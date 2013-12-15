@@ -23,14 +23,14 @@ prepare: $(PREPARE_LIST)
 
 cover-prepare:
 	go get github.com/golang/lint/golint
-	go get github.com/matm/gocov-html
 	go get github.com/mattn/goveralls
 	go get github.com/axw/gocov/gocov
 	go get code.google.com/p/go.tools/cmd/cover
 
 coverage:
-	gocov test ./... | gocov-html > coverage.html
-	open coverage.html
+	go test -coverprofile=coverage.out
+	go tool cover -html=coverage.out
+	rm -f coverage.out
 
 check:
 	go tool vet -all=true .
