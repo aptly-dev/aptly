@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 
-ifeq ($(TRAVIS), yes)
+ifeq ($(TRAVIS), true)
 GOVERALLS?=$(HOME)/gopath/bin/goveralls
 else
 GOVERALLS?=goveralls
