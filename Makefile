@@ -25,6 +25,7 @@ cover-prepare:
 	go get github.com/golang/lint/golint
 	go get github.com/matm/gocov-html
 	go get github.com/mattn/goveralls
+	go get github.com/axw/gocov/gocov
 	go get code.google.com/p/go.tools/cmd/cover
 
 coverage:
@@ -41,6 +42,6 @@ test:
 	go test -v ./...
 
 coveralls:
-	$(GOVERALLS) -service travis-ci.org -package="./..." $(COVERALLS_TOKEN)
+	@$(GOVERALLS) -service travis-ci.org -package="./..." $(COVERALLS_TOKEN)
 
 .PHONY: prepare cover-prepare coverage check test coveralls travis
