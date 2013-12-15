@@ -17,6 +17,7 @@ endif
 all: test check
 
 prepare: $(PREPARE_LIST)
+	env
 	go get -d -v ./...
 	go get launchpad.net/gocheck
 
