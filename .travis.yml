@@ -13,4 +13,4 @@ install:
   - go get launchpad.net/gocheck
 
 
-script: make test
+script: make travis
