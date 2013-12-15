@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -58,6 +59,30 @@ func (downloader *Downloader) Download(url string, destination string) <-chan er
 	downloader.queue <- &downloadTask{url: url, destination: destination, result: ch}
 
 	return ch
+}
+
+// DownloadTemp starts new download to temporary file and returns File
+//
+// Temporary file would be already removed, so no need to cleanup
+func (downloader *Downloader) DownloadTemp(url string) (*os.File, error) {
+	ch := make(chan error, 1)
+
+	tempfile, err := ioutil.TempFile(os.TempDir(), "aptly")
+	if err != nil {
+		return nil, err
+	}
+
+	defer os.Remove(tempfile.Name())
+
+	downloader.queue <- &downloadTask{url: url, destination: tempfile.Name(), result: ch}
+
+	err = <-ch
+	if err != nil {
+		tempfile.Close()
+		return nil, err
+	}
+
+	return tempfile, nil
 }
 
 // handleTask processes single download task

@@ -74,3 +74,30 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	res := <-d.Download("http://smira.ru/", "/no/such/file")
 	c.Assert(res, ErrorMatches, ".*no such file or directory")
 }
+
+func (s *DownloaderSuite) TestDownloadTemp(c *C) {
+	d := NewDownloader(2)
+	defer d.Shutdown()
+
+	f, err := d.DownloadTemp("http://smira.ru/")
+	c.Assert(err, IsNil)
+	defer f.Close()
+
+	buf := make([]byte, 1)
+
+	f.Read(buf)
+	c.Assert(buf, DeepEquals, []byte("<"))
+
+	_, err = os.Stat(f.Name())
+	c.Assert(os.IsNotExist(err), Equals, true)
+}
+
+func (s *DownloaderSuite) TestDownloadTempError(c *C) {
+	d := NewDownloader(2)
+	defer d.Shutdown()
+
+	f, err := d.DownloadTemp("http://smira.ru/doesntexist")
+	c.Assert(err, NotNil)
+	c.Assert(f, IsNil)
+	c.Assert(err, ErrorMatches, "HTTP code 404.*")
+}
