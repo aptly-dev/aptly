@@ -10,7 +10,7 @@ env:
     - secure: "YSwtFrMqh4oUvdSQTXBXMHHLWeQgyNEL23ChIZwU0nuDGIcQZ65kipu0PzefedtUbK4ieC065YCUi4UDDh6gPotB/Wu1pnYg3dyQ7rFvhaVYAAUEpajAdXZhlx+7+J8a4FZMeC/kqiahxoRgLbthF9019ouIqhGB9zHKI6/yZwc="
 
 install:
-  - go get launchpad.net/gocheck
+  - make prepare
 
 
-script: make prepare
+script: make travis
