@@ -40,7 +40,7 @@ check:
 travis: $(TRAVIS_TARGET)
 
 test:
-	go test -v ./...
+	go test -v ./... -gocheck.v=true
 
 coveralls:
 	@$(GOVERALLS) -service travis-ci.org -package="./..." $(COVERALLS_TOKEN)
