@@ -6,13 +6,15 @@ else
 GOVERALLS?=goveralls
 endif
 
-ifeq ($(GOVERSION), go1.2)
-TRAVIS_TARGET=coveralls
-PREPARE_LIST=cover-prepare
-else
+# Disable coverage in Redis until I figure out go tool cover + multiple
+# packages
+#ifeq ($(GOVERSION), go1.2)
+#TRAVIS_TARGET=coveralls
+#PREPARE_LIST=cover-prepare
+#else
 TRAVIS_TARGET=test
 PREPARE_LIST=
-endif
+#endif
 
 all: test check
 
