@@ -6,7 +6,7 @@ import (
 )
 
 type expectedRequest struct {
-	Url      string
+	URL      string
 	Err      error
 	Response string
 }
@@ -31,13 +31,13 @@ func NewFakeDownloader() *FakeDownloader {
 
 // ExpectResponse installs expectation on upcoming download with response
 func (f *FakeDownloader) ExpectResponse(url string, response string) *FakeDownloader {
-	f.expected = append(f.expected, expectedRequest{Url: url, Response: response})
+	f.expected = append(f.expected, expectedRequest{URL: url, Response: response})
 	return f
 }
 
 // ExpectError installs expectation on upcoming download with error
 func (f *FakeDownloader) ExpectError(url string, err error) *FakeDownloader {
-	f.expected = append(f.expected, expectedRequest{Url: url, Err: err})
+	f.expected = append(f.expected, expectedRequest{URL: url, Err: err})
 	return f
 }
 
@@ -50,7 +50,7 @@ func (f *FakeDownloader) Empty() bool {
 func (f *FakeDownloader) Download(url string, filename string) <-chan error {
 	result := make(chan error, 1)
 
-	if len(f.expected) == 0 || f.expected[0].Url != url {
+	if len(f.expected) == 0 || f.expected[0].URL != url {
 		result <- fmt.Errorf("unexpected request for %s", url)
 		return result
 	}
