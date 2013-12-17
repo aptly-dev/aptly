@@ -34,7 +34,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 func (s *PackageSuite) TestKey(c *C) {
 	p := NewPackageFromControlFile(s.para)
 
-	c.Check(p.Key(), DeepEquals, []byte("alien-arena-common 7.40-2"))
+	c.Check(p.Key(), DeepEquals, []byte("alien-arena-common 7.40-2 i386"))
 }
 
 func (s *PackageSuite) TestEncodeDecode(c *C) {

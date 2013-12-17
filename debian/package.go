@@ -58,7 +58,7 @@ func NewPackageFromControlFile(input debc.Paragraph) *Package {
 
 // Key returns unique key identifying package
 func (p *Package) Key() []byte {
-	return []byte(p.Name + " " + p.Version)
+	return []byte(p.Name + " " + p.Version + " " + p.Architecture)
 }
 
 // Encode does serializing of Package
