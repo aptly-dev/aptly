@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 // Downloader is parallel HTTP fetcher
@@ -91,14 +92,34 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		return
 	}
 
-	outfile, err := os.Create(task.destination)
+	err = os.MkdirAll(filepath.Base(task.destination), 0755)
+	if err != nil {
+		task.result <- err
+		return
+	}
+
+	temppath := task.destination + ".down"
+
+	outfile, err := os.Create(temppath)
 	if err != nil {
 		task.result <- err
 		return
 	}
 	defer outfile.Close()
 
-	io.Copy(outfile, resp.Body)
+	_, err = io.Copy(outfile, resp.Body)
+	if err != nil {
+		os.Remove(temppath)
+		task.result <- err
+		return
+	}
+
+	err = os.Rename(temppath, task.destination)
+	if err != nil {
+		os.Remove(temppath)
+		task.result <- err
+		return
+	}
 
 	task.result <- nil
 }
@@ -120,23 +141,27 @@ func (downloader *downloaderImpl) process() {
 //
 // Temporary file would be already removed, so no need to cleanup
 func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
-
-	tempfile, err := ioutil.TempFile(os.TempDir(), "aptly")
+	tempdir, err := ioutil.TempDir(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
 	}
+	defer os.RemoveAll(tempdir)
 
-	defer os.Remove(tempfile.Name())
+	tempfile := filepath.Join(tempdir, "buffer")
 
-	ch := downloader.Download(url, tempfile.Name())
+	ch := downloader.Download(url, tempfile)
 
 	err = <-ch
 	if err != nil {
-		tempfile.Close()
 		return nil, err
 	}
 
-	return tempfile, nil
+	file, err := os.Open(tempfile)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
 
 // List of extensions + corresponding uncompression support
