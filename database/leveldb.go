@@ -7,10 +7,12 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
+// Errors for Storage
 var (
 	ErrNotFound = errors.New("key not found")
 )
 
+// Storage is an interface to KV storage
 type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
@@ -26,6 +28,7 @@ var (
 	_ Storage = &levelDB{}
 )
 
+// OpenDB opens (creates) LevelDB database
 func OpenDB(path string) (Storage, error) {
 	o := &opt.Options{
 		Filter: filter.NewBloomFilter(10),
