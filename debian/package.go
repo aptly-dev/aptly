@@ -1,8 +1,9 @@
 package debian
 
 import (
-	"encoding/json"
+	"bytes"
 	debc "github.com/smira/godebiancontrol"
+	"github.com/ugorji/go/codec"
 	"strings"
 )
 
@@ -61,13 +62,18 @@ func (p *Package) Key() []byte {
 	return []byte(p.Name + " " + p.Version + " " + p.Architecture)
 }
 
-// Encode does serializing of Package
+// Encode does msgpack encoding of Package
 func (p *Package) Encode() []byte {
-	result, _ := json.Marshal(p)
-	return result
+	var buf bytes.Buffer
+
+	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
+	encoder.Encode(p)
+
+	return buf.Bytes()
 }
 
-// Decode unserializes representation into Package
+// Decode decodes msgpack representation into Package
 func (p *Package) Decode(input []byte) error {
-	return json.Unmarshal(input, p)
+	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+	return decoder.Decode(p)
 }
