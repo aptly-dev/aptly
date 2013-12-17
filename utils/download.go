@@ -92,7 +92,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		return
 	}
 
-	err = os.MkdirAll(filepath.Base(task.destination), 0755)
+	err = os.MkdirAll(filepath.Dir(task.destination), 0755)
 	if err != nil {
 		task.result <- err
 		return

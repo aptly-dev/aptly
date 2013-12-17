@@ -73,8 +73,8 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
 
-	res := <-d.Download("http://smira.ru/", "/no/such/file")
-	c.Assert(res, ErrorMatches, ".*no such file or directory")
+	res := <-d.Download("http://smira.ru/", "/")
+	c.Assert(res, ErrorMatches, ".*permission denied")
 }
 
 func (s *DownloaderSuite) TestDownloadTemp(c *C) {
