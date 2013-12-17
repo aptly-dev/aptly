@@ -29,7 +29,6 @@ var (
 func OpenDB(path string) (Storage, error) {
 	o := &opt.Options{
 		Filter: filter.NewBloomFilter(10),
-		Flag:   opt.OFCreateIfMissing,
 	}
 
 	db, err := leveldb.OpenFile(path, o)
