@@ -79,7 +79,7 @@ func (s *DownloaderSuite) TestDownloadTemp(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
 
-	f, err := d.DownloadTemp("http://smira.ru/")
+	f, err := DownloadTemp(d, "http://smira.ru/")
 	c.Assert(err, IsNil)
 	defer f.Close()
 
@@ -96,7 +96,7 @@ func (s *DownloaderSuite) TestDownloadTempError(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
 
-	f, err := d.DownloadTemp("http://smira.ru/doesntexist")
+	f, err := DownloadTemp(d, "http://smira.ru/doesntexist")
 	c.Assert(err, NotNil)
 	c.Assert(f, IsNil)
 	c.Assert(err, ErrorMatches, "HTTP code 404.*")

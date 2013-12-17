@@ -2,45 +2,9 @@ package debian
 
 import (
 	"github.com/smira/aptly/utils"
-	"io/ioutil"
 	. "launchpad.net/gocheck"
-	"os"
 	"testing"
 )
-
-type FakeDownloader struct {
-	Err      error
-	Response string
-}
-
-func (f *FakeDownloader) DownloadTemp(url string) (*os.File, error) {
-	if f.Err != nil {
-		return nil, f.Err
-	}
-
-	tempfile, _ := ioutil.TempFile(os.TempDir(), "aptly-test")
-	defer os.Remove(tempfile.Name())
-
-	tempfile.Write([]byte(f.Response))
-	tempfile.Seek(0, 0)
-
-	return tempfile, nil
-}
-
-func (f *FakeDownloader) Download(url string, filename string) <-chan error {
-	result := make(chan error)
-	if f.Err != nil {
-		result <- f.Err
-		return result
-	}
-
-	// TODO
-
-	return result
-}
-
-func (f *FakeDownloader) Shutdown() {
-}
 
 // Launch gocheck tests
 func Test(t *testing.T) {
@@ -56,12 +20,20 @@ var _ = Suite(&RemoteRepoSuite{})
 
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
-	s.downloader = &FakeDownloader{Response: exampleReleaseFile}
+	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 	_, err := NewRemoteRepo("http://lolo%2", "squeeze", []string{"main"}, []string{})
 	c.Assert(err, ErrorMatches, ".*hexadecimal escape in host.*")
+}
+
+func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
+	c.Assert(s.repo.ReleaseURL().String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/Release")
+}
+
+func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
+	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
 }
 
 func (s *RemoteRepoSuite) TestFetch(c *C) {

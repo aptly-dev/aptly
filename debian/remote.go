@@ -3,6 +3,7 @@ package debian
 
 import (
 	"fmt"
+	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	debc "github.com/smira/godebiancontrol"
 	"net/url"
@@ -52,10 +53,17 @@ func (repo *RemoteRepo) ReleaseURL() *url.URL {
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
+// BinaryURL returns URL of Packages file for given component and
+// architecture
+func (repo *RemoteRepo) BinaryURL(component string, architecture string) *url.URL {
+	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s/binary-%s/Packages", repo.Distribution, component, architecture)}
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
 // Fetch updates information about repository
 func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 	// Download release file to temporary URL
-	release, err := d.DownloadTemp(repo.ReleaseURL().String())
+	release, err := utils.DownloadTemp(d, repo.ReleaseURL().String())
 	if err != nil {
 		return err
 	}
@@ -91,6 +99,31 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 			fmt.Sprintf("component %%s not available in repo %s", repo))
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// Download downloads all repo files
+func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage) error {
+	for _, component := range repo.Components {
+		for _, architecture := range repo.Architectures {
+			packagesReader, packagesFile, err := utils.DownloadTryCompression(d, repo.BinaryURL(component, architecture).String())
+			if err != nil {
+				return err
+			}
+			defer packagesFile.Close()
+
+			paras, err := debc.Parse(packagesReader)
+			if err != nil {
+				return err
+			}
+
+			for _, para := range paras {
+				p := NewPackageFromControlFile(para)
+				db.Put(p.Key(), p.Encode())
+			}
 		}
 	}
 

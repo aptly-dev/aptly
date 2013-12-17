@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"compress/bzip2"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,7 +14,6 @@ import (
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	Download(url string, destination string) <-chan error
-	DownloadTemp(url string) (*os.File, error)
 	Shutdown()
 }
 
@@ -74,30 +75,6 @@ func (downloader *downloaderImpl) Download(url string, destination string) <-cha
 	return ch
 }
 
-// DownloadTemp starts new download to temporary file and returns File
-//
-// Temporary file would be already removed, so no need to cleanup
-func (downloader *downloaderImpl) DownloadTemp(url string) (*os.File, error) {
-	ch := make(chan error, 1)
-
-	tempfile, err := ioutil.TempFile(os.TempDir(), "aptly")
-	if err != nil {
-		return nil, err
-	}
-
-	defer os.Remove(tempfile.Name())
-
-	downloader.queue <- &downloadTask{url: url, destination: tempfile.Name(), result: ch}
-
-	err = <-ch
-	if err != nil {
-		tempfile.Close()
-		return nil, err
-	}
-
-	return tempfile, nil
-}
-
 // handleTask processes single download task
 func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	log.Printf("Downloading %s...\n", task.url)
@@ -137,4 +114,67 @@ func (downloader *downloaderImpl) process() {
 			downloader.handleTask(task)
 		}
 	}
+}
+
+// DownloadTemp starts new download to temporary file and returns File
+//
+// Temporary file would be already removed, so no need to cleanup
+func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
+
+	tempfile, err := ioutil.TempFile(os.TempDir(), "aptly")
+	if err != nil {
+		return nil, err
+	}
+
+	defer os.Remove(tempfile.Name())
+
+	ch := downloader.Download(url, tempfile.Name())
+
+	err = <-ch
+	if err != nil {
+		tempfile.Close()
+		return nil, err
+	}
+
+	return tempfile, nil
+}
+
+// List of extensions + corresponding uncompression support
+var compressionMethods = []struct {
+	extenstion     string
+	transformation func(io.Reader) (io.Reader, error)
+}{
+	{
+		extenstion:     ".bz2",
+		transformation: func(r io.Reader) (io.Reader, error) { return bzip2.NewReader(r), nil },
+	},
+	{
+		extenstion:     ".gz",
+		transformation: func(r io.Reader) (io.Reader, error) { return gzip.NewReader(r) },
+	},
+	{
+		extenstion:     "",
+		transformation: func(r io.Reader) (io.Reader, error) { return r, nil },
+	},
+}
+
+// DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
+// it finds existing file.
+func DownloadTryCompression(downloader Downloader, url string) (io.Reader, *os.File, error) {
+	var err error
+
+	for _, method := range compressionMethods {
+		file, err := DownloadTemp(downloader, url+method.extenstion)
+		if err != nil {
+			continue
+		}
+
+		uncompressed, err := method.transformation(file)
+		if err != nil {
+			continue
+		}
+
+		return uncompressed, file, err
+	}
+	return nil, nil, err
 }
