@@ -6,15 +6,13 @@ else
 GOVERALLS?=goveralls
 endif
 
-# Disable coverage in Redis until I figure out go tool cover + multiple
-# packages
-#ifeq ($(GOVERSION), go1.2)
-#TRAVIS_TARGET=coveralls
-#PREPARE_LIST=cover-prepare
-#else
+ifeq ($(GOVERSION), go1.2)
+TRAVIS_TARGET=coveralls
+PREPARE_LIST=cover-prepare
+else
 TRAVIS_TARGET=test
 PREPARE_LIST=
-#endif
+endif
 
 all: test check
 
@@ -28,8 +26,14 @@ cover-prepare:
 	go get github.com/axw/gocov/gocov
 	go get code.google.com/p/go.tools/cmd/cover
 
-coverage:
-	go test -coverprofile=coverage.out
+coverage.out:
+	go test -coverprofile=coverage.debian.out ./debian
+	go test -coverprofile=coverage.utils.out ./utils
+	go test -coverprofile=coverage.database.out ./database
+	echo "mode: set" > coverage.out
+	grep -v -h "mode: set" coverage.*.out >> coverage.out
+
+coverage: coverage.out
 	go tool cover -html=coverage.out
 	rm -f coverage.out
 
@@ -42,7 +46,7 @@ travis: $(TRAVIS_TARGET)
 test:
 	go test -v ./... -gocheck.v=true
 
-coveralls:
-	@$(GOVERALLS) -service travis-ci.org -package="./..." $(COVERALLS_TOKEN)
+coveralls: coverage.out
+	@$(GOVERALLS) -service travis-ci.org -coverprofile=coverage.out $(COVERALLS_TOKEN)
 
-.PHONY: prepare cover-prepare coverage check test coveralls travis
+.PHONY: coverage.out
