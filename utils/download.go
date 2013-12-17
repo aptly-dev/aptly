@@ -164,12 +164,15 @@ func DownloadTryCompression(downloader Downloader, url string) (io.Reader, *os.F
 	var err error
 
 	for _, method := range compressionMethods {
-		file, err := DownloadTemp(downloader, url+method.extenstion)
+		var file *os.File
+
+		file, err = DownloadTemp(downloader, url+method.extenstion)
 		if err != nil {
 			continue
 		}
 
-		uncompressed, err := method.transformation(file)
+		var uncompressed io.Reader
+		uncompressed, err = method.transformation(file)
 		if err != nil {
 			continue
 		}
