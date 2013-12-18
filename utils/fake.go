@@ -47,12 +47,10 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // Download performs fake download by matching against first expectation in the queue
-func (f *FakeDownloader) Download(url string, filename string) <-chan error {
-	result := make(chan error, 1)
-
+func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
 	if len(f.expected) == 0 || f.expected[0].URL != url {
 		result <- fmt.Errorf("unexpected request for %s", url)
-		return result
+		return
 	}
 
 	expected := f.expected[0]
@@ -60,24 +58,24 @@ func (f *FakeDownloader) Download(url string, filename string) <-chan error {
 
 	if expected.Err != nil {
 		result <- expected.Err
-		return result
+		return
 	}
 
 	outfile, err := os.Create(filename)
 	if err != nil {
 		result <- err
-		return result
+		return
 	}
 	defer outfile.Close()
 
 	_, err = outfile.Write([]byte(expected.Response))
 	if err != nil {
 		result <- err
-		return result
+		return
 	}
 
 	result <- nil
-	return result
+	return
 }
 
 // Shutdown does nothing

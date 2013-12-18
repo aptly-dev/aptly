@@ -14,7 +14,7 @@ import (
 
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
-	Download(url string, destination string) <-chan error
+	Download(url string, destination string, result chan<- error)
 	Shutdown()
 }
 
@@ -68,12 +68,8 @@ func (downloader *downloaderImpl) Shutdown() {
 }
 
 // Download starts new download task
-func (downloader *downloaderImpl) Download(url string, destination string) <-chan error {
-	ch := make(chan error, 1)
-
-	downloader.queue <- &downloadTask{url: url, destination: destination, result: ch}
-
-	return ch
+func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
+	downloader.queue <- &downloadTask{url: url, destination: destination, result: result}
 }
 
 // handleTask processes single download task
@@ -149,7 +145,8 @@ func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
 
 	tempfile := filepath.Join(tempdir, "buffer")
 
-	ch := downloader.Download(url, tempfile)
+	ch := make(chan error, 1)
+	downloader.Download(url, tempfile, ch)
 
 	err = <-ch
 	if err != nil {

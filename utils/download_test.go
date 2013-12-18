@@ -48,32 +48,40 @@ func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 func (s *DownloaderSuite) TestDownloadOK(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
+	ch := make(chan error)
 
-	res := <-d.Download("http://smira.ru/", s.tempfile.Name())
+	d.Download("http://smira.ru/", s.tempfile.Name(), ch)
+	res := <-ch
 	c.Assert(res, IsNil)
 }
 
 func (s *DownloaderSuite) TestDownload404(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
+	ch := make(chan error)
 
-	res := <-d.Download("http://smira.ru/doesntexist", s.tempfile.Name())
+	d.Download("http://smira.ru/doesntexist", s.tempfile.Name(), ch)
+	res := <-ch
 	c.Assert(res, ErrorMatches, "HTTP code 404.*")
 }
 
 func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
+	ch := make(chan error)
 
-	res := <-d.Download("http://nosuch.smira.ru/", s.tempfile.Name())
+	d.Download("http://nosuch.smira.ru/", s.tempfile.Name(), ch)
+	res := <-ch
 	c.Assert(res, ErrorMatches, ".*no such host")
 }
 
 func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
+	ch := make(chan error)
 
-	res := <-d.Download("http://smira.ru/", "/")
+	d.Download("http://smira.ru/", "/", ch)
+	res := <-ch
 	c.Assert(res, ErrorMatches, ".*permission denied")
 }
 
