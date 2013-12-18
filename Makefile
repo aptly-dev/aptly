@@ -27,11 +27,11 @@ cover-prepare:
 	go get code.google.com/p/go.tools/cmd/cover
 
 coverage.out:
-	go test -coverprofile=coverage.debian.out ./debian
-	go test -coverprofile=coverage.utils.out ./utils
-	go test -coverprofile=coverage.database.out ./database
-	echo "mode: set" > coverage.out
-	grep -v -h "mode: set" coverage.*.out >> coverage.out
+	go test -coverprofile=coverage.debian.out -covermode=count ./debian
+	go test -coverprofile=coverage.utils.out -covermode=count ./utils
+	go test -coverprofile=coverage.database.out -covermode=count ./database
+	echo "mode: count" > coverage.out
+	grep -v -h "mode: count" coverage.*.out >> coverage.out
 
 coverage: coverage.out
 	go tool cover -html=coverage.out
