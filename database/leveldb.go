@@ -1,3 +1,4 @@
+// Package database provides KV database for meta-information
 package database
 
 import (
