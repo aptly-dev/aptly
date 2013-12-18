@@ -34,7 +34,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 func (s *PackageSuite) TestKey(c *C) {
 	p := NewPackageFromControlFile(s.para)
 
-	c.Check(p.Key(), DeepEquals, []byte("alien-arena-common 7.40-2 i386"))
+	c.Check(p.Key(), DeepEquals, []byte("Palien-arena-common 7.40-2 i386"))
 }
 
 func (s *PackageSuite) TestEncodeDecode(c *C) {
@@ -45,4 +45,23 @@ func (s *PackageSuite) TestEncodeDecode(c *C) {
 
 	c.Assert(err, IsNil)
 	c.Assert(p2, DeepEquals, p)
+}
+
+func (s *PackageSuite) TestString(c *C) {
+	p := NewPackageFromControlFile(s.para)
+	c.Assert(p.String(), Equals, "alien-arena-common-7.40-2_i386")
+}
+
+func (s *PackageSuite) TestEquals(c *C) {
+	p := NewPackageFromControlFile(s.para)
+
+	para2 := make(debc.Paragraph)
+	for k, v := range packagePara {
+		para2[k] = v
+	}
+	p2 := NewPackageFromControlFile(para2)
+	c.Check(p.Equals(p2), Equals, true)
+
+	p2.Depends = []string{"package1"}
+	c.Check(p.Equals(p2), Equals, false)
 }
