@@ -6,6 +6,8 @@ import (
 	"github.com/smira/aptly/utils"
 	debc "github.com/smira/godebiancontrol"
 	"github.com/ugorji/go/codec"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -16,6 +18,7 @@ type Package struct {
 	Name         string
 	Version      string
 	Filename     string
+	Filesize     int64
 	Architecture string
 	Depends      []string
 	PreDepends   []string
@@ -48,6 +51,9 @@ func NewPackageFromControlFile(input debc.Paragraph) *Package {
 	delete(input, "Version")
 	delete(input, "Filename")
 	delete(input, "Architecture")
+
+	result.Filesize, _ = strconv.ParseInt(input["Size"], 10, 64)
+	delete(input, "Size")
 
 	result.Depends = parseDependencies(input, "Depends")
 	result.PreDepends = parseDependencies(input, "Pre-Depends")
@@ -90,5 +96,15 @@ func (p *Package) Equals(p2 *Package) bool {
 	return p.Name == p2.Name && p.Version == p2.Version && p.Filename == p2.Filename &&
 		p.Architecture == p2.Architecture && utils.StrSlicesEqual(p.Depends, p2.Depends) &&
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
-		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra)
+		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
+		p.Filesize == p2.Filesize
+}
+
+// VerifyFile verifies integrity and existence of local files for the package
+func (p *Package) VerifyFile(filepath string) bool {
+	st, err := os.Stat(filepath)
+	if err != nil {
+		return false
+	}
+	return st.Size() == p.Filesize
 }

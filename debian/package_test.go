@@ -29,6 +29,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.Filename, Equals, "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
 	c.Check(p.Suggests, IsNil)
+	c.Check(p.Filesize, Equals, int64(187518))
 }
 
 func (s *PackageSuite) TestKey(c *C) {

@@ -60,6 +60,13 @@ func (repo *RemoteRepo) BinaryURL(component string, architecture string) *url.UR
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
+// PackageURL returns URL of package file relative to repository root
+// architecture
+func (repo *RemoteRepo) PackageURL(filename string) *url.URL {
+	path := &url.URL{Path: filename}
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
 // Fetch updates information about repository
 func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 	// Download release file to temporary URL
@@ -106,7 +113,10 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage) error {
+func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packageRepo *Repository) error {
+	list := NewPackageList()
+
+	// Download and parse all Release files
 	for _, component := range repo.Components {
 		for _, architecture := range repo.Architectures {
 			packagesReader, packagesFile, err := utils.DownloadTryCompression(d, repo.BinaryURL(component, architecture).String())
@@ -122,9 +132,36 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage) error 
 
 			for _, para := range paras {
 				p := NewPackageFromControlFile(para)
-				db.Put(p.Key(), p.Encode())
+
+				list.Add(p)
 			}
 		}
+	}
+
+	// Save package meta information to DB
+	list.ForEach(func(p *Package) {
+		db.Put(p.Key(), p.Encode())
+	})
+
+	// Download all package files
+	ch := make(chan error, list.Length())
+	count := 0
+
+	list.ForEach(func(p *Package) {
+		poolPath, err := packageRepo.PoolPath(p.Filename)
+		if err == nil {
+			if !p.VerifyFile(poolPath) {
+				d.Download(repo.PackageURL(p.Filename).String(), poolPath, ch)
+				count++
+			}
+		}
+	})
+
+	// Wait for all downloads to finish
+	// TODO: report errors
+	for count > 0 {
+		_ = <-ch
+		count--
 	}
 
 	return nil
