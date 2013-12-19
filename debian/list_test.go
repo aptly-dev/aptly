@@ -33,14 +33,14 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 	s.p4 = NewPackageFromControlFile(para)
 }
 
-func (s *PackageListSuite) TestAddLength(c *C) {
-	c.Check(s.list.Length(), Equals, 0)
+func (s *PackageListSuite) TestAddLen(c *C) {
+	c.Check(s.list.Len(), Equals, 0)
 	c.Check(s.list.Add(s.p1), IsNil)
-	c.Check(s.list.Length(), Equals, 1)
+	c.Check(s.list.Len(), Equals, 1)
 	c.Check(s.list.Add(s.p2), IsNil)
-	c.Check(s.list.Length(), Equals, 1)
+	c.Check(s.list.Len(), Equals, 1)
 	c.Check(s.list.Add(s.p3), IsNil)
-	c.Check(s.list.Length(), Equals, 2)
+	c.Check(s.list.Len(), Equals, 2)
 	c.Check(s.list.Add(s.p4), ErrorMatches, "conflict in package.*")
 }
 
@@ -48,10 +48,20 @@ func (s *PackageListSuite) TestForeach(c *C) {
 	s.list.Add(s.p1)
 	s.list.Add(s.p3)
 
-	length := 0
+	Len := 0
 	s.list.ForEach(func(*Package) {
-		length++
+		Len++
 	})
 
-	c.Check(length, Equals, 2)
+	c.Check(Len, Equals, 2)
+}
+
+func (s *PackageListSuite) TestNewPackageRefList(c *C) {
+	s.list.Add(s.p1)
+	s.list.Add(s.p3)
+
+	reflist := NewPackageRefListFromPackageList(s.list)
+	c.Assert(reflist.Len(), Equals, 2)
+	c.Assert(reflist.Refs[0], DeepEquals, []byte(s.p1.Key()))
+	c.Assert(reflist.Refs[1], DeepEquals, []byte(s.p3.Key()))
 }

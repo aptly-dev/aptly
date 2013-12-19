@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // RemoteRepo represents remote (fetchable) Debian repository.
@@ -32,7 +33,11 @@ type RemoteRepo struct {
 	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures []string
 	// Meta-information about repository
-	Meta           debc.Paragraph
+	Meta debc.Paragraph
+	// Last update date
+	LastDownloadDate time.Time
+	// "Snapshot" of current list of packages
+	PackageRefs    *PackageRefList
 	archiveRootURL *url.URL
 }
 
@@ -168,7 +173,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packag
 	})
 
 	// Download all package files
-	ch := make(chan error, list.Length())
+	ch := make(chan error, list.Len())
 	count := 0
 
 	list.ForEach(func(p *Package) {
@@ -187,6 +192,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packag
 		_ = <-ch
 		count--
 	}
+
+	repo.LastDownloadDate = time.Now()
+	repo.PackageRefs = NewPackageRefListFromPackageList(list)
 
 	return nil
 }

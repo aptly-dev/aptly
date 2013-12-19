@@ -1,7 +1,9 @@
 package debian
 
 import (
+	"bytes"
 	"fmt"
+	"sort"
 )
 
 // PackageList is list of unique (by key) packages
@@ -40,7 +42,47 @@ func (l *PackageList) ForEach(handler func(*Package)) {
 	}
 }
 
-// Length returns number of packages in the list
-func (l *PackageList) Length() int {
+// Len returns number of packages in the list
+func (l *PackageList) Len() int {
 	return len(l.packages)
+}
+
+// PackageRefList is a list of keys of packages, this is basis for snapshot
+// and similar stuff
+//
+// Refs are sorted in lexographical order
+type PackageRefList struct {
+	// List of package keys
+	Refs [][]byte
+}
+
+// NewPackageRefListFromPackageList creates PackageRefList from PackageList
+func NewPackageRefListFromPackageList(list *PackageList) *PackageRefList {
+	reflist := &PackageRefList{}
+	reflist.Refs = make([][]byte, list.Len())
+
+	i := 0
+	for _, p := range list.packages {
+		reflist.Refs[i] = p.Key()
+		i++
+	}
+
+	sort.Sort(reflist)
+
+	return reflist
+}
+
+// Len returns number of refs
+func (l *PackageRefList) Len() int {
+	return len(l.Refs)
+}
+
+// Swap swaps two refs
+func (l *PackageRefList) Swap(i, j int) {
+	l.Refs[i], l.Refs[j] = l.Refs[j], l.Refs[i]
+}
+
+// Compare compares two refs in lexographical order
+func (l *PackageRefList) Less(i, j int) bool {
+	return bytes.Compare(l.Refs[i], l.Refs[j]) < 0
 }

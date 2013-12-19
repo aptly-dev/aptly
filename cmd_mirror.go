@@ -76,6 +76,14 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, ", "))
+	if repo.LastDownloadDate.IsZero() {
+		fmt.Printf("Last update: never\n")
+	} else {
+		fmt.Printf("Last update: %s\n", repo.LastDownloadDate.Format("2006-01-02 15:04:05 MST"))
+	}
+	if repo.PackageRefs != nil {
+		fmt.Printf("Number of packages: %d\n", repo.PackageRefs.Len())
+	}
 
 	fmt.Printf("\nInformation from release file:\n")
 	for name, value := range repo.Meta {
@@ -193,7 +201,7 @@ func makeCmdMirror() *commander.Commander {
 			makeCmdMirrorCreate(),
 			makeCmdMirrorList(),
 			makeCmdMirrorShow(),
-			//makeCmdMirrorDelete(),
+			//makeCmdMirrorDeestroy(),
 			makeCmdMirrorUpdate(),
 		},
 		Flag: flag.NewFlagSet("aptly-mirror", flag.ExitOnError),
