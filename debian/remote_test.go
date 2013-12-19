@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	. "launchpad.net/gocheck"
 	"testing"
@@ -19,12 +20,12 @@ type RemoteRepoSuite struct {
 var _ = Suite(&RemoteRepoSuite{})
 
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
-	s.repo, _ = NewRemoteRepo("http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
 	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
-	_, err := NewRemoteRepo("http://lolo%2", "squeeze", []string{"main"}, []string{})
+	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{})
 	c.Assert(err, ErrorMatches, ".*hexadecimal escape in host.*")
 }
 
@@ -36,6 +37,11 @@ func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
 	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
 }
 
+func (s *RemoteRepoSuite) TestPackageURL(c *C) {
+	c.Assert(s.repo.PackageURL("pool/main/0/0ad/0ad_0~r11863-2_i386.deb").String(), Equals,
+		"http://mirror.yandex.ru/debian/pool/main/0/0ad/0ad_0~r11863-2_i386.deb")
+}
+
 func (s *RemoteRepoSuite) TestFetch(c *C) {
 	err := s.repo.Fetch(s.downloader)
 	c.Assert(err, IsNil)
@@ -44,15 +50,63 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
-	s.repo, _ = NewRemoteRepo("http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{"xyz"})
+	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{"xyz"})
 	err := s.repo.Fetch(s.downloader)
 	c.Assert(err, ErrorMatches, "architecture xyz not available in repo.*")
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongComponent(c *C) {
-	s.repo, _ = NewRemoteRepo("http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"})
+	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"})
 	err := s.repo.Fetch(s.downloader)
 	c.Assert(err, ErrorMatches, "component xyz not available in repo.*")
+}
+
+func (s *RemoteRepoSuite) TestEncodeDecode(c *C) {
+	repo := &RemoteRepo{}
+	err := repo.Decode(s.repo.Encode())
+	c.Assert(err, IsNil)
+
+	c.Check(repo.Name, Equals, "yandex")
+	c.Check(repo.ArchiveRoot, Equals, "http://mirror.yandex.ru/debian/")
+}
+
+func (s *RemoteRepoSuite) TestKey(c *C) {
+	c.Assert(len(s.repo.Key()), Equals, 37)
+}
+
+type RemoteRepoCollectionSuite struct {
+	db         database.Storage
+	collection *RemoteRepoCollection
+}
+
+var _ = Suite(&RemoteRepoCollectionSuite{})
+
+func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
+	s.db, _ = database.OpenDB(c.MkDir())
+	s.collection = NewRemoteRepoCollection(s.db)
+}
+
+func (s *RemoteRepoCollectionSuite) TearDownTest(c *C) {
+	s.db.Close()
+}
+
+func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
+	r, err := s.collection.ByName("yandex")
+	c.Assert(err, ErrorMatches, "*.not found")
+
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	c.Assert(s.collection.Add(repo), IsNil)
+	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
+
+	r, err = s.collection.ByName("yandex")
+	c.Assert(err, IsNil)
+	c.Assert(r.String(), Equals, repo.String())
+
+	collection := NewRemoteRepoCollection(s.db)
+	r, err = collection.ByName("yandex")
+	c.Assert(err, IsNil)
+	c.Assert(r.String(), Equals, repo.String())
+
 }
 
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily

@@ -2,10 +2,14 @@
 package debian
 
 import (
+	"bytes"
+	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	debc "github.com/smira/godebiancontrol"
+	"github.com/ugorji/go/codec"
+	"log"
 	"net/url"
 	"strings"
 )
@@ -15,35 +19,48 @@ import (
 // Repostitory could be filtered when fetching by components, architectures
 // TODO: support flat format
 type RemoteRepo struct {
-	ArchiveRoot    string
-	Distribution   string
-	Components     []string
+	// Permanent internal ID
+	UUID string
+	// User-assigned name
+	Name string
+	// Root of Debian archive, URL
+	ArchiveRoot string
+	// Distribution name, e.g. squeeze
+	Distribution string
+	// List of components to fetch, if empty, then fetch all components
+	Components []string
+	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures  []string
 	archiveRootURL *url.URL
 }
 
 // NewRemoteRepo creates new instance of Debian remote repository with specified params
-func NewRemoteRepo(archiveRoot string, distribution string, components []string, architectures []string) (*RemoteRepo, error) {
+func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string, architectures []string) (*RemoteRepo, error) {
 	result := &RemoteRepo{
+		UUID:          uuid.New(),
+		Name:          name,
 		ArchiveRoot:   archiveRoot,
 		Distribution:  distribution,
 		Components:    components,
 		Architectures: architectures,
 	}
 
-	var err error
-
-	result.archiveRootURL, err = url.Parse(archiveRoot)
+	err := result.prepare()
 	if err != nil {
 		return nil, err
 	}
-
 	return result, nil
+}
+
+func (repo *RemoteRepo) prepare() error {
+	var err error
+	repo.archiveRootURL, err = url.Parse(repo.ArchiveRoot)
+	return err
 }
 
 // String interface
 func (repo *RemoteRepo) String() string {
-	return fmt.Sprintf("%s %s", repo.ArchiveRoot, repo.Distribution)
+	return fmt.Sprintf("[%s]: %s %s", repo.Name, repo.ArchiveRoot, repo.Distribution)
 }
 
 // ReleaseURL returns URL to Release file in repo root
@@ -165,4 +182,88 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packag
 	}
 
 	return nil
+}
+
+// Encode does msgpack encoding of RemoteRepo
+func (repo *RemoteRepo) Encode() []byte {
+	var buf bytes.Buffer
+
+	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
+	encoder.Encode(repo)
+
+	return buf.Bytes()
+}
+
+// Decode decodes msgpack representation into RemoteRepo
+func (repo *RemoteRepo) Decode(input []byte) error {
+	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+	err := decoder.Decode(repo)
+	if err != nil {
+		return err
+	}
+	return repo.prepare()
+}
+
+// Key is a unique id in DB
+func (repo *RemoteRepo) Key() []byte {
+	return []byte("R" + repo.UUID)
+}
+
+// RemoteRepoCollection does listing, updating/adding/deleting of RemoteRepos
+type RemoteRepoCollection struct {
+	db   database.Storage
+	list []*RemoteRepo
+}
+
+// NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
+func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
+	result := &RemoteRepoCollection{
+		db: db,
+	}
+
+	blobs := db.FetchByPrefix([]byte("R"))
+	result.list = make([]*RemoteRepo, 0, len(blobs))
+
+	for _, blob := range blobs {
+		r := &RemoteRepo{}
+		if err := r.Decode(blob); err != nil {
+			log.Printf("Error decoding mirror: %s\n", err)
+		} else {
+			result.list = append(result.list, r)
+		}
+	}
+
+	return result
+}
+
+// Add appends new repo to collection and saves it
+func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
+	for _, r := range collection.list {
+		if r.Name == repo.Name {
+			return fmt.Errorf("mirror with name %s already exists", repo.Name)
+		}
+	}
+
+	err := collection.Update(repo)
+	if err != nil {
+		return err
+	}
+
+	collection.list = append(collection.list, repo)
+	return nil
+}
+
+// Update stores updated information about repo in DB
+func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
+	return collection.db.Put(repo.Key(), repo.Encode())
+}
+
+// ByName looks up repository by name
+func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error) {
+	for _, r := range collection.list {
+		if r.Name == name {
+			return r, nil
+		}
+	}
+	return nil, fmt.Errorf("mirror with name %s not found", name)
 }
