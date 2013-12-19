@@ -30,7 +30,9 @@ type RemoteRepo struct {
 	// List of components to fetch, if empty, then fetch all components
 	Components []string
 	// List of architectures to fetch, if empty, then fetch all architectures
-	Architectures  []string
+	Architectures []string
+	// Meta-information about repository
+	Meta           debc.Paragraph
 	archiveRootURL *url.URL
 }
 
@@ -125,6 +127,11 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 			return err
 		}
 	}
+
+	delete(para, "MD5Sum")
+	delete(para, "SHA1")
+	delete(para, "SHA256")
+	repo.Meta = para
 
 	return nil
 }

@@ -21,6 +21,8 @@ func aptlyMirrorList(cmd *commander.Command, args []string) {
 	repoCollection.ForEach(func(repo *debian.RemoteRepo) {
 		fmt.Printf(" * %s\n", repo)
 	})
+
+	fmt.Printf("\nTo get more information about repository, run `aptly mirror show <name>`.\n")
 }
 
 func aptlyMirrorCreate(cmd *commander.Command, args []string) {
@@ -74,6 +76,11 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, ", "))
+
+	fmt.Printf("\nInformation from release file:\n")
+	for name, value := range repo.Meta {
+		fmt.Printf("%s: %s\n", name, value)
+	}
 }
 
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) {
@@ -99,6 +106,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Unable to update: %s", err)
 	}
+
+	err = repoCollection.Update(repo)
+	if err != nil {
+		log.Fatalf("Unable to update: %s", err)
+	}
+
 }
 
 func makeCmdMirrorCreate() *commander.Command {
