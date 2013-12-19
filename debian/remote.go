@@ -267,3 +267,10 @@ func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error)
 	}
 	return nil, fmt.Errorf("mirror with name %s not found", name)
 }
+
+// ForEach runs method for each repository
+func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo)) {
+	for _, r := range collection.list {
+		handler(r)
+	}
+}

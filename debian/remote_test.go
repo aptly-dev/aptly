@@ -109,6 +109,15 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 
 }
 
+func (s *RemoteRepoCollectionSuite) TestForEach(c *C) {
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	s.collection.Add(repo)
+
+	count := 0
+	s.collection.ForEach(func(*RemoteRepo) { count++ })
+	c.Assert(count, Equals, 1)
+}
+
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily
 Label: Agenda Daily Builds
 Suite: precise
