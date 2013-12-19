@@ -1,23 +1,56 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gonuts/commander"
+	"github.com/gonuts/flag"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
+	"log"
+	"os"
 )
 
+var cmd *commander.Commander
+
+func init() {
+	cmd = &commander.Commander{
+		Name:     os.Args[0],
+		Commands: []*commander.Command{},
+		Flag:     flag.NewFlagSet("aptly", flag.ExitOnError),
+		Commanders: []*commander.Commander{
+			makeCmdMirror(),
+		},
+	}
+}
+
+var context struct {
+	downloader        utils.Downloader
+	database          database.Storage
+	packageRepository *debian.Repository
+}
+
 func main() {
-	downloader := utils.NewDownloader(2)
-	defer downloader.Shutdown()
+	err := cmd.Flag.Parse(os.Args[1:])
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
 
-	database, _ := database.OpenDB("/tmp/aptlydb")
-	defer database.Close()
+	context.downloader = utils.NewDownloader(2)
+	defer context.downloader.Shutdown()
 
-	repo, _ := debian.NewRemoteRepo("http://mirror.yandex.ru/debian/", "squeeze", []string{}, []string{})
-	err := repo.Fetch(downloader)
-	fmt.Printf("Fetch(), err = %#v", err)
+	// TODO: configure DB dir
+	context.database, err = database.OpenDB("/tmp/aptly/db")
+	if err != nil {
+		log.Fatalf("can't open database: %s", err)
+	}
+	defer context.database.Close()
 
-	err = repo.Download(downloader, database)
-	fmt.Printf("Download(), err = %#v", err)
+	// TODO:configure pool dir
+	context.packageRepository = debian.NewRepository("/tmp/aptly")
+
+	args := cmd.Flag.Args()
+	err = cmd.Run(args)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
 }
