@@ -2,6 +2,7 @@
 package database
 
 import (
+	"bytes"
 	"errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
@@ -17,6 +18,7 @@ var (
 type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
+	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
 }
 
@@ -56,6 +58,25 @@ func (l *levelDB) Get(key []byte) ([]byte, error) {
 
 func (l *levelDB) Put(key []byte, value []byte) error {
 	return l.db.Put(key, value, nil)
+}
+
+func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
+	result := make([][]byte, 0, 20)
+
+	iterator := l.db.NewIterator(nil)
+	if iterator.Seek(prefix) {
+		for bytes.HasPrefix(iterator.Key(), prefix) {
+			val := iterator.Value()
+			valc := make([]byte, len(val))
+			copy(valc, val)
+			result = append(result, valc)
+			if !iterator.Next() {
+				break
+			}
+		}
+	}
+
+	return result
 }
 
 func (l *levelDB) Close() error {
