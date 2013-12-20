@@ -51,13 +51,13 @@ func (s *LevelDBSuite) TestFetchByPrefix(c *C) {
 	s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
 	s.db.Put([]byte{0x80, 0x03}, []byte{0x03})
 	s.db.Put([]byte{0x80, 0x02}, []byte{0x02})
-	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{[]byte{0x01}, []byte{0x02}, []byte{0x03}})
+	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 
 	s.db.Put([]byte{0x90, 0x01}, []byte{0x04})
-	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{[]byte{0x01}, []byte{0x02}, []byte{0x03}})
+	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 
 	s.db.Put([]byte{0x00, 0x01}, []byte{0x05})
-	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{[]byte{0x01}, []byte{0x02}, []byte{0x03}})
+	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 
 	c.Check(s.db.FetchByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
 }

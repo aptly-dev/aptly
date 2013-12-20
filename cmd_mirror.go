@@ -5,14 +5,14 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
-	"log"
 	"strings"
 )
 
-func aptlyMirrorList(cmd *commander.Command, args []string) {
+func aptlyMirrorList(cmd *commander.Command, args []string) error {
+	var err error
 	if len(args) != 0 {
 		cmd.Usage()
-		return
+		return err
 	}
 
 	fmt.Printf("List of mirrors:\n")
@@ -23,12 +23,14 @@ func aptlyMirrorList(cmd *commander.Command, args []string) {
 	})
 
 	fmt.Printf("\nTo get more information about repository, run `aptly mirror show <name>`.\n")
+	return err
 }
 
-func aptlyMirrorCreate(cmd *commander.Command, args []string) {
+func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
+	var err error
 	if len(args) < 3 {
 		cmd.Usage()
-		return
+		return err
 	}
 
 	var architectures []string
@@ -39,28 +41,30 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) {
 
 	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], architectures)
 	if err != nil {
-		log.Fatalf("Unable to create mirror: %s", err)
+		return fmt.Errorf("Unable to create mirror: %s", err)
 	}
 
 	err = repo.Fetch(context.downloader)
 	if err != nil {
-		log.Fatalf("Unable to fetch mirror: %s", err)
+		return fmt.Errorf("Unable to fetch mirror: %s", err)
 	}
 
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 
 	err = repoCollection.Add(repo)
 	if err != nil {
-		log.Fatalf("Unable to add mirror: %s", err)
+		return fmt.Errorf("Unable to add mirror: %s", err)
 	}
 
 	fmt.Printf("\nMirror %s successfully added.\nYou can run 'aptly mirror update %s' to download repository contents.\n", repo, repo.Name)
+	return err
 }
 
-func aptlyMirrorShow(cmd *commander.Command, args []string) {
+func aptlyMirrorShow(cmd *commander.Command, args []string) error {
+	var err error
 	if len(args) != 1 {
 		cmd.Usage()
-		return
+		return err
 	}
 
 	name := args[0]
@@ -68,12 +72,12 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	repo, err := repoCollection.ByName(name)
 	if err != nil {
-		log.Fatalf("Unable to show: %s", err)
+		return fmt.Errorf("Unable to show: %s", err)
 	}
 
 	err = repoCollection.LoadComplete(repo)
 	if err != nil {
-		log.Fatalf("Unable to show: %s", err)
+		return fmt.Errorf("Unable to show: %s", err)
 	}
 
 	fmt.Printf("Name: %s\n", repo.Name)
@@ -92,12 +96,14 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 	for name, value := range repo.Meta {
 		fmt.Printf("%s: %s\n", name, value)
 	}
+	return err
 }
 
-func aptlyMirrorUpdate(cmd *commander.Command, args []string) {
+func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
+	var err error
 	if len(args) != 1 {
 		cmd.Usage()
-		return
+		return err
 	}
 
 	name := args[0]
@@ -105,29 +111,29 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) {
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	repo, err := repoCollection.ByName(name)
 	if err != nil {
-		log.Fatalf("Unable to update: %s", err)
+		return fmt.Errorf("Unable to update: %s", err)
 	}
 
 	err = repoCollection.LoadComplete(repo)
 	if err != nil {
-		log.Fatalf("Unable to update: %s", err)
+		return fmt.Errorf("Unable to update: %s", err)
 	}
 
 	err = repo.Fetch(context.downloader)
 	if err != nil {
-		log.Fatalf("Unable to update: %s", err)
+		return fmt.Errorf("Unable to update: %s", err)
 	}
 
 	err = repo.Download(context.downloader, context.database, context.packageRepository)
 	if err != nil {
-		log.Fatalf("Unable to update: %s", err)
+		return fmt.Errorf("Unable to update: %s", err)
 	}
 
 	err = repoCollection.Update(repo)
 	if err != nil {
-		log.Fatalf("Unable to update: %s", err)
+		return fmt.Errorf("Unable to update: %s", err)
 	}
-
+	return err
 }
 
 func makeCmdMirrorCreate() *commander.Command {
@@ -201,17 +207,17 @@ ex:
 	return cmd
 }
 
-func makeCmdMirror() *commander.Commander {
-	return &commander.Commander{
-		Name:  "mirror",
-		Short: "manage mirrors of remote repositories",
-		Commands: []*commander.Command{
+func makeCmdMirror() *commander.Command {
+	return &commander.Command{
+		UsageLine: "mirror",
+		Short:     "manage mirrors of remote repositories",
+		Subcommands: []*commander.Command{
 			makeCmdMirrorCreate(),
 			makeCmdMirrorList(),
 			makeCmdMirrorShow(),
 			//makeCmdMirrorDeestroy(),
 			makeCmdMirrorUpdate(),
 		},
-		Flag: flag.NewFlagSet("aptly-mirror", flag.ExitOnError),
+		Flag: *flag.NewFlagSet("aptly-mirror", flag.ExitOnError),
 	}
 }
