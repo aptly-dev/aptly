@@ -10,14 +10,13 @@ import (
 	"os"
 )
 
-var cmd *commander.Commander
+var cmd *commander.Command
 
 func init() {
-	cmd = &commander.Commander{
-		Name:     os.Args[0],
-		Commands: []*commander.Command{},
-		Flag:     flag.NewFlagSet("aptly", flag.ExitOnError),
-		Commanders: []*commander.Commander{
+	cmd = &commander.Command{
+		UsageLine: os.Args[0],
+		Flag:      *flag.NewFlagSet("aptly", flag.ExitOnError),
+		Subcommands: []*commander.Command{
 			makeCmdMirror(),
 		},
 	}
@@ -48,8 +47,7 @@ func main() {
 	// TODO:configure pool dir
 	context.packageRepository = debian.NewRepository("/tmp/aptly")
 
-	args := cmd.Flag.Args()
-	err = cmd.Run(args)
+	err = cmd.Dispatch(os.Args[1:])
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
