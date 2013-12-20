@@ -17,8 +17,9 @@ endif
 all: test check
 
 prepare: $(PREPARE_LIST)
-	go get -d -v ./...
-	go get launchpad.net/gocheck
+	go get -d -t -v ./...
+	# temporary fix: use commander develop version for now (https://github.com/smira/aptly/pull/1)
+	cd $(GOPATH)/src/github.com/gonuts/commander && git fetch && git checkout develop
 
 cover-prepare:
 	go get github.com/golang/lint/golint
