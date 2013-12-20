@@ -2,8 +2,10 @@ GOVERSION=$(shell go version | awk '{print $$3;}')
 
 ifeq ($(TRAVIS), true)
 GOVERALLS?=$(HOME)/gopath/bin/goveralls
+SRCPATH?=$(HOME)/gopath/src
 else
 GOVERALLS?=goveralls
+SRCPATH?=$(GOPATH)/src
 endif
 
 ifeq ($(GOVERSION), go1.2)
@@ -17,9 +19,10 @@ endif
 all: test check
 
 prepare: $(PREPARE_LIST)
-	go get -d -t -v ./...
+	go get -d -v ./...
+	go get launchpad.net/gocheck
 	# temporary fix: use commander develop version for now (https://github.com/smira/aptly/pull/1)
-	cd $(GOPATH)/src/github.com/gonuts/commander && git fetch && git checkout develop
+	cd $(SRCPATH)/github.com/gonuts/commander && git fetch && git checkout develop
 
 cover-prepare:
 	go get github.com/golang/lint/golint
