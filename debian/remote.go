@@ -37,7 +37,8 @@ type RemoteRepo struct {
 	// Last update date
 	LastDownloadDate time.Time
 	// "Snapshot" of current list of packages
-	PackageRefs    *PackageRefList
+	packageRefs *PackageRefList
+	// Parsed archived root
 	archiveRootURL *url.URL
 }
 
@@ -68,6 +69,14 @@ func (repo *RemoteRepo) prepare() error {
 // String interface
 func (repo *RemoteRepo) String() string {
 	return fmt.Sprintf("[%s]: %s %s", repo.Name, repo.ArchiveRoot, repo.Distribution)
+}
+
+// NumPackages return number of packages retrived from remore repo
+func (repo *RemoteRepo) NumPackages() int {
+	if repo.packageRefs == nil {
+		return 0
+	}
+	return repo.packageRefs.Len()
 }
 
 // ReleaseURL returns URL to Release file in repo root
@@ -194,7 +203,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packag
 	}
 
 	repo.LastDownloadDate = time.Now()
-	repo.PackageRefs = NewPackageRefListFromPackageList(list)
+	repo.packageRefs = NewPackageRefListFromPackageList(list)
 
 	return nil
 }
@@ -222,6 +231,11 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 // Key is a unique id in DB
 func (repo *RemoteRepo) Key() []byte {
 	return []byte("R" + repo.UUID)
+}
+
+// RefKey is a unique id for package reference list
+func (repo *RemoteRepo) RefKey() []byte {
+	return []byte("E" + repo.UUID)
 }
 
 // RemoteRepoCollection does listing, updating/adding/deleting of RemoteRepos
@@ -270,7 +284,31 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	return collection.db.Put(repo.Key(), repo.Encode())
+	err := collection.db.Put(repo.Key(), repo.Encode())
+	if err != nil {
+		return err
+	}
+	if repo.packageRefs != nil {
+		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// LoadComplete loads additional information for remote repo
+func (collection *RemoteRepoCollection) LoadComplete(repo *RemoteRepo) error {
+	encoded, err := collection.db.Get(repo.RefKey())
+	if err == database.ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	repo.packageRefs = &PackageRefList{}
+	return repo.packageRefs.Decode(encoded)
 }
 
 // ByName looks up repository by name

@@ -3,6 +3,7 @@ package debian
 import (
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
+	debc "github.com/smira/godebiancontrol"
 	. "launchpad.net/gocheck"
 	"testing"
 )
@@ -12,7 +13,40 @@ func Test(t *testing.T) {
 	TestingT(t)
 }
 
+type PackageListMixinSuite struct {
+	p1, p2, p3 *Package
+	list       *PackageList
+	reflist    *PackageRefList
+}
+
+func (s *PackageListMixinSuite) SetUpPackages() {
+	s.list = NewPackageList()
+
+	paraGen := func() debc.Paragraph {
+		para := make(debc.Paragraph)
+		for k, v := range packagePara {
+			para[k] = v
+		}
+		return para
+	}
+
+	s.p1 = NewPackageFromControlFile(paraGen())
+	para := paraGen()
+	para["Package"] = "mars-invaders"
+	s.p2 = NewPackageFromControlFile(para)
+	para = paraGen()
+	para["Package"] = "lonely-strangers"
+	s.p3 = NewPackageFromControlFile(para)
+
+	s.list.Add(s.p1)
+	s.list.Add(s.p2)
+	s.list.Add(s.p3)
+
+	s.reflist = NewPackageRefListFromPackageList(s.list)
+}
+
 type RemoteRepoSuite struct {
+	PackageListMixinSuite
 	repo       *RemoteRepo
 	downloader utils.Downloader
 }
@@ -22,11 +56,18 @@ var _ = Suite(&RemoteRepoSuite{})
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
 	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	s.SetUpPackages()
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{})
 	c.Assert(err, ErrorMatches, ".*hexadecimal escape in host.*")
+}
+
+func (s *RemoteRepoSuite) TestNumPackages(c *C) {
+	c.Check(s.repo.NumPackages(), Equals, 0)
+	s.repo.packageRefs = s.reflist
+	c.Check(s.repo.NumPackages(), Equals, 3)
 }
 
 func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
@@ -72,9 +113,16 @@ func (s *RemoteRepoSuite) TestEncodeDecode(c *C) {
 
 func (s *RemoteRepoSuite) TestKey(c *C) {
 	c.Assert(len(s.repo.Key()), Equals, 37)
+	c.Assert(s.repo.Key()[0], Equals, byte('R'))
+}
+
+func (s *RemoteRepoSuite) TestRefKey(c *C) {
+	c.Assert(len(s.repo.RefKey()), Equals, 37)
+	c.Assert(s.repo.RefKey()[0], Equals, byte('E'))
 }
 
 type RemoteRepoCollectionSuite struct {
+	PackageListMixinSuite
 	db         database.Storage
 	collection *RemoteRepoCollection
 }
@@ -84,6 +132,7 @@ var _ = Suite(&RemoteRepoCollectionSuite{})
 func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.collection = NewRemoteRepoCollection(s.db)
+	s.SetUpPackages()
 }
 
 func (s *RemoteRepoCollectionSuite) TearDownTest(c *C) {
@@ -107,6 +156,27 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 
+}
+
+func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	c.Assert(s.collection.Update(repo), IsNil)
+
+	collection := NewRemoteRepoCollection(s.db)
+	r, err := collection.ByName("yandex")
+	c.Assert(err, IsNil)
+	c.Assert(r.packageRefs, IsNil)
+
+	repo.packageRefs = s.reflist
+	c.Assert(s.collection.Update(repo), IsNil)
+
+	collection = NewRemoteRepoCollection(s.db)
+	r, err = collection.ByName("yandex")
+	c.Assert(err, IsNil)
+	c.Assert(r.packageRefs, IsNil)
+	c.Assert(r.NumPackages(), Equals, 0)
+	c.Assert(s.collection.LoadComplete(r), IsNil)
+	c.Assert(r.NumPackages(), Equals, 3)
 }
 
 func (s *RemoteRepoCollectionSuite) TestForEach(c *C) {

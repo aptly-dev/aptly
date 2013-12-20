@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"fmt"
+	"github.com/ugorji/go/codec"
 	"sort"
 )
 
@@ -85,4 +86,20 @@ func (l *PackageRefList) Swap(i, j int) {
 // Compare compares two refs in lexographical order
 func (l *PackageRefList) Less(i, j int) bool {
 	return bytes.Compare(l.Refs[i], l.Refs[j]) < 0
+}
+
+// Encode does msgpack encoding of PackageRefList
+func (l *PackageRefList) Encode() []byte {
+	var buf bytes.Buffer
+
+	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
+	encoder.Encode(l)
+
+	return buf.Bytes()
+}
+
+// Decode decodes msgpack representation into PackageRefLit
+func (l *PackageRefList) Decode(input []byte) error {
+	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+	return decoder.Decode(l)
 }

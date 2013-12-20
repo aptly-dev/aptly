@@ -71,6 +71,11 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 		log.Fatalf("Unable to show: %s", err)
 	}
 
+	err = repoCollection.LoadComplete(repo)
+	if err != nil {
+		log.Fatalf("Unable to show: %s", err)
+	}
+
 	fmt.Printf("Name: %s\n", repo.Name)
 	fmt.Printf("Archive Root URL: %s\n", repo.ArchiveRoot)
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
@@ -80,9 +85,7 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) {
 		fmt.Printf("Last update: never\n")
 	} else {
 		fmt.Printf("Last update: %s\n", repo.LastDownloadDate.Format("2006-01-02 15:04:05 MST"))
-	}
-	if repo.PackageRefs != nil {
-		fmt.Printf("Number of packages: %d\n", repo.PackageRefs.Len())
+		fmt.Printf("Number of packages: %d\n", repo.NumPackages())
 	}
 
 	fmt.Printf("\nInformation from release file:\n")
@@ -101,6 +104,11 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) {
 
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	repo, err := repoCollection.ByName(name)
+	if err != nil {
+		log.Fatalf("Unable to update: %s", err)
+	}
+
+	err = repoCollection.LoadComplete(repo)
 	if err != nil {
 		log.Fatalf("Unable to update: %s", err)
 	}
