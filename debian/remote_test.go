@@ -119,6 +119,7 @@ func (s *RemoteRepoSuite) TestKey(c *C) {
 func (s *RemoteRepoSuite) TestRefKey(c *C) {
 	c.Assert(len(s.repo.RefKey()), Equals, 37)
 	c.Assert(s.repo.RefKey()[0], Equals, byte('E'))
+	c.Assert(s.repo.RefKey()[1:], DeepEquals, s.repo.Key()[1:])
 }
 
 type RemoteRepoCollectionSuite struct {
