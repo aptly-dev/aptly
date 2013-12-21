@@ -41,19 +41,19 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 
 	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], architectures)
 	if err != nil {
-		return fmt.Errorf("Unable to create mirror: %s", err)
+		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
 	err = repo.Fetch(context.downloader)
 	if err != nil {
-		return fmt.Errorf("Unable to fetch mirror: %s", err)
+		return fmt.Errorf("unable to fetch mirror: %s", err)
 	}
 
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 
 	err = repoCollection.Add(repo)
 	if err != nil {
-		return fmt.Errorf("Unable to add mirror: %s", err)
+		return fmt.Errorf("unable to add mirror: %s", err)
 	}
 
 	fmt.Printf("\nMirror %s successfully added.\nYou can run 'aptly mirror update %s' to download repository contents.\n", repo, repo.Name)
@@ -72,12 +72,12 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	repo, err := repoCollection.ByName(name)
 	if err != nil {
-		return fmt.Errorf("Unable to show: %s", err)
+		return fmt.Errorf("unable to show: %s", err)
 	}
 
 	err = repoCollection.LoadComplete(repo)
 	if err != nil {
-		return fmt.Errorf("Unable to show: %s", err)
+		return fmt.Errorf("unable to show: %s", err)
 	}
 
 	fmt.Printf("Name: %s\n", repo.Name)
@@ -111,27 +111,27 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	repo, err := repoCollection.ByName(name)
 	if err != nil {
-		return fmt.Errorf("Unable to update: %s", err)
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	err = repoCollection.LoadComplete(repo)
 	if err != nil {
-		return fmt.Errorf("Unable to update: %s", err)
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	err = repo.Fetch(context.downloader)
 	if err != nil {
-		return fmt.Errorf("Unable to update: %s", err)
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	err = repo.Download(context.downloader, context.database, context.packageRepository)
 	if err != nil {
-		return fmt.Errorf("Unable to update: %s", err)
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	err = repoCollection.Update(repo)
 	if err != nil {
-		return fmt.Errorf("Unable to update: %s", err)
+		return fmt.Errorf("unable to update: %s", err)
 	}
 	return err
 }
@@ -149,7 +149,7 @@ ex:
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
-	cmd.Flag.String("architecture", "", "limit architectures to specified in the list, comma-delimited list")
+	cmd.Flag.String("architecture", "", "limit architectures to download, comma-delimited list")
 
 	return cmd
 
@@ -215,7 +215,7 @@ func makeCmdMirror() *commander.Command {
 			makeCmdMirrorCreate(),
 			makeCmdMirrorList(),
 			makeCmdMirrorShow(),
-			//makeCmdMirrorDeestroy(),
+			//makeCmdMirrorDestroy(),
 			makeCmdMirrorUpdate(),
 		},
 		Flag: *flag.NewFlagSet("aptly-mirror", flag.ExitOnError),
