@@ -10,6 +10,9 @@ import (
 // Stanza or paragraph of Debian control file
 type Stanza map[string]string
 
+// Canonical order of fields in stanza
+var canocialOrder = []string{"Package", "Version", "Installed-Size", "Priority", "Section", "Maintainer", "Architecture"}
+
 // Copy returns copy of Stanza
 func (s Stanza) Copy() (result Stanza) {
 	result = make(Stanza, len(s))
@@ -17,6 +20,42 @@ func (s Stanza) Copy() (result Stanza) {
 		result[k] = v
 	}
 	return
+}
+
+// Write single field from Stanza to writer
+func writeField(w *bufio.Writer, field, value string) (err error) {
+	_, multiline := multilineFields[field]
+
+	if !multiline {
+		_, err = w.WriteString(field + ": " + value + "\n")
+	} else {
+		_, err = w.WriteString(field + ":" + value)
+	}
+
+	return
+}
+
+// WriteTo saves stanza back to stream, modifying itself on the fly
+func (s Stanza) WriteTo(w *bufio.Writer) error {
+	for _, field := range canocialOrder {
+		value, ok := s[field]
+		if ok {
+			delete(s, field)
+			err := writeField(w, field, value)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for field, value := range s {
+		err := writeField(w, field, value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Parsing errors
@@ -77,8 +116,15 @@ func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 				return nil, ErrMalformedStanza
 			}
 			lastField = parts[0]
-			stanza[lastField] = strings.TrimSpace(parts[1])
 			_, lastFieldMultiline = multilineFields[lastField]
+			if lastFieldMultiline {
+				stanza[lastField] = parts[1]
+			} else {
+				stanza[lastField] = strings.TrimSpace(parts[1])
+			}
+			if lastFieldMultiline && stanza[lastField] != "" {
+				stanza[lastField] += "\n"
+			}
 		}
 	}
 	if err := c.scanner.Err(); err != nil {

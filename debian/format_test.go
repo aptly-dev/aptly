@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"bufio"
 	"bytes"
 	. "launchpad.net/gocheck"
 )
@@ -95,6 +96,25 @@ func (s *ControlFileSuite) TestReadStanza(c *C) {
 	c.Check(stanza1["Files"], Equals, " 3d5f65778bf3f89be03c313b0024b62c 1980 bti_032-1.dsc\n"+
 		" 1e0d0b693fdeebec268004ba41701baf 59773 bti_032.orig.tar.gz\n"+" ac1229a6d685023aeb8fcb0806324aa8 5065 bti_032-1.debian.tar.gz\n")
 	c.Check(len(stanza2), Equals, 20)
+}
+
+func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
+	r := NewControlFileReader(s.reader)
+	stanza, err := r.ReadStanza()
+	c.Assert(err, IsNil)
+
+	buf := &bytes.Buffer{}
+	w := bufio.NewWriter(buf)
+	err = stanza.Copy().WriteTo(w)
+	c.Assert(err, IsNil)
+	err = w.Flush()
+	c.Assert(err, IsNil)
+
+	r = NewControlFileReader(bytes.NewBuffer(buf.Bytes()))
+	stanza2, err := r.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Assert(stanza2, DeepEquals, stanza)
 }
 
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
