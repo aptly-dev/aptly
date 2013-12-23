@@ -137,9 +137,6 @@ func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 // LoadComplete loads additional information about snapshot
 func (collection *SnapshotCollection) LoadComplete(snapshot *Snapshot) error {
 	encoded, err := collection.db.Get(snapshot.RefKey())
-	if err == database.ErrNotFound {
-		return nil
-	}
 	if err != nil {
 		return err
 	}
