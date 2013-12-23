@@ -151,7 +151,7 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packageRepo *Repository) error {
+func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository) error {
 	list := NewPackageList()
 
 	// Download and parse all Release files
@@ -178,7 +178,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, db database.Storage, packag
 
 	// Save package meta information to DB
 	list.ForEach(func(p *Package) {
-		db.Put(p.Key(), p.Encode())
+		packageCollection.Update(p)
 	})
 
 	// Download all package files

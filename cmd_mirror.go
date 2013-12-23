@@ -124,7 +124,9 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = repo.Download(context.downloader, context.database, context.packageRepository)
+	packageCollection := debian.NewPackageCollection(context.database)
+
+	err = repo.Download(context.downloader, packageCollection, context.packageRepository)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
