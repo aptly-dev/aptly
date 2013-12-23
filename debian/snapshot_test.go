@@ -19,29 +19,30 @@ func (s *SnapshotSuite) SetUpTest(c *C) {
 }
 
 func (s *SnapshotSuite) TestNewSnapshotFromRepository(c *C) {
-	snapshot := NewSnapshotFromRepository("snap1", s.repo)
+	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	c.Check(snapshot.Name, Equals, "snap1")
 	c.Check(snapshot.NumPackages(), Equals, 3)
 
 	s.repo.packageRefs = nil
-	c.Check(func() { NewSnapshotFromRepository("snap2", s.repo) }, PanicMatches, "repo.packageRefs == nil")
+	_, err := NewSnapshotFromRepository("snap2", s.repo)
+	c.Check(err, ErrorMatches, ".*not updated")
 }
 
 func (s *SnapshotSuite) TestKey(c *C) {
-	snapshot := NewSnapshotFromRepository("snap1", s.repo)
+	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	c.Assert(len(snapshot.Key()), Equals, 37)
 	c.Assert(snapshot.Key()[0], Equals, byte('S'))
 }
 
 func (s *SnapshotSuite) TestRefKey(c *C) {
-	snapshot := NewSnapshotFromRepository("snap1", s.repo)
+	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	c.Assert(len(snapshot.RefKey()), Equals, 37)
 	c.Assert(snapshot.RefKey()[0], Equals, byte('E'))
 	c.Assert(snapshot.RefKey()[1:], DeepEquals, snapshot.Key()[1:])
 }
 
 func (s *SnapshotSuite) TestEncodeDecode(c *C) {
-	snapshot := NewSnapshotFromRepository("snap1", s.repo)
+	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	s.repo.packageRefs = s.reflist
 
 	snapshot2 := &Snapshot{}
@@ -67,11 +68,11 @@ func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
 
 	s.repo1, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
 	s.repo1.packageRefs = s.reflist
-	s.snapshot1 = NewSnapshotFromRepository("snap1", s.repo1)
+	s.snapshot1, _ = NewSnapshotFromRepository("snap1", s.repo1)
 
 	s.repo2, _ = NewRemoteRepo("android", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{})
 	s.repo2.packageRefs = s.reflist
-	s.snapshot2 = NewSnapshotFromRepository("snap2", s.repo2)
+	s.snapshot2, _ = NewSnapshotFromRepository("snap2", s.repo2)
 }
 
 func (s *SnapshotCollectionSuite) TearDownTest(c *C) {

@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"code.google.com/p/go-uuid/uuid"
+	"errors"
 	"fmt"
 	"github.com/smira/aptly/database"
 	"github.com/ugorji/go/codec"
@@ -29,9 +30,9 @@ type Snapshot struct {
 }
 
 // NewSnapshotFromRepository creates snapshot from current state of repository
-func NewSnapshotFromRepository(name string, repo *RemoteRepo) *Snapshot {
+func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error) {
 	if repo.packageRefs == nil {
-		panic("repo.packageRefs == nil")
+		return nil, errors.New("mirror not updated")
 	}
 
 	return &Snapshot{
@@ -42,7 +43,7 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) *Snapshot {
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from mirror %s", repo),
 		packageRefs: repo.packageRefs,
-	}
+	}, nil
 }
 
 // String returns string representation of snapshot
