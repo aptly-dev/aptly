@@ -160,7 +160,6 @@ func makeCmdSnapshot() *commander.Command {
 			makeCmdSnapshotList(),
 			makeCmdSnapshotShow(),
 			//makeCmdSnapshotDestroy(),
-			//makeCmdSnapshotPublish(),
 		},
 		Flag: *flag.NewFlagSet("aptly-snapshot", flag.ExitOnError),
 	}
