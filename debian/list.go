@@ -103,3 +103,12 @@ func (l *PackageRefList) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
 	return decoder.Decode(l)
 }
+
+// ForEach calls handler for each package ref in list
+//
+// TODO: Error handling
+func (l *PackageRefList) ForEach(handler func([]byte)) {
+	for _, p := range l.Refs {
+		handler(p)
+	}
+}

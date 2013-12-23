@@ -90,3 +90,19 @@ func (s *PackageListSuite) TestPackageRefListEncodeDecode(c *C) {
 	c.Check(reflist2.Len(), Equals, reflist.Len())
 	c.Check(reflist2.Refs, DeepEquals, reflist.Refs)
 }
+
+func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
+	s.list.Add(s.p1)
+	s.list.Add(s.p3)
+	s.list.Add(s.p5)
+	s.list.Add(s.p6)
+
+	reflist := NewPackageRefListFromPackageList(s.list)
+
+	Len := 0
+	reflist.ForEach(func([]byte) {
+		Len++
+	})
+
+	c.Check(Len, Equals, 4)
+}

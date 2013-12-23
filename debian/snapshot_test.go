@@ -22,6 +22,7 @@ func (s *SnapshotSuite) TestNewSnapshotFromRepository(c *C) {
 	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	c.Check(snapshot.Name, Equals, "snap1")
 	c.Check(snapshot.NumPackages(), Equals, 3)
+	c.Check(snapshot.RefList().Len(), Equals, 3)
 
 	s.repo.packageRefs = nil
 	_, err := NewSnapshotFromRepository("snap2", s.repo)

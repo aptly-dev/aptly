@@ -56,6 +56,11 @@ func (s *Snapshot) NumPackages() int {
 	return s.packageRefs.Len()
 }
 
+// RefList returns list of package refs in snapshot
+func (s *Snapshot) RefList() *PackageRefList {
+	return s.packageRefs
+}
+
 // Key is a unique id in DB
 func (s *Snapshot) Key() []byte {
 	return []byte("S" + s.UUID)

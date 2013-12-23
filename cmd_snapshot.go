@@ -87,6 +87,14 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Created At: %s\n", snapshot.CreatedAt.Format("2006-01-02 15:04:05 MST"))
 	fmt.Printf("Description: %s\n", snapshot.Description)
 	fmt.Printf("Number of packages: %d\n", snapshot.NumPackages())
+	fmt.Printf("Packages:\n")
+
+	packageCollection := debian.NewPackageCollection(context.database)
+
+	snapshot.RefList().ForEach(func(key []byte) {
+		p, _ := packageCollection.ByKey(key)
+		fmt.Printf("  %s\n", p)
+	})
 
 	return err
 }
