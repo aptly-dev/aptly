@@ -147,7 +147,18 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 	r, err = collection.ByName("yandex")
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
+}
 
+func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
+	r, err := s.collection.ByUUID("some-uuid")
+	c.Assert(err, ErrorMatches, "*.not found")
+
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	c.Assert(s.collection.Add(repo), IsNil)
+
+	r, err = s.collection.ByUUID(repo.UUID)
+	c.Assert(err, IsNil)
+	c.Assert(r.String(), Equals, repo.String())
 }
 
 func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {

@@ -320,6 +320,16 @@ func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error)
 	return nil, fmt.Errorf("mirror with name %s not found", name)
 }
 
+// ByUUID looks up repository by uuid
+func (collection *RemoteRepoCollection) ByUUID(uuid string) (*RemoteRepo, error) {
+	for _, r := range collection.list {
+		if r.UUID == uuid {
+			return r, nil
+		}
+	}
+	return nil, fmt.Errorf("mirror with uuid %s not found", uuid)
+}
+
 // ForEach runs method for each repository
 func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo)) {
 	for _, r := range collection.list {
