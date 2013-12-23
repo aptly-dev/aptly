@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"github.com/smira/aptly/database"
 	debc "github.com/smira/godebiancontrol"
 	. "launchpad.net/gocheck"
 )
@@ -65,4 +66,35 @@ func (s *PackageSuite) TestEquals(c *C) {
 
 	p2.Depends = []string{"package1"}
 	c.Check(p.Equals(p2), Equals, false)
+}
+
+type PackageCollectionSuite struct {
+	collection *PackageCollection
+	p          *Package
+	db         database.Storage
+}
+
+var _ = Suite(&PackageCollectionSuite{})
+
+func (s *PackageCollectionSuite) SetUpTest(c *C) {
+	para := make(debc.Paragraph)
+	for k, v := range packagePara {
+		para[k] = v
+	}
+	s.p = NewPackageFromControlFile(para)
+	s.db, _ = database.OpenDB(c.MkDir())
+	s.collection = NewPackageCollection(s.db)
+}
+
+func (s *PackageCollectionSuite) TearDownTest(c *C) {
+	s.db.Close()
+}
+
+func (s *PackageCollectionSuite) TestUpdateByKey(c *C) {
+	err := s.collection.Update(s.p)
+	c.Assert(err, IsNil)
+
+	p2, err := s.collection.ByKey(s.p.Key())
+	c.Assert(err, IsNil)
+	c.Assert(p2.Equals(s.p), Equals, true)
 }

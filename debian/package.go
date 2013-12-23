@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"fmt"
+	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	debc "github.com/smira/godebiancontrol"
 	"github.com/ugorji/go/codec"
@@ -107,4 +108,36 @@ func (p *Package) VerifyFile(filepath string) bool {
 		return false
 	}
 	return st.Size() == p.Filesize
+}
+
+// PackageCollection does management of packages in DB
+type PackageCollection struct {
+	db database.Storage
+}
+
+// NewPackageCollection creates new PackageCollection and binds it to database
+func NewPackageCollection(db database.Storage) *PackageCollection {
+	return &PackageCollection{
+		db: db,
+	}
+}
+
+// ByKey find package in DB by its key
+func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
+	encoded, err := collection.db.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	p := &Package{}
+	err = p.Decode(encoded)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// Update adds or updates information about package in DB
+func (collection *PackageCollection) Update(p *Package) error {
+	return collection.db.Put(p.Key(), p.Encode())
 }
