@@ -18,6 +18,7 @@ func init() {
 		Flag:      *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
 			makeCmdMirror(),
+			makeCmdSnapshot(),
 		},
 	}
 }
