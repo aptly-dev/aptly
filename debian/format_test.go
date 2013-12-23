@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	. "launchpad.net/gocheck"
+	"strings"
 )
 
 type ControlFileSuite struct {
@@ -110,11 +111,14 @@ func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	err = w.Flush()
 	c.Assert(err, IsNil)
 
-	r = NewControlFileReader(bytes.NewBuffer(buf.Bytes()))
+	str := buf.String()
+
+	r = NewControlFileReader(buf)
 	stanza2, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 
 	c.Assert(stanza2, DeepEquals, stanza)
+	c.Assert(strings.HasPrefix(str, "Package: "), Equals, true)
 }
 
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {

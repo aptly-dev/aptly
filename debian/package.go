@@ -103,6 +103,42 @@ func (p *Package) String() string {
 	return fmt.Sprintf("%s-%s_%s", p.Name, p.Version, p.Architecture)
 }
 
+// Stanza creates original stanza from package
+func (p *Package) Stanza() (result Stanza) {
+	result = p.Extra.Copy()
+	result["Package"] = p.Name
+	result["Version"] = p.Version
+	result["Filename"] = p.Filename
+	result["Architecture"] = p.Architecture
+
+	if p.HashMD5 != "" {
+		result["MD5sum"] = p.HashMD5
+	}
+	if p.HashSHA1 != "" {
+		result["SHA1"] = p.HashSHA1
+	}
+	if p.HashSHA256 != "" {
+		result["SHA256"] = p.HashSHA256
+	}
+
+	if p.Depends != nil {
+		result["Depends"] = strings.Join(p.Depends, ", ")
+	}
+	if p.PreDepends != nil {
+		result["Pre-Depends"] = strings.Join(p.PreDepends, ", ")
+	}
+	if p.Suggests != nil {
+		result["Suggests"] = strings.Join(p.Suggests, ", ")
+	}
+	if p.Recommends != nil {
+		result["Recommends"] = strings.Join(p.Recommends, ", ")
+	}
+
+	result["Size"] = fmt.Sprintf("%d", p.Filesize)
+
+	return
+}
+
 // Equals compares two packages to be identical
 func (p *Package) Equals(p2 *Package) bool {
 	return p.Name == p2.Name && p.Version == p2.Version && p.Filename == p2.Filename &&
