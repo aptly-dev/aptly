@@ -20,11 +20,17 @@ type Package struct {
 	Filename     string
 	Filesize     int64
 	Architecture string
-	Depends      []string
-	PreDepends   []string
-	Suggests     []string
-	Recommends   []string
-	Extra        Stanza
+	// Various dependencies
+	Depends    []string
+	PreDepends []string
+	Suggests   []string
+	Recommends []string
+	// Hashsums of package contents
+	HashMD5    string
+	HashSHA1   string
+	HashSHA256 string
+	// Extra information from stanza
+	Extra Stanza
 }
 
 func parseDependencies(input Stanza, key string) []string {
@@ -45,12 +51,18 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Filename:     input["Filename"],
 		Architecture: input["Architecture"],
+		HashMD5:      input["MD5sum"],
+		HashSHA1:     input["SHA1"],
+		HashSHA256:   input["SHA256"],
 	}
 
 	delete(input, "Package")
 	delete(input, "Version")
 	delete(input, "Filename")
 	delete(input, "Architecture")
+	delete(input, "MD5sum")
+	delete(input, "SHA1")
+	delete(input, "SHA256")
 
 	result.Filesize, _ = strconv.ParseInt(input["Size"], 10, 64)
 	delete(input, "Size")
@@ -97,7 +109,8 @@ func (p *Package) Equals(p2 *Package) bool {
 		p.Architecture == p2.Architecture && utils.StrSlicesEqual(p.Depends, p2.Depends) &&
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
 		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
-		p.Filesize == p2.Filesize
+		p.Filesize == p2.Filesize && p.HashMD5 == p2.HashMD5 && p.HashSHA1 == p2.HashSHA1 &&
+		p.HashSHA256 == p2.HashSHA256
 }
 
 // VerifyFile verifies integrity and existence of local files for the package
