@@ -3,7 +3,6 @@ package debian
 import (
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
-	debc "github.com/smira/godebiancontrol"
 	. "launchpad.net/gocheck"
 	"testing"
 )
@@ -22,21 +21,13 @@ type PackageListMixinSuite struct {
 func (s *PackageListMixinSuite) SetUpPackages() {
 	s.list = NewPackageList()
 
-	paraGen := func() debc.Paragraph {
-		para := make(debc.Paragraph)
-		for k, v := range packagePara {
-			para[k] = v
-		}
-		return para
-	}
-
-	s.p1 = NewPackageFromControlFile(paraGen())
-	para := paraGen()
-	para["Package"] = "mars-invaders"
-	s.p2 = NewPackageFromControlFile(para)
-	para = paraGen()
-	para["Package"] = "lonely-strangers"
-	s.p3 = NewPackageFromControlFile(para)
+	s.p1 = NewPackageFromControlFile(packageStanza.Copy())
+	stanza := packageStanza.Copy()
+	stanza["Package"] = "mars-invaders"
+	s.p2 = NewPackageFromControlFile(stanza)
+	stanza = packageStanza.Copy()
+	stanza["Package"] = "lonely-strangers"
+	s.p3 = NewPackageFromControlFile(stanza)
 
 	s.list.Add(s.p1)
 	s.list.Add(s.p2)

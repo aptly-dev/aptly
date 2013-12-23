@@ -1,7 +1,6 @@
 package debian
 
 import (
-	debc "github.com/smira/godebiancontrol"
 	. "launchpad.net/gocheck"
 )
 
@@ -15,28 +14,20 @@ var _ = Suite(&PackageListSuite{})
 func (s *PackageListSuite) SetUpTest(c *C) {
 	s.list = NewPackageList()
 
-	paraGen := func() debc.Paragraph {
-		para := make(debc.Paragraph)
-		for k, v := range packagePara {
-			para[k] = v
-		}
-		return para
-	}
-
-	s.p1 = NewPackageFromControlFile(paraGen())
-	s.p2 = NewPackageFromControlFile(paraGen())
-	para := paraGen()
-	para["Package"] = "mars-invaders"
-	s.p3 = NewPackageFromControlFile(para)
-	para = paraGen()
-	para["Size"] = "42"
-	s.p4 = NewPackageFromControlFile(para)
-	para = paraGen()
-	para["Package"] = "lonely-strangers"
-	s.p5 = NewPackageFromControlFile(para)
-	para = paraGen()
-	para["Version"] = "99.1"
-	s.p6 = NewPackageFromControlFile(para)
+	s.p1 = NewPackageFromControlFile(packageStanza.Copy())
+	s.p2 = NewPackageFromControlFile(packageStanza.Copy())
+	stanza := packageStanza.Copy()
+	stanza["Package"] = "mars-invaders"
+	s.p3 = NewPackageFromControlFile(stanza)
+	stanza = packageStanza.Copy()
+	stanza["Size"] = "42"
+	s.p4 = NewPackageFromControlFile(stanza)
+	stanza = packageStanza.Copy()
+	stanza["Package"] = "lonely-strangers"
+	s.p5 = NewPackageFromControlFile(stanza)
+	stanza = packageStanza.Copy()
+	stanza["Version"] = "99.1"
+	s.p6 = NewPackageFromControlFile(stanza)
 }
 
 func (s *PackageListSuite) TestAddLen(c *C) {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
-	debc "github.com/smira/godebiancontrol"
 	"github.com/ugorji/go/codec"
 	"os"
 	"strconv"
@@ -25,10 +24,10 @@ type Package struct {
 	PreDepends   []string
 	Suggests     []string
 	Recommends   []string
-	Extra        debc.Paragraph
+	Extra        Stanza
 }
 
-func parseDependencies(input debc.Paragraph, key string) []string {
+func parseDependencies(input Stanza, key string) []string {
 	value, ok := input[key]
 	if !ok {
 		return nil
@@ -40,7 +39,7 @@ func parseDependencies(input debc.Paragraph, key string) []string {
 }
 
 // NewPackageFromControlFile creates Package from parsed Debian control file
-func NewPackageFromControlFile(input debc.Paragraph) *Package {
+func NewPackageFromControlFile(input Stanza) *Package {
 	result := &Package{
 		Name:         input["Package"],
 		Version:      input["Version"],

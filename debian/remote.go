@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
-	debc "github.com/smira/godebiancontrol"
 	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
@@ -33,7 +32,7 @@ type RemoteRepo struct {
 	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures []string
 	// Meta-information about repository
-	Meta debc.Paragraph
+	Meta Stanza
 	// Last update date
 	LastDownloadDate time.Time
 	// "Snapshot" of current list of packages
@@ -109,18 +108,13 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 	}
 	defer release.Close()
 
-	paras, err := debc.Parse(release)
+	sreader := NewControlFileReader(release)
+	stanza, err := sreader.ReadStanza()
 	if err != nil {
 		return err
 	}
 
-	if len(paras) != 1 {
-		return fmt.Errorf("wrong number of parts in Release file")
-	}
-
-	para := paras[0]
-
-	architectures := strings.Split(para["Architectures"], " ")
+	architectures := strings.Split(stanza["Architectures"], " ")
 	if len(repo.Architectures) == 0 {
 		repo.Architectures = architectures
 	} else {
@@ -131,7 +125,7 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 		}
 	}
 
-	components := strings.Split(para["Components"], " ")
+	components := strings.Split(stanza["Components"], " ")
 	if len(repo.Components) == 0 {
 		repo.Components = components
 	} else {
@@ -142,10 +136,10 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 		}
 	}
 
-	delete(para, "MD5Sum")
-	delete(para, "SHA1")
-	delete(para, "SHA256")
-	repo.Meta = para
+	delete(stanza, "MD5Sum")
+	delete(stanza, "SHA1")
+	delete(stanza, "SHA256")
+	repo.Meta = stanza
 
 	return nil
 }
@@ -163,13 +157,18 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 			}
 			defer packagesFile.Close()
 
-			paras, err := debc.Parse(packagesReader)
-			if err != nil {
-				return err
-			}
+			sreader := NewControlFileReader(packagesReader)
 
-			for _, para := range paras {
-				p := NewPackageFromControlFile(para)
+			for {
+				stanza, err := sreader.ReadStanza()
+				if err != nil {
+					return err
+				}
+				if stanza == nil {
+					break
+				}
+
+				p := NewPackageFromControlFile(stanza)
 
 				list.Add(p)
 			}

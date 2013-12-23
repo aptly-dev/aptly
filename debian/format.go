@@ -10,6 +10,15 @@ import (
 // Stanza or paragraph of Debian control file
 type Stanza map[string]string
 
+// Copy returns copy of Stanza
+func (s Stanza) Copy() (result Stanza) {
+	result = make(Stanza, len(s))
+	for k, v := range s {
+		result[k] = v
+	}
+	return
+}
+
 // Parsing errors
 var (
 	ErrMalformedStanza = errors.New("malformed stanza syntax")
