@@ -2,6 +2,7 @@ package debian
 
 import (
 	"fmt"
+	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -84,4 +85,9 @@ func (r *Repository) LinkFromPool(prefix string, component string, filename stri
 
 	err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
 	return err
+}
+
+// ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
+func (r *Repository) ChecksumsForFile(path string) (*utils.ChecksumInfo, error) {
+	return utils.ChecksumsForFile(filepath.Join(r.RootPath, "public", path))
 }
