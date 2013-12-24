@@ -185,7 +185,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	count := 0
 
 	list.ForEach(func(p *Package) {
-		poolPath, err := packageRepo.PoolPath(p.Filename)
+		poolPath, err := packageRepo.PoolPath(p.Filename, p.HashMD5)
 		if err == nil {
 			if !p.VerifyFile(poolPath) {
 				d.Download(repo.PackageURL(p.Filename).String(), poolPath, ch)
