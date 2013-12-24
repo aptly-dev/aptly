@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Repository directory structure:
@@ -51,4 +52,36 @@ func (r *Repository) MkDir(path string) error {
 // CreateFile creates file for writing under public path
 func (r *Repository) CreateFile(path string) (*os.File, error) {
 	return os.Create(filepath.Join(r.RootPath, "public", path))
+}
+
+// LinkFromPool links package file from pool to dist's pool location
+func (r *Repository) LinkFromPool(prefix string, component string, filename string, hashMD5 string) error {
+	sourcePath, err := r.PoolPath(filename, hashMD5)
+	if err != nil {
+		return err
+	}
+
+	baseName := filepath.Base(filename)
+
+	if len(baseName) < 8 {
+		return fmt.Errorf("package filename %s too short", baseName)
+	}
+
+	var subdir string
+	if strings.HasPrefix(baseName, "lib") {
+		subdir = baseName[:4]
+	} else {
+		subdir = baseName[:1]
+
+	}
+
+	poolPath := filepath.Join(r.RootPath, "public", prefix, "pool", component, subdir)
+
+	err = os.MkdirAll(poolPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	return err
 }

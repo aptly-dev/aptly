@@ -4,6 +4,7 @@ import (
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 type RepositorySuite struct {
@@ -45,4 +46,46 @@ func (s *RepositorySuite) TestCreateFile(c *C) {
 
 	_, err = os.Stat(filepath.Join(s.repo.RootPath, "public/ppa/dists/squeeze/Release"))
 	c.Assert(err, IsNil)
+}
+
+func (s *RepositorySuite) TestLinkFromPool(c *C) {
+	tests := []struct {
+		packageFilename  string
+		MD5              string
+		expectedFilename string
+	}{
+		{
+			packageFilename:  "pool/m/mars-invaders_1.03.deb",
+			MD5:              "91b1a1480b90b9e269ca44d897b12575",
+			expectedFilename: "public/pool/main/m/mars-invaders_1.03.deb",
+		},
+		{
+			packageFilename:  "pool/libm/libmars-invaders_1.03.deb",
+			MD5:              "12c2a1480b90b9e269ca44d897b12575",
+			expectedFilename: "public/pool/main/libm/libmars-invaders_1.03.deb",
+		},
+	}
+
+	for _, t := range tests {
+		poolPath, err := s.repo.PoolPath(t.packageFilename, t.MD5)
+		c.Assert(err, IsNil)
+
+		err = os.MkdirAll(filepath.Dir(poolPath), 0755)
+		c.Assert(err, IsNil)
+
+		file, err := os.Create(poolPath)
+		c.Assert(err, IsNil)
+
+		file.Write([]byte("Contents"))
+		file.Close()
+
+		err = s.repo.LinkFromPool("", "main", t.packageFilename, t.MD5)
+		c.Assert(err, IsNil)
+
+		st, err := os.Stat(filepath.Join(s.repo.RootPath, t.expectedFilename))
+		c.Assert(err, IsNil)
+
+		info := st.Sys().(*syscall.Stat_t)
+		c.Check(info.Nlink, Equals, uint16(2))
+	}
 }
