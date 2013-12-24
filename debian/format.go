@@ -119,11 +119,11 @@ func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 			_, lastFieldMultiline = multilineFields[lastField]
 			if lastFieldMultiline {
 				stanza[lastField] = parts[1]
+				if parts[1] != "" {
+					stanza[lastField] += "\n"
+				}
 			} else {
 				stanza[lastField] = strings.TrimSpace(parts[1])
-			}
-			if lastFieldMultiline && stanza[lastField] != "" {
-				stanza[lastField] += "\n"
 			}
 		}
 	}

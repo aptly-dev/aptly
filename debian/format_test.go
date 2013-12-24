@@ -42,7 +42,8 @@ Homepage: http://gregkh.github.com/bti/
 Package-List:
  bti deb net extra
 Directory: pool/main/b/bti
-Priority: source
+Description: This is cool
+ Multiline description
 Section: net
 
 
