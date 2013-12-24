@@ -10,6 +10,7 @@ import (
 	"os"
 )
 
+// ChecksumInfo represents checksums for a single file
 type ChecksumInfo struct {
 	Size   int64
 	MD5    string

@@ -14,7 +14,7 @@ var _ = Suite(&ChecksumSuite{})
 
 func (s *ChecksumSuite) SetUpTest(c *C) {
 	s.tempfile, _ = ioutil.TempFile(c.MkDir(), "aptly-test")
-	s.tempfile.WriteString("Quick brown fox jumps over black dog and runs away... Really far away... who knows?")
+	s.tempfile.WriteString(testString)
 }
 
 func (s *ChecksumSuite) TearDownTest(c *C) {
