@@ -28,6 +28,6 @@ func CompressFile(source *os.File) error {
 		return err
 	}
 
-	cmd := exec.Command("bzip2", source.Name())
+	cmd := exec.Command("bzip2", "-k", "-f", source.Name())
 	return cmd.Run()
 }
