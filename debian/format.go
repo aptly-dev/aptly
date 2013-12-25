@@ -29,6 +29,9 @@ func writeField(w *bufio.Writer, field, value string) (err error) {
 	if !multiline {
 		_, err = w.WriteString(field + ": " + value + "\n")
 	} else {
+		if !strings.HasSuffix(value, "\n") {
+			value = value + "\n"
+		}
 		_, err = w.WriteString(field + ":" + value)
 	}
 
