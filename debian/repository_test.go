@@ -86,6 +86,6 @@ func (s *RepositorySuite) TestLinkFromPool(c *C) {
 		c.Assert(err, IsNil)
 
 		info := st.Sys().(*syscall.Stat_t)
-		c.Check(info.Nlink, Equals, uint16(2))
+		c.Check(int(info.Nlink), Equals, 2)
 	}
 }
