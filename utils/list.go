@@ -51,5 +51,14 @@ func StrMapsEqual(m1, m2 map[string]string) bool {
 	}
 
 	return true
+}
 
+// StrSliceHasItem checks item for presence in slice
+func StrSliceHasItem(s []string, item string) bool {
+	for _, v := range s {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }

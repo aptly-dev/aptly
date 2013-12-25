@@ -37,3 +37,8 @@ func (s *ListSuite) TestStrMapsEqual(c *C) {
 	c.Check(StrMapsEqual(map[string]string{"a": "1", "b": "2"}, map[string]string{"a": "1", "c": "2"}), Equals, false)
 	c.Check(StrMapsEqual(map[string]string{"a": "1", "b": "2"}, map[string]string{"a": "1"}), Equals, false)
 }
+
+func (s *ListSuite) TestStrSliceHasIteml(c *C) {
+	c.Check(StrSliceHasItem([]string{"a", "b"}, "b"), Equals, true)
+	c.Check(StrSliceHasItem([]string{"a", "b"}, "c"), Equals, false)
+}
