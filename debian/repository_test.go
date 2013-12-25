@@ -52,17 +52,26 @@ func (s *RepositorySuite) TestLinkFromPool(c *C) {
 	tests := []struct {
 		packageFilename  string
 		MD5              string
+		source           string
 		expectedFilename string
 	}{
-		{
+		{ // package name regular
 			packageFilename:  "pool/m/mars-invaders_1.03.deb",
 			MD5:              "91b1a1480b90b9e269ca44d897b12575",
-			expectedFilename: "public/pool/main/m/mars-invaders_1.03.deb",
+			source:           "mars-invaders",
+			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
 		},
-		{
+		{ // lib-like filename
 			packageFilename:  "pool/libm/libmars-invaders_1.03.deb",
 			MD5:              "12c2a1480b90b9e269ca44d897b12575",
-			expectedFilename: "public/pool/main/libm/libmars-invaders_1.03.deb",
+			source:           "libmars-invaders",
+			expectedFilename: "pool/main/libm/libmars-invaders/libmars-invaders_1.03.deb",
+		},
+		{ // duplicate link, shouldn't panic
+			packageFilename:  "pool/m/mars-invaders_1.03.deb",
+			MD5:              "91b1a1480b90b9e269ca44d897b12575",
+			source:           "mars-invaders",
+			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
 		},
 	}
 
@@ -79,10 +88,11 @@ func (s *RepositorySuite) TestLinkFromPool(c *C) {
 		file.Write([]byte("Contents"))
 		file.Close()
 
-		err = s.repo.LinkFromPool("", "main", t.packageFilename, t.MD5)
+		path, err := s.repo.LinkFromPool("", "main", t.packageFilename, t.MD5, t.source)
 		c.Assert(err, IsNil)
+		c.Assert(path, Equals, t.expectedFilename)
 
-		st, err := os.Stat(filepath.Join(s.repo.RootPath, t.expectedFilename))
+		st, err := os.Stat(filepath.Join(s.repo.RootPath, "public", t.expectedFilename))
 		c.Assert(err, IsNil)
 
 		info := st.Sys().(*syscall.Stat_t)

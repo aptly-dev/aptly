@@ -56,35 +56,40 @@ func (r *Repository) CreateFile(path string) (*os.File, error) {
 }
 
 // LinkFromPool links package file from pool to dist's pool location
-func (r *Repository) LinkFromPool(prefix string, component string, filename string, hashMD5 string) error {
+func (r *Repository) LinkFromPool(prefix string, component string, filename string, hashMD5 string, source string) (string, error) {
 	sourcePath, err := r.PoolPath(filename, hashMD5)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	baseName := filepath.Base(filename)
-
-	if len(baseName) < 8 {
-		return fmt.Errorf("package filename %s too short", baseName)
+	if len(source) < 3 {
+		return "", fmt.Errorf("package source %s too short", source)
 	}
 
 	var subdir string
-	if strings.HasPrefix(baseName, "lib") {
-		subdir = baseName[:4]
+	if strings.HasPrefix(source, "lib") {
+		subdir = source[:4]
 	} else {
-		subdir = baseName[:1]
+		subdir = source[:1]
 
 	}
 
-	poolPath := filepath.Join(r.RootPath, "public", prefix, "pool", component, subdir)
+	baseName := filepath.Base(filename)
+	relPath := filepath.Join("pool", component, subdir, source, baseName)
+	poolPath := filepath.Join(r.RootPath, "public", prefix, "pool", component, subdir, source)
 
 	err = os.MkdirAll(poolPath, 0755)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	_, err = os.Stat(filepath.Join(poolPath, baseName))
+	if err == nil { // already exists, skip
+		return relPath, nil
 	}
 
 	err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
-	return err
+	return relPath, err
 }
 
 // ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
