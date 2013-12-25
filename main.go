@@ -15,10 +15,16 @@ var cmd *commander.Command
 func init() {
 	cmd = &commander.Command{
 		UsageLine: os.Args[0],
-		Flag:      *flag.NewFlagSet("aptly", flag.ExitOnError),
+		Short:     "Debian repository management tool",
+		Long: `
+aptly allows to create partial and full mirrors of remote
+repositories, filter them, merge, upgrade individual packages,
+take snapshots and publish them back as Debian repositories.`,
+		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
 			makeCmdMirror(),
 			makeCmdSnapshot(),
+			makeCmdPublish(),
 		},
 	}
 }
@@ -35,18 +41,18 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 
-	context.downloader = utils.NewDownloader(2)
+	context.downloader = utils.NewDownloader(4)
 	defer context.downloader.Shutdown()
 
 	// TODO: configure DB dir
-	context.database, err = database.OpenDB("/tmp/aptly/db")
+	context.database, err = database.OpenDB("/var/aptly/db")
 	if err != nil {
 		log.Fatalf("can't open database: %s", err)
 	}
 	defer context.database.Close()
 
 	// TODO:configure pool dir
-	context.packageRepository = debian.NewRepository("/tmp/aptly")
+	context.packageRepository = debian.NewRepository("/var/aptly")
 
 	err = cmd.Dispatch(os.Args[1:])
 	if err != nil {
