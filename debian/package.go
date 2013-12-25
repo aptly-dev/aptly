@@ -20,6 +20,7 @@ type Package struct {
 	Filename     string
 	Filesize     int64
 	Architecture string
+	Source       string
 	// Various dependencies
 	Depends    []string
 	PreDepends []string
@@ -51,6 +52,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Filename:     input["Filename"],
 		Architecture: input["Architecture"],
+		Source:       input["Source"],
 		HashMD5:      input["MD5sum"],
 		HashSHA1:     input["SHA1"],
 		HashSHA256:   input["SHA256"],
@@ -60,6 +62,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	delete(input, "Version")
 	delete(input, "Filename")
 	delete(input, "Architecture")
+	delete(input, "Source")
 	delete(input, "MD5sum")
 	delete(input, "SHA1")
 	delete(input, "SHA256")
@@ -110,6 +113,7 @@ func (p *Package) Stanza() (result Stanza) {
 	result["Version"] = p.Version
 	result["Filename"] = p.Filename
 	result["Architecture"] = p.Architecture
+	result["Source"] = p.Source
 
 	if p.HashMD5 != "" {
 		result["MD5sum"] = p.HashMD5
@@ -146,7 +150,7 @@ func (p *Package) Equals(p2 *Package) bool {
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
 		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
 		p.Filesize == p2.Filesize && p.HashMD5 == p2.HashMD5 && p.HashSHA1 == p2.HashSHA1 &&
-		p.HashSHA256 == p2.HashSHA256
+		p.HashSHA256 == p2.HashSHA256 && p.Source == p2.Source
 }
 
 // VerifyFile verifies integrity and existence of local files for the package
