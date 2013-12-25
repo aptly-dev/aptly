@@ -55,7 +55,22 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 		list.Add(pkg)
 	})
 
-	// TODO: verify/guess list of architectures
+	if list.Len() == 0 {
+		return fmt.Errorf("repository is empty, can't publish")
+	}
+
+	if p.Architectures == nil {
+		p.Architectures = make([]string, 0, 10)
+		list.ForEach(func(pkg *Package) {
+			if pkg.Architecture != "all" && !utils.StrSliceHasItem(p.Architectures, pkg.Architecture) {
+				p.Architectures = append(p.Architectures, pkg.Architecture)
+			}
+		})
+	}
+
+	if len(p.Architectures) == 0 {
+		return fmt.Errorf("unable to figure out list of architectures, please supply explicit list")
+	}
 
 	generatedFiles := map[string]*utils.ChecksumInfo{}
 
@@ -76,11 +91,13 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 		list.ForEach(func(pkg *Package) {
 			if pkg.Architecture == arch || pkg.Architecture == "all" {
+				path, _ := repo.LinkFromPool(p.Prefix, p.Component, pkg.Filename, pkg.HashMD5, pkg.Source)
+
 				// TODO: error handling
+				pkg.Filename = path
 				pkg.Stanza().WriteTo(bufWriter)
 				bufWriter.WriteByte('\n')
 
-				repo.LinkFromPool(p.Prefix, p.Component, pkg.Filename, pkg.HashMD5)
 			}
 		})
 
