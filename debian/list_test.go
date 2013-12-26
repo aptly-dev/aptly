@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"errors"
 	. "launchpad.net/gocheck"
 )
 
@@ -46,11 +47,22 @@ func (s *PackageListSuite) TestForeach(c *C) {
 	s.list.Add(s.p3)
 
 	Len := 0
-	s.list.ForEach(func(*Package) {
+	err := s.list.ForEach(func(*Package) error {
 		Len++
+		return nil
 	})
 
 	c.Check(Len, Equals, 2)
+	c.Check(err, IsNil)
+
+	e := errors.New("a")
+
+	err = s.list.ForEach(func(*Package) error {
+		return e
+	})
+
+	c.Check(err, Equals, e)
+
 }
 
 func (s *PackageListSuite) TestNewPackageRefList(c *C) {
@@ -91,9 +103,19 @@ func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
 	reflist := NewPackageRefListFromPackageList(s.list)
 
 	Len := 0
-	reflist.ForEach(func([]byte) {
+	err := reflist.ForEach(func([]byte) error {
 		Len++
+		return nil
 	})
 
 	c.Check(Len, Equals, 4)
+	c.Check(err, IsNil)
+
+	e := errors.New("b")
+
+	err = reflist.ForEach(func([]byte) error {
+		return e
+	})
+
+	c.Check(err, Equals, e)
 }

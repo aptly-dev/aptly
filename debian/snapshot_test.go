@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"errors"
 	"github.com/smira/aptly/database"
 	. "launchpad.net/gocheck"
 )
@@ -116,6 +117,16 @@ func (s *SnapshotCollectionSuite) TestForEach(c *C) {
 	s.collection.Add(s.snapshot2)
 
 	count := 0
-	s.collection.ForEach(func(*Snapshot) { count++ })
+	err := s.collection.ForEach(func(*Snapshot) error {
+		count++
+		return nil
+	})
 	c.Assert(count, Equals, 2)
+	c.Assert(err, IsNil)
+
+	e := errors.New("d")
+	err = s.collection.ForEach(func(*Snapshot) error {
+		return e
+	})
+	c.Assert(err, Equals, e)
 }

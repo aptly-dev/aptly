@@ -162,8 +162,13 @@ func (collection *SnapshotCollection) ByName(name string) (*Snapshot, error) {
 }
 
 // ForEach runs method for each snapshot
-func (collection *SnapshotCollection) ForEach(handler func(*Snapshot)) {
+func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) error {
+	var err error
 	for _, s := range collection.list {
-		handler(s)
+		err = handler(s)
+		if err != nil {
+			return err
+		}
 	}
+	return err
 }

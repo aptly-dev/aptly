@@ -18,8 +18,9 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	fmt.Printf("List of mirrors:\n")
 
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	repoCollection.ForEach(func(repo *debian.RemoteRepo) {
+	repoCollection.ForEach(func(repo *debian.RemoteRepo) error {
 		fmt.Printf(" * %s\n", repo)
+		return nil
 	})
 
 	fmt.Printf("\nTo get more information about repository, run `aptly mirror show <name>`.\n")

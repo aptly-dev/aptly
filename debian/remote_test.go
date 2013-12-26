@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"errors"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	. "launchpad.net/gocheck"
@@ -187,8 +188,19 @@ func (s *RemoteRepoCollectionSuite) TestForEach(c *C) {
 	s.collection.Add(repo)
 
 	count := 0
-	s.collection.ForEach(func(*RemoteRepo) { count++ })
+	err := s.collection.ForEach(func(*RemoteRepo) error {
+		count++
+		return nil
+	})
 	c.Assert(count, Equals, 1)
+	c.Assert(err, IsNil)
+
+	e := errors.New("c")
+
+	err = s.collection.ForEach(func(*RemoteRepo) error {
+		return e
+	})
+	c.Assert(err, Equals, e)
 }
 
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily

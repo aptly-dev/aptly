@@ -35,12 +35,15 @@ func (l *PackageList) Add(p *Package) error {
 }
 
 // ForEach calls handler for each package in list
-//
-// TODO: Error handling
-func (l *PackageList) ForEach(handler func(*Package)) {
+func (l *PackageList) ForEach(handler func(*Package) error) error {
+	var err error
 	for _, p := range l.packages {
-		handler(p)
+		err = handler(p)
+		if err != nil {
+			return err
+		}
 	}
+	return err
 }
 
 // Len returns number of packages in the list
@@ -105,10 +108,13 @@ func (l *PackageRefList) Decode(input []byte) error {
 }
 
 // ForEach calls handler for each package ref in list
-//
-// TODO: Error handling
-func (l *PackageRefList) ForEach(handler func([]byte)) {
+func (l *PackageRefList) ForEach(handler func([]byte) error) error {
+	var err error
 	for _, p := range l.Refs {
-		handler(p)
+		err = handler(p)
+		if err != nil {
+			return err
+		}
 	}
+	return err
 }

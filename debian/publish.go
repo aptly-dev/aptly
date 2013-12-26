@@ -50,10 +50,16 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	// Load all packages
 	list := NewPackageList()
 
-	p.snapshot.RefList().ForEach(func(key []byte) {
-		pkg, _ := packageCollection.ByKey(key)
-		list.Add(pkg)
+	err = p.snapshot.RefList().ForEach(func(key []byte) error {
+		pkg, err := packageCollection.ByKey(key)
+		if err != nil {
+			return err
+		}
+		return list.Add(pkg)
 	})
+	if err != nil {
+		return fmt.Errorf("unable to load packages: %s", err)
+	}
 
 	if list.Len() == 0 {
 		return fmt.Errorf("repository is empty, can't publish")
@@ -61,10 +67,11 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 	if p.Architectures == nil {
 		p.Architectures = make([]string, 0, 10)
-		list.ForEach(func(pkg *Package) {
+		list.ForEach(func(pkg *Package) error {
 			if pkg.Architecture != "all" && !utils.StrSliceHasItem(p.Architectures, pkg.Architecture) {
 				p.Architectures = append(p.Architectures, pkg.Architecture)
 			}
+			return nil
 		})
 	}
 
@@ -89,17 +96,32 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 		bufWriter := bufio.NewWriter(packagesFile)
 
-		list.ForEach(func(pkg *Package) {
+		err = list.ForEach(func(pkg *Package) error {
 			if pkg.Architecture == arch || pkg.Architecture == "all" {
-				path, _ := repo.LinkFromPool(p.Prefix, p.Component, pkg.Filename, pkg.HashMD5, pkg.Source)
+				path, err := repo.LinkFromPool(p.Prefix, p.Component, pkg.Filename, pkg.HashMD5, pkg.Source)
+				if err != nil {
+					return err
+				}
 
-				// TODO: error handling
 				pkg.Filename = path
-				pkg.Stanza().WriteTo(bufWriter)
-				bufWriter.WriteByte('\n')
+
+				err = pkg.Stanza().WriteTo(bufWriter)
+				if err != nil {
+					return err
+				}
+				err = bufWriter.WriteByte('\n')
+				if err != nil {
+					return err
+				}
 
 			}
+
+			return nil
 		})
+
+		if err != nil {
+			return fmt.Errorf("unable to creates process packages: %s", err)
+		}
 
 		err = bufWriter.Flush()
 		if err != nil {

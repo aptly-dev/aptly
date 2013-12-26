@@ -176,29 +176,48 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	}
 
 	// Save package meta information to DB
-	list.ForEach(func(p *Package) {
-		packageCollection.Update(p)
+	err := list.ForEach(func(p *Package) error {
+		return packageCollection.Update(p)
 	})
+
+	if err != nil {
+		return fmt.Errorf("unable to save packages to db: %s", err)
+	}
 
 	// Download all package files
 	ch := make(chan error, list.Len())
 	count := 0
 
-	list.ForEach(func(p *Package) {
+	err = list.ForEach(func(p *Package) error {
 		poolPath, err := packageRepo.PoolPath(p.Filename, p.HashMD5)
-		if err == nil {
-			if !p.VerifyFile(poolPath) {
-				d.Download(repo.PackageURL(p.Filename).String(), poolPath, ch)
-				count++
-			}
+		if err != nil {
+			return err
 		}
+
+		if !p.VerifyFile(poolPath) {
+			d.Download(repo.PackageURL(p.Filename).String(), poolPath, ch)
+			count++
+		}
+		return nil
 	})
 
+	if err != nil {
+		return fmt.Errorf("unable to download packages: %s", err)
+	}
+
+	errors := make([]string, 0)
+
 	// Wait for all downloads to finish
-	// TODO: report errors
 	for count > 0 {
-		_ = <-ch
+		err = <-ch
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
 		count--
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("download errors: %s", strings.Join(errors, ", "))
 	}
 
 	repo.LastDownloadDate = time.Now()
@@ -331,8 +350,13 @@ func (collection *RemoteRepoCollection) ByUUID(uuid string) (*RemoteRepo, error)
 }
 
 // ForEach runs method for each repository
-func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo)) {
+func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo) error) error {
+	var err error
 	for _, r := range collection.list {
-		handler(r)
+		err = handler(r)
+		if err != nil {
+			return err
+		}
 	}
+	return err
 }

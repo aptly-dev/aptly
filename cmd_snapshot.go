@@ -40,7 +40,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to add snapshot: %s", err)
 	}
 
-	fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly snapshot publish %s' to publish snapshot as Debian repository.\n", snapshot.Name, snapshot.Name)
+	fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", snapshot.Name, snapshot.Name)
 
 	return err
 }
@@ -55,8 +55,9 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	fmt.Printf("List of snapshots:\n")
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	snapshotCollection.ForEach(func(snapshot *debian.Snapshot) {
+	snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
 		fmt.Printf(" * %s\n", snapshot)
+		return nil
 	})
 
 	fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
@@ -91,10 +92,17 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 
 	packageCollection := debian.NewPackageCollection(context.database)
 
-	snapshot.RefList().ForEach(func(key []byte) {
-		p, _ := packageCollection.ByKey(key)
+	err = snapshot.RefList().ForEach(func(key []byte) error {
+		p, err := packageCollection.ByKey(key)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("  %s\n", p)
+		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("unable to load packages: %s", err)
+	}
 
 	return err
 }
