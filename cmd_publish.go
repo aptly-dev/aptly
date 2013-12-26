@@ -11,13 +11,19 @@ import (
 
 func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	var err error
-	if len(args) != 2 {
+	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
 		return err
 	}
 
 	name := args[0]
-	prefix := args[1]
+
+	var prefix string
+	if len(args) == 2 {
+		prefix = args[1]
+	} else {
+		prefix = ""
+	}
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
 	snapshot, err := snapshotCollection.ByName(name)
@@ -69,6 +75,19 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 
 	packageCollection := debian.NewPackageCollection(context.database)
 	err = published.Publish(context.packageRepository, packageCollection, signer)
+	if err != nil {
+		return err
+	}
+
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
+
+	fmt.Printf("\nSnapshot %s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
+		snapshot.Name, context.packageRepository.PublicPath())
+	fmt.Printf("Now you can add following line to apt sources:\n")
+	fmt.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
+	fmt.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
 
 	return err
 }
@@ -82,7 +101,7 @@ func makeCmdPublishSnapshot() *commander.Command {
 Publishes snapshot as Debian repository ready to be used by apt tools.
 
 ex:
-  $ aptly publish snapshot <name> <prefix>
+  $ aptly publish snapshot <name> [<prefix>]
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-snapshot", flag.ExitOnError),
 	}
