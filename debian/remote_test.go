@@ -39,8 +39,11 @@ func (s *PackageListMixinSuite) SetUpPackages() {
 
 type RemoteRepoSuite struct {
 	PackageListMixinSuite
-	repo       *RemoteRepo
-	downloader utils.Downloader
+	repo              *RemoteRepo
+	downloader        *utils.FakeDownloader
+	db                database.Storage
+	packageCollection *PackageCollection
+	packageRepo       *Repository
 }
 
 var _ = Suite(&RemoteRepoSuite{})
@@ -48,7 +51,14 @@ var _ = Suite(&RemoteRepoSuite{})
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
 	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	s.db, _ = database.OpenDB(c.MkDir())
+	s.packageCollection = NewPackageCollection(s.db)
+	s.packageRepo = NewRepository(c.MkDir())
 	s.SetUpPackages()
+}
+
+func (s *RemoteRepoSuite) TearDownTest(c *C) {
+	s.db.Close()
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
@@ -80,6 +90,7 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
+	c.Assert(s.downloader.Empty(), Equals, true)
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
@@ -112,6 +123,31 @@ func (s *RemoteRepoSuite) TestRefKey(c *C) {
 	c.Assert(len(s.repo.RefKey()), Equals, 37)
 	c.Assert(s.repo.RefKey()[0], Equals, byte('E'))
 	c.Assert(s.repo.RefKey()[1:], DeepEquals, s.repo.Key()[1:])
+}
+
+func (s *RemoteRepoSuite) TestDownload(c *C) {
+	s.repo.Architectures = []string{"i386"}
+
+	err := s.repo.Fetch(s.downloader)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
+
+	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+	c.Assert(s.repo.packageRefs, NotNil)
+
+	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
+	c.Assert(err, IsNil)
+
+	poolPath, _ := s.packageRepo.PoolPath(pkg.Filename, pkg.HashMD5)
+	c.Check(pkg.VerifyFile(poolPath), Equals, true)
+
+	c.Check(pkg.Name, Equals, "amanda-client")
 }
 
 type RemoteRepoCollectionSuite struct {
@@ -332,3 +368,24 @@ SHA256:
  a8707486566f1623f0e50c0f8f61d93a93d79fb3043b6e1c407fc9f2afb002ce             1119 main/source/Sources
  d178f1e310218d9f0f16c37d0780637f1cf3640a94a7fb0e24dc940c51b1e115              656 main/source/Sources.bz2
  080228b550da407fb8ac73fb30b37323468fd2b2de98dd56a324ee7d701f6103              592 main/source/Sources.gz`
+
+const examplePackagesFile = `Package: amanda-client
+Source: amanda
+Version: 1:3.3.1-3~bpo60+1
+Installed-Size: 880
+Maintainer: Bdale Garbee <bdale@gag.com>
+Architecture: i386
+Replaces: amanda-common (<< 1:2.5.2p1-3)
+Depends: libc6 (>= 2.3), libcurl3 (>= 7.16.2-1), libglib2.0-0 (>= 2.12.0), libreadline6 (>= 6.0), libssl0.9.8 (>= 0.9.8m-1), amanda-common (= 1:3.3.1-3~bpo60+1)
+Suggests: gnuplot, dump, smbclient
+Conflicts: amanda, amanda-common (<< 1:2.5.2p1-3)
+Description: Advanced Maryland Automatic Network Disk Archiver (Client)
+Description-md5: 21af3684379a64cacc51c39152ab1062
+Section: utils
+Priority: optional
+Filename: pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb
+Size: 3
+MD5sum: cdc997dc06126e18ea9ba843efed9811
+SHA1: 049ba341d520c447fa2e6a1f8c871b3dbbe00106
+SHA256: 4487115ca47fe9acd95355b9278f30e18c53f33c385252252d3d7948d650d1d0
+`
