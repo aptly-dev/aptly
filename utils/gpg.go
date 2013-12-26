@@ -29,7 +29,7 @@ func (g *GpgSigner) SetKey(keyRef string) {
 
 // DetachedSign signs file with detached signature in ASCII format
 func (g *GpgSigner) DetachedSign(source string, destination string) error {
-	fmt.Println("Signing file '%s' with gpg, please enter your passphrase when prompted:\n")
+	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", source)
 
 	args := []string{"-o", destination, "--armor", "--yes"}
 	if g.keyRef != "" {
@@ -42,7 +42,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 
 // ClearSign clear-signs the file
 func (g *GpgSigner) ClearSign(source string, destination string) error {
-	fmt.Println("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n")
+	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", source)
 	args := []string{"-o", destination, "--yes"}
 	if g.keyRef != "" {
 		args = append(args, "-u", g.keyRef)
