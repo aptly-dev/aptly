@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type expectedRequest struct {
@@ -58,6 +59,12 @@ func (f *FakeDownloader) Download(url string, filename string, result chan<- err
 
 	if expected.Err != nil {
 		result <- expected.Err
+		return
+	}
+
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	if err != nil {
+		result <- err
 		return
 	}
 
