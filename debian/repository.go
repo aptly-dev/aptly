@@ -45,6 +45,11 @@ func (r *Repository) PoolPath(filename string, hashMD5 string) (string, error) {
 	return filepath.Join(r.RootPath, "pool", hashMD5[0:2], hashMD5[2:4], filename), nil
 }
 
+// PublicPath returns root of public part of repository
+func (r *Repository) PublicPath() string {
+	return filepath.Join(r.RootPath, "public")
+}
+
 // MkDir creates directory recursively under public path
 func (r *Repository) MkDir(path string) error {
 	return os.MkdirAll(filepath.Join(r.RootPath, "public", path), 0755)
@@ -62,7 +67,7 @@ func (r *Repository) LinkFromPool(prefix string, component string, filename stri
 		return "", err
 	}
 
-	if len(source) < 3 {
+	if len(source) < 2 {
 		return "", fmt.Errorf("package source %s too short", source)
 	}
 

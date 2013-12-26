@@ -28,6 +28,10 @@ func (s *RepositorySuite) TestPoolPath(c *C) {
 	c.Assert(err, ErrorMatches, ".*is invalid")
 }
 
+func (s *RepositorySuite) TestPublicPath(c *C) {
+	c.Assert(s.repo.PublicPath(), Equals, filepath.Join(s.repo.RootPath, "public"))
+}
+
 func (s *RepositorySuite) TestMkDir(c *C) {
 	err := s.repo.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
