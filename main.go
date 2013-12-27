@@ -8,6 +8,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var cmd *commander.Command
@@ -41,18 +42,35 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 
-	context.downloader = utils.NewDownloader(4)
+	configLocations := []string{
+		filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
+		"/etc/aptly.conf",
+	}
+
+	for _, configLocation := range configLocations {
+		err = utils.LoadConfig(configLocation, &utils.Config)
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		log.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+		utils.SaveConfig(configLocations[0], &utils.Config)
+	}
+
+	context.downloader = utils.NewDownloader(utils.Config.DownloadConcurrency)
 	defer context.downloader.Shutdown()
 
 	// TODO: configure DB dir
-	context.database, err = database.OpenDB("/var/aptly/db")
+	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
 	if err != nil {
 		log.Fatalf("can't open database: %s", err)
 	}
 	defer context.database.Close()
 
 	// TODO:configure pool dir
-	context.packageRepository = debian.NewRepository("/var/aptly")
+	context.packageRepository = debian.NewRepository(utils.Config.RootDir)
 
 	err = cmd.Dispatch(os.Args[1:])
 	if err != nil {
