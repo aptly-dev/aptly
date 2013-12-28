@@ -29,20 +29,43 @@ Usage
 
 Aptly supports commands in three basic categories:
 
-* `mirror`
-* `snapshot`
-* `publish`
+* ``mirror``
+* ``snapshot``
+* ``publish``
 
-Command `mirror`
-~~~~~~~~~~~~~~~~
+Command ``mirror``
+~~~~~~~~~~~~~~~~~~
 
 Mirror subcommands manage mirrors of remote Debian repositories.
 
-`aptly mirror create`
-^^^^^^^^^^^^^^^^^^^^^
+``aptly mirror create``
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Creates mirror of remote repository. It supports only HTTP repositories.
 
 Usage::
 
     $ aptly mirror create <name> <archive url> <distribution> [<component1> ...]
+
+Params are:
+
+* ``name`` is a name that would be used in aptly to reference this mirror
+* ``archive url`` is a root of archive, e.g. http://ftp.ru.debian.org/debian/
+* ``distribution`` is a distribution name, e.g. ``squeeze``
+* ``component1`` is an optional list of components to download, if not 
+  specified aptly would fetch all components, e.g. ``main``
+
+Options:
+
+* ``--architecture="i386,amd64"`` list of architectures to fetch, if not specified, 
+  aptly would fetch packages for all architectures
+  
+Example::
+
+  $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
+  2013/12/28 19:44:45 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/Release...
+
+  Mirror [debian-main]: http://ftp.ru.debian.org/debian/ squeeze successfully added.
+  You can run 'aptly mirror update debian-main' to download repository contents.
+
+
