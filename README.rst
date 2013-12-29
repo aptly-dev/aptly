@@ -21,6 +21,9 @@ It allows to: ("+" means planned features)
 
 Currently aptly is under heavy development, so please use it with care.
 
+Download
+--------
+
 Example
 -------
 
@@ -94,3 +97,53 @@ Example::
   2013/12/29 18:37:19 Downloading http://ftp.ru.debian.org/debian/pool/main/libg/libgwenhywfar/libgwenhywfar47-dev_3.11.3-1_amd64.deb...
   ....
   
+``aptly mirror list``
+^^^^^^^^^^^^^^^^^^^^^
+
+Shows list of registered mirrors of repositories.
+
+Usage::
+
+   $ aptly mirror list
+   
+Example::
+
+   $ aptly mirror list
+   List of mirrors:
+    * [backports]: http://mirror.yandex.ru/backports.org/ squeeze-backports
+    * [debian-main]: http://ftp.ru.debian.org/debian/ squeeze
+
+   To get more information about repository, run `aptly mirror show <name>`.
+   
+``aptly mirror show``
+^^^^^^^^^^^^^^^^^^^^^
+
+Shows detailed information about mirror.
+
+Usage::
+
+   $ aptly mirror show <name>
+   
+Params are:
+
+* ``name`` is a mirror name (given when mirror was created)
+
+Example::
+
+  $ aptly mirror show backports2
+  Name: backports2
+  Archive Root URL: http://mirror.yandex.ru/backports.org/
+  Distribution: squeeze-backports
+  Components: main, contrib, non-free
+  Architectures: i386, amd64
+  Last update: 2013-12-27 19:30:19 MSK
+  Number of packages: 3898
+
+  Information from release file:
+  ...
+
+In detailed information, one can see basiс parameters of the mirror, filters by component & architecture, timestamp
+of last successful repository fetch and number of packages.
+
+Configuration
+-------------
