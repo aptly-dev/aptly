@@ -1,3 +1,4 @@
+=====
 aptly
 =====
 
@@ -20,6 +21,8 @@ It allows to: ("+" means planned features)
 * publish self-made packages as Debian repositories (+)
 
 Currently aptly is under heavy development, so please use it with care.
+
+.. contents::
 
 Download
 --------
@@ -144,6 +147,39 @@ Example::
 
 In detailed information, one can see basiс parameters of the mirror, filters by component & architecture, timestamp
 of last successful repository fetch and number of packages.
+
+Command ``snapshot``
+~~~~~~~~~~~~~~~~~~~~
+
+Snapshot is a fixed state of remote repository. Internally snapshot is list of packages with explicit version.
+Snapshot is immutable, i.e. it can't change since it has been created.
+
+``aptly snapshot create .. from mirror``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Creates snapshot from current state of remote mirror. Mirros should be updated at least once before using this command.
+
+Usage::
+
+  $ aptly snapshot create <name> from mirror <mirror-name>
+
+Params are:
+
+* ``name`` is a name for the snapshot to be created
+* ``mirror-name`` is a mirror name (given when mirror was created)
+
+Example::
+
+  $ aptly snapshot create monday-updates from mirror backports2
+
+  Snapshot monday-updates successfully created.
+  You can run 'aptly publish snapshot monday-updates' to publish snapshot as Debian repository.
+
+``aptly snapshot list``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``aptly snapshot show``
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Configuration
 -------------
