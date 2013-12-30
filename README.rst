@@ -20,6 +20,13 @@ It allows to: ("+" means planned features)
 * controlled update of one or more packages in snapshot from upstream mirror, tracking dependencies (+)
 * publish self-made packages as Debian repositories (+)
 
+Current limitations:
+
+* source packages, debian-installer and translations not supported yet
+* checksums and signature are not verified while downloading
+* deleting created items is not implemented
+* cleaning up stale files is not implemented
+
 Currently aptly is under heavy development, so please use it with care.
 
 .. contents::
@@ -178,8 +185,75 @@ Example::
 ``aptly snapshot list``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+Displays list of all created snapshots.
+
+Usage::
+
+  $ aptly snapshot list
+  
+Example::
+
+  $ aptly snapshot list
+  List of snapshots:
+   * [monday-updates]: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
+   * [back]: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
+
+  To get more information about snapshot, run `aptly snapshot show <name>`.  
+  
+With snapshot information, basic information about snapshot origin is displayed: which mirror it has been created from.
+
 ``aptly snapshot show``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+Shows detailed information about snapshot. Full list of packages in the snapshot is displayed as well.
+
+Usage::
+
+  $ aptly snapshot show <name>
+  
+Params:
+
+* ``name`` is snapshot name which has been given during snapshot creation
+
+Example::
+
+  Name: back
+  Created At: 2013-12-24 15:39:29 MSK
+  Description: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
+  Number of packages: 3898
+  Packages:
+    altos-1.0.3~bpo60+1_i386
+    amanda-client-1:3.3.1-3~bpo60+1_amd64
+    ...
+
+Command ``publish``
+~~~~~~~~~~~~~~~~~~~
+
+Publishing snapshot as Debian repository which could be served by HTTP/FTP/rsync server. Repository is signed by
+user's key with GnuPG. Key should be created beforehand (see section GPG Keys). Published repository could 
+be consumed directly by apt.
+
+``aptly publish snapshot``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Usage::
+
+  $ aptly publish snapshot <name> [<prefix>]
+
+Params:
+
+* ``name``
+* ``prefix``
+
+Options:
+
+* ``-architectures=""``: list of architectures to publish (comma-separated)
+* ``-component=""``: component name to publish
+* ``-distribution=""``: distribution name to publish
+* ``-gpg-key=""``: GPG key ID to use when signing the release
+
 Configuration
 -------------
+
+GPG Keys
+--------
