@@ -34,6 +34,8 @@ Currently aptly is under heavy development, so please use it with care.
 Download
 --------
 
+TBD
+
 Configuration
 -------------
 
@@ -57,7 +59,53 @@ Options:
 Example
 -------
 
-TBD
+Create mirror::
+
+  $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
+  2013/12/28 19:44:45 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/Release...
+  ...
+
+  Mirror [debian-main]: http://ftp.ru.debian.org/debian/ squeeze successfully added.
+  You can run 'aptly mirror update debian-main' to download repository contents.
+
+Take snapshot::
+
+  $ aptly snapshot create debian-3112 from mirror debian-main
+
+  Snapshot debian-3112 successfully created.
+  You can run 'aptly publish snapshot debian-3112' to publish snapshot as Debian repository.
+
+Publish snapshot (requires generated GPG key)::
+
+  $ aptly publish snapshot debian-3112
+  
+  ...
+  
+  Snapshot back has been successfully published.
+  Please setup your webserver to serve directory '/var/aptly/public' with autoindexing.
+  Now you can add following line to apt sources:
+    deb http://your-server/ squeeze main
+  Don't forget to add your GPG key to apt with apt-key.
+
+Set up webserver (e.g. nginx)::
+
+  server {
+        root /home/example/.aptly/public;
+        server_name mirror.local;
+
+        location / {
+                autoindex on;
+        }
+        
+Add new repository to apt's sources::
+
+  deb http://mirror.local/ squeeze main
+  
+Run apt-get to fetch repository metadata::
+
+  apt-get update
+  
+Enjoy!
 
 Usage
 -----
@@ -99,6 +147,7 @@ Example::
 
   $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
   2013/12/28 19:44:45 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/Release...
+  ...
 
   Mirror [debian-main]: http://ftp.ru.debian.org/debian/ squeeze successfully added.
   You can run 'aptly mirror update debian-main' to download repository contents.
@@ -281,7 +330,7 @@ Options:
 
 Example::
 
-  $ aptly  publish snapshot back
+  $ aptly publish snapshot back
   Signing file '/var/aptly/public/dists/squeeze-backports/Release' with gpg, please enter your passphrase when prompted:
 
   <<gpg asks for passphrase>>
@@ -316,3 +365,11 @@ Directory structure for published repositories::
 
 GPG Keys
 --------
+
+GPG key is required to sign any published repository. Key should be generated before publishing first repository.
+
+Key generation, storage, backup and revocation is out of scope of this document, there are many tutorials available,
+e.g. `this one <http://fedoraproject.org/wiki/Creating_GPG_Keys>`_.
+
+Publiс part of the key should be exported (``gpg --export --armor``) and imported into apt keyring on all machines that would be using 
+published repositories using ``apt-key``.
