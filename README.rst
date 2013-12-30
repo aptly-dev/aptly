@@ -34,8 +34,30 @@ Currently aptly is under heavy development, so please use it with care.
 Download
 --------
 
+Configuration
+-------------
+
+aptly looks for configuration file in ``/etc/aptly.conf`` and ``~/.aptly.conf``, if no config file found, 
+new one is created. Also aptly needs root directory for database, package and published repository storage.
+If not specified, directory defaults to ``~/.aptly``, it will be created if missing.
+
+Configuration file is stored in JSON format::
+
+  {
+    "rootDir": "/var/aptly",
+    "downloadConcurrency": 4
+  }
+
+Options:
+
+* ``rootDir`` is root of directory storage to store datbase (``rootDir/db``), downloaded packages (``rootDir/pool``) and
+  published repositories (``rootDir/public``)
+* ``downloadConcurrency`` is a number of parallel download threads to use when downloading packages
+
 Example
 -------
+
+TBD
 
 Usage
 -----
@@ -236,24 +258,61 @@ be consumed directly by apt.
 ``aptly publish snapshot``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Published repositories appear under ``rootDir/public`` directory. 
+
 Usage::
 
   $ aptly publish snapshot <name> [<prefix>]
 
 Params:
 
-* ``name``
-* ``prefix``
+* ``name`` is a snapshot name that snould be published
+* ``prefix`` is an optional prefix for publishing, if not specified, repository would be published to the root of
+  publiс directory
 
 Options:
 
-* ``-architectures=""``: list of architectures to publish (comma-separated)
-* ``-component=""``: component name to publish
-* ``-distribution=""``: distribution name to publish
-* ``-gpg-key=""``: GPG key ID to use when signing the release
+* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
+  snapshot contents
+* ``-component=""``: component name to publish; guessed from original repository (if any), or defaults to
+  main
+* ``-distribution=""``: distribution name to publish; guessed from original repository distribution
+* ``-gpg-key=""``: GPG key ID to use when signing the release, if not specified default key is used
 
-Configuration
--------------
+Example::
+
+  $ aptly  publish snapshot back
+  Signing file '/var/aptly/public/dists/squeeze-backports/Release' with gpg, please enter your passphrase when prompted:
+
+  <<gpg asks for passphrase>>
+
+  Clearsigning file '/var/aptly/public/dists/squeeze-backports/Release' with gpg, please enter your passphrase when prompted:
+
+  <<gpg asks for passphrase>>
+
+  Snapshot back has been successfully published.
+  Please setup your webserver to serve directory '/var/aptly/public' with autoindexing.
+  Now you can add following line to apt sources:
+    deb http://your-server/ squeeze-backports main
+  Don't forget to add your GPG key to apt with apt-key.
+
+Directory structure for published repositories::
+
+  public/ - root of published tree (root for webserver)
+    dists/
+      squeeze/ - distribution name
+        Release - raw file
+        InRelease - clearsigned file
+        Release.gpg - signature for Release file
+        binary-i386/
+          Packages - list of metadata for packages
+          Packages.gz
+          Packages.bz2
+    pool/
+      main/ - component name
+        m/
+          mars-invaders/
+            mars-invaders_1.0.3_i386.deb - package (hard link to package from main pool)
 
 GPG Keys
 --------
