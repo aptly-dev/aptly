@@ -136,6 +136,8 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
+
+	fmt.Printf("\nMirror `%s` has been successfully updated.\n", repo.Name)
 	return err
 }
 
