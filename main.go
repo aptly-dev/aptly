@@ -11,6 +11,9 @@ import (
 	"path/filepath"
 )
 
+// aptly version
+const Version = "0.1"
+
 var cmd *commander.Command
 
 func init() {
@@ -26,6 +29,7 @@ take snapshots and publish them back as Debian repositories.`,
 			makeCmdMirror(),
 			makeCmdSnapshot(),
 			makeCmdPublish(),
+			makeCmdVersion(),
 		},
 	}
 }
