@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 // ConfigStructure is structure of main configuration
@@ -13,7 +14,7 @@ type ConfigStructure struct {
 
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
-	RootDir:             "/var/aptly",
+	RootDir:             filepath.Join(os.Getenv("HOME"), ".aptly"),
 	DownloadConcurrency: 4,
 }
 
