@@ -34,12 +34,17 @@ Currently aptly is under heavy development, so please use it with care.
 Download
 --------
 
-TBD
+Binary executables (depends almost only on libc) are available for download from `Bintray <https://bintray.com/smira/generic/aptly>`_.
+
+If you have Go environment set up, you can build aptly from source by running::
+
+    go get -d -v github.com/smira/aptly
+    go install github.com/smira/aptly
 
 Configuration
 -------------
 
-aptly looks for configuration file in ``/etc/aptly.conf`` and ``~/.aptly.conf``, if no config file found, 
+aptly looks for configuration file in ``/etc/aptly.conf`` and ``~/.aptly.conf``, if no config file found,
 new one is created. Also aptly needs root directory for database, package and published repository storage.
 If not specified, directory defaults to ``~/.aptly``, it will be created if missing.
 
@@ -78,9 +83,9 @@ Take snapshot::
 Publish snapshot (requires generated GPG key)::
 
   $ aptly publish snapshot debian-3112
-  
+
   ...
-  
+
   Snapshot back has been successfully published.
   Please setup your webserver to serve directory '/var/aptly/public' with autoindexing.
   Now you can add following line to apt sources:
@@ -96,15 +101,15 @@ Set up webserver (e.g. nginx)::
         location / {
                 autoindex on;
         }
-        
+
 Add new repository to apt's sources::
 
   deb http://mirror.local/ squeeze main
-  
+
 Run apt-get to fetch repository metadata::
 
   apt-get update
-  
+
 Enjoy!
 
 Usage
@@ -135,14 +140,14 @@ Params are:
 * ``name`` is a name that would be used in aptly to reference this mirror
 * ``archive url`` is a root of archive, e.g. http://ftp.ru.debian.org/debian/
 * ``distribution`` is a distribution name, e.g. ``squeeze``
-* ``component1`` is an optional list of components to download, if not 
+* ``component1`` is an optional list of components to download, if not
   specified aptly would fetch all components, e.g. ``main``
 
 Options:
 
-* ``--architecture="i386,amd64"`` list of architectures to fetch, if not specified, 
+* ``--architecture="i386,amd64"`` list of architectures to fetch, if not specified,
   aptly would fetch packages for all architectures
-  
+
 Example::
 
   $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
@@ -155,7 +160,7 @@ Example::
 ``aptly mirror update``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Updates (fetches packages and meta) remote mirror. When mirror is created, it should be run for the 
+Updates (fetches packages and meta) remote mirror. When mirror is created, it should be run for the
 first time to fetch mirror contents. This command could be run many times. If interrupted, it could
 be restarted in a safe way.
 
@@ -177,7 +182,7 @@ Example::
   2013/12/29 18:32:37 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/main/binary-amd64/Packages.bz2...
   2013/12/29 18:37:19 Downloading http://ftp.ru.debian.org/debian/pool/main/libg/libgwenhywfar/libgwenhywfar47-dev_3.11.3-1_amd64.deb...
   ....
-  
+
 ``aptly mirror list``
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -186,7 +191,7 @@ Shows list of registered mirrors of repositories.
 Usage::
 
    $ aptly mirror list
-   
+
 Example::
 
    $ aptly mirror list
@@ -195,7 +200,7 @@ Example::
     * [debian-main]: http://ftp.ru.debian.org/debian/ squeeze
 
    To get more information about repository, run `aptly mirror show <name>`.
-   
+
 ``aptly mirror show``
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -204,7 +209,7 @@ Shows detailed information about mirror.
 Usage::
 
    $ aptly mirror show <name>
-   
+
 Params are:
 
 * ``name`` is a mirror name (given when mirror was created)
@@ -261,7 +266,7 @@ Displays list of all created snapshots.
 Usage::
 
   $ aptly snapshot list
-  
+
 Example::
 
   $ aptly snapshot list
@@ -269,8 +274,8 @@ Example::
    * [monday-updates]: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
    * [back]: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
 
-  To get more information about snapshot, run `aptly snapshot show <name>`.  
-  
+  To get more information about snapshot, run `aptly snapshot show <name>`.
+
 With snapshot information, basic information about snapshot origin is displayed: which mirror it has been created from.
 
 ``aptly snapshot show``
@@ -281,7 +286,7 @@ Shows detailed information about snapshot. Full list of packages in the snapshot
 Usage::
 
   $ aptly snapshot show <name>
-  
+
 Params:
 
 * ``name`` is snapshot name which has been given during snapshot creation
@@ -301,13 +306,13 @@ Command ``publish``
 ~~~~~~~~~~~~~~~~~~~
 
 Publishing snapshot as Debian repository which could be served by HTTP/FTP/rsync server. Repository is signed by
-user's key with GnuPG. Key should be created beforehand (see section GPG Keys). Published repository could 
+user's key with GnuPG. Key should be created beforehand (see section GPG Keys). Published repository could
 be consumed directly by apt.
 
 ``aptly publish snapshot``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Published repositories appear under ``rootDir/public`` directory. 
+Published repositories appear under ``rootDir/public`` directory.
 
 Usage::
 
@@ -371,5 +376,5 @@ GPG key is required to sign any published repository. Key should be generated be
 Key generation, storage, backup and revocation is out of scope of this document, there are many tutorials available,
 e.g. `this one <http://fedoraproject.org/wiki/Creating_GPG_Keys>`_.
 
-Publiс part of the key should be exported (``gpg --export --armor``) and imported into apt keyring on all machines that would be using 
+Publiс part of the key should be exported (``gpg --export --armor``) and imported into apt keyring on all machines that would be using
 published repositories using ``apt-key``.
