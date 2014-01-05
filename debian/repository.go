@@ -5,7 +5,6 @@ import (
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Repository directory structure:
@@ -61,29 +60,13 @@ func (r *Repository) CreateFile(path string) (*os.File, error) {
 }
 
 // LinkFromPool links package file from pool to dist's pool location
-func (r *Repository) LinkFromPool(prefix string, component string, filename string, hashMD5 string, source string) (string, error) {
-	sourcePath, err := r.PoolPath(filename, hashMD5)
-	if err != nil {
-		return "", err
-	}
+func (r *Repository) LinkFromPool(prefix string, component string, sourcePath string, poolDirectory string) (string, error) {
+	baseName := filepath.Base(sourcePath)
 
-	if len(source) < 2 {
-		return "", fmt.Errorf("package source %s too short", source)
-	}
+	relPath := filepath.Join("pool", component, poolDirectory, baseName)
+	poolPath := filepath.Join(r.RootPath, "public", prefix, "pool", component, poolDirectory)
 
-	var subdir string
-	if strings.HasPrefix(source, "lib") {
-		subdir = source[:4]
-	} else {
-		subdir = source[:1]
-
-	}
-
-	baseName := filepath.Base(filename)
-	relPath := filepath.Join("pool", component, subdir, source, baseName)
-	poolPath := filepath.Join(r.RootPath, "public", prefix, "pool", component, subdir, source)
-
-	err = os.MkdirAll(poolPath, 0755)
+	err := os.MkdirAll(poolPath, 0755)
 	if err != nil {
 		return "", err
 	}

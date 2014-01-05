@@ -189,16 +189,14 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	count := 0
 
 	err = list.ForEach(func(p *Package) error {
-		poolPath, err := packageRepo.PoolPath(p.Filename, p.HashMD5)
-		if err != nil {
-			return err
-		}
+		list, err := p.DownloadList(packageRepo)
 
-		if !p.VerifyFile(poolPath) {
-			d.Download(repo.PackageURL(p.Filename).String(), poolPath, ch)
+		for _, pair := range list {
+			d.Download(repo.PackageURL(pair[0]).String(), pair[1], ch)
 			count++
 		}
-		return nil
+
+		return err
 	})
 
 	if err != nil {

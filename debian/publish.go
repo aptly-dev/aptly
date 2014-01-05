@@ -98,17 +98,10 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 		err = list.ForEach(func(pkg *Package) error {
 			if pkg.Architecture == arch || pkg.Architecture == "all" {
-				source := pkg.Source
-				if source == "" {
-					source = pkg.Name
-				}
-
-				path, err := repo.LinkFromPool(p.Prefix, p.Component, pkg.Filename, pkg.HashMD5, source)
+				err = pkg.LinkFromPool(repo, p.Prefix, p.Component)
 				if err != nil {
 					return err
 				}
-
-				pkg.Filename = path
 
 				err = pkg.Stanza().WriteTo(bufWriter)
 				if err != nil {

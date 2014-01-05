@@ -54,49 +54,59 @@ func (s *RepositorySuite) TestCreateFile(c *C) {
 
 func (s *RepositorySuite) TestLinkFromPool(c *C) {
 	tests := []struct {
-		packageFilename  string
-		MD5              string
-		source           string
+		prefix           string
+		component        string
+		sourcePath       string
+		poolDirectory    string
 		expectedFilename string
 	}{
 		{ // package name regular
-			packageFilename:  "pool/m/mars-invaders_1.03.deb",
-			MD5:              "91b1a1480b90b9e269ca44d897b12575",
-			source:           "mars-invaders",
+			prefix:           "",
+			component:        "main",
+			sourcePath:       "pool/01/ae/mars-invaders_1.03.deb",
+			poolDirectory:    "m/mars-invaders",
 			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
 		},
 		{ // lib-like filename
-			packageFilename:  "pool/libm/libmars-invaders_1.03.deb",
-			MD5:              "12c2a1480b90b9e269ca44d897b12575",
-			source:           "libmars-invaders",
+			prefix:           "",
+			component:        "main",
+			sourcePath:       "pool/01/ae/libmars-invaders_1.03.deb",
+			poolDirectory:    "libm/libmars-invaders",
 			expectedFilename: "pool/main/libm/libmars-invaders/libmars-invaders_1.03.deb",
 		},
 		{ // duplicate link, shouldn't panic
-			packageFilename:  "pool/m/mars-invaders_1.03.deb",
-			MD5:              "91b1a1480b90b9e269ca44d897b12575",
-			source:           "mars-invaders",
+			prefix:           "",
+			component:        "main",
+			sourcePath:       "pool/01/ae/mars-invaders_1.03.deb",
+			poolDirectory:    "m/mars-invaders",
 			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
+		},
+		{ // prefix & component
+			prefix:           "ppa",
+			component:        "contrib",
+			sourcePath:       "pool/01/ae/libmars-invaders_1.04.deb",
+			poolDirectory:    "libm/libmars-invaders",
+			expectedFilename: "pool/contrib/libm/libmars-invaders/libmars-invaders_1.04.deb",
 		},
 	}
 
 	for _, t := range tests {
-		poolPath, err := s.repo.PoolPath(t.packageFilename, t.MD5)
+		t.sourcePath = filepath.Join(s.repo.RootPath, t.sourcePath)
+
+		err := os.MkdirAll(filepath.Dir(t.sourcePath), 0755)
 		c.Assert(err, IsNil)
 
-		err = os.MkdirAll(filepath.Dir(poolPath), 0755)
-		c.Assert(err, IsNil)
-
-		file, err := os.Create(poolPath)
+		file, err := os.Create(t.sourcePath)
 		c.Assert(err, IsNil)
 
 		file.Write([]byte("Contents"))
 		file.Close()
 
-		path, err := s.repo.LinkFromPool("", "main", t.packageFilename, t.MD5, t.source)
+		path, err := s.repo.LinkFromPool(t.prefix, t.component, t.sourcePath, t.poolDirectory)
 		c.Assert(err, IsNil)
 		c.Assert(path, Equals, t.expectedFilename)
 
-		st, err := os.Stat(filepath.Join(s.repo.RootPath, "public", t.expectedFilename))
+		st, err := os.Stat(filepath.Join(s.repo.RootPath, "public", t.prefix, t.expectedFilename))
 		c.Assert(err, IsNil)
 
 		info := st.Sys().(*syscall.Stat_t)
