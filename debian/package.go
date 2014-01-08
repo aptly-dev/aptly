@@ -148,6 +148,23 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 	return p.Architecture == arch
 }
 
+// GetDependencies compiles list of dependenices by flags from options
+func (p *Package) GetDependencies(options int) (dependencies []string) {
+	dependencies = make([]string, 0, 30)
+	dependencies = append(dependencies, p.Depends...)
+	dependencies = append(dependencies, p.PreDepends...)
+
+	if options&DepFollowRecommends == DepFollowRecommends {
+		dependencies = append(dependencies, p.Recommends...)
+	}
+
+	if options&DepFollowSuggests == DepFollowSuggests {
+		dependencies = append(dependencies, p.Suggests...)
+	}
+
+	return
+}
+
 // Stanza creates original stanza from package
 func (p *Package) Stanza() (result Stanza) {
 	result = p.Extra.Copy()
