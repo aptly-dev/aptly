@@ -52,11 +52,23 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.Name, Equals, "alien-arena-common")
 	c.Check(p.Version, Equals, "7.40-2")
 	c.Check(p.Architecture, Equals, "i386")
+	c.Check(p.Provides, Equals, "")
 	c.Check(p.Files, HasLen, 1)
 	c.Check(p.Files[0].Filename, Equals, "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(187518))
 	c.Check(p.Files[0].Checksums.MD5, Equals, "1e8cba92c41420aa7baa8a5718d67122")
 	c.Check(p.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
+}
+
+func (s *PackageSuite) TestWithProvides(c *C) {
+	s.stanza["Provides"] = "arena"
+	p := NewPackageFromControlFile(s.stanza)
+
+	c.Check(p.Name, Equals, "alien-arena-common")
+	c.Check(p.Provides, Equals, "arena")
+
+	st := p.Stanza()
+	c.Check(st["Provides"], Equals, "arena")
 }
 
 func (s *PackageSuite) TestKey(c *C) {
@@ -99,6 +111,18 @@ func (s *PackageSuite) TestEquals(c *C) {
 	p2 = NewPackageFromControlFile(packageStanza.Copy())
 	p2.Files[0].Checksums.MD5 = "abcdefabcdef"
 	c.Check(p.Equals(p2), Equals, false)
+}
+
+func (s *PackageSuite) TestMatchesArchitecture(c *C) {
+	p := NewPackageFromControlFile(s.stanza)
+	c.Check(p.MatchesArchitecture("i386"), Equals, true)
+	c.Check(p.MatchesArchitecture("amd64"), Equals, false)
+
+	s.stanza = packageStanza.Copy()
+	s.stanza["Architecture"] = "all"
+	p = NewPackageFromControlFile(s.stanza)
+	c.Check(p.MatchesArchitecture("i386"), Equals, true)
+	c.Check(p.MatchesArchitecture("amd64"), Equals, true)
 }
 
 func (s *PackageSuite) TestPoolDirectory(c *C) {

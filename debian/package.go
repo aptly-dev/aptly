@@ -41,6 +41,7 @@ type Package struct {
 	Version      string
 	Architecture string
 	Source       string
+	Provides     string
 	// Various dependencies
 	Depends    []string
 	PreDepends []string
@@ -60,7 +61,11 @@ func parseDependencies(input Stanza, key string) []string {
 
 	delete(input, key)
 
-	return strings.Split(value, ", ")
+	result := strings.Split(value, ",")
+	for i := range result {
+		result[i] = strings.TrimSpace(result[i])
+	}
+	return result
 }
 
 // NewPackageFromControlFile creates Package from parsed Debian control file
@@ -70,6 +75,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Architecture: input["Architecture"],
 		Source:       input["Source"],
+		Provides:     input["Provides"],
 		Files:        make([]PackageFile, 0, 1),
 	}
 
@@ -77,6 +83,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	delete(input, "Version")
 	delete(input, "Architecture")
 	delete(input, "Source")
+	delete(input, "Provides")
 
 	filesize, _ := strconv.ParseInt(input["Size"], 10, 64)
 
@@ -132,6 +139,15 @@ func (p *Package) String() string {
 	return fmt.Sprintf("%s-%s_%s", p.Name, p.Version, p.Architecture)
 }
 
+// MatchesArchitecture checks whether packages matches specified architecture
+func (p *Package) MatchesArchitecture(arch string) bool {
+	if p.Architecture == "all" {
+		return true
+	}
+
+	return p.Architecture == arch
+}
+
 // Stanza creates original stanza from package
 func (p *Package) Stanza() (result Stanza) {
 	result = p.Extra.Copy()
@@ -140,6 +156,10 @@ func (p *Package) Stanza() (result Stanza) {
 	result["Filename"] = p.Files[0].Filename
 	result["Architecture"] = p.Architecture
 	result["Source"] = p.Source
+
+	if p.Provides != "" {
+		result["Provides"] = p.Provides
+	}
 
 	if p.Files[0].Checksums.MD5 != "" {
 		result["MD5sum"] = p.Files[0].Checksums.MD5
@@ -185,7 +205,7 @@ func (p *Package) Equals(p2 *Package) bool {
 		p.Architecture == p2.Architecture && utils.StrSlicesEqual(p.Depends, p2.Depends) &&
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
 		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
-		p.Source == p2.Source
+		p.Source == p2.Source && p.Provides == p2.Provides
 }
 
 // LinkFromPool links package file from pool to dist's pool location

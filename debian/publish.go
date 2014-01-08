@@ -97,7 +97,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 		bufWriter := bufio.NewWriter(packagesFile)
 
 		err = list.ForEach(func(pkg *Package) error {
-			if pkg.Architecture == arch || pkg.Architecture == "all" {
+			if pkg.MatchesArchitecture(arch) {
 				err = pkg.LinkFromPool(repo, p.Prefix, p.Component)
 				if err != nil {
 					return err
