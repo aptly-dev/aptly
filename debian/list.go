@@ -66,8 +66,8 @@ const (
 // VerifyDependencies looks for missing dependencies in package list.
 //
 // Analysis would be peformed for each architecture
-func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageIndexedList) ([]string, error) {
-	missing := make([]string, 0, 100)
+func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageIndexedList) ([]Dependency, error) {
+	missing := make([]Dependency, 0, 100)
 
 	for _, arch := range architectures {
 		for _, p := range l.packages {
@@ -76,13 +76,15 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 			}
 
 			for _, dep := range p.GetDependencies(options) {
-				pkg, relation, version, err := parseDependency(dep)
+				dep, err := parseDependency(dep)
 				if err != nil {
-					return nil, fmt.Errorf("unable to process pkg %s: %s", p, err)
+					return nil, fmt.Errorf("unable to process package %s: %s", p, err)
 				}
 
-				if sources.Search(arch, pkg, relation, version) != nil {
-					missing = append(missing, fmt.Sprintf("%s [%s]", formatDependency(pkg, relation, version), arch))
+				dep.Architecture = arch
+
+				if sources.Search(dep) != nil {
+					missing = append(missing, dep)
 				}
 			}
 		}
@@ -151,7 +153,7 @@ func (l *PackageIndexedList) Append(pl *PackageList) {
 }
 
 // Search searches package index for specified package
-func (l *PackageIndexedList) Search(arch string, pkg string, relation int, version string) *Package {
+func (l *PackageIndexedList) Search(dep Dependency) *Package {
 	return nil
 }
 

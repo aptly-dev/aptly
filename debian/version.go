@@ -180,11 +180,19 @@ const (
 	VersionGreater
 )
 
+// Dependency is a parsed version of Debian dependency to package
+type Dependency struct {
+	Pkg          string
+	Relation     int
+	Version      string
+	Architecture string
+}
+
 // parseDependency parses dependency in format "pkg (>= 1.35)" into parts
-func parseDependency(dep string) (pkg string, relation int, version string, err error) {
+func parseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {
-		pkg = strings.TrimSpace(dep)
-		relation = VersionDontCare
+		d.Pkg = strings.TrimSpace(dep)
+		d.Relation = VersionDontCare
 		return
 	}
 
@@ -194,27 +202,27 @@ func parseDependency(dep string) (pkg string, relation int, version string, err 
 		return
 	}
 
-	pkg = strings.TrimSpace(dep[0:i])
+	d.Pkg = strings.TrimSpace(dep[0:i])
 
 	rel := dep[i+1 : i+2]
 	if dep[i+2] == '>' || dep[i+2] == '<' || dep[i+2] == '=' {
 		rel += dep[i+2 : i+3]
-		version = strings.TrimSpace(dep[i+3 : len(dep)-1])
+		d.Version = strings.TrimSpace(dep[i+3 : len(dep)-1])
 	} else {
-		version = strings.TrimSpace(dep[i+2 : len(dep)-1])
+		d.Version = strings.TrimSpace(dep[i+2 : len(dep)-1])
 	}
 
 	switch rel {
 	case "<", "<=":
-		relation = VersionLessOrEqual
+		d.Relation = VersionLessOrEqual
 	case ">", ">=":
-		relation = VersionGreaterOrEqual
+		d.Relation = VersionGreaterOrEqual
 	case "<<":
-		relation = VersionLess
+		d.Relation = VersionLess
 	case ">>":
-		relation = VersionGreater
+		d.Relation = VersionGreater
 	case "=":
-		relation = VersionEqual
+		d.Relation = VersionEqual
 	default:
 		err = fmt.Errorf("relation unknown: %s", rel)
 	}
