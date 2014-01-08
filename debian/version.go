@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -167,4 +168,56 @@ func compareVersionPart(part1, part2 string) int {
 		}
 	}
 	return 0
+}
+
+// Version relations
+const (
+	VersionDontCare = iota
+	VersionLess
+	VersionLessOrEqual
+	VersionEqual
+	VersionGreaterOrEqual
+	VersionGreater
+)
+
+// parseDependency parses dependency in format "pkg (>= 1.35)" into parts
+func parseDependency(dep string) (pkg string, relation int, version string, err error) {
+	if !strings.HasSuffix(dep, ")") {
+		pkg = strings.TrimSpace(dep)
+		relation = VersionDontCare
+		return
+	}
+
+	i := strings.Index(dep, "(")
+	if i == -1 {
+		err = fmt.Errorf("unable to parse dependency: %s", dep)
+		return
+	}
+
+	pkg = strings.TrimSpace(dep[0:i])
+
+	rel := dep[i+1 : i+2]
+	if dep[i+2] == '>' || dep[i+2] == '<' || dep[i+2] == '=' {
+		rel += dep[i+2 : i+3]
+		version = strings.TrimSpace(dep[i+3 : len(dep)-1])
+	} else {
+		version = strings.TrimSpace(dep[i+2 : len(dep)-1])
+	}
+
+	switch rel {
+	case "<", "<=":
+		relation = VersionLessOrEqual
+	case ">", ">=":
+		relation = VersionGreaterOrEqual
+	case "<<":
+		relation = VersionLess
+	case ">>":
+		relation = VersionGreater
+	case "=":
+		relation = VersionEqual
+	default:
+		err = fmt.Errorf("relation unknown: %s", rel)
+	}
+
+	return
 }

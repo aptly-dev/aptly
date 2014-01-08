@@ -97,3 +97,59 @@ func (s *VersionSuite) TestCompareVersions(c *C) {
 	c.Check(CompareVersions("1.0~beta1~svn1245", "1.0~beta1"), Equals, -1)
 	c.Check(CompareVersions("1.0~beta1", "1.0"), Equals, -1)
 }
+
+func (s *VersionSuite) TestParseDependency(c *C) {
+	p, r, v, e := parseDependency("dpkg (>= 1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionGreaterOrEqual)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg(>>1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionGreater)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg (> 1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionGreaterOrEqual)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg (< 1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionLessOrEqual)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg (= 1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionEqual)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg (<< 1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionLess)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg(>>1.6)")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionGreater)
+	c.Check(v, Equals, "1.6")
+
+	p, r, v, e = parseDependency("dpkg ")
+	c.Check(e, IsNil)
+	c.Check(p, Equals, "dpkg")
+	c.Check(r, Equals, VersionDontCare)
+	c.Check(v, Equals, "")
+
+	p, r, v, e = parseDependency("dpkg(==1.6)")
+	c.Check(e, ErrorMatches, "relation unknown.*")
+
+	p, r, v, e = parseDependency("dpkg==1.6)")
+	c.Check(e, ErrorMatches, "unable to parse.*")
+}
