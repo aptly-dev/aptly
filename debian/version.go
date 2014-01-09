@@ -193,6 +193,26 @@ func (d *Dependency) Hash() string {
 	return fmt.Sprintf("%s:%s:%d:%s", d.Architecture, d.Pkg, d.Relation, d.Version)
 }
 
+// String produces human-readable representation
+func (d *Dependency) String() string {
+	var rel string
+	switch d.Relation {
+	case VersionEqual:
+		rel = "="
+	case VersionGreater:
+		rel = ">>"
+	case VersionLess:
+		rel = "<<"
+	case VersionGreaterOrEqual:
+		rel = ">="
+	case VersionLessOrEqual:
+		rel = "<="
+	case VersionDontCare:
+		return fmt.Sprintf("%s [%s]", d.Pkg, d.Architecture)
+	}
+	return fmt.Sprintf("%s (%s %s) [%s]", d.Pkg, rel, d.Version, d.Architecture)
+}
+
 // parseDependency parses dependency in format "pkg (>= 1.35)" into parts
 func parseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {

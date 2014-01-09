@@ -153,3 +153,13 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	d, e = parseDependency("dpkg==1.6)")
 	c.Check(e, ErrorMatches, "unable to parse.*")
 }
+
+func (s *VersionSuite) TestDependencyString(c *C) {
+	d, _ := parseDependency("dpkg(>>1.6)")
+	d.Architecture = "i386"
+	c.Check(d.String(), Equals, "dpkg (>> 1.6) [i386]")
+
+	d, _ = parseDependency("dpkg")
+	d.Architecture = "i386"
+	c.Check(d.String(), Equals, "dpkg [i386]")
+}
