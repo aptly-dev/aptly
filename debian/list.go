@@ -65,11 +65,13 @@ const (
 
 // VerifyDependencies looks for missing dependencies in package list.
 //
-// Analysis would be peformed for each architecture
+// Analysis would be peformed for each architecture, in specified sources
 func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageIndexedList) ([]Dependency, error) {
-	missing := make([]Dependency, 0, 100)
+	missing := make([]Dependency, 0, 128)
 
 	for _, arch := range architectures {
+		cache := make(map[string]bool, 2048)
+
 		for _, p := range l.packages {
 			if !p.MatchesArchitecture(arch) {
 				continue
@@ -83,8 +85,17 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 
 				dep.Architecture = arch
 
-				if sources.Search(dep) != nil {
+				hash := dep.Hash()
+				_, ok := cache[hash]
+				if ok {
+					continue
+				}
+
+				if sources.Search(dep) == nil {
 					missing = append(missing, dep)
+					cache[hash] = false
+				} else {
+					cache[hash] = true
 				}
 			}
 		}
@@ -154,6 +165,49 @@ func (l *PackageIndexedList) Append(pl *PackageList) {
 
 // Search searches package index for specified package
 func (l *PackageIndexedList) Search(dep Dependency) *Package {
+	if dep.Relation == VersionDontCare {
+		for _, p := range l.providesList[dep.Pkg] {
+			if p.MatchesArchitecture(dep.Architecture) {
+				return p
+			}
+		}
+	}
+
+	i := sort.Search(len(l.packages), func(j int) bool { return l.packages[j].Name >= dep.Pkg })
+
+	for i < len(l.packages) && l.packages[i].Name == dep.Pkg {
+		p := l.packages[i]
+		if p.MatchesArchitecture(dep.Architecture) {
+			if dep.Relation == VersionDontCare {
+				return p
+			}
+
+			r := CompareVersions(p.Version, dep.Version)
+			switch dep.Relation {
+			case VersionEqual:
+				if r == 0 {
+					return p
+				}
+			case VersionLess:
+				if r < 0 {
+					return p
+				}
+			case VersionGreater:
+				if r > 0 {
+					return p
+				}
+			case VersionLessOrEqual:
+				if r <= 0 {
+					return p
+				}
+			case VersionGreaterOrEqual:
+				if r >= 0 {
+					return p
+				}
+			}
+		}
+		i++
+	}
 	return nil
 }
 

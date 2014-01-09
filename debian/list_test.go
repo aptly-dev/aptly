@@ -119,3 +119,79 @@ func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
 
 	c.Check(err, Equals, e)
 }
+
+type PackageIndexedListSuite struct {
+	packages []*Package
+	pl       *PackageList
+	list     *PackageIndexedList
+}
+
+var _ = Suite(&PackageIndexedListSuite{})
+
+func (s *PackageIndexedListSuite) SetUpTest(c *C) {
+	s.pl = NewPackageList()
+	s.packages = []*Package{
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},
+		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
+		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: "mail-agent"},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
+		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
+		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64"},
+	}
+	for _, p := range s.packages {
+		s.pl.Add(p)
+	}
+
+	s.list = NewPackageIndexedList()
+	s.list.Append(s.pl)
+	s.list.PrepareIndex()
+}
+
+func (s *PackageIndexedListSuite) TestIndex(c *C) {
+	c.Check(len(s.list.providesList), Equals, 1)
+	c.Check(len(s.list.providesList["mail-agent"]), Equals, 1)
+	c.Check(s.list.packages[0], Equals, s.packages[8])
+}
+
+func (s *PackageIndexedListSuite) TestSearch(c *C) {
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "mail-agent"}), Equals, s.packages[4])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "puppy"}), IsNil)
+
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp1"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp2"}), IsNil)
+
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1~~"}), IsNil)
+
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~bp1"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~~"}), IsNil)
+
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.0"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.2"}), IsNil)
+
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}), Equals, s.packages[3])
+	c.Check(s.list.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}), IsNil)
+}
+
+func (s *PackageIndexedListSuite) TestVerifyDependencies(c *C) {
+	missing, err := s.pl.VerifyDependencies(0, []string{"i386"}, s.list)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{})
+
+	missing, err = s.pl.VerifyDependencies(0, []string{"i386", "amd64"}, s.list)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
+
+	_, err = s.pl.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.list)
+
+	c.Check(err, ErrorMatches, "unable to process package app-1.0_s390:.*")
+}

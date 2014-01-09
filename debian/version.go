@@ -188,6 +188,11 @@ type Dependency struct {
 	Architecture string
 }
 
+// Hash calculates some predefined unique ID of Dependency
+func (d *Dependency) Hash() string {
+	return fmt.Sprintf("%s:%s:%d:%s", d.Architecture, d.Pkg, d.Relation, d.Version)
+}
+
 // parseDependency parses dependency in format "pkg (>= 1.35)" into parts
 func parseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {
