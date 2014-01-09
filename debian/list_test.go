@@ -2,7 +2,9 @@ package debian
 
 import (
 	"errors"
+	"github.com/smira/aptly/database"
 	. "launchpad.net/gocheck"
+	"sort"
 )
 
 type PackageListSuite struct {
@@ -63,6 +65,31 @@ func (s *PackageListSuite) TestForeach(c *C) {
 
 	c.Check(err, Equals, e)
 
+}
+
+func (s *PackageListSuite) TestNewPackageListFromRefList(c *C) {
+	db, _ := database.OpenDB(c.MkDir())
+	coll := NewPackageCollection(db)
+	coll.Update(s.p1)
+	coll.Update(s.p3)
+
+	s.list.Add(s.p1)
+	s.list.Add(s.p3)
+	s.list.Add(s.p5)
+	s.list.Add(s.p6)
+
+	reflist := NewPackageRefListFromPackageList(s.list)
+
+	_, err := NewPackageListFromRefList(reflist, coll)
+	c.Assert(err, ErrorMatches, "unable to load package with key.*")
+
+	coll.Update(s.p5)
+	coll.Update(s.p6)
+
+	list, err := NewPackageListFromRefList(reflist, coll)
+	c.Assert(err, IsNil)
+	c.Check(list.Len(), Equals, 4)
+	c.Check(list.Add(s.p4), ErrorMatches, "conflict in package.*")
 }
 
 func (s *PackageListSuite) TestNewPackageRefList(c *C) {
@@ -194,4 +221,10 @@ func (s *PackageIndexedListSuite) TestVerifyDependencies(c *C) {
 	_, err = s.pl.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.list)
 
 	c.Check(err, ErrorMatches, "unable to process package app-1.0_s390:.*")
+}
+
+func (s *PackageIndexedListSuite) TestArchitectures(c *C) {
+	archs := s.pl.Architectures()
+	sort.Strings(archs)
+	c.Check(archs, DeepEquals, []string{"amd64", "arm", "i386", "s390"})
 }

@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"fmt"
+	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"sort"
 )
@@ -18,6 +19,25 @@ type PackageList struct {
 // NewPackageList creates empty package list
 func NewPackageList() *PackageList {
 	return &PackageList{packages: make(map[string]*Package, 1000)}
+}
+
+// NewPackageListFromRefList loads packages list from PackageRefList
+func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageCollection) (*PackageList, error) {
+	result := &PackageList{packages: make(map[string]*Package, reflist.Len())}
+
+	err := reflist.ForEach(func(key []byte) error {
+		p, err := collection.ByKey(key)
+		if err != nil {
+			return fmt.Errorf("unable to load package with key %s: %s", key, err)
+		}
+		return result.Add(p)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // Add appends package to package list, additionally checking for uniqueness
@@ -49,6 +69,17 @@ func (l *PackageList) ForEach(handler func(*Package) error) error {
 // Len returns number of packages in the list
 func (l *PackageList) Len() int {
 	return len(l.packages)
+}
+
+// Architectures returns list of architectures present in packages
+func (l *PackageList) Architectures() (result []string) {
+	result = make([]string, 0, 10)
+	for _, pkg := range l.packages {
+		if pkg.Architecture != "all" && !utils.StrSliceHasItem(result, pkg.Architecture) {
+			result = append(result, pkg.Architecture)
+		}
+	}
+	return
 }
 
 // Dependency options

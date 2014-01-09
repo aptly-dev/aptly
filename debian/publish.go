@@ -66,13 +66,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	}
 
 	if p.Architectures == nil {
-		p.Architectures = make([]string, 0, 10)
-		list.ForEach(func(pkg *Package) error {
-			if pkg.Architecture != "all" && !utils.StrSliceHasItem(p.Architectures, pkg.Architecture) {
-				p.Architectures = append(p.Architectures, pkg.Architecture)
-			}
-			return nil
-		})
+		p.Architectures = list.Architectures()
 	}
 
 	if len(p.Architectures) == 0 {
