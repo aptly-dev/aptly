@@ -48,15 +48,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	}
 
 	// Load all packages
-	list := NewPackageList()
-
-	err = p.snapshot.RefList().ForEach(func(key []byte) error {
-		pkg, err := packageCollection.ByKey(key)
-		if err != nil {
-			return err
-		}
-		return list.Add(pkg)
-	})
+	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
