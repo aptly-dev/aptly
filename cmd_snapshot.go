@@ -5,6 +5,7 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
+	"strings"
 )
 
 func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
@@ -107,6 +108,76 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) < 1 {
+		cmd.Usage()
+		return err
+	}
+
+	snapshotCollection := debian.NewSnapshotCollection(context.database)
+	packageCollection := debian.NewPackageCollection(context.database)
+
+	snapshots := make([]*debian.Snapshot, len(args))
+	for i := range snapshots {
+		snapshots[i], err = snapshotCollection.ByName(args[i])
+		if err != nil {
+			return fmt.Errorf("unable to verify: %s", err)
+		}
+
+		err = snapshotCollection.LoadComplete(snapshots[i])
+		if err != nil {
+			return fmt.Errorf("unable to verify: %s", err)
+		}
+	}
+
+	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), packageCollection)
+	if err != nil {
+		fmt.Errorf("unable to load packages: %s", err)
+	}
+
+	packageIndexedList := debian.NewPackageIndexedList()
+	packageIndexedList.Append(packageList)
+
+	for i := 1; i < len(snapshots); i++ {
+		pL, err := debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection)
+		if err != nil {
+			fmt.Errorf("unable to load packages: %s", err)
+		}
+
+		packageIndexedList.Append(pL)
+	}
+
+	var architecturesList []string
+
+	architectures := cmd.Flag.Lookup("architectures").Value.String()
+	if architectures != "" {
+		architecturesList = strings.Split(architectures, ",")
+	} else {
+		architecturesList = packageList.Architectures()
+	}
+
+	if len(architecturesList) == 0 {
+		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
+	}
+
+	missing, err := packageList.VerifyDependencies(0, architecturesList, packageIndexedList)
+	if err != nil {
+		return fmt.Errorf("unable to verify dependencies: %s", err)
+	}
+
+	if len(missing) == 0 {
+		fmt.Printf("All dependencies are satisfied.\n")
+	} else {
+		fmt.Printf("Missing dependencies (%d):\n", len(missing))
+		for _, dep := range missing {
+			fmt.Printf("  %s\n", dep.String())
+		}
+	}
+
+	return err
+}
+
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
@@ -159,6 +230,26 @@ ex:
 	return cmd
 }
 
+func makeCmdSnapshotVerify() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlySnapshotVerify,
+		UsageLine: "verify",
+		Short:     "verifies that dependencies are satisfied in snapshot",
+		Long: `
+Verify does depenency resolution in snapshot, possibly using additional snapshots as dependency sources.
+All unsatisfied dependencies are returned.
+
+ex:
+  $ aptly snapshot verify <name> [<source> ...]
+`,
+		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),
+	}
+
+	cmd.Flag.String("architectures", "", "list of architectures to publish (comma-separated)")
+
+	return cmd
+}
+
 func makeCmdSnapshot() *commander.Command {
 	return &commander.Command{
 		UsageLine: "snapshot",
@@ -167,6 +258,7 @@ func makeCmdSnapshot() *commander.Command {
 			makeCmdSnapshotCreate(),
 			makeCmdSnapshotList(),
 			makeCmdSnapshotShow(),
+			makeCmdSnapshotVerify(),
 			//makeCmdSnapshotDestroy(),
 		},
 		Flag: *flag.NewFlagSet("aptly-snapshot", flag.ExitOnError),
