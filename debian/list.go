@@ -109,24 +109,36 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 			}
 
 			for _, dep := range p.GetDependencies(options) {
-				dep, err := parseDependency(dep)
+				variants, err := parseDependencyVariants(dep)
 				if err != nil {
 					return nil, fmt.Errorf("unable to process package %s: %s", p, err)
 				}
 
-				dep.Architecture = arch
+				variantsMissing := make([]Dependency, 0, len(variants))
 
-				hash := dep.Hash()
-				_, ok := cache[hash]
-				if ok {
-					continue
+				for _, dep := range variants {
+					dep.Architecture = arch
+
+					hash := dep.Hash()
+					_, ok := cache[hash]
+					if ok {
+						continue
+					}
+
+					if sources.Search(dep) == nil {
+						variantsMissing = append(variantsMissing, dep)
+						cache[hash] = false
+					} else {
+						cache[hash] = true
+					}
 				}
 
-				if sources.Search(dep) == nil {
-					missing = append(missing, dep)
-					cache[hash] = false
+				if options&DepFollowAllVariants == DepFollowAllVariants {
+					missing = append(missing, variantsMissing...)
 				} else {
-					cache[hash] = true
+					if len(variantsMissing) == len(variants) {
+						missing = append(missing, variantsMissing...)
+					}
 				}
 			}
 		}

@@ -164,10 +164,12 @@ func (s *PackageIndexedListSuite) SetUpTest(c *C) {
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: "mail-agent"},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}},
 		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}},
 		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64"},
+		&Package{Name: "libx", Version: "1.5", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm"},
 	}
 	for _, p := range s.packages {
 		s.pl.Add(p)
@@ -217,6 +219,17 @@ func (s *PackageIndexedListSuite) TestVerifyDependencies(c *C) {
 
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
+
+	missing, err = s.pl.VerifyDependencies(0, []string{"arm"}, s.list)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{})
+
+	missing, err = s.pl.VerifyDependencies(DepFollowAllVariants, []string{"arm"}, s.list)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "arm"},
+		Dependency{Pkg: "mail-agent", Relation: VersionDontCare, Version: "", Architecture: "arm"}})
 
 	_, err = s.pl.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.list)
 

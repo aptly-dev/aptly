@@ -154,6 +154,27 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	c.Check(e, ErrorMatches, "unable to parse.*")
 }
 
+func (s *VersionSuite) TestParseDependencyVariants(c *C) {
+	l, e := parseDependencyVariants("dpkg (>= 1.6)")
+	c.Check(e, IsNil)
+	c.Check(l, HasLen, 1)
+	c.Check(l[0].Pkg, Equals, "dpkg")
+	c.Check(l[0].Relation, Equals, VersionGreaterOrEqual)
+	c.Check(l[0].Version, Equals, "1.6")
+
+	l, e = parseDependencyVariants("dpkg (>= 1.6) | mailer-agent")
+	c.Check(e, IsNil)
+	c.Check(l, HasLen, 2)
+	c.Check(l[0].Pkg, Equals, "dpkg")
+	c.Check(l[0].Relation, Equals, VersionGreaterOrEqual)
+	c.Check(l[0].Version, Equals, "1.6")
+	c.Check(l[1].Pkg, Equals, "mailer-agent")
+	c.Check(l[1].Relation, Equals, VersionDontCare)
+
+	_, e = parseDependencyVariants("dpkg(==1.6)")
+	c.Check(e, ErrorMatches, "relation unknown.*")
+}
+
 func (s *VersionSuite) TestDependencyString(c *C) {
 	d, _ := parseDependency("dpkg(>>1.6)")
 	d.Architecture = "i386"

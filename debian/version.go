@@ -213,6 +213,21 @@ func (d *Dependency) String() string {
 	return fmt.Sprintf("%s (%s %s) [%s]", d.Pkg, rel, d.Version, d.Architecture)
 }
 
+// parseDependencyVariants parses dependencies in format "pkg (>= 1.35) | other-package"
+func parseDependencyVariants(variants string) (l []Dependency, err error) {
+	parts := strings.Split(variants, "|")
+	l = make([]Dependency, len(parts))
+
+	for i, part := range parts {
+		l[i], err = parseDependency(strings.TrimSpace(part))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return
+}
+
 // parseDependency parses dependency in format "pkg (>= 1.35)" into parts
 func parseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {
