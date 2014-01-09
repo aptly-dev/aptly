@@ -188,8 +188,8 @@ func (l *PackageIndexedList) PrepareIndex() {
 
 	l.providesList = make(map[string][]*Package, 128)
 	for _, p := range l.packages {
-		if p.Provides != "" {
-			l.providesList[p.Provides] = append(l.providesList[p.Provides], p)
+		for _, provides := range p.Provides {
+			l.providesList[provides] = append(l.providesList[provides], p)
 		}
 	}
 }

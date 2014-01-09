@@ -52,7 +52,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.Name, Equals, "alien-arena-common")
 	c.Check(p.Version, Equals, "7.40-2")
 	c.Check(p.Architecture, Equals, "i386")
-	c.Check(p.Provides, Equals, "")
+	c.Check(p.Provides, DeepEquals, []string(nil))
 	c.Check(p.Files, HasLen, 1)
 	c.Check(p.Files[0].Filename, Equals, "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(187518))
@@ -65,7 +65,7 @@ func (s *PackageSuite) TestWithProvides(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
 	c.Check(p.Name, Equals, "alien-arena-common")
-	c.Check(p.Provides, Equals, "arena")
+	c.Check(p.Provides, DeepEquals, []string{"arena"})
 
 	st := p.Stanza()
 	c.Check(st["Provides"], Equals, "arena")

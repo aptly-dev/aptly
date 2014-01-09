@@ -162,7 +162,7 @@ func (s *PackageIndexedListSuite) SetUpTest(c *C) {
 		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},
 		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", PreDepends: []string{"dpkg (>= 1.6)"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: "mail-agent"},
+		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: []string{"mail-agent"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}},
 		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},

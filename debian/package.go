@@ -41,7 +41,7 @@ type Package struct {
 	Version      string
 	Architecture string
 	Source       string
-	Provides     string
+	Provides     []string
 	// Various dependencies
 	Depends    []string
 	PreDepends []string
@@ -75,7 +75,6 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Architecture: input["Architecture"],
 		Source:       input["Source"],
-		Provides:     input["Provides"],
 		Files:        make([]PackageFile, 0, 1),
 	}
 
@@ -83,7 +82,6 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	delete(input, "Version")
 	delete(input, "Architecture")
 	delete(input, "Source")
-	delete(input, "Provides")
 
 	filesize, _ := strconv.ParseInt(input["Size"], 10, 64)
 
@@ -107,6 +105,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	result.PreDepends = parseDependencies(input, "Pre-Depends")
 	result.Suggests = parseDependencies(input, "Suggests")
 	result.Recommends = parseDependencies(input, "Recommends")
+	result.Provides = parseDependencies(input, "Provides")
 
 	result.Extra = input
 
@@ -174,10 +173,6 @@ func (p *Package) Stanza() (result Stanza) {
 	result["Architecture"] = p.Architecture
 	result["Source"] = p.Source
 
-	if p.Provides != "" {
-		result["Provides"] = p.Provides
-	}
-
 	if p.Files[0].Checksums.MD5 != "" {
 		result["MD5sum"] = p.Files[0].Checksums.MD5
 	}
@@ -199,6 +194,9 @@ func (p *Package) Stanza() (result Stanza) {
 	}
 	if p.Recommends != nil {
 		result["Recommends"] = strings.Join(p.Recommends, ", ")
+	}
+	if p.Provides != nil {
+		result["Provides"] = strings.Join(p.Provides, ", ")
 	}
 
 	result["Size"] = fmt.Sprintf("%d", p.Files[0].Checksums.Size)
@@ -222,7 +220,7 @@ func (p *Package) Equals(p2 *Package) bool {
 		p.Architecture == p2.Architecture && utils.StrSlicesEqual(p.Depends, p2.Depends) &&
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
 		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
-		p.Source == p2.Source && p.Provides == p2.Provides
+		p.Source == p2.Source && utils.StrSlicesEqual(p.Provides, p2.Provides)
 }
 
 // LinkFromPool links package file from pool to dist's pool location
