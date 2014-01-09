@@ -148,6 +148,8 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		packageIndexedList.Append(pL)
 	}
 
+	packageIndexedList.PrepareIndex()
+
 	var architecturesList []string
 
 	architectures := cmd.Flag.Lookup("architectures").Value.String()
