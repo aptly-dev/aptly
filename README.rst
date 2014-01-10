@@ -293,6 +293,7 @@ Params:
 
 Example::
 
+  $ aptly snapshot show back
   Name: back
   Created At: 2013-12-24 15:39:29 MSK
   Description: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
@@ -301,6 +302,38 @@ Example::
     altos-1.0.3~bpo60+1_i386
     amanda-client-1:3.3.1-3~bpo60+1_amd64
     ...
+
+``aptly snapshot verify``
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Verifies dependencies between packages in snapshot and reports unsatisfied dependencies. Command might take
+additional as dependency sources
+
+Usage::
+
+  $ aptly snapshot verify <name> [<source> ...]
+
+Params:
+
+* ``name`` is snapshot name which has been given during snapshot creation
+* ``source`` is a options list of snapshot names which would be used as additional sources
+
+Options:
+
+* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
+  snapshot contents
+
+Example::
+
+  $ aptly snapshot verify snap-deb2-main
+  Missing dependencies (7):
+    oracle-instantclient11.2-basic [i386]
+    scsh-0.6 [amd64]
+    fenix [amd64]
+    fenix-plugins-system [amd64]
+    mozart (>= 1.4.0) [amd64]
+    scsh-0.6 (>= 0.6.6) [amd64]
+    oracle-instantclient11.2-basic [amd64]
 
 Command ``publish``
 ~~~~~~~~~~~~~~~~~~~
