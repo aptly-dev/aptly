@@ -53,16 +53,21 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("List of snapshots:\n")
-
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
-		fmt.Printf(" * %s\n", snapshot)
-		return nil
-	})
 
-	fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
+	if snapshotCollection.Len() > 0 {
+		fmt.Printf("List of snapshots:\n")
+		snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
+			fmt.Printf(" * %s\n", snapshot)
+			return nil
+		})
+
+		fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
+	} else {
+		fmt.Printf("\nNo snapshots found, create one with `aptly snapshot create...`.\n")
+	}
 	return err
+
 }
 
 func aptlySnapshotShow(cmd *commander.Command, args []string) error {

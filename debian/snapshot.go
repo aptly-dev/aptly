@@ -172,3 +172,9 @@ func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) err
 	}
 	return err
 }
+
+// Len returns number of snapshots in collection
+// ForEach runs method for each snapshot
+func (collection *SnapshotCollection) Len() int {
+	return len(collection.list)
+}

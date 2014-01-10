@@ -358,3 +358,8 @@ func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo) error)
 	}
 	return err
 }
+
+// Len returns number of remote repos
+func (collection *RemoteRepoCollection) Len() int {
+	return len(collection.list)
+}

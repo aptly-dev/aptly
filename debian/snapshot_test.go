@@ -112,7 +112,7 @@ func (s *SnapshotCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(snapshot.NumPackages(), Equals, 3)
 }
 
-func (s *SnapshotCollectionSuite) TestForEach(c *C) {
+func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
 	s.collection.Add(s.snapshot1)
 	s.collection.Add(s.snapshot2)
 
@@ -123,6 +123,8 @@ func (s *SnapshotCollectionSuite) TestForEach(c *C) {
 	})
 	c.Assert(count, Equals, 2)
 	c.Assert(err, IsNil)
+
+	c.Check(s.collection.Len(), Equals, 2)
 
 	e := errors.New("d")
 	err = s.collection.ForEach(func(*Snapshot) error {

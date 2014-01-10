@@ -219,7 +219,7 @@ func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.NumPackages(), Equals, 3)
 }
 
-func (s *RemoteRepoCollectionSuite) TestForEach(c *C) {
+func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
 	s.collection.Add(repo)
 
@@ -230,6 +230,8 @@ func (s *RemoteRepoCollectionSuite) TestForEach(c *C) {
 	})
 	c.Assert(count, Equals, 1)
 	c.Assert(err, IsNil)
+
+	c.Check(s.collection.Len(), Equals, 1)
 
 	e := errors.New("c")
 
