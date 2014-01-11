@@ -8,13 +8,39 @@ import (
 	"sort"
 )
 
+// Dependency options
+const (
+	// DepFollowSource pulls source packages when required
+	DepFollowSource = 1 << iota
+	// DepFollowSuggests pulls from suggests
+	DepFollowSuggests
+	// DepFollowRecommends pulls from recommends
+	DepFollowRecommends
+	// DepFollowAllVariants follows all variants if depends on "a | b"
+	DepFollowAllVariants
+)
+
 // PackageList is list of unique (by key) packages
 //
 // It could be seen as repo snapshot, repo contents, result of filtering,
 // merge, etc.
+//
+// If indexed, PackageList starts supporting searching
 type PackageList struct {
+	// Straight list of packages as map
 	packages map[string]*Package
+	// Has index been prepared?
+	indexed bool
+	// Indexed list of packages, sorted by name internally
+	packagesIndex []*Package
+	// Map of packages for each virtual package (provides)
+	providesIndex map[string][]*Package
 }
+
+// Verify interface
+var (
+	_ sort.Interface = &PackageList{}
+)
 
 // NewPackageList creates empty package list
 func NewPackageList() *PackageList {
@@ -51,6 +77,19 @@ func (l *PackageList) Add(p *Package) error {
 		return nil
 	}
 	l.packages[key] = p
+
+	if l.indexed {
+		for _, provides := range p.Provides {
+			l.providesIndex[provides] = append(l.providesIndex[provides], p)
+		}
+
+		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= p.Name })
+
+		// insert p into l.packagesIndex in position i
+		l.packagesIndex = append(l.packagesIndex, nil)
+		copy(l.packagesIndex[i+1:], l.packagesIndex[i:])
+		l.packagesIndex[i] = p
+	}
 	return nil
 }
 
@@ -71,6 +110,54 @@ func (l *PackageList) Len() int {
 	return len(l.packages)
 }
 
+// Append adds content from one package list to another
+func (l *PackageList) Append(pl *PackageList) error {
+	if l.indexed {
+		panic("Append not supported when indexed")
+	}
+	for k, p := range pl.packages {
+		existing, ok := l.packages[k]
+		if ok {
+			if !existing.Equals(p) {
+				return fmt.Errorf("conflict in package %s: %#v != %#v", p, existing, p)
+			}
+		} else {
+			l.packages[k] = p
+		}
+	}
+
+	return nil
+}
+
+// Remove removes package from the list, and updates index when required
+func (l *PackageList) Remove(p *Package) {
+	delete(l.packages, string(p.Key()))
+	if l.indexed {
+		for _, provides := range p.Provides {
+			for i, pkg := range l.providesIndex[provides] {
+				if pkg.Equals(p) {
+					// remove l.ProvidesIndex[provides][i] w/o preserving order
+					l.providesIndex[provides][len(l.providesIndex[provides])-1], l.providesIndex[provides][i], l.providesIndex[provides] =
+						nil, l.providesIndex[provides][len(l.providesIndex[provides])-1], l.providesIndex[provides][:len(l.providesIndex[provides])-1]
+					break
+				}
+			}
+		}
+
+		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= p.Name })
+		for i < len(l.packagesIndex) && l.packagesIndex[i].Name == p.Name {
+			if l.packagesIndex[i].Equals(p) {
+				// remove l.packagesIndex[i] preserving order
+				copy(l.packagesIndex[i:], l.packagesIndex[i+1:])
+				l.packagesIndex[len(l.packagesIndex)-1] = nil
+				l.packagesIndex = l.packagesIndex[:len(l.packagesIndex)-1]
+				break
+			}
+			i++
+		}
+	}
+}
+
 // Architectures returns list of architectures present in packages
 func (l *PackageList) Architectures() (result []string) {
 	result = make([]string, 0, 10)
@@ -82,22 +169,10 @@ func (l *PackageList) Architectures() (result []string) {
 	return
 }
 
-// Dependency options
-const (
-	// DepFollowSource pulls source packages when required
-	DepFollowSource = 1 << iota
-	// DepFollowSuggests pulls from suggests
-	DepFollowSuggests
-	// DepFollowRecommends pulls from recommends
-	DepFollowRecommends
-	// DepFollowAllVariants follows all variants if depends on "a | b"
-	DepFollowAllVariants
-)
-
 // VerifyDependencies looks for missing dependencies in package list.
 //
 // Analysis would be peformed for each architecture, in specified sources
-func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageIndexedList) ([]Dependency, error) {
+func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList) ([]Dependency, error) {
 	missing := make([]Dependency, 0, 128)
 
 	for _, arch := range architectures {
@@ -109,7 +184,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 			}
 
 			for _, dep := range p.GetDependencies(options) {
-				variants, err := parseDependencyVariants(dep)
+				variants, err := ParseDependencyVariants(dep)
 				if err != nil {
 					return nil, fmt.Errorf("unable to process package %s: %s", p, err)
 				}
@@ -147,79 +222,54 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 	return missing, nil
 }
 
-// PackageIndexedList is a list of packages optimized for satisfying searches
-type PackageIndexedList struct {
-	// List of packages, sorted by name internally
-	packages []*Package
-	// Map of packages for each virtual package
-	providesList map[string][]*Package
+// Swap swaps two packages in index
+func (l *PackageList) Swap(i, j int) {
+	l.packagesIndex[i], l.packagesIndex[j] = l.packagesIndex[j], l.packagesIndex[i]
 }
 
-// Verify interface
-var (
-	_ sort.Interface = &PackageIndexedList{}
-)
-
-// NewPackageIndexedList creates empty PackageIndexedList
-func NewPackageIndexedList() *PackageIndexedList {
-	return &PackageIndexedList{
-		packages: make([]*Package, 0, 1024),
-	}
-}
-
-// Len returns number of refs
-func (l *PackageIndexedList) Len() int {
-	return len(l.packages)
-}
-
-// Swap swaps two refs
-func (l *PackageIndexedList) Swap(i, j int) {
-	l.packages[i], l.packages[j] = l.packages[j], l.packages[i]
-}
-
-// Compare compares two refs in lexographical order
-func (l *PackageIndexedList) Less(i, j int) bool {
-	return l.packages[i].Name < l.packages[j].Name
+// Compare compares two names in lexographical order
+func (l *PackageList) Less(i, j int) bool {
+	return l.packagesIndex[i].Name < l.packagesIndex[j].Name
 }
 
 // PrepareIndex prepares list for indexing
-func (l *PackageIndexedList) PrepareIndex() {
-	sort.Sort(l)
+func (l *PackageList) PrepareIndex() {
+	l.packagesIndex = make([]*Package, l.Len())
+	l.providesIndex = make(map[string][]*Package, 128)
 
-	l.providesList = make(map[string][]*Package, 128)
+	i := 0
 	for _, p := range l.packages {
+		l.packagesIndex[i] = p
+		i++
+
 		for _, provides := range p.Provides {
-			l.providesList[provides] = append(l.providesList[provides], p)
+			l.providesIndex[provides] = append(l.providesIndex[provides], p)
 		}
 	}
-}
 
-// Append adds more packages to the index
-func (l *PackageIndexedList) Append(pl *PackageList) {
-	pp := make([]*Package, pl.Len())
-	i := 0
-	for _, p := range pl.packages {
-		pp[i] = p
-		i++
-	}
+	sort.Sort(l)
 
-	l.packages = append(l.packages, pp...)
+	l.indexed = true
 }
 
 // Search searches package index for specified package
-func (l *PackageIndexedList) Search(dep Dependency) *Package {
+func (l *PackageList) Search(dep Dependency) *Package {
+	if !l.indexed {
+		panic("list not indexed, can't search")
+	}
+
 	if dep.Relation == VersionDontCare {
-		for _, p := range l.providesList[dep.Pkg] {
+		for _, p := range l.providesIndex[dep.Pkg] {
 			if p.MatchesArchitecture(dep.Architecture) {
 				return p
 			}
 		}
 	}
 
-	i := sort.Search(len(l.packages), func(j int) bool { return l.packages[j].Name >= dep.Pkg })
+	i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= dep.Pkg })
 
-	for i < len(l.packages) && l.packages[i].Name == dep.Pkg {
-		p := l.packages[i]
+	for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
+		p := l.packagesIndex[i]
 		if p.MatchesArchitecture(dep.Architecture) {
 			if dep.Relation == VersionDontCare {
 				return p
