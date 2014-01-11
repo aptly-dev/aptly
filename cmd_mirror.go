@@ -148,13 +148,10 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 func makeCmdMirrorCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorCreate,
-		UsageLine: "create",
+		UsageLine: "create <name> <archive url> <distribution> [<component1> ...]",
 		Short:     "create new mirror of Debian repository",
 		Long: `
-create only stores metadata about new mirror, and fetches Release files (it doesn't download packages)
-
-ex:
-  $ aptly mirror create <name> <archive url> <distribution> [<component1> ...]
+Create only stores metadata about new mirror, and fetches Release files (it doesn't download packages)
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
@@ -185,13 +182,10 @@ ex:
 func makeCmdMirrorShow() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorShow,
-		UsageLine: "show",
+		UsageLine: "show <name>",
 		Short:     "show details about remote repository mirror",
 		Long: `
 show shows full information about mirror.
-
-ex:
-  $ aptly mirror show <name>
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
@@ -202,13 +196,10 @@ ex:
 func makeCmdMirrorUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorUpdate,
-		UsageLine: "update",
+		UsageLine: "update <name>",
 		Short:     "update packages from remote mirror",
 		Long: `
 Update downloads list of packages and packages themselves.
-
-ex:
-  $ aptly mirror update <name>
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-update", flag.ExitOnError),
 	}

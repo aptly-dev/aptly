@@ -95,13 +95,10 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshot,
-		UsageLine: "snapshot",
+		UsageLine: "snapshot <name> [<prefix>]",
 		Short:     "makes Debian repository out of snapshot",
 		Long: `
 Publishes snapshot as Debian repository ready to be used by apt tools.
-
-ex:
-  $ aptly publish snapshot <name> [<prefix>]
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-snapshot", flag.ExitOnError),
 	}
