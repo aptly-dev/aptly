@@ -213,13 +213,13 @@ func (d *Dependency) String() string {
 	return fmt.Sprintf("%s (%s %s) [%s]", d.Pkg, rel, d.Version, d.Architecture)
 }
 
-// parseDependencyVariants parses dependencies in format "pkg (>= 1.35) | other-package"
-func parseDependencyVariants(variants string) (l []Dependency, err error) {
+// ParseDependencyVariants parses dependencies in format "pkg (>= 1.35) | other-package"
+func ParseDependencyVariants(variants string) (l []Dependency, err error) {
 	parts := strings.Split(variants, "|")
 	l = make([]Dependency, len(parts))
 
 	for i, part := range parts {
-		l[i], err = parseDependency(strings.TrimSpace(part))
+		l[i], err = ParseDependency(strings.TrimSpace(part))
 		if err != nil {
 			return nil, err
 		}
@@ -228,8 +228,8 @@ func parseDependencyVariants(variants string) (l []Dependency, err error) {
 	return
 }
 
-// parseDependency parses dependency in format "pkg (>= 1.35)" into parts
-func parseDependency(dep string) (d Dependency, err error) {
+// ParseDependency parses dependency in format "pkg (>= 1.35)" into parts
+func ParseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {
 		d.Pkg = strings.TrimSpace(dep)
 		d.Relation = VersionDontCare

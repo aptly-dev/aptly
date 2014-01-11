@@ -99,70 +99,70 @@ func (s *VersionSuite) TestCompareVersions(c *C) {
 }
 
 func (s *VersionSuite) TestParseDependency(c *C) {
-	d, e := parseDependency("dpkg (>= 1.6)")
+	d, e := ParseDependency("dpkg (>= 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionGreaterOrEqual)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg(>>1.6)")
+	d, e = ParseDependency("dpkg(>>1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionGreater)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg (> 1.6)")
+	d, e = ParseDependency("dpkg (> 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionGreaterOrEqual)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg (< 1.6)")
+	d, e = ParseDependency("dpkg (< 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionLessOrEqual)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg (= 1.6)")
+	d, e = ParseDependency("dpkg (= 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionEqual)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg (<< 1.6)")
+	d, e = ParseDependency("dpkg (<< 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionLess)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg(>>1.6)")
+	d, e = ParseDependency("dpkg(>>1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionGreater)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = parseDependency("dpkg ")
+	d, e = ParseDependency("dpkg ")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionDontCare)
 	c.Check(d.Version, Equals, "")
 
-	d, e = parseDependency("dpkg(==1.6)")
+	d, e = ParseDependency("dpkg(==1.6)")
 	c.Check(e, ErrorMatches, "relation unknown.*")
 
-	d, e = parseDependency("dpkg==1.6)")
+	d, e = ParseDependency("dpkg==1.6)")
 	c.Check(e, ErrorMatches, "unable to parse.*")
 }
 
 func (s *VersionSuite) TestParseDependencyVariants(c *C) {
-	l, e := parseDependencyVariants("dpkg (>= 1.6)")
+	l, e := ParseDependencyVariants("dpkg (>= 1.6)")
 	c.Check(e, IsNil)
 	c.Check(l, HasLen, 1)
 	c.Check(l[0].Pkg, Equals, "dpkg")
 	c.Check(l[0].Relation, Equals, VersionGreaterOrEqual)
 	c.Check(l[0].Version, Equals, "1.6")
 
-	l, e = parseDependencyVariants("dpkg (>= 1.6) | mailer-agent")
+	l, e = ParseDependencyVariants("dpkg (>= 1.6) | mailer-agent")
 	c.Check(e, IsNil)
 	c.Check(l, HasLen, 2)
 	c.Check(l[0].Pkg, Equals, "dpkg")
@@ -171,16 +171,16 @@ func (s *VersionSuite) TestParseDependencyVariants(c *C) {
 	c.Check(l[1].Pkg, Equals, "mailer-agent")
 	c.Check(l[1].Relation, Equals, VersionDontCare)
 
-	_, e = parseDependencyVariants("dpkg(==1.6)")
+	_, e = ParseDependencyVariants("dpkg(==1.6)")
 	c.Check(e, ErrorMatches, "relation unknown.*")
 }
 
 func (s *VersionSuite) TestDependencyString(c *C) {
-	d, _ := parseDependency("dpkg(>>1.6)")
+	d, _ := ParseDependency("dpkg(>>1.6)")
 	d.Architecture = "i386"
 	c.Check(d.String(), Equals, "dpkg (>> 1.6) [i386]")
 
-	d, _ = parseDependency("dpkg")
+	d, _ = ParseDependency("dpkg")
 	d.Architecture = "i386"
 	c.Check(d.String(), Equals, "dpkg [i386]")
 }
