@@ -5,6 +5,7 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
+	"github.com/wsxiaoys/terminal/color"
 	"strings"
 )
 
@@ -141,8 +142,11 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	packageIndexedList := debian.NewPackageIndexedList()
-	packageIndexedList.Append(packageList)
+	sourcePackageList := debian.NewPackageList()
+	err = sourcePackageList.Append(packageList)
+	if err != nil {
+		fmt.Errorf("unable to merge sources: %s", err)
+	}
 
 	for i := 1; i < len(snapshots); i++ {
 		pL, err := debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection)
@@ -150,10 +154,13 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 			fmt.Errorf("unable to load packages: %s", err)
 		}
 
-		packageIndexedList.Append(pL)
+		err = sourcePackageList.Append(pL)
+		if err != nil {
+			fmt.Errorf("unable to merge sources: %s", err)
+		}
 	}
 
-	packageIndexedList.PrepareIndex()
+	sourcePackageList.PrepareIndex()
 
 	var architecturesList []string
 
@@ -168,7 +175,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
 
-	missing, err := packageList.VerifyDependencies(0, architecturesList, packageIndexedList)
+	missing, err := packageList.VerifyDependencies(0, architecturesList, sourcePackageList)
 	if err != nil {
 		return fmt.Errorf("unable to verify dependencies: %s", err)
 	}
@@ -185,16 +192,157 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlySnapshotPull(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) < 4 {
+		cmd.Usage()
+		return err
+	}
+
+	snapshotCollection := debian.NewSnapshotCollection(context.database)
+	packageCollection := debian.NewPackageCollection(context.database)
+
+	// Load <name> snapshot
+	snapshot, err := snapshotCollection.ByName(args[0])
+	if err != nil {
+		return fmt.Errorf("unable to pull: %s", err)
+	}
+
+	err = snapshotCollection.LoadComplete(snapshot)
+	if err != nil {
+		return fmt.Errorf("unable to pull: %s", err)
+	}
+
+	// Load <source> snapshot
+	source, err := snapshotCollection.ByName(args[1])
+	if err != nil {
+		return fmt.Errorf("unable to pull: %s", err)
+	}
+
+	err = snapshotCollection.LoadComplete(source)
+	if err != nil {
+		return fmt.Errorf("unable to pull: %s", err)
+	}
+
+	fmt.Printf("Dependencies would be pulled into snapshot:\n    %s\nfrom snapshot:\n    %s\nand result would be saved as new snapshot %s.\n",
+		snapshot, source, args[2])
+
+	// Convert snapshot to package list
+	fmt.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
+	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), packageCollection)
+	if err != nil {
+		return fmt.Errorf("unable to load packages: %s", err)
+	}
+
+	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), packageCollection)
+	if err != nil {
+		return fmt.Errorf("unable to load packages: %s", err)
+	}
+
+	fmt.Printf("Building indexes...\n")
+	packageList.PrepareIndex()
+	sourcePackageList.PrepareIndex()
+
+	// Calculate architectures
+	var architecturesList []string
+
+	architectures := cmd.Flag.Lookup("architectures").Value.String()
+	if architectures != "" {
+		architecturesList = strings.Split(architectures, ",")
+	} else {
+		architecturesList = packageList.Architectures()
+	}
+
+	if len(architecturesList) == 0 {
+		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
+	}
+
+	// Initial dependencies out of arguments
+	initialDependencies := make([]debian.Dependency, len(args)-3)
+	for i, arg := range args[3:] {
+		initialDependencies[i], err = debian.ParseDependency(arg)
+		if err != nil {
+			return fmt.Errorf("unable to parse argument: %s", err)
+		}
+	}
+
+	// Perform pull
+	for _, arch := range architecturesList {
+		dependencies := make([]debian.Dependency, len(initialDependencies), 128)
+		for i := range dependencies {
+			dependencies[i] = initialDependencies[i]
+			dependencies[i].Architecture = arch
+		}
+
+		// Go over list of initial dependencies + list of dependencies found
+		for i := 0; i < len(dependencies); i++ {
+			dep := dependencies[i]
+
+			// Search for package that can satisfy dependencies
+			pkg := sourcePackageList.Search(dep)
+			if pkg == nil {
+				color.Printf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|\n", &dep, source)
+				continue
+			}
+
+			// Remove all packages with the same name and architecture
+			for p := packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name}); p != nil; {
+				packageList.Remove(p)
+				color.Printf("@r[-]@| %s removed\n", p)
+				p = packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name})
+			}
+
+			// Add new discovered package
+			packageList.Add(pkg)
+			color.Printf("@g[+]@| %s added\n", pkg)
+
+			// Find missing dependencies for single added package
+			pL := debian.NewPackageList()
+			pL.Add(pkg)
+
+			missing, err := pL.VerifyDependencies(0, []string{arch}, packageList)
+			if err != nil {
+				color.Printf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|\n", pkg, err)
+			}
+
+			// Append missing dependencies to the list of dependencies to satisfy
+			for _, misDep := range missing {
+				found := false
+				for _, d := range dependencies {
+					if d == misDep {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					dependencies = append(dependencies, misDep)
+				}
+			}
+		}
+	}
+
+	// Create <destination> snapshot
+	destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
+		fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
+
+	err = snapshotCollection.Add(destination)
+	if err != nil {
+		return fmt.Errorf("unable to create snapshot: %s", err)
+	}
+
+	fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
+
+	return err
+}
+
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
-		UsageLine: "create",
+		UsageLine: "create <name> from mirror <mirror-name>",
 		Short:     "creates snapshot out of any mirror",
 		Long: `
 Create makes persistent immutable snapshot of repository mirror state in givent moment of time.
-
-ex:
-  $ aptly snapshot create <name> from mirror <mirror-name>
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-create", flag.ExitOnError),
 	}
@@ -223,13 +371,10 @@ ex:
 func makeCmdSnapshotShow() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotShow,
-		UsageLine: "show",
+		UsageLine: "show <name>",
 		Short:     "shows details about snapshot",
 		Long: `
-shows shows full information about snapshot.
-
-ex:
-  $ aptly snapshot show <name>
+Show shows full information about snapshot.
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),
 	}
@@ -240,19 +385,33 @@ ex:
 func makeCmdSnapshotVerify() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotVerify,
-		UsageLine: "verify",
+		UsageLine: "verify <name> [<source> ...]",
 		Short:     "verifies that dependencies are satisfied in snapshot",
 		Long: `
 Verify does depenency resolution in snapshot, possibly using additional snapshots as dependency sources.
 All unsatisfied dependencies are returned.
-
-ex:
-  $ aptly snapshot verify <name> [<source> ...]
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),
 	}
 
-	cmd.Flag.String("architectures", "", "list of architectures to publish (comma-separated)")
+	cmd.Flag.String("architectures", "", "list of architectures to verify (comma-separated)")
+
+	return cmd
+}
+
+func makeCmdSnapshotPull() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlySnapshotPull,
+		UsageLine: "pull <name> <source> <destination> <package-name> ...",
+		Short:     "performs partial upgrades (pulls new packages) from another snapshot",
+		Long: `
+Pulls (upgrades) new packages (upgrades version) along with its dependencies in <name> snapshot
+from <source> snapshot. New snapshot <destination> is created.
+`,
+		Flag: *flag.NewFlagSet("aptly-snapshot-pull", flag.ExitOnError),
+	}
+
+	cmd.Flag.String("architectures", "", "list of architectures to consider during pull (comma-separated)")
 
 	return cmd
 }
@@ -266,6 +425,7 @@ func makeCmdSnapshot() *commander.Command {
 			makeCmdSnapshotList(),
 			makeCmdSnapshotShow(),
 			makeCmdSnapshotVerify(),
+			makeCmdSnapshotPull(),
 			//makeCmdSnapshotDestroy(),
 		},
 		Flag: *flag.NewFlagSet("aptly-snapshot", flag.ExitOnError),
