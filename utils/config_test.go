@@ -43,7 +43,11 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	c.Check(string(buf), Equals, ""+
 		"{\n"+
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
-		"  \"downloadConcurrency\": 5\n"+
+		"  \"downloadConcurrency\": 5,\n"+
+		"  \"architectures\": null,\n"+
+		"  \"dependencyFollowSuggests\": false,\n"+
+		"  \"dependencyFollowRecommends\": false,\n"+
+		"  \"dependencyFollowAllVariants\": false\n"+
 		"}")
 }
 

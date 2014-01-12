@@ -62,16 +62,10 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	var architecturesList []string
-	architectures := cmd.Flag.Lookup("architectures").Value.String()
-	if architectures != "" {
-		architecturesList = strings.Split(architectures, ",")
-	}
-
 	signer := &utils.GpgSigner{}
 	signer.SetKey(cmd.Flag.Lookup("gpg-key").Value.String())
 
-	published := debian.NewPublishedRepo(prefix, distribution, component, architecturesList, snapshot)
+	published := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
 
 	packageCollection := debian.NewPackageCollection(context.database)
 	err = published.Publish(context.packageRepository, packageCollection, signer)
@@ -104,7 +98,6 @@ Publishes snapshot as Debian repository ready to be used by apt tools.
 	}
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
-	cmd.Flag.String("architectures", "", "list of architectures to publish (comma-separated)")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
 
 	return cmd

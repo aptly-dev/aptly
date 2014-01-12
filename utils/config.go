@@ -8,14 +8,22 @@ import (
 
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct {
-	RootDir             string `json:"rootDir"`
-	DownloadConcurrency int    `json:"downloadConcurrency"`
+	RootDir              string   `json:"rootDir"`
+	DownloadConcurrency  int      `json:"downloadConcurrency"`
+	Architectures        []string `json:"architectures"`
+	DepFollowSuggests    bool     `json:"dependencyFollowSuggests"`
+	DepFollowRecommends  bool     `json:"dependencyFollowRecommends"`
+	DepFollowAllVariants bool     `json:"dependencyFollowAllVariants"`
 }
 
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
-	RootDir:             filepath.Join(os.Getenv("HOME"), ".aptly"),
-	DownloadConcurrency: 4,
+	RootDir:              filepath.Join(os.Getenv("HOME"), ".aptly"),
+	DownloadConcurrency:  4,
+	Architectures:        []string{},
+	DepFollowSuggests:    false,
+	DepFollowRecommends:  false,
+	DepFollowAllVariants: false,
 }
 
 // LoadConfig loads configuration from json file

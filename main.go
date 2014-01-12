@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // aptly version
@@ -32,12 +33,19 @@ take snapshots and publish them back as Debian repositories.`,
 			makeCmdVersion(),
 		},
 	}
+
+	cmd.Flag.Bool("dep-follow-suggests", false, "when processing dependencies, follow Suggests")
+	cmd.Flag.Bool("dep-follow-recommends", false, "when processing dependencies, follow Recommends")
+	cmd.Flag.Bool("dep-follow-all-variants", false, "when processing dependencies, follow a & b if depdency is 'a|b'")
+	cmd.Flag.String("architectures", "", "list of architectures to consider during (comma-separated), default to all available")
 }
 
 var context struct {
 	downloader        utils.Downloader
 	database          database.Storage
 	packageRepository *debian.Repository
+	dependencyOptions int
+	architecturesList []string
 }
 
 func main() {
@@ -63,17 +71,32 @@ func main() {
 		utils.SaveConfig(configLocations[0], &utils.Config)
 	}
 
+	context.dependencyOptions = 0
+	if utils.Config.DepFollowSuggests || cmd.Flag.Lookup("dep-follow-suggests").Value.Get().(bool) {
+		context.dependencyOptions |= debian.DepFollowSuggests
+	}
+	if utils.Config.DepFollowRecommends || cmd.Flag.Lookup("dep-follow-recommends").Value.Get().(bool) {
+		context.dependencyOptions |= debian.DepFollowRecommends
+	}
+	if utils.Config.DepFollowAllVariants || cmd.Flag.Lookup("dep-follow-all-variants").Value.Get().(bool) {
+		context.dependencyOptions |= debian.DepFollowAllVariants
+	}
+
+	context.architecturesList = utils.Config.Architectures
+	optionArchitectures := cmd.Flag.Lookup("architectures").Value.String()
+	if optionArchitectures != "" {
+		context.architecturesList = strings.Split(optionArchitectures, ",")
+	}
+
 	context.downloader = utils.NewDownloader(utils.Config.DownloadConcurrency)
 	defer context.downloader.Shutdown()
 
-	// TODO: configure DB dir
 	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
 	if err != nil {
 		log.Fatalf("can't open database: %s", err)
 	}
 	defer context.database.Close()
 
-	// TODO:configure pool dir
 	context.packageRepository = debian.NewRepository(utils.Config.RootDir)
 
 	err = cmd.Dispatch(os.Args[1:])

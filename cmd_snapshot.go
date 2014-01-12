@@ -164,9 +164,8 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	var architecturesList []string
 
-	architectures := cmd.Flag.Lookup("architectures").Value.String()
-	if architectures != "" {
-		architecturesList = strings.Split(architectures, ",")
+	if len(context.architecturesList) > 0 {
+		architecturesList = context.architecturesList
 	} else {
 		architecturesList = packageList.Architectures()
 	}
@@ -175,7 +174,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
 
-	missing, err := packageList.VerifyDependencies(0, architecturesList, sourcePackageList)
+	missing, err := packageList.VerifyDependencies(context.dependencyOptions, architecturesList, sourcePackageList)
 	if err != nil {
 		return fmt.Errorf("unable to verify dependencies: %s", err)
 	}
@@ -248,9 +247,8 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	// Calculate architectures
 	var architecturesList []string
 
-	architectures := cmd.Flag.Lookup("architectures").Value.String()
-	if architectures != "" {
-		architecturesList = strings.Split(architectures, ",")
+	if len(context.architecturesList) > 0 {
+		architecturesList = context.architecturesList
 	} else {
 		architecturesList = packageList.Architectures()
 	}
@@ -306,7 +304,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			pL := debian.NewPackageList()
 			pL.Add(pkg)
 
-			missing, err := pL.VerifyDependencies(0, []string{arch}, packageList)
+			missing, err := pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList)
 			if err != nil {
 				color.Printf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|\n", pkg, err)
 			}
@@ -403,8 +401,6 @@ All unsatisfied dependencies are returned.
 		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),
 	}
 
-	cmd.Flag.String("architectures", "", "list of architectures to verify (comma-separated)")
-
 	return cmd
 }
 
@@ -422,7 +418,6 @@ process.
 		Flag: *flag.NewFlagSet("aptly-snapshot-pull", flag.ExitOnError),
 	}
 
-	cmd.Flag.String("architectures", "", "list of architectures to consider during pull (comma-separated)")
 	cmd.Flag.Bool("dry-run", false, "don't create destination snapshot, just show what would be pulled")
 	cmd.Flag.Bool("no-deps", false, "don't process dependencies, just pull listed packages")
 

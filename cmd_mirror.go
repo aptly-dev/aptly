@@ -38,13 +38,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	var architectures []string
-	archs := cmd.Flag.Lookup("architecture").Value.String()
-	if len(archs) > 0 {
-		architectures = strings.Split(archs, ",")
-	}
-
-	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], architectures)
+	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], context.architecturesList)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
@@ -155,10 +149,8 @@ Create only stores metadata about new mirror, and fetches Release files (it does
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
-	cmd.Flag.String("architecture", "", "limit architectures to download, comma-delimited list")
 
 	return cmd
-
 }
 
 func makeCmdMirrorList() *commander.Command {
