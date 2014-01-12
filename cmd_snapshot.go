@@ -199,6 +199,8 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	noDeps := cmd.Flag.Lookup("no-deps").Value.Get().(bool)
+
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
 	packageCollection := debian.NewPackageCollection(context.database)
 
@@ -296,6 +298,10 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			packageList.Add(pkg)
 			color.Printf("@g[+]@| %s added\n", pkg)
 
+			if noDeps {
+				continue
+			}
+
 			// Find missing dependencies for single added package
 			pL := debian.NewPackageList()
 			pL.Add(pkg)
@@ -322,17 +328,20 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	// Create <destination> snapshot
-	destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
-		fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
+	if cmd.Flag.Lookup("dry-run").Value.Get().(bool) {
+		fmt.Printf("\nNot creating snapshot, as dry run was requested.\n")
+	} else {
+		// Create <destination> snapshot
+		destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
+			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
 
-	err = snapshotCollection.Add(destination)
-	if err != nil {
-		return fmt.Errorf("unable to create snapshot: %s", err)
+		err = snapshotCollection.Add(destination)
+		if err != nil {
+			return fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
+		fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
 	}
-
-	fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
-
 	return err
 }
 
@@ -405,13 +414,17 @@ func makeCmdSnapshotPull() *commander.Command {
 		UsageLine: "pull <name> <source> <destination> <package-name> ...",
 		Short:     "performs partial upgrades (pulls new packages) from another snapshot",
 		Long: `
-Pulls (upgrades) new packages (upgrades version) along with its dependencies in <name> snapshot
-from <source> snapshot. New snapshot <destination> is created.
+Pulls new packages along with its dependencies in <name> snapshot
+from <source> snapshot. Also can upgrade package version from one snapshot into
+another, once again along with dependencies. New snapshot <destination> is created as result of this
+process.
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-pull", flag.ExitOnError),
 	}
 
 	cmd.Flag.String("architectures", "", "list of architectures to consider during pull (comma-separated)")
+	cmd.Flag.Bool("dry-run", false, "don't create destination snapshot, just show what would be pulled")
+	cmd.Flag.Bool("no-deps", false, "don't process dependencies, just pull listed packages")
 
 	return cmd
 }
