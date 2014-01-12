@@ -316,7 +316,7 @@ Usage::
 Params:
 
 * ``name`` is snapshot name which has been given during snapshot creation
-* ``source`` is a options list of snapshot names which would be used as additional sources
+* ``source`` is a optional list of snapshot names which would be used as additional sources
 
 Options:
 
@@ -334,6 +334,60 @@ Example::
     mozart (>= 1.4.0) [amd64]
     scsh-0.6 (>= 0.6.6) [amd64]
     oracle-instantclient11.2-basic [amd64]
+
+``aptly snapshot pull``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Pulls new packages along with its dependencies in ``name`` snapshot from ``source`` snapshot. Also can
+upgrade package version from one snapshot into another, once again along with dependencies.
+New snapshot ``destination`` is created as result of this process.
+
+Usage::
+
+  $ aptly snapshot pull <name> <source> <destination> <package-name> ...
+
+Params:
+
+* ``name`` is snapshot name which has been given during snapshot creation
+* ``source`` is a snapshot name where packages and dependencies would be searched
+* ``destination`` is a name of the snapshot that would be created
+* ``package-name`` is a name of package to be pulled from ``source``, could be specified
+  as Debian dependency, e.g. ``package (>= 1.3.5)`` to restrict search to specific version
+
+Options:
+
+* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
+  snapshot contents
+* ``-dry-run=false``: don't create destination snapshot, just show what would be pulled
+* ``-no-deps=false``: don't process dependencies, just pull listed packages
+
+Example::
+
+    $ aptly snapshot pull snap-deb2-main back snap-deb-main-w-xorg xserver-xorg
+    Dependencies would be pulled into snapshot:
+        [snap-deb2-main]: Snapshot from mirror [deb2-main]: http://ftp.ru.debian.org/debian/ squeeze
+    from snapshot:
+        [back]: Snapshot from mirror [backports2]: http://mirror.yandex.ru/backports.org/ squeeze-backports
+    and result would be saved as new snapshot snap-deb-main-w-xorg.
+    Loading packages (49476)...
+    Building indexes...
+    [-] xserver-xorg-1:7.5+8+squeeze1_amd64 removed
+    [+] xserver-xorg-1:7.6+8~bpo60+1_amd64 added
+    [-] xserver-xorg-core-2:1.7.7-16_amd64 removed
+    [+] xserver-xorg-core-2:1.10.4-1~bpo60+2_amd64 added
+    [-] xserver-common-2:1.7.7-16_all removed
+    [+] xserver-common-2:1.10.4-1~bpo60+2_all added
+    [-] libxfont1-1:1.4.1-3_amd64 removed
+    [+] libxfont1-1:1.4.4-1~bpo60+1_amd64 added
+    [-] xserver-xorg-1:7.5+8+squeeze1_i386 removed
+    [+] xserver-xorg-1:7.6+8~bpo60+1_i386 added
+    [-] xserver-xorg-core-2:1.7.7-16_i386 removed
+    [+] xserver-xorg-core-2:1.10.4-1~bpo60+2_i386 added
+    [-] libxfont1-1:1.4.1-3_i386 removed
+    [+] libxfont1-1:1.4.4-1~bpo60+1_i386 added
+
+    Snapshot snap-deb-main-w-xorg successfully created.
+    You can run 'aptly publish snapshot snap-deb-main-w-xorg' to publish snapshot as Debian repository.
 
 Command ``publish``
 ~~~~~~~~~~~~~~~~~~~
