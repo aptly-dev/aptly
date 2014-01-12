@@ -144,8 +144,9 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	// poolPath, _ := s.packageRepo.PoolPath(pkg.Filename, pkg.HashMD5)
-	// c.Check(pkg.VerifyFile(poolPath), Equals, true)
+	result, err := pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 }

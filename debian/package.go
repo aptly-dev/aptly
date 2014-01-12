@@ -293,6 +293,20 @@ func (p *Package) DownloadList(packageRepo *Repository) (result [][]string, err 
 	return result, nil
 }
 
+// VerifyFiles verifies that all package files have neen correctly downloaded
+func (p *Package) VerifyFiles(packageRepo *Repository) (result bool, err error) {
+	result = true
+
+	for _, f := range p.Files {
+		result, err = f.Verify(packageRepo)
+		if err != nil || !result {
+			return
+		}
+	}
+
+	return
+}
+
 // PackageCollection does management of packages in DB
 type PackageCollection struct {
 	db database.Storage

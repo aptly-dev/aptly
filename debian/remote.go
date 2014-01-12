@@ -186,14 +186,21 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	// Download all package files
 	ch := make(chan error, list.Len())
+	queued := make(map[string]bool, 1024)
 	count := 0
 
 	err = list.ForEach(func(p *Package) error {
 		list, err := p.DownloadList(packageRepo)
 
 		for _, pair := range list {
-			d.Download(repo.PackageURL(pair[0]).String(), pair[1], ch)
-			count++
+			key := pair[0] + "-" + pair[1]
+			_, found := queued[key]
+			if !found {
+				d.Download(repo.PackageURL(pair[0]).String(), pair[1], ch)
+				count++
+			} else {
+				queued[key] = true
+			}
 		}
 
 		return err

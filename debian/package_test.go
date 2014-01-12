@@ -40,8 +40,16 @@ func (s *PackageSuite) TestPackageFileVerify(c *C) {
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
+	result, err = p.VerifyFiles(packageRepo)
+	c.Check(err, IsNil)
+	c.Check(result, Equals, false)
+
 	p.Files[0].Checksums.Size = 5
 	result, err = p.Files[0].Verify(packageRepo)
+	c.Check(err, IsNil)
+	c.Check(result, Equals, true)
+
+	result, err = p.VerifyFiles(packageRepo)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }
