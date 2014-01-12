@@ -46,6 +46,24 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 	}, nil
 }
 
+// NewSnapshotFromPackageList creates snapshot from PackageList
+func NewSnapshotFromPackageList(name string, sources []*Snapshot, list *PackageList, description string) *Snapshot {
+	sourceUUIDs := make([]string, len(sources))
+	for i := range sources {
+		sourceUUIDs[i] = sources[i].UUID
+	}
+
+	return &Snapshot{
+		UUID:        uuid.New(),
+		Name:        name,
+		CreatedAt:   time.Now(),
+		SourceKind:  "snapshot",
+		SourceIDs:   sourceUUIDs,
+		Description: description,
+		packageRefs: NewPackageRefListFromPackageList(list),
+	}
+}
+
 // String returns string representation of snapshot
 func (s *Snapshot) String() string {
 	return fmt.Sprintf("[%s]: %s", s.Name, s.Description)

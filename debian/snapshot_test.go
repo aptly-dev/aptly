@@ -24,10 +24,22 @@ func (s *SnapshotSuite) TestNewSnapshotFromRepository(c *C) {
 	c.Check(snapshot.Name, Equals, "snap1")
 	c.Check(snapshot.NumPackages(), Equals, 3)
 	c.Check(snapshot.RefList().Len(), Equals, 3)
+	c.Check(snapshot.SourceKind, Equals, "repo")
+	c.Check(snapshot.SourceIDs, DeepEquals, []string{s.repo.UUID})
 
 	s.repo.packageRefs = nil
 	_, err := NewSnapshotFromRepository("snap2", s.repo)
 	c.Check(err, ErrorMatches, ".*not updated")
+}
+
+func (s *SnapshotSuite) TestNewSnapshotFromPackageList(c *C) {
+	snap, _ := NewSnapshotFromRepository("snap1", s.repo)
+
+	snapshot := NewSnapshotFromPackageList("snap2", []*Snapshot{snap}, s.list, "Pulled")
+	c.Check(snapshot.Name, Equals, "snap2")
+	c.Check(snapshot.NumPackages(), Equals, 3)
+	c.Check(snapshot.SourceKind, Equals, "snapshot")
+	c.Check(snapshot.SourceIDs, DeepEquals, []string{snap.UUID})
 }
 
 func (s *SnapshotSuite) TestKey(c *C) {
