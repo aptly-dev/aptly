@@ -322,3 +322,75 @@ func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
 
 	c.Check(err, Equals, e)
 }
+
+func (s *PackageListSuite) TestDiff(c *C) {
+	db, _ := database.OpenDB(c.MkDir())
+	coll := NewPackageCollection(db)
+
+	packages := []*Package{
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
+		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
+		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
+		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
+		&Package{Name: "xyz", Version: "3.0", Architecture: "sparc"},     //6
+	}
+
+	for _, p := range packages {
+		coll.Update(p)
+	}
+
+	listA := NewPackageList()
+	listA.Add(packages[0])
+	listA.Add(packages[1])
+	listA.Add(packages[2])
+	listA.Add(packages[3])
+	listA.Add(packages[6])
+
+	listB := NewPackageList()
+	listB.Add(packages[0])
+	listB.Add(packages[2])
+	listB.Add(packages[4])
+	listB.Add(packages[5])
+
+	reflistA := NewPackageRefListFromPackageList(listA)
+	reflistB := NewPackageRefListFromPackageList(listB)
+
+	diffAA, err := reflistA.Diff(reflistA, coll)
+	c.Check(err, IsNil)
+	c.Check(diffAA, HasLen, 0)
+
+	diffAB, err := reflistA.Diff(reflistB, coll)
+	c.Check(err, IsNil)
+	c.Check(diffAB, HasLen, 4)
+
+	c.Check(diffAB[0].Left, IsNil)
+	c.Check(diffAB[0].Right.String(), Equals, "app-1.1~bp2_amd64")
+
+	c.Check(diffAB[1].Left.String(), Equals, "app-1.1~bp1_i386")
+	c.Check(diffAB[1].Right.String(), Equals, "app-1.1~bp2_i386")
+
+	c.Check(diffAB[2].Left.String(), Equals, "dpkg-1.7_i386")
+	c.Check(diffAB[2].Right, IsNil)
+
+	c.Check(diffAB[3].Left.String(), Equals, "xyz-3.0_sparc")
+	c.Check(diffAB[3].Right, IsNil)
+
+	diffBA, err := reflistB.Diff(reflistA, coll)
+	c.Check(err, IsNil)
+	c.Check(diffBA, HasLen, 4)
+
+	c.Check(diffBA[0].Right, IsNil)
+	c.Check(diffBA[0].Left.String(), Equals, "app-1.1~bp2_amd64")
+
+	c.Check(diffBA[1].Right.String(), Equals, "app-1.1~bp1_i386")
+	c.Check(diffBA[1].Left.String(), Equals, "app-1.1~bp2_i386")
+
+	c.Check(diffBA[2].Right.String(), Equals, "dpkg-1.7_i386")
+	c.Check(diffBA[2].Left, IsNil)
+
+	c.Check(diffBA[3].Right.String(), Equals, "xyz-3.0_sparc")
+	c.Check(diffBA[3].Left, IsNil)
+
+}

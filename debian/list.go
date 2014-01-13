@@ -376,3 +376,100 @@ func (l *PackageRefList) ForEach(handler func([]byte) error) error {
 	}
 	return err
 }
+
+// PackageDiff is a difference between two packages in a list.
+//
+// If left & right are present, difference is in package version
+// If left is nil, package is present only in right
+// If right is nil, package is present only in left
+type PackageDiff struct {
+	Left, Right *Package
+}
+
+// PackageDiffs is a list of PackageDiff records
+type PackageDiffs []PackageDiff
+
+// Diff calculates difference between two reflists
+func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageCollection) (result PackageDiffs, err error) {
+	result = make(PackageDiffs, 0, 128)
+
+	// pointer to left and right reflists
+	il, ir := 0, 0
+	// length of reflists
+	ll, lr := l.Len(), r.Len()
+	// cached loaded packages on the left & right
+	pl, pr := (*Package)(nil), (*Package)(nil)
+
+	// until we reached end of both lists
+	for il < ll || ir < lr {
+		// if we've exhausted left list, pull the rest from the right
+		if il == ll {
+			pr, err = packageCollection.ByKey(r.Refs[ir])
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, PackageDiff{Left: nil, Right: pr})
+			ir++
+			continue
+		}
+		// if we've exhausted right list, pull the rest from the left
+		if ir == lr {
+			pl, err = packageCollection.ByKey(l.Refs[il])
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, PackageDiff{Left: pl, Right: nil})
+			il++
+			continue
+		}
+
+		// refs on both sides are present, load them
+		rl, rr := l.Refs[il], r.Refs[ir]
+		// compare refs
+		rel := bytes.Compare(rl, rr)
+
+		if rel == 0 {
+			// refs are identical, so are packages, advance pointer
+			il++
+			ir++
+			pl, pr = nil, nil
+		} else {
+			// load pl & pr if they haven't been loaded before
+			if pl == nil {
+				pl, err = packageCollection.ByKey(rl)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			if pr == nil {
+				pr, err = packageCollection.ByKey(rr)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			// is pl & pr the same package, but different version?
+			if pl.Name == pr.Name && pl.Architecture == pr.Architecture {
+				result = append(result, PackageDiff{Left: pl, Right: pr})
+				il++
+				ir++
+				pl, pr = nil, nil
+			} else {
+				// otherwise pl or pr is missing on one of the sides
+				if rel < 0 {
+					result = append(result, PackageDiff{Left: pl, Right: nil})
+					il++
+					pl = nil
+				} else {
+					result = append(result, PackageDiff{Left: nil, Right: pr})
+					ir++
+					pr = nil
+				}
+			}
+
+		}
+	}
+
+	return
+}
