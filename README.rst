@@ -51,8 +51,12 @@ If not specified, directory defaults to ``~/.aptly``, it will be created if miss
 Configuration file is stored in JSON format::
 
   {
-    "rootDir": "/var/aptly",
-    "downloadConcurrency": 4
+    "rootDir": "/Users/smira/.aptly",
+    "downloadConcurrency": 4,
+    "architectures": [],
+    "dependencyFollowSuggests": false,
+    "dependencyFollowRecommends": false,
+    "dependencyFollowAllVariants": false
   }
 
 Options:
@@ -60,13 +64,18 @@ Options:
 * ``rootDir`` is root of directory storage to store datbase (``rootDir/db``), downloaded packages (``rootDir/pool``) and
   published repositories (``rootDir/public``)
 * ``downloadConcurrency`` is a number of parallel download threads to use when downloading packages
+* ``architectures`` is a list of architectures to process; if left empty defaults to all available architectures; could be overridden
+  with option ``-architectures``
+* ``dependencyFollowSuggests``: follow contents of ``Suggests:`` field when processing dependencies for the package
+* ``dependencyFollowRecommends``: follow contents of ``Recommends:`` field when processing dependencies for the package
+* ``dependencyFollowAllVariants``: when dependency looks like ``package-a | package-b``, follow both variants always
 
 Example
 -------
 
 Create mirror::
 
-  $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
+  $ aptly -architectures="amd64,i386"  mirror create debian-main http://ftp.ru.debian.org/debian/ squeeze main
   2013/12/28 19:44:45 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/Release...
   ...
 
@@ -121,6 +130,20 @@ Aptly supports commands in three basic categories:
 * ``snapshot``
 * ``publish``
 
+Common Options
+~~~~~~~~~~~~~~
+
+There are several options that should be specfied right before command name::
+
+  aptly --option1 command ...
+
+These options are:
+
+* ``-architectures=""``: list of architectures to consider during (comma-separated), default to all available
+* ``-dep-follow-all-variants=false``: when processing dependencies, follow a & b if depdency is 'a|b'
+* ``-dep-follow-recommends=false``: when processing dependencies, follow Recommends
+* ``-dep-follow-suggests=false``: when processing dependencies, follow Suggests
+
 Command ``mirror``
 ~~~~~~~~~~~~~~~~~~
 
@@ -143,14 +166,13 @@ Params are:
 * ``component1`` is an optional list of components to download, if not
   specified aptly would fetch all components, e.g. ``main``
 
-Options:
-
-* ``--architecture="i386,amd64"`` list of architectures to fetch, if not specified,
-  aptly would fetch packages for all architectures
+If architectures are limited (with config ``architectures`` or option ``-architectures``), only
+mentioned architectures are downloaded, otherwise ``aptly`` will download all architectures available
+at the mirror.
 
 Example::
 
-  $ aptly mirror create --architecture="amd64" debian-main http://ftp.ru.debian.org/debian/ squeeze main
+  $ aptly -architectures="amd64" mirror create debian-main http://ftp.ru.debian.org/debian/ squeeze main
   2013/12/28 19:44:45 Downloading http://ftp.ru.debian.org/debian/dists/squeeze/Release...
   ...
 
@@ -318,10 +340,9 @@ Params:
 * ``name`` is snapshot name which has been given during snapshot creation
 * ``source`` is a optional list of snapshot names which would be used as additional sources
 
-Options:
-
-* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
-  snapshot contents
+If architectures are limited (with config ``architectures`` or option ``-architectures``), only
+mentioned architectures are checked for internal dependencies, otherwise ``aptly`` will
+check all architectures in the snapshot.
 
 Example::
 
@@ -356,10 +377,12 @@ Params:
 
 Options:
 
-* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
-  snapshot contents
 * ``-dry-run=false``: don't create destination snapshot, just show what would be pulled
 * ``-no-deps=false``: don't process dependencies, just pull listed packages
+
+If architectures are limited (with config ``architectures`` or option ``-architectures``), only
+mentioned architectures are processed, otherwise ``aptly`` will
+process all architectures in the snapshot.
 
 Example::
 
@@ -413,12 +436,14 @@ Params:
 
 Options:
 
-* ``-architectures=""``: list of architectures to publish (comma-separated); derived automatically from
-  snapshot contents
 * ``-component=""``: component name to publish; guessed from original repository (if any), or defaults to
   main
 * ``-distribution=""``: distribution name to publish; guessed from original repository distribution
 * ``-gpg-key=""``: GPG key ID to use when signing the release, if not specified default key is used
+
+If architectures are limited (with config ``architectures`` or option ``-architectures``), only
+mentioned architectures would ne published, otherwise ``aptly`` will
+publish all architectures in the snapshot.
 
 Example::
 
