@@ -114,7 +114,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 
 // Key returns unique key identifying package
 func (p *Package) Key() []byte {
-	return []byte("P" + p.Name + " " + p.Version + " " + p.Architecture)
+	return []byte("P" + p.Architecture + " " + p.Name + " " + p.Version)
 }
 
 // Encode does msgpack encoding of Package

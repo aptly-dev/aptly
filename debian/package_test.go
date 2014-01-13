@@ -82,7 +82,7 @@ func (s *PackageSuite) TestWithProvides(c *C) {
 func (s *PackageSuite) TestKey(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
-	c.Check(p.Key(), DeepEquals, []byte("Palien-arena-common 7.40-2 i386"))
+	c.Check(p.Key(), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
 }
 
 func (s *PackageSuite) TestEncodeDecode(c *C) {
