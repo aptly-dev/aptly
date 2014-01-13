@@ -99,7 +99,7 @@ func main() {
 
 	context.packageRepository = debian.NewRepository(utils.Config.RootDir)
 
-	err = cmd.Dispatch(os.Args[1:])
+	err = cmd.Dispatch(cmd.Flag.Args())
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
