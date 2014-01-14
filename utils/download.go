@@ -15,6 +15,8 @@ import (
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	Download(url string, destination string, result chan<- error)
+	Pause()
+	Resume()
 	Shutdown()
 }
 
@@ -28,6 +30,8 @@ type downloaderImpl struct {
 	queue   chan *downloadTask
 	stop    chan bool
 	stopped chan bool
+	pause   chan bool
+	unpause chan bool
 	threads int
 }
 
@@ -45,6 +49,8 @@ func NewDownloader(threads int) Downloader {
 		queue:   make(chan *downloadTask, 1000),
 		stop:    make(chan bool),
 		stopped: make(chan bool),
+		pause:   make(chan bool),
+		unpause: make(chan bool),
 		threads: threads,
 	}
 
@@ -64,6 +70,20 @@ func (downloader *downloaderImpl) Shutdown() {
 
 	for i := 0; i < downloader.threads; i++ {
 		<-downloader.stopped
+	}
+}
+
+// Pause pauses task processing
+func (downloader *downloaderImpl) Pause() {
+	for i := 0; i < downloader.threads; i++ {
+		downloader.pause <- true
+	}
+}
+
+// Resume resumes task processing
+func (downloader *downloaderImpl) Resume() {
+	for i := 0; i < downloader.threads; i++ {
+		downloader.unpause <- true
 	}
 }
 
@@ -127,6 +147,8 @@ func (downloader *downloaderImpl) process() {
 		case <-downloader.stop:
 			downloader.stopped <- true
 			return
+		case <-downloader.pause:
+			<-downloader.unpause
 		case task := <-downloader.queue:
 			downloader.handleTask(task)
 		}

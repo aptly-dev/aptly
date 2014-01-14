@@ -45,6 +45,14 @@ func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 	}
 }
 
+func (s *DownloaderSuite) TestPauseResume(c *C) {
+	d := NewDownloader(2)
+	defer d.Shutdown()
+
+	d.Pause()
+	d.Resume()
+}
+
 func (s *DownloaderSuite) TestDownloadOK(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()

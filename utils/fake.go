@@ -88,3 +88,11 @@ func (f *FakeDownloader) Download(url string, filename string, result chan<- err
 // Shutdown does nothing
 func (f *FakeDownloader) Shutdown() {
 }
+
+// Pause does nothing
+func (f *FakeDownloader) Pause() {
+}
+
+// Resume does nothing
+func (f *FakeDownloader) Resume() {
+}
