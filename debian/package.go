@@ -269,10 +269,17 @@ func (p *Package) PoolDirectory() (string, error) {
 	return filepath.Join(subdir, source), nil
 }
 
+// PackageDownloadTask is a element of download queue for the package
+type PackageDownloadTask struct {
+	RepoURI         string
+	DestinationPath string
+	Size            int64
+}
+
 // DownloadList returns list of missing package files for download in format
 // [[srcpath, dstpath]]
-func (p *Package) DownloadList(packageRepo *Repository) (result [][]string, err error) {
-	result = make([][]string, 0, 1)
+func (p *Package) DownloadList(packageRepo *Repository) (result []PackageDownloadTask, err error) {
+	result = make([]PackageDownloadTask, 0, 1)
 
 	for _, f := range p.Files {
 		poolPath, err := packageRepo.PoolPath(f.Filename, f.Checksums.MD5)
@@ -286,7 +293,7 @@ func (p *Package) DownloadList(packageRepo *Repository) (result [][]string, err 
 		}
 
 		if !verified {
-			result = append(result, []string{f.Filename, poolPath})
+			result = append(result, PackageDownloadTask{RepoURI: f.Filename, DestinationPath: poolPath, Size: f.Checksums.Size})
 		}
 	}
 

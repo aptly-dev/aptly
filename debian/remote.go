@@ -148,6 +148,8 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository) error {
 	list := NewPackageList()
 
+	fmt.Printf("Downloading & parsing package files...\n")
+
 	// Download and parse all Release files
 	for _, component := range repo.Components {
 		for _, architecture := range repo.Architectures {
@@ -175,6 +177,8 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		}
 	}
 
+	fmt.Printf("Saving packages to database...\n")
+
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
 		return packageCollection.Update(p)
@@ -184,20 +188,24 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		return fmt.Errorf("unable to save packages to db: %s", err)
 	}
 
+	fmt.Printf("Building download queue...\n")
+
 	// Download all package files
 	ch := make(chan error, list.Len())
 	queued := make(map[string]bool, 1024)
 	count := 0
+	downloadSize := int64(0)
 
 	err = list.ForEach(func(p *Package) error {
 		list, err := p.DownloadList(packageRepo)
 
-		for _, pair := range list {
-			key := pair[0] + "-" + pair[1]
+		for _, task := range list {
+			key := task.RepoURI + "-" + task.DestinationPath
 			_, found := queued[key]
 			if !found {
-				d.Download(repo.PackageURL(pair[0]).String(), pair[1], ch)
+				d.Download(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch)
 				count++
+				downloadSize += task.Size
 			} else {
 				queued[key] = true
 			}
@@ -209,6 +217,8 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	if err != nil {
 		return fmt.Errorf("unable to download packages: %s", err)
 	}
+
+	fmt.Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
 
 	errors := make([]string, 0)
 
@@ -222,7 +232,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf("download errors: %s", strings.Join(errors, ", "))
+		return fmt.Errorf("download errors:\n  %s\n", strings.Join(errors, "\n  "))
 	}
 
 	repo.LastDownloadDate = time.Now()

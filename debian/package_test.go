@@ -189,7 +189,11 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 
 	list, err := p.DownloadList(packageRepo)
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, [][]string{[]string{"pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb", poolPath}})
+	c.Check(list, DeepEquals, []PackageDownloadTask{
+		PackageDownloadTask{
+			RepoURI:         "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			DestinationPath: poolPath,
+			Size:            5}})
 
 	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
 	c.Assert(err, IsNil)
@@ -201,7 +205,7 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 
 	list, err = p.DownloadList(packageRepo)
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, [][]string{})
+	c.Check(list, DeepEquals, []PackageDownloadTask{})
 }
 
 type PackageCollectionSuite struct {
