@@ -21,9 +21,14 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	var prefix string
 	if len(args) == 2 {
 		prefix = args[1]
+		if prefix == "." || prefix == "/" {
+			prefix = ""
+		}
 	} else {
 		prefix = ""
 	}
+
+	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
 	snapshot, err := snapshotCollection.ByName(name)
@@ -67,10 +72,21 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 
 	published := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
 
+	duplicate := publishedCollecton.CheckDuplicate(published)
+	if duplicate != nil {
+		publishedCollecton.LoadComplete(duplicate, snapshotCollection)
+		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
+	}
+
 	packageCollection := debian.NewPackageCollection(context.database)
 	err = published.Publish(context.packageRepository, packageCollection, signer)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to publish: %s", err)
+	}
+
+	err = publishedCollecton.Add(published)
+	if err != nil {
+		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
 	if prefix != "" && !strings.HasSuffix(prefix, "/") {
