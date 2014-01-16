@@ -6,6 +6,7 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
+	"sort"
 	"strings"
 )
 
@@ -102,6 +103,48 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlyPublishList(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) != 0 {
+		cmd.Usage()
+		return err
+	}
+
+	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
+	snapshotCollection := debian.NewSnapshotCollection(context.database)
+
+	if publishedCollecton.Len() == 0 {
+		fmt.Printf("No snapshots have been published. Publish a snapshot by running `aptly publish snapshot ...`.")
+		return err
+	}
+
+	published := make(sort.StringSlice, 0, publishedCollecton.Len())
+
+	err = publishedCollecton.ForEach(func(repo *debian.PublishedRepo) error {
+		err := publishedCollecton.LoadComplete(repo, snapshotCollection)
+		if err != nil {
+			return err
+		}
+
+		published = append(published, repo.String())
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("unable to load list of repos: %s", err)
+	}
+
+	sort.Strings(published)
+
+	fmt.Printf("Published repositories:\n")
+
+	for _, description := range published {
+		fmt.Printf("  * %s\n", description)
+	}
+
+	return err
+}
+
 func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshot,
@@ -119,12 +162,27 @@ Publishes snapshot as Debian repository ready to be used by apt tools.
 	return cmd
 }
 
+func makeCmdPublishList() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlyPublishList,
+		UsageLine: "list",
+		Short:     "displays list of published repositories",
+		Long: `
+Displays list of currently published snapshots.
+`,
+		Flag: *flag.NewFlagSet("aptly-publish-list", flag.ExitOnError),
+	}
+
+	return cmd
+}
+
 func makeCmdPublish() *commander.Command {
 	return &commander.Command{
 		UsageLine: "publish",
 		Short:     "manage published repositories",
 		Subcommands: []*commander.Command{
 			makeCmdPublishSnapshot(),
+			makeCmdPublishList(),
 		},
 		Flag: *flag.NewFlagSet("aptly-publish", flag.ExitOnError),
 	}
