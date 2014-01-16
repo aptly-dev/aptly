@@ -13,7 +13,7 @@ Aptly is a swiss army knife for Debian repository management.
 Documentation is available at `http://smira.github.io/aptly/ <http://smira.github.io/aptly>`_. For support use
 mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
 
-It allows to: ("+" means planned features)
+Aptly features: ("+" means planned features)
 
 * make mirrors of remote Debian/Ubuntu repositories, limiting by components/architectures
 * take snapshots of mirrors at any point in time, fixing state of repository at some moment of time
