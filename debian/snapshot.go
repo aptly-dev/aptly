@@ -179,6 +179,16 @@ func (collection *SnapshotCollection) ByName(name string) (*Snapshot, error) {
 	return nil, fmt.Errorf("snapshot with name %s not found", name)
 }
 
+// ByUUID looks up snapshot by UUID
+func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
+	for _, s := range collection.list {
+		if s.UUID == uuid {
+			return s, nil
+		}
+	}
+	return nil, fmt.Errorf("snapshot with uuid %s not found", uuid)
+}
+
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) error {
 	var err error
