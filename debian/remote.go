@@ -190,39 +190,46 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	fmt.Printf("Building download queue...\n")
 
-	// Download all package files
-	ch := make(chan error, list.Len())
-	queued := make(map[string]bool, 1024)
+	// Build download queue
+	queued := make(map[string]PackageDownloadTask, list.Len())
 	count := 0
 	downloadSize := int64(0)
 
 	err = list.ForEach(func(p *Package) error {
 		list, err := p.DownloadList(packageRepo)
+		if err != nil {
+			return err
+		}
 
 		for _, task := range list {
 			key := task.RepoURI + "-" + task.DestinationPath
 			_, found := queued[key]
 			if !found {
-				d.Download(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch)
 				count++
 				downloadSize += task.Size
-			} else {
-				queued[key] = true
+				queued[key] = task
 			}
 		}
 
-		return err
+		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("unable to download packages: %s", err)
+		return fmt.Errorf("unable to build download queue: %s", err)
 	}
 
 	fmt.Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
 
-	errors := make([]string, 0)
+	// Download all package files
+	ch := make(chan error, len(queued))
+
+	for _, task := range queued {
+		d.Download(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch)
+	}
 
 	// Wait for all downloads to finish
+	errors := make([]string, 0)
+
 	for count > 0 {
 		err = <-ch
 		if err != nil {
