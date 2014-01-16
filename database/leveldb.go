@@ -18,6 +18,7 @@ var (
 type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
+	Delete(key []byte) error
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
 }
@@ -58,6 +59,10 @@ func (l *levelDB) Get(key []byte) ([]byte, error) {
 
 func (l *levelDB) Put(key []byte, value []byte) error {
 	return l.db.Put(key, value, nil)
+}
+
+func (l *levelDB) Delete(key []byte) error {
+	return l.db.Delete(key, nil)
 }
 
 func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {

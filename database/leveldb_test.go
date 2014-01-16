@@ -45,6 +45,22 @@ func (s *LevelDBSuite) TestGetPut(c *C) {
 	c.Assert(result, DeepEquals, value)
 }
 
+func (s *LevelDBSuite) TestDelete(c *C) {
+	var (
+		key   = []byte("key")
+		value = []byte("value")
+	)
+
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	err = s.db.Delete(key)
+	c.Assert(err, IsNil)
+
+	_, err = s.db.Get(key)
+	c.Assert(err, ErrorMatches, "key not found")
+}
+
 func (s *LevelDBSuite) TestFetchByPrefix(c *C) {
 	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{})
 
