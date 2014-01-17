@@ -22,9 +22,6 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	var prefix string
 	if len(args) == 2 {
 		prefix = args[1]
-		if prefix == "." || prefix == "/" {
-			prefix = ""
-		}
 	} else {
 		prefix = ""
 	}
@@ -71,7 +68,10 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	signer := &utils.GpgSigner{}
 	signer.SetKey(cmd.Flag.Lookup("gpg-key").Value.String())
 
-	published := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
+	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
+	if err != nil {
+		return fmt.Errorf("unable to publish: %s", err)
+	}
 
 	duplicate := publishedCollecton.CheckDuplicate(published)
 	if duplicate != nil {
@@ -114,7 +114,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
 
 	if publishedCollecton.Len() == 0 {
-		fmt.Printf("No snapshots have been published. Publish a snapshot by running `aptly publish snapshot ...`.")
+		fmt.Printf("No snapshots have been published. Publish a snapshot by running `aptly publish snapshot ...`.\n")
 		return err
 	}
 
@@ -145,6 +145,30 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlyPublishDrop(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) < 1 || len(args) > 2 {
+		cmd.Usage()
+		return err
+	}
+
+	distribution := args[0]
+	prefix := "."
+
+	if len(args) == 2 {
+		prefix = args[1]
+	}
+
+	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
+
+	err = publishedCollecton.Remove(context.packageRepository, prefix, distribution)
+	if err != nil {
+		return fmt.Errorf("unable to remove: %s", err)
+	}
+
+	return err
+}
+
 func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshot,
@@ -158,6 +182,20 @@ Publishes snapshot as Debian repository ready to be used by apt tools.
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
+
+	return cmd
+}
+
+func makeCmdPublishDrop() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlyPublishDrop,
+		UsageLine: "drop <distribution> [<prefix>]",
+		Short:     "removes files of published repository",
+		Long: `
+Removes whatever has been published under specified prefix and distribution name.
+`,
+		Flag: *flag.NewFlagSet("aptly-publish-drop", flag.ExitOnError),
+	}
 
 	return cmd
 }
@@ -183,6 +221,7 @@ func makeCmdPublish() *commander.Command {
 		Subcommands: []*commander.Command{
 			makeCmdPublishSnapshot(),
 			makeCmdPublishList(),
+			makeCmdPublishDrop(),
 		},
 		Flag: *flag.NewFlagSet("aptly-publish", flag.ExitOnError),
 	}
