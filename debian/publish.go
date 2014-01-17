@@ -31,7 +31,22 @@ type PublishedRepo struct {
 }
 
 // NewPublishedRepo creates new published repository
-func NewPublishedRepo(prefix string, distribution string, component string, architectures []string, snapshot *Snapshot) *PublishedRepo {
+func NewPublishedRepo(prefix string, distribution string, component string, architectures []string, snapshot *Snapshot) (*PublishedRepo, error) {
+	prefix = filepath.Clean(prefix)
+	if strings.HasPrefix(prefix, "/") {
+		prefix = prefix[1:]
+	}
+	if strings.HasSuffix(prefix, "/") {
+		prefix = prefix[:len(prefix)-1]
+	}
+	prefix = filepath.Clean(prefix)
+
+	for _, component := range strings.Split(prefix, "/") {
+		if component == ".." || component == "dists" || component == "pool" {
+			return nil, fmt.Errorf("invalid prefix %s", prefix)
+		}
+	}
+
 	return &PublishedRepo{
 		UUID:          uuid.New(),
 		Prefix:        prefix,
@@ -40,24 +55,18 @@ func NewPublishedRepo(prefix string, distribution string, component string, arch
 		Architectures: architectures,
 		SnapshotUUID:  snapshot.UUID,
 		snapshot:      snapshot,
-	}
+	}, nil
 }
 
 // String returns human-readable represenation of PublishedRepo
 func (p *PublishedRepo) String() string {
-	var prefix, archs string
-
-	if p.Prefix != "" {
-		prefix = p.Prefix
-	} else {
-		prefix = "."
-	}
+	var archs string
 
 	if len(p.Architectures) > 0 {
 		archs = fmt.Sprintf(" [%s]", strings.Join(p.Architectures, ", "))
 	}
 
-	return fmt.Sprintf("%s/%s (%s)%s publishes %s", prefix, p.Distribution, p.Component, archs, p.snapshot.String())
+	return fmt.Sprintf("%s/%s (%s)%s publishes %s", p.Prefix, p.Distribution, p.Component, archs, p.snapshot.String())
 }
 
 // Key returns unique key identifying PublishedRepo
@@ -236,6 +245,33 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	return nil
 }
 
+// RemoveFiles removes files that were created by Publish
+//
+// It can remove prefix fully, and part of pool (for specific component)
+func (p *PublishedRepo) RemoveFiles(repo *Repository, removePrefix, removePoolComponent bool) error {
+	if removePrefix {
+		err := repo.RemoveDirs(filepath.Join(p.Prefix, "dists"))
+		if err != nil {
+			return err
+		}
+
+		return repo.RemoveDirs(filepath.Join(p.Prefix, "pool"))
+	}
+
+	err := repo.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution))
+	if err != nil {
+		return err
+	}
+
+	if removePoolComponent {
+		err = repo.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // PublishedRepoCollection does listing, updating/adding/deleting of PublishedRepos
 type PublishedRepoCollection struct {
 	db   database.Storage
@@ -344,4 +380,39 @@ func (collection *PublishedRepoCollection) ForEach(handler func(*PublishedRepo) 
 // Len returns number of remote repos
 func (collection *PublishedRepoCollection) Len() int {
 	return len(collection.list)
+}
+
+// Remove removes published repository, cleaning up directories, files
+func (collection *PublishedRepoCollection) Remove(packageRepo *Repository, prefix, distribution string) error {
+	repo, err := collection.ByPrefixDistribution(prefix, distribution)
+	if err != nil {
+		return err
+	}
+
+	removePrefix := true
+	removePoolComponent := true
+	repoPosition := -1
+
+	for i, r := range collection.list {
+		if r == repo {
+			repoPosition = i
+			continue
+		}
+		if r.Prefix == repo.Prefix {
+			removePrefix = false
+			if r.Component == repo.Component {
+				removePoolComponent = false
+			}
+		}
+	}
+
+	err = repo.RemoveFiles(packageRepo, removePrefix, removePoolComponent)
+	if err != nil {
+		return err
+	}
+
+	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
+		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
+
+	return collection.db.Delete(repo.Key())
 }
