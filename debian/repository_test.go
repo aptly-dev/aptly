@@ -52,6 +52,21 @@ func (s *RepositorySuite) TestCreateFile(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *RepositorySuite) TestRemoveDirs(c *C) {
+	err := s.repo.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	file, err := s.repo.CreateFile("ppa/dists/squeeze/Release")
+	c.Assert(err, IsNil)
+	defer file.Close()
+
+	err = s.repo.RemoveDirs("ppa/dists/")
+
+	_, err = os.Stat(filepath.Join(s.repo.RootPath, "public/ppa/dists/squeeze/Release"))
+	c.Assert(err, NotNil)
+	c.Assert(os.IsNotExist(err), Equals, true)
+}
+
 func (s *RepositorySuite) TestLinkFromPool(c *C) {
 	tests := []struct {
 		prefix           string

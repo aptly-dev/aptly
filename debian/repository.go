@@ -59,6 +59,13 @@ func (r *Repository) CreateFile(path string) (*os.File, error) {
 	return os.Create(filepath.Join(r.RootPath, "public", path))
 }
 
+// RemoveDirs removes directory structure under public path
+func (r *Repository) RemoveDirs(path string) error {
+	filepath := filepath.Join(r.RootPath, "public", path)
+	fmt.Printf("Removing %s...\n", filepath)
+	return os.RemoveAll(filepath)
+}
+
 // LinkFromPool links package file from pool to dist's pool location
 func (r *Repository) LinkFromPool(prefix string, component string, sourcePath string, poolDirectory string) (string, error) {
 	baseName := filepath.Base(sourcePath)
