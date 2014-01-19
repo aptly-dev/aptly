@@ -42,6 +42,16 @@ func (s *SnapshotSuite) TestNewSnapshotFromPackageList(c *C) {
 	c.Check(snapshot.SourceIDs, DeepEquals, []string{snap.UUID})
 }
 
+func (s *SnapshotSuite) TestNewSnapshotFromRefList(c *C) {
+	snap, _ := NewSnapshotFromRepository("snap1", s.repo)
+
+	snapshot := NewSnapshotFromRefList("snap2", []*Snapshot{snap}, s.reflist, "Merged")
+	c.Check(snapshot.Name, Equals, "snap2")
+	c.Check(snapshot.NumPackages(), Equals, 3)
+	c.Check(snapshot.SourceKind, Equals, "snapshot")
+	c.Check(snapshot.SourceIDs, DeepEquals, []string{snap.UUID})
+}
+
 func (s *SnapshotSuite) TestKey(c *C) {
 	snapshot, _ := NewSnapshotFromRepository("snap1", s.repo)
 	c.Assert(len(snapshot.Key()), Equals, 37)

@@ -48,6 +48,11 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 
 // NewSnapshotFromPackageList creates snapshot from PackageList
 func NewSnapshotFromPackageList(name string, sources []*Snapshot, list *PackageList, description string) *Snapshot {
+	return NewSnapshotFromRefList(name, sources, NewPackageRefListFromPackageList(list), description)
+}
+
+// NewSnapshotFromRefList creates snapshot from PackageRefList
+func NewSnapshotFromRefList(name string, sources []*Snapshot, list *PackageRefList, description string) *Snapshot {
 	sourceUUIDs := make([]string, len(sources))
 	for i := range sources {
 		sourceUUIDs[i] = sources[i].UUID
@@ -60,7 +65,7 @@ func NewSnapshotFromPackageList(name string, sources []*Snapshot, list *PackageL
 		SourceKind:  "snapshot",
 		SourceIDs:   sourceUUIDs,
 		Description: description,
-		packageRefs: NewPackageRefListFromPackageList(list),
+		packageRefs: list,
 	}
 }
 
