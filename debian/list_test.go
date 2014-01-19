@@ -394,3 +394,56 @@ func (s *PackageListSuite) TestDiff(c *C) {
 	c.Check(diffBA[3].Left, IsNil)
 
 }
+
+func (s *PackageListSuite) TestMerge(c *C) {
+	db, _ := database.OpenDB(c.MkDir())
+	coll := NewPackageCollection(db)
+
+	packages := []*Package{
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
+		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
+		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
+		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
+		&Package{Name: "dpkg", Version: "1.0", Architecture: "i386"},     //6
+		&Package{Name: "xyz", Version: "1.0", Architecture: "sparc"},     //7
+	}
+
+	for _, p := range packages {
+		coll.Update(p)
+	}
+
+	listA := NewPackageList()
+	listA.Add(packages[0])
+	listA.Add(packages[1])
+	listA.Add(packages[2])
+	listA.Add(packages[3])
+	listA.Add(packages[7])
+
+	listB := NewPackageList()
+	listB.Add(packages[0])
+	listB.Add(packages[2])
+	listB.Add(packages[4])
+	listB.Add(packages[5])
+	listB.Add(packages[6])
+
+	reflistA := NewPackageRefListFromPackageList(listA)
+	reflistB := NewPackageRefListFromPackageList(listB)
+
+	mergeAB := reflistA.Merge(reflistB)
+	mergeBA := reflistB.Merge(reflistA)
+
+	toStrSlice := func(reflist *PackageRefList) (result []string) {
+		result = make([]string, reflist.Len())
+		for i, r := range reflist.Refs {
+			result[i] = string(r)
+		}
+		return
+	}
+
+	c.Check(toStrSlice(mergeAB), DeepEquals,
+		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+	c.Check(toStrSlice(mergeBA), DeepEquals,
+		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+}

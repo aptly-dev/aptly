@@ -473,3 +473,66 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 
 	return
 }
+
+// Merge merges reflist r into current reflist. Merge replaces matching packages (by architecture/name)
+// with reference from r.
+func (l *PackageRefList) Merge(r *PackageRefList) (result *PackageRefList) {
+	// pointer to left and right reflists
+	il, ir := 0, 0
+	// length of reflists
+	ll, lr := l.Len(), r.Len()
+
+	result = &PackageRefList{}
+	result.Refs = make([][]byte, 0, ll+lr)
+
+	// until we reached end of both lists
+	for il < ll || ir < lr {
+		// if we've exhausted left list, pull the rest from the right
+		if il == ll {
+			result.Refs = append(result.Refs, r.Refs[ir:]...)
+			break
+		}
+		// if we've exhausted right list, pull the rest from the left
+		if ir == lr {
+			result.Refs = append(result.Refs, l.Refs[il:]...)
+			break
+		}
+
+		// refs on both sides are present, load them
+		rl, rr := l.Refs[il], r.Refs[ir]
+		// compare refs
+		rel := bytes.Compare(rl, rr)
+
+		if rel == 0 {
+			// refs are identical, so are packages, advance pointer
+			result.Refs = append(result.Refs, l.Refs[il])
+			il++
+			ir++
+		} else {
+			partsL := bytes.Split(rl, []byte(" "))
+			archL, nameL := partsL[0][1:], partsL[1]
+
+			partsR := bytes.Split(rr, []byte(" "))
+			archR, nameR := partsR[0][1:], partsR[1]
+
+			if bytes.Compare(archL, archR) == 0 && bytes.Compare(nameL, nameR) == 0 {
+				// override with package from the right
+				result.Refs = append(result.Refs, r.Refs[ir])
+				il++
+				ir++
+			} else {
+				// otherwise append smallest of two
+				if rel < 0 {
+					result.Refs = append(result.Refs, l.Refs[il])
+					il++
+				} else {
+					result.Refs = append(result.Refs, r.Refs[ir])
+					ir++
+				}
+			}
+
+		}
+	}
+
+	return
+}
