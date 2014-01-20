@@ -10,7 +10,7 @@ aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
-Documentation is available at `http://smira.github.io/aptly/ <http://smira.github.io/aptly>`_. For support use
+Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support use
 mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
 
 Aptly features: ("+" means planned features)
