@@ -1,0 +1,8 @@
+{
+  "rootDir": "${HOME}/.aptly",
+  "downloadConcurrency": 4,
+  "architectures": [],
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": false,
+  "dependencyFollowAllVariants": false
+}
