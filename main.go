@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,10 +48,15 @@ var context struct {
 	architecturesList []string
 }
 
+func fatal(err error) {
+	fmt.Printf("ERROR: %s\n", err)
+	os.Exit(1)
+}
+
 func main() {
 	err := cmd.Flag.Parse(os.Args[1:])
 	if err != nil {
-		log.Fatalf("%s", err)
+		fatal(err)
 	}
 
 	configLocations := []string{
@@ -64,10 +69,13 @@ func main() {
 		if err == nil {
 			break
 		}
+		if !os.IsNotExist(err) {
+			fatal(fmt.Errorf("error loading config file %s: %s", configLocation, err))
+		}
 	}
 
 	if err != nil {
-		log.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+		fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
 		utils.SaveConfig(configLocations[0], &utils.Config)
 	}
 
@@ -93,7 +101,7 @@ func main() {
 
 	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
 	if err != nil {
-		log.Fatalf("can't open database: %s", err)
+		fatal(fmt.Errorf("can't open database: %s", err))
 	}
 	defer context.database.Close()
 
@@ -101,6 +109,6 @@ func main() {
 
 	err = cmd.Dispatch(cmd.Flag.Args())
 	if err != nil {
-		log.Fatalf("%s", err)
+		fatal(err)
 	}
 }
