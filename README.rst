@@ -35,7 +35,7 @@ Currently aptly is under heavy development, so please use it with care.
 Download
 --------
 
-Binary executables (depends almost only on libc) are available for download from `Bintray <https://bintray.com/smira/generic/aptly>`_.
+Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
 If you have Go environment set up, you can build aptly from source by running::
 
