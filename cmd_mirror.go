@@ -6,6 +6,7 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
+	"sort"
 	"strings"
 )
 
@@ -20,12 +21,20 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 
 	if repoCollection.Len() > 0 {
 		fmt.Printf("List of mirrors:\n")
+		repos := make(sort.StringSlice, repoCollection.Len())
+		i := 0
 		repoCollection.ForEach(func(repo *debian.RemoteRepo) error {
-			fmt.Printf(" * %s\n", repo)
+			repos[i] = repo.String()
+			i++
 			return nil
 		})
 
-		fmt.Printf("\nTo get more information about repository, run `aptly mirror show <name>`.\n")
+		sort.Strings(repos)
+		for _, repo := range repos {
+			fmt.Printf(" * %s\n", repo)
+		}
+
+		fmt.Printf("\nTo get more information about mirror, run `aptly mirror show <name>`.\n")
 	} else {
 		fmt.Printf("No mirrors found, create one with `aptly mirror create ...`.\n")
 	}
