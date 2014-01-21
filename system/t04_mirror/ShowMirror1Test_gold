@@ -1,0 +1,18 @@
+Name: mirror1
+Archive Root URL: http://mirror.yandex.ru/debian/
+Distribution: wheezy
+Components: main, contrib, non-free
+Architectures: amd64, armel, armhf, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc
+Last update: never
+
+Information from release file:
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
+Codename: wheezy
+Components: main contrib non-free
+Date: Sat, 14 Dec 2013 10:51:30 UTC
+Description:  Debian 7.3 Released 14 December 2013
+
+Label: Debian
+Origin: Debian
+Suite: stable
+Version: 7.3

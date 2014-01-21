@@ -4,10 +4,12 @@ Test library.
 
 import difflib
 import inspect
+import json
 import subprocess
 import os
 import shutil
 import string
+
 
 class BaseTest(object):
     """
@@ -15,6 +17,15 @@ class BaseTest(object):
     """
 
     expectedCode = 0
+    configFile = {
+        "rootDir": "%s/.aptly" % os.environ["HOME"],
+        "downloadConcurrency": 4,
+        "architectures": [],
+        "dependencyFollowSuggests": False,
+        "dependencyFollowRecommends": False,
+        "dependencyFollowAllVariants": False
+    }
+    configOverride = {}
 
     def test(self):
         self.prepare()
@@ -28,9 +39,16 @@ class BaseTest(object):
             os.remove(os.path.join(os.environ["HOME"], ".aptly.conf"))
 
     def prepare_default_config(self):
+        cfg = self.configFile.copy()
+        cfg.update(**self.configOverride)
         f = open(os.path.join(os.environ["HOME"], ".aptly.conf"), "w")
-        f.write(config_file)
+        f.write(json.dumps(cfg))
         f.close()
+
+    def prepare_fixture(self):
+        if hasattr(self, "fixtureCmds"):
+            for cmd in self.fixtureCmds:
+                self.run_cmd(cmd)
 
     def run(self):
         self.output = self.run_cmd(self.runCmd, self.expectedCode)
@@ -75,14 +93,5 @@ class BaseTest(object):
     def prepare(self):
         self.prepare_remove_all()
         self.prepare_default_config()
+        self.prepare_fixture()
 
-config_file = """
-{
-  "rootDir": "%s/.aptly",
-  "downloadConcurrency": 4,
-  "architectures": [],
-  "dependencyFollowSuggests": false,
-  "dependencyFollowRecommends": false,
-  "dependencyFollowAllVariants": false
-}
-""" % (os.environ["HOME"])

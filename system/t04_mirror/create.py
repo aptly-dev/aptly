@@ -59,3 +59,17 @@ class CreateMirror6Test(BaseTest):
     expectedCode = 1
 
     runCmd = "aptly mirror create mirror6 http://mirror.yandex.ru/debian/ suslik"
+
+
+class CreateMirror7Test(BaseTest):
+    """
+    create mirror: architectures fixed via config file
+    """
+    runCmd = "aptly mirror create mirror7 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    configOverride = {"architectures": ["i386", "amd64"]}
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror7", "mirror_show")
+
+
