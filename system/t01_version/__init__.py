@@ -1,9 +1,13 @@
 """
-Test aptly version.
+Test aptly version
 """
 
 from lib import BaseTest
 
 
-class Test(BaseTest):
+class VersionTest(BaseTest):
+    """
+    version should match
+    """
+
     runCmd = "aptly version"

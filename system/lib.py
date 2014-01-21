@@ -48,7 +48,7 @@ class BaseTest(object):
         return string.Template(gold).substitute(os.environ)
 
     def get_gold(self):
-        gold = os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), "gold")
+        gold = os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__ + "_gold")
         return self.gold_processor(open(gold, "r").read())
 
     def check_output(self):
