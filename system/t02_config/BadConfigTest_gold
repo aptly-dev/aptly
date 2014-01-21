@@ -1,1 +1,1 @@
-ERROR: error loading config file /Users/smira/.aptly.conf: invalid character 's' looking for beginning of object key string
+ERROR: error loading config file ${HOME}/.aptly.conf: invalid character 's' looking for beginning of object key string

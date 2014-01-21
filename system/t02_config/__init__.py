@@ -25,6 +25,8 @@ class BadConfigTest(BaseTest):
     runCmd = "aptly"
     expectedCode = 1
 
+    gold_processor = BaseTest.expand_environ
+
     def prepare(self):
         self.prepare_remove_all()
 
