@@ -16,7 +16,7 @@ TRAVIS_TARGET=test
 PREPARE_LIST=
 endif
 
-all: test check
+all: test check system-test
 
 prepare: $(PREPARE_LIST)
 	go get -d -v ./...
@@ -43,7 +43,10 @@ check:
 	go tool vet -all=true .
 	golint .
 
-travis: $(TRAVIS_TARGET)
+system-test:
+	python system/run.py
+
+travis: $(TRAVIS_TARGET) system-test
 
 test:
 	go test -v ./... -gocheck.v=true
