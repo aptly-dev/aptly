@@ -15,13 +15,13 @@ except ImportError:
         return s
 
 
-def run():
+def run(include_long_tests=False):
     """
     Run system test.
     """
     tests = glob.glob("t*_*")
     fails = []
-    numTests = numFailed = 0
+    numTests = numFailed = numSkipped = 0
 
     for test in tests:
 
@@ -34,6 +34,10 @@ def run():
                 continue
 
             t = o()
+            if t.longTest and not include_long_tests:
+                numSkipped += 1
+                continue
+
             numTests += 1
 
             sys.stdout.write("%s:%s... " % (test, o.__name__))
@@ -47,7 +51,7 @@ def run():
             else:
                 sys.stdout.write(colored("OK\n", color="green"))
 
-    print "TESTS: %d SUCCESS: %d FAIL: %d" % (numTests, numTests - numFailed, numFailed)
+    print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (numTests, numTests - numFailed, numFailed, numSkipped)
 
     if len(fails) > 0:
         print "\nFAILURES (%d):" % (len(fails), )
@@ -61,4 +65,5 @@ def run():
 
 if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
-    run()
+    include_long_tests = len(sys.argv) > 1 and sys.argv[1] == "--long"
+    run(include_long_tests)

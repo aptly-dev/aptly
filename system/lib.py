@@ -16,6 +16,7 @@ class BaseTest(object):
     Base class for all tests.
     """
 
+    longTest = False
     expectedCode = 0
     configFile = {
         "rootDir": "%s/.aptly" % os.environ["HOME"],
@@ -51,20 +52,23 @@ class BaseTest(object):
                 self.run_cmd(cmd)
 
     def run(self):
-        self.output = self.run_cmd(self.runCmd, self.expectedCode)
+        self.output = self.output_processor(self.run_cmd(self.runCmd, self.expectedCode))
 
     def run_cmd(self, command, expected_code=0):
         try:
             proc = subprocess.Popen(command.split(" "), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             output, _ = proc.communicate()
             if proc.returncode != expected_code:
-                raise Exception("exit code %d != %d" % (proc.returncode, expected_code))
+                raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
             return output
         except Exception, e:
             raise Exception("Running command %s failed: %s" % (command, str(e)))
 
     def gold_processor(self, gold):
         return gold
+
+    def output_processor(self, output):
+        return output
 
     def expand_environ(self, gold):
         return string.Template(gold).substitute(os.environ)
