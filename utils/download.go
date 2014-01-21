@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -94,7 +93,7 @@ func (downloader *downloaderImpl) Download(url string, destination string, resul
 
 // handleTask processes single download task
 func (downloader *downloaderImpl) handleTask(task *downloadTask) {
-	log.Printf("Downloading %s...\n", task.url)
+	fmt.Printf("Downloading %s...\n", task.url)
 
 	resp, err := http.Get(task.url)
 	if err != nil {
