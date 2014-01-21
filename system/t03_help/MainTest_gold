@@ -1,0 +1,17 @@
+aptly - Debian repository management tool
+
+Commands:
+
+    mirror      manage mirrors of remote repositories
+    publish     manage published repositories
+    snapshot    manage snapshots of repositories
+    version     display version
+
+Use "aptly help <command>" for more information about a command.
+
+
+Options:
+  -architectures="": list of architectures to consider during (comma-separated), default to all available
+  -dep-follow-all-variants=false: when processing dependencies, follow a & b if depdency is 'a|b'
+  -dep-follow-recommends=false: when processing dependencies, follow Recommends
+  -dep-follow-suggests=false: when processing dependencies, follow Suggests

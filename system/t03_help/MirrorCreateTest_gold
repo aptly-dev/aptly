@@ -1,0 +1,4 @@
+Usage: aptly mirror create <name> <archive url> <distribution> [<component1> ...]
+
+aptly mirror create - create new mirror of Debian repository
+

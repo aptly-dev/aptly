@@ -1,0 +1,11 @@
+aptly mirror - manage mirrors of remote repositories
+
+Commands:
+
+    create      create new mirror of Debian repository
+    list        list mirrors of remote repositories
+    show        show details about remote repository mirror
+    update      update packages from remote mirror
+
+Use "mirror help <command>" for more information about a command.
+
