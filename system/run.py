@@ -7,7 +7,12 @@ import inspect
 import sys
 
 from lib import BaseTest
-from termcolor import colored
+
+try:
+    from termcolor import colored
+except ImportError:
+    def colored(s, **kwargs):
+        return s
 
 
 def run():
@@ -52,6 +57,7 @@ def run():
             print "ERROR: %s" % (e, )
             print "=" * 60
 
+        sys.exit(1)
 
 if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
