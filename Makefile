@@ -3,9 +3,11 @@ GOVERSION=$(shell go version | awk '{print $$3;}')
 ifeq ($(TRAVIS), true)
 GOVERALLS?=$(HOME)/gopath/bin/goveralls
 SRCPATH?=$(HOME)/gopath/src
+BINPATH=$(HOME)/gopath/bin
 else
 GOVERALLS?=goveralls
 SRCPATH?=$(GOPATH)/src
+BINPATH?=$(GOPATH)/bin
 endif
 
 ifeq ($(GOVERSION), go1.2)
@@ -44,7 +46,7 @@ check:
 	golint .
 
 system-test:
-	python system/run.py
+	PATH=$(BINPATH):$(PATH) python system/run.py
 
 travis: $(TRAVIS_TARGET) system-test
 
