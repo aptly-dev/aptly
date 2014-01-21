@@ -46,6 +46,7 @@ check:
 	golint .
 
 system-test:
+	go install
 	PATH=$(BINPATH):$(PATH) python system/run.py
 
 travis: $(TRAVIS_TARGET) system-test
