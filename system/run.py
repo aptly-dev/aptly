@@ -38,7 +38,7 @@ def run():
             except BaseException, e:
                 numFailed += 1
                 fails.append((test, t, e, testModule))
-                sys.stdout.write("FAIL\n")
+                sys.stdout.write(colored("FAIL\n", color="red"))
             else:
                 sys.stdout.write(colored("OK\n", color="green"))
 

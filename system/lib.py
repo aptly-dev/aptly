@@ -33,13 +33,17 @@ class BaseTest(object):
         f.close()
 
     def run(self):
+        self.output = self.run_cmd(self.runCmd, self.expectedCode)
+
+    def run_cmd(self, command, expected_code=0):
         try:
-            proc = subprocess.Popen(self.runCmd.split(" "), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-            self.output, _ = proc.communicate()
-            if proc.returncode != self.expectedCode:
-                raise Exception("exit code %d != %d" % (proc.returncode, self.expectedCode))
+            proc = subprocess.Popen(command.split(" "), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+            output, _ = proc.communicate()
+            if proc.returncode != expected_code:
+                raise Exception("exit code %d != %d" % (proc.returncode, expected_code))
+            return output
         except Exception, e:
-            raise Exception("Running command %s failed: %s" % (self.runCmd, str(e)))
+            raise Exception("Running command %s failed: %s" % (command, str(e)))
 
     def gold_processor(self, gold):
         return gold
@@ -47,12 +51,15 @@ class BaseTest(object):
     def expand_environ(self, gold):
         return string.Template(gold).substitute(os.environ)
 
-    def get_gold(self):
-        gold = os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__ + "_gold")
+    def get_gold(self, gold_name="gold"):
+        gold = os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__ + "_" + gold_name)
         return self.gold_processor(open(gold, "r").read())
 
     def check_output(self):
         self.verify_match(self.get_gold(), self.output)
+
+    def check_cmd_output(self, command, gold_name):
+        self.verify_match(self.get_gold(gold_name), self.run_cmd(command))
 
     def verify_match(self, a, b):
         if a != b:
