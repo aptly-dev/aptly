@@ -39,5 +39,4 @@ Binary executables (depends almost only on libc) are available for download from
 
 If you have Go environment set up, you can build aptly from source by running::
 
-    go get -d -v github.com/smira/aptly
-    go install github.com/smira/aptly
+    go get github.com/smira/aptly
