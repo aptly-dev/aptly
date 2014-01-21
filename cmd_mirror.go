@@ -5,6 +5,7 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/utils"
 	"strings"
 )
 
@@ -92,9 +93,10 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	}
 
 	fmt.Printf("\nInformation from release file:\n")
-	for name, value := range repo.Meta {
-		fmt.Printf("%s: %s\n", name, value)
+	for _, k := range utils.StrMapSortedKeys(repo.Meta) {
+		fmt.Printf("%s: %s\n", k, repo.Meta[k])
 	}
+
 	return err
 }
 
