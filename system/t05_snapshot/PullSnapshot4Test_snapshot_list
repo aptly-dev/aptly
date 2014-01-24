@@ -1,0 +1,5 @@
+List of snapshots:
+ * [snap1]: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
+ * [snap2]: Snapshot from mirror [wheezy-backports]: http://mirror.yandex.ru/debian/ wheezy-backports
+
+To get more information about snapshot, run `aptly snapshot show <name>`.
