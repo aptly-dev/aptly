@@ -75,3 +75,29 @@ func StrMapSortedKeys(m map[string]string) []string {
 	sort.Strings(keys)
 	return keys
 }
+
+// StrSliceDeduplicate removes dups in slice
+func StrSliceDeduplicate(s []string) []string {
+	l := len(s)
+	if l < 2 {
+		return s
+	}
+	if l == 2 {
+		if s[0] == s[1] {
+			return s[0:1]
+		}
+		return s
+	}
+
+	found := make(map[string]bool, l)
+	j := 0
+	for i, x := range s {
+		if !found[x] {
+			found[x] = true
+			s[j] = s[i]
+			j++
+		}
+	}
+
+	return s[:j]
+}
