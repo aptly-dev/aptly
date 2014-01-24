@@ -301,20 +301,23 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			// Search for package that can satisfy dependencies
 			pkg := sourcePackageList.Search(dep)
 			if pkg == nil {
-				color.Printf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|\n", &dep, source)
+				color.Printf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
+				fmt.Printf("\n")
 				continue
 			}
 
 			// Remove all packages with the same name and architecture
 			for p := packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name}); p != nil; {
 				packageList.Remove(p)
-				color.Printf("@r[-]@| %s removed\n", p)
+				color.Printf("@r[-]@| %s removed", p)
+				fmt.Printf("\n")
 				p = packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name})
 			}
 
 			// Add new discovered package
 			packageList.Add(pkg)
-			color.Printf("@g[+]@| %s added\n", pkg)
+			color.Printf("@g[+]@| %s added", pkg)
+			fmt.Printf("\n")
 
 			if noDeps {
 				continue
@@ -326,7 +329,8 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 			missing, err := pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList)
 			if err != nil {
-				color.Printf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|\n", pkg, err)
+				color.Printf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
+				fmt.Printf("\n")
 			}
 
 			// Append missing dependencies to the list of dependencies to satisfy
