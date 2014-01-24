@@ -190,19 +190,23 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				}
 
 				variantsMissing := make([]Dependency, 0, len(variants))
+				missingCount := 0
 
 				for _, dep := range variants {
 					dep.Architecture = arch
 
 					hash := dep.Hash()
-					_, ok := cache[hash]
+					r, ok := cache[hash]
 					if ok {
+						if !r {
+							missingCount++
+						}
 						continue
 					}
 
 					if sources.Search(dep) == nil {
 						variantsMissing = append(variantsMissing, dep)
-						cache[hash] = false
+						missingCount++
 					} else {
 						cache[hash] = true
 					}
@@ -210,9 +214,15 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 
 				if options&DepFollowAllVariants == DepFollowAllVariants {
 					missing = append(missing, variantsMissing...)
+					for _, dep := range variantsMissing {
+						cache[dep.Hash()] = false
+					}
 				} else {
-					if len(variantsMissing) == len(variants) {
+					if missingCount == len(variants) {
 						missing = append(missing, variantsMissing...)
+						for _, dep := range variantsMissing {
+							cache[dep.Hash()] = false
+						}
 					}
 				}
 			}
