@@ -7,6 +7,7 @@ import inspect
 import json
 import subprocess
 import os
+import shlex
 import shutil
 import string
 
@@ -79,7 +80,7 @@ class BaseTest(object):
 
     def run_cmd(self, command, expected_code=0):
         try:
-            proc = subprocess.Popen(command.split(" "), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+            proc = subprocess.Popen(shlex.split(command), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             output, _ = proc.communicate()
             if proc.returncode != expected_code:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
