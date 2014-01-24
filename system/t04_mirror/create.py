@@ -73,3 +73,12 @@ class CreateMirror7Test(BaseTest):
         self.check_cmd_output("aptly mirror show mirror7", "mirror_show")
 
 
+class CreateMirror8Test(BaseTest):
+    """
+    create mirror: already exists
+    """
+    fixtureCmds = [
+        "aptly mirror create mirror8 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    ]
+    runCmd = "aptly mirror create mirror8 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    expectedCode = 1
