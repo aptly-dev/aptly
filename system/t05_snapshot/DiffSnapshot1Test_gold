@@ -1,0 +1,7 @@
+  Arch   | Package                                  | Version in A                             | Version in B
+[0;32;49m+[0;39;49m all    | init-system-helpers                      | -                                        | 1.11~bpo70.1                            
+[0m[0;33;49m![0;39;49m amd64  | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1                         
+[0m[0;33;49m![0;39;49m amd64  | rsyslog                                  | 5.8.11-3                                 | 7.4.4-1~bpo70+1                         
+[0m[0;33;49m![0;39;49m i386   | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1                         
+[0m[0;33;49m![0;39;49m i386   | rsyslog                                  | 5.8.11-3                                 | 7.4.4-1~bpo70+1                         
+[0m
