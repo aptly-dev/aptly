@@ -17,6 +17,9 @@ class BaseTest(object):
     """
 
     longTest = False
+    fixturePool = False
+    fixtureDB = False
+
     expectedCode = 0
     configFile = {
         "rootDir": "%s/.aptly" % os.environ["HOME"],
@@ -27,6 +30,11 @@ class BaseTest(object):
         "dependencyFollowAllVariants": False
     }
     configOverride = {}
+
+    fixtureDBDir = os.path.join(os.environ["HOME"], "aptly-fixture-db")
+    fixturePoolDir = os.path.join(os.environ["HOME"], "aptly-fixture-pool")
+
+    outputMatchPrepare = None
 
     def test(self):
         self.prepare()
@@ -46,7 +54,22 @@ class BaseTest(object):
         f.write(json.dumps(cfg))
         f.close()
 
+    def fixture_available(self):
+        if self.fixturePool and not os.path.exists(self.fixturePoolDir):
+            return False
+        if self.fixtureDB and not os.path.exists(self.fixtureDBDir):
+            return False
+
+        return True
+
     def prepare_fixture(self):
+        if self.fixturePool:
+            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
+            os.symlink(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"))
+
+        if self.fixtureDB:
+            shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
+
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:
                 self.run_cmd(cmd)
@@ -78,12 +101,16 @@ class BaseTest(object):
         return self.gold_processor(open(gold, "r").read())
 
     def check_output(self):
-        self.verify_match(self.get_gold(), self.output)
+        self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
 
-    def check_cmd_output(self, command, gold_name):
-        self.verify_match(self.get_gold(gold_name), self.run_cmd(command))
+    def check_cmd_output(self, command, gold_name, match_prepare=None):
+        self.verify_match(self.get_gold(gold_name), self.run_cmd(command), match_prepare)
 
-    def verify_match(self, a, b):
+    def verify_match(self, a, b, match_prepare=None):
+        if match_prepare is not None:
+            a = match_prepare(a)
+            b = match_prepare(b)
+
         if a != b:
             diff = "".join(difflib.unified_diff([l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
 
@@ -98,4 +125,3 @@ class BaseTest(object):
         self.prepare_remove_all()
         self.prepare_default_config()
         self.prepare_fixture()
-

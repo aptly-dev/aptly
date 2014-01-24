@@ -34,7 +34,7 @@ def run(include_long_tests=False):
                 continue
 
             t = o()
-            if t.longTest and not include_long_tests:
+            if t.longTest and not include_long_tests or not t.fixture_available():
                 numSkipped += 1
                 continue
 
