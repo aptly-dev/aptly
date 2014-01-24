@@ -1,4 +1,7 @@
 Usage: aptly mirror create <name> <archive url> <distribution> [<component1> ...]
 
-Create only stores metadata about new mirror, and fetches Release files (it doesn't download packages)
+Create records information about new mirror and fetches Release file (it doesn't download packages).
+
+ex:
+  $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main
 

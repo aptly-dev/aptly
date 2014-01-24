@@ -156,7 +156,10 @@ func makeCmdMirrorCreate() *commander.Command {
 		UsageLine: "create <name> <archive url> <distribution> [<component1> ...]",
 		Short:     "create new mirror of Debian repository",
 		Long: `
-Create only stores metadata about new mirror, and fetches Release files (it doesn't download packages)
+Create records information about new mirror and fetches Release file (it doesn't download packages).
+
+ex:
+  $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
@@ -170,7 +173,7 @@ func makeCmdMirrorList() *commander.Command {
 		UsageLine: "list",
 		Short:     "list mirrors of remote repositories",
 		Long: `
-list shows full list of remote repositories.
+List shows full list of remote repositories.
 
 ex:
   $ aptly mirror list
@@ -188,7 +191,10 @@ func makeCmdMirrorShow() *commander.Command {
 		UsageLine: "show <name>",
 		Short:     "show details about remote repository mirror",
 		Long: `
-show shows full information about mirror.
+Show shows full information about mirror.
+
+ex:
+  $ aptly mirror show wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
@@ -202,7 +208,10 @@ func makeCmdMirrorUpdate() *commander.Command {
 		UsageLine: "update <name>",
 		Short:     "update packages from remote mirror",
 		Long: `
-Update downloads list of packages and packages themselves.
+Update downloads list of packages and package files.
+
+ex:
+  $ aptly mirror update wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-update", flag.ExitOnError),
 	}

@@ -175,7 +175,10 @@ func makeCmdPublishSnapshot() *commander.Command {
 		UsageLine: "snapshot <name> [<prefix>]",
 		Short:     "makes Debian repository out of snapshot",
 		Long: `
-Publishes snapshot as Debian repository ready to be used by apt tools.
+Command publish oublishes snapshot as Debian repository ready to be used by apt tools.
+
+ex.
+	$ aptly publish snapshot wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-snapshot", flag.ExitOnError),
 	}
@@ -192,7 +195,10 @@ func makeCmdPublishDrop() *commander.Command {
 		UsageLine: "drop <distribution> [<prefix>]",
 		Short:     "removes files of published repository",
 		Long: `
-Removes whatever has been published under specified prefix and distribution name.
+Command removes whatever has been published under specified prefix and distribution name.
+
+ex.
+	$ aptly publish drop wheezy
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-drop", flag.ExitOnError),
 	}
@@ -206,7 +212,10 @@ func makeCmdPublishList() *commander.Command {
 		UsageLine: "list",
 		Short:     "displays list of published repositories",
 		Long: `
-Displays list of currently published snapshots.
+Display command displays list of currently published snapshots with information about published root.
+
+ex.
+	$ aptly publish list
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-list", flag.ExitOnError),
 	}

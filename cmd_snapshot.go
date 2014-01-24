@@ -505,7 +505,11 @@ func makeCmdSnapshotCreate() *commander.Command {
 		UsageLine: "create <name> from mirror <mirror-name>",
 		Short:     "creates snapshot out of any mirror",
 		Long: `
-Create makes persistent immutable snapshot of repository mirror state in givent moment of time.
+Command create makes persistent immutable snapshot of remote repository mirror. Snapshot could be
+published or further modified using merge, pull and other aptly features.
+
+ex.
+  $ aptly snapshot create wheezy-main-today from mirror wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-create", flag.ExitOnError),
 	}
@@ -520,7 +524,7 @@ func makeCmdSnapshotList() *commander.Command {
 		UsageLine: "list",
 		Short:     "lists snapshots",
 		Long: `
-list shows full list of snapshots created.
+Command list shows full list of snapshots created.
 
 ex:
   $ aptly snapshot list
@@ -537,7 +541,10 @@ func makeCmdSnapshotShow() *commander.Command {
 		UsageLine: "show <name>",
 		Short:     "shows details about snapshot",
 		Long: `
-Show shows full information about snapshot.
+Command show displays full information about snapshot.
+
+ex.
+	$ aptly snapshot show wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),
 	}
@@ -553,6 +560,9 @@ func makeCmdSnapshotVerify() *commander.Command {
 		Long: `
 Verify does depenency resolution in snapshot, possibly using additional snapshots as dependency sources.
 All unsatisfied dependencies are returned.
+
+ex.
+	$ aptly snapshot verify wheezy-main wheezy-contrib wheezy-non-free
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),
 	}
@@ -566,10 +576,13 @@ func makeCmdSnapshotPull() *commander.Command {
 		UsageLine: "pull <name> <source> <destination> <package-name> ...",
 		Short:     "performs partial upgrades (pulls new packages) from another snapshot",
 		Long: `
-Pulls new packages along with its dependencies in <name> snapshot
+Command pull pulls new packages along with its dependencies in <name> snapshot
 from <source> snapshot. Also can upgrade package version from one snapshot into
 another, once again along with dependencies. New snapshot <destination> is created as result of this
-process.
+process. Packages could be specified simply as 'package-name' or as dependency 'package-name (>= version)'.
+
+ex.
+	$ aptly snapshot pull wheezy-main wheezy-backports wheezy-new-xorg xorg-server-server
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-pull", flag.ExitOnError),
 	}
@@ -586,7 +599,10 @@ func makeCmdSnapshotDiff() *commander.Command {
 		UsageLine: "diff <name-a> <name-b>",
 		Short:     "calculates difference in packages between two snapshots",
 		Long: `
-Displays list of missing and new packages, difference in package versions between two snapshots.
+Command diff shows list of missing and new packages, difference in package versions between two snapshots.
+
+ex.
+	$ aptly snapshot diff -only-matching wheezy-main wheezy-backports
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-diff", flag.ExitOnError),
 	}
@@ -604,7 +620,10 @@ func makeCmdSnapshotMerge() *commander.Command {
 		Long: `
 Merge merges several snapshots into one. Merge happens from left to right. Packages with the same
 name-architecture pair are replaced during merge (package from latest snapshot on the list wins).
-If specified with only one snapshot, merge copies source into destination.
+If run with only one source snapshot, merge copies source into destination.
+
+ex.
+	$ aptly snapshot merge wheezy-w-backports wheezy-main wheezy-backports
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-merge", flag.ExitOnError),
 	}
