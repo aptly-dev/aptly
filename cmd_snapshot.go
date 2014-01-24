@@ -194,8 +194,17 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		fmt.Printf("All dependencies are satisfied.\n")
 	} else {
 		fmt.Printf("Missing dependencies (%d):\n", len(missing))
+		deps := make(sort.StringSlice, len(missing))
+		i := 0
 		for _, dep := range missing {
-			fmt.Printf("  %s\n", dep.String())
+			deps[i] = dep.String()
+			i++
+		}
+
+		sort.Strings(deps)
+
+		for _, dep := range deps {
+			fmt.Printf("  %s\n", dep)
 		}
 	}
 
