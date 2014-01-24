@@ -169,6 +169,33 @@ func (l *PackageList) Architectures() (result []string) {
 	return
 }
 
+// depSliceDeduplicate removes dups in slice of Dependencies
+func depSliceDeduplicate(s []Dependency) []Dependency {
+	l := len(s)
+	if l < 2 {
+		return s
+	}
+	if l == 2 {
+		if s[0] == s[1] {
+			return s[0:1]
+		}
+		return s
+	}
+
+	found := make(map[string]bool, l)
+	j := 0
+	for i, x := range s {
+		h := x.Hash()
+		if !found[h] {
+			found[h] = true
+			s[j] = s[i]
+			j++
+		}
+	}
+
+	return s[:j]
+}
+
 // VerifyDependencies looks for missing dependencies in package list.
 //
 // Analysis would be peformed for each architecture, in specified sources
@@ -188,6 +215,8 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				if err != nil {
 					return nil, fmt.Errorf("unable to process package %s: %s", p, err)
 				}
+
+				variants = depSliceDeduplicate(variants)
 
 				variantsMissing := make([]Dependency, 0, len(variants))
 				missingCount := 0
