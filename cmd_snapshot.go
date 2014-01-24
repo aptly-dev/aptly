@@ -6,6 +6,7 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/wsxiaoys/terminal/color"
+	"sort"
 	"strings"
 )
 
@@ -58,10 +59,20 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 
 	if snapshotCollection.Len() > 0 {
 		fmt.Printf("List of snapshots:\n")
+
+		snapshots := make(sort.StringSlice, snapshotCollection.Len())
+
+		i := 0
 		snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
-			fmt.Printf(" * %s\n", snapshot)
+			snapshots[i] = snapshot.String()
+			i++
 			return nil
 		})
+
+		sort.Strings(snapshots)
+		for _, snapshot := range snapshots {
+			fmt.Printf(" * %s\n", snapshot)
+		}
 
 		fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
 	} else {
