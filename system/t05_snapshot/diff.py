@@ -60,3 +60,15 @@ class DiffSnapshot5Test(BaseTest):
     ]
     runCmd = "aptly snapshot diff -only-matching snap-no snap2"
     expectedCode = 1
+
+
+class DiffSnapshot6Test(BaseTest):
+    """
+    diff two snapshots: identical snapshots
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-main",
+    ]
+    runCmd = "aptly snapshot diff snap1 snap2"

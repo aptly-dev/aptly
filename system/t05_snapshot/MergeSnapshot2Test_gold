@@ -1,0 +1,3 @@
+
+Snapshot snap2 successfully created.
+You can run 'aptly publish snapshot snap2' to publish snapshot as Debian repository.
