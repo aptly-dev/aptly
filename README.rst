@@ -37,6 +37,8 @@ Download
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running::
+If you have Go environment set up, you can build aptly from source by running (go 1.1+ required)::
 
     go get github.com/smira/aptly
+
+If you don't have Go installed (or older version), you can easily install Go using `gvm <https://github.com/moovweb/gvm/>`_.
