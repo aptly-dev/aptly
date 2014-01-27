@@ -46,7 +46,7 @@ check:
 	golint .
 
 system-test:
-	if [ ! -e ~/aptly-fixture-db ]; then git clone git@github.com:aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
+	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	go install
 	PATH=$(BINPATH):$(PATH) python system/run.py --long
 
