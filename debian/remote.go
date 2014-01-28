@@ -78,6 +78,11 @@ func (repo *RemoteRepo) NumPackages() int {
 	return repo.packageRefs.Len()
 }
 
+// RefList returns package list for repo
+func (repo *RemoteRepo) RefList() *PackageRefList {
+	return repo.packageRefs
+}
+
 // ReleaseURL returns URL to Release file in repo root
 // TODO: InRelease, Release.gz, Release.bz2 handling
 func (repo *RemoteRepo) ReleaseURL() *url.URL {

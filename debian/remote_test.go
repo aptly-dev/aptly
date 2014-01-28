@@ -72,6 +72,11 @@ func (s *RemoteRepoSuite) TestNumPackages(c *C) {
 	c.Check(s.repo.NumPackages(), Equals, 3)
 }
 
+func (s *RemoteRepoSuite) TestRefList(c *C) {
+	s.repo.packageRefs = s.reflist
+	c.Check(s.repo.RefList(), Equals, s.reflist)
+}
+
 func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
 	c.Assert(s.repo.ReleaseURL().String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/Release")
 }

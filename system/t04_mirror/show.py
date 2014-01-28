@@ -15,3 +15,11 @@ class ShowMirror2Test(BaseTest):
     """
     runCmd = "aptly mirror show mirror-xx"
     expectedCode = 1
+
+
+class ShowMirror3Test(BaseTest):
+    """
+    show mirror: regular mirror with packages
+    """
+    fixtureDB = True
+    runCmd = "aptly mirror show --with-packages wheezy-contrib"

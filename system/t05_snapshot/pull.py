@@ -19,7 +19,7 @@ class PullSnapshot1Test(BaseTest):
             return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly snapshot show snap3", "snapshot_show", match_prepare=remove_created_at)
+        self.check_cmd_output("aptly snapshot show -with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
 
 
 class PullSnapshot2Test(BaseTest):
@@ -39,7 +39,7 @@ class PullSnapshot2Test(BaseTest):
             return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly snapshot show snap3", "snapshot_show", match_prepare=remove_created_at)
+        self.check_cmd_output("aptly snapshot show -with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
 
 
 class PullSnapshot3Test(BaseTest):
@@ -59,7 +59,7 @@ class PullSnapshot3Test(BaseTest):
             return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly snapshot show snap3", "snapshot_show", match_prepare=remove_created_at)
+        self.check_cmd_output("aptly snapshot show -with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
 
 
 class PullSnapshot4Test(BaseTest):
@@ -136,6 +136,4 @@ class PullSnapshot8Test(BaseTest):
             return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly snapshot show snap3", "snapshot_show", match_prepare=remove_created_at)
-
-
+        self.check_cmd_output("aptly snapshot show --with-packages snap3", "snapshot_show", match_prepare=remove_created_at)

@@ -106,6 +106,15 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 		fmt.Printf("%s: %s\n", k, repo.Meta[k])
 	}
 
+	withPackages := cmd.Flag.Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		if repo.LastDownloadDate.IsZero() {
+			fmt.Printf("Unable to show package list, mirror hasn't been downloaded yet.\n")
+		} else {
+			ListPackagesRefList(repo.RefList())
+		}
+	}
+
 	return err
 }
 
@@ -198,6 +207,8 @@ ex:
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
+
+	cmd.Flag.Bool("with-packages", false, "show package list for mirror as well")
 
 	return cmd
 }

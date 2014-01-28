@@ -106,20 +106,10 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Created At: %s\n", snapshot.CreatedAt.Format("2006-01-02 15:04:05 MST"))
 	fmt.Printf("Description: %s\n", snapshot.Description)
 	fmt.Printf("Number of packages: %d\n", snapshot.NumPackages())
-	fmt.Printf("Packages:\n")
 
-	packageCollection := debian.NewPackageCollection(context.database)
-
-	err = snapshot.RefList().ForEach(func(key []byte) error {
-		p, err := packageCollection.ByKey(key)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("  %s\n", p)
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("unable to load packages: %s", err)
+	withPackages := cmd.Flag.Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		ListPackagesRefList(snapshot.RefList())
 	}
 
 	return err
@@ -548,6 +538,8 @@ ex.
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),
 	}
+
+	cmd.Flag.Bool("with-packages", false, "show package list for snapshot as well")
 
 	return cmd
 }
