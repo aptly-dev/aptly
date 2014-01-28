@@ -1,4 +1,5 @@
 from lib import BaseTest
+import re
 
 
 class ShowMirror1Test(BaseTest):
@@ -23,3 +24,4 @@ class ShowMirror3Test(BaseTest):
     """
     fixtureDB = True
     runCmd = "aptly mirror show --with-packages wheezy-contrib"
+    outputMatchPrepare = lambda _, s: re.sub(r"Last update: [0-9:A-Za-z -]+\n", "", s)
