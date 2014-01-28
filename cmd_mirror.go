@@ -208,7 +208,7 @@ ex:
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
 
-	cmd.Flag.Bool("with-packages", false, "show package list for mirror as well")
+	cmd.Flag.Bool("with-packages", false, "show list of packages")
 
 	return cmd
 }

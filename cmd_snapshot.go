@@ -539,7 +539,7 @@ ex.
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),
 	}
 
-	cmd.Flag.Bool("with-packages", false, "show package list for snapshot as well")
+	cmd.Flag.Bool("with-packages", false, "show list of packages")
 
 	return cmd
 }
