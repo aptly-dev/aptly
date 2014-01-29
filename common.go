@@ -5,6 +5,7 @@ import (
 	"github.com/smira/aptly/debian"
 )
 
+//ListPackagesRefList shows list of packages in PackageRefList
 func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
 	fmt.Printf("Packages:\n")
 
