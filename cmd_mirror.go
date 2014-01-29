@@ -185,7 +185,7 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 				fmt.Printf(" * %s\n", snapshot)
 			}
 
-			return fmt.Errorf("won't delete mirror with snapshots, use --force to override")
+			return fmt.Errorf("won't delete mirror with snapshots, use -force to override")
 		}
 	}
 
