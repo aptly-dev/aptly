@@ -1,0 +1,3 @@
+Mirror `wheezy-main` was used to create following snapshots:
+ * [wheez]: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
+ERROR: won't delete mirror with snapshots, use --force to override

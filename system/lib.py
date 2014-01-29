@@ -104,8 +104,8 @@ class BaseTest(object):
     def check_output(self):
         self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
 
-    def check_cmd_output(self, command, gold_name, match_prepare=None):
-        self.verify_match(self.get_gold(gold_name), self.run_cmd(command), match_prepare)
+    def check_cmd_output(self, command, gold_name, match_prepare=None, expected_code=0):
+        self.verify_match(self.get_gold(gold_name), self.run_cmd(command, expected_code=expected_code), match_prepare)
 
     def verify_match(self, a, b, match_prepare=None):
         if match_prepare is not None:

@@ -489,6 +489,35 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) != 1 {
+		cmd.Usage()
+		return err
+	}
+
+	name := args[0]
+
+	snapshotCollection := debian.NewSnapshotCollection(context.database)
+	snapshot, err := snapshotCollection.ByName(name)
+	if err != nil {
+		return fmt.Errorf("unable to drop: %s", err)
+	}
+
+	force := cmd.Flag.Lookup("force").Value.Get().(bool)
+	if !force {
+		// check for snapshots using this
+	}
+
+	// check for published repos
+
+	// drop
+
+	_ = snapshot
+
+	return err
+}
+
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
@@ -623,6 +652,26 @@ ex.
 	return cmd
 }
 
+func makeCmdSnapshotDrop() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlySnapshotDrop,
+		UsageLine: "drop <name>",
+		Short:     "delete snapshot",
+		Long: `
+Drop removes information about snapshot. If snapshot is published,
+it can't be dropped.
+
+ex.
+	$ aptly snapshot drop wheezy-main
+`,
+		Flag: *flag.NewFlagSet("aptly-snapshot-drop", flag.ExitOnError),
+	}
+
+	cmd.Flag.Bool("force", false, "remove snapshot even if it was used as source for other snapshots")
+
+	return cmd
+}
+
 func makeCmdSnapshot() *commander.Command {
 	return &commander.Command{
 		UsageLine: "snapshot",
@@ -635,7 +684,7 @@ func makeCmdSnapshot() *commander.Command {
 			makeCmdSnapshotPull(),
 			makeCmdSnapshotDiff(),
 			makeCmdSnapshotMerge(),
-			//makeCmdSnapshotDestroy(),
+			makeCmdSnapshotDrop(),
 		},
 		Flag: *flag.NewFlagSet("aptly-snapshot", flag.ExitOnError),
 	}
