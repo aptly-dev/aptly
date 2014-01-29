@@ -1,0 +1,3 @@
+Snapshot `snap1` was used as a source in following snapshots:
+ * [snap2]: Merged from sources: 'snap1'
+ERROR: won't delete snapshot that was used as source for other snapshots, use -force to override

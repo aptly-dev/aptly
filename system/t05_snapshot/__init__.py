@@ -9,3 +9,4 @@ from .verify import *
 from .pull import *
 from .diff import *
 from .merge import *
+from .drop import *

@@ -504,16 +504,41 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	force := cmd.Flag.Lookup("force").Value.Get().(bool)
-	if !force {
-		// check for snapshots using this
+	publishedRepoCollection := debian.NewPublishedRepoCollection(context.database)
+	published := publishedRepoCollection.BySnapshot(snapshot)
+
+	if len(published) > 0 {
+		fmt.Printf("Snapshot `%s` is published currently:\n", snapshot.Name)
+		for _, repo := range published {
+			err = publishedRepoCollection.LoadComplete(repo, snapshotCollection)
+			if err != nil {
+				return fmt.Errorf("unable to load published: %s", err)
+			}
+			fmt.Printf(" * %s\n", repo)
+		}
+
+		return fmt.Errorf("unable to drop: snapshot is published")
 	}
 
-	// check for published repos
+	force := cmd.Flag.Lookup("force").Value.Get().(bool)
+	if !force {
+		snapshots := snapshotCollection.BySnapshotSource(snapshot)
+		if len(snapshots) > 0 {
+			fmt.Printf("Snapshot `%s` was used as a source in following snapshots:\n", snapshot.Name)
+			for _, snap := range snapshots {
+				fmt.Printf(" * %s\n", snap)
+			}
 
-	// drop
+			return fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use -force to override")
+		}
+	}
 
-	_ = snapshot
+	err = snapshotCollection.Drop(snapshot)
+	if err != nil {
+		return fmt.Errorf("unable to drop: %s", err)
+	}
+
+	fmt.Printf("Snapshot `%s` has been dropped.\n", snapshot.Name)
 
 	return err
 }

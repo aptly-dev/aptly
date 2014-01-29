@@ -9,3 +9,6 @@ aptly mirror update wheezy-contrib
 aptly mirror update wheezy-non-free
 aptly mirror update wheezy-updates
 aptly mirror update wheezy-backports
+
+aptly mirror create gnuplot-maverick http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+aptly mirror update gnuplot-maverick
