@@ -365,6 +365,17 @@ func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, 
 	return nil, fmt.Errorf("published repo with uuid %s not found", uuid)
 }
 
+// BySnapshot looks up repository by snapshot source
+func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*PublishedRepo {
+	result := make([]*PublishedRepo, 0)
+	for _, r := range collection.list {
+		if r.SnapshotUUID == snapshot.UUID {
+			result = append(result, r)
+		}
+	}
+	return result
+}
+
 // ForEach runs method for each repository
 func (collection *PublishedRepoCollection) ForEach(handler func(*PublishedRepo) error) error {
 	var err error

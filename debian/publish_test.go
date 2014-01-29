@@ -223,7 +223,7 @@ func (s *PublishedRepoCollectionSuite) TearDownTest(c *C) {
 	s.db.Close()
 }
 
-func (s *PublishedRepoCollectionSuite) TestAddByName(c *C) {
+func (s *PublishedRepoCollectionSuite) TestAddByPrefixDistribution(c *C) {
 	r, err := s.collection.ByPrefixDistribution("ppa", "anaconda")
 	c.Assert(err, ErrorMatches, "*.not found")
 
@@ -294,6 +294,14 @@ func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
 		return e
 	})
 	c.Assert(err, Equals, e)
+}
+
+func (s *PublishedRepoCollectionSuite) TestBySnapshot(c *C) {
+	c.Check(s.collection.Add(s.repo1), IsNil)
+	c.Check(s.collection.Add(s.repo2), IsNil)
+
+	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1})
+	c.Check(s.collection.BySnapshot(s.snap2), DeepEquals, []*PublishedRepo{s.repo2})
 }
 
 type pathExistsChecker struct {
