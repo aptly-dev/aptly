@@ -392,3 +392,29 @@ func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo) error)
 func (collection *RemoteRepoCollection) Len() int {
 	return len(collection.list)
 }
+
+// Drop removes remote repo from collection
+func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
+	repoPosition := -1
+
+	for i, r := range collection.list {
+		if r == repo {
+			repoPosition = i
+			break
+		}
+	}
+
+	if repoPosition == -1 {
+		panic("repo not found!")
+	}
+
+	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
+		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
+
+	err := collection.db.Delete(repo.Key())
+	if err != nil {
+		return err
+	}
+
+	return collection.db.Delete(repo.RefKey())
+}

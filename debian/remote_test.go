@@ -247,6 +247,32 @@ func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 	c.Assert(err, Equals, e)
 }
 
+func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
+	repo1, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	s.collection.Add(repo1)
+
+	repo2, _ := NewRemoteRepo("tyndex", "http://mirror.yandex.ru/debian/", "wheezy", []string{"main"}, []string{})
+	s.collection.Add(repo2)
+
+	r1, _ := s.collection.ByUUID(repo1.UUID)
+	c.Check(r1, Equals, repo1)
+
+	err := s.collection.Drop(repo1)
+	c.Check(err, IsNil)
+
+	_, err = s.collection.ByUUID(repo1.UUID)
+	c.Check(err, ErrorMatches, "mirror .* not found")
+
+	collection := NewRemoteRepoCollection(s.db)
+	_, err = collection.ByName("yandex")
+	c.Check(err, ErrorMatches, "mirror .* not found")
+
+	r2, _ := collection.ByName("tyndex")
+	c.Check(r2.String(), Equals, repo2.String())
+
+	c.Check(func() { s.collection.Drop(repo1) }, Panics, "repo not found!")
+}
+
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily
 Label: Agenda Daily Builds
 Suite: precise
