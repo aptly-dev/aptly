@@ -59,6 +59,9 @@ func (s *LevelDBSuite) TestDelete(c *C) {
 
 	_, err = s.db.Get(key)
 	c.Assert(err, ErrorMatches, "key not found")
+
+	err = s.db.Delete(key)
+	c.Assert(err, IsNil)
 }
 
 func (s *LevelDBSuite) TestFetchByPrefix(c *C) {
