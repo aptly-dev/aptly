@@ -224,3 +224,29 @@ func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) err
 func (collection *SnapshotCollection) Len() int {
 	return len(collection.list)
 }
+
+// Drop removes snapshot from collection
+func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
+	snapshotPosition := -1
+
+	for i, s := range collection.list {
+		if s == snapshot {
+			snapshotPosition = i
+			break
+		}
+	}
+
+	if snapshotPosition == -1 {
+		panic("snapshot not found!")
+	}
+
+	collection.list[len(collection.list)-1], collection.list[snapshotPosition], collection.list =
+		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
+
+	err := collection.db.Delete(snapshot.Key())
+	if err != nil {
+		return err
+	}
+
+	return collection.db.Delete(snapshot.RefKey())
+}

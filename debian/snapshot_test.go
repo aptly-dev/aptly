@@ -170,3 +170,24 @@ func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
 
 	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot{})
 }
+
+func (s *SnapshotCollectionSuite) TestDrop(c *C) {
+	s.collection.Add(s.snapshot1)
+	s.collection.Add(s.snapshot2)
+
+	snap, _ := s.collection.ByUUID(s.snapshot1.UUID)
+	c.Check(snap, Equals, s.snapshot1)
+
+	err := s.collection.Drop(s.snapshot1)
+	c.Check(err, IsNil)
+
+	_, err = s.collection.ByUUID(s.snapshot1.UUID)
+	c.Check(err, ErrorMatches, "snapshot .* not found")
+
+	collection := NewSnapshotCollection(s.db)
+
+	_, err = collection.ByUUID(s.snapshot1.UUID)
+	c.Check(err, ErrorMatches, "snapshot .* not found")
+
+	c.Check(func() { s.collection.Drop(s.snapshot1) }, Panics, "snapshot not found!")
+}
