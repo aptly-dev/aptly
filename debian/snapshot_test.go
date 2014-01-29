@@ -158,3 +158,15 @@ func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
 	})
 	c.Assert(err, Equals, e)
 }
+
+func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
+	c.Assert(s.collection.Add(s.snapshot1), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2), IsNil)
+
+	c.Check(s.collection.ByRemoteRepoSource(s.repo1), DeepEquals, []*Snapshot{s.snapshot1})
+	c.Check(s.collection.ByRemoteRepoSource(s.repo2), DeepEquals, []*Snapshot{s.snapshot2})
+
+	repo3, _ := NewRemoteRepo("other", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{})
+
+	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot{})
+}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
 	"time"
@@ -192,6 +193,18 @@ func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
 		}
 	}
 	return nil, fmt.Errorf("snapshot with uuid %s not found", uuid)
+}
+
+// ByRemoteRepoSource looks up snapshots that have specified RepoteRepo as a source
+func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Snapshot {
+	result := make([]*Snapshot, 0)
+
+	for _, s := range collection.list {
+		if s.SourceKind == "repo" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
+			result = append(result, s)
+		}
+	}
+	return result
 }
 
 // ForEach runs method for each snapshot
