@@ -207,6 +207,18 @@ func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Sn
 	return result
 }
 
+// BySnapshotSource looks up snapshots that have specified snapshot as a source
+func (collection *SnapshotCollection) BySnapshotSource(snapshot *Snapshot) []*Snapshot {
+	result := make([]*Snapshot, 0)
+
+	for _, s := range collection.list {
+		if s.SourceKind == "snapshot" && utils.StrSliceHasItem(s.SourceIDs, snapshot.UUID) {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) error {
 	var err error

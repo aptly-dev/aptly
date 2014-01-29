@@ -171,6 +171,22 @@ func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
 	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot{})
 }
 
+func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
+	snapshot3 := NewSnapshotFromRefList("snap3", []*Snapshot{s.snapshot1, s.snapshot2}, s.reflist, "desc1")
+	snapshot4 := NewSnapshotFromRefList("snap4", []*Snapshot{s.snapshot1}, s.reflist, "desc2")
+	snapshot5 := NewSnapshotFromRefList("snap5", []*Snapshot{snapshot3}, s.reflist, "desc3")
+
+	c.Assert(s.collection.Add(s.snapshot1), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2), IsNil)
+	c.Assert(s.collection.Add(snapshot3), IsNil)
+	c.Assert(s.collection.Add(snapshot4), IsNil)
+	c.Assert(s.collection.Add(snapshot5), IsNil)
+
+	c.Check(s.collection.BySnapshotSource(s.snapshot1), DeepEquals, []*Snapshot{snapshot3, snapshot4})
+	c.Check(s.collection.BySnapshotSource(s.snapshot2), DeepEquals, []*Snapshot{snapshot3})
+	c.Check(s.collection.BySnapshotSource(snapshot5), DeepEquals, []*Snapshot{})
+}
+
 func (s *SnapshotCollectionSuite) TestDrop(c *C) {
 	s.collection.Add(s.snapshot1)
 	s.collection.Add(s.snapshot2)
