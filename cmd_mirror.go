@@ -277,7 +277,7 @@ func makeCmdMirrorDrop() *commander.Command {
 		Short:     "delete remote repository mirror",
 		Long: `
 Drop deletes information about remote repository mirror. Package data is not deleted
-if it is still used by other mirrors or snapshots.
+(it could be still used by other mirrors or snapshots).
 
 ex:
   $ aptly mirror drop wheezy-main
