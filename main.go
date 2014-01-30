@@ -30,6 +30,7 @@ take snapshots and publish them back as Debian repositories.`,
 			makeCmdMirror(),
 			makeCmdSnapshot(),
 			makeCmdPublish(),
+			makeCmdServe(),
 			makeCmdVersion(),
 		},
 	}
