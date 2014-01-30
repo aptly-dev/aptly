@@ -4,6 +4,7 @@ Commands:
 
     mirror      manage mirrors of remote repositories
     publish     manage published repositories
+    serve       start embedded HTTP server to serve published repositories
     snapshot    manage snapshots of repositories
     version     display version
 
