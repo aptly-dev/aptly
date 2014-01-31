@@ -21,7 +21,7 @@ func (s *ChecksumSuite) TearDownTest(c *C) {
 	s.tempfile.Close()
 }
 
-func (s *ChecksumSuite) TestChecksum(c *C) {
+func (s *ChecksumSuite) TestChecksumsForFile(c *C) {
 	info, err := ChecksumsForFile(s.tempfile.Name())
 
 	c.Assert(err, IsNil)
