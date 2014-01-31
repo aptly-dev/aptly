@@ -1,0 +1,1 @@
+ERROR: prefix/distribution already used by another published repo: ./maverick (main) [amd64, i386] publishes [snap7]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick

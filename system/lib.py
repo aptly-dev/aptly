@@ -80,7 +80,9 @@ class BaseTest(object):
 
     def run_cmd(self, command, expected_code=0):
         try:
-            proc = subprocess.Popen(shlex.split(command), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+            if not hasattr(command, "__iter__"):
+                command = shlex.split(command)
+            proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             output, _ = proc.communicate()
             if proc.returncode != expected_code:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
@@ -107,6 +109,23 @@ class BaseTest(object):
     def check_cmd_output(self, command, gold_name, match_prepare=None, expected_code=0):
         self.verify_match(self.get_gold(gold_name), self.run_cmd(command, expected_code=expected_code), match_prepare)
 
+    def read_file(self, path):
+        with open(os.path.join(os.environ["HOME"], ".aptly", path), "r") as f:
+            return f.read()
+
+    def check_file(self, path, gold_name, match_prepare=None):
+        contents = self.read_file(path)
+
+        self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
+
+    def check_exists(self, path):
+        if not os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+            raise Exception("path %s doesn't exist" % (path, ))
+
+    def check_not_exists(self, path):
+        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+            raise Exception("path %s exists" % (path, ))
+
     def verify_match(self, a, b, match_prepare=None):
         if match_prepare is not None:
             a = match_prepare(a)
@@ -116,9 +135,6 @@ class BaseTest(object):
             diff = "".join(difflib.unified_diff([l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
 
             raise Exception("content doesn't match:\n" + diff + "\n")
-
-    def check_file(self):
-        self.verify_match(self.get_gold(), open(self.checkedFile, "r").read())
 
     check = check_output
 
