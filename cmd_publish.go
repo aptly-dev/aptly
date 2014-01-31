@@ -167,6 +167,8 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
+	fmt.Printf("\nPublished repositroy has been removed successfully.\n")
+
 	return err
 }
 
