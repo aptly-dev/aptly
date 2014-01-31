@@ -2,9 +2,12 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
+	"net"
+	"net/http"
 	"os"
 	"runtime"
 	"testing"
@@ -18,15 +21,35 @@ func Test(t *testing.T) {
 
 type DownloaderSuite struct {
 	tempfile *os.File
+	l        net.Listener
+	url      string
+	ch       chan bool
 }
 
 var _ = Suite(&DownloaderSuite{})
 
 func (s *DownloaderSuite) SetUpTest(c *C) {
 	s.tempfile, _ = ioutil.TempFile(os.TempDir(), "aptly-test")
+	s.l, _ = net.ListenTCP("tcp4", &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1)})
+	s.url = fmt.Sprintf("http://localhost:%d", s.l.Addr().(*net.TCPAddr).Port)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, %s", r.URL.Path)
+	})
+
+	s.ch = make(chan bool)
+
+	go func() {
+		http.Serve(s.l, mux)
+		s.ch <- true
+	}()
 }
 
 func (s *DownloaderSuite) TearDownTest(c *C) {
+	s.l.Close()
+	<-s.ch
+
 	os.Remove(s.tempfile.Name())
 	s.tempfile.Close()
 }
@@ -58,7 +81,7 @@ func (s *DownloaderSuite) TestDownloadOK(c *C) {
 	defer d.Shutdown()
 	ch := make(chan error)
 
-	d.Download("http://smira.ru/", s.tempfile.Name(), ch)
+	d.Download(s.url+"/test", s.tempfile.Name(), ch)
 	res := <-ch
 	c.Assert(res, IsNil)
 }
@@ -68,7 +91,7 @@ func (s *DownloaderSuite) TestDownload404(c *C) {
 	defer d.Shutdown()
 	ch := make(chan error)
 
-	d.Download("http://smira.ru/doesntexist", s.tempfile.Name(), ch)
+	d.Download(s.url+"/doesntexist", s.tempfile.Name(), ch)
 	res := <-ch
 	c.Assert(res, ErrorMatches, "HTTP code 404.*")
 }
@@ -78,7 +101,7 @@ func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 	defer d.Shutdown()
 	ch := make(chan error)
 
-	d.Download("http://nosuch.smira.ru/", s.tempfile.Name(), ch)
+	d.Download("http://nosuch.localhost/", s.tempfile.Name(), ch)
 	res := <-ch
 	c.Assert(res, ErrorMatches, ".*no such host")
 }
@@ -88,7 +111,7 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	defer d.Shutdown()
 	ch := make(chan error)
 
-	d.Download("http://smira.ru/", "/", ch)
+	d.Download(s.url+"/test", "/", ch)
 	res := <-ch
 	c.Assert(res, ErrorMatches, ".*permission denied")
 }
@@ -97,14 +120,14 @@ func (s *DownloaderSuite) TestDownloadTemp(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
 
-	f, err := DownloadTemp(d, "http://smira.ru/")
+	f, err := DownloadTemp(d, s.url+"/test")
 	c.Assert(err, IsNil)
 	defer f.Close()
 
 	buf := make([]byte, 1)
 
 	f.Read(buf)
-	c.Assert(buf, DeepEquals, []byte("<"))
+	c.Assert(buf, DeepEquals, []byte("H"))
 
 	_, err = os.Stat(f.Name())
 	c.Assert(os.IsNotExist(err), Equals, true)
@@ -114,7 +137,7 @@ func (s *DownloaderSuite) TestDownloadTempError(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
 
-	f, err := DownloadTemp(d, "http://smira.ru/doesntexist")
+	f, err := DownloadTemp(d, s.url+"/doesntexist")
 	c.Assert(err, NotNil)
 	c.Assert(f, IsNil)
 	c.Assert(err, ErrorMatches, "HTTP code 404.*")
