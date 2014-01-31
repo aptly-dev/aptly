@@ -19,7 +19,7 @@ def run(include_long_tests=False):
     """
     Run system test.
     """
-    tests = ["t06_publish"]#glob.glob("t*_*")
+    tests = glob.glob("t*_*")
     fails = []
     numTests = numFailed = numSkipped = 0
 
