@@ -36,7 +36,7 @@ class PublishSnapshot1Test(BaseTest):
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
         # verify contents except of sums
-        self.check_file('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
         # verify signatures
         self.run_cmd(["gpg", "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
@@ -103,7 +103,7 @@ class PublishSnapshot2Test(BaseTest):
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
         # verify contents except of sums
-        self.check_file('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
 
 
 class PublishSnapshot3Test(BaseTest):
@@ -135,7 +135,7 @@ class PublishSnapshot3Test(BaseTest):
         self.check_exists('public/pool/contrib/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
         # verify contents except of sums
-        self.check_file('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
 
 
 class PublishSnapshot4Test(BaseTest):
@@ -167,7 +167,7 @@ class PublishSnapshot4Test(BaseTest):
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
         # verify contents except of sums
-        self.check_file('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
 
 
 class PublishSnapshot5Test(BaseTest):

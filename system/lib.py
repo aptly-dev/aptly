@@ -113,10 +113,13 @@ class BaseTest(object):
         with open(os.path.join(os.environ["HOME"], ".aptly", path), "r") as f:
             return f.read()
 
-    def check_file(self, path, gold_name, match_prepare=None):
+    def check_file_contents(self, path, gold_name, match_prepare=None):
         contents = self.read_file(path)
 
         self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
+
+    def check_file(self):
+        self.verify_match(self.get_gold(), open(self.checkedFile, "r").read())
 
     def check_exists(self, path):
         if not os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
