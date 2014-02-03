@@ -138,6 +138,8 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
+	ignoreMismatch := cmd.Flag.Lookup("ignore-checksums").Value.Get().(bool)
+
 	err = repo.Fetch(context.downloader)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -145,7 +147,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	packageCollection := debian.NewPackageCollection(context.database)
 
-	err = repo.Download(context.downloader, packageCollection, context.packageRepository)
+	err = repo.Download(context.downloader, packageCollection, context.packageRepository, ignoreMismatch)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -266,6 +268,8 @@ ex:
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-update", flag.ExitOnError),
 	}
+
+	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 
 	return cmd
 }
