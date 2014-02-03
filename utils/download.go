@@ -14,6 +14,7 @@ import (
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	Download(url string, destination string, result chan<- error)
+	DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo)
 	Pause()
 	Resume()
 	Shutdown()
@@ -39,6 +40,7 @@ type downloadTask struct {
 	url         string
 	destination string
 	result      chan<- error
+	expected    ChecksumInfo
 }
 
 // NewDownloader creates new instance of Downloader which specified number
@@ -88,7 +90,12 @@ func (downloader *downloaderImpl) Resume() {
 
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
-	downloader.queue <- &downloadTask{url: url, destination: destination, result: result}
+	downloader.DownloadWithChecksum(url, destination, result, ChecksumInfo{Size: -1})
+}
+
+// DownloadWithChecksum starts new download task with checksum verification
+func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo) {
+	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected}
 }
 
 // handleTask processes single download task
@@ -122,11 +129,41 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	}
 	defer outfile.Close()
 
-	_, err = io.Copy(outfile, resp.Body)
+	var w io.Writer
+
+	checksummer := NewChecksumWriter()
+
+	if task.expected.Size != -1 {
+		w = io.MultiWriter(outfile, checksummer)
+	} else {
+		w = outfile
+	}
+
+	_, err = io.Copy(w, resp.Body)
 	if err != nil {
 		os.Remove(temppath)
 		task.result <- err
 		return
+	}
+
+	if task.expected.Size != -1 {
+		actual := checksummer.Sum()
+
+		if actual.Size != task.expected.Size {
+			err = fmt.Errorf("%s: size check mismatch %d != %d", task.url, actual.Size, task.expected.Size)
+		} else if task.expected.MD5 != "" && actual.MD5 != task.expected.MD5 {
+			err = fmt.Errorf("%s: md5 hash mismatch %#v != %#v", task.url, actual.MD5, task.expected.MD5)
+		} else if task.expected.SHA1 != "" && actual.SHA1 != task.expected.SHA1 {
+			err = fmt.Errorf("%s: sha1 hash mismatch %#v != %#v", task.url, actual.SHA1, task.expected.SHA1)
+		} else if task.expected.SHA256 != "" && actual.SHA256 != task.expected.SHA256 {
+			err = fmt.Errorf("%s: sha256 hash mismatch %#v != %#v", task.url, actual.SHA256, task.expected.SHA256)
+		}
+
+		if err != nil {
+			os.Remove(temppath)
+			task.result <- err
+			return
+		}
 	}
 
 	err = os.Rename(temppath, task.destination)

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -47,18 +48,18 @@ func (f *FakeDownloader) Empty() bool {
 	return len(f.expected) == 0
 }
 
-// Download performs fake download by matching against first expectation in the queue
-func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
+// DownloadWithChecksum performs fake download by matching against first expectation in the queue, with cheksum verification
+func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected ChecksumInfo) {
 	if len(f.expected) == 0 || f.expected[0].URL != url {
 		result <- fmt.Errorf("unexpected request for %s", url)
 		return
 	}
 
-	expected := f.expected[0]
+	expectation := f.expected[0]
 	f.expected = f.expected[1:]
 
-	if expected.Err != nil {
-		result <- expected.Err
+	if expectation.Err != nil {
+		result <- expectation.Err
 		return
 	}
 
@@ -75,14 +76,29 @@ func (f *FakeDownloader) Download(url string, filename string, result chan<- err
 	}
 	defer outfile.Close()
 
-	_, err = outfile.Write([]byte(expected.Response))
+	cks := NewChecksumWriter()
+	w := io.MultiWriter(outfile, cks)
+
+	_, err = w.Write([]byte(expectation.Response))
 	if err != nil {
 		result <- err
 		return
 	}
 
+	if expected.MD5 != "" {
+		if expected != cks.Sum() {
+			result <- fmt.Errorf("checksums don't match: %#v != %#v", expected, cks.Sum())
+			return
+		}
+	}
+
 	result <- nil
 	return
+}
+
+// Download performs fake download by matching against first expectation in the queue
+func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
+	f.DownloadWithChecksum(url, filename, result, ChecksumInfo{})
 }
 
 // Shutdown does nothing

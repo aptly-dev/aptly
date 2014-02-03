@@ -86,6 +86,43 @@ func (s *DownloaderSuite) TestDownloadOK(c *C) {
 	c.Assert(res, IsNil)
 }
 
+func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
+	d := NewDownloader(2)
+	defer d.Shutdown()
+	ch := make(chan error)
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{})
+	res := <-ch
+	c.Assert(res, ErrorMatches, ".*size check mismatch 12 != 0")
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "abcdef"})
+	res = <-ch
+	c.Assert(res, ErrorMatches, ".*md5 hash mismatch \"a1acb0fe91c7db45ec4d775192ec5738\" != \"abcdef\"")
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738"})
+	res = <-ch
+	c.Assert(res, IsNil)
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738", SHA1: "abcdef"})
+	res = <-ch
+	c.Assert(res, ErrorMatches, ".*sha1 hash mismatch \"921893bae6ad6fd818401875d6779254ef0ff0ec\" != \"abcdef\"")
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec"})
+	res = <-ch
+	c.Assert(res, IsNil)
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "abcdef"})
+	res = <-ch
+	c.Assert(res, ErrorMatches, ".*sha256 hash mismatch \"b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac\" != \"abcdef\"")
+
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac"})
+	res = <-ch
+	c.Assert(res, IsNil)
+}
+
 func (s *DownloaderSuite) TestDownload404(c *C) {
 	d := NewDownloader(2)
 	defer d.Shutdown()
