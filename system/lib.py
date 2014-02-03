@@ -7,9 +7,46 @@ import inspect
 import json
 import subprocess
 import os
+import posixpath
 import shlex
 import shutil
 import string
+import threading
+import urllib
+import SocketServer
+import SimpleHTTPServer
+
+
+class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    pass
+
+
+class FileHTTPServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def translate_path(self, path):
+        """Translate a /-separated PATH to the local filename syntax.
+
+        Components that mean special things to the local file system
+        (e.g. drive or directory names) are ignored.  (XXX They should
+        probably be diagnosed.)
+
+        """
+        # abandon query parameters
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
+        path = posixpath.normpath(urllib.unquote(path))
+        words = path.split('/')
+        words = filter(None, words)
+        path = self.rootPath
+        for word in words:
+            drive, word = os.path.splitdrive(word)
+            head, word = os.path.split(word)
+            if word in (os.curdir, os.pardir):
+                continue
+            path = os.path.join(path, word)
+        return path
+
+    def log_message(self, format, *args):
+        pass
 
 
 class BaseTest(object):
@@ -20,6 +57,7 @@ class BaseTest(object):
     longTest = False
     fixturePool = False
     fixtureDB = False
+    fixtureWebServer = False
 
     expectedCode = 0
     configFile = {
@@ -71,7 +109,14 @@ class BaseTest(object):
         if self.fixtureDB:
             shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
 
+        if self.fixtureWebServer:
+            self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
+                                                     self.fixtureWebServer))
+
         if hasattr(self, "fixtureCmds"):
+            if self.fixtureWebServer:
+                params = {'url': self.webServerUrl}
+                self.fixtureCmds = [string.Template(cmd).substitute(params) for cmd in self.fixtureCmds]
             for cmd in self.fixtureCmds:
                 self.run_cmd(cmd)
 
@@ -145,3 +190,20 @@ class BaseTest(object):
         self.prepare_remove_all()
         self.prepare_default_config()
         self.prepare_fixture()
+
+    def start_webserver(self, directory):
+        FileHTTPServerRequestHandler.rootPath = directory
+        self.webserver = ThreadedTCPServer(("localhost", 0), FileHTTPServerRequestHandler)
+
+        server_thread = threading.Thread(target=self.webserver.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+
+        return "http://%s:%d/" % self.webserver.server_address
+
+    def shutdown(self):
+        if hasattr(self, 'webserver'):
+            self.shutdown_webserver()
+
+    def shutdown_webserver(self):
+        self.webserver.shutdown()

@@ -51,6 +51,8 @@ def run(include_long_tests=False):
             else:
                 sys.stdout.write(colored("OK\n", color="green"))
 
+            t.shutdown()
+
     print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (numTests, numTests - numFailed, numFailed, numSkipped)
 
     if len(fails) > 0:
