@@ -2,6 +2,7 @@ package debian
 
 import (
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
@@ -193,7 +194,10 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 		PackageDownloadTask{
 			RepoURI:         "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb",
 			DestinationPath: poolPath,
-			Size:            5}})
+			Checksums: utils.ChecksumInfo{Size: 5,
+				MD5:    "1e8cba92c41420aa7baa8a5718d67122",
+				SHA1:   "46955e48cad27410a83740a21d766ce362364024",
+				SHA256: "eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5"}}})
 
 	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
 	c.Assert(err, IsNil)
