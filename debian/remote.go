@@ -10,6 +10,7 @@ import (
 	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -35,6 +36,8 @@ type RemoteRepo struct {
 	Meta Stanza
 	// Last update date
 	LastDownloadDate time.Time
+	// Checksums for release files
+	ReleaseFiles map[string]utils.ChecksumInfo
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -141,16 +144,60 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 		}
 	}
 
-	delete(stanza, "MD5Sum")
-	delete(stanza, "SHA1")
-	delete(stanza, "SHA256")
+	repo.ReleaseFiles = make(map[string]utils.ChecksumInfo)
+
+	parseSums := func(field string, setter func(sum *utils.ChecksumInfo, data string)) error {
+		for _, line := range strings.Split(stanza[field], "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			parts := strings.Fields(line)
+
+			if len(parts) != 3 {
+				return fmt.Errorf("unparseable hash sum line: %#v", line)
+			}
+
+			size, err := strconv.ParseInt(parts[1], 10, 64)
+			if err != nil {
+				return fmt.Errorf("unable to parse size: %s", err)
+			}
+
+			sum := repo.ReleaseFiles[parts[2]]
+
+			sum.Size = size
+			setter(&sum, parts[0])
+
+			repo.ReleaseFiles[parts[2]] = sum
+		}
+
+		delete(stanza, field)
+
+		return nil
+	}
+
+	err = parseSums("MD5Sum", func(sum *utils.ChecksumInfo, data string) { sum.MD5 = data })
+	if err != nil {
+		return err
+	}
+
+	err = parseSums("SHA1", func(sum *utils.ChecksumInfo, data string) { sum.SHA1 = data })
+	if err != nil {
+		return err
+	}
+
+	err = parseSums("SHA256", func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
+	if err != nil {
+		return err
+	}
+
 	repo.Meta = stanza
 
 	return nil
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository) error {
+func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository, ignoreMismatch bool) error {
 	list := NewPackageList()
 
 	fmt.Printf("Downloading & parsing package files...\n")
@@ -158,7 +205,8 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	// Download and parse all Release files
 	for _, component := range repo.Components {
 		for _, architecture := range repo.Architectures {
-			packagesReader, packagesFile, err := utils.DownloadTryCompression(d, repo.BinaryURL(component, architecture).String())
+			packagesReader, packagesFile, err := utils.DownloadTryCompression(d,
+				repo.BinaryURL(component, architecture).String(), repo.ReleaseFiles, ignoreMismatch)
 			if err != nil {
 				return err
 			}
@@ -229,7 +277,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	ch := make(chan error, len(queued))
 
 	for _, task := range queued {
-		d.DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums)
+		d.DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
 	}
 
 	// Wait for all downloads to finish

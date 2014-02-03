@@ -96,6 +96,14 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
 	c.Assert(s.downloader.Empty(), Equals, true)
+
+	c.Check(s.repo.ReleaseFiles, HasLen, 39)
+	c.Check(s.repo.ReleaseFiles["main/binary-i386/Packages.bz2"], DeepEquals,
+		utils.ChecksumInfo{
+			Size:   734,
+			MD5:    "7954ed80936429687122b554620c1b5b",
+			SHA1:   "95a463a0739bf9ff622c8d68f6e4598d400f5248",
+			SHA256: "377890a26f99db55e117dfc691972dcbbb7d8be1630c8fc8297530c205377f2b"})
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
@@ -141,7 +149,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
-	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo)
+	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
@@ -295,7 +303,7 @@ MD5Sum:
  c63d31e8e3a5650c29a7124e541d6c23              134 main/binary-armhf/Release
  4059d198768f9f8dc9372dc1c54bc3c3               14 main/binary-armhf/Packages.bz2
  d41d8cd98f00b204e9800998ecf8427e                0 main/binary-armhf/Packages
- 708fc548e709eea0dfd2d7edb6098829             1344 main/binary-i386/Packages
+ c8d336856df67d509032bb54145c2f89              826 main/binary-i386/Packages
  92262f0668b265401291f0467bc93763              133 main/binary-i386/Release
  7954ed80936429687122b554620c1b5b              734 main/binary-i386/Packages.bz2
  e2eef4fe7d285b12c511adfa3a39069e              641 main/binary-i386/Packages.gz
@@ -335,7 +343,7 @@ SHA1:
  585a452e27c2e7e047c49d4b0a7459d8c627aa08              134 main/binary-armhf/Release
  64a543afbb5f4bf728636bdcbbe7a2ed0804adc2               14 main/binary-armhf/Packages.bz2
  da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-armhf/Packages
- 2bfad956c2d2437924a8527970858c59823451b7             1344 main/binary-i386/Packages
+ 1d2f0cd7a3c9e687b853eb277e241cd712b6e3b1              826 main/binary-i386/Packages
  16020809662f9bda36eb516d0995658dd94d1ad5              133 main/binary-i386/Release
  95a463a0739bf9ff622c8d68f6e4598d400f5248              734 main/binary-i386/Packages.bz2
  bf8c0dec9665ba78311c97cae1755d4b2e60af76              641 main/binary-i386/Packages.gz
@@ -375,7 +383,7 @@ SHA256:
  d25382b633c4a1621f8df6ce86e5c63da2e506a377e05ae9453238bb18191540              134 main/binary-armhf/Release
  d3dda84eb03b9738d118eb2be78e246106900493c0ae07819ad60815134a8058               14 main/binary-armhf/Packages.bz2
  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-armhf/Packages
- 9cd4bad3462e795bad509a44bae48622f2e9c9e56aafc999419cc5221f087dc8             1344 main/binary-i386/Packages
+ b1bb341bb613363ca29440c2eb9c08a9289de5458209990ec502ed27711a83a2              826 main/binary-i386/Packages
  e5aaceaac5ecb59143a4b4ed2bf700fe85d6cf08addd10cf2058bde697b7b219              133 main/binary-i386/Release
  377890a26f99db55e117dfc691972dcbbb7d8be1630c8fc8297530c205377f2b              734 main/binary-i386/Packages.bz2
  6361e8efc67d2e7c1a8db45388aec0311007c0a1bd96698623ddeb5ed0bdc914              641 main/binary-i386/Packages.gz
