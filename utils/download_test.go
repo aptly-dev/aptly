@@ -183,8 +183,7 @@ func (s *DownloaderSuite) TestDownloadTempWithChecksum(c *C) {
 	defer f.Close()
 	c.Assert(err, IsNil)
 
-	f2, err := DownloadTempWithChecksum(d, s.url+"/test", ChecksumInfo{Size: 13}, false)
-	defer f2.Close()
+	_, err = DownloadTempWithChecksum(d, s.url+"/test", ChecksumInfo{Size: 13}, false)
 	c.Assert(err, ErrorMatches, ".*size check mismatch 12 != 13")
 }
 
