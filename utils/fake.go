@@ -49,7 +49,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected ChecksumInfo) {
+func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected ChecksumInfo, ignoreMismatch bool) {
 	if len(f.expected) == 0 || f.expected[0].URL != url {
 		result <- fmt.Errorf("unexpected request for %s", url)
 		return
@@ -85,10 +85,15 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 		return
 	}
 
-	if expected.MD5 != "" {
-		if expected != cks.Sum() {
-			result <- fmt.Errorf("checksums don't match: %#v != %#v", expected, cks.Sum())
-			return
+	if expected.Size != -1 {
+		if expected.Size != cks.Sum().Size || expected.MD5 != "" && expected.MD5 != cks.Sum().MD5 ||
+			expected.SHA1 != "" && expected.SHA1 != cks.Sum().SHA1 || expected.SHA256 != "" && expected.SHA256 != cks.Sum().SHA256 {
+			if ignoreMismatch {
+				fmt.Printf("WARNING: checksums don't match: %#v != %#v\n", expected, cks.Sum())
+			} else {
+				result <- fmt.Errorf("checksums don't match: %#v != %#v", expected, cks.Sum())
+				return
+			}
 		}
 	}
 
@@ -98,7 +103,7 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 
 // Download performs fake download by matching against first expectation in the queue
 func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
-	f.DownloadWithChecksum(url, filename, result, ChecksumInfo{})
+	f.DownloadWithChecksum(url, filename, result, ChecksumInfo{Size: -1}, false)
 }
 
 // Shutdown does nothing

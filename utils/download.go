@@ -9,12 +9,13 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	Download(url string, destination string, result chan<- error)
-	DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo)
+	DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo, ignoreMismatch bool)
 	Pause()
 	Resume()
 	Shutdown()
@@ -37,10 +38,11 @@ type downloaderImpl struct {
 
 // downloadTask represents single item in queue
 type downloadTask struct {
-	url         string
-	destination string
-	result      chan<- error
-	expected    ChecksumInfo
+	url            string
+	destination    string
+	result         chan<- error
+	expected       ChecksumInfo
+	ignoreMismatch bool
 }
 
 // NewDownloader creates new instance of Downloader which specified number
@@ -90,12 +92,13 @@ func (downloader *downloaderImpl) Resume() {
 
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
-	downloader.DownloadWithChecksum(url, destination, result, ChecksumInfo{Size: -1})
+	downloader.DownloadWithChecksum(url, destination, result, ChecksumInfo{Size: -1}, false)
 }
 
 // DownloadWithChecksum starts new download task with checksum verification
-func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo) {
-	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected}
+func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error,
+	expected ChecksumInfo, ignoreMismatch bool) {
+	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch}
 }
 
 // handleTask processes single download task
@@ -160,9 +163,13 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		}
 
 		if err != nil {
-			os.Remove(temppath)
-			task.result <- err
-			return
+			if task.ignoreMismatch {
+				fmt.Printf("WARNING: %s\n", err.Error())
+			} else {
+				os.Remove(temppath)
+				task.result <- err
+				return
+			}
 		}
 	}
 
@@ -195,6 +202,13 @@ func (downloader *downloaderImpl) process() {
 //
 // Temporary file would be already removed, so no need to cleanup
 func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
+	return DownloadTempWithChecksum(downloader, url, ChecksumInfo{Size: -1}, false)
+}
+
+// DownloadTempWithChecksum is a DownloadTemp with checksum verification
+//
+// Temporary file would be already removed, so no need to cleanup
+func DownloadTempWithChecksum(downloader Downloader, url string, expected ChecksumInfo, ignoreMismatch bool) (*os.File, error) {
 	tempdir, err := ioutil.TempDir(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
@@ -204,7 +218,7 @@ func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
 	tempfile := filepath.Join(tempdir, "buffer")
 
 	ch := make(chan error, 1)
-	downloader.Download(url, tempfile, ch)
+	downloader.DownloadWithChecksum(url, tempfile, ch, expected, ignoreMismatch)
 
 	err = <-ch
 	if err != nil {
@@ -240,13 +254,27 @@ var compressionMethods = []struct {
 
 // DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
 // it finds existing file.
-func DownloadTryCompression(downloader Downloader, url string) (io.Reader, *os.File, error) {
+func DownloadTryCompression(downloader Downloader, url string, expectedChecksums map[string]ChecksumInfo, ignoreMismatch bool) (io.Reader, *os.File, error) {
 	var err error
 
 	for _, method := range compressionMethods {
 		var file *os.File
 
-		file, err = DownloadTemp(downloader, url+method.extenstion)
+		tryUrl := url + method.extenstion
+		foundChecksum := false
+
+		for suffix, expected := range expectedChecksums {
+			if strings.HasSuffix(tryUrl, suffix) {
+				file, err = DownloadTempWithChecksum(downloader, tryUrl, expected, ignoreMismatch)
+				foundChecksum = true
+				break
+			}
+		}
+
+		if !foundChecksum {
+			file, err = DownloadTemp(downloader, tryUrl)
+		}
+
 		if err != nil {
 			continue
 		}
