@@ -419,7 +419,7 @@ Section: utils
 Priority: optional
 Filename: pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb
 Size: 3
-MD5sum: cdc997dc06126e18ea9ba843efed9811
-SHA1: 049ba341d520c447fa2e6a1f8c871b3dbbe00106
-SHA256: 4487115ca47fe9acd95355b9278f30e18c53f33c385252252d3d7948d650d1d0
+MD5sum: d16fb36f0911f878998c136191af705e
+SHA1: 66b27417d37e024c46526c2f6d358a754fc552f3
+SHA256: 3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282
 `

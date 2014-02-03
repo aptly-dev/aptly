@@ -211,7 +211,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 			_, found := queued[key]
 			if !found {
 				count++
-				downloadSize += task.Size
+				downloadSize += task.Checksums.Size
 				queued[key] = task
 			}
 		}
@@ -229,7 +229,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	ch := make(chan error, len(queued))
 
 	for _, task := range queued {
-		d.Download(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch)
+		d.DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums)
 	}
 
 	// Wait for all downloads to finish
