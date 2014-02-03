@@ -1,0 +1,19 @@
+Package: amanda-client
+Source: amanda
+Version: 1:3.3.1-3~bpo60+1
+Installed-Size: 880
+Maintainer: Bdale Garbee <bdale@gag.com>
+Architecture: amd64
+Replaces: amanda-common (<< 1:2.5.2p1-3)
+Depends: libc6 (>= 2.3), libcurl3 (>= 7.16.2-1), libglib2.0-0 (>= 2.12.0), libreadline6 (>= 6.0), libssl0.9.8 (>= 0.9.8m-1), amanda-common (= 1:3.3.1-3~bpo60+1)
+Suggests: gnuplot, dump, smbclient
+Conflicts: amanda, amanda-common (<< 1:2.5.2p1-3)
+Description: Advanced Maryland Automatic Network Disk Archiver (Client)
+Description-md5: 21af3684379a64cacc51c39152ab1062
+Section: utils
+Priority: optional
+Filename: pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb
+Size: 30
+MD5sum: 4f7223ebadee9fb57b6796570d60638f
+SHA1: 66b27417d37e024c46526c2f6d358a754fc552f3
+SHA256: 3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282

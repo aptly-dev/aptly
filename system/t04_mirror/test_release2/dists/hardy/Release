@@ -1,0 +1,11 @@
+Origin: test
+Label: failure
+Suite: test
+Version: 6.0.8
+Codename: hardy
+Date: Sat, 19 Oct 2013 13:54:21 UTC
+Architectures: amd64
+Components: main
+Description: Debian 6.0.8 Released 19 October 2013
+MD5Sum:
+ 846549680001f5c632b6ee8e0f183825        827 main/binary-amd64/Packages
