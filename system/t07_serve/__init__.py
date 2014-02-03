@@ -12,7 +12,7 @@ import time
 from lib import BaseTest
 
 
-class VerifySnapshot1Test(BaseTest):
+class Serve1Test(BaseTest):
     """
     serve public: two publishes, verify HTTP
     """
@@ -57,7 +57,7 @@ class VerifySnapshot1Test(BaseTest):
         self.verify_match(self.get_gold('http'), self.http_response)
 
 
-class VerifySnapshot2Test(BaseTest):
+class Serve2Test(BaseTest):
     """
     serve public: no publishes
     """
