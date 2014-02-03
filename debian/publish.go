@@ -120,7 +120,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 		return fmt.Errorf("unable to figure out list of architectures, please supply explicit list")
 	}
 
-	generatedFiles := map[string]*utils.ChecksumInfo{}
+	generatedFiles := map[string]utils.ChecksumInfo{}
 
 	// For all architectures, generate release file
 	for _, arch := range p.Architectures {

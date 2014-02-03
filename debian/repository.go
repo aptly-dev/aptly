@@ -88,6 +88,6 @@ func (r *Repository) LinkFromPool(prefix string, component string, sourcePath st
 }
 
 // ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
-func (r *Repository) ChecksumsForFile(path string) (*utils.ChecksumInfo, error) {
+func (r *Repository) ChecksumsForFile(path string) (utils.ChecksumInfo, error) {
 	return utils.ChecksumsForFile(filepath.Join(r.RootPath, "public", path))
 }
