@@ -89,9 +89,9 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Filename: input["Filename"],
 		Checksums: utils.ChecksumInfo{
 			Size:   filesize,
-			MD5:    input["MD5sum"],
-			SHA1:   input["SHA1"],
-			SHA256: input["SHA256"],
+			MD5:    strings.TrimSpace(input["MD5sum"]),
+			SHA1:   strings.TrimSpace(input["SHA1"]),
+			SHA256: strings.TrimSpace(input["SHA256"]),
 		},
 	})
 
@@ -273,7 +273,7 @@ func (p *Package) PoolDirectory() (string, error) {
 type PackageDownloadTask struct {
 	RepoURI         string
 	DestinationPath string
-	Size            int64
+	Checksums       utils.ChecksumInfo
 }
 
 // DownloadList returns list of missing package files for download in format
@@ -293,7 +293,7 @@ func (p *Package) DownloadList(packageRepo *Repository) (result []PackageDownloa
 		}
 
 		if !verified {
-			result = append(result, PackageDownloadTask{RepoURI: f.Filename, DestinationPath: poolPath, Size: f.Checksums.Size})
+			result = append(result, PackageDownloadTask{RepoURI: f.Filename, DestinationPath: poolPath, Checksums: f.Checksums})
 		}
 	}
 
