@@ -200,7 +200,7 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
 func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository, ignoreMismatch bool) error {
 	list := NewPackageList()
 
-	fmt.Printf("Downloading & parsing package files...\n")
+	d.GetProgress().Printf("Downloading & parsing package files...\n")
 
 	// Download and parse all Release files
 	for _, component := range repo.Components {
@@ -230,10 +230,13 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		}
 	}
 
-	fmt.Printf("Saving packages to database...\n")
+	d.GetProgress().Printf("Saving packages to database...\n")
+
+	d.GetProgress().InitBar(int64(list.Len()), false)
 
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
+		d.GetProgress().Add(1)
 		return packageCollection.Update(p)
 	})
 
@@ -241,7 +244,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		return fmt.Errorf("unable to save packages to db: %s", err)
 	}
 
-	fmt.Printf("Building download queue...\n")
+	d.GetProgress().ShutdownBar()
+
+	d.GetProgress().Printf("Building download queue...\n")
 
 	// Build download queue
 	queued := make(map[string]PackageDownloadTask, list.Len())
@@ -271,7 +276,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		return fmt.Errorf("unable to build download queue: %s", err)
 	}
 
-	fmt.Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
+	d.GetProgress().Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
+
+	d.GetProgress().InitBar(downloadSize, true)
 
 	// Download all package files
 	ch := make(chan error, len(queued))
@@ -290,6 +297,8 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		}
 		count--
 	}
+
+	d.GetProgress().ShutdownBar()
 
 	if len(errors) > 0 {
 		return fmt.Errorf("download errors:\n  %s\n", strings.Join(errors, "\n  "))
