@@ -26,8 +26,7 @@ Aptly features: ("+" means planned features)
 Current limitations:
 
 * source packages, debian-installer and translations not supported yet
-* checksums and signature are not verified while downloading
-* deleting created items is not implemented
+* signature is not verified while downloading
 * cleaning up stale files is not implemented
 
 Currently aptly is under heavy development, so please use it with care.
