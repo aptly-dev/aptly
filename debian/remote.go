@@ -236,7 +236,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
-		d.GetProgress().Add(1)
+		d.GetProgress().AddBar(1)
 		return packageCollection.Update(p)
 	})
 

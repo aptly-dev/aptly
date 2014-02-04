@@ -17,6 +17,7 @@ type expectedRequest struct {
 // to stub out results
 type FakeDownloader struct {
 	expected []expectedRequest
+	progress *Progress
 }
 
 // Check interface
@@ -28,6 +29,8 @@ var (
 func NewFakeDownloader() *FakeDownloader {
 	result := &FakeDownloader{}
 	result.expected = make([]expectedRequest, 0)
+	result.progress = NewProgress()
+	result.progress.Start()
 	return result
 }
 
@@ -108,6 +111,7 @@ func (f *FakeDownloader) Download(url string, filename string, result chan<- err
 
 // Shutdown does nothing
 func (f *FakeDownloader) Shutdown() {
+	f.progress.Shutdown()
 }
 
 // Pause does nothing
@@ -120,5 +124,5 @@ func (f *FakeDownloader) Resume() {
 
 // GetProgress does nothing
 func (f *FakeDownloader) GetProgress() *Progress {
-	return nil
+	return f.progress
 }
