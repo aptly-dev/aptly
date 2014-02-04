@@ -19,6 +19,7 @@ type Downloader interface {
 	Pause()
 	Resume()
 	Shutdown()
+	GetProgress() *Progress
 }
 
 // Check interface
@@ -28,12 +29,13 @@ var (
 
 // downloaderImpl is implementation of Downloader interface
 type downloaderImpl struct {
-	queue   chan *downloadTask
-	stop    chan bool
-	stopped chan bool
-	pause   chan bool
-	unpause chan bool
-	threads int
+	queue    chan *downloadTask
+	stop     chan bool
+	stopped  chan bool
+	pause    chan bool
+	unpause  chan bool
+	progress *Progress
+	threads  int
 }
 
 // downloadTask represents single item in queue
@@ -49,13 +51,16 @@ type downloadTask struct {
 // of threads
 func NewDownloader(threads int) Downloader {
 	downloader := &downloaderImpl{
-		queue:   make(chan *downloadTask, 1000),
-		stop:    make(chan bool),
-		stopped: make(chan bool),
-		pause:   make(chan bool),
-		unpause: make(chan bool),
-		threads: threads,
+		queue:    make(chan *downloadTask, 1000),
+		stop:     make(chan bool),
+		stopped:  make(chan bool),
+		pause:    make(chan bool),
+		unpause:  make(chan bool),
+		threads:  threads,
+		progress: NewProgress(),
 	}
+
+	downloader.progress.Start()
 
 	for i := 0; i < downloader.threads; i++ {
 		go downloader.process()
@@ -74,6 +79,8 @@ func (downloader *downloaderImpl) Shutdown() {
 	for i := 0; i < downloader.threads; i++ {
 		<-downloader.stopped
 	}
+
+	downloader.progress.Shutdown()
 }
 
 // Pause pauses task processing
@@ -90,6 +97,11 @@ func (downloader *downloaderImpl) Resume() {
 	}
 }
 
+// Resume resumes task processing
+func (downloader *downloaderImpl) GetProgress() *Progress {
+	return downloader.progress
+}
+
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
 	downloader.DownloadWithChecksum(url, destination, result, ChecksumInfo{Size: -1}, false)
@@ -103,7 +115,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination s
 
 // handleTask processes single download task
 func (downloader *downloaderImpl) handleTask(task *downloadTask) {
-	fmt.Printf("Downloading %s...\n", task.url)
+	downloader.progress.Printf("Downloading %s...\n", task.url)
 
 	resp, err := http.Get(task.url)
 	if err != nil {
@@ -132,15 +144,18 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	}
 	defer outfile.Close()
 
-	var w io.Writer
-
 	checksummer := NewChecksumWriter()
+	writers := []io.Writer{outfile}
 
 	if task.expected.Size != -1 {
-		w = io.MultiWriter(outfile, checksummer)
-	} else {
-		w = outfile
+		writers = append(writers, checksummer)
 	}
+
+	if downloader.progress != nil {
+		writers = append(writers, downloader.progress)
+	}
+
+	w := io.MultiWriter(writers...)
 
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
@@ -164,7 +179,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 
 		if err != nil {
 			if task.ignoreMismatch {
-				fmt.Printf("WARNING: %s\n", err.Error())
+				downloader.progress.Printf("WARNING: %s\n", err.Error())
 			} else {
 				os.Remove(temppath)
 				task.result <- err

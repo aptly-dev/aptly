@@ -117,3 +117,8 @@ func (f *FakeDownloader) Pause() {
 // Resume does nothing
 func (f *FakeDownloader) Resume() {
 }
+
+// GetProgress does nothing
+func (f *FakeDownloader) GetProgress() *Progress {
+	return nil
+}
