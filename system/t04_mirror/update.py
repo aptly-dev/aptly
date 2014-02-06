@@ -74,10 +74,10 @@ class UpdateMirror6Test(BaseTest):
     update mirrors: wrong checksum in package, but ignore
     """
     fixtureCmds = [
-        "aptly mirror create --ignore-signatures failure ${url} hardy main",
+        "aptly mirror create --ignore-signatures --keyring=aptlytest.gpg failure ${url} hardy main",
     ]
     fixtureWebServer = "test_release2"
-    runCmd = "aptly mirror update -ignore-checksums --ignore-signatures failure"
+    runCmd = "aptly mirror update -ignore-checksums --ignore-signatures --keyring=aptlytest.gpg failure"
 
     def gold_processor(self, gold):
         return string.Template(gold).substitute({'url': self.webServerUrl})
