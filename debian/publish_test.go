@@ -8,7 +8,24 @@ import (
 	"path/filepath"
 )
 
+type pathExistsChecker struct {
+	*CheckerInfo
+}
+
+var PathExists = &pathExistsChecker{
+	&CheckerInfo{Name: "PathExists", Params: []string{"path"}},
+}
+
+func (checker *pathExistsChecker) Check(params []interface{}, names []string) (result bool, error string) {
+	_, err := os.Stat(params[0].(string))
+	return err == nil, ""
+}
+
 type NullSigner struct{}
+
+func (n *NullSigner) Init() error {
+	return nil
+}
 
 func (n *NullSigner) SetKey(keyRef string) {
 
@@ -165,6 +182,13 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
+	err := s.repo.Publish(s.packageRepo, s.packageCollection, nil)
+	c.Assert(err, IsNil)
+
+	c.Check(filepath.Join(s.packageRepo.RootPath, "public/ppa/dists/squeeze/Release"), PathExists)
+}
+
 func (s *PublishedRepoSuite) TestString(c *C) {
 	c.Check(s.repo.String(), Equals,
 		"ppa/squeeze (main) publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
@@ -302,19 +326,6 @@ func (s *PublishedRepoCollectionSuite) TestBySnapshot(c *C) {
 
 	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1})
 	c.Check(s.collection.BySnapshot(s.snap2), DeepEquals, []*PublishedRepo{s.repo2})
-}
-
-type pathExistsChecker struct {
-	*CheckerInfo
-}
-
-var PathExists = &pathExistsChecker{
-	&CheckerInfo{Name: "PathExists", Params: []string{"path"}},
-}
-
-func (checker *pathExistsChecker) Check(params []interface{}, names []string) (result bool, error string) {
-	_, err := os.Stat(params[0].(string))
-	return err == nil, ""
 }
 
 type PublishedRepoRemoveSuite struct {

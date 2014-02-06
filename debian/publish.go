@@ -232,14 +232,16 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	releaseFilename := releaseFile.Name()
 	releaseFile.Close()
 
-	err = signer.DetachedSign(releaseFilename, releaseFilename+".gpg")
-	if err != nil {
-		return fmt.Errorf("unable to sign Release file: %s", err)
-	}
+	if signer != nil {
+		err = signer.DetachedSign(releaseFilename, releaseFilename+".gpg")
+		if err != nil {
+			return fmt.Errorf("unable to sign Release file: %s", err)
+		}
 
-	err = signer.ClearSign(releaseFilename, filepath.Join(filepath.Dir(releaseFilename), "InRelease"))
-	if err != nil {
-		return fmt.Errorf("unable to sign Release file: %s", err)
+		err = signer.ClearSign(releaseFilename, filepath.Join(filepath.Dir(releaseFilename), "InRelease"))
+		if err != nil {
+			return fmt.Errorf("unable to sign Release file: %s", err)
+		}
 	}
 
 	return nil
