@@ -6,7 +6,7 @@ class ShowMirror1Test(BaseTest):
     """
     show mirror: regular mirror
     """
-    fixtureCmds = ["aptly mirror create mirror1 http://mirror.yandex.ru/debian/ wheezy"]
+    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ wheezy"]
     runCmd = "aptly mirror show mirror1"
 
 

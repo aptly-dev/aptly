@@ -2,3 +2,7 @@ Usage: aptly mirror create <name> <archive url> <distribution> [<component1> ...
 
 aptly mirror create - create new mirror of Debian repository
 
+
+Options:
+  -ignore-signatures=false: disable verification of Release file signatures
+  -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)

@@ -4,5 +4,7 @@
   "architectures": [],
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
-  "dependencyFollowAllVariants": false
+  "dependencyFollowAllVariants": false,
+  "gpgDisableSign": false,
+  "gpgDisableVerify": false
 }

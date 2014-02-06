@@ -5,3 +5,7 @@ Create records information about new mirror and fetches Release file (it doesn't
 ex:
   $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main
 
+Options:
+  -ignore-signatures=false: disable verification of Release file signatures
+  -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
+
