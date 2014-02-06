@@ -275,19 +275,19 @@ func DownloadTryCompression(downloader Downloader, url string, expectedChecksums
 	for _, method := range compressionMethods {
 		var file *os.File
 
-		tryUrl := url + method.extenstion
+		tryURL := url + method.extenstion
 		foundChecksum := false
 
 		for suffix, expected := range expectedChecksums {
-			if strings.HasSuffix(tryUrl, suffix) {
-				file, err = DownloadTempWithChecksum(downloader, tryUrl, expected, ignoreMismatch)
+			if strings.HasSuffix(tryURL, suffix) {
+				file, err = DownloadTempWithChecksum(downloader, tryURL, expected, ignoreMismatch)
 				foundChecksum = true
 				break
 			}
 		}
 
 		if !foundChecksum {
-			file, err = DownloadTemp(downloader, tryUrl)
+			file, err = DownloadTemp(downloader, tryURL)
 		}
 
 		if err != nil {
