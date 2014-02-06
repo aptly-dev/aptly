@@ -10,6 +10,43 @@ import (
 	"strings"
 )
 
+func getVerifier(cmd *commander.Command) (utils.Verifier, error) {
+	if utils.Config.GpgDisableVerify || cmd.Flag.Lookup("ignore-signatures").Value.Get().(bool) {
+		return nil, nil
+	}
+
+	verifier := &utils.GpgVerifier{}
+	for _, keyRing := range keyRings.keyRings {
+		verifier.AddKeyring(keyRing)
+	}
+
+	err := verifier.InitKeyring()
+	if err != nil {
+		return nil, err
+	}
+
+	return verifier, nil
+}
+
+type keyRingsFlag struct {
+	keyRings []string
+}
+
+func (k *keyRingsFlag) Set(value string) error {
+	k.keyRings = append(k.keyRings, value)
+	return nil
+}
+
+func (k *keyRingsFlag) Get() interface{} {
+	return k.keyRings
+}
+
+func (k *keyRingsFlag) String() string {
+	return strings.Join(k.keyRings, ",")
+}
+
+var keyRings = keyRingsFlag{}
+
 func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 0 {
@@ -53,7 +90,12 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
-	err = repo.Fetch(context.downloader)
+	verifier, err := getVerifier(cmd)
+	if err != nil {
+		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
+	}
+
+	err = repo.Fetch(context.downloader, verifier)
 	if err != nil {
 		return fmt.Errorf("unable to fetch mirror: %s", err)
 	}
@@ -140,7 +182,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	ignoreMismatch := cmd.Flag.Lookup("ignore-checksums").Value.Get().(bool)
 
-	err = repo.Fetch(context.downloader)
+	verifier, err := getVerifier(cmd)
+	if err != nil {
+		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
+	}
+
+	err = repo.Fetch(context.downloader, verifier)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -215,6 +262,9 @@ ex:
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
+	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
+
 	return cmd
 }
 
@@ -270,6 +320,8 @@ ex:
 	}
 
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
+	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
+	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd
 }

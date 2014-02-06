@@ -10,6 +10,27 @@ import (
 	"strings"
 )
 
+func getSigner(cmd *commander.Command) (utils.Signer, error) {
+	if cmd.Flag.Lookup("skip-signing").Value.Get().(bool) || utils.Config.GpgDisableSign {
+		return nil, nil
+	}
+
+	signer := &utils.GpgSigner{}
+
+	key := cmd.Flag.Lookup("gpg-key").Value.String()
+	if key != "" {
+		signer.SetKey(key)
+	}
+
+	err := signer.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	return signer, nil
+
+}
+
 func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 1 || len(args) > 2 {
@@ -65,9 +86,6 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	signer := &utils.GpgSigner{}
-	signer.SetKey(cmd.Flag.Lookup("gpg-key").Value.String())
-
 	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
@@ -77,6 +95,11 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	if duplicate != nil {
 		publishedCollecton.LoadComplete(duplicate, snapshotCollection)
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
+	}
+
+	signer, err := getSigner(cmd)
+	if err != nil {
+		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
 	packageCollection := debian.NewPackageCollection(context.database)
@@ -188,6 +211,7 @@ ex.
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
+	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 
 	return cmd
 }
