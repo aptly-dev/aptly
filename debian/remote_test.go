@@ -4,13 +4,39 @@ import (
 	"errors"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
+	"io"
+	"io/ioutil"
 	. "launchpad.net/gocheck"
+	"os"
 	"testing"
 )
 
 // Launch gocheck tests
 func Test(t *testing.T) {
 	TestingT(t)
+}
+
+type NullVerifier struct {
+}
+
+func (n *NullVerifier) InitKeyring() error {
+	return nil
+}
+
+func (n *NullVerifier) AddKeyring(keyring string) {
+}
+
+func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) error {
+	return nil
+}
+
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, err error) {
+	text, _ = ioutil.TempFile("", "aptly-test")
+	io.Copy(text, clearsigned)
+	text.Seek(0, 0)
+	os.Remove(text.Name())
+
+	return
 }
 
 type PackageListMixinSuite struct {
@@ -78,7 +104,8 @@ func (s *RemoteRepoSuite) TestRefList(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
-	c.Assert(s.repo.ReleaseURL().String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/Release")
+	c.Assert(s.repo.ReleaseURL("Release").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/Release")
+	c.Assert(s.repo.ReleaseURL("InRelease").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/InRelease")
 }
 
 func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
@@ -91,7 +118,7 @@ func (s *RemoteRepoSuite) TestPackageURL(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetch(c *C) {
-	err := s.repo.Fetch(s.downloader)
+	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
@@ -106,15 +133,39 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 			SHA256: "377890a26f99db55e117dfc691972dcbbb7d8be1630c8fc8297530c205377f2b"})
 }
 
+func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
+	downloader := utils.NewFakeDownloader()
+	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", errors.New("404"))
+	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
+
+	err := s.repo.Fetch(downloader, &NullVerifier{})
+	c.Assert(err, IsNil)
+	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
+	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
+	c.Assert(downloader.Empty(), Equals, true)
+}
+
+func (s *RemoteRepoSuite) TestFetchNullVerifier2(c *C) {
+	downloader := utils.NewFakeDownloader()
+	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", exampleReleaseFile)
+
+	err := s.repo.Fetch(downloader, &NullVerifier{})
+	c.Assert(err, IsNil)
+	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
+	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
+	c.Assert(downloader.Empty(), Equals, true)
+}
+
 func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
 	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{"xyz"})
-	err := s.repo.Fetch(s.downloader)
+	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, ErrorMatches, "architecture xyz not available in repo.*")
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongComponent(c *C) {
 	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"})
-	err := s.repo.Fetch(s.downloader)
+	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, ErrorMatches, "component xyz not available in repo.*")
 }
 
@@ -141,7 +192,7 @@ func (s *RemoteRepoSuite) TestRefKey(c *C) {
 func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.repo.Architectures = []string{"i386"}
 
-	err := s.repo.Fetch(s.downloader)
+	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))

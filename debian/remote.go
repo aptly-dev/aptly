@@ -10,6 +10,7 @@ import (
 	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -86,10 +87,9 @@ func (repo *RemoteRepo) RefList() *PackageRefList {
 	return repo.packageRefs
 }
 
-// ReleaseURL returns URL to Release file in repo root
-// TODO: InRelease, Release.gz, Release.bz2 handling
-func (repo *RemoteRepo) ReleaseURL() *url.URL {
-	path := &url.URL{Path: fmt.Sprintf("dists/%s/Release", repo.Distribution)}
+// ReleaseURL returns URL to Release* files in repo root
+func (repo *RemoteRepo) ReleaseURL(name string) *url.URL {
+	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s", repo.Distribution, name)}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
@@ -108,12 +108,57 @@ func (repo *RemoteRepo) PackageURL(filename string) *url.URL {
 }
 
 // Fetch updates information about repository
-func (repo *RemoteRepo) Fetch(d utils.Downloader) error {
-	// Download release file to temporary URL
-	release, err := utils.DownloadTemp(d, repo.ReleaseURL().String())
-	if err != nil {
-		return err
+func (repo *RemoteRepo) Fetch(d utils.Downloader, verifier utils.Verifier) error {
+	var (
+		release *os.File
+		err     error
+	)
+
+	if verifier == nil {
+		// 0. Just download release file to temporary URL
+		release, err = utils.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		if err != nil {
+			return err
+		}
+	} else {
+		// 1. try InRelease file
+		inrelease, err := utils.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
+		if err != nil {
+			goto splitsignature
+		}
+		defer inrelease.Close()
+
+		release, err = verifier.VerifyClearsigned(inrelease)
+		if err != nil {
+			goto splitsignature
+		}
+
+		goto ok
+
+	splitsignature:
+		// 2. try Release + Release.gpg
+		release, err = utils.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		if err != nil {
+			return err
+		}
+
+		releasesig, err := utils.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
+		if err != nil {
+			return err
+		}
+
+		err = verifier.VerifyDetachedSignature(releasesig, release)
+		if err != nil {
+			return err
+		}
+
+		_, err = release.Seek(0, 0)
+		if err != nil {
+			return err
+		}
 	}
+ok:
+
 	defer release.Close()
 
 	sreader := NewControlFileReader(release)
