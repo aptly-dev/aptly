@@ -47,7 +47,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"architectures\": null,\n"+
 		"  \"dependencyFollowSuggests\": false,\n"+
 		"  \"dependencyFollowRecommends\": false,\n"+
-		"  \"dependencyFollowAllVariants\": false\n"+
+		"  \"dependencyFollowAllVariants\": false,\n"+
+		"  \"gpgDisableSign\": false,\n"+
+		"  \"gpgDisableVerify\": false\n"+
 		"}")
 }
 
