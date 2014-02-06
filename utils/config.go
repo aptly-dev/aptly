@@ -14,6 +14,8 @@ type ConfigStructure struct {
 	DepFollowSuggests    bool     `json:"dependencyFollowSuggests"`
 	DepFollowRecommends  bool     `json:"dependencyFollowRecommends"`
 	DepFollowAllVariants bool     `json:"dependencyFollowAllVariants"`
+	GpgDisableSign       bool     `json:"gpgDisableSign"`
+	GpgDisableVerify     bool     `json:"gpgDisableVerify"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -24,6 +26,8 @@ var Config = ConfigStructure{
 	DepFollowSuggests:    false,
 	DepFollowRecommends:  false,
 	DepFollowAllVariants: false,
+	GpgDisableSign:       false,
+	GpgDisableVerify:     false,
 }
 
 // LoadConfig loads configuration from json file
