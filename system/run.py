@@ -15,11 +15,12 @@ except ImportError:
         return s
 
 
-def run(include_long_tests=False):
+def run(include_long_tests=False, tests=None):
     """
     Run system test.
     """
-    tests = glob.glob("t*_*")
+    if tests is None:
+        tests = glob.glob("t*_*")
     fails = []
     numTests = numFailed = numSkipped = 0
 
@@ -67,5 +68,11 @@ def run(include_long_tests=False):
 
 if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
-    include_long_tests = len(sys.argv) > 1 and sys.argv[1] == "--long"
-    run(include_long_tests)
+    include_long_tests = False
+    tests = None
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--long":
+            include_long_tests = True
+        else:
+            tests = sys.argv[1:]
+    run(include_long_tests, tests)
