@@ -135,3 +135,15 @@ class CreateMirror12Test(BaseTest):
     gold_processor = BaseTest.expand_environ
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
     expectedCode = 1
+
+
+class CreateMirror13Test(BaseTest):
+    """
+    create mirror: skip verification using config file
+    """
+    runCmd = "aptly mirror create mirror13 http://mirror.yandex.ru/debian/ wheezy"
+    configOverride = {"gpgDisableVerify": True}
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror13", "mirror_show")

@@ -326,3 +326,34 @@ class PublishSnapshot14Test(BaseTest):
     ]
     runCmd = "aptly publish snapshot --distribution=mars --skip-signing snap14"
     expectedCode = 1
+
+
+class PublishSnapshot15Test(BaseTest):
+    """
+    publish snapshot: skip signing via config
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap15 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot snap15"
+    configOverride = {"gpgDisableSign": True}
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot15Test, self).check()
+
+        self.check_not_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_not_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
