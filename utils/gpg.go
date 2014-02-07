@@ -87,6 +87,7 @@ type GpgVerifier struct {
 	keyRings []string
 }
 
+// InitKeyring verifies that gpg is installed and some keys are trusted
 func (g *GpgVerifier) InitKeyring() error {
 	err := exec.Command("gpgv", "--version").Run()
 	if err != nil {
@@ -107,6 +108,7 @@ func (g *GpgVerifier) InitKeyring() error {
 	return nil
 }
 
+// AddKeyring adds custom keyring to GPG parameters
 func (g *GpgVerifier) AddKeyring(keyring string) {
 	g.keyRings = append(g.keyRings, keyring)
 }
@@ -123,6 +125,7 @@ func (g *GpgVerifier) argsKeyrings() (args []string) {
 	return
 }
 
+// VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
 func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) error {
 	args := g.argsKeyrings()
 
@@ -185,11 +188,12 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
 				strings.Join(keyIDs, " "))
 		}
-		return fmt.Errorf("GnuPG verification of detached signature failed: %s", err)
+		return fmt.Errorf("verification of detached signature failed: %s", err)
 	}
 	return nil
 }
 
+// VerifyClearsigned verifies clearsigned file using gpgv and extracts cleartext version
 func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	args := g.argsKeyrings()
 
@@ -240,7 +244,7 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
 				strings.Join(keyIDs, " "))
 		}
-		return nil, fmt.Errorf("GnuPG verification of clearsigned file failed: %s", err)
+		return nil, fmt.Errorf("verification of clearsigned file failed: %s", err)
 	}
 
 	text, err = ioutil.TempFile("", "aptly-gpg")
@@ -274,7 +278,7 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 	err = cmd.Wait()
 
 	if err != nil {
-		return nil, fmt.Errorf("GnuPG extraction of clearsigned file failed: %s", err)
+		return nil, fmt.Errorf("extraction of clearsigned file failed: %s", err)
 	}
 
 	_, err = text.Seek(0, 0)
