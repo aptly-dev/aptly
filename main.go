@@ -39,6 +39,7 @@ take snapshots and publish them back as Debian repositories.`,
 	cmd.Flag.Bool("dep-follow-recommends", false, "when processing dependencies, follow Recommends")
 	cmd.Flag.Bool("dep-follow-all-variants", false, "when processing dependencies, follow a & b if depdency is 'a|b'")
 	cmd.Flag.String("architectures", "", "list of architectures to consider during (comma-separated), default to all available")
+	cmd.Flag.String("config", "", "location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)")
 }
 
 var context struct {
@@ -60,24 +61,33 @@ func main() {
 		fatal(err)
 	}
 
-	configLocations := []string{
-		filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
-		"/etc/aptly.conf",
-	}
-
-	for _, configLocation := range configLocations {
+	configLocation := cmd.Flag.Lookup("config").Value.String()
+	if configLocation != "" {
 		err = utils.LoadConfig(configLocation, &utils.Config)
-		if err == nil {
-			break
-		}
-		if !os.IsNotExist(err) {
-			fatal(fmt.Errorf("error loading config file %s: %s", configLocation, err))
-		}
-	}
 
-	if err != nil {
-		fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
-		utils.SaveConfig(configLocations[0], &utils.Config)
+		if err != nil {
+			fatal(err)
+		}
+	} else {
+		configLocations := []string{
+			filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
+			"/etc/aptly.conf",
+		}
+
+		for _, configLocation := range configLocations {
+			err = utils.LoadConfig(configLocation, &utils.Config)
+			if err == nil {
+				break
+			}
+			if !os.IsNotExist(err) {
+				fatal(fmt.Errorf("error loading config file %s: %s", configLocation, err))
+			}
+		}
+
+		if err != nil {
+			fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+			utils.SaveConfig(configLocations[0], &utils.Config)
+		}
 	}
 
 	context.dependencyOptions = 0
