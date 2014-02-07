@@ -557,11 +557,14 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
-		UsageLine: "create <name> from mirror <mirror-name>",
-		Short:     "creates snapshot out of any mirror",
+		UsageLine: "create <name> from mirror <mirror-name> | create <name> empty",
+		Short:     "creates immutable snapshot of mirror contents",
 		Long: `
-Command create makes persistent immutable snapshot of remote repository mirror. Snapshot could be
+Command create .. from mirror makes persistent immutable snapshot of remote repository mirror. Snapshot could be
 published or further modified using merge, pull and other aptly features.
+
+Command create .. empty creates empty snapshot that could be used as a basis for snapshot pull operations, for example.
+As snapshots are immutable, creating one empty snapshot should be enough.
 
 ex.
   $ aptly snapshot create wheezy-main-today from mirror wheezy-main
