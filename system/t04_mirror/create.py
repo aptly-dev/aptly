@@ -58,7 +58,7 @@ class CreateMirror6Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly mirror create mirror6 http://mirror.yandex.ru/debian/ suslik"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://mirror.yandex.ru/debian/ suslik"
 
 
 class CreateMirror7Test(BaseTest):
