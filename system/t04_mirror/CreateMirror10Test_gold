@@ -7,4 +7,4 @@ Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/Rel
 gpgv: keyblock resource `${HOME}/.gnupg/aptlytest.gpg': file open error
 gpgv:  RSA key ID 46925553
 gpgv: Can't check signature: public key not found
-ERROR: unable to fetch mirror: GnuPG verification of detached signature failed: exit status 2
+ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

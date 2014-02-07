@@ -95,8 +95,11 @@ class CreateMirror9Test(BaseTest):
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
     def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror9", "mirror_show")
+        self.check_cmd_output("aptly mirror show mirror9", "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror10Test(BaseTest):

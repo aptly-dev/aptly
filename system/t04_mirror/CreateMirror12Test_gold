@@ -6,4 +6,4 @@ gpgv:  RSA key ID 473041FA
 gpgv: Can't check signature: public key not found
 gpgv:  RSA key ID B98321F9
 gpgv: Can't check signature: public key not found
-ERROR: unable to fetch mirror: GnuPG verification of detached signature failed: exit status 2
+ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2
