@@ -67,7 +67,9 @@ class BaseTest(object):
         "architectures": [],
         "dependencyFollowSuggests": False,
         "dependencyFollowRecommends": False,
-        "dependencyFollowAllVariants": False
+        "dependencyFollowAllVariants": False,
+        "gpgDisableVerify": False,
+        "gpgDisableSign": False,
     }
     configOverride = {}
 
