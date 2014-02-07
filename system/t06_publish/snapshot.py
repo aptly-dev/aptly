@@ -284,3 +284,33 @@ class PublishSnapshot12Test(BaseTest):
     fixtureDB = True
     runCmd = "aptly publish snapshot snap12"
     expectedCode = 1
+
+
+class PublishSnapshot13Test(BaseTest):
+    """
+    publish snapshot: -skip-signing
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap13 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap13"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot13Test, self).check()
+
+        self.check_not_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_not_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
