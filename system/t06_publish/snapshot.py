@@ -324,5 +324,5 @@ class PublishSnapshot14Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap14 empty",
     ]
-    runCmd = "aptly publish snapshot --distribution=mars snap14"
+    runCmd = "aptly publish snapshot --distribution=mars --skip-signing snap14"
     expectedCode = 1
