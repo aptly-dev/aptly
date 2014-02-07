@@ -11,29 +11,40 @@ import (
 )
 
 func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
-	var err error
+	var (
+		err      error
+		snapshot *debian.Snapshot
+	)
 
-	if len(args) < 4 || args[1] != "from" || args[2] != "mirror" {
+	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" {
+		// aptly snapshot create snap from mirror mirror
+		repoName, snapshotName := args[3], args[0]
+
+		repoCollection := debian.NewRemoteRepoCollection(context.database)
+		repo, err := repoCollection.ByName(repoName)
+		if err != nil {
+			return fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
+		err = repoCollection.LoadComplete(repo)
+		if err != nil {
+			return fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
+		snapshot, err = debian.NewSnapshotFromRepository(snapshotName, repo)
+		if err != nil {
+			return fmt.Errorf("unable to create snapshot: %s", err)
+		}
+	} else if len(args) == 2 && args[1] == "empty" {
+		// aptly snapshot create snap empty
+		snapshotName := args[0]
+
+		packageList := debian.NewPackageList()
+
+		snapshot = debian.NewSnapshotFromPackageList(snapshotName, nil, packageList, "Created as empty")
+	} else {
 		cmd.Usage()
 		return err
-	}
-
-	repoName, mirrorName := args[3], args[0]
-
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	repo, err := repoCollection.ByName(repoName)
-	if err != nil {
-		return fmt.Errorf("unable to create snapshot: %s", err)
-	}
-
-	err = repoCollection.LoadComplete(repo)
-	if err != nil {
-		return fmt.Errorf("unable to create snapshot: %s", err)
-	}
-
-	snapshot, err := debian.NewSnapshotFromRepository(mirrorName, repo)
-	if err != nil {
-		return fmt.Errorf("unable to create snapshot: %s", err)
 	}
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
