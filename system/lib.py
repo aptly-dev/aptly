@@ -117,9 +117,8 @@ class BaseTest(object):
                                                      self.fixtureWebServer))
 
         if self.fixtureGpg:
-            self.run_cmd(["gpg", "--no-default-keyring", "--keyring", "aptlytest.gpg", "--import",
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg")],
-                         expected_code=2)
+            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import",
+                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg")])
 
         if hasattr(self, "fixtureCmds"):
             if self.fixtureWebServer:

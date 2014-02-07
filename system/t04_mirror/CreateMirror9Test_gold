@@ -3,9 +3,7 @@ gpgv: Signature made Fri Feb  7 06:56:50 2014 MSK using RSA key ID 46925553
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
 gpg: Signature made Fri Feb  7 06:56:50 2014 MSK using RSA key ID 46925553
 gpg: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
-gpg: WARNING: This key is not certified with a trusted signature!
-gpg:          There is no indication that the signature belongs to the owner.
-Primary key fingerprint: A1BD 8E9D 78F7 FE5C 3E65  D8AF 8B48 AD62 4692 5553
+gpg: WARNING: Using untrusted key!
 
 Mirror [mirror9]: http://mirror.yandex.ru/debian-backports/ squeeze-backports successfully added.
 You can run 'aptly mirror update mirror9' to download repository contents.
