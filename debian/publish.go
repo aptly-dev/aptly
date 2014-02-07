@@ -109,7 +109,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	}
 
 	if list.Len() == 0 {
-		return fmt.Errorf("repository is empty, can't publish")
+		return fmt.Errorf("snapshot is empty")
 	}
 
 	if len(p.Architectures) == 0 {
