@@ -251,7 +251,7 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 
 	args = []string{"--no-default-keyring"}
 	args = append(args, g.argsKeyrings()...)
-	args = append(args, "--decrypt", "--batch", "--output", "-", clearf.Name())
+	args = append(args, "--decrypt", "--batch", "--trust-model", "always", "--output", "-", clearf.Name())
 
 	cmd = exec.Command("gpg", args...)
 	cmd.Stderr = os.Stderr
