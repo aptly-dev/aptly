@@ -1,0 +1,18 @@
+Name: mirror11
+Archive Root URL: http://mirror.yandex.ru/debian/
+Distribution: squeeze
+Components: main, contrib, non-free
+Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
+Last update: never
+
+Information from release file:
+Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
+Codename: squeeze
+Components: main contrib non-free
+Date: Sat, 19 Oct 2013 13:54:21 UTC
+Description:  Debian 6.0.8 Released 19 October 2013
+
+Label: Debian
+Origin: Debian
+Suite: oldstable
+Version: 6.0.8

@@ -57,6 +57,7 @@ class BaseTest(object):
     longTest = False
     fixturePool = False
     fixtureDB = False
+    fixtureGpg = False
     fixtureWebServer = False
 
     expectedCode = 0
@@ -85,6 +86,8 @@ class BaseTest(object):
             shutil.rmtree(os.path.join(os.environ["HOME"], ".aptly"))
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly.conf")):
             os.remove(os.path.join(os.environ["HOME"], ".aptly.conf"))
+        if os.path.exists(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg")):
+            os.remove(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
 
     def prepare_default_config(self):
         cfg = self.configFile.copy()
@@ -113,6 +116,11 @@ class BaseTest(object):
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
                                                      self.fixtureWebServer))
 
+        if self.fixtureGpg:
+            self.run_cmd(["gpg", "--no-default-keyring", "--keyring", "aptlytest.gpg", "--import",
+                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg")],
+                         expected_code=2)
+
         if hasattr(self, "fixtureCmds"):
             if self.fixtureWebServer:
                 params = {'url': self.webServerUrl}
@@ -127,7 +135,9 @@ class BaseTest(object):
         try:
             if not hasattr(command, "__iter__"):
                 command = shlex.split(command)
-            proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+            environ = os.environ.copy()
+            environ["LC_ALL"] = "C"
+            proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, env=environ)
             output, _ = proc.communicate()
             if proc.returncode != expected_code:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))

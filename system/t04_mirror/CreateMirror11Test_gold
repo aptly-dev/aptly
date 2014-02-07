@@ -1,0 +1,10 @@
+Downloading http://mirror.yandex.ru/debian/dists/squeeze/InRelease...
+Downloading http://mirror.yandex.ru/debian/dists/squeeze/Release...
+Downloading http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg...
+gpgv:  RSA key ID 473041FA
+gpgv: Good signature from "Debian Archive Automatic Signing Key (6.0/squeeze) <ftpmaster@debian.org>"
+gpgv:  RSA key ID B98321F9
+gpgv: Good signature from "Squeeze Stable Release Key <debian-release@lists.debian.org>"
+
+Mirror [mirror11]: http://mirror.yandex.ru/debian/ squeeze successfully added.
+You can run 'aptly mirror update mirror11' to download repository contents.

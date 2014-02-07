@@ -1,0 +1,10 @@
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/InRelease...
+gpgv: keyblock resource `${HOME}/.gnupg/aptlytest.gpg': file open error
+gpgv:  RSA key ID 46925553
+gpgv: Can't check signature: public key not found
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/Release...
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/Release.gpg...
+gpgv: keyblock resource `${HOME}/.gnupg/aptlytest.gpg': file open error
+gpgv:  RSA key ID 46925553
+gpgv: Can't check signature: public key not found
+ERROR: unable to fetch mirror: GnuPG verification of detached signature failed: exit status 2
