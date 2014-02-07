@@ -314,3 +314,15 @@ class PublishSnapshot13Test(BaseTest):
 
         # verify contents except of sums
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+
+
+class PublishSnapshot14Test(BaseTest):
+    """
+    publish snapshot: empty snapshot is not publishable
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap14 empty",
+    ]
+    runCmd = "aptly publish snapshot --distribution=mars snap14"
+    expectedCode = 1
