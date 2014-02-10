@@ -125,6 +125,49 @@ func (g *GpgVerifier) argsKeyrings() (args []string) {
 	return
 }
 
+func (g *GpgVerifier) runGpgv(args []string, context string) error {
+	cmd := exec.Command("gpgv", args...)
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	defer stderr.Close()
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	buffer := &bytes.Buffer{}
+
+	_, err = io.Copy(io.MultiWriter(os.Stderr, buffer), stderr)
+	if err != nil {
+		return err
+	}
+
+	matches := regexp.MustCompile("ID ([0-9A-F]{8})").FindAllStringSubmatch(buffer.String(), -1)
+
+	err = cmd.Wait()
+	if err != nil {
+		if len(g.keyRings) == 0 && len(matches) > 0 {
+			fmt.Printf("\nLooks like some keys are missing in your trusted keyring, you may consider importing them from keyserver:\n\n")
+
+			keyIDs := []string{}
+			for _, match := range matches {
+				keyIDs = append(keyIDs, match[1])
+			}
+			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
+				strings.Join(keyIDs, " "))
+
+			fmt.Printf("Sometimes keys are stored in repository root in file named Release.key, to import such key:\n\n")
+			fmt.Printf("wget -O - http://some.repo/repository/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import\n\n")
+		}
+		return fmt.Errorf("verification of %s failed: %s", context, err)
+	}
+	return nil
+}
+
 // VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
 func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) error {
 	args := g.argsKeyrings()
@@ -154,43 +197,8 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 	}
 
 	args = append(args, sigf.Name(), clearf.Name())
-	cmd := exec.Command("gpgv", args...)
 
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	defer stderr.Close()
-
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	buffer := &bytes.Buffer{}
-
-	_, err = io.Copy(io.MultiWriter(os.Stderr, buffer), stderr)
-	if err != nil {
-		return err
-	}
-
-	matches := regexp.MustCompile("ID ([0-9A-F]{8})").FindAllStringSubmatch(buffer.String(), -1)
-
-	err = cmd.Wait()
-	if err != nil {
-		if len(g.keyRings) == 0 && len(matches) > 0 {
-			fmt.Printf("\nLooks like some keys are missing in your trusted keyring, you may consider importing them from keyserver:\n\n")
-
-			keyIDs := []string{}
-			for _, match := range matches {
-				keyIDs = append(keyIDs, match[1])
-			}
-			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
-				strings.Join(keyIDs, " "))
-		}
-		return fmt.Errorf("verification of detached signature failed: %s", err)
-	}
-	return nil
+	return g.runGpgv(args, "detached signature")
 }
 
 // VerifyClearsigned verifies clearsigned file using gpgv and extracts cleartext version
@@ -210,41 +218,9 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 	}
 
 	args = append(args, clearf.Name())
-	cmd := exec.Command("gpgv", args...)
-
-	stderr, err := cmd.StderrPipe()
+	err = g.runGpgv(args, "clearsigned file")
 	if err != nil {
 		return nil, err
-	}
-	defer stderr.Close()
-
-	err = cmd.Start()
-	if err != nil {
-		return nil, err
-	}
-
-	buffer := &bytes.Buffer{}
-
-	_, err = io.Copy(io.MultiWriter(os.Stderr, buffer), stderr)
-	if err != nil {
-		return nil, err
-	}
-
-	matches := regexp.MustCompile("ID ([0-9A-F]{8})").FindAllStringSubmatch(buffer.String(), -1)
-
-	err = cmd.Wait()
-	if err != nil {
-		if len(g.keyRings) == 0 && len(matches) > 0 {
-			fmt.Printf("\nLooks like some keys are missing in your trusted keyring, you may consider importing them from keyserver:\n\n")
-
-			keyIDs := []string{}
-			for _, match := range matches {
-				keyIDs = append(keyIDs, match[1])
-			}
-			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
-				strings.Join(keyIDs, " "))
-		}
-		return nil, fmt.Errorf("verification of clearsigned file failed: %s", err)
 	}
 
 	text, err = ioutil.TempFile("", "aptly-gpg")
@@ -257,7 +233,7 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 	args = append(args, g.argsKeyrings()...)
 	args = append(args, "--decrypt", "--batch", "--trust-model", "always", "--output", "-", clearf.Name())
 
-	cmd = exec.Command("gpg", args...)
+	cmd := exec.Command("gpg", args...)
 	cmd.Stderr = os.Stderr
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
