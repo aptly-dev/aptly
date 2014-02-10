@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"code.google.com/p/go.crypto/ssh/terminal"
 	"fmt"
 	"github.com/cheggaaa/pb"
-	"syscall"
 )
 
 const (
@@ -54,7 +52,7 @@ func (p *Progress) InitBar(count int64, isBytes bool) {
 	if p.bar != nil {
 		panic("bar already initialized")
 	}
-	if terminal.IsTerminal(syscall.Stdout) {
+	if RunningOnTerminal() {
 		p.bar = pb.New(0)
 		p.bar.Total = count
 		p.bar.NotPrint = true
