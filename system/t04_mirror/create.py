@@ -92,7 +92,7 @@ class CreateMirror9Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
 
     def check(self):
         def removeDates(s):
