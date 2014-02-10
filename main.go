@@ -13,7 +13,7 @@ import (
 )
 
 // aptly version
-const Version = "0.3~dev"
+const Version = "0.3"
 
 var cmd *commander.Command
 
