@@ -66,6 +66,7 @@ func (s *PackageListMixinSuite) SetUpPackages() {
 type RemoteRepoSuite struct {
 	PackageListMixinSuite
 	repo              *RemoteRepo
+	flat              *RemoteRepo
 	downloader        *utils.FakeDownloader
 	db                database.Storage
 	packageCollection *PackageCollection
@@ -76,6 +77,7 @@ var _ = Suite(&RemoteRepoSuite{})
 
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{})
 	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.packageCollection = NewPackageCollection(s.db)
@@ -92,10 +94,24 @@ func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 	c.Assert(err, ErrorMatches, ".*hexadecimal escape in host.*")
 }
 
+func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
+	c.Check(s.flat.Distribution, Equals, "")
+	c.Check(s.flat.Architectures, IsNil)
+	c.Check(s.flat.Components, IsNil)
+
+	_, err := NewRemoteRepo("fl", "http://some.repo/", "./", []string{"main"}, []string{})
+	c.Check(err, ErrorMatches, "components aren't supported for flat repos")
+}
+
 func (s *RemoteRepoSuite) TestNumPackages(c *C) {
 	c.Check(s.repo.NumPackages(), Equals, 0)
 	s.repo.packageRefs = s.reflist
 	c.Check(s.repo.NumPackages(), Equals, 3)
+}
+
+func (s *RemoteRepoSuite) TestIsFlat(c *C) {
+	c.Check(s.repo.IsFlat(), Equals, false)
+	c.Check(s.flat.IsFlat(), Equals, true)
 }
 
 func (s *RemoteRepoSuite) TestRefList(c *C) {
@@ -106,10 +122,16 @@ func (s *RemoteRepoSuite) TestRefList(c *C) {
 func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
 	c.Assert(s.repo.ReleaseURL("Release").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/Release")
 	c.Assert(s.repo.ReleaseURL("InRelease").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/InRelease")
+
+	c.Assert(s.flat.ReleaseURL("Release").String(), Equals, "http://repos.express42.com/virool/precise/Release")
 }
 
 func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
 	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
+}
+
+func (s *RemoteRepoSuite) TestFlatBinaryURL(c *C) {
+	c.Assert(s.flat.FlatBinaryURL().String(), Equals, "http://repos.express42.com/virool/precise/Packages")
 }
 
 func (s *RemoteRepoSuite) TestPackageURL(c *C) {
@@ -206,6 +228,32 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
+	c.Assert(err, IsNil)
+
+	result, err := pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "amanda-client")
+}
+
+func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
+	downloader := utils.NewFakeDownloader()
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
+
+	err := s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.Download(downloader, s.packageCollection, s.packageRepo, false)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+	c.Assert(s.flat.packageRefs, NotNil)
+
+	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	result, err := pkg.VerifyFiles(s.packageRepo)

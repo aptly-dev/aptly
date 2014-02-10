@@ -60,6 +60,17 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 	if err != nil {
 		return nil, err
 	}
+
+	if result.Distribution == "." || result.Distribution == "./" {
+		// flat repo
+		result.Distribution = ""
+		result.Architectures = nil
+		if len(result.Components) > 0 {
+			return nil, fmt.Errorf("components aren't supported for flat repos")
+		}
+		result.Components = nil
+	}
+
 	return result, nil
 }
 
@@ -72,6 +83,11 @@ func (repo *RemoteRepo) prepare() error {
 // String interface
 func (repo *RemoteRepo) String() string {
 	return fmt.Sprintf("[%s]: %s %s", repo.Name, repo.ArchiveRoot, repo.Distribution)
+}
+
+// IsFlat determines if repository is flat
+func (repo *RemoteRepo) IsFlat() bool {
+	return repo.Distribution == ""
 }
 
 // NumPackages return number of packages retrived from remore repo
@@ -89,7 +105,20 @@ func (repo *RemoteRepo) RefList() *PackageRefList {
 
 // ReleaseURL returns URL to Release* files in repo root
 func (repo *RemoteRepo) ReleaseURL(name string) *url.URL {
-	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s", repo.Distribution, name)}
+	var path *url.URL
+
+	if !repo.IsFlat() {
+		path = &url.URL{Path: fmt.Sprintf("dists/%s/%s", repo.Distribution, name)}
+	} else {
+		path = &url.URL{Path: name}
+	}
+
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
+// FlatBinaryURL returns URL to Package files for flat repo
+func (repo *RemoteRepo) FlatBinaryURL() *url.URL {
+	path := &url.URL{Path: "Packages"}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
@@ -167,25 +196,27 @@ ok:
 		return err
 	}
 
-	architectures := strings.Split(stanza["Architectures"], " ")
-	if len(repo.Architectures) == 0 {
-		repo.Architectures = architectures
-	} else {
-		err = utils.StringsIsSubset(repo.Architectures, architectures,
-			fmt.Sprintf("architecture %%s not available in repo %s", repo))
-		if err != nil {
-			return err
+	if !repo.IsFlat() {
+		architectures := strings.Split(stanza["Architectures"], " ")
+		if len(repo.Architectures) == 0 {
+			repo.Architectures = architectures
+		} else {
+			err = utils.StringsIsSubset(repo.Architectures, architectures,
+				fmt.Sprintf("architecture %%s not available in repo %s", repo))
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	components := strings.Split(stanza["Components"], " ")
-	if len(repo.Components) == 0 {
-		repo.Components = components
-	} else {
-		err = utils.StringsIsSubset(repo.Components, components,
-			fmt.Sprintf("component %%s not available in repo %s", repo))
-		if err != nil {
-			return err
+		components := strings.Split(stanza["Components"], " ")
+		if len(repo.Components) == 0 {
+			repo.Components = components
+		} else {
+			err = utils.StringsIsSubset(repo.Components, components,
+				fmt.Sprintf("component %%s not available in repo %s", repo))
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -247,31 +278,40 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	d.GetProgress().Printf("Downloading & parsing package files...\n")
 
-	// Download and parse all Release files
-	for _, component := range repo.Components {
-		for _, architecture := range repo.Architectures {
-			packagesReader, packagesFile, err := utils.DownloadTryCompression(d,
-				repo.BinaryURL(component, architecture).String(), repo.ReleaseFiles, ignoreMismatch)
+	// Download and parse all Packages files
+	packagesURLs := []string{}
+
+	if repo.IsFlat() {
+		packagesURLs = append(packagesURLs, repo.FlatBinaryURL().String())
+	} else {
+		for _, component := range repo.Components {
+			for _, architecture := range repo.Architectures {
+				packagesURLs = append(packagesURLs, repo.BinaryURL(component, architecture).String())
+			}
+		}
+	}
+
+	for _, url := range packagesURLs {
+		packagesReader, packagesFile, err := utils.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
+		if err != nil {
+			return err
+		}
+		defer packagesFile.Close()
+
+		sreader := NewControlFileReader(packagesReader)
+
+		for {
+			stanza, err := sreader.ReadStanza()
 			if err != nil {
 				return err
 			}
-			defer packagesFile.Close()
-
-			sreader := NewControlFileReader(packagesReader)
-
-			for {
-				stanza, err := sreader.ReadStanza()
-				if err != nil {
-					return err
-				}
-				if stanza == nil {
-					break
-				}
-
-				p := NewPackageFromControlFile(stanza)
-
-				list.Add(p)
+			if stanza == nil {
+				break
 			}
+
+			p := NewPackageFromControlFile(stanza)
+
+			list.Add(p)
 		}
 	}
 
