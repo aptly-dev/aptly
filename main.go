@@ -31,6 +31,7 @@ take snapshots and publish them back as Debian repositories.`,
 			makeCmdSnapshot(),
 			makeCmdPublish(),
 			makeCmdServe(),
+			makeCmdGraph(),
 			makeCmdVersion(),
 		},
 	}
