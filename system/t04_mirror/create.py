@@ -155,6 +155,7 @@ class CreateMirror14Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./"
     fixtureGpg = True
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
     def check(self):
         self.check_output()

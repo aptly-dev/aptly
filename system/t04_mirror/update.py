@@ -1,4 +1,5 @@
 import string
+import re
 from lib import BaseTest
 
 
@@ -92,6 +93,7 @@ class UpdateMirror7Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg flat http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
