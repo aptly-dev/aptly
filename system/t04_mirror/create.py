@@ -109,7 +109,7 @@ class CreateMirror10Test(BaseTest):
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
     expectedCode = 1
 
 
@@ -119,7 +119,7 @@ class CreateMirror11Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ squeeze"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
 
     def check(self):
         self.check_output()
