@@ -81,7 +81,9 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	if distribution == "" {
 		if sourceRepo != nil {
 			distribution = sourceRepo.Distribution
-		} else {
+		}
+
+		if distribution == "" {
 			return fmt.Errorf("unable to guess distribution name, please specify explicitly")
 		}
 	}
