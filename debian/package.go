@@ -177,10 +177,10 @@ func (p *Package) Stanza() (result Stanza) {
 		result["MD5sum"] = p.Files[0].Checksums.MD5
 	}
 	if p.Files[0].Checksums.SHA1 != "" {
-		result["SHA1"] = p.Files[0].Checksums.SHA1
+		result["SHA1"] = " " + p.Files[0].Checksums.SHA1
 	}
 	if p.Files[0].Checksums.SHA256 != "" {
-		result["SHA256"] = p.Files[0].Checksums.SHA256
+		result["SHA256"] = " " + p.Files[0].Checksums.SHA256
 	}
 
 	if p.Depends != nil {
