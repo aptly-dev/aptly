@@ -81,3 +81,17 @@ class UpdateMirror6Test(BaseTest):
 
     def gold_processor(self, gold):
         return string.Template(gold).substitute({'url': self.webServerUrl})
+
+
+class UpdateMirror7Test(BaseTest):
+    """
+    update mirrors: flat repository
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg flat http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./",
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))

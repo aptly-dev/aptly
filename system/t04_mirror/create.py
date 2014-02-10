@@ -147,3 +147,23 @@ class CreateMirror13Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror13", "mirror_show")
+
+
+class CreateMirror14Test(BaseTest):
+    """
+    create mirror: flat repository
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./"
+    fixtureGpg = True
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror14", "mirror_show")
+
+
+class CreateMirror15Test(BaseTest):
+    """
+    create mirror: flat repository + components
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./ main"
+    expectedCode = 1
