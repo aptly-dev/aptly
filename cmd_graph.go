@@ -114,8 +114,11 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 	tempfile.Close()
+	os.Remove(tempfile.Name())
 
-	command := exec.Command("dot", "-Tpng", "-o"+tempfile.Name())
+	tempfilename := tempfile.Name() + ".png"
+
+	command := exec.Command("dot", "-Tpng", "-o"+tempfilename)
 	command.Stderr = os.Stderr
 
 	stdin, err := command.StdinPipe()
@@ -143,9 +146,9 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	err = exec.Command("open", tempfile.Name()).Run()
+	err = exec.Command("open", tempfilename).Run()
 	if err != nil {
-		fmt.Printf("Rendered to PNG file: %s\n", tempfile.Name())
+		fmt.Printf("Rendered to PNG file: %s\n", tempfilename)
 		err = nil
 	}
 
