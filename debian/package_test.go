@@ -238,3 +238,12 @@ func (s *PackageCollectionSuite) TestUpdateByKey(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(p2.Equals(s.p), Equals, true)
 }
+
+func (s *PackageCollectionSuite) TestAllPackageRefs(c *C) {
+	err := s.collection.Update(s.p)
+	c.Assert(err, IsNil)
+
+	refs := s.collection.AllPackageRefs()
+	c.Check(refs.Len(), Equals, 1)
+	c.Check(refs.Refs[0], DeepEquals, s.p.Key())
+}

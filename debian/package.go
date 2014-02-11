@@ -345,3 +345,8 @@ func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
 func (collection *PackageCollection) Update(p *Package) error {
 	return collection.db.Put(p.Key(), p.Encode())
 }
+
+// AllPackageRefs returns list of all packages as PackageRefList
+func (collection *PackageCollection) AllPackageRefs() *PackageRefList {
+	return &PackageRefList{Refs: collection.db.KeysByPrefix([]byte("P"))}
+}
