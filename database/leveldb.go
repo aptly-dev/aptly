@@ -19,6 +19,7 @@ type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
 	Delete(key []byte) error
+	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
 }
@@ -63,6 +64,24 @@ func (l *levelDB) Put(key []byte, value []byte) error {
 
 func (l *levelDB) Delete(key []byte) error {
 	return l.db.Delete(key, nil)
+}
+
+func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
+	result := make([][]byte, 0, 20)
+	iterator := l.db.NewIterator(nil)
+	if iterator.Seek(prefix) {
+		for bytes.HasPrefix(iterator.Key(), prefix) {
+			key := iterator.Key()
+			keyc := make([]byte, len(key))
+			copy(keyc, key)
+			result = append(result, keyc)
+			if !iterator.Next() {
+				break
+			}
+		}
+	}
+
+	return result
 }
 
 func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
