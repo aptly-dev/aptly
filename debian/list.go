@@ -421,6 +421,44 @@ func (l *PackageRefList) ForEach(handler func([]byte) error) error {
 	return err
 }
 
+// Substract returns all packages in l that are not in r
+func (l *PackageRefList) Substract(r *PackageRefList) *PackageRefList {
+	result := &PackageRefList{Refs: make([][]byte, 0, 128)}
+
+	// pointer to left and right reflists
+	il, ir := 0, 0
+	// length of reflists
+	ll, lr := l.Len(), r.Len()
+
+	for il < ll || ir < lr {
+		if il == ll {
+			// left list exhausted, we got the result
+			break
+		}
+		if ir == lr {
+			// right list exhausted, append what is left to result
+			result.Refs = append(result.Refs, l.Refs[il:]...)
+			break
+		}
+
+		rel := bytes.Compare(l.Refs[il], r.Refs[ir])
+		if rel == 0 {
+			// r contains entry from l, so we skip it
+			il++
+			ir++
+		} else if rel < 0 {
+			// item il is not in r, append
+			result.Refs = append(result.Refs, l.Refs[il])
+			il++
+		} else {
+			// skip over to next item in r
+			ir++
+		}
+	}
+
+	return result
+}
+
 // PackageDiff is a difference between two packages in a list.
 //
 // If left & right are present, difference is in package version

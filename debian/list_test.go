@@ -326,6 +326,28 @@ func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
 	c.Check(err, Equals, e)
 }
 
+func (s *PackageListSuite) TestSubstract(c *C) {
+	r1 := []byte("r1")
+	r2 := []byte("r2")
+	r3 := []byte("r3")
+	r4 := []byte("r4")
+	r5 := []byte("r5")
+
+	empty := &PackageRefList{Refs: [][]byte{}}
+	l1 := &PackageRefList{Refs: [][]byte{r1, r2, r3, r4}}
+	l2 := &PackageRefList{Refs: [][]byte{r1, r3}}
+	l3 := &PackageRefList{Refs: [][]byte{r2, r4}}
+	l4 := &PackageRefList{Refs: [][]byte{r4, r5}}
+	l5 := &PackageRefList{Refs: [][]byte{r1, r2, r3}}
+
+	c.Check(l1.Substract(empty), DeepEquals, l1)
+	c.Check(l1.Substract(l2), DeepEquals, l3)
+	c.Check(l1.Substract(l3), DeepEquals, l2)
+	c.Check(l1.Substract(l4), DeepEquals, l5)
+	c.Check(empty.Substract(l1), DeepEquals, empty)
+	c.Check(l2.Substract(l3), DeepEquals, l2)
+}
+
 func (s *PackageListSuite) TestDiff(c *C) {
 	db, _ := database.OpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
