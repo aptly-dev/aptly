@@ -280,6 +280,9 @@ func (s *PackageListSuite) TestNewPackageRefList(c *C) {
 	c.Check(reflist.Refs[1], DeepEquals, []byte(s.p6.Key()))
 	c.Check(reflist.Refs[2], DeepEquals, []byte(s.p5.Key()))
 	c.Check(reflist.Refs[3], DeepEquals, []byte(s.p3.Key()))
+
+	reflist = NewPackageRefList()
+	c.Check(reflist.Len(), Equals, 0)
 }
 
 func (s *PackageListSuite) TestPackageRefListEncodeDecode(c *C) {
@@ -431,9 +434,6 @@ func (s *PackageListSuite) TestMerge(c *C) {
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
 
-	mergeAB := reflistA.Merge(reflistB)
-	mergeBA := reflistB.Merge(reflistA)
-
 	toStrSlice := func(reflist *PackageRefList) (result []string) {
 		result = make([]string, reflist.Len())
 		for i, r := range reflist.Refs {
@@ -442,8 +442,18 @@ func (s *PackageListSuite) TestMerge(c *C) {
 		return
 	}
 
+	mergeAB := reflistA.Merge(reflistB, true)
+	mergeBA := reflistB.Merge(reflistA, true)
+
 	c.Check(toStrSlice(mergeAB), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 lib 1.0", "Psparc xyz 1.0"})
 	c.Check(toStrSlice(mergeBA), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+
+	mergeABall := reflistA.Merge(reflistB, false)
+	mergeBAall := reflistB.Merge(reflistA, false)
+
+	c.Check(mergeABall, DeepEquals, mergeBAall)
+	c.Check(toStrSlice(mergeBAall), DeepEquals,
+		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
 }

@@ -357,6 +357,11 @@ var (
 	_ sort.Interface = &PackageRefList{}
 )
 
+// NewPackageRefList creates empty PackageRefList
+func NewPackageRefList() *PackageRefList {
+	return &PackageRefList{}
+}
+
 // NewPackageRefListFromPackageList creates PackageRefList from PackageList
 func NewPackageRefListFromPackageList(list *PackageList) *PackageRefList {
 	reflist := &PackageRefList{}
@@ -513,9 +518,9 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 	return
 }
 
-// Merge merges reflist r into current reflist. Merge replaces matching packages (by architecture/name)
-// with reference from r.
-func (l *PackageRefList) Merge(r *PackageRefList) (result *PackageRefList) {
+// Merge merges reflist r into current reflist. If overrideMatching, merge replaces matching packages (by architecture/name)
+// with reference from r, otherwise all packages are saved.
+func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result *PackageRefList) {
 	// pointer to left and right reflists
 	il, ir := 0, 0
 	// length of reflists
@@ -548,26 +553,29 @@ func (l *PackageRefList) Merge(r *PackageRefList) (result *PackageRefList) {
 			il++
 			ir++
 		} else {
-			partsL := bytes.Split(rl, []byte(" "))
-			archL, nameL := partsL[0][1:], partsL[1]
+			if overrideMatching {
+				partsL := bytes.Split(rl, []byte(" "))
+				archL, nameL := partsL[0][1:], partsL[1]
 
-			partsR := bytes.Split(rr, []byte(" "))
-			archR, nameR := partsR[0][1:], partsR[1]
+				partsR := bytes.Split(rr, []byte(" "))
+				archR, nameR := partsR[0][1:], partsR[1]
 
-			if bytes.Compare(archL, archR) == 0 && bytes.Compare(nameL, nameR) == 0 {
-				// override with package from the right
-				result.Refs = append(result.Refs, r.Refs[ir])
-				il++
-				ir++
-			} else {
-				// otherwise append smallest of two
-				if rel < 0 {
-					result.Refs = append(result.Refs, l.Refs[il])
-					il++
-				} else {
+				if bytes.Compare(archL, archR) == 0 && bytes.Compare(nameL, nameR) == 0 {
+					// override with package from the right
 					result.Refs = append(result.Refs, r.Refs[ir])
+					il++
 					ir++
+					continue
 				}
+			}
+
+			// otherwise append smallest of two
+			if rel < 0 {
+				result.Refs = append(result.Refs, l.Refs[il])
+				il++
+			} else {
+				result.Refs = append(result.Refs, r.Refs[ir])
+				ir++
 			}
 
 		}
