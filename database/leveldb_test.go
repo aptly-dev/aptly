@@ -84,3 +84,41 @@ func (s *LevelDBSuite) TestByPrefix(c *C) {
 	c.Check(s.db.FetchByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
 	c.Check(s.db.KeysByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
 }
+
+func (s *LevelDBSuite) TestBatch(c *C) {
+	var (
+		key    = []byte("key")
+		key2   = []byte("key2")
+		value  = []byte("value")
+		value2 = []byte("value2")
+	)
+
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	s.db.StartBatch()
+	s.db.Put(key2, value2)
+	s.db.Delete(key)
+
+	v, err := s.db.Get(key)
+	c.Check(err, IsNil)
+	c.Check(v, DeepEquals, value)
+
+	_, err = s.db.Get(key2)
+	c.Check(err, ErrorMatches, "key not found")
+
+	err = s.db.FinishBatch()
+	c.Check(err, IsNil)
+
+	v2, err := s.db.Get(key2)
+	c.Check(err, IsNil)
+	c.Check(v2, DeepEquals, value2)
+
+	_, err = s.db.Get(key)
+	c.Check(err, ErrorMatches, "key not found")
+
+	c.Check(func() { s.db.FinishBatch() }, Panics, "no batch")
+
+	s.db.StartBatch()
+	c.Check(func() { s.db.StartBatch() }, Panics, "batch already started")
+}

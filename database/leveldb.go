@@ -22,10 +22,13 @@ type Storage interface {
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
+	StartBatch()
+	FinishBatch() error
 }
 
 type levelDB struct {
-	db *leveldb.DB
+	db    *leveldb.DB
+	batch *leveldb.Batch
 }
 
 // Check interface
@@ -59,10 +62,18 @@ func (l *levelDB) Get(key []byte) ([]byte, error) {
 }
 
 func (l *levelDB) Put(key []byte, value []byte) error {
+	if l.batch != nil {
+		l.batch.Put(key, value)
+		return nil
+	}
 	return l.db.Put(key, value, nil)
 }
 
 func (l *levelDB) Delete(key []byte) error {
+	if l.batch != nil {
+		l.batch.Delete(key)
+		return nil
+	}
 	return l.db.Delete(key, nil)
 }
 
@@ -105,4 +116,20 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 
 func (l *levelDB) Close() error {
 	return l.db.Close()
+}
+
+func (l *levelDB) StartBatch() {
+	if l.batch != nil {
+		panic("batch already started")
+	}
+	l.batch = new(leveldb.Batch)
+}
+
+func (l *levelDB) FinishBatch() error {
+	if l.batch == nil {
+		panic("no batch")
+	}
+	err := l.db.Write(l.batch, nil)
+	l.batch = nil
+	return err
 }
