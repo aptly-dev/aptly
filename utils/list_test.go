@@ -56,3 +56,19 @@ func (s *ListSuite) TestStrSliceDeduplicate(c *C) {
 	c.Check(StrSliceDeduplicate([]string{"a", "b", "c", "a", "a", "b"}), DeepEquals, []string{"a", "b", "c"})
 	c.Check(StrSliceDeduplicate([]string{"a", "b", "c", "d", "e", "f"}), DeepEquals, []string{"a", "b", "c", "d", "e", "f"})
 }
+
+func (s *ListSuite) TestStrSlicesSubstract(c *C) {
+	empty := []string{}
+	l1 := []string{"r1", "r2", "r3", "r4"}
+	l2 := []string{"r1", "r3"}
+	l3 := []string{"r2", "r4"}
+	l4 := []string{"r4", "r5"}
+	l5 := []string{"r1", "r2", "r3"}
+
+	c.Check(StrSlicesSubstract(l1, empty), DeepEquals, l1)
+	c.Check(StrSlicesSubstract(l1, l2), DeepEquals, l3)
+	c.Check(StrSlicesSubstract(l1, l3), DeepEquals, l2)
+	c.Check(StrSlicesSubstract(l1, l4), DeepEquals, l5)
+	c.Check(StrSlicesSubstract(empty, l1), DeepEquals, empty)
+	c.Check(StrSlicesSubstract(l2, l3), DeepEquals, l2)
+}

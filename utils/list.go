@@ -101,3 +101,40 @@ func StrSliceDeduplicate(s []string) []string {
 
 	return s[:j]
 }
+
+// StrSlicesSubstract finds all the strings which are in l but not in r, both slices shoult be sorted
+func StrSlicesSubstract(l, r []string) []string {
+	result := make([]string, 0)
+
+	// pointer to left and right reflists
+	il, ir := 0, 0
+	// length of reflists
+	ll, lr := len(l), len(r)
+
+	for il < ll || ir < lr {
+		if il == ll {
+			// left list exhausted, we got the result
+			break
+		}
+		if ir == lr {
+			// right list exhausted, append what is left to result
+			result = append(result, l[il:]...)
+			break
+		}
+
+		if l[il] == r[ir] {
+			// r contains entry from l, so we skip it
+			il++
+			ir++
+		} else if l[il] < r[ir] {
+			// item il is not in r, append
+			result = append(result, l[il])
+			il++
+		} else {
+			// skip over to next item in r
+			ir++
+		}
+	}
+
+	return result
+}
