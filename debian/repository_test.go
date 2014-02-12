@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
@@ -111,11 +112,8 @@ func (s *RepositorySuite) TestLinkFromPool(c *C) {
 		err := os.MkdirAll(filepath.Dir(t.sourcePath), 0755)
 		c.Assert(err, IsNil)
 
-		file, err := os.Create(t.sourcePath)
+		err = ioutil.WriteFile(t.sourcePath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
-
-		file.Write([]byte("Contents"))
-		file.Close()
 
 		path, err := s.repo.LinkFromPool(t.prefix, t.component, t.sourcePath, t.poolDirectory)
 		c.Assert(err, IsNil)
