@@ -56,6 +56,7 @@ class BaseTest(object):
 
     longTest = False
     fixturePool = False
+    fixturePoolCopy = False
     fixtureDB = False
     fixtureGpg = False
     fixtureWebServer = False
@@ -110,6 +111,10 @@ class BaseTest(object):
         if self.fixturePool:
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
             os.symlink(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"))
+
+        if self.fixturePoolCopy:
+            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
+            shutil.copytree(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
             shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
