@@ -2,6 +2,7 @@ aptly - Debian repository management tool
 
 Commands:
 
+    db          manage aptly's internal database and package pool
     graph       display graph of dependencies between aptly objects (requires graphviz)
     mirror      manage mirrors of remote repositories
     publish     manage published repositories
