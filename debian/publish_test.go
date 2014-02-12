@@ -28,7 +28,9 @@ func (n *NullSigner) Init() error {
 }
 
 func (n *NullSigner) SetKey(keyRef string) {
+}
 
+func (g *NullSigner) SetKeyRing(keyring, secretKeyring string) {
 }
 
 func (n *NullSigner) DetachedSign(source string, destination string) error {

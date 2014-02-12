@@ -16,11 +16,8 @@ func getSigner(cmd *commander.Command) (utils.Signer, error) {
 	}
 
 	signer := &utils.GpgSigner{}
-
-	key := cmd.Flag.Lookup("gpg-key").Value.String()
-	if key != "" {
-		signer.SetKey(key)
-	}
+	signer.SetKey(cmd.Flag.Lookup("gpg-key").Value.String())
+	signer.SetKeyRing(cmd.Flag.Lookup("keyring").Value.String(), cmd.Flag.Lookup("secret-keyring").Value.String())
 
 	err := signer.Init()
 	if err != nil {
@@ -213,6 +210,8 @@ ex.
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
+	cmd.Flag.String("keyring", "", "GPG keyring to use (instead of default)")
+	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 
 	return cmd

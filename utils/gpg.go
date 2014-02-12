@@ -15,6 +15,7 @@ import (
 type Signer interface {
 	Init() error
 	SetKey(keyRef string)
+	SetKeyRing(keyring, secretKeyring string)
 	DetachedSign(source string, destination string) error
 	ClearSign(source string, destination string) error
 }
@@ -35,12 +36,34 @@ var (
 
 // GpgSigner is implementation of Signer interface using gpg
 type GpgSigner struct {
-	keyRef string
+	keyRef                 string
+	keyring, secretKeyring string
 }
 
 // SetKey sets key ID to use when signing files
 func (g *GpgSigner) SetKey(keyRef string) {
 	g.keyRef = keyRef
+}
+
+// SetKeyring allows to set custom keyring and secretkeyring
+func (g *GpgSigner) SetKeyRing(keyring, secretKeyring string) {
+	g.keyring, g.secretKeyring = keyring, secretKeyring
+}
+
+func (g *GpgSigner) gpgArgs() []string {
+	args := []string{}
+	if g.keyring != "" {
+		args = append(args, "--no-default-keyring", "--keyring", g.keyring)
+	}
+	if g.secretKeyring != "" {
+		args = append(args, "--secret-keyring", g.secretKeyring)
+	}
+
+	if g.keyRef != "" {
+		args = append(args, "-u", g.keyRef)
+	}
+
+	return args
 }
 
 // Init verifies availability of gpg & presence of keys
@@ -62,9 +85,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", source)
 
 	args := []string{"-o", destination, "--armor", "--yes"}
-	if g.keyRef != "" {
-		args = append(args, "-u", g.keyRef)
-	}
+	args = append(args, g.gpgArgs()...)
 	args = append(args, "--detach-sign", source)
 	cmd := exec.Command("gpg", args...)
 	return cmd.Run()
@@ -74,9 +95,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 func (g *GpgSigner) ClearSign(source string, destination string) error {
 	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", source)
 	args := []string{"-o", destination, "--yes"}
-	if g.keyRef != "" {
-		args = append(args, "-u", g.keyRef)
-	}
+	args = append(args, g.gpgArgs()...)
 	args = append(args, "--clearsign", source)
 	cmd := exec.Command("gpg", args...)
 	return cmd.Run()
