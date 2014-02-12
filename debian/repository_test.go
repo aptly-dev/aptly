@@ -160,3 +160,25 @@ func (s *RepositorySuite) TestPoolFilepathList(c *C) {
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"ae/0c/1.deb", "ae/0c/2.deb", "bd/0a/3.deb", "bd/0b/4.deb"})
 }
+
+func (s *RepositorySuite) TestPoolRemove(c *C) {
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "bd", "0b"), 0755)
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "bd", "0a"), 0755)
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "ae", "0c"), 0755)
+
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "ae", "0c", "1.deb"), []byte("1"), 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "ae", "0c", "2.deb"), []byte("22"), 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "bd", "0a", "3.deb"), []byte("333"), 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "bd", "0b", "4.deb"), []byte("4444"), 0644)
+
+	size, err := s.repo.PoolRemove("ae/0c/2.deb")
+	c.Check(err, IsNil)
+	c.Check(size, Equals, int64(2))
+
+	_, err = s.repo.PoolRemove("ae/0c/2.deb")
+	c.Check(err, ErrorMatches, ".*no such file or directory")
+
+	list, err := s.repo.PoolFilepathList(nil)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"ae/0c/1.deb", "bd/0a/3.deb", "bd/0b/4.deb"})
+}

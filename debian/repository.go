@@ -151,3 +151,16 @@ func (r *Repository) PoolFilepathList(progress *utils.Progress) ([]string, error
 
 	return result, nil
 }
+
+// PoolRemove deletes file in package pool
+func (r *Repository) PoolRemove(path string) (size int64, err error) {
+	path = filepath.Join(r.RootPath, "pool", path)
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+
+	err = os.Remove(path)
+	return info.Size(), err
+}
