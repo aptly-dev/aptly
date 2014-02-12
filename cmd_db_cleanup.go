@@ -111,9 +111,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	if len(filesToDelete) > 0 {
 		context.downloader.GetProgress().InitBar(int64(len(filesToDelete)), false)
-
 		totalSize := int64(0)
-
 		for _, file := range filesToDelete {
 			size, err := context.packageRepository.PoolRemove(file)
 			if err != nil {
@@ -123,9 +121,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			context.downloader.GetProgress().AddBar(1)
 			totalSize += size
 		}
-
 		context.downloader.GetProgress().ShutdownBar()
-	}
 
+		context.downloader.GetProgress().Printf("Disk space freed: %.2f GiB...\n", float64(totalSize)/1024.0/1024.0/1024.0)
+	}
 	return err
 }
