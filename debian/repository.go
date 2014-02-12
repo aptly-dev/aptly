@@ -3,6 +3,7 @@ package debian
 import (
 	"fmt"
 	"github.com/smira/aptly/utils"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -34,14 +35,28 @@ func NewRepository(root string) *Repository {
 	return &Repository{RootPath: root}
 }
 
-// PoolPath returns full path to package file in pool givan any name and hash of file contents
-func (r *Repository) PoolPath(filename string, hashMD5 string) (string, error) {
+// RelativePoolPath returns path relative to pool's root
+func (r *Repository) RelativePoolPath(filename string, hashMD5 string) (string, error) {
 	filename = filepath.Base(filename)
 	if filename == "." || filename == "/" {
 		return "", fmt.Errorf("filename %s is invalid", filename)
 	}
 
-	return filepath.Join(r.RootPath, "pool", hashMD5[0:2], hashMD5[2:4], filename), nil
+	if len(hashMD5) < 4 {
+		return "", fmt.Errorf("unable to compute pool location for filename %v, MD5 is missing", filename)
+	}
+
+	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
+}
+
+// PoolPath returns full path to package file in pool given any name and hash of file contents
+func (r *Repository) PoolPath(filename string, hashMD5 string) (string, error) {
+	relative, err := r.RelativePoolPath(filename, hashMD5)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(r.RootPath, "pool", relative), nil
 }
 
 // PublicPath returns root of public part of repository
@@ -90,4 +105,49 @@ func (r *Repository) LinkFromPool(prefix string, component string, sourcePath st
 // ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
 func (r *Repository) ChecksumsForFile(path string) (utils.ChecksumInfo, error) {
 	return utils.ChecksumsForFile(filepath.Join(r.RootPath, "public", path))
+}
+
+// PoolFilepathList returns file paths of all the files in the pool
+func (r *Repository) PoolFilepathList(progress *utils.Progress) ([]string, error) {
+	poolPath := filepath.Join(r.RootPath, "pool")
+
+	dirs, err := ioutil.ReadDir(poolPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	if len(dirs) == 0 {
+		return nil, nil
+	}
+
+	if progress != nil {
+		progress.InitBar(int64(len(dirs)), false)
+		defer progress.ShutdownBar()
+	}
+
+	result := []string{}
+
+	for _, dir := range dirs {
+		err = filepath.Walk(filepath.Join(poolPath, dir.Name()), func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				result = append(result, path[len(poolPath)+1:])
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		if progress != nil {
+			progress.AddBar(1)
+		}
+	}
+
+	return result, nil
 }

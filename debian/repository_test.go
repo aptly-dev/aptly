@@ -18,14 +18,25 @@ func (s *RepositorySuite) SetUpTest(c *C) {
 	s.repo = NewRepository(c.MkDir())
 }
 
+func (s *RepositorySuite) TestRelativePoolPath(c *C) {
+	path, err := s.repo.RelativePoolPath("a/b/package.deb", "91b1a1480b90b9e269ca44d897b12575")
+	c.Assert(err, IsNil)
+	c.Assert(path, Equals, "91/b1/package.deb")
+
+	_, err = s.repo.RelativePoolPath("/", "91b1a1480b90b9e269ca44d897b12575")
+	c.Assert(err, ErrorMatches, ".*is invalid")
+	_, err = s.repo.RelativePoolPath("", "91b1a1480b90b9e269ca44d897b12575")
+	c.Assert(err, ErrorMatches, ".*is invalid")
+	_, err = s.repo.RelativePoolPath("a/b/package.deb", "9")
+	c.Assert(err, ErrorMatches, ".*MD5 is missing")
+}
+
 func (s *RepositorySuite) TestPoolPath(c *C) {
 	path, err := s.repo.PoolPath("a/b/package.deb", "91b1a1480b90b9e269ca44d897b12575")
 	c.Assert(err, IsNil)
 	c.Assert(path, Equals, filepath.Join(s.repo.RootPath, "pool", "91/b1/package.deb"))
 
 	_, err = s.repo.PoolPath("/", "91b1a1480b90b9e269ca44d897b12575")
-	c.Assert(err, ErrorMatches, ".*is invalid")
-	_, err = s.repo.PoolPath("", "91b1a1480b90b9e269ca44d897b12575")
 	c.Assert(err, ErrorMatches, ".*is invalid")
 }
 
@@ -125,4 +136,27 @@ func (s *RepositorySuite) TestLinkFromPool(c *C) {
 		info := st.Sys().(*syscall.Stat_t)
 		c.Check(int(info.Nlink), Equals, 2)
 	}
+}
+
+func (s *RepositorySuite) TestPoolFilepathList(c *C) {
+	list, err := s.repo.PoolFilepathList(nil)
+	c.Check(err, IsNil)
+	c.Check(list, IsNil)
+
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "bd", "0b"), 0755)
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "bd", "0a"), 0755)
+	os.MkdirAll(filepath.Join(s.repo.RootPath, "pool", "ae", "0c"), 0755)
+
+	list, err = s.repo.PoolFilepathList(nil)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{})
+
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "ae", "0c", "1.deb"), nil, 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "ae", "0c", "2.deb"), nil, 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "bd", "0a", "3.deb"), nil, 0644)
+	ioutil.WriteFile(filepath.Join(s.repo.RootPath, "pool", "bd", "0b", "4.deb"), nil, 0644)
+
+	list, err = s.repo.PoolFilepathList(nil)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"ae/0c/1.deb", "ae/0c/2.deb", "bd/0a/3.deb", "bd/0b/4.deb"})
 }
