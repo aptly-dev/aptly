@@ -21,8 +21,8 @@ class Serve1Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
         "aptly snapshot create snap2 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1",
-        "aptly publish snapshot snap2 debian",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap2 debian",
     ]
     runCmd = "aptly serve -listen=127.0.0.1:8765"
 
