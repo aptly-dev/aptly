@@ -73,7 +73,7 @@ func (g *GpgSigner) Init() error {
 		return fmt.Errorf("unable to execute gpg: %s (is gpg installed?)", err)
 	}
 
-	if len(output) == 0 {
+	if g.keyring == "" && g.secretKeyring == "" && len(output) == 0 {
 		return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
 	}
 
