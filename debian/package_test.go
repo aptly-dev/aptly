@@ -182,6 +182,15 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	c.Check(p.Files[0].Filename, Equals, "pool/non-free/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 }
 
+func (s *PackageSuite) TestFilepathList(c *C) {
+	packageRepo := NewRepository(c.MkDir())
+	p := NewPackageFromControlFile(s.stanza)
+
+	list, err := p.FilepathList(packageRepo)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"1e/8c/alien-arena-common_7.40-2_i386.deb"})
+}
+
 func (s *PackageSuite) TestDownloadList(c *C) {
 	packageRepo := NewRepository(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
@@ -246,4 +255,15 @@ func (s *PackageCollectionSuite) TestAllPackageRefs(c *C) {
 	refs := s.collection.AllPackageRefs()
 	c.Check(refs.Len(), Equals, 1)
 	c.Check(refs.Refs[0], DeepEquals, s.p.Key())
+}
+
+func (s *PackageCollectionSuite) TestDeleteByKey(c *C) {
+	err := s.collection.Update(s.p)
+	c.Assert(err, IsNil)
+
+	err = s.collection.DeleteByKey(s.p.Key())
+	c.Check(err, IsNil)
+
+	_, err = s.collection.ByKey(s.p.Key())
+	c.Check(err, ErrorMatches, "key not found")
 }

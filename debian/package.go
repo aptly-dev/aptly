@@ -247,7 +247,7 @@ func (p *Package) LinkFromPool(packageRepo *Repository, prefix string, component
 	return nil
 }
 
-// PoolDirectory returns directory in package pool for this package files
+// PoolDirectory returns directory in package pool of published repository for this package files
 func (p *Package) PoolDirectory() (string, error) {
 	source := p.Source
 	if source == "" {
@@ -314,6 +314,21 @@ func (p *Package) VerifyFiles(packageRepo *Repository) (result bool, err error) 
 	return
 }
 
+// FilepathsList returns list of paths to files in package repository
+func (p *Package) FilepathList(packageRepo *Repository) ([]string, error) {
+	var err error
+	result := make([]string, len(p.Files))
+
+	for i, f := range p.Files {
+		result[i], err = packageRepo.RelativePoolPath(f.Filename, f.Checksums.MD5)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
 // PackageCollection does management of packages in DB
 type PackageCollection struct {
 	db database.Storage
@@ -349,4 +364,9 @@ func (collection *PackageCollection) Update(p *Package) error {
 // AllPackageRefs returns list of all packages as PackageRefList
 func (collection *PackageCollection) AllPackageRefs() *PackageRefList {
 	return &PackageRefList{Refs: collection.db.KeysByPrefix([]byte("P"))}
+}
+
+// DeleteByKey deletes package in DB by key
+func (collection *PackageCollection) DeleteByKey(key []byte) error {
+	return collection.db.Delete(key)
 }
