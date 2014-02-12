@@ -49,6 +49,7 @@ system-test:
 ifeq ($(GOVERSION), go1.2)
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 endif
+	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	go install
 	PATH=$(BINPATH):$(PATH) python system/run.py --long
 
