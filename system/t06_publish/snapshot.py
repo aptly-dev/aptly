@@ -1,5 +1,6 @@
 import os
 import hashlib
+import inspect
 from lib import BaseTest
 
 
@@ -16,7 +17,7 @@ class PublishSnapshot1Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot snap1"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
@@ -39,8 +40,10 @@ class PublishSnapshot1Test(BaseTest):
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
         # verify signatures
-        self.run_cmd(["gpg", "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
-        self.run_cmd(["gpg", "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+        self.run_cmd(["gpg", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
         # verify sums
@@ -83,7 +86,7 @@ class PublishSnapshot2Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap2 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -distribution=squeeze snap2"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap2"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
@@ -115,7 +118,7 @@ class PublishSnapshot3Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap3 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -distribution=squeeze -component=contrib snap3"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -component=contrib snap3"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
@@ -147,7 +150,7 @@ class PublishSnapshot4Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap4 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly -architectures=i386 publish snapshot -distribution=squeeze snap4"
+    runCmd = "aptly -architectures=i386 publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap4"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
@@ -179,7 +182,7 @@ class PublishSnapshot5Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap5 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -distribution=squeeze snap5 ppa/smira"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
 
     gold_processor = BaseTest.expand_environ
 
@@ -221,7 +224,7 @@ class PublishSnapshot7Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap7 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap7",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap7",
     ]
     runCmd = "aptly publish snapshot snap7"
     expectedCode = 1
@@ -235,7 +238,7 @@ class PublishSnapshot8Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap8 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap8 ./ppa",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap8 ./ppa",
     ]
     runCmd = "aptly publish snapshot snap8 ppa"
     expectedCode = 1

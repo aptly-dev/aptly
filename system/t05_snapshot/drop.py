@@ -51,7 +51,7 @@ class DropSnapshot4Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1"
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1"
     ]
     runCmd = "aptly snapshot drop snap1"
     expectedCode = 1
@@ -65,7 +65,7 @@ class DropSnapshot5Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1"
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1"
     ]
     runCmd = "aptly snapshot drop --force snap1"
     expectedCode = 1
@@ -88,7 +88,7 @@ class DropSnapshot7Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
         "aptly publish drop maverick",
     ]
     runCmd = "aptly snapshot drop snap1"

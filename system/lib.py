@@ -129,9 +129,6 @@ class BaseTest(object):
                           os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "flat.key")])
 
         if hasattr(self, "fixtureCmds"):
-            if self.fixtureWebServer:
-                params = {'url': self.webServerUrl}
-                self.fixtureCmds = [string.Template(cmd).substitute(params) for cmd in self.fixtureCmds]
             for cmd in self.fixtureCmds:
                 self.run_cmd(cmd)
 
@@ -141,6 +138,12 @@ class BaseTest(object):
     def run_cmd(self, command, expected_code=0):
         try:
             if not hasattr(command, "__iter__"):
+                params = {'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files")}
+                if self.fixtureWebServer:
+                    params['url'] = self.webServerUrl
+
+                command = string.Template(command).substitute(params)
+
                 command = shlex.split(command)
             environ = os.environ.copy()
             environ["LC_ALL"] = "C"

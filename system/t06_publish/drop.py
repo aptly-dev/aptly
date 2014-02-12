@@ -9,7 +9,7 @@ class PublishDrop1Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
     ]
     runCmd = "aptly publish drop maverick"
     gold_processor = BaseTest.expand_environ
@@ -29,7 +29,7 @@ class PublishDrop2Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot snap1 ppa/smira",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1 ppa/smira",
     ]
     runCmd = "aptly publish drop maverick ppa/smira"
     gold_processor = BaseTest.expand_environ
