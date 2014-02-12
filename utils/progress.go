@@ -64,7 +64,6 @@ func (p *Progress) InitBar(count int64, isBytes bool) {
 			p.bar.SetUnits(pb.U_BYTES)
 			p.bar.ShowSpeed = true
 		}
-		p.barShown = false
 		p.bar.Start()
 	}
 }
@@ -111,8 +110,10 @@ func (p *Progress) worker() {
 				}
 				fmt.Print(task.message)
 			case codeProgress:
-				fmt.Print("\r" + task.message)
-				p.barShown = true
+				if p.bar != nil {
+					fmt.Print("\r" + task.message)
+					p.barShown = true
+				}
 			case codeHideProgress:
 				if p.barShown {
 					fmt.Print("\r\033[2K")
