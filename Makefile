@@ -58,6 +58,6 @@ test:
 	go test -v ./... -gocheck.v=true
 
 coveralls: coverage.out
-	@$(GOVERALLS) -service travis-ci.org -coverprofile=coverage.out $(COVERALLS_TOKEN)
+	@$(GOVERALLS) -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
 
 .PHONY: coverage.out
