@@ -54,7 +54,7 @@ class Serve1Test(BaseTest):
 
     def check(self):
         self.check_output()
-        self.verify_match(self.get_gold('http'), self.http_response)
+        self.verify_match(self.get_gold('http'), self.http_response, match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
 
 
 class Serve2Test(BaseTest):
