@@ -319,12 +319,18 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	d.GetProgress().InitBar(int64(list.Len()), false)
 
+	packageCollection.db.StartBatch()
+
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
 		d.GetProgress().AddBar(1)
 		return packageCollection.Update(p)
 	})
+	if err != nil {
+		return fmt.Errorf("unable to save packages to db: %s", err)
+	}
 
+	err = packageCollection.db.FinishBatch()
 	if err != nil {
 		return fmt.Errorf("unable to save packages to db: %s", err)
 	}
