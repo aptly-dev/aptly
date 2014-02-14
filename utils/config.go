@@ -8,26 +8,28 @@ import (
 
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct {
-	RootDir              string   `json:"rootDir"`
-	DownloadConcurrency  int      `json:"downloadConcurrency"`
-	Architectures        []string `json:"architectures"`
-	DepFollowSuggests    bool     `json:"dependencyFollowSuggests"`
-	DepFollowRecommends  bool     `json:"dependencyFollowRecommends"`
-	DepFollowAllVariants bool     `json:"dependencyFollowAllVariants"`
-	GpgDisableSign       bool     `json:"gpgDisableSign"`
-	GpgDisableVerify     bool     `json:"gpgDisableVerify"`
+	RootDir                string   `json:"rootDir"`
+	DownloadConcurrency    int      `json:"downloadConcurrency"`
+	Architectures          []string `json:"architectures"`
+	DepFollowSuggests      bool     `json:"dependencyFollowSuggests"`
+	DepFollowRecommends    bool     `json:"dependencyFollowRecommends"`
+	DepFollowAllVariants   bool     `json:"dependencyFollowAllVariants"`
+	GpgDisableSign         bool     `json:"gpgDisableSign"`
+	GpgDisableVerify       bool     `json:"gpgDisableVerify"`
+	DownloadSourcePackages bool     `json:"downloadSourcePackages"`
 }
 
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
-	RootDir:              filepath.Join(os.Getenv("HOME"), ".aptly"),
-	DownloadConcurrency:  4,
-	Architectures:        []string{},
-	DepFollowSuggests:    false,
-	DepFollowRecommends:  false,
-	DepFollowAllVariants: false,
-	GpgDisableSign:       false,
-	GpgDisableVerify:     false,
+	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	DownloadConcurrency:    4,
+	Architectures:          []string{},
+	DepFollowSuggests:      false,
+	DepFollowRecommends:    false,
+	DepFollowAllVariants:   false,
+	GpgDisableSign:         false,
+	GpgDisableVerify:       false,
+	DownloadSourcePackages: false,
 }
 
 // LoadConfig loads configuration from json file
