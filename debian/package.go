@@ -152,11 +152,12 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 				return fmt.Errorf("unable to parse size: %s", err)
 			}
 
+			filename := filepath.Join(input["Directory"], parts[2])
+
 			found := false
 			pos := 0
-
 			for i, file := range result.Files {
-				if file.Filename == parts[2] {
+				if file.Filename == filename {
 					found = true
 					pos = i
 					break
@@ -164,7 +165,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 			}
 
 			if !found {
-				result.Files = append(result.Files, PackageFile{Filename: parts[2]})
+				result.Files = append(result.Files, PackageFile{Filename: filename})
 				pos = len(result.Files) - 1
 			}
 
@@ -267,9 +268,10 @@ func (p *Package) Stanza() (result Stanza) {
 		md5, sha1, sha256 := make([]string, len(p.Files)), make([]string, len(p.Files)), make([]string, len(p.Files))
 
 		for i, f := range p.Files {
-			md5[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename)
-			sha1[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename)
-			sha256[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename)
+			base := filepath.Base(f.Filename)
+			md5[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, base)
+			sha1[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, base)
+			sha256[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, base)
 		}
 
 		result["Files"] = strings.Join(md5, "")

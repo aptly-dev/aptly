@@ -87,19 +87,19 @@ func (s *PackageSuite) TestNewSourceFromPara(c *C) {
 	c.Check(p.BuildDependsInDep, DeepEquals, []string{"default-jdk-doc", "junit (>= 3.8.1)", "libannotation-indexer-java (>= 1.3)", "libannotation-indexer-java-doc", "libasm3-java", "libmaven-install-plugin-java", "libmaven-javadoc-plugin-java", "libmaven-scm-java", "libmaven2-core-java", "libmaven2-core-java-doc", "libmetainf-services-java", "libmetainf-services-java-doc", "libmaven-plugin-tools-java (>= 2.8)"})
 	c.Check(p.Files, HasLen, 3)
 
-	c.Check(p.Files[0].Filename, Equals, "access-modifier-checker_1.0-4.dsc")
+	c.Check(p.Files[0].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc")
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(2583))
 	c.Check(p.Files[0].Checksums.MD5, Equals, "eb2a7a57c92ebac9d3d1c2d2d719f290")
 	c.Check(p.Files[0].Checksums.SHA1, Equals, "a70b87bba4391c0138cc9cc75efa747c4eeea2d7")
 	c.Check(p.Files[0].Checksums.SHA256, Equals, "36ae7f68974bd69450229244510faa8f8056709913770218821069e6cce6b4b8")
 
-	c.Check(p.Files[1].Filename, Equals, "access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(p.Files[1].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(p.Files[1].Checksums.Size, Equals, int64(10049))
 	c.Check(p.Files[1].Checksums.MD5, Equals, "f280abdc753beea4243d99530f023f12")
 	c.Check(p.Files[1].Checksums.SHA1, Equals, "c5bea16095ae1685941193370d20756e036d61a7")
 	c.Check(p.Files[1].Checksums.SHA256, Equals, "9d362301892bd647a361755bde28f0a39644a5bbb2ff5300060373ee29d9d87a")
 
-	c.Check(p.Files[2].Filename, Equals, "access-modifier-checker_1.0-4.debian.tar.gz")
+	c.Check(p.Files[2].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
 	c.Check(p.Depends, IsNil)
 }
