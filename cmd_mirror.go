@@ -85,7 +85,9 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], context.architecturesList)
+	downloadSources := utils.Config.DownloadSourcePackages || cmd.Flag.Lookup("with-sources").Value.Get().(bool)
+
+	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], context.architecturesList, downloadSources)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
@@ -263,6 +265,7 @@ ex:
 	}
 
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
+	cmd.Flag.Bool("with-sources", false, "download source packages")
 	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd
