@@ -47,9 +47,9 @@ type Package struct {
 	// while Architecture would be equal to "source"
 	SourceArchitecture string
 	// For binary package, name of source package
-	Source   string
-	Provides []string
+	Source string
 	// Various dependencies
+	Provides          []string
 	Depends           []string
 	BuildDepends      []string
 	BuildDependsInDep []string
