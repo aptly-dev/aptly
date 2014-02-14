@@ -33,6 +33,8 @@ type RemoteRepo struct {
 	Components []string
 	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures []string
+	// Should we download sources?
+	DownloadSources bool
 	// Meta-information about repository
 	Meta Stanza
 	// Last update date
@@ -46,14 +48,16 @@ type RemoteRepo struct {
 }
 
 // NewRemoteRepo creates new instance of Debian remote repository with specified params
-func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string, architectures []string) (*RemoteRepo, error) {
+func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string,
+	architectures []string, downloadSources bool) (*RemoteRepo, error) {
 	result := &RemoteRepo{
-		UUID:          uuid.New(),
-		Name:          name,
-		ArchiveRoot:   archiveRoot,
-		Distribution:  distribution,
-		Components:    components,
-		Architectures: architectures,
+		UUID:            uuid.New(),
+		Name:            name,
+		ArchiveRoot:     archiveRoot,
+		Distribution:    distribution,
+		Components:      components,
+		Architectures:   architectures,
+		DownloadSources: downloadSources,
 	}
 
 	err := result.prepare()
@@ -116,16 +120,28 @@ func (repo *RemoteRepo) ReleaseURL(name string) *url.URL {
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
-// FlatBinaryURL returns URL to Package files for flat repo
+// FlatBinaryURL returns URL to Packages files for flat repo
 func (repo *RemoteRepo) FlatBinaryURL() *url.URL {
 	path := &url.URL{Path: "Packages"}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
-// BinaryURL returns URL of Packages file for given component and
+// FlatSourcesURL returns URL to Sources files for flat repo
+func (repo *RemoteRepo) FlatSourcesURL() *url.URL {
+	path := &url.URL{Path: "Sources"}
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
+// BinaryURL returns URL of Packages files for given component and
 // architecture
 func (repo *RemoteRepo) BinaryURL(component string, architecture string) *url.URL {
 	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s/binary-%s/Packages", repo.Distribution, component, architecture)}
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
+// SourcesURL returns URL of Sources files for given component
+func (repo *RemoteRepo) SourcesURL(component string) *url.URL {
+	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s/source/Sources", repo.Distribution, component)}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
@@ -278,20 +294,27 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	d.GetProgress().Printf("Downloading & parsing package files...\n")
 
-	// Download and parse all Packages files
-	packagesURLs := []string{}
+	// Download and parse all Packages & Source files
+	packagesURLs := [][]string{}
 
 	if repo.IsFlat() {
-		packagesURLs = append(packagesURLs, repo.FlatBinaryURL().String())
+		packagesURLs = append(packagesURLs, []string{repo.FlatBinaryURL().String(), "binary"})
+		if repo.DownloadSources {
+			packagesURLs = append(packagesURLs, []string{repo.FlatSourcesURL().String(), "source"})
+		}
 	} else {
 		for _, component := range repo.Components {
 			for _, architecture := range repo.Architectures {
-				packagesURLs = append(packagesURLs, repo.BinaryURL(component, architecture).String())
+				packagesURLs = append(packagesURLs, []string{repo.BinaryURL(component, architecture).String(), "binary"})
+			}
+			if repo.DownloadSources {
+				packagesURLs = append(packagesURLs, []string{repo.SourcesURL(component).String(), "source"})
 			}
 		}
 	}
 
-	for _, url := range packagesURLs {
+	for _, info := range packagesURLs {
+		url, kind := info[0], info[1]
 		packagesReader, packagesFile, err := utils.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
 		if err != nil {
 			return err
@@ -309,8 +332,16 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 				break
 			}
 
-			p := NewPackageFromControlFile(stanza)
+			var p *Package
 
+			if kind == "binary" {
+				p = NewPackageFromControlFile(stanza)
+			} else if kind == "source" {
+				p, err = NewSourcePackageFromControlFile(stanza)
+				if err != nil {
+					return err
+				}
+			}
 			list.Add(p)
 		}
 	}

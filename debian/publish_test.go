@@ -59,7 +59,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.packageRepo = NewRepository(c.MkDir())
 
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{})
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false)
 	repo.packageRefs = s.reflist
 
 	s.snapshot, _ = NewSnapshotFromRepository("snap", repo)
