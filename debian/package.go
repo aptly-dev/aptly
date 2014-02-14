@@ -37,16 +37,25 @@ func (f *PackageFile) Verify(packageRepo *Repository) (bool, error) {
 
 // Package is single instance of Debian package
 type Package struct {
+	// Is this source package
+	IsSource bool
+	// Basic package properties
 	Name         string
 	Version      string
 	Architecture string
-	Source       string
-	Provides     []string
+	// If this source package, this field holds "real" architecture value,
+	// while Architecture would be equal to "source"
+	SourceArchitecture string
+	// For binary package, name of source package
+	Source   string
+	Provides []string
 	// Various dependencies
-	Depends    []string
-	PreDepends []string
-	Suggests   []string
-	Recommends []string
+	Depends           []string
+	BuildDepends      []string
+	BuildDependsInDep []string
+	PreDepends        []string
+	Suggests          []string
+	Recommends        []string
 	// Files in package
 	Files []PackageFile
 	// Extra information from stanza
@@ -112,6 +121,83 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	return result
 }
 
+// NewSourcePackageFromControlFile creates Package from parsed Debian control file for source package
+func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
+	result := &Package{
+		IsSource:           true,
+		Name:               input["Package"],
+		Version:            input["Version"],
+		Architecture:       "source",
+		SourceArchitecture: input["Architecture"],
+	}
+
+	delete(input, "Package")
+	delete(input, "Version")
+	delete(input, "Architecture")
+
+	parseSums := func(field string, setter func(sum *utils.ChecksumInfo, data string)) error {
+		for _, line := range strings.Split(input[field], "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			parts := strings.Fields(line)
+
+			if len(parts) != 3 {
+				return fmt.Errorf("unparseable hash sum line: %#v", line)
+			}
+
+			size, err := strconv.ParseInt(parts[1], 10, 64)
+			if err != nil {
+				return fmt.Errorf("unable to parse size: %s", err)
+			}
+
+			found := false
+			pos := 0
+
+			for i, file := range result.Files {
+				if file.Filename == parts[2] {
+					found = true
+					pos = i
+					break
+				}
+			}
+
+			if !found {
+				result.Files = append(result.Files, PackageFile{Filename: parts[2]})
+				pos = len(result.Files) - 1
+			}
+
+			result.Files[pos].Checksums.Size = size
+			setter(&result.Files[pos].Checksums, parts[0])
+		}
+
+		delete(input, field)
+
+		return nil
+	}
+
+	err := parseSums("Files", func(sum *utils.ChecksumInfo, data string) { sum.MD5 = data })
+	if err != nil {
+		return nil, err
+	}
+	err = parseSums("Checksums-Sha1", func(sum *utils.ChecksumInfo, data string) { sum.SHA1 = data })
+	if err != nil {
+		return nil, err
+	}
+	err = parseSums("Checksums-Sha256", func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
+	if err != nil {
+		return nil, err
+	}
+
+	result.BuildDepends = parseDependencies(input, "Build-Depends")
+	result.BuildDependsInDep = parseDependencies(input, "Build-Depends-Indep")
+
+	result.Extra = input
+
+	return result, nil
+}
+
 // Key returns unique key identifying package
 func (p *Package) Key() []byte {
 	return []byte("P" + p.Architecture + " " + p.Name + " " + p.Version)
@@ -169,18 +255,38 @@ func (p *Package) Stanza() (result Stanza) {
 	result = p.Extra.Copy()
 	result["Package"] = p.Name
 	result["Version"] = p.Version
-	result["Filename"] = p.Files[0].Filename
-	result["Architecture"] = p.Architecture
-	result["Source"] = p.Source
 
-	if p.Files[0].Checksums.MD5 != "" {
-		result["MD5sum"] = p.Files[0].Checksums.MD5
+	if p.IsSource {
+		result["Architecture"] = p.SourceArchitecture
+	} else {
+		result["Architecture"] = p.Architecture
+		result["Source"] = p.Source
 	}
-	if p.Files[0].Checksums.SHA1 != "" {
-		result["SHA1"] = " " + p.Files[0].Checksums.SHA1
-	}
-	if p.Files[0].Checksums.SHA256 != "" {
-		result["SHA256"] = " " + p.Files[0].Checksums.SHA256
+
+	if p.IsSource {
+		md5, sha1, sha256 := make([]string, len(p.Files)), make([]string, len(p.Files)), make([]string, len(p.Files))
+
+		for i, f := range p.Files {
+			md5[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename)
+			sha1[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename)
+			sha256[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename)
+		}
+
+		result["Files"] = strings.Join(md5, "")
+		result["Checksums-Sha1"] = strings.Join(sha1, "")
+		result["Checksums-Sha256"] = strings.Join(sha256, "")
+	} else {
+		result["Filename"] = p.Files[0].Filename
+		if p.Files[0].Checksums.MD5 != "" {
+			result["MD5sum"] = p.Files[0].Checksums.MD5
+		}
+		if p.Files[0].Checksums.SHA1 != "" {
+			result["SHA1"] = " " + p.Files[0].Checksums.SHA1
+		}
+		if p.Files[0].Checksums.SHA256 != "" {
+			result["SHA256"] = " " + p.Files[0].Checksums.SHA256
+		}
+		result["Size"] = fmt.Sprintf("%d", p.Files[0].Checksums.Size)
 	}
 
 	if p.Depends != nil {
@@ -198,8 +304,12 @@ func (p *Package) Stanza() (result Stanza) {
 	if p.Provides != nil {
 		result["Provides"] = strings.Join(p.Provides, ", ")
 	}
-
-	result["Size"] = fmt.Sprintf("%d", p.Files[0].Checksums.Size)
+	if p.BuildDepends != nil {
+		result["Build-Depends"] = strings.Join(p.BuildDepends, ", ")
+	}
+	if p.BuildDependsInDep != nil {
+		result["Build-Depends-Indep"] = strings.Join(p.BuildDependsInDep, ", ")
+	}
 
 	return
 }
@@ -216,11 +326,12 @@ func (p *Package) Equals(p2 *Package) bool {
 		}
 	}
 
-	return p.Name == p2.Name && p.Version == p2.Version &&
+	return p.Name == p2.Name && p.Version == p2.Version && p.SourceArchitecture == p2.SourceArchitecture &&
 		p.Architecture == p2.Architecture && utils.StrSlicesEqual(p.Depends, p2.Depends) &&
 		utils.StrSlicesEqual(p.PreDepends, p2.PreDepends) && utils.StrSlicesEqual(p.Suggests, p2.Suggests) &&
 		utils.StrSlicesEqual(p.Recommends, p2.Recommends) && utils.StrMapsEqual(p.Extra, p2.Extra) &&
-		p.Source == p2.Source && utils.StrSlicesEqual(p.Provides, p2.Provides)
+		p.Source == p2.Source && utils.StrSlicesEqual(p.Provides, p2.Provides) && utils.StrSlicesEqual(p.BuildDepends, p2.BuildDepends) &&
+		utils.StrSlicesEqual(p.BuildDependsInDep, p2.BuildDependsInDep) && p.IsSource == p2.IsSource
 }
 
 // LinkFromPool links package file from pool to dist's pool location

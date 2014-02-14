@@ -1,6 +1,7 @@
 package debian
 
 import (
+	"bytes"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	. "launchpad.net/gocheck"
@@ -8,16 +9,18 @@ import (
 	"path/filepath"
 )
 
-var packageStanza = Stanza{"Source": "alien-arena", "Pre-Depends": "dpkg (>= 1.6)", "Suggests": "alien-arena-mars", "Recommends": "aliean-arena-luna", "Depends": "libc6 (>= 2.7), alien-arena-data (>= 7.40)", "Filename": "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb", "SHA1": " 46955e48cad27410a83740a21d766ce362364024", "SHA256": " eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5", "Priority": "extra", "Maintainer": "Debian Games Team <pkg-games-devel@lists.alioth.debian.org>", "Description": "Common files for Alien Arena client and server ALIEN ARENA is a standalone 3D first person online deathmatch shooter\n crafted from the original source code of Quake II and Quake III, released\n by id Software under the GPL license. With features including 32 bit\n graphics, new particle engine and effects, light blooms, reflective water,\n hi resolution textures and skins, hi poly models, stain maps, ALIEN ARENA\n pushes the envelope of graphical beauty rivaling today's top games.\n .\n This package installs the common files for Alien Arena.\n", "Homepage": "http://red.planetarena.org", "Tag": "role::app-data, role::shared-lib, special::auto-inst-parts", "Installed-Size": "456", "Version": "7.40-2", "Replaces": "alien-arena (<< 7.33-1)", "Size": "187518", "MD5sum": "1e8cba92c41420aa7baa8a5718d67122", "Package": "alien-arena-common", "Section": "contrib/games", "Architecture": "i386"}
-
 type PackageSuite struct {
-	stanza Stanza
+	stanza       Stanza
+	sourceStanza Stanza
 }
 
 var _ = Suite(&PackageSuite{})
 
 func (s *PackageSuite) SetUpTest(c *C) {
 	s.stanza = packageStanza.Copy()
+
+	buf := bytes.NewBufferString(sourcePackageMeta)
+	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza()
 }
 
 func (s *PackageSuite) TestPackageFileVerify(c *C) {
@@ -58,6 +61,7 @@ func (s *PackageSuite) TestPackageFileVerify(c *C) {
 func (s *PackageSuite) TestNewFromPara(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
+	c.Check(p.IsSource, Equals, false)
 	c.Check(p.Name, Equals, "alien-arena-common")
 	c.Check(p.Version, Equals, "7.40-2")
 	c.Check(p.Architecture, Equals, "i386")
@@ -67,6 +71,37 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(187518))
 	c.Check(p.Files[0].Checksums.MD5, Equals, "1e8cba92c41420aa7baa8a5718d67122")
 	c.Check(p.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
+}
+
+func (s *PackageSuite) TestNewSourceFromPara(c *C) {
+	p, err := NewSourcePackageFromControlFile(s.sourceStanza)
+
+	c.Check(err, IsNil)
+	c.Check(p.IsSource, Equals, true)
+	c.Check(p.Name, Equals, "access-modifier-checker")
+	c.Check(p.Version, Equals, "1.0-4")
+	c.Check(p.Architecture, Equals, "source")
+	c.Check(p.SourceArchitecture, Equals, "all")
+	c.Check(p.Provides, IsNil)
+	c.Check(p.BuildDepends, DeepEquals, []string{"cdbs", "debhelper (>= 7)", "default-jdk", "maven-debian-helper"})
+	c.Check(p.BuildDependsInDep, DeepEquals, []string{"default-jdk-doc", "junit (>= 3.8.1)", "libannotation-indexer-java (>= 1.3)", "libannotation-indexer-java-doc", "libasm3-java", "libmaven-install-plugin-java", "libmaven-javadoc-plugin-java", "libmaven-scm-java", "libmaven2-core-java", "libmaven2-core-java-doc", "libmetainf-services-java", "libmetainf-services-java-doc", "libmaven-plugin-tools-java (>= 2.8)"})
+	c.Check(p.Files, HasLen, 3)
+
+	c.Check(p.Files[0].Filename, Equals, "access-modifier-checker_1.0-4.dsc")
+	c.Check(p.Files[0].Checksums.Size, Equals, int64(2583))
+	c.Check(p.Files[0].Checksums.MD5, Equals, "eb2a7a57c92ebac9d3d1c2d2d719f290")
+	c.Check(p.Files[0].Checksums.SHA1, Equals, "a70b87bba4391c0138cc9cc75efa747c4eeea2d7")
+	c.Check(p.Files[0].Checksums.SHA256, Equals, "36ae7f68974bd69450229244510faa8f8056709913770218821069e6cce6b4b8")
+
+	c.Check(p.Files[1].Filename, Equals, "access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(p.Files[1].Checksums.Size, Equals, int64(10049))
+	c.Check(p.Files[1].Checksums.MD5, Equals, "f280abdc753beea4243d99530f023f12")
+	c.Check(p.Files[1].Checksums.SHA1, Equals, "c5bea16095ae1685941193370d20756e036d61a7")
+	c.Check(p.Files[1].Checksums.SHA256, Equals, "9d362301892bd647a361755bde28f0a39644a5bbb2ff5300060373ee29d9d87a")
+
+	c.Check(p.Files[2].Filename, Equals, "access-modifier-checker_1.0-4.debian.tar.gz")
+
+	c.Check(p.Depends, IsNil)
 }
 
 func (s *PackageSuite) TestWithProvides(c *C) {
@@ -101,6 +136,11 @@ func (s *PackageSuite) TestStanza(c *C) {
 	stanza := p.Stanza()
 
 	c.Assert(stanza, DeepEquals, s.stanza)
+
+	p, _ = NewSourcePackageFromControlFile(s.sourceStanza.Copy())
+	stanza = p.Stanza()
+
+	c.Assert(stanza, DeepEquals, s.sourceStanza)
 }
 
 func (s *PackageSuite) TestString(c *C) {
@@ -120,6 +160,11 @@ func (s *PackageSuite) TestEquals(c *C) {
 	p2 = NewPackageFromControlFile(packageStanza.Copy())
 	p2.Files[0].Checksums.MD5 = "abcdefabcdef"
 	c.Check(p.Equals(p2), Equals, false)
+
+	so, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
+	so2, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
+
+	c.Check(so.Equals(so2), Equals, true)
 }
 
 func (s *PackageSuite) TestMatchesArchitecture(c *C) {
@@ -267,3 +312,39 @@ func (s *PackageCollectionSuite) TestDeleteByKey(c *C) {
 	_, err = s.collection.ByKey(s.p.Key())
 	c.Check(err, ErrorMatches, "key not found")
 }
+
+var packageStanza = Stanza{"Source": "alien-arena", "Pre-Depends": "dpkg (>= 1.6)", "Suggests": "alien-arena-mars", "Recommends": "aliean-arena-luna", "Depends": "libc6 (>= 2.7), alien-arena-data (>= 7.40)", "Filename": "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb", "SHA1": " 46955e48cad27410a83740a21d766ce362364024", "SHA256": " eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5", "Priority": "extra", "Maintainer": "Debian Games Team <pkg-games-devel@lists.alioth.debian.org>", "Description": "Common files for Alien Arena client and server ALIEN ARENA is a standalone 3D first person online deathmatch shooter\n crafted from the original source code of Quake II and Quake III, released\n by id Software under the GPL license. With features including 32 bit\n graphics, new particle engine and effects, light blooms, reflective water,\n hi resolution textures and skins, hi poly models, stain maps, ALIEN ARENA\n pushes the envelope of graphical beauty rivaling today's top games.\n .\n This package installs the common files for Alien Arena.\n", "Homepage": "http://red.planetarena.org", "Tag": "role::app-data, role::shared-lib, special::auto-inst-parts", "Installed-Size": "456", "Version": "7.40-2", "Replaces": "alien-arena (<< 7.33-1)", "Size": "187518", "MD5sum": "1e8cba92c41420aa7baa8a5718d67122", "Package": "alien-arena-common", "Section": "contrib/games", "Architecture": "i386"}
+
+const sourcePackageMeta = `Package: access-modifier-checker
+Binary: libaccess-modifier-checker-java, libaccess-modifier-checker-java-doc
+Version: 1.0-4
+Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
+Uploaders: James Page <james.page@ubuntu.com>
+Build-Depends: cdbs, debhelper (>= 7), default-jdk, maven-debian-helper
+Build-Depends-Indep: default-jdk-doc, junit (>= 3.8.1), libannotation-indexer-java (>= 1.3), libannotation-indexer-java-doc, libasm3-java, libmaven-install-plugin-java, libmaven-javadoc-plugin-java, libmaven-scm-java, libmaven2-core-java, libmaven2-core-java-doc, libmetainf-services-java, libmetainf-services-java-doc, libmaven-plugin-tools-java (>= 2.8)
+Architecture: all
+Standards-Version: 3.9.3
+Format: 3.0 (quilt)
+Files:
+ eb2a7a57c92ebac9d3d1c2d2d719f290 2583 access-modifier-checker_1.0-4.dsc
+ f280abdc753beea4243d99530f023f12 10049 access-modifier-checker_1.0.orig.tar.gz
+ 182b18d7a4bfd1a4e6bfda886f986766 4310 access-modifier-checker_1.0-4.debian.tar.gz
+Dm-Upload-Allowed: yes
+Vcs-Browser: http://git.debian.org/?p=pkg-java/access-modifier-checker.git
+Vcs-Git: git://git.debian.org/git/pkg-java/access-modifier-checker.git
+Checksums-Sha1:
+ a70b87bba4391c0138cc9cc75efa747c4eeea2d7 2583 access-modifier-checker_1.0-4.dsc
+ c5bea16095ae1685941193370d20756e036d61a7 10049 access-modifier-checker_1.0.orig.tar.gz
+ 54033d40ae2f35eb147df0876c649eb9d2eb86bc 4310 access-modifier-checker_1.0-4.debian.tar.gz
+Checksums-Sha256:
+ 36ae7f68974bd69450229244510faa8f8056709913770218821069e6cce6b4b8 2583 access-modifier-checker_1.0-4.dsc
+ 9d362301892bd647a361755bde28f0a39644a5bbb2ff5300060373ee29d9d87a 10049 access-modifier-checker_1.0.orig.tar.gz
+ 23852c63f7b5511b4c827a443ff0f92926fc71efc57dc47b49cb2fd9136d8f95 4310 access-modifier-checker_1.0-4.debian.tar.gz
+Homepage: https://github.com/kohsuke/access-modifier
+Package-List:
+ libaccess-modifier-checker-java deb java optional
+ libaccess-modifier-checker-java-doc deb doc optional
+Directory: pool/main/a/access-modifier-checker
+Priority: source
+Section: java
+`
