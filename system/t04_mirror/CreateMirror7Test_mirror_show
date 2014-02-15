@@ -3,6 +3,7 @@ Archive Root URL: http://mirror.yandex.ru/debian/
 Distribution: wheezy
 Components: main, contrib
 Architectures: i386, amd64
+Download Sources: no
 Last update: never
 
 Information from release file:

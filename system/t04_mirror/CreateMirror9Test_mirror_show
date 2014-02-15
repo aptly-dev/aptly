@@ -3,6 +3,7 @@ Archive Root URL: http://mirror.yandex.ru/debian-backports/
 Distribution: squeeze-backports
 Components: main, contrib, non-free
 Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
+Download Sources: no
 Last update: never
 
 Information from release file:
