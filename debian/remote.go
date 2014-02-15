@@ -393,7 +393,6 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("unable to build download queue: %s", err)
 	}

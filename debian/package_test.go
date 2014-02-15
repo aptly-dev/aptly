@@ -88,16 +88,16 @@ func (s *PackageSuite) TestNewSourceFromPara(c *C) {
 	c.Check(p.Files, HasLen, 3)
 
 	c.Check(p.Files[0].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc")
-	c.Check(p.Files[0].Checksums.Size, Equals, int64(2583))
-	c.Check(p.Files[0].Checksums.MD5, Equals, "eb2a7a57c92ebac9d3d1c2d2d719f290")
-	c.Check(p.Files[0].Checksums.SHA1, Equals, "a70b87bba4391c0138cc9cc75efa747c4eeea2d7")
-	c.Check(p.Files[0].Checksums.SHA256, Equals, "36ae7f68974bd69450229244510faa8f8056709913770218821069e6cce6b4b8")
+	c.Check(p.Files[0].Checksums.Size, Equals, int64(3))
+	c.Check(p.Files[0].Checksums.MD5, Equals, "900150983cd24fb0d6963f7d28e17f72")
+	c.Check(p.Files[0].Checksums.SHA1, Equals, "a9993e364706816aba3e25717850c26c9cd0d89d")
+	c.Check(p.Files[0].Checksums.SHA256, Equals, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
 
 	c.Check(p.Files[1].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
-	c.Check(p.Files[1].Checksums.Size, Equals, int64(10049))
-	c.Check(p.Files[1].Checksums.MD5, Equals, "f280abdc753beea4243d99530f023f12")
-	c.Check(p.Files[1].Checksums.SHA1, Equals, "c5bea16095ae1685941193370d20756e036d61a7")
-	c.Check(p.Files[1].Checksums.SHA256, Equals, "9d362301892bd647a361755bde28f0a39644a5bbb2ff5300060373ee29d9d87a")
+	c.Check(p.Files[1].Checksums.Size, Equals, int64(4))
+	c.Check(p.Files[1].Checksums.MD5, Equals, "e2fc714c4727ee9395f324cd2e7f331f")
+	c.Check(p.Files[1].Checksums.SHA1, Equals, "81fe8bfe87576c3ecb22426f8e57847382917acf")
+	c.Check(p.Files[1].Checksums.SHA256, Equals, "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589")
 
 	c.Check(p.Files[2].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
@@ -326,20 +326,20 @@ Architecture: all
 Standards-Version: 3.9.3
 Format: 3.0 (quilt)
 Files:
- eb2a7a57c92ebac9d3d1c2d2d719f290 2583 access-modifier-checker_1.0-4.dsc
- f280abdc753beea4243d99530f023f12 10049 access-modifier-checker_1.0.orig.tar.gz
- 182b18d7a4bfd1a4e6bfda886f986766 4310 access-modifier-checker_1.0-4.debian.tar.gz
+ 900150983cd24fb0d6963f7d28e17f72 3 access-modifier-checker_1.0-4.dsc
+ e2fc714c4727ee9395f324cd2e7f331f 4 access-modifier-checker_1.0.orig.tar.gz
+ ab56b4d92b40713acc5af89985d4b786 5 access-modifier-checker_1.0-4.debian.tar.gz
 Dm-Upload-Allowed: yes
 Vcs-Browser: http://git.debian.org/?p=pkg-java/access-modifier-checker.git
 Vcs-Git: git://git.debian.org/git/pkg-java/access-modifier-checker.git
 Checksums-Sha1:
- a70b87bba4391c0138cc9cc75efa747c4eeea2d7 2583 access-modifier-checker_1.0-4.dsc
- c5bea16095ae1685941193370d20756e036d61a7 10049 access-modifier-checker_1.0.orig.tar.gz
- 54033d40ae2f35eb147df0876c649eb9d2eb86bc 4310 access-modifier-checker_1.0-4.debian.tar.gz
+ a9993e364706816aba3e25717850c26c9cd0d89d 3 access-modifier-checker_1.0-4.dsc
+ 81fe8bfe87576c3ecb22426f8e57847382917acf 4 access-modifier-checker_1.0.orig.tar.gz
+ 03de6c570bfe24bfc328ccd7ca46b76eadaf4334 5 access-modifier-checker_1.0-4.debian.tar.gz
 Checksums-Sha256:
- 36ae7f68974bd69450229244510faa8f8056709913770218821069e6cce6b4b8 2583 access-modifier-checker_1.0-4.dsc
- 9d362301892bd647a361755bde28f0a39644a5bbb2ff5300060373ee29d9d87a 10049 access-modifier-checker_1.0.orig.tar.gz
- 23852c63f7b5511b4c827a443ff0f92926fc71efc57dc47b49cb2fd9136d8f95 4310 access-modifier-checker_1.0-4.debian.tar.gz
+ ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad 3 access-modifier-checker_1.0-4.dsc
+ 88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589 4 access-modifier-checker_1.0.orig.tar.gz
+ 36bbe50ed96841d10443bcb670d6554f0a34b761be67ec9c4a8ad2c0c44ca42c 5 access-modifier-checker_1.0-4.debian.tar.gz
 Homepage: https://github.com/kohsuke/access-modifier
 Package-List:
  libaccess-modifier-checker-java deb java optional

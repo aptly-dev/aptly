@@ -130,8 +130,16 @@ func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
 	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
 }
 
+func (s *RemoteRepoSuite) TestSourcesURL(c *C) {
+	c.Assert(s.repo.SourcesURL("main").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources")
+}
+
 func (s *RemoteRepoSuite) TestFlatBinaryURL(c *C) {
 	c.Assert(s.flat.FlatBinaryURL().String(), Equals, "http://repos.express42.com/virool/precise/Packages")
+}
+
+func (s *RemoteRepoSuite) TestFlatSourcesURL(c *C) {
+	c.Assert(s.flat.FlatSourcesURL().String(), Equals, "http://repos.express42.com/virool/precise/Sources")
 }
 
 func (s *RemoteRepoSuite) TestPackageURL(c *C) {
@@ -237,6 +245,48 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Check(pkg.Name, Equals, "amanda-client")
 }
 
+func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
+	s.repo.Architectures = []string{"i386"}
+	s.repo.DownloadSources = true
+
+	err := s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
+	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
+	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
+	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
+	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
+
+	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo, false)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+	c.Assert(s.repo.packageRefs, NotNil)
+
+	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
+	c.Assert(err, IsNil)
+
+	result, err := pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "amanda-client")
+
+	pkg, err = s.packageCollection.ByKey(s.repo.packageRefs.Refs[1])
+	c.Assert(err, IsNil)
+
+	result, err = pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "access-modifier-checker")
+}
+
 func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader := utils.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
@@ -261,6 +311,49 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Check(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
+}
+
+func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
+	s.flat.DownloadSources = true
+
+	downloader := utils.NewFakeDownloader()
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", errors.New("HTTP 404"))
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
+	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
+	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
+	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
+	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
+
+	err := s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.Download(downloader, s.packageCollection, s.packageRepo, false)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+	c.Assert(s.flat.packageRefs, NotNil)
+
+	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
+	c.Assert(err, IsNil)
+
+	result, err := pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "amanda-client")
+
+	pkg, err = s.packageCollection.ByKey(s.flat.packageRefs.Refs[1])
+	c.Assert(err, IsNil)
+
+	result, err = pkg.VerifyFiles(s.packageRepo)
+	c.Check(result, Equals, true)
+	c.Check(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "access-modifier-checker")
 }
 
 type RemoteRepoCollectionSuite struct {
@@ -426,7 +519,7 @@ MD5Sum:
  4059d198768f9f8dc9372dc1c54bc3c3               14 main/debian-installer/binary-powerpc/Packages.bz2
  9d10bb61e59bd799891ae4fbcf447ec9               29 main/debian-installer/binary-powerpc/Packages.gz
  3481d65651306df1596dca9078c2506a              135 main/source/Release
- 0531474bd4630bfcfd39048be830483d             1119 main/source/Sources
+ dd09503813f711817457551858f6ec2f             2003 main/source/Sources
  3d83a489f1bd3c04226aa6520b8a6d07              656 main/source/Sources.bz2
  b062b5b77094aeeb05ca8dbb1ecf68a9              592 main/source/Sources.gz
 SHA1:
@@ -466,7 +559,7 @@ SHA1:
  64a543afbb5f4bf728636bdcbbe7a2ed0804adc2               14 main/debian-installer/binary-powerpc/Packages.bz2
  3df6ca52b6e8ecfb4a8fac6b8e02c777e3c7960d               29 main/debian-installer/binary-powerpc/Packages.gz
  49cfec0c9b1df3a25e983a3ddf29d15b0e376e02              135 main/source/Release
- 4987db83999b0a8bbbbeeb183f066cadb87a5fa5             1119 main/source/Sources
+ dfa81a35ac2eebcefdc51ae73486c480e277ef1b             2003 main/source/Sources
  ecb8afea11030a5df46941cb8ec297ca24c85736              656 main/source/Sources.bz2
  923e71383969c91146f12fa8cd121397f2467a2e              592 main/source/Sources.gz
 SHA256:
@@ -506,7 +599,7 @@ SHA256:
  d3dda84eb03b9738d118eb2be78e246106900493c0ae07819ad60815134a8058               14 main/debian-installer/binary-powerpc/Packages.bz2
  825d493158fe0f50ca1acd70367aefa391170563af2e4ee9cedbcbe6796c8384               29 main/debian-installer/binary-powerpc/Packages.gz
  d683102993b6f11067ce86d73111f067e36a199e9dc1f4295c8b19c274dc9ef8              135 main/source/Release
- a8707486566f1623f0e50c0f8f61d93a93d79fb3043b6e1c407fc9f2afb002ce             1119 main/source/Sources
+ 4d911b084c12c71ce973743a3c27fc4efd18d7b8faa6ee936add9cca8e2c6ccf             2003 main/source/Sources
  d178f1e310218d9f0f16c37d0780637f1cf3640a94a7fb0e24dc940c51b1e115              656 main/source/Sources.bz2
  080228b550da407fb8ac73fb30b37323468fd2b2de98dd56a324ee7d701f6103              592 main/source/Sources.gz`
 
@@ -530,3 +623,5 @@ MD5sum: d16fb36f0911f878998c136191af705e
 SHA1: 66b27417d37e024c46526c2f6d358a754fc552f3
 SHA256: 3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282
 `
+
+const exampleSourcesFile = sourcePackageMeta
