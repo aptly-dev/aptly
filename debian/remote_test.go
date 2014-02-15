@@ -103,6 +103,16 @@ func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
 	c.Check(err, ErrorMatches, "components aren't supported for flat repos")
 }
 
+func (s *RemoteRepoSuite) TestString(c *C) {
+	c.Check(s.repo.String(), Equals, "[yandex]: http://mirror.yandex.ru/debian/ squeeze")
+	c.Check(s.flat.String(), Equals, "[exp42]: http://repos.express42.com/virool/precise/ ./")
+
+	s.repo.DownloadSources = true
+	s.flat.DownloadSources = true
+	c.Check(s.repo.String(), Equals, "[yandex]: http://mirror.yandex.ru/debian/ squeeze [src]")
+	c.Check(s.flat.String(), Equals, "[exp42]: http://repos.express42.com/virool/precise/ ./ [src]")
+}
+
 func (s *RemoteRepoSuite) TestNumPackages(c *C) {
 	c.Check(s.repo.NumPackages(), Equals, 0)
 	s.repo.packageRefs = s.reflist

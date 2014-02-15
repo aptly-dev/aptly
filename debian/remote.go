@@ -86,7 +86,15 @@ func (repo *RemoteRepo) prepare() error {
 
 // String interface
 func (repo *RemoteRepo) String() string {
-	return fmt.Sprintf("[%s]: %s %s", repo.Name, repo.ArchiveRoot, repo.Distribution)
+	srcFlag := ""
+	if repo.DownloadSources {
+		srcFlag = " [src]"
+	}
+	distribution := repo.Distribution
+	if distribution == "" {
+		distribution = "./"
+	}
+	return fmt.Sprintf("[%s]: %s %s%s", repo.Name, repo.ArchiveRoot, distribution, srcFlag)
 }
 
 // IsFlat determines if repository is flat

@@ -138,6 +138,11 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, ", "))
+	downloadSources := "no"
+	if repo.DownloadSources {
+		downloadSources = "yes"
+	}
+	fmt.Printf("Download Sources: %s\n", downloadSources)
 	if repo.LastDownloadDate.IsZero() {
 		fmt.Printf("Last update: never\n")
 	} else {
