@@ -158,11 +158,13 @@ func (l *PackageList) Remove(p *Package) {
 	}
 }
 
-// Architectures returns list of architectures present in packages
-func (l *PackageList) Architectures() (result []string) {
+// Architectures returns list of architectures present in packages and flag if source packages are present.
+//
+// If includeSource is true, meta-architecture "source" would be present in the list
+func (l *PackageList) Architectures(includeSource bool) (result []string) {
 	result = make([]string, 0, 10)
 	for _, pkg := range l.packages {
-		if pkg.Architecture != "all" && !utils.StrSliceHasItem(result, pkg.Architecture) {
+		if pkg.Architecture != "all" && (pkg.Architecture != "source" || includeSource) && !utils.StrSliceHasItem(result, pkg.Architecture) {
 			result = append(result, pkg.Architecture)
 		}
 	}

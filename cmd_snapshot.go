@@ -179,7 +179,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 	if len(context.architecturesList) > 0 {
 		architecturesList = context.architecturesList
 	} else {
-		architecturesList = packageList.Architectures()
+		architecturesList = packageList.Architectures(true)
 	}
 
 	if len(architecturesList) == 0 {
@@ -271,7 +271,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	if len(context.architecturesList) > 0 {
 		architecturesList = context.architecturesList
 	} else {
-		architecturesList = packageList.Architectures()
+		architecturesList = packageList.Architectures(false)
 	}
 
 	if len(architecturesList) == 0 {

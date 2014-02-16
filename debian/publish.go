@@ -113,7 +113,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 	}
 
 	if len(p.Architectures) == 0 {
-		p.Architectures = list.Architectures()
+		p.Architectures = list.Architectures(true)
 	}
 
 	if len(p.Architectures) == 0 {

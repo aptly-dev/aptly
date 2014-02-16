@@ -51,6 +51,7 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Provides: []string{"package-installer"}},
 		&Package{Name: "libx", Version: "1.5", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}},
 		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Provides: []string{"package-installer"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any"},
 	}
 	for _, p := range s.packages {
 		s.il.Add(p)
@@ -110,14 +111,14 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "libx", "mailer"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "libx", "mailer"})
 
 	s.il.Remove(s.packages[4])
 	names = make([]string, s.il.Len())
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["mail-agent"], DeepEquals, []*Package{})
 
 	s.il.Remove(s.packages[9])
@@ -125,7 +126,7 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["package-installer"], HasLen, 2)
 
 	s.il.Remove(s.packages[1])
@@ -133,7 +134,7 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["package-installer"], DeepEquals, []*Package{s.packages[11]})
 }
 
@@ -173,7 +174,7 @@ func (s *PackageListSuite) TestAppend(c *C) {
 
 	err := s.list.Append(s.il)
 	c.Check(err, IsNil)
-	c.Check(s.list.Len(), Equals, 14)
+	c.Check(s.list.Len(), Equals, 15)
 
 	list := NewPackageList()
 	list.Add(s.p4)
@@ -238,7 +239,11 @@ func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 }
 
 func (s *PackageListSuite) TestArchitectures(c *C) {
-	archs := s.il.Architectures()
+	archs := s.il.Architectures(true)
+	sort.Strings(archs)
+	c.Check(archs, DeepEquals, []string{"amd64", "arm", "i386", "s390", "source"})
+
+	archs = s.il.Architectures(false)
 	sort.Strings(archs)
 	c.Check(archs, DeepEquals, []string{"amd64", "arm", "i386", "s390"})
 }
