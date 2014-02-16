@@ -359,10 +359,19 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	d.GetProgress().InitBar(int64(list.Len()), false)
 
 	packageCollection.db.StartBatch()
+	count := 0
 
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
 		d.GetProgress().AddBar(1)
+		count++
+		if count > 1000 {
+			err := packageCollection.db.FinishBatch()
+			if err != nil {
+				return err
+			}
+			packageCollection.db.StartBatch()
+		}
 		return packageCollection.Update(p)
 	})
 	if err != nil {
@@ -380,7 +389,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	// Build download queue
 	queued := make(map[string]PackageDownloadTask, list.Len())
-	count := 0
+	count = 0
 	downloadSize := int64(0)
 
 	err = list.ForEach(func(p *Package) error {
@@ -404,6 +413,10 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	if err != nil {
 		return fmt.Errorf("unable to build download queue: %s", err)
 	}
+
+	repo.packageRefs = NewPackageRefListFromPackageList(list)
+	// free up package list, we don't need it after this point
+	list = nil
 
 	d.GetProgress().Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
 
@@ -434,7 +447,6 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	}
 
 	repo.LastDownloadDate = time.Now()
-	repo.packageRefs = NewPackageRefListFromPackageList(list)
 
 	return nil
 }
