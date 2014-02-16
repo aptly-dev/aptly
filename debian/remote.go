@@ -366,6 +366,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		d.GetProgress().AddBar(1)
 		count++
 		if count > 1000 {
+			count = 0
 			err := packageCollection.db.FinishBatch()
 			if err != nil {
 				return err
