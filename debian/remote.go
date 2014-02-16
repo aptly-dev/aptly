@@ -430,6 +430,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		d.DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
 	}
 
+	// We don't need queued after this point
+	queued = nil
+
 	// Wait for all downloads to finish
 	errors := make([]string, 0)
 
