@@ -12,3 +12,6 @@ aptly mirror update wheezy-backports
 
 aptly mirror create gnuplot-maverick http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
 aptly mirror update gnuplot-maverick
+
+aptly mirror create -with-sources gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+aptly mirror update gnuplot-maverick-src
