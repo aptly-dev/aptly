@@ -227,7 +227,7 @@ func (p *Package) String() string {
 
 // MatchesArchitecture checks whether packages matches specified architecture
 func (p *Package) MatchesArchitecture(arch string) bool {
-	if p.Architecture == "all" {
+	if p.Architecture == "all" && arch != "source" {
 		return true
 	}
 
@@ -265,13 +265,19 @@ func (p *Package) Stanza() (result Stanza) {
 	}
 
 	if p.IsSource {
-		md5, sha1, sha256 := make([]string, len(p.Files)), make([]string, len(p.Files)), make([]string, len(p.Files))
+		md5, sha1, sha256 := make([]string, 0), make([]string, 0), make([]string, 0)
 
-		for i, f := range p.Files {
+		for _, f := range p.Files {
 			base := filepath.Base(f.Filename)
-			md5[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, base)
-			sha1[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, base)
-			sha256[i] = fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, base)
+			if f.Checksums.MD5 != "" {
+				md5 = append(md5, fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, base))
+			}
+			if f.Checksums.SHA1 != "" {
+				sha1 = append(sha1, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, base))
+			}
+			if f.Checksums.SHA256 != "" {
+				sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, base))
+			}
 		}
 
 		result["Files"] = strings.Join(md5, "")

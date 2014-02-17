@@ -177,6 +177,11 @@ func (s *PackageSuite) TestMatchesArchitecture(c *C) {
 	p = NewPackageFromControlFile(s.stanza)
 	c.Check(p.MatchesArchitecture("i386"), Equals, true)
 	c.Check(p.MatchesArchitecture("amd64"), Equals, true)
+	c.Check(p.MatchesArchitecture("source"), Equals, false)
+
+	p, _ = NewSourcePackageFromControlFile(s.sourceStanza)
+	c.Check(p.MatchesArchitecture("source"), Equals, true)
+	c.Check(p.MatchesArchitecture("amd64"), Equals, false)
 }
 
 func (s *PackageSuite) TestGetDependencies(c *C) {
