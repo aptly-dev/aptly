@@ -48,6 +48,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"dependencyFollowSuggests\": false,\n"+
 		"  \"dependencyFollowRecommends\": false,\n"+
 		"  \"dependencyFollowAllVariants\": false,\n"+
+		"  \"dependencyFollowSource\": false,\n"+
 		"  \"gpgDisableSign\": false,\n"+
 		"  \"gpgDisableVerify\": false,\n"+
 		"  \"downloadSourcePackages\": false\n"+
