@@ -142,14 +142,14 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	c.Check(d.Relation, Equals, VersionGreater)
 	c.Check(d.Version, Equals, "1.6")
 
-	d, e = ParseDependency("dpkg (>>1.6) [i386]")
+	d, e = ParseDependency("dpkg (>>1.6) {i386}")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionGreater)
 	c.Check(d.Version, Equals, "1.6")
 	c.Check(d.Architecture, Equals, "i386")
 
-	d, e = ParseDependency("dpkg[i386]")
+	d, e = ParseDependency("dpkg{i386}")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
 	c.Check(d.Relation, Equals, VersionDontCare)
@@ -168,10 +168,10 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	d, e = ParseDependency("dpkg==1.6)")
 	c.Check(e, ErrorMatches, "unable to parse.*")
 
-	d, e = ParseDependency("dpkg i386]")
+	d, e = ParseDependency("dpkg i386}")
 	c.Check(e, ErrorMatches, "unable to parse.*")
 
-	d, e = ParseDependency("dpkg ) [i386]")
+	d, e = ParseDependency("dpkg ) {i386}")
 	c.Check(e, ErrorMatches, "unable to parse.*")
 }
 

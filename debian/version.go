@@ -230,8 +230,8 @@ func ParseDependencyVariants(variants string) (l []Dependency, err error) {
 
 // ParseDependency parses dependency in format "pkg (>= 1.35) [arch]" into parts
 func ParseDependency(dep string) (d Dependency, err error) {
-	if strings.HasSuffix(dep, "]") {
-		i := strings.LastIndex(dep, "[")
+	if strings.HasSuffix(dep, "}") {
+		i := strings.LastIndex(dep, "{")
 		if i == -1 {
 			err = fmt.Errorf("unable to parse dependency: %s", dep)
 			return
