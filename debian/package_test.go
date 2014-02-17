@@ -230,6 +230,11 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	err = p.LinkFromPool(packageRepo, "", "non-free")
 	c.Check(err, IsNil)
 	c.Check(p.Files[0].Filename, Equals, "pool/non-free/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
+
+	p.IsSource = true
+	err = p.LinkFromPool(packageRepo, "", "non-free")
+	c.Check(err, IsNil)
+	c.Check(p.Extra["Directory"], Equals, "pool/non-free/a/alien-arena")
 }
 
 func (s *PackageSuite) TestFilepathList(c *C) {
