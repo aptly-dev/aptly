@@ -18,4 +18,5 @@ Options:
   -config="": location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)
   -dep-follow-all-variants=false: when processing dependencies, follow a & b if depdency is 'a|b'
   -dep-follow-recommends=false: when processing dependencies, follow Recommends
+  -dep-follow-source=false: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests=false: when processing dependencies, follow Suggests

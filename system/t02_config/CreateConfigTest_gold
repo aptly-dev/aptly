@@ -5,6 +5,7 @@
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
   "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
   "downloadSourcePackages": false
