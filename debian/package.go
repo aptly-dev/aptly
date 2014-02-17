@@ -248,6 +248,15 @@ func (p *Package) GetDependencies(options int) (dependencies []string) {
 		dependencies = append(dependencies, p.Suggests...)
 	}
 
+	if options&DepFollowBuild == DepFollowBuild {
+		dependencies = append(dependencies, p.BuildDepends...)
+		dependencies = append(dependencies, p.BuildDependsInDep...)
+	}
+
+	if options&DepFollowSource == DepFollowSource && p.Source != "" {
+		dependencies = append(dependencies, p.Source+" {source}")
+	}
+
 	return
 }
 

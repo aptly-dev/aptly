@@ -189,6 +189,11 @@ func (s *PackageSuite) TestGetDependencies(c *C) {
 	c.Check(p.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)", "dpkg (>= 1.6)"})
 	c.Check(p.GetDependencies(DepFollowSuggests), DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)", "dpkg (>= 1.6)", "alien-arena-mars"})
 	c.Check(p.GetDependencies(DepFollowSuggests|DepFollowRecommends), DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)", "dpkg (>= 1.6)", "aliean-arena-luna", "alien-arena-mars"})
+	c.Check(p.GetDependencies(DepFollowSource), DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)", "dpkg (>= 1.6)", "alien-arena {source}"})
+
+	p, _ = NewSourcePackageFromControlFile(s.sourceStanza)
+	c.Check(p.GetDependencies(0), DeepEquals, []string{})
+	c.Check(p.GetDependencies(DepFollowBuild), DeepEquals, []string{"cdbs", "debhelper (>= 7)", "default-jdk", "maven-debian-helper", "default-jdk-doc", "junit (>= 3.8.1)", "libannotation-indexer-java (>= 1.3)", "libannotation-indexer-java-doc", "libasm3-java", "libmaven-install-plugin-java", "libmaven-javadoc-plugin-java", "libmaven-scm-java", "libmaven2-core-java", "libmaven2-core-java-doc", "libmetainf-services-java", "libmetainf-services-java-doc", "libmaven-plugin-tools-java (>= 2.8)"})
 }
 
 func (s *PackageSuite) TestPoolDirectory(c *C) {
