@@ -40,7 +40,7 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 	s.il = NewPackageList()
 	s.packages = []*Package{
 		&Package{Name: "lib", Version: "1.0", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}},
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Provides: []string{"package-installer"}},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Source: "dpkg", Provides: []string{"package-installer"}},
 		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", PreDepends: []string{"dpkg (>= 1.6)"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: []string{"mail-agent"}},
@@ -48,10 +48,11 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}},
 		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Provides: []string{"package-installer"}},
-		&Package{Name: "libx", Version: "1.5", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Provides: []string{"package-installer"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Source: "dpkg", Provides: []string{"package-installer"}},
+		&Package{Name: "libx", Version: "1.5", Architecture: "arm", Source: "libx", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Source: "dpkg", Provides: []string{"package-installer"}},
 		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any"},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any"},
 	}
 	for _, p := range s.packages {
 		s.il.Add(p)
@@ -111,14 +112,14 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "libx", "mailer"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "dpkg", "libx", "mailer"})
 
 	s.il.Remove(s.packages[4])
 	names = make([]string, s.il.Len())
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["mail-agent"], DeepEquals, []*Package{})
 
 	s.il.Remove(s.packages[9])
@@ -126,7 +127,7 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["package-installer"], HasLen, 2)
 
 	s.il.Remove(s.packages[1])
@@ -134,7 +135,7 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 	for i, p := range s.il.packagesIndex {
 		names[i] = p.Name
 	}
-	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "libx"})
+	c.Check(names, DeepEquals, []string{"aa", "app", "app", "app", "app", "data", "dpkg", "dpkg", "dpkg", "libx"})
 	c.Check(s.il.providesIndex["package-installer"], DeepEquals, []*Package{s.packages[11]})
 }
 
@@ -174,7 +175,7 @@ func (s *PackageListSuite) TestAppend(c *C) {
 
 	err := s.list.Append(s.il)
 	c.Check(err, IsNil)
-	c.Check(s.list.Len(), Equals, 15)
+	c.Check(s.list.Len(), Equals, 16)
 
 	list := NewPackageList()
 	list.Add(s.p4)
@@ -232,6 +233,16 @@ func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "arm"},
 		Dependency{Pkg: "mail-agent", Relation: VersionDontCare, Version: "", Architecture: "arm"}})
+
+	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
+
+	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"arm"}, s.il)
+
+	c.Check(err, IsNil)
+	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "libx", Relation: VersionEqual, Version: "1.5", Architecture: "source"}})
 
 	_, err = s.il.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.il)
 

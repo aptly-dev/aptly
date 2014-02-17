@@ -18,6 +18,8 @@ const (
 	DepFollowRecommends
 	// DepFollowAllVariants follows all variants if depends on "a | b"
 	DepFollowAllVariants
+	// DepFollowBuild pulls build dependencies
+	DepFollowBuild
 )
 
 // PackageList is list of unique (by key) packages
@@ -224,7 +226,9 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				missingCount := 0
 
 				for _, dep := range variants {
-					dep.Architecture = arch
+					if dep.Architecture == "" {
+						dep.Architecture = arch
+					}
 
 					hash := dep.Hash()
 					r, ok := cache[hash]
