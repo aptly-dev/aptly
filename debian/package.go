@@ -360,7 +360,11 @@ func (p *Package) LinkFromPool(packageRepo *Repository, prefix string, component
 			return err
 		}
 
-		p.Files[i].Filename = relPath
+		if p.IsSource {
+			p.Extra["Directory"] = filepath.Dir(relPath)
+		} else {
+			p.Files[i].Filename = relPath
+		}
 	}
 
 	return nil
