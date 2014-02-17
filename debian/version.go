@@ -228,8 +228,19 @@ func ParseDependencyVariants(variants string) (l []Dependency, err error) {
 	return
 }
 
-// ParseDependency parses dependency in format "pkg (>= 1.35)" into parts
+// ParseDependency parses dependency in format "pkg (>= 1.35) [arch]" into parts
 func ParseDependency(dep string) (d Dependency, err error) {
+	if strings.HasSuffix(dep, "]") {
+		i := strings.LastIndex(dep, "[")
+		if i == -1 {
+			err = fmt.Errorf("unable to parse dependency: %s", dep)
+			return
+		}
+		d.Architecture = dep[i+1 : len(dep)-1]
+
+		dep = strings.TrimSpace(dep[:i])
+	}
+
 	if !strings.HasSuffix(dep, ")") {
 		d.Pkg = strings.TrimSpace(dep)
 		d.Relation = VersionDontCare
