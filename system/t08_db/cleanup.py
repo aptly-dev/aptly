@@ -14,6 +14,7 @@ class CleanupDB2Test(BaseTest):
     """
     fixtureDB = True
     fixtureCmds = [
+        "aptly mirror drop wheezy-main-src",
         "aptly mirror drop wheezy-main",
         "aptly mirror drop wheezy-contrib",
     ]
@@ -27,6 +28,7 @@ class CleanupDB3Test(BaseTest):
     fixtureDB = True
     fixturePoolCopy = True
     fixtureCmds = [
+        "aptly mirror drop gnuplot-maverick-src",
         "aptly mirror drop gnuplot-maverick",
     ]
     runCmd = "aptly db cleanup"
@@ -52,6 +54,7 @@ class CleanupDB5Test(BaseTest):
     fixtureDB = True
     fixturePoolCopy = True
     fixtureCmds = [
+        "aptly mirror drop gnuplot-maverick-src",
         "aptly snapshot create gnuplot from mirror gnuplot-maverick",
         "aptly snapshot drop gnuplot",
         "aptly mirror drop gnuplot-maverick",
