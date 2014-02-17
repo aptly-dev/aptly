@@ -274,6 +274,8 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		architecturesList = packageList.Architectures(false)
 	}
 
+	sort.Strings(architecturesList)
+
 	if len(architecturesList) == 0 {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
@@ -308,11 +310,11 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			}
 
 			// Remove all packages with the same name and architecture
-			for p := packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name}); p != nil; {
+			for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
 				packageList.Remove(p)
 				color.Printf("@r[-]@| %s removed", p)
 				fmt.Printf("\n")
-				p = packageList.Search(debian.Dependency{Architecture: arch, Pkg: pkg.Name})
+				p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
 			}
 
 			// Add new discovered package
