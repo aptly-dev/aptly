@@ -20,7 +20,7 @@ class Serve1Test(BaseTest):
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly snapshot create snap2 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 from mirror gnuplot-maverick-src",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap2 debian",
     ]

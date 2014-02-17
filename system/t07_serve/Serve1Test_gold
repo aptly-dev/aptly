@@ -2,7 +2,8 @@ Serving published repositories, recommended apt sources list:
 
 # ./maverick (main) [amd64, i386] publishes [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
 deb http://127.0.0.1:8765/ maverick main
-# debian/maverick (main) [amd64, i386] publishes [snap2]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+# debian/maverick (main) [amd64, i386, source] publishes [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]
 deb http://127.0.0.1:8765/debian/ maverick main
+deb-src http://127.0.0.1:8765/debian/ maverick main
 
 Starting web server at: 127.0.0.1:8765 (press Ctrl+C to quit)...
