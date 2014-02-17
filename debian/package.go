@@ -254,7 +254,11 @@ func (p *Package) GetDependencies(options int) (dependencies []string) {
 	}
 
 	if options&DepFollowSource == DepFollowSource && p.Source != "" {
-		dependencies = append(dependencies, fmt.Sprintf("%s (= %s) {source}", p.Source, p.Version))
+		if strings.Index(p.Source, ")") != -1 {
+			dependencies = append(dependencies, fmt.Sprintf("%s {source}", p.Source))
+		} else {
+			dependencies = append(dependencies, fmt.Sprintf("%s (= %s) {source}", p.Source, p.Version))
+		}
 	}
 
 	return
