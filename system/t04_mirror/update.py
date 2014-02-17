@@ -97,3 +97,31 @@ class UpdateMirror7Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror8Test(BaseTest):
+    """
+    update mirrors: with sources (already in pool)
+    """
+    fixtureGpg = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg gnuplot-maverick-src"
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+
+class UpdateMirror9Test(BaseTest):
+    """
+    update mirrors: flat repository + sources
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./",
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
