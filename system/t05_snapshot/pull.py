@@ -137,3 +137,41 @@ class PullSnapshot8Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly snapshot show --with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
+
+
+class PullSnapshot9Test(BaseTest):
+    """
+    pull snapshot: follow sources
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-backports-src",
+    ]
+    runCmd = "aptly -dep-follow-source snapshot pull snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
+
+    def check(self):
+        def remove_created_at(s):
+            return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly snapshot show --with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
+
+
+class PullSnapshot10Test(BaseTest):
+    """
+    pull snapshot: follow sources + replace sources
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main-src",
+        "aptly snapshot create snap2 from mirror wheezy-backports-src",
+    ]
+    runCmd = "aptly -dep-follow-source snapshot pull snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
+
+    def check(self):
+        def remove_created_at(s):
+            return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly snapshot show --with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
