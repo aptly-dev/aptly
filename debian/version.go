@@ -255,12 +255,17 @@ func ParseDependency(dep string) (d Dependency, err error) {
 
 	d.Pkg = strings.TrimSpace(dep[0:i])
 
-	rel := dep[i+1 : i+2]
-	if dep[i+2] == '>' || dep[i+2] == '<' || dep[i+2] == '=' {
-		rel += dep[i+2 : i+3]
-		d.Version = strings.TrimSpace(dep[i+3 : len(dep)-1])
+	rel := ""
+	if dep[i+1] == '>' || dep[i+1] == '<' || dep[i+1] == '=' {
+		rel += dep[i+1 : i+2]
+		if dep[i+2] == '>' || dep[i+2] == '<' || dep[i+2] == '=' {
+			rel += dep[i+2 : i+3]
+			d.Version = strings.TrimSpace(dep[i+3 : len(dep)-1])
+		} else {
+			d.Version = strings.TrimSpace(dep[i+2 : len(dep)-1])
+		}
 	} else {
-		d.Version = strings.TrimSpace(dep[i+2 : len(dep)-1])
+		d.Version = strings.TrimSpace(dep[i+1 : len(dep)-1])
 	}
 
 	switch rel {
@@ -272,10 +277,10 @@ func ParseDependency(dep string) (d Dependency, err error) {
 		d.Relation = VersionLess
 	case ">>":
 		d.Relation = VersionGreater
-	case "=":
+	case "", "=":
 		d.Relation = VersionEqual
 	default:
-		err = fmt.Errorf("relation unknown: %s", rel)
+		err = fmt.Errorf("relation unknown %#v in dependency %s", rel, dep)
 	}
 
 	return

@@ -112,6 +112,18 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	c.Check(d.Relation, Equals, VersionGreater)
 	c.Check(d.Version, Equals, "1.6")
 
+	d, e = ParseDependency("dpkg(1.6)")
+	c.Check(e, IsNil)
+	c.Check(d.Pkg, Equals, "dpkg")
+	c.Check(d.Relation, Equals, VersionEqual)
+	c.Check(d.Version, Equals, "1.6")
+
+	d, e = ParseDependency("dpkg ( 1.6)")
+	c.Check(e, IsNil)
+	c.Check(d.Pkg, Equals, "dpkg")
+	c.Check(d.Relation, Equals, VersionEqual)
+	c.Check(d.Version, Equals, "1.6")
+
 	d, e = ParseDependency("dpkg (> 1.6)")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")
