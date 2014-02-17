@@ -7,6 +7,7 @@ import (
 	"syscall"
 )
 
+// RunningOnTerminal checks whether stdout is terminal
 func RunningOnTerminal() bool {
 	return terminal.IsTerminal(syscall.Stdout)
 }

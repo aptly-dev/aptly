@@ -454,7 +454,7 @@ func (p *Package) VerifyFiles(packageRepo *Repository) (result bool, err error) 
 	return
 }
 
-// FilepathsList returns list of paths to files in package repository
+// FilepathList returns list of paths to files in package repository
 func (p *Package) FilepathList(packageRepo *Repository) ([]string, error) {
 	var err error
 	result := make([]string, len(p.Files))

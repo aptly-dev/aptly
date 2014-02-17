@@ -45,7 +45,7 @@ func (g *GpgSigner) SetKey(keyRef string) {
 	g.keyRef = keyRef
 }
 
-// SetKeyring allows to set custom keyring and secretkeyring
+// SetKeyRing allows to set custom keyring and secretkeyring
 func (g *GpgSigner) SetKeyRing(keyring, secretKeyring string) {
 	g.keyring, g.secretKeyring = keyring, secretKeyring
 }
