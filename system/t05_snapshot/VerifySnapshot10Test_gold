@@ -1,0 +1,12 @@
+Missing dependencies (11):
+  fenix [amd64]
+  fenix-plugins-system [amd64]
+  ia32-libs-gtk-i386 [amd64]
+  ia32-libs-i386 [amd64]
+  kbdcontrol [amd64]
+  kbdcontrol [i386]
+  mozart (>= 1.4.0) [amd64]
+  scsh-0.6 (>= 0.6.6) [amd64]
+  scsh-0.6 [amd64]
+  vidcontrol [amd64]
+  vidcontrol [i386]

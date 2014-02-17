@@ -66,3 +66,34 @@ class VerifySnapshot7Test(BaseTest):
     fixtureDB = True
     fixtureCmds = ["aptly snapshot create snap1 from mirror wheezy-main"]
     runCmd = "aptly -dep-follow-all-variants snapshot verify snap1"
+
+
+class VerifySnapshot8Test(BaseTest):
+    """
+    verify snapshot: follow-source w/o sources
+    """
+    fixtureDB = True
+    fixtureCmds = ["aptly snapshot create snap1 from mirror gnuplot-maverick"]
+    runCmd = "aptly -dep-follow-source snapshot verify snap1"
+
+
+class VerifySnapshot9Test(BaseTest):
+    """
+    verify snapshot: follow-source w sources
+    """
+    fixtureDB = True
+    fixtureCmds = ["aptly snapshot create snap1 from mirror gnuplot-maverick-src"]
+    runCmd = "aptly -dep-follow-source snapshot verify snap1"
+
+
+class VerifySnapshot10Test(BaseTest):
+    """
+    verify snapshot: follow-source on whole wheezy
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main-src",
+        "aptly snapshot create snap2 from mirror wheezy-contrib-src",
+        "aptly snapshot create snap3 from mirror wheezy-non-free-src",
+    ]
+    runCmd = "aptly -dep-follow-source snapshot verify snap1 snap2 snap3"

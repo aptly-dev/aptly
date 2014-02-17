@@ -13,6 +13,7 @@ import shutil
 import string
 import threading
 import urllib
+#import time
 import SocketServer
 import SimpleHTTPServer
 
@@ -110,15 +111,19 @@ class BaseTest(object):
 
     def prepare_fixture(self):
         if self.fixturePool:
+            #start = time.time()
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
             os.symlink(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"))
+            #print "FIXTURE POOL: %.2f" % (time.time()-start)
 
         if self.fixturePoolCopy:
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
             shutil.copytree(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
+            #start = time.time()
             shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
+            #print "FIXTURE DB: %.2f" % (time.time()-start)
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
@@ -139,6 +144,7 @@ class BaseTest(object):
 
     def run_cmd(self, command, expected_code=0):
         try:
+            #start = time.time()
             if not hasattr(command, "__iter__"):
                 params = {'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files")}
                 if self.fixtureWebServer:
@@ -151,6 +157,7 @@ class BaseTest(object):
             environ["LC_ALL"] = "C"
             proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, env=environ)
             output, _ = proc.communicate()
+            #print "CMD %s: %.2f" % (" ".join(command), time.time()-start)
             if proc.returncode != expected_code:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
             return output
