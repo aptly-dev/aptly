@@ -13,8 +13,9 @@ type PackageListSuite struct {
 	p1, p2, p3, p4, p5, p6 *Package
 
 	// Mocked packages in list
-	packages []*Package
-	il       *PackageList
+	packages       []*Package
+	sourcePackages []*Package
+	il             *PackageList
 }
 
 var _ = Suite(&PackageListSuite{})
@@ -39,25 +40,32 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 
 	s.il = NewPackageList()
 	s.packages = []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}},
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Source: "dpkg", Provides: []string{"package-installer"}},
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386", Source: "lib (0.9)", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Provides: []string{"package-installer"}},
+		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", Source: "app", PreDepends: []string{"dpkg (>= 1.6)"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Provides: []string{"mail-agent"}},
+		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Source: "postfix (1.3)", Provides: []string{"mail-agent"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}},
 		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
 		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Source: "dpkg", Provides: []string{"package-installer"}},
-		&Package{Name: "libx", Version: "1.5", Architecture: "arm", Source: "libx", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Source: "dpkg", Provides: []string{"package-installer"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any"},
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any"},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Provides: []string{"package-installer"}},
+		&Package{Name: "libx", Version: "1.5", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Provides: []string{"package-installer"}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any", IsSource: true},
 	}
 	for _, p := range s.packages {
 		s.il.Add(p)
 	}
 	s.il.PrepareIndex()
+
+	s.sourcePackages = []*Package{
+		&Package{Name: "postfix", Version: "1.3", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "aa", Version: "2.0-1", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "lib", Version: "0.9", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+	}
 
 }
 
@@ -214,38 +222,35 @@ func (s *PackageListSuite) TestSearch(c *C) {
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 	missing, err := s.il.VerifyDependencies(0, []string{"i386"}, s.il)
-
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{})
 
 	missing, err = s.il.VerifyDependencies(0, []string{"i386", "amd64"}, s.il)
-
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
 
 	missing, err = s.il.VerifyDependencies(0, []string{"arm"}, s.il)
-
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{})
 
 	missing, err = s.il.VerifyDependencies(DepFollowAllVariants, []string{"arm"}, s.il)
-
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "arm"},
 		Dependency{Pkg: "mail-agent", Relation: VersionDontCare, Version: "", Architecture: "arm"}})
 
-	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il)
+	for _, p := range s.sourcePackages {
+		s.il.Add(p)
+	}
 
+	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
 
 	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"arm"}, s.il)
-
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "libx", Relation: VersionEqual, Version: "1.5", Architecture: "source"}})
 
 	_, err = s.il.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.il)
-
 	c.Check(err, ErrorMatches, "unable to process package app-1.0_s390:.*")
 }
 
