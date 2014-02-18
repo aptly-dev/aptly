@@ -58,7 +58,7 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 
 	if repoCollection.Len() > 0 {
 		fmt.Printf("List of mirrors:\n")
-		repos := make(sort.StringSlice, repoCollection.Len())
+		repos := make([]string, repoCollection.Len())
 		i := 0
 		repoCollection.ForEach(func(repo *debian.RemoteRepo) error {
 			repos[i] = repo.String()

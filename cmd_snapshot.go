@@ -71,7 +71,7 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	if snapshotCollection.Len() > 0 {
 		fmt.Printf("List of snapshots:\n")
 
-		snapshots := make(sort.StringSlice, snapshotCollection.Len())
+		snapshots := make([]string, snapshotCollection.Len())
 
 		i := 0
 		snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
@@ -195,7 +195,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		fmt.Printf("All dependencies are satisfied.\n")
 	} else {
 		fmt.Printf("Missing dependencies (%d):\n", len(missing))
-		deps := make(sort.StringSlice, len(missing))
+		deps := make([]string, len(missing))
 		i := 0
 		for _, dep := range missing {
 			deps[i] = dep.String()

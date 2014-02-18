@@ -141,7 +141,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	published := make(sort.StringSlice, 0, publishedCollecton.Len())
+	published := make([]string, 0, publishedCollecton.Len())
 
 	err = publishedCollecton.ForEach(func(repo *debian.PublishedRepo) error {
 		err := publishedCollecton.LoadComplete(repo, snapshotCollection)
