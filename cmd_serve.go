@@ -84,7 +84,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)
 
-	err = http.ListenAndServe(listen, http.FileServer(http.Dir(context.packageRepository.PublicPath())))
+	err = http.ListenAndServe(listen, http.FileServer(http.Dir(context.publishedStorage.PublicPath())))
 	if err != nil {
 		return fmt.Errorf("unable to serve: %s", err)
 	}

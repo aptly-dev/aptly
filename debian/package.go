@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
@@ -19,8 +20,8 @@ type PackageFile struct {
 }
 
 // Verify that package file is present and correct
-func (f *PackageFile) Verify(packageRepo *Repository) (bool, error) {
-	poolPath, err := packageRepo.PoolPath(f.Filename, f.Checksums.MD5)
+func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
+	poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
 	if err != nil {
 		return false, err
 	}
@@ -360,19 +361,19 @@ func (p *Package) Equals(p2 *Package) bool {
 }
 
 // LinkFromPool links package file from pool to dist's pool location
-func (p *Package) LinkFromPool(packageRepo *Repository, prefix string, component string) error {
+func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packagePool aptly.PackagePool, prefix string, component string) error {
 	poolDir, err := p.PoolDirectory()
 	if err != nil {
 		return err
 	}
 
 	for i, f := range p.Files {
-		sourcePath, err := packageRepo.PoolPath(f.Filename, f.Checksums.MD5)
+		sourcePath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
 		if err != nil {
 			return err
 		}
 
-		relPath, err := packageRepo.LinkFromPool(prefix, component, sourcePath, poolDir)
+		relPath, err := publishedStorage.LinkFromPool(prefix, component, poolDir, packagePool, sourcePath)
 		if err != nil {
 			return err
 		}
@@ -418,16 +419,16 @@ type PackageDownloadTask struct {
 
 // DownloadList returns list of missing package files for download in format
 // [[srcpath, dstpath]]
-func (p *Package) DownloadList(packageRepo *Repository) (result []PackageDownloadTask, err error) {
+func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageDownloadTask, err error) {
 	result = make([]PackageDownloadTask, 0, 1)
 
 	for _, f := range p.Files {
-		poolPath, err := packageRepo.PoolPath(f.Filename, f.Checksums.MD5)
+		poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
 		if err != nil {
 			return nil, err
 		}
 
-		verified, err := f.Verify(packageRepo)
+		verified, err := f.Verify(packagePool)
 		if err != nil {
 			return nil, err
 		}
@@ -441,11 +442,11 @@ func (p *Package) DownloadList(packageRepo *Repository) (result []PackageDownloa
 }
 
 // VerifyFiles verifies that all package files have neen correctly downloaded
-func (p *Package) VerifyFiles(packageRepo *Repository) (result bool, err error) {
+func (p *Package) VerifyFiles(packagePool aptly.PackagePool) (result bool, err error) {
 	result = true
 
 	for _, f := range p.Files {
-		result, err = f.Verify(packageRepo)
+		result, err = f.Verify(packagePool)
 		if err != nil || !result {
 			return
 		}
@@ -455,12 +456,12 @@ func (p *Package) VerifyFiles(packageRepo *Repository) (result bool, err error) 
 }
 
 // FilepathList returns list of paths to files in package repository
-func (p *Package) FilepathList(packageRepo *Repository) ([]string, error) {
+func (p *Package) FilepathList(packagePool aptly.PackagePool) ([]string, error) {
 	var err error
 	result := make([]string, len(p.Files))
 
 	for i, f := range p.Files {
-		result[i], err = packageRepo.RelativePoolPath(f.Filename, f.Checksums.MD5)
+		result[i], err = packagePool.RelativePath(f.Filename, f.Checksums.MD5)
 		if err != nil {
 			return nil, err
 		}

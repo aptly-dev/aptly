@@ -80,7 +80,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		paths, err := pkg.FilepathList(context.packageRepository)
+		paths, err := pkg.FilepathList(context.packagePool)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	// build a list of files in the package pool
 	context.downloader.GetProgress().Printf("Building list of files in package pool...\n")
-	existingFiles, err := context.packageRepository.PoolFilepathList(context.downloader.GetProgress())
+	existingFiles, err := context.packagePool.FilepathList(context.downloader.GetProgress())
 	if err != nil {
 		return fmt.Errorf("unable to collect file paths: %s", err)
 	}
@@ -113,7 +113,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		context.downloader.GetProgress().InitBar(int64(len(filesToDelete)), false)
 		totalSize := int64(0)
 		for _, file := range filesToDelete {
-			size, err := context.packageRepository.PoolRemove(file)
+			size, err := context.packagePool.Remove(file)
 			if err != nil {
 				return err
 			}

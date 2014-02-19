@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
@@ -297,7 +298,7 @@ ok:
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packageRepo *Repository, ignoreMismatch bool) error {
+func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packagePool aptly.PackagePool, ignoreMismatch bool) error {
 	list := NewPackageList()
 
 	d.GetProgress().Printf("Downloading & parsing package files...\n")
@@ -394,7 +395,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	downloadSize := int64(0)
 
 	err = list.ForEach(func(p *Package) error {
-		list, err := p.DownloadList(packageRepo)
+		list, err := p.DownloadList(packagePool)
 		if err != nil {
 			return err
 		}

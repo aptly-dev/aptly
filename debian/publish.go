@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
@@ -92,13 +93,13 @@ func (p *PublishedRepo) Decode(input []byte) error {
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
-func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageCollection, signer utils.Signer) error {
-	err := repo.MkDir(filepath.Join(p.Prefix, "pool"))
+func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, packageCollection *PackageCollection, signer utils.Signer) error {
+	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
 	}
 	basePath := filepath.Join(p.Prefix, "dists", p.Distribution)
-	err = repo.MkDir(basePath)
+	err = publishedStorage.MkDir(basePath)
 	if err != nil {
 		return err
 	}
@@ -133,12 +134,12 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 		} else {
 			relativePath = filepath.Join(p.Component, fmt.Sprintf("binary-%s", arch), "Packages")
 		}
-		err = repo.MkDir(filepath.Dir(filepath.Join(basePath, relativePath)))
+		err = publishedStorage.MkDir(filepath.Dir(filepath.Join(basePath, relativePath)))
 		if err != nil {
 			return err
 		}
 
-		packagesFile, err := repo.CreateFile(filepath.Join(basePath, relativePath))
+		packagesFile, err := publishedStorage.CreateFile(filepath.Join(basePath, relativePath))
 		if err != nil {
 			return fmt.Errorf("unable to creates Packages file: %s", err)
 		}
@@ -147,7 +148,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 		err = list.ForEach(func(pkg *Package) error {
 			if pkg.MatchesArchitecture(arch) {
-				err = pkg.LinkFromPool(repo, p.Prefix, p.Component)
+				err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, p.Component)
 				if err != nil {
 					return err
 				}
@@ -182,19 +183,19 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 
 		packagesFile.Close()
 
-		checksumInfo, err := repo.ChecksumsForFile(filepath.Join(basePath, relativePath))
+		checksumInfo, err := publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath))
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}
 		generatedFiles[relativePath] = checksumInfo
 
-		checksumInfo, err = repo.ChecksumsForFile(filepath.Join(basePath, relativePath+".gz"))
+		checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+".gz"))
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}
 		generatedFiles[relativePath+".gz"] = checksumInfo
 
-		checksumInfo, err = repo.ChecksumsForFile(filepath.Join(basePath, relativePath+".bz2"))
+		checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+".bz2"))
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}
@@ -220,7 +221,7 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
 	}
 
-	releaseFile, err := repo.CreateFile(filepath.Join(basePath, "Release"))
+	releaseFile, err := publishedStorage.CreateFile(filepath.Join(basePath, "Release"))
 	if err != nil {
 		return fmt.Errorf("unable to create Release file: %s", err)
 	}
@@ -258,23 +259,23 @@ func (p *PublishedRepo) Publish(repo *Repository, packageCollection *PackageColl
 // RemoveFiles removes files that were created by Publish
 //
 // It can remove prefix fully, and part of pool (for specific component)
-func (p *PublishedRepo) RemoveFiles(repo *Repository, removePrefix, removePoolComponent bool) error {
+func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, removePrefix, removePoolComponent bool) error {
 	if removePrefix {
-		err := repo.RemoveDirs(filepath.Join(p.Prefix, "dists"))
+		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"))
 		if err != nil {
 			return err
 		}
 
-		return repo.RemoveDirs(filepath.Join(p.Prefix, "pool"))
+		return publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"))
 	}
 
-	err := repo.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution))
+	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution))
 	if err != nil {
 		return err
 	}
 
 	if removePoolComponent {
-		err = repo.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component))
+		err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component))
 		if err != nil {
 			return err
 		}
@@ -404,7 +405,7 @@ func (collection *PublishedRepoCollection) Len() int {
 }
 
 // Remove removes published repository, cleaning up directories, files
-func (collection *PublishedRepoCollection) Remove(packageRepo *Repository, prefix, distribution string) error {
+func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.PublishedStorage, prefix, distribution string) error {
 	repo, err := collection.ByPrefixDistribution(prefix, distribution)
 	if err != nil {
 		return err
@@ -427,7 +428,7 @@ func (collection *PublishedRepoCollection) Remove(packageRepo *Repository, prefi
 		}
 	}
 
-	err = repo.RemoveFiles(packageRepo, removePrefix, removePoolComponent)
+	err = repo.RemoveFiles(publishedStorage, removePrefix, removePoolComponent)
 	if err != nil {
 		return err
 	}

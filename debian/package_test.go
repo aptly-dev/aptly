@@ -3,6 +3,7 @@ package debian
 import (
 	"bytes"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 	. "launchpad.net/gocheck"
 	"os"
@@ -24,11 +25,11 @@ func (s *PackageSuite) SetUpTest(c *C) {
 }
 
 func (s *PackageSuite) TestPackageFileVerify(c *C) {
-	packageRepo := NewRepository(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
-	poolPath, _ := packageRepo.PoolPath(p.Files[0].Filename, p.Files[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files[0].Filename, p.Files[0].Checksums.MD5)
 
-	result, err := p.Files[0].Verify(packageRepo)
+	result, err := p.Files[0].Verify(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
@@ -40,20 +41,20 @@ func (s *PackageSuite) TestPackageFileVerify(c *C) {
 	file.WriteString("abcde")
 	file.Close()
 
-	result, err = p.Files[0].Verify(packageRepo)
+	result, err = p.Files[0].Verify(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
-	result, err = p.VerifyFiles(packageRepo)
+	result, err = p.VerifyFiles(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
 	p.Files[0].Checksums.Size = 5
-	result, err = p.Files[0].Verify(packageRepo)
+	result, err = p.Files[0].Verify(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 
-	result, err = p.VerifyFiles(packageRepo)
+	result, err = p.VerifyFiles(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }
@@ -226,10 +227,11 @@ func (s *PackageSuite) TestPoolDirectory(c *C) {
 }
 
 func (s *PackageSuite) TestLinkFromPool(c *C) {
-	packageRepo := NewRepository(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir())
+	publishedStorage := files.NewPublishedStorage(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 
-	poolPath, _ := packageRepo.PoolPath(p.Files[0].Filename, p.Files[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files[0].Filename, p.Files[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	c.Assert(err, IsNil)
 
@@ -237,32 +239,32 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	file.Close()
 
-	err = p.LinkFromPool(packageRepo, "", "non-free")
+	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free")
 	c.Check(err, IsNil)
 	c.Check(p.Files[0].Filename, Equals, "pool/non-free/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 
 	p.IsSource = true
-	err = p.LinkFromPool(packageRepo, "", "non-free")
+	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free")
 	c.Check(err, IsNil)
 	c.Check(p.Extra["Directory"], Equals, "pool/non-free/a/alien-arena")
 }
 
 func (s *PackageSuite) TestFilepathList(c *C) {
-	packageRepo := NewRepository(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 
-	list, err := p.FilepathList(packageRepo)
+	list, err := p.FilepathList(packagePool)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"1e/8c/alien-arena-common_7.40-2_i386.deb"})
 }
 
 func (s *PackageSuite) TestDownloadList(c *C) {
-	packageRepo := NewRepository(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 	p.Files[0].Checksums.Size = 5
-	poolPath, _ := packageRepo.PoolPath(p.Files[0].Filename, p.Files[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files[0].Filename, p.Files[0].Checksums.MD5)
 
-	list, err := p.DownloadList(packageRepo)
+	list, err := p.DownloadList(packagePool)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{
 		PackageDownloadTask{
@@ -281,7 +283,7 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 	file.WriteString("abcde")
 	file.Close()
 
-	list, err = p.DownloadList(packageRepo)
+	list, err = p.DownloadList(packagePool)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{})
 }

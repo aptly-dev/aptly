@@ -102,7 +102,7 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	}
 
 	packageCollection := debian.NewPackageCollection(context.database)
-	err = published.Publish(context.packageRepository, packageCollection, signer)
+	err = published.Publish(context.packagePool, context.publishedStorage, packageCollection, signer)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -117,7 +117,7 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	}
 
 	fmt.Printf("\nSnapshot %s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
-		snapshot.Name, context.packageRepository.PublicPath())
+		snapshot.Name, context.publishedStorage.PublicPath())
 	fmt.Printf("Now you can add following line to apt sources:\n")
 	fmt.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
 	fmt.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
@@ -184,7 +184,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 
 	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
 
-	err = publishedCollecton.Remove(context.packageRepository, prefix, distribution)
+	err = publishedCollecton.Remove(context.publishedStorage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}

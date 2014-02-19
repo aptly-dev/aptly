@@ -2,7 +2,9 @@ package debian
 
 import (
 	"errors"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/files"
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
@@ -44,7 +46,9 @@ func (n *NullSigner) ClearSign(source string, destination string) error {
 type PublishedRepoSuite struct {
 	PackageListMixinSuite
 	repo              *PublishedRepo
-	packageRepo       *Repository
+	root              string
+	publishedStorage  aptly.PublishedStorage
+	packagePool       aptly.PackagePool
 	snapshot          *Snapshot
 	db                database.Storage
 	packageCollection *PackageCollection
@@ -57,7 +61,9 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.db, _ = database.OpenDB(c.MkDir())
 
-	s.packageRepo = NewRepository(c.MkDir())
+	s.root = c.MkDir()
+	s.publishedStorage = files.NewPublishedStorage(s.root)
+	s.packagePool = files.NewPackagePool(s.root)
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false)
 	repo.packageRefs = s.reflist
@@ -71,7 +77,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.packageCollection.Update(s.p2)
 	s.packageCollection.Update(s.p3)
 
-	poolPath, _ := s.packageRepo.PoolPath(s.p1.Files[0].Filename, s.p1.Files[0].Checksums.MD5)
+	poolPath, _ := s.packagePool.Path(s.p1.Files[0].Filename, s.p1.Files[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	f, err := os.Create(poolPath)
 	c.Assert(err, IsNil)
@@ -148,12 +154,12 @@ func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
-	err := s.repo.Publish(s.packageRepo, s.packageCollection, &NullSigner{})
+	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, &NullSigner{})
 	c.Assert(err, IsNil)
 
 	c.Check(s.repo.Architectures, DeepEquals, []string{"i386"})
 
-	rf, err := os.Open(filepath.Join(s.packageRepo.RootPath, "public/ppa/dists/squeeze/Release"))
+	rf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"))
 	c.Assert(err, IsNil)
 
 	cfr := NewControlFileReader(rf)
@@ -164,7 +170,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Check(st["Components"], Equals, "main")
 	c.Check(st["Architectures"], Equals, "i386")
 
-	pf, err := os.Open(filepath.Join(s.packageRepo.RootPath, "public/ppa/dists/squeeze/main/binary-i386/Packages"))
+	pf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Packages"))
 	c.Assert(err, IsNil)
 
 	cfr = NewControlFileReader(pf)
@@ -180,15 +186,15 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(st, IsNil)
 
-	_, err = os.Stat(filepath.Join(s.packageRepo.RootPath, "public/ppa/pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
+	_, err = os.Stat(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
 	c.Assert(err, IsNil)
 }
 
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
-	err := s.repo.Publish(s.packageRepo, s.packageCollection, nil)
+	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, nil)
 	c.Assert(err, IsNil)
 
-	c.Check(filepath.Join(s.packageRepo.RootPath, "public/ppa/dists/squeeze/Release"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"), PathExists)
 }
 
 func (s *PublishedRepoSuite) TestString(c *C) {
@@ -335,7 +341,8 @@ type PublishedRepoRemoveSuite struct {
 	db                         database.Storage
 	snapshotCollection         *SnapshotCollection
 	collection                 *PublishedRepoCollection
-	packageRepo                *Repository
+	root                       string
+	publishedStorage           aptly.PublishedStorage
 	snap1                      *Snapshot
 	repo1, repo2, repo3, repo4 *PublishedRepo
 }
@@ -362,14 +369,15 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.collection.Add(s.repo3)
 	s.collection.Add(s.repo4)
 
-	s.packageRepo = NewRepository(c.MkDir())
-	s.packageRepo.MkDir("ppa/dists/anaconda")
-	s.packageRepo.MkDir("ppa/dists/meduza")
-	s.packageRepo.MkDir("ppa/dists/osminog")
-	s.packageRepo.MkDir("ppa/pool/main")
-	s.packageRepo.MkDir("ppa/pool/contrib")
-	s.packageRepo.MkDir("dists/anaconda")
-	s.packageRepo.MkDir("pool/main")
+	s.root = c.MkDir()
+	s.publishedStorage = files.NewPublishedStorage(s.root)
+	s.publishedStorage.MkDir("ppa/dists/anaconda")
+	s.publishedStorage.MkDir("ppa/dists/meduza")
+	s.publishedStorage.MkDir("ppa/dists/osminog")
+	s.publishedStorage.MkDir("ppa/pool/main")
+	s.publishedStorage.MkDir("ppa/pool/contrib")
+	s.publishedStorage.MkDir("dists/anaconda")
+	s.publishedStorage.MkDir("pool/main")
 }
 
 func (s *PublishedRepoRemoveSuite) TearDownTest(c *C) {
@@ -377,54 +385,54 @@ func (s *PublishedRepoRemoveSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
-	s.repo1.RemoveFiles(s.packageRepo, false, false)
+	s.repo1.RemoveFiles(s.publishedStorage, false, false)
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
-	s.repo1.RemoveFiles(s.packageRepo, false, true)
+	s.repo1.RemoveFiles(s.publishedStorage, false, true)
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
-	s.repo1.RemoveFiles(s.packageRepo, true, true)
+	s.repo1.RemoveFiles(s.publishedStorage, true, true)
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
-	s.repo2.RemoveFiles(s.packageRepo, true, true)
+	s.repo2.RemoveFiles(s.publishedStorage, true, true)
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), Not(PathExists))
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
-	err := s.collection.Remove(s.packageRepo, "ppa", "anaconda")
+	err := s.collection.Remove(s.publishedStorage, "ppa", "anaconda")
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByPrefixDistribution("ppa", "anaconda")
@@ -434,31 +442,31 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
 	_, err = collection.ByPrefixDistribution("ppa", "anaconda")
 	c.Check(err, ErrorMatches, ".*not found")
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 
-	err = s.collection.Remove(s.packageRepo, "ppa", "anaconda")
+	err = s.collection.Remove(s.publishedStorage, "ppa", "anaconda")
 	c.Check(err, ErrorMatches, ".*not found")
 
-	err = s.collection.Remove(s.packageRepo, "ppa", "meduza")
+	err = s.collection.Remove(s.publishedStorage, "ppa", "meduza")
 	c.Check(err, IsNil)
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo3(c *C) {
-	err := s.collection.Remove(s.packageRepo, ".", "anaconda")
+	err := s.collection.Remove(s.publishedStorage, ".", "anaconda")
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByPrefixDistribution(".", "anaconda")
@@ -468,11 +476,11 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo3(c *C) {
 	_, err = collection.ByPrefixDistribution(".", "anaconda")
 	c.Check(err, ErrorMatches, ".*not found")
 
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/anaconda"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/meduza"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/dists/osminog"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/main"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "ppa/pool/contrib"), PathExists)
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "dists/"), Not(PathExists))
-	c.Check(filepath.Join(s.packageRepo.PublicPath(), "pool/"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/"), Not(PathExists))
 }

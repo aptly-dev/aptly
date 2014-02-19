@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
@@ -48,7 +50,8 @@ take snapshots and publish them back as Debian repositories.`,
 var context struct {
 	downloader        utils.Downloader
 	database          database.Storage
-	packageRepository *debian.Repository
+	packagePool       aptly.PackagePool
+	publishedStorage  aptly.PublishedStorage
 	dependencyOptions int
 	architecturesList []string
 }
@@ -122,7 +125,8 @@ func main() {
 	}
 	defer context.database.Close()
 
-	context.packageRepository = debian.NewRepository(utils.Config.RootDir)
+	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
+	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
 
 	err = cmd.Dispatch(cmd.Flag.Args())
 	if err != nil {

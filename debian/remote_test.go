@@ -2,7 +2,9 @@ package debian
 
 import (
 	"errors"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
@@ -70,7 +72,7 @@ type RemoteRepoSuite struct {
 	downloader        *utils.FakeDownloader
 	db                database.Storage
 	packageCollection *PackageCollection
-	packageRepo       *Repository
+	packagePool       aptly.PackagePool
 }
 
 var _ = Suite(&RemoteRepoSuite{})
@@ -81,7 +83,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.packageCollection = NewPackageCollection(s.db)
-	s.packageRepo = NewRepository(c.MkDir())
+	s.packagePool = files.NewPackagePool(c.MkDir())
 	s.SetUpPackages()
 }
 
@@ -240,7 +242,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
-	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo, false)
+	err = s.repo.Download(s.downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
@@ -248,7 +250,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packageRepo)
+	result, err := pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
@@ -273,7 +275,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
-	err = s.repo.Download(s.downloader, s.packageCollection, s.packageRepo, false)
+	err = s.repo.Download(s.downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
@@ -281,7 +283,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packageRepo)
+	result, err := pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
@@ -290,7 +292,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	pkg, err = s.packageCollection.ByKey(s.repo.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
 
-	result, err = pkg.VerifyFiles(s.packageRepo)
+	result, err = pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
@@ -308,7 +310,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(downloader, s.packageCollection, s.packageRepo, false)
+	err = s.flat.Download(downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)
@@ -316,7 +318,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packageRepo)
+	result, err := pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
@@ -342,7 +344,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(downloader, s.packageCollection, s.packageRepo, false)
+	err = s.flat.Download(downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)
@@ -350,7 +352,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packageRepo)
+	result, err := pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
@@ -359,7 +361,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	pkg, err = s.packageCollection.ByKey(s.flat.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
 
-	result, err = pkg.VerifyFiles(s.packageRepo)
+	result, err = pkg.VerifyFiles(s.packagePool)
 	c.Check(result, Equals, true)
 	c.Check(err, IsNil)
 
