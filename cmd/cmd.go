@@ -36,7 +36,6 @@ func RootCommand() *commander.Command {
 		UsageLine: os.Args[0],
 		Short:     "Debian repository management tool",
 		Long: `
-}
 aptly is a tool to create partial and full mirrors of remote
 repositories, filter them, merge, upgrade individual packages,
 take snapshots and publish them back as Debian repositories.`,

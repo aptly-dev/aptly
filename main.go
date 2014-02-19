@@ -3,79 +3,26 @@ package main
 import (
 	"fmt"
 	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/debian"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/cmd"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
-	"strings"
 )
-
-// aptly version
-const Version = "0.4~dev"
-
-var cmd *commander.Command
-
-func init() {
-	cmd = &commander.Command{
-		UsageLine: os.Args[0],
-		Short:     "Debian repository management tool",
-		Long: `
-aptly is a tool to create partial and full mirrors of remote
-repositories, filter them, merge, upgrade individual packages,
-take snapshots and publish them back as Debian repositories.`,
-		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
-		Subcommands: []*commander.Command{
-			makeCmdDb(),
-			makeCmdGraph(),
-			makeCmdMirror(),
-			makeCmdServe(),
-			makeCmdSnapshot(),
-			makeCmdPublish(),
-			makeCmdVersion(),
-		},
-	}
-
-	cmd.Flag.Bool("dep-follow-suggests", false, "when processing dependencies, follow Suggests")
-	cmd.Flag.Bool("dep-follow-source", false, "when processing dependencies, follow from binary to Source packages")
-	cmd.Flag.Bool("dep-follow-recommends", false, "when processing dependencies, follow Recommends")
-	cmd.Flag.Bool("dep-follow-all-variants", false, "when processing dependencies, follow a & b if depdency is 'a|b'")
-	cmd.Flag.String("architectures", "", "list of architectures to consider during (comma-separated), default to all available")
-	cmd.Flag.String("config", "", "location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)")
-}
-
-var context struct {
-	progress          aptly.Progress
-	downloader        aptly.Downloader
-	database          database.Storage
-	packagePool       aptly.PackagePool
-	publishedStorage  aptly.PublishedStorage
-	dependencyOptions int
-	architecturesList []string
-}
 
 func fatal(err error) {
 	fmt.Printf("ERROR: %s\n", err)
 	os.Exit(1)
 }
 
-func main() {
-	err := cmd.Flag.Parse(os.Args[1:])
-	if err != nil {
-		fatal(err)
-	}
+func loadConfig(command *commander.Command) error {
+	var err error
 
-	configLocation := cmd.Flag.Lookup("config").Value.String()
+	configLocation := command.Flag.Lookup("config").Value.String()
 	if configLocation != "" {
 		err = utils.LoadConfig(configLocation, &utils.Config)
 
 		if err != nil {
-			fatal(err)
+			return err
 		}
 	} else {
 		configLocations := []string{
@@ -99,43 +46,29 @@ func main() {
 		}
 	}
 
-	context.dependencyOptions = 0
-	if utils.Config.DepFollowSuggests || cmd.Flag.Lookup("dep-follow-suggests").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowSuggests
-	}
-	if utils.Config.DepFollowRecommends || cmd.Flag.Lookup("dep-follow-recommends").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowRecommends
-	}
-	if utils.Config.DepFollowAllVariants || cmd.Flag.Lookup("dep-follow-all-variants").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowAllVariants
-	}
-	if utils.Config.DepFollowSource || cmd.Flag.Lookup("dep-follow-source").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowSource
-	}
+	return nil
+}
 
-	context.architecturesList = utils.Config.Architectures
-	optionArchitectures := cmd.Flag.Lookup("architectures").Value.String()
-	if optionArchitectures != "" {
-		context.architecturesList = strings.Split(optionArchitectures, ",")
-	}
+func main() {
+	command := cmd.RootCommand()
 
-	context.progress = console.NewProgress()
-	context.progress.Start()
-	defer context.progress.Shutdown()
-
-	context.downloader = http.NewDownloader(utils.Config.DownloadConcurrency, context.progress)
-	defer context.downloader.Shutdown()
-
-	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
+	err := command.Flag.Parse(os.Args[1:])
 	if err != nil {
-		fatal(fmt.Errorf("can't open database: %s", err))
+		fatal(err)
 	}
-	defer context.database.Close()
 
-	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
-	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
+	err = loadConfig(command)
+	if err != nil {
+		fatal(err)
+	}
 
-	err = cmd.Dispatch(cmd.Flag.Args())
+	err = cmd.InitContext(command)
+	if err != nil {
+		fatal(err)
+	}
+	defer cmd.ShutdownContext()
+
+	err = command.Dispatch(command.Flag.Args())
 	if err != nil {
 		fatal(err)
 	}

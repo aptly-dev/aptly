@@ -25,6 +25,7 @@ var context struct {
 	architecturesList []string
 }
 
+// InitContext initializes context with default settings
 func InitContext(cmd *commander.Command) error {
 	var err error
 
@@ -50,19 +51,23 @@ func InitContext(cmd *commander.Command) error {
 
 	context.progress = console.NewProgress()
 	context.progress.Start()
-	defer context.progress.Shutdown()
 
 	context.downloader = http.NewDownloader(utils.Config.DownloadConcurrency, context.progress)
-	defer context.downloader.Shutdown()
 
 	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
 	if err != nil {
 		return fmt.Errorf("can't open database: %s", err)
 	}
-	defer context.database.Close()
 
 	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
 	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
 
 	return nil
+}
+
+// ShutdownContext shuts context down
+func ShutdownContext() {
+	context.database.Close()
+	context.downloader.Shutdown()
+	context.progress.Shutdown()
 }
