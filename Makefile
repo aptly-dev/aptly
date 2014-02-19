@@ -31,9 +31,8 @@ cover-prepare:
 	go get code.google.com/p/go.tools/cmd/cover
 
 coverage.out:
-	go test -coverprofile=coverage.debian.out -covermode=count ./debian
-	go test -coverprofile=coverage.utils.out -covermode=count ./utils
-	go test -coverprofile=coverage.database.out -covermode=count ./database
+	rm -f coverage.*.out
+	for i in database debian files http utils; do go test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
 	echo "mode: count" > coverage.out
 	grep -v -h "mode: count" coverage.*.out >> coverage.out
 
