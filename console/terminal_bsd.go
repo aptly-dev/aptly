@@ -1,6 +1,6 @@
 // +build freebsd
 
-package utils
+package console
 
 // RunningOnTerminal checks whether stdout is terminal
 //

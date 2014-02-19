@@ -1,6 +1,6 @@
 // +build !freebsd
 
-package utils
+package console
 
 import (
 	"code.google.com/p/go.crypto/ssh/terminal"

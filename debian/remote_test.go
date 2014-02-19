@@ -3,20 +3,16 @@ package debian
 import (
 	"errors"
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"os"
-	"testing"
 )
-
-// Launch gocheck tests
-func Test(t *testing.T) {
-	TestingT(t)
-}
 
 type NullVerifier struct {
 }
@@ -69,7 +65,8 @@ type RemoteRepoSuite struct {
 	PackageListMixinSuite
 	repo              *RemoteRepo
 	flat              *RemoteRepo
-	downloader        *utils.FakeDownloader
+	downloader        *http.FakeDownloader
+	progress          aptly.Progress
 	db                database.Storage
 	packageCollection *PackageCollection
 	packagePool       aptly.PackagePool
@@ -80,14 +77,17 @@ var _ = Suite(&RemoteRepoSuite{})
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false)
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false)
-	s.downloader = utils.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	s.progress = console.NewProgress()
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.packageCollection = NewPackageCollection(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir())
 	s.SetUpPackages()
+	s.progress.Start()
 }
 
 func (s *RemoteRepoSuite) TearDownTest(c *C) {
+	s.progress.Shutdown()
 	s.db.Close()
 }
 
@@ -176,7 +176,7 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
-	downloader := utils.NewFakeDownloader()
+	downloader := http.NewFakeDownloader()
 	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", errors.New("404"))
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
@@ -189,7 +189,7 @@ func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetchNullVerifier2(c *C) {
-	downloader := utils.NewFakeDownloader()
+	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", exampleReleaseFile)
 
 	err := s.repo.Fetch(downloader, &NullVerifier{})
@@ -242,7 +242,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
-	err = s.repo.Download(s.downloader, s.packageCollection, s.packagePool, false)
+	err = s.repo.Download(s.progress, s.downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
@@ -275,7 +275,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
-	err = s.repo.Download(s.downloader, s.packageCollection, s.packagePool, false)
+	err = s.repo.Download(s.progress, s.downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
@@ -300,7 +300,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
-	downloader := utils.NewFakeDownloader()
+	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
@@ -310,7 +310,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(downloader, s.packageCollection, s.packagePool, false)
+	err = s.flat.Download(s.progress, downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)
@@ -328,7 +328,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	s.flat.DownloadSources = true
 
-	downloader := utils.NewFakeDownloader()
+	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
@@ -344,7 +344,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(downloader, s.packageCollection, s.packagePool, false)
+	err = s.flat.Download(s.progress, downloader, s.packageCollection, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)

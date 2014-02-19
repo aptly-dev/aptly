@@ -1,8 +1,9 @@
-package utils
+package console
 
 import (
 	"fmt"
 	"github.com/cheggaaa/pb"
+	"github.com/smira/aptly/aptly"
 )
 
 const (
@@ -26,6 +27,11 @@ type Progress struct {
 	barShown bool
 }
 
+// Check interface
+var (
+	_ aptly.Progress = (*Progress)(nil)
+)
+
 // NewProgress creates new progress instance
 func NewProgress() *Progress {
 	return &Progress{
@@ -47,7 +53,7 @@ func (p *Progress) Shutdown() {
 	<-p.stopped
 }
 
-// InitBar creates progressbar for count bytes
+// InitBar starts progressbar for count bytes or count items
 func (p *Progress) InitBar(count int64, isBytes bool) {
 	if p.bar != nil {
 		panic("bar already initialized")

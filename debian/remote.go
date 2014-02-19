@@ -1,4 +1,3 @@
-// Package debian implements Debian-specific repository handling
 package debian
 
 import (
@@ -7,6 +6,7 @@ import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
@@ -162,7 +162,7 @@ func (repo *RemoteRepo) PackageURL(filename string) *url.URL {
 }
 
 // Fetch updates information about repository
-func (repo *RemoteRepo) Fetch(d utils.Downloader, verifier utils.Verifier) error {
+func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error {
 	var (
 		release *os.File
 		err     error
@@ -170,13 +170,13 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader, verifier utils.Verifier) error
 
 	if verifier == nil {
 		// 0. Just download release file to temporary URL
-		release, err = utils.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		release, err = http.DownloadTemp(d, repo.ReleaseURL("Release").String())
 		if err != nil {
 			return err
 		}
 	} else {
 		// 1. try InRelease file
-		inrelease, err := utils.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
+		inrelease, err := http.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
 		if err != nil {
 			goto splitsignature
 		}
@@ -191,12 +191,12 @@ func (repo *RemoteRepo) Fetch(d utils.Downloader, verifier utils.Verifier) error
 
 	splitsignature:
 		// 2. try Release + Release.gpg
-		release, err = utils.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		release, err = http.DownloadTemp(d, repo.ReleaseURL("Release").String())
 		if err != nil {
 			return err
 		}
 
-		releasesig, err := utils.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
+		releasesig, err := http.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
 		if err != nil {
 			return err
 		}
@@ -298,10 +298,10 @@ ok:
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageCollection, packagePool aptly.PackagePool, ignoreMismatch bool) error {
+func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, packageCollection *PackageCollection, packagePool aptly.PackagePool, ignoreMismatch bool) error {
 	list := NewPackageList()
 
-	d.GetProgress().Printf("Downloading & parsing package files...\n")
+	progress.Printf("Downloading & parsing package files...\n")
 
 	// Download and parse all Packages & Source files
 	packagesURLs := [][]string{}
@@ -324,7 +324,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 
 	for _, info := range packagesURLs {
 		url, kind := info[0], info[1]
-		packagesReader, packagesFile, err := utils.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
+		packagesReader, packagesFile, err := http.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
 		if err != nil {
 			return err
 		}
@@ -355,16 +355,16 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		}
 	}
 
-	d.GetProgress().Printf("Saving packages to database...\n")
+	progress.Printf("Saving packages to database...\n")
 
-	d.GetProgress().InitBar(int64(list.Len()), false)
+	progress.InitBar(int64(list.Len()), false)
 
 	packageCollection.db.StartBatch()
 	count := 0
 
 	// Save package meta information to DB
 	err := list.ForEach(func(p *Package) error {
-		d.GetProgress().AddBar(1)
+		progress.AddBar(1)
 		count++
 		if count > 1000 {
 			count = 0
@@ -385,9 +385,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		return fmt.Errorf("unable to save packages to db: %s", err)
 	}
 
-	d.GetProgress().ShutdownBar()
+	progress.ShutdownBar()
 
-	d.GetProgress().Printf("Building download queue...\n")
+	progress.Printf("Building download queue...\n")
 
 	// Build download queue
 	queued := make(map[string]PackageDownloadTask, list.Len())
@@ -420,9 +420,9 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 	// free up package list, we don't need it after this point
 	list = nil
 
-	d.GetProgress().Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
+	progress.Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
 
-	d.GetProgress().InitBar(downloadSize, true)
+	progress.InitBar(downloadSize, true)
 
 	// Download all package files
 	ch := make(chan error, len(queued))
@@ -445,7 +445,7 @@ func (repo *RemoteRepo) Download(d utils.Downloader, packageCollection *PackageC
 		count--
 	}
 
-	d.GetProgress().ShutdownBar()
+	progress.ShutdownBar()
 
 	if len(errors) > 0 {
 		return fmt.Errorf("download errors:\n  %s\n", strings.Join(errors, "\n  "))

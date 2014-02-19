@@ -1,9 +1,11 @@
-package utils
+package http
 
 import (
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,19 +14,9 @@ import (
 	"strings"
 )
 
-// Downloader is parallel HTTP fetcher
-type Downloader interface {
-	Download(url string, destination string, result chan<- error)
-	DownloadWithChecksum(url string, destination string, result chan<- error, expected ChecksumInfo, ignoreMismatch bool)
-	Pause()
-	Resume()
-	Shutdown()
-	GetProgress() *Progress
-}
-
 // Check interface
 var (
-	_ Downloader = &downloaderImpl{}
+	_ aptly.Downloader = (*downloaderImpl)(nil)
 )
 
 // downloaderImpl is implementation of Downloader interface
@@ -34,7 +26,7 @@ type downloaderImpl struct {
 	stopped  chan bool
 	pause    chan bool
 	unpause  chan bool
-	progress *Progress
+	progress aptly.Progress
 	threads  int
 }
 
@@ -43,13 +35,13 @@ type downloadTask struct {
 	url            string
 	destination    string
 	result         chan<- error
-	expected       ChecksumInfo
+	expected       utils.ChecksumInfo
 	ignoreMismatch bool
 }
 
 // NewDownloader creates new instance of Downloader which specified number
 // of threads
-func NewDownloader(threads int) Downloader {
+func NewDownloader(threads int, progress aptly.Progress) aptly.Downloader {
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
 		stop:     make(chan bool),
@@ -57,10 +49,8 @@ func NewDownloader(threads int) Downloader {
 		pause:    make(chan bool),
 		unpause:  make(chan bool),
 		threads:  threads,
-		progress: NewProgress(),
+		progress: progress,
 	}
-
-	downloader.progress.Start()
 
 	for i := 0; i < downloader.threads; i++ {
 		go downloader.process()
@@ -79,8 +69,6 @@ func (downloader *downloaderImpl) Shutdown() {
 	for i := 0; i < downloader.threads; i++ {
 		<-downloader.stopped
 	}
-
-	downloader.progress.Shutdown()
 }
 
 // Pause pauses task processing
@@ -97,19 +85,14 @@ func (downloader *downloaderImpl) Resume() {
 	}
 }
 
-// Resume resumes task processing
-func (downloader *downloaderImpl) GetProgress() *Progress {
-	return downloader.progress
-}
-
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
-	downloader.DownloadWithChecksum(url, destination, result, ChecksumInfo{Size: -1}, false)
+	downloader.DownloadWithChecksum(url, destination, result, utils.ChecksumInfo{Size: -1}, false)
 }
 
 // DownloadWithChecksum starts new download task with checksum verification
 func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error,
-	expected ChecksumInfo, ignoreMismatch bool) {
+	expected utils.ChecksumInfo, ignoreMismatch bool) {
 	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch}
 }
 
@@ -144,15 +127,11 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	}
 	defer outfile.Close()
 
-	checksummer := NewChecksumWriter()
-	writers := []io.Writer{outfile}
+	checksummer := utils.NewChecksumWriter()
+	writers := []io.Writer{outfile, downloader.progress}
 
 	if task.expected.Size != -1 {
 		writers = append(writers, checksummer)
-	}
-
-	if downloader.progress != nil {
-		writers = append(writers, downloader.progress)
 	}
 
 	w := io.MultiWriter(writers...)
@@ -216,14 +195,14 @@ func (downloader *downloaderImpl) process() {
 // DownloadTemp starts new download to temporary file and returns File
 //
 // Temporary file would be already removed, so no need to cleanup
-func DownloadTemp(downloader Downloader, url string) (*os.File, error) {
-	return DownloadTempWithChecksum(downloader, url, ChecksumInfo{Size: -1}, false)
+func DownloadTemp(downloader aptly.Downloader, url string) (*os.File, error) {
+	return DownloadTempWithChecksum(downloader, url, utils.ChecksumInfo{Size: -1}, false)
 }
 
 // DownloadTempWithChecksum is a DownloadTemp with checksum verification
 //
 // Temporary file would be already removed, so no need to cleanup
-func DownloadTempWithChecksum(downloader Downloader, url string, expected ChecksumInfo, ignoreMismatch bool) (*os.File, error) {
+func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected utils.ChecksumInfo, ignoreMismatch bool) (*os.File, error) {
 	tempdir, err := ioutil.TempDir(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
@@ -269,7 +248,7 @@ var compressionMethods = []struct {
 
 // DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
 // it finds existing file.
-func DownloadTryCompression(downloader Downloader, url string, expectedChecksums map[string]ChecksumInfo, ignoreMismatch bool) (io.Reader, *os.File, error) {
+func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool) (io.Reader, *os.File, error) {
 	var err error
 
 	for _, method := range compressionMethods {

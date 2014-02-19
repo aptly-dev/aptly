@@ -1,8 +1,11 @@
-package utils
+package http
 
 import (
 	"errors"
 	"fmt"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
+	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
@@ -10,20 +13,15 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"testing"
 	"time"
 )
-
-// Launch gocheck tests
-func Test(t *testing.T) {
-	TestingT(t)
-}
 
 type DownloaderSuite struct {
 	tempfile *os.File
 	l        net.Listener
 	url      string
 	ch       chan bool
+	progress aptly.Progress
 }
 
 var _ = Suite(&DownloaderSuite{})
@@ -44,9 +42,14 @@ func (s *DownloaderSuite) SetUpTest(c *C) {
 		http.Serve(s.l, mux)
 		s.ch <- true
 	}()
+
+	s.progress = console.NewProgress()
+	s.progress.Start()
 }
 
 func (s *DownloaderSuite) TearDownTest(c *C) {
+	s.progress.Shutdown()
+
 	s.l.Close()
 	<-s.ch
 
@@ -57,7 +60,7 @@ func (s *DownloaderSuite) TearDownTest(c *C) {
 func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 	goroutines := runtime.NumGoroutine()
 
-	d := NewDownloader(10)
+	d := NewDownloader(10, s.progress)
 	d.Shutdown()
 
 	// wait for goroutines to shutdown
@@ -69,7 +72,7 @@ func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 }
 
 func (s *DownloaderSuite) TestPauseResume(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 
 	d.Pause()
@@ -77,7 +80,7 @@ func (s *DownloaderSuite) TestPauseResume(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadOK(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -87,48 +90,48 @@ func (s *DownloaderSuite) TestDownloadOK(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{}, false)
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{}, false)
 	res := <-ch
 	c.Assert(res, ErrorMatches, ".*size check mismatch 12 != 0")
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "abcdef"}, false)
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "abcdef"}, false)
 	res = <-ch
 	c.Assert(res, ErrorMatches, ".*md5 hash mismatch \"a1acb0fe91c7db45ec4d775192ec5738\" != \"abcdef\"")
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "abcdef"}, true)
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "abcdef"}, true)
 	res = <-ch
 	c.Assert(res, IsNil)
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738"}, false)
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738"}, false)
 	res = <-ch
 	c.Assert(res, IsNil)
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738", SHA1: "abcdef"}, false)
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738", SHA1: "abcdef"}, false)
 	res = <-ch
 	c.Assert(res, ErrorMatches, ".*sha1 hash mismatch \"921893bae6ad6fd818401875d6779254ef0ff0ec\" != \"abcdef\"")
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
 		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec"}, false)
 	res = <-ch
 	c.Assert(res, IsNil)
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
 		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "abcdef"}, false)
 	res = <-ch
 	c.Assert(res, ErrorMatches, ".*sha256 hash mismatch \"b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac\" != \"abcdef\"")
 
-	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+	d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), ch, utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
 		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac"}, false)
 	res = <-ch
 	c.Assert(res, IsNil)
 }
 
 func (s *DownloaderSuite) TestDownload404(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -138,7 +141,7 @@ func (s *DownloaderSuite) TestDownload404(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -148,7 +151,7 @@ func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadFileError(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -158,7 +161,7 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadTemp(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 
 	f, err := DownloadTemp(d, s.url+"/test")
@@ -175,20 +178,20 @@ func (s *DownloaderSuite) TestDownloadTemp(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadTempWithChecksum(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 
-	f, err := DownloadTempWithChecksum(d, s.url+"/test", ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+	f, err := DownloadTempWithChecksum(d, s.url+"/test", utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
 		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac"}, false)
 	defer f.Close()
 	c.Assert(err, IsNil)
 
-	_, err = DownloadTempWithChecksum(d, s.url+"/test", ChecksumInfo{Size: 13}, false)
+	_, err = DownloadTempWithChecksum(d, s.url+"/test", utils.ChecksumInfo{Size: 13}, false)
 	c.Assert(err, ErrorMatches, ".*size check mismatch 12 != 13")
 }
 
 func (s *DownloaderSuite) TestDownloadTempError(c *C) {
-	d := NewDownloader(2)
+	d := NewDownloader(2, s.progress)
 	defer d.Shutdown()
 
 	f, err := DownloadTemp(d, s.url+"/doesntexist")
@@ -206,10 +209,10 @@ const (
 func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	var buf []byte
 
-	expectedChecksums := map[string]ChecksumInfo{
-		"file.bz2": ChecksumInfo{Size: int64(len(bzipData))},
-		"file.gz":  ChecksumInfo{Size: int64(len(gzipData))},
-		"file":     ChecksumInfo{Size: int64(len(rawData))},
+	expectedChecksums := map[string]utils.ChecksumInfo{
+		"file.bz2": utils.ChecksumInfo{Size: int64(len(bzipData))},
+		"file.gz":  utils.ChecksumInfo{Size: int64(len(gzipData))},
+		"file":     utils.ChecksumInfo{Size: int64(len(rawData))},
 	}
 
 	// bzip2 only available
@@ -278,6 +281,6 @@ func (s *DownloaderSuite) TestDownloadTryCompressionErrors(c *C) {
 	d.ExpectError("http://example.com/file.bz2", errors.New("404"))
 	d.ExpectError("http://example.com/file.gz", errors.New("404"))
 	d.ExpectResponse("http://example.com/file", rawData)
-	_, _, err = DownloadTryCompression(d, "http://example.com/file", map[string]ChecksumInfo{"file": ChecksumInfo{Size: 7}}, false)
+	_, _, err = DownloadTryCompression(d, "http://example.com/file", map[string]utils.ChecksumInfo{"file": utils.ChecksumInfo{Size: 7}}, false)
 	c.Assert(err, ErrorMatches, "checksums don't match.*")
 }

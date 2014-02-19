@@ -1,7 +1,9 @@
-package utils
+package http
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,12 +20,11 @@ type expectedRequest struct {
 type FakeDownloader struct {
 	expected    []expectedRequest
 	anyExpected map[string]expectedRequest
-	progress    *Progress
 }
 
 // Check interface
 var (
-	_ Downloader = &FakeDownloader{}
+	_ aptly.Downloader = (*FakeDownloader)(nil)
 )
 
 // NewFakeDownloader creates new expected downloader
@@ -31,8 +32,6 @@ func NewFakeDownloader() *FakeDownloader {
 	result := &FakeDownloader{}
 	result.expected = make([]expectedRequest, 0)
 	result.anyExpected = make(map[string]expectedRequest)
-	result.progress = NewProgress()
-	result.progress.Start()
 	return result
 }
 
@@ -60,7 +59,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected ChecksumInfo, ignoreMismatch bool) {
+func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool) {
 	var expectation expectedRequest
 	if len(f.expected) > 0 && f.expected[0].URL == url {
 		expectation, f.expected = f.expected[0], f.expected[1:]
@@ -90,7 +89,7 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 	}
 	defer outfile.Close()
 
-	cks := NewChecksumWriter()
+	cks := utils.NewChecksumWriter()
 	w := io.MultiWriter(outfile, cks)
 
 	_, err = w.Write([]byte(expectation.Response))
@@ -117,12 +116,11 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 
 // Download performs fake download by matching against first expectation in the queue
 func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
-	f.DownloadWithChecksum(url, filename, result, ChecksumInfo{Size: -1}, false)
+	f.DownloadWithChecksum(url, filename, result, utils.ChecksumInfo{Size: -1}, false)
 }
 
 // Shutdown does nothing
 func (f *FakeDownloader) Shutdown() {
-	f.progress.Shutdown()
 }
 
 // Pause does nothing
@@ -131,9 +129,4 @@ func (f *FakeDownloader) Pause() {
 
 // Resume does nothing
 func (f *FakeDownloader) Resume() {
-}
-
-// GetProgress does nothing
-func (f *FakeDownloader) GetProgress() *Progress {
-	return f.progress
 }

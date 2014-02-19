@@ -5,9 +5,11 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
@@ -48,7 +50,8 @@ take snapshots and publish them back as Debian repositories.`,
 }
 
 var context struct {
-	downloader        utils.Downloader
+	progress          aptly.Progress
+	downloader        aptly.Downloader
 	database          database.Storage
 	packagePool       aptly.PackagePool
 	publishedStorage  aptly.PublishedStorage
@@ -116,7 +119,11 @@ func main() {
 		context.architecturesList = strings.Split(optionArchitectures, ",")
 	}
 
-	context.downloader = utils.NewDownloader(utils.Config.DownloadConcurrency)
+	context.progress = console.NewProgress()
+	context.progress.Start()
+	defer context.progress.Shutdown()
+
+	context.downloader = http.NewDownloader(utils.Config.DownloadConcurrency, context.progress)
 	defer context.downloader.Shutdown()
 
 	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
