@@ -3,7 +3,6 @@ package files
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -39,18 +38,18 @@ func (pool *PackagePool) RelativePath(filename string, hashMD5 string) (string, 
 }
 
 // Path returns full path to package file in pool given any name and hash of file contents
-func (p *PackagePool) Path(filename string, hashMD5 string) (string, error) {
-	relative, err := p.RelativePath(filename, hashMD5)
+func (pool *PackagePool) Path(filename string, hashMD5 string) (string, error) {
+	relative, err := pool.RelativePath(filename, hashMD5)
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(p.rootPath, relative), nil
+	return filepath.Join(pool.rootPath, relative), nil
 }
 
 // FilepathList returns file paths of all the files in the pool
-func (p *PackagePool) FilepathList(progress *utils.Progress) ([]string, error) {
-	dirs, err := ioutil.ReadDir(p.rootPath)
+func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
+	dirs, err := ioutil.ReadDir(pool.rootPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -70,12 +69,12 @@ func (p *PackagePool) FilepathList(progress *utils.Progress) ([]string, error) {
 	result := []string{}
 
 	for _, dir := range dirs {
-		err = filepath.Walk(filepath.Join(p.rootPath, dir.Name()), func(path string, info os.FileInfo, err error) error {
+		err = filepath.Walk(filepath.Join(pool.rootPath, dir.Name()), func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() {
-				result = append(result, path[len(p.rootPath)+1:])
+				result = append(result, path[len(pool.rootPath)+1:])
 			}
 			return nil
 		})
@@ -92,8 +91,8 @@ func (p *PackagePool) FilepathList(progress *utils.Progress) ([]string, error) {
 }
 
 // Remove deletes file in package pool returns its size
-func (p *PackagePool) Remove(path string) (size int64, err error) {
-	path = filepath.Join(p.rootPath, path)
+func (pool *PackagePool) Remove(path string) (size int64, err error) {
+	path = filepath.Join(pool.rootPath, path)
 
 	info, err := os.Stat(path)
 	if err != nil {
