@@ -20,7 +20,6 @@ import (
 // RemoteRepo represents remote (fetchable) Debian repository.
 //
 // Repostitory could be filtered when fetching by components, architectures
-// TODO: support flat format
 type RemoteRepo struct {
 	// Permanent internal ID
 	UUID string
@@ -103,7 +102,7 @@ func (repo *RemoteRepo) IsFlat() bool {
 	return repo.Distribution == ""
 }
 
-// NumPackages return number of packages retrived from remore repo
+// NumPackages return number of packages retrived from remote repo
 func (repo *RemoteRepo) NumPackages() int {
 	if repo.packageRefs == nil {
 		return 0
