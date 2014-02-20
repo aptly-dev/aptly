@@ -1,6 +1,7 @@
 aptly is a tool to create partial and full mirrors of remote
-repositories, filter them, merge, upgrade individual packages,
-take snapshots and publish them back as Debian repositories.
+repositories, manage local repositories, filter them, merge,
+upgrade individual packages, take snapshots and publish them
+back as Debian repositories.
 
 Options:
   -architectures="": list of architectures to consider during (comma-separated), default to all available

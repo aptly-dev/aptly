@@ -1,0 +1,3 @@
+
+Local repo [repo2]: Repository2 successfully added.
+You can run 'aptly repo add repo2 ...' to add packages to repository.

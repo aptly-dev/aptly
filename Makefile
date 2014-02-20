@@ -35,6 +35,7 @@ coverage.out:
 	for i in database debian files http utils; do go test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
 	echo "mode: count" > coverage.out
 	grep -v -h "mode: count" coverage.*.out >> coverage.out
+	rm -f coverage.*.out
 
 coverage: coverage.out
 	go tool cover -html=coverage.out

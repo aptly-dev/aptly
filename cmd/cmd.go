@@ -37,13 +37,15 @@ func RootCommand() *commander.Command {
 		Short:     "Debian repository management tool",
 		Long: `
 aptly is a tool to create partial and full mirrors of remote
-repositories, filter them, merge, upgrade individual packages,
-take snapshots and publish them back as Debian repositories.`,
+repositories, manage local repositories, filter them, merge,
+upgrade individual packages, take snapshots and publish them
+back as Debian repositories.`,
 		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
 			makeCmdDb(),
 			makeCmdGraph(),
 			makeCmdMirror(),
+			makeCmdRepo(),
 			makeCmdServe(),
 			makeCmdSnapshot(),
 			makeCmdPublish(),
