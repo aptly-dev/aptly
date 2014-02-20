@@ -23,9 +23,6 @@ type LocalRepo struct {
 
 // NewLocalRepo creates new instance of Debian local repository
 func NewLocalRepo(name string, comment string) *LocalRepo {
-	if comment == "" {
-		comment = "local repo"
-	}
 	return &LocalRepo{
 		UUID:    uuid.New(),
 		Name:    name,
@@ -35,7 +32,10 @@ func NewLocalRepo(name string, comment string) *LocalRepo {
 
 // String interface
 func (repo *LocalRepo) String() string {
-	return fmt.Sprintf("[%s]: %s", repo.Name, repo.Comment)
+	if repo.Comment != "" {
+		return fmt.Sprintf("[%s]: %s", repo.Name, repo.Comment)
+	}
+	return fmt.Sprintf("[%s]", repo.Name)
 }
 
 // NumPackages return number of packages in local repo

@@ -33,7 +33,7 @@ func (s *LocalRepoSuite) TearDownTest(c *C) {
 
 func (s *LocalRepoSuite) TestString(c *C) {
 	c.Check(NewLocalRepo("lrepo", "My first repo").String(), Equals, "[lrepo]: My first repo")
-	c.Check(NewLocalRepo("lrepo2", "").String(), Equals, "[lrepo2]: local repo")
+	c.Check(NewLocalRepo("lrepo2", "").String(), Equals, "[lrepo2]")
 }
 
 func (s *LocalRepoSuite) TestNumPackages(c *C) {
