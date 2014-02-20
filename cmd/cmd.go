@@ -13,6 +13,10 @@ import (
 func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
 	fmt.Printf("Packages:\n")
 
+	if reflist == nil {
+		return
+	}
+
 	packageCollection := debian.NewPackageCollection(context.database)
 
 	err = reflist.ForEach(func(key []byte) error {

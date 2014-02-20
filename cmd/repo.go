@@ -11,6 +11,7 @@ func makeCmdRepo() *commander.Command {
 		Short:     "manage local package repositories",
 		Subcommands: []*commander.Command{
 			makeCmdRepoCreate(),
+			makeCmdRepoShow(),
 		},
 		Flag: *flag.NewFlagSet("aptly-repo", flag.ExitOnError),
 	}

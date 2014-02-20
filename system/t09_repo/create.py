@@ -9,7 +9,7 @@ class CreateRepo1Test(BaseTest):
 
     def check(self):
         self.check_output()
-        #self.check_cmd_output("aptly mirror show mirror1", "mirror_show")
+        self.check_cmd_output("aptly repo show repo1", "repo_show")
 
 
 class CreateRepo2Test(BaseTest):
@@ -20,7 +20,7 @@ class CreateRepo2Test(BaseTest):
 
     def check(self):
         self.check_output()
-        #self.check_cmd_output("aptly mirror show mirror1", "mirror_show")
+        self.check_cmd_output("aptly repo show repo2", "repo_show")
 
 
 class CreateRepo3Test(BaseTest):
