@@ -12,6 +12,7 @@ func makeCmdRepo() *commander.Command {
 		Subcommands: []*commander.Command{
 			makeCmdRepoCreate(),
 			makeCmdRepoShow(),
+			makeCmdRepoList(),
 		},
 		Flag: *flag.NewFlagSet("aptly-repo", flag.ExitOnError),
 	}
