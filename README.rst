@@ -19,15 +19,15 @@ Aptly features: ("+" means planned features)
 * take snapshots of mirrors at any point in time, fixing state of repository at some moment of time
 * publish snapshot as Debian repository, ready to be consumed by apt
 * controlled update of one or more packages in snapshot from upstream mirror, tracking dependencies
-* merge two or more snapshots into one (+)
+* merge two or more snapshots into one
 * filter repository by search query, pulling dependencies when required (+)
 * publish self-made packages as Debian repositories (+)
+* mirror repositories "as-is" (without resigning with user's key) (+)
+* support for yum repositories (+)
 
 Current limitations:
 
-* source packages, debian-installer and translations not supported yet
-* signature is not verified while downloading
-* cleaning up stale files is not implemented
+* debian-installer and translations not supported yet
 
 Currently aptly is under heavy development, so please use it with care.
 
