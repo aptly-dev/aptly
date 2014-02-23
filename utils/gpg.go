@@ -25,7 +25,8 @@ type Verifier interface {
 	InitKeyring() error
 	AddKeyring(keyring string)
 	VerifyDetachedSignature(signature, cleartext io.Reader) error
-	VerifyClearsigned(clearsigned io.Reader) (text *os.File, err error)
+	VerifyClearsigned(clearsigned io.Reader) error
+	ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error)
 }
 
 // Test interface
@@ -216,14 +217,31 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 	}
 
 	args = append(args, sigf.Name(), clearf.Name())
-
 	return g.runGpgv(args, "detached signature")
 }
 
-// VerifyClearsigned verifies clearsigned file using gpgv and extracts cleartext version
-func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, err error) {
+// VerifyClearsigned verifies clearsigned file using gpgv
+func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) error {
 	args := g.argsKeyrings()
 
+	clearf, err := ioutil.TempFile("", "aptly-gpg")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(clearf.Name())
+	defer clearf.Close()
+
+	_, err = io.Copy(clearf, clearsigned)
+	if err != nil {
+		return err
+	}
+
+	args = append(args, clearf.Name())
+	return g.runGpgv(args, "clearsigned file")
+}
+
+// ExtractClearsigned extracts cleartext from clearsigned file WITHOUT signature verification
+func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	clearf, err := ioutil.TempFile("", "aptly-gpg")
 	if err != nil {
 		return
@@ -236,24 +254,15 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, e
 		return
 	}
 
-	args = append(args, clearf.Name())
-	err = g.runGpgv(args, "clearsigned file")
-	if err != nil {
-		return nil, err
-	}
-
 	text, err = ioutil.TempFile("", "aptly-gpg")
 	if err != nil {
 		return
 	}
 	defer os.Remove(text.Name())
 
-	args = []string{"--no-default-keyring"}
-	args = append(args, g.argsKeyrings()...)
-	args = append(args, "--decrypt", "--batch", "--trust-model", "always", "--output", "-", clearf.Name())
+	args := []string{"--decrypt", "--batch", "--skip-verify", "--output", "-", clearf.Name()}
 
 	cmd := exec.Command("gpg", args...)
-	cmd.Stderr = os.Stderr
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

@@ -28,7 +28,11 @@ func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) e
 	return nil
 }
 
-func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader) (text *os.File, err error) {
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader) error {
+	return nil
+}
+
+func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	text, _ = ioutil.TempFile("", "aptly-test")
 	io.Copy(text, clearsigned)
 	text.Seek(0, 0)
