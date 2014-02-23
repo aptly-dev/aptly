@@ -2,14 +2,17 @@ package debian
 
 import (
 	"archive/tar"
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"github.com/mkrautz/goar"
+	"github.com/smira/aptly/utils"
 	"io"
 	"os"
+	"strings"
 )
 
-// GetControlFileFromDeb read control file from deb package
+// GetControlFileFromDeb reads control file from deb package
 func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 	file, err := os.Open(packageFile)
 	if err != nil {
@@ -56,4 +59,41 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 			}
 		}
 	}
+}
+
+// GetControlFileFromDsc reads control file from dsc package
+func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, error) {
+	file, err := os.Open(dscFile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	line, err := bufio.NewReader(file).ReadString('\n')
+	if err != nil {
+		return nil, err
+	}
+
+	file.Seek(0, 0)
+
+	var text *os.File
+
+	if strings.Index(line, "BEGIN PGP SIGN") != -1 {
+		text, err = verifier.ExtractClearsigned(file)
+		if err != nil {
+			return nil, err
+		}
+		defer text.Close()
+	} else {
+		text = file
+	}
+
+	reader := NewControlFileReader(text)
+	stanza, err := reader.ReadStanza()
+	if err != nil {
+		return nil, err
+	}
+
+	return stanza, nil
+
 }
