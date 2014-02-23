@@ -27,7 +27,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false)
+		if repo.RefList() != nil {
+			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false)
+		}
 		return nil
 	})
 	if err != nil {
