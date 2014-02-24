@@ -46,6 +46,11 @@ func (s *LocalRepoSuite) TestRefList(c *C) {
 	c.Check(s.repo.RefList(), Equals, s.reflist)
 }
 
+func (s *LocalRepoSuite) TestUpdateRefList(c *C) {
+	s.repo.UpdateRefList(nil)
+	c.Check(s.repo.RefList(), IsNil)
+}
+
 func (s *LocalRepoSuite) TestEncodeDecode(c *C) {
 	repo := &LocalRepo{}
 	err := repo.Decode(s.repo.Encode())

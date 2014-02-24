@@ -51,6 +51,11 @@ func (repo *LocalRepo) RefList() *PackageRefList {
 	return repo.packageRefs
 }
 
+// UpdateRefList changes package list for local repo
+func (repo *LocalRepo) UpdateRefList(reflist *PackageRefList) {
+	repo.packageRefs = reflist
+}
+
 // Encode does msgpack encoding of LocalRepo
 func (repo *LocalRepo) Encode() []byte {
 	var buf bytes.Buffer
