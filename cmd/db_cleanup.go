@@ -20,10 +20,25 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	// collect information about references packages...
 	existingPackageRefs := debian.NewPackageRefList()
 
-	context.progress.Printf("Loading mirrors and snapshots...\n")
+	context.progress.Printf("Loading mirrors, local repos and snapshots...\n")
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
 	err = repoCollection.ForEach(func(repo *debian.RemoteRepo) error {
 		err := repoCollection.LoadComplete(repo)
+		if err != nil {
+			return err
+		}
+		if repo.RefList() != nil {
+			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	localRepoCollection := debian.NewLocalRepoCollection(context.database)
+	err = localRepoCollection.ForEach(func(repo *debian.LocalRepo) error {
+		err := localRepoCollection.LoadComplete(repo)
 		if err != nil {
 			return err
 		}
