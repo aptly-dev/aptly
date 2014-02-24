@@ -20,6 +20,8 @@ type PackagePool interface {
 	FilepathList(progress Progress) ([]string, error)
 	// Remove deletes file in package pool returns its size
 	Remove(path string) (size int64, err error)
+	// Import copies file into package pool
+	Import(path string, hashMD5 string) error
 }
 
 // PublishedStorage is abstraction of filesystem storing all published repositories
