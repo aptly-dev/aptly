@@ -3,6 +3,7 @@ package files
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -101,4 +102,53 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 
 	err = os.Remove(path)
 	return info.Size(), err
+}
+
+// Import copies file into package pool
+func (pool *PackagePool) Import(path string, hashMD5 string) error {
+	source, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	sourceInfo, err := source.Stat()
+	if err != nil {
+		return err
+	}
+
+	poolPath, err := pool.Path(path, hashMD5)
+	if err != nil {
+		return err
+	}
+
+	targetInfo, err := os.Stat(poolPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			// unable to stat target location?
+			return err
+		}
+		// file doesn't exist, that's ok
+	} else {
+		if targetInfo.Size() != sourceInfo.Size() {
+			// trying to overwrite file?
+			return fmt.Errorf("unable to import into pool: file %s already exists", poolPath)
+		}
+	}
+
+	// create subdirs as necessary
+	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
+	if err != nil {
+		return err
+	}
+
+	target, err := os.Create(poolPath)
+	if err != nil {
+		return err
+	}
+	defer target.Close()
+
+	_, err = io.Copy(target, source)
+
+	return err
 }

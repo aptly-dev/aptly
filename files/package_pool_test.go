@@ -5,6 +5,7 @@ import (
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type PackagePoolSuite struct {
@@ -83,4 +84,36 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 	list, err := s.pool.FilepathList(nil)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"ae/0c/1.deb", "bd/0a/3.deb", "bd/0b/4.deb"})
+}
+
+func (s *PackagePoolSuite) TestImportOk(c *C) {
+	_, __file__, _, _ := runtime.Caller(0)
+	debFile := filepath.Join(filepath.Dir(__file__), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+	err := s.pool.Import(debFile, "91b1a1480b90b9e269ca44d897b12575")
+	c.Check(err, IsNil)
+
+	info, err := os.Stat(filepath.Join(s.pool.rootPath, "91", "b1", "libboost-program-options-dev_1.49.0.1_i386.deb"))
+	c.Check(err, IsNil)
+	c.Check(info.Size(), Equals, int64(2738))
+
+	// double import, should be ok
+	err = s.pool.Import(debFile, "91b1a1480b90b9e269ca44d897b12575")
+	c.Check(err, IsNil)
+}
+
+func (s *PackagePoolSuite) TestImportNotExist(c *C) {
+	err := s.pool.Import("no-such-file", "91b1a1480b90b9e269ca44d897b12575")
+	c.Check(err, ErrorMatches, ".*no such file or directory")
+}
+
+func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
+	_, __file__, _, _ := runtime.Caller(0)
+	debFile := filepath.Join(filepath.Dir(__file__), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+	os.MkdirAll(filepath.Join(s.pool.rootPath, "91", "b1"), 0755)
+	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "91", "b1", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
+
+	err := s.pool.Import(debFile, "91b1a1480b90b9e269ca44d897b12575")
+	c.Check(err, ErrorMatches, "unable to import into pool.*")
 }
