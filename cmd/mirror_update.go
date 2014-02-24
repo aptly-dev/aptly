@@ -51,7 +51,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	fmt.Printf("\nMirror `%s` has been successfully updated.\n", repo.Name)
+	context.progress.Printf("\nMirror `%s` has been successfully updated.\n", repo.Name)
 	return err
 }
 
