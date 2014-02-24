@@ -79,17 +79,15 @@ func (l *levelDB) Delete(key []byte) error {
 
 func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
-	iterator := l.db.NewIterator(nil)
-	if iterator.Seek(prefix) {
-		for bytes.HasPrefix(iterator.Key(), prefix) {
-			key := iterator.Key()
-			keyc := make([]byte, len(key))
-			copy(keyc, key)
-			result = append(result, keyc)
-			if !iterator.Next() {
-				break
-			}
-		}
+
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		key := iterator.Key()
+		keyc := make([]byte, len(key))
+		copy(keyc, key)
+		result = append(result, keyc)
 	}
 
 	return result
@@ -98,17 +96,14 @@ func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
 
-	iterator := l.db.NewIterator(nil)
-	if iterator.Seek(prefix) {
-		for bytes.HasPrefix(iterator.Key(), prefix) {
-			val := iterator.Value()
-			valc := make([]byte, len(val))
-			copy(valc, val)
-			result = append(result, valc)
-			if !iterator.Next() {
-				break
-			}
-		}
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		val := iterator.Value()
+		valc := make([]byte, len(val))
+		copy(valc, val)
+		result = append(result, valc)
 	}
 
 	return result
