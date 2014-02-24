@@ -306,7 +306,45 @@ func (s *PackageCollectionSuite) TearDownTest(c *C) {
 	s.db.Close()
 }
 
-func (s *PackageCollectionSuite) TestUpdateByKey(c *C) {
+func (s *PackageCollectionSuite) TestUpdate(c *C) {
+	// package doesn't exist, update ok
+	err := s.collection.Update(s.p)
+	c.Assert(err, IsNil)
+	res, err := s.collection.ByKey(s.p.Key())
+	c.Assert(err, IsNil)
+	c.Assert(res.Equals(s.p), Equals, true)
+
+	// same package, ok
+	p2 := NewPackageFromControlFile(packageStanza.Copy())
+	err = s.collection.Update(p2)
+	c.Assert(err, IsNil)
+	res, err = s.collection.ByKey(p2.Key())
+	c.Assert(err, IsNil)
+	c.Assert(res.Equals(s.p), Equals, true)
+
+	// change some metadata
+	p2.Source = "lala"
+	err = s.collection.Update(p2)
+	c.Assert(err, IsNil)
+	res, err = s.collection.ByKey(p2.Key())
+	c.Assert(err, IsNil)
+	c.Assert(res.Equals(s.p), Equals, false)
+	c.Assert(res.Equals(p2), Equals, true)
+
+	// change file info
+	p2 = NewPackageFromControlFile(packageStanza.Copy())
+	p2.Files = nil
+	res, err = s.collection.ByKey(p2.Key())
+	err = s.collection.Update(p2)
+	c.Assert(err, ErrorMatches, ".*conflict with existing packge")
+	p2 = NewPackageFromControlFile(packageStanza.Copy())
+	p2.Files[0].Checksums.MD5 = "abcdef"
+	res, err = s.collection.ByKey(p2.Key())
+	err = s.collection.Update(p2)
+	c.Assert(err, ErrorMatches, ".*conflict with existing packge")
+}
+
+func (s *PackageCollectionSuite) TestByKey(c *C) {
 	err := s.collection.Update(s.p)
 	c.Assert(err, IsNil)
 

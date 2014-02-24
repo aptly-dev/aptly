@@ -205,14 +205,18 @@ func (p *Package) Key() []byte {
 	return []byte("P" + p.Architecture + " " + p.Name + " " + p.Version)
 }
 
-// Encode does msgpack encoding of Package
-func (p *Package) Encode() []byte {
-	var buf bytes.Buffer
+// Internal buffer reused by all Package.Encode operations
+var encodeBuf bytes.Buffer
 
-	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
+// Encode does msgpack encoding of Package, []byte should be copied, as buffer would
+// be used for the next call to Encode
+func (p *Package) Encode() []byte {
+	encodeBuf.Reset()
+
+	encoder := codec.NewEncoder(&encodeBuf, &codec.MsgpackHandle{})
 	encoder.Encode(p)
 
-	return buf.Bytes()
+	return encodeBuf.Bytes()
 }
 
 // Decode decodes msgpack representation into Package
@@ -499,6 +503,33 @@ func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
 
 // Update adds or updates information about package in DB
 func (collection *PackageCollection) Update(p *Package) error {
+	existing, err := collection.ByKey(p.Key())
+	if err == nil {
+		// check for conflict
+		if existing.Equals(p) {
+			// packages are the same, no need to update
+			return nil
+		}
+
+		// if .Files is different, consider to be conflict
+		if len(p.Files) != len(existing.Files) {
+			return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
+		}
+
+		for i, f := range p.Files {
+			if existing.Files[i] != f {
+				return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
+			}
+		}
+
+		// ok, .Files are the same, but some meta-data is different, proceed to saving
+	} else {
+		if err != database.ErrNotFound {
+			return err
+		}
+		// ok, package doesn't exist yet
+	}
+
 	return collection.db.Put(p.Key(), p.Encode())
 }
 
