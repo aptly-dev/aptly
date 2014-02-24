@@ -287,6 +287,10 @@ func (s *PackageListSuite) TestNewPackageListFromRefList(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(list.Len(), Equals, 4)
 	c.Check(list.Add(s.p4), ErrorMatches, "conflict in package.*")
+
+	list, err = NewPackageListFromRefList(nil, coll)
+	c.Assert(err, IsNil)
+	c.Check(list.Len(), Equals, 0)
 }
 
 func (s *PackageListSuite) TestNewPackageRefList(c *C) {

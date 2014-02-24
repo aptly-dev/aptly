@@ -51,6 +51,11 @@ func NewPackageList() *PackageList {
 
 // NewPackageListFromRefList loads packages list from PackageRefList
 func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageCollection) (*PackageList, error) {
+	// empty reflist
+	if reflist == nil {
+		return NewPackageList(), nil
+	}
+
 	result := &PackageList{packages: make(map[string]*Package, reflist.Len())}
 
 	err := reflist.ForEach(func(key []byte) error {
