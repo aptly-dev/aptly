@@ -15,8 +15,12 @@ import (
 
 // PackageFile is a single file entry in package
 type PackageFile struct {
-	Filename  string
+	// Filename is name of file for the package (without directory)
+	Filename string
+	// Hashes for the file
 	Checksums utils.ChecksumInfo
+	// Temporary field used while downloading, stored relative path on the mirror
+	downloadPath string
 }
 
 // Verify that package file is present and correct
@@ -34,6 +38,11 @@ func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
 	// verify size
 	// TODO: verify checksum if configured
 	return st.Size() == f.Checksums.Size, nil
+}
+
+// DownloadURL return relative URL to package download location
+func (f *PackageFile) DownloadURL() string {
+	return filepath.Join(f.downloadPath, f.Filename)
 }
 
 // Package is single instance of Debian package
@@ -96,7 +105,8 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	filesize, _ := strconv.ParseInt(input["Size"], 10, 64)
 
 	result.Files = append(result.Files, PackageFile{
-		Filename: input["Filename"],
+		Filename:     filepath.Base(input["Filename"]),
+		downloadPath: filepath.Dir(input["Filename"]),
 		Checksums: utils.ChecksumInfo{
 			Size:   filesize,
 			MD5:    strings.TrimSpace(input["MD5sum"]),
@@ -153,7 +163,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 				return fmt.Errorf("unable to parse size: %s", err)
 			}
 
-			filename := filepath.Join(input["Directory"], parts[2])
+			filename := filepath.Base(parts[2])
 
 			found := false
 			pos := 0
@@ -166,7 +176,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 			}
 
 			if !found {
-				result.Files = append(result.Files, PackageFile{Filename: filename})
+				result.Files = append(result.Files, PackageFile{Filename: filename, downloadPath: input["Directory"]})
 				pos = len(result.Files) - 1
 			}
 
@@ -222,7 +232,16 @@ func (p *Package) Encode() []byte {
 // Decode decodes msgpack representation into Package
 func (p *Package) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
-	return decoder.Decode(p)
+	err := decoder.Decode(p)
+	if err != nil {
+		return err
+	}
+
+	for i := range p.Files {
+		p.Files[i].Filename = filepath.Base(p.Files[i].Filename)
+	}
+
+	return nil
 }
 
 // String creates readable representation
@@ -290,15 +309,14 @@ func (p *Package) Stanza() (result Stanza) {
 		md5, sha1, sha256 := make([]string, 0), make([]string, 0), make([]string, 0)
 
 		for _, f := range p.Files {
-			base := filepath.Base(f.Filename)
 			if f.Checksums.MD5 != "" {
-				md5 = append(md5, fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, base))
+				md5 = append(md5, fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename))
 			}
 			if f.Checksums.SHA1 != "" {
-				sha1 = append(sha1, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, base))
+				sha1 = append(sha1, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename))
 			}
 			if f.Checksums.SHA256 != "" {
-				sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, base))
+				sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename))
 			}
 		}
 
@@ -306,7 +324,7 @@ func (p *Package) Stanza() (result Stanza) {
 		result["Checksums-Sha1"] = strings.Join(sha1, "")
 		result["Checksums-Sha256"] = strings.Join(sha256, "")
 	} else {
-		result["Filename"] = p.Files[0].Filename
+		result["Filename"] = p.Files[0].DownloadURL()
 		if p.Files[0].Checksums.MD5 != "" {
 			result["MD5sum"] = p.Files[0].Checksums.MD5
 		}
@@ -350,8 +368,20 @@ func (p *Package) Equals(p2 *Package) bool {
 		return false
 	}
 
-	for i, f := range p.Files {
-		if p2.Files[i] != f {
+	for _, f := range p.Files {
+		found := false
+		for _, f2 := range p2.Files {
+			if f2.Filename == f.Filename {
+				found = true
+				if f.Checksums != f2.Checksums {
+					return false
+				} else {
+					break
+				}
+			}
+
+		}
+		if !found {
 			return false
 		}
 	}
@@ -382,10 +412,11 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 			return err
 		}
 
+		dir := filepath.Dir(relPath)
 		if p.IsSource {
-			p.Extra["Directory"] = filepath.Dir(relPath)
+			p.Extra["Directory"] = dir
 		} else {
-			p.Files[i].Filename = relPath
+			p.Files[i].downloadPath = dir
 		}
 	}
 
@@ -438,7 +469,7 @@ func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageD
 		}
 
 		if !verified {
-			result = append(result, PackageDownloadTask{RepoURI: f.Filename, DestinationPath: poolPath, Checksums: f.Checksums})
+			result = append(result, PackageDownloadTask{RepoURI: f.DownloadURL(), DestinationPath: poolPath, Checksums: f.Checksums})
 		}
 	}
 
@@ -516,8 +547,20 @@ func (collection *PackageCollection) Update(p *Package) error {
 			return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
 		}
 
-		for i, f := range p.Files {
-			if existing.Files[i] != f {
+		for _, f := range p.Files {
+			found := false
+			for _, f2 := range existing.Files {
+				if f2.Filename == f.Filename {
+					found = true
+					if f.Checksums != f2.Checksums {
+						return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
+					} else {
+						break
+					}
+				}
+
+			}
+			if !found {
 				return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
 			}
 		}

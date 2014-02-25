@@ -59,6 +59,14 @@ func (s *PackageSuite) TestPackageFileVerify(c *C) {
 	c.Check(result, Equals, true)
 }
 
+func (s *PackageSuite) TestPackageFileDownloadURL(c *C) {
+	p := NewPackageFromControlFile(s.stanza)
+
+	c.Check(p.Files[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/contrib/a/alien-arena")
+	c.Check(p.Files[0].DownloadURL(), Equals, "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
+}
+
 func (s *PackageSuite) TestNewFromPara(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
@@ -68,7 +76,8 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.Architecture, Equals, "i386")
 	c.Check(p.Provides, DeepEquals, []string(nil))
 	c.Check(p.Files, HasLen, 1)
-	c.Check(p.Files[0].Filename, Equals, "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
+	c.Check(p.Files[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/contrib/a/alien-arena")
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(187518))
 	c.Check(p.Files[0].Checksums.MD5, Equals, "1e8cba92c41420aa7baa8a5718d67122")
 	c.Check(p.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
@@ -88,19 +97,22 @@ func (s *PackageSuite) TestNewSourceFromPara(c *C) {
 	c.Check(p.BuildDependsInDep, DeepEquals, []string{"default-jdk-doc", "junit (>= 3.8.1)", "libannotation-indexer-java (>= 1.3)", "libannotation-indexer-java-doc", "libasm3-java", "libmaven-install-plugin-java", "libmaven-javadoc-plugin-java", "libmaven-scm-java", "libmaven2-core-java", "libmaven2-core-java-doc", "libmetainf-services-java", "libmetainf-services-java-doc", "libmaven-plugin-tools-java (>= 2.8)"})
 	c.Check(p.Files, HasLen, 3)
 
-	c.Check(p.Files[0].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc")
+	c.Check(p.Files[0].Filename, Equals, "access-modifier-checker_1.0-4.dsc")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/main/a/access-modifier-checker")
 	c.Check(p.Files[0].Checksums.Size, Equals, int64(3))
 	c.Check(p.Files[0].Checksums.MD5, Equals, "900150983cd24fb0d6963f7d28e17f72")
 	c.Check(p.Files[0].Checksums.SHA1, Equals, "a9993e364706816aba3e25717850c26c9cd0d89d")
 	c.Check(p.Files[0].Checksums.SHA256, Equals, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
 
-	c.Check(p.Files[1].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(p.Files[1].Filename, Equals, "access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/main/a/access-modifier-checker")
 	c.Check(p.Files[1].Checksums.Size, Equals, int64(4))
 	c.Check(p.Files[1].Checksums.MD5, Equals, "e2fc714c4727ee9395f324cd2e7f331f")
 	c.Check(p.Files[1].Checksums.SHA1, Equals, "81fe8bfe87576c3ecb22426f8e57847382917acf")
 	c.Check(p.Files[1].Checksums.SHA256, Equals, "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589")
 
-	c.Check(p.Files[2].Filename, Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
+	c.Check(p.Files[2].Filename, Equals, "access-modifier-checker_1.0-4.debian.tar.gz")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/main/a/access-modifier-checker")
 
 	c.Check(p.Depends, IsNil)
 }
@@ -124,6 +136,10 @@ func (s *PackageSuite) TestKey(c *C) {
 
 func (s *PackageSuite) TestEncodeDecode(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
+
+	// downloadPath would be lost in encode/decode cycle, that's OK
+	p.Files[0].downloadPath = ""
+
 	encoded := p.Encode()
 	p2 := &Package{}
 	err := p2.Decode(encoded)
@@ -166,6 +182,16 @@ func (s *PackageSuite) TestEquals(c *C) {
 	so2, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
 
 	c.Check(so.Equals(so2), Equals, true)
+
+	so2.Files[2], so2.Files[1] = so2.Files[1], so2.Files[2]
+	c.Check(so.Equals(so2), Equals, true)
+
+	so2.Files[2].Checksums.MD5 = "abcde"
+	c.Check(so.Equals(so2), Equals, false)
+
+	so2, _ = NewSourcePackageFromControlFile(s.sourceStanza.Copy())
+	so2.Files[1].Filename = "other.deb"
+	c.Check(so.Equals(so2), Equals, false)
 }
 
 func (s *PackageSuite) TestMatchesArchitecture(c *C) {
@@ -241,7 +267,8 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 
 	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free")
 	c.Check(err, IsNil)
-	c.Check(p.Files[0].Filename, Equals, "pool/non-free/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
+	c.Check(p.Files[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
+	c.Check(p.Files[0].downloadPath, Equals, "pool/non-free/a/alien-arena")
 
 	p.IsSource = true
 	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free")
