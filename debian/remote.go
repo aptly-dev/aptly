@@ -80,6 +80,12 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 
 func (repo *RemoteRepo) prepare() error {
 	var err error
+
+	// Add final / to URL
+	if !strings.HasSuffix(repo.ArchiveRoot, "/") {
+		repo.ArchiveRoot = repo.ArchiveRoot + "/"
+	}
+
 	repo.archiveRootURL, err = url.Parse(repo.ArchiveRoot)
 	return err
 }

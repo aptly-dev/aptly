@@ -79,7 +79,7 @@ type RemoteRepoSuite struct {
 var _ = Suite(&RemoteRepoSuite{})
 
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
-	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false)
+	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false)
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
