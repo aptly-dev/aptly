@@ -7,11 +7,11 @@ class UpdateMirror1Test(BaseTest):
     """
     update mirrors: regular update
     """
-    longTest = True
+    longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures alsa-ppa http://ppa.launchpad.net/alsa-backports/ubuntu/ hardy main",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
     ]
-    runCmd = "aptly mirror update --ignore-signatures alsa-ppa"
+    runCmd = "aptly mirror update --ignore-signatures varnish"
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
