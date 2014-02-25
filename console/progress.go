@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/cheggaaa/pb"
 	"github.com/smira/aptly/aptly"
+	"github.com/wsxiaoys/terminal/color"
+	"strings"
 )
 
 const (
@@ -102,6 +104,34 @@ func (p *Progress) AddBar(count int) {
 // Printf does printf but in safe manner: not overwriting progress bar
 func (p *Progress) Printf(msg string, a ...interface{}) {
 	p.queue <- printTask{code: codePrint, message: fmt.Sprintf(msg, a...)}
+}
+
+// ColoredPrintf does printf in colored way + newline
+func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
+	if RunningOnTerminal() {
+		p.queue <- printTask{code: codePrint, message: color.Sprintf(msg, a...) + "\n"}
+	} else {
+		// stip color marks
+		var prev rune
+		msg = strings.Map(func(r rune) rune {
+			if prev == '@' {
+				prev = 0
+				if r == '@' {
+					return r
+				}
+				return -1
+			}
+			prev = r
+			if r == '@' {
+				return -1
+
+			}
+
+			return r
+		}, msg)
+
+		p.Printf(msg+"\n", a...)
+	}
 }
 
 func (p *Progress) worker() {

@@ -56,6 +56,8 @@ type Progress interface {
 	AddBar(count int)
 	// Printf does printf but in safe manner: not overwriting progress bar
 	Printf(msg string, a ...interface{})
+	// ColoredPrintf does printf in colored way + newline
+	ColoredPrintf(msg string, a ...interface{})
 }
 
 // Downloader is parallel HTTP fetcher
