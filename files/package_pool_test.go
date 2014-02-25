@@ -87,8 +87,8 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOk(c *C) {
-	_, __file__, _, _ := runtime.Caller(0)
-	debFile := filepath.Join(filepath.Dir(__file__), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
+	_, _File, _, _ := runtime.Caller(0)
+	debFile := filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 	err := s.pool.Import(debFile, "91b1a1480b90b9e269ca44d897b12575")
 	c.Check(err, IsNil)
@@ -108,8 +108,8 @@ func (s *PackagePoolSuite) TestImportNotExist(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
-	_, __file__, _, _ := runtime.Caller(0)
-	debFile := filepath.Join(filepath.Dir(__file__), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
+	_, _File, _, _ := runtime.Caller(0)
+	debFile := filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 	os.MkdirAll(filepath.Join(s.pool.rootPath, "91", "b1"), 0755)
 	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "91", "b1", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)

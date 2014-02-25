@@ -375,9 +375,8 @@ func (p *Package) Equals(p2 *Package) bool {
 				found = true
 				if f.Checksums != f2.Checksums {
 					return false
-				} else {
-					break
 				}
+				break
 			}
 
 		}
@@ -554,9 +553,8 @@ func (collection *PackageCollection) Update(p *Package) error {
 					found = true
 					if f.Checksums != f2.Checksums {
 						return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
-					} else {
-						break
 					}
+					break
 				}
 
 			}
