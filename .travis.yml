@@ -14,3 +14,7 @@ install:
 
 
 script: make travis
+
+matrix:
+    allow_failures:
+        - go: tip
