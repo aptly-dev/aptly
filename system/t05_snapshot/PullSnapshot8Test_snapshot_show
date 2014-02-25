@@ -1,7 +1,7 @@
 Name: snap3
-Created At: 2014-01-24 18:29:38 MSK
+Created At: 2014-02-25 12:25:36 MSK
 Description: Pulled into 'snap1' with 'snap2' as source, pull request was: 'lunar-landing mars-landing (>= 1.0)'
-Number of packages: 56169
+Number of packages: 56139
 Packages:
   0ad-data-0~r11863-1_all
   2ping-2.0-1_all
@@ -115,7 +115,7 @@ Packages:
   anything-el-1.287-2_all
   aolserver4-doc-4.5.1-15.1_all
   aolserver4-xotcl-1.6.7-2_all
-  apache2-doc-2.2.22-13_all
+  apache2-doc-2.2.22-13+deb7u1_all
   apcalc-common-2.12.4.4-3_all
   apcupsd-doc-3.14.10-2_all
   apel-10.8-2_all
@@ -249,7 +249,7 @@ Packages:
   aspell-uz-0.6.0-1_all
   asql-1.6-1_all
   asr-manpages-1.3-6_all
-  asterisk-config-1:1.8.13.1~dfsg-3_all
+  asterisk-config-1:1.8.13.1~dfsg1-3+deb7u3_all
   asterisk-core-sounds-en-1.4.22-1_all
   asterisk-core-sounds-en-g722-1.4.22-1_all
   asterisk-core-sounds-en-gsm-1.4.22-1_all
@@ -266,8 +266,8 @@ Packages:
   asterisk-core-sounds-ru-g722-1.4.22-1_all
   asterisk-core-sounds-ru-gsm-1.4.22-1_all
   asterisk-core-sounds-ru-wav-1.4.22-1_all
-  asterisk-dev-1:1.8.13.1~dfsg-3_all
-  asterisk-doc-1:1.8.13.1~dfsg-3_all
+  asterisk-dev-1:1.8.13.1~dfsg1-3+deb7u3_all
+  asterisk-doc-1:1.8.13.1~dfsg1-3+deb7u3_all
   asterisk-moh-opsound-g722-2.03-1_all
   asterisk-moh-opsound-gsm-2.03-1_all
   asterisk-moh-opsound-wav-2.03-1_all
@@ -1124,19 +1124,19 @@ Packages:
   debian-faq-ru-5.0.1_all
   debian-faq-zh-cn-5.0.1_all
   debian-goodies-0.61_all
-  debian-handbook-6.0+20121031_all
+  debian-handbook-7.20140126~deb7u1_all
   debian-history-2.19~deb7u1_all
-  debian-installer-7.0-netboot-amd64-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-armel-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-armhf-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-i386-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-ia64-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-kfreebsd-amd64-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-kfreebsd-i386-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-mips-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-mipsel-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-powerpc-20130613+deb7u1.b1_all
-  debian-installer-7.0-netboot-sparc-20130613+deb7u1.b1_all
+  debian-installer-7.0-netboot-amd64-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-armel-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-armhf-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-i386-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-ia64-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-kfreebsd-amd64-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-kfreebsd-i386-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-mips-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-mipsel-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-powerpc-20130613+deb7u1.b2_all
+  debian-installer-7.0-netboot-sparc-20130613+deb7u1.b2_all
   debian-installer-launcher-17_all
   debian-kernel-handbook-1.0.15_all
   debian-keyring-2013.04.21_all
@@ -1198,7 +1198,7 @@ Packages:
   deluged-1.3.3-2+nmu1_all
   denemo-data-0.9.2-3_all
   denemo-doc-0.9.2-3_all
-  denyhosts-2.6-10_all
+  denyhosts-2.6-10+deb7u3_all
   deps-tools-cli-0.13-1.1_all
   derivations-0.53.20120414-1.1_all
   desktop-base-7.0.3_all
@@ -1464,7 +1464,7 @@ Packages:
   drpython-1:3.11.1-2_all
   drraw-2.2b2-4_all
   drslib-0.3.0a3-3_all
-  drupal7-7.14-2+deb7u1_all
+  drupal7-7.14-2+deb7u2_all
   drush-5.4-1_all
   dsc-statistics-presenter-201203250530-2_all
   dsdp-doc-5.8-9.1_all
@@ -1553,7 +1553,7 @@ Packages:
   efp-1.4-2_all
   egg-4.0.6+0.20041122cvs-19_all
   eggdrop-data-1.6.20-1_all
-  eglibc-source-2.13-38_all
+  eglibc-source-2.13-38+deb7u1_all
   eiskaltdcpp-2.2.6-4_all
   eiskaltdcpp-common-2.2.6-4_all
   eiskaltdcpp-emoticons-2.2.6-4_all
@@ -1770,8 +1770,8 @@ Packages:
   feynmf-1.08-8_all
   ffado-mixer-qt4-2.0.99+svn2171-2_all
   ffdiaporama-data-1.3-1_all
-  ffmpeg-dbg-6:0.8.6-1_all
-  ffmpeg-doc-6:0.8.6-1_all
+  ffmpeg-dbg-6:0.8.9-1_all
+  ffmpeg-doc-6:0.8.9-1_all
   fftw-docs-2.1.5-1_all
   fgo-1.3.1-2_all
   fiaif-1.22.1-1_all
@@ -2398,7 +2398,7 @@ Packages:
   ghc6-prof-7.4.1-4_all
   ghextris-0.9.0-3_all
   ghostscript-doc-9.05~dfsg-6.3+deb7u1_all
-  gimp-data-2.8.2-2_all
+  gimp-data-2.8.2-2+deb7u1_all
   gimp-data-extras-1:2.0.1-3_all
   gimp-help-common-2.6.1-1_all
   gimp-help-de-2.6.1-1_all
@@ -2472,7 +2472,7 @@ Packages:
   glest-3.6.0.3-1.2_all
   glest-data-3.6.0.3-1_all
   glib-networking-common-2.32.3-1_all
-  glibc-doc-2.13-38_all
+  glibc-doc-2.13-38+deb7u1_all
   glipper-2.3-3.1_all
   glob2-data-0.9.4.4-2.1_all
   globus-gram-audit-3.1-3_all
@@ -2511,9 +2511,9 @@ Packages:
   gmt-tutorial-ps-3.4.4-1_all
   gmtkbabel-0.1-1_all
   gmusicbrowser-1.1.9-2_all
-  gnash-common-opengl-0.8.11~git20120629-1_all
-  gnash-doc-0.8.11~git20120629-1_all
-  gnash-opengl-0.8.11~git20120629-1_all
+  gnash-common-opengl-0.8.11~git20120629-1+deb7u1_all
+  gnash-doc-0.8.11~git20120629-1+deb7u1_all
+  gnash-opengl-0.8.11~git20120629-1+deb7u1_all
   gnat-gps-common-5.0-13_all
   gnat-gps-doc-5.0-13_all
   gnat-mingw-w64-4.6.3-14+8_all
@@ -2717,7 +2717,7 @@ Packages:
   gpe-0.2.9-1.1_all
   gpe-icons-0.25-1_all
   gperf-ace-6.0.3+dfsg-0.1_all
-  gpgv-win32-1.4.12-7+deb7u2_all
+  gpgv-win32-1.4.12-7+deb7u3_all
   gpodder-2.20.1-1_all
   gprbuild-doc-2011-2_all
   gprename-2.6.6-1_all
@@ -2739,8 +2739,8 @@ Packages:
   graphicsmagick-libmagick-dev-compat-1.3.16-1.1_all
   graphite-carbon-0.9.10-3_all
   graphmonkey-1.7-3_all
-  graphviz-dev-2.26.3-14_all
-  graphviz-doc-2.26.3-14_all
+  graphviz-dev-2.26.3-14+deb7u1_all
+  graphviz-doc-2.26.3-14+deb7u1_all
   grass-6.4.2-2_all
   grass-dev-doc-6.4.2-2_all
   grass-doc-6.4.2-2_all
@@ -2939,12 +2939,12 @@ Packages:
   howm-1.4.0rc2-2_all
   hp-ppd-0.9-0.2_all
   hp-search-mac-0.1.3_all
-  hpijs-3.12.6-3.1_all
-  hpijs-ppds-3.12.6-3.1_all
-  hplip-cups-3.12.6-3.1_all
-  hplip-data-3.12.6-3.1_all
-  hplip-doc-3.12.6-3.1_all
-  hplip-gui-3.12.6-3.1_all
+  hpijs-3.12.6-3.1+deb7u1_all
+  hpijs-ppds-3.12.6-3.1+deb7u1_all
+  hplip-cups-3.12.6-3.1+deb7u1_all
+  hplip-data-3.12.6-3.1+deb7u1_all
+  hplip-doc-3.12.6-3.1+deb7u1_all
+  hplip-gui-3.12.6-3.1+deb7u1_all
   hsqldb-server-1.8.0.10+dfsg-0+deb7u1_all
   hsqldb-utils-1.8.0.10+dfsg-0+deb7u1_all
   htag-0.0.24-1_all
@@ -3071,32 +3071,6 @@ Packages:
   icatalan-0.20111230b-4_all
   icc-profiles-free-2.0.1+dfsg-1_all
   ice34-slice-3.4.2-8.2_all
-  iceape-browser-2.7.12-1_all
-  iceape-chatzilla-2.7.12-1_all
-  iceape-l10n-all-2.7.12-1_all
-  iceape-l10n-be-2.7.12-1_all
-  iceape-l10n-ca-2.7.12-1_all
-  iceape-l10n-cs-2.7.12-1_all
-  iceape-l10n-de-2.7.12-1_all
-  iceape-l10n-en-gb-2.7.12-1_all
-  iceape-l10n-es-ar-2.7.12-1_all
-  iceape-l10n-es-es-2.7.12-1_all
-  iceape-l10n-fi-2.7.12-1_all
-  iceape-l10n-fr-2.7.12-1_all
-  iceape-l10n-gl-2.7.12-1_all
-  iceape-l10n-hu-2.7.12-1_all
-  iceape-l10n-it-2.7.12-1_all
-  iceape-l10n-ja-2.7.12-1_all
-  iceape-l10n-lt-2.7.12-1_all
-  iceape-l10n-nb-no-2.7.12-1_all
-  iceape-l10n-nl-2.7.12-1_all
-  iceape-l10n-pl-2.7.12-1_all
-  iceape-l10n-pt-pt-2.7.12-1_all
-  iceape-l10n-ru-2.7.12-1_all
-  iceape-l10n-sk-2.7.12-1_all
-  iceape-l10n-sv-se-2.7.12-1_all
-  iceape-l10n-tr-2.7.12-1_all
-  iceape-l10n-zh-cn-2.7.12-1_all
   icecream-1.3-4_all
   icedove-bidiui-0.9.6-1_all
   icedove-dispmua-1.6.8-1_all
@@ -3715,8 +3689,8 @@ Packages:
   keymapper-0.5.3-10.1_all
   keystone-2012.1.1-13+wheezy1_all
   keystone-doc-2012.1.1-13+wheezy1_all
-  kfreebsd-source-8.3-8.3-6_all
-  kfreebsd-source-9.0-9.0-10+deb70.5_all
+  kfreebsd-source-8.3-8.3-6+deb7u1_all
+  kfreebsd-source-9.0-9.0-10+deb70.6_all
   kgb-bot-1.15-2_all
   kgb-client-1.15-2_all
   kgb-client-git-1.15-2_all
@@ -3745,7 +3719,7 @@ Packages:
   king-2.21.120420-2_all
   kinput2-common-3.1-10.3_all
   kipi-plugins-common-4:2.6.0-1_all
-  klash-opengl-0.8.11~git20120629-1_all
+  klash-opengl-0.8.11~git20120629-1+deb7u1_all
   klettres-data-4:4.8.4-1_all
   klone-2.1.0~rc1-1_all
   klone-package-0.3_all
@@ -4135,19 +4109,19 @@ Packages:
   libautobox-list-util-perl-20090629-1_all
   libautodie-perl-2.12-1_all
   libautomaton-java-1.11-8-1_all
-  libav-doc-6:0.8.6-1_all
-  libav-extra-dbg-6:0.8.6-1_all
+  libav-doc-6:0.8.9-1_all
+  libav-extra-dbg-6:0.8.9-1_all
   libavahi-cil-dev-0.6.19-4.2_all
   libavahi-ui-cil-dev-0.6.19-4.2_all
   libavahi-ui0.0-cil-0.6.19-4.2_all
   libavahi1.0-cil-0.6.19-4.2_all
   libavalon-framework-java-4.2.0-8_all
   libavalon-framework-java-doc-4.2.0-8_all
-  libavdevice-extra-53-6:0.8.6-1_all
-  libavfilter-extra-2-6:0.8.6-1_all
-  libavformat-extra-53-6:0.8.6-1_all
+  libavdevice-extra-53-6:0.8.9-1_all
+  libavfilter-extra-2-6:0.8.9-1_all
+  libavformat-extra-53-6:0.8.9-1_all
   libavifile-0.7-common-1:0.7.48~20090503.ds-13_all
-  libavutil-extra-51-6:0.8.6-1_all
+  libavutil-extra-51-6:0.8.9-1_all
   libawl-php-0.53-1_all
   libaws-doc-2.10.2-4_all
   libaxiom-java-1.2.8-1_all
@@ -4596,8 +4570,8 @@ Packages:
   libcommons-discovery-java-doc-0.5-3_all
   libcommons-el-java-1.0-7_all
   libcommons-exec-java-1.0.1-1_all
-  libcommons-fileupload-java-1.2.2-1_all
-  libcommons-fileupload-java-doc-1.2.2-1_all
+  libcommons-fileupload-java-1.2.2-1+deb7u1_all
+  libcommons-fileupload-java-doc-1.2.2-1+deb7u1_all
   libcommons-httpclient-java-3.1-10.2_all
   libcommons-httpclient-java-doc-3.1-10.2_all
   libcommons-io-java-1.4-4_all
@@ -6472,7 +6446,7 @@ Packages:
   libghc6-zlib-prof-1:8_all
   libghemical-data-3.0.0-2_all
   libgig-doc-3.3.0-2_all
-  libgimp2.0-doc-2.8.2-2_all
+  libgimp2.0-doc-2.8.2-2+deb7u1_all
   libgio-cil-2.22.3-2_all
   libgio2.0-cil-dev-2.22.3-2_all
   libgirara-doc-0.1.2-3_all
@@ -6620,12 +6594,12 @@ Packages:
   libgruff-ruby1.8-0.3.6-6_all
   libgs9-common-9.05~dfsg-6.3+deb7u1_all
   libgsf-1-common-1.14.21-2.1_all
-  libgsl-ruby-1.14.7-1_all
-  libgsl-ruby-doc-1.14.7-1_all
-  libgsl-ruby1.8-1.14.7-1_all
-  libgsl-ruby1.8-dbg-1.14.7-1_all
-  libgsl-ruby1.9.1-1.14.7-1_all
-  libgsl-ruby1.9.1-dbg-1.14.7-1_all
+  libgsl-ruby-1.14.7+dfsg-1_all
+  libgsl-ruby-doc-1.14.7+dfsg-1_all
+  libgsl-ruby1.8-1.14.7+dfsg-1_all
+  libgsl-ruby1.8-dbg-1.14.7+dfsg-1_all
+  libgsl-ruby1.9.1-1.14.7+dfsg-1_all
+  libgsl-ruby1.9.1-dbg-1.14.7+dfsg-1_all
   libgssdp-doc-0.12.2.1-2_all
   libgst-ruby-1.1.3-2_all
   libgst-ruby1.8-1.1.3-2_all
@@ -6755,7 +6729,7 @@ Packages:
   libhtml-formattext-withlinks-perl-0.14-1_all
   libhtml-formfu-model-dbic-perl-0.09002-1_all
   libhtml-formfu-perl-0.09007-1_all
-  libhtml-formhandler-perl-0.40013-1_all
+  libhtml-formhandler-perl-0.40013-1+deb7u1_all
   libhtml-fromtext-perl-2.05-5.1_all
   libhtml-highlight-perl-0.20-6_all
   libhtml-html5-entities-perl-0.003-2_all
@@ -6873,9 +6847,9 @@ Packages:
   libhypre-dev-2.8.0b-1_all
   libi18n-acceptlanguage-perl-1.04-2_all
   libi18n-charset-perl-1.401-1_all
-  libi18n-ruby-0.6.0-3_all
-  libi18n-ruby1.8-0.6.0-3_all
-  libi18n-ruby1.9.1-0.6.0-3_all
+  libi18n-ruby-0.6.0-3+deb7u1_all
+  libi18n-ruby1.8-0.6.0-3+deb7u1_all
+  libi18n-ruby1.9.1-0.6.0-3+deb7u1_all
   libi2c-dev-3.1.0-2_all
   libibatis-java-2.3.4.726-3_all
   libical-parser-html-perl-1.07-1_all
@@ -7705,7 +7679,7 @@ Packages:
   libmakefile-dom-perl-0.006-1_all
   libmakefile-parser-perl-0.215-1_all
   libmapnik-dev-2.0.0+ds1-3_all
-  libmapscript-ruby-6.0.1-3.2+deb7u1_all
+  libmapscript-ruby-6.0.1-3.2+deb7u2_all
   libmarc-crosswalk-dublincore-perl-0.02-1_all
   libmarc-lint-perl-1.44-1_all
   libmarc-perl-1.07-5_all
@@ -8358,7 +8332,7 @@ Packages:
   libnet-ldap-server-perl-0.4-2_all
   libnet-luminis-build-plugin-java-0.2.0-1_all
   libnet-mac-perl-2.103622-1_all
-  libnet-mac-vendor-perl-1.18-2_all
+  libnet-mac-vendor-perl-1.18-2+deb7u1_all
   libnet-managesieve-perl-0.10-1_all
   libnet-nbname-perl-0.26-1_all
   libnet-netmask-perl-1.9016-1_all
@@ -8546,9 +8520,9 @@ Packages:
   libopenbabel-doc-2.3.1+dfsg-4_all
   libopendap-java-2.2-1_all
   libopendap-java-doc-2.2-1_all
-  libopengl-ruby-0.60.1+dfsg1-2_all
-  libopengl-ruby1.8-0.60.1+dfsg1-2_all
-  libopengl-ruby1.9.1-0.60.1+dfsg1-2_all
+  libopengl-ruby-0.60.1+dfsg2-1~wheezy1_all
+  libopengl-ruby1.8-0.60.1+dfsg2-1~wheezy1_all
+  libopengl-ruby1.9.1-0.60.1+dfsg2-1~wheezy1_all
   libopenid-ruby-2.1.8debian-6_all
   libopenid-ruby1.8-2.1.8debian-6_all
   libopenid4java-java-0.9.6.662-1_all
@@ -8871,7 +8845,7 @@ Packages:
   libpostgresql-gst-3.2.4-2_all
   libpostgresql-jdbc-java-9.1-901-2_all
   libpostgresql-jdbc-java-doc-9.1-901-2_all
-  libpostproc-extra-52-6:0.8.6-1_all
+  libpostproc-extra-52-6:0.8.9-1_all
   libpostscript-file-perl-2.20+dfsg-1_all
   libpostscript-perl-0.06-2_all
   libpostscript-simple-perl-0.07-2_all
@@ -9386,33 +9360,33 @@ Packages:
   libspreadsheet-ruby1.9.1-0.7.3-1_all
   libspreadsheet-writeexcel-perl-2.37-1_all
   libspreadsheet-xlsx-perl-0.13-1_all
-  libspring-aop-java-3.0.6.RELEASE-6_all
-  libspring-beans-java-3.0.6.RELEASE-6_all
+  libspring-aop-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-beans-java-3.0.6.RELEASE-6+deb7u1_all
   libspring-build-java-2.7.0-2_all
-  libspring-context-java-3.0.6.RELEASE-6_all
-  libspring-context-support-java-3.0.6.RELEASE-6_all
-  libspring-core-java-3.0.6.RELEASE-6_all
-  libspring-expression-java-3.0.6.RELEASE-6_all
-  libspring-instrument-java-3.0.6.RELEASE-6_all
-  libspring-jdbc-java-3.0.6.RELEASE-6_all
-  libspring-jms-java-3.0.6.RELEASE-6_all
+  libspring-context-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-context-support-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-core-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-expression-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-instrument-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-jdbc-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-jms-java-3.0.6.RELEASE-6+deb7u1_all
   libspring-js-2.0-java-2.0.9.RELEASE-4_all
   libspring-ldap-java-1.3.1.RELEASE-4_all
   libspring-ldap-java-doc-1.3.1.RELEASE-4_all
-  libspring-orm-java-3.0.6.RELEASE-6_all
-  libspring-oxm-java-3.0.6.RELEASE-6_all
+  libspring-orm-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-oxm-java-3.0.6.RELEASE-6+deb7u1_all
   libspring-security-2.0-java-doc-2.0.7.RELEASE-1_all
   libspring-security-acl-2.0-java-2.0.7.RELEASE-1_all
   libspring-security-core-2.0-java-2.0.7.RELEASE-1_all
   libspring-security-ntlm-2.0-java-2.0.7.RELEASE-1_all
   libspring-security-portlet-2.0-java-2.0.7.RELEASE-1_all
   libspring-security-taglibs-2.0-java-2.0.7.RELEASE-1_all
-  libspring-test-java-3.0.6.RELEASE-6_all
-  libspring-transaction-java-3.0.6.RELEASE-6_all
-  libspring-web-java-3.0.6.RELEASE-6_all
-  libspring-web-portlet-java-3.0.6.RELEASE-6_all
-  libspring-web-servlet-java-3.0.6.RELEASE-6_all
-  libspring-web-struts-java-3.0.6.RELEASE-6_all
+  libspring-test-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-transaction-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-web-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-web-portlet-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-web-servlet-java-3.0.6.RELEASE-6+deb7u1_all
+  libspring-web-struts-java-3.0.6.RELEASE-6+deb7u1_all
   libspring-webflow-2.0-java-2.0.9.RELEASE-4_all
   libspring-webflow-2.0-java-doc-2.0.9.RELEASE-4_all
   libsprng2-doc-2.0a-8_all
@@ -9427,7 +9401,7 @@ Packages:
   libsratom-doc-0.2.0~dfsg0-1_all
   libsru-perl-0.99-1_all
   libssh-doc-0.5.4-1_all
-  libssl-doc-1.0.1e-2_all
+  libssl-doc-1.0.1e-2+deb7u4_all
   libssreflect-coq-1.3pl4-1_all
   libstapler-adjunct-codemirror-java-1.1-1_all
   libstapler-adjunct-timeline-java-1.3+dfsg-1_all
@@ -9536,7 +9510,7 @@ Packages:
   libswiss-perl-1.67-1_all
   libswitch-perl-2.16-2_all
   libsword-common-1.6.2+dfsg-5_all
-  libswscale-extra-2-6:0.8.6-1_all
+  libswscale-extra-2-6:0.8.9-1_all
   libswtcalendar-java-0.5-1_all
   libswtchart-java-0.8.0-1_all
   libswtchart-java-doc-0.8.0-1_all
@@ -9980,7 +9954,7 @@ Packages:
   libupnp-dev-1:1.6.17-1.2_all
   libupnp4-doc-1.8.0~svn20100507-1.2_all
   libupnp6-doc-1:1.6.17-1.2_all
-  libups-nut-perl-2.6.4-2.3_all
+  libups-nut-perl-2.6.4-2.3+deb7u1_all
   liburi-encode-perl-0.061-1_all
   liburi-fetch-perl-0.09-1_all
   liburi-find-delimited-perl-0.02-6_all
@@ -10027,8 +10001,8 @@ Packages:
   libvia-doc-2.0.4-2_all
   libvideo-fourcc-info-perl-1.005-1_all
   libvigraimpex-doc-1.7.1+dfsg1-3_all
-  libvips-doc-7.28.5-1_all
-  libvirt-doc-0.9.12-11+deb7u4_all
+  libvips-doc-7.28.5-1+deb7u1_all
+  libvirt-doc-0.9.12.3-1_all
   libvirt-ruby-0.4.0-1_all
   libvirt-ruby1.8-0.4.0-1_all
   libvisio-doc-0.0.17-1_all
@@ -10092,7 +10066,7 @@ Packages:
   libwirble-ruby-doc-0.1.3-4_all
   libwirble-ruby1.8-0.1.3-4_all
   libwirble-ruby1.9.1-0.1.3-4_all
-  libwireshark-data-1.8.2-5wheezy7_all
+  libwireshark-data-1.8.2-5wheezy9_all
   libwmf-doc-0.2.8.4-10.3_all
   libwnck-3-common-3.4.2-1_all
   libwnck-common-2.30.7-1_all
@@ -10362,15 +10336,15 @@ Packages:
   linux-base-3.5_all
   linux-doc-3.2+46_all
   linux-doc-2.6-1:3.2+46_all
-  linux-doc-3.2-3.2.51-1_all
-  linux-manual-3.2-3.2.51-1_all
+  linux-doc-3.2-3.2.54-2_all
+  linux-manual-3.2-3.2.54-2_all
   linux-patch-debianlogo-1.16_all
   linux-patch-grsecurity2-2.9.1+3.2.21-201206221855-1_all
   linux-patch-xenomai-2.6.0-2_all
   linux-source-3.2+46_all
   linux-source-2.6-1:3.2+46_all
-  linux-source-3.2-3.2.51-1_all
-  linux-support-3.2.0-4-3.2.51-1_all
+  linux-source-3.2-3.2.54-2_all
+  linux-support-3.2.0-4-3.2.54-2_all
   linux-tools-3.2+46_all
   linux-tools-2.6-3.2+46_all
   linux-wlan-ng-doc-0.2.9+dfsg-5_all
@@ -10417,8 +10391,8 @@ Packages:
   llvm-3.1-source-3.1-1_all
   lmms-common-0.4.10-2.3_all
   lmodern-2.004.2-1_all
-  localepurge-0.6.3_all
-  locales-2.13-38_all
+  localepurge-0.6.3+deb7u1_all
+  locales-2.13-38+deb7u1_all
   localization-config-1.07+nmu1_all
   logcheck-1.3.15_all
   logcheck-database-1.3.15_all
@@ -10567,7 +10541,7 @@ Packages:
   mantis-1.2.11-1.2_all
   mapivi-0.9.7-1_all
   mapnik-doc-2.0.0+ds1-3_all
-  mapserver-doc-6.0.1-3.2+deb7u1_all
+  mapserver-doc-6.0.1-3.2+deb7u2_all
   maptransfer-0.3-1_all
   maptransfer-server-0.3-1_all
   maradns-docs-1.4.12-5_all
@@ -10841,9 +10815,9 @@ Packages:
   morse-simulator-data-0.5.2-1_all
   morse-simulator-doc-0.5.2-1_all
   mova-4.0-4.2_all
-  movabletype-opensource-5.1.4+dfsg-4_all
-  movabletype-plugin-core-5.1.4+dfsg-4_all
-  movabletype-plugin-zemanta-5.1.4+dfsg-4_all
+  movabletype-opensource-5.1.4+dfsg-4+deb7u1_all
+  movabletype-plugin-core-5.1.4+dfsg-4+deb7u1_all
+  movabletype-plugin-zemanta-5.1.4+dfsg-4+deb7u1_all
   movixmaker-2-0.8.4-2_all
   mozart-doc-1.4.0-8_all
   mozart-stdlib-20060615-6_all
@@ -10854,7 +10828,7 @@ Packages:
   mozilla-livehttpheaders-0.17-3_all
   mozilla-noscript-2.1.4-1_all
   mozilla-nukeimage-0.3-12_all
-  mozilla-plugin-gnash-0.8.11~git20120629-1_all
+  mozilla-plugin-gnash-0.8.11~git20120629-1+deb7u1_all
   mozvoikko-2.0.1-1_all
   mp3burn-0.4.2-2.1_all
   mp3cd-1.27.0-2_all
@@ -10906,15 +10880,15 @@ Packages:
   mumble-django-2.7-7_all
   mummer-doc-3.23~dfsg-2_all
   mummy-doc-1.0.2-5_all
-  munin-2.0.6-4+deb7u1_all
-  munin-async-2.0.6-4+deb7u1_all
-  munin-common-2.0.6-4+deb7u1_all
-  munin-doc-2.0.6-4+deb7u1_all
+  munin-2.0.6-4+deb7u2_all
+  munin-async-2.0.6-4+deb7u2_all
+  munin-common-2.0.6-4+deb7u2_all
+  munin-doc-2.0.6-4+deb7u2_all
   munin-libvirt-plugins-0.0.6-1_all
-  munin-node-2.0.6-4+deb7u1_all
-  munin-plugins-core-2.0.6-4+deb7u1_all
-  munin-plugins-extra-2.0.6-4+deb7u1_all
-  munin-plugins-java-2.0.6-4+deb7u1_all
+  munin-node-2.0.6-4+deb7u2_all
+  munin-plugins-core-2.0.6-4+deb7u2_all
+  munin-plugins-extra-2.0.6-4+deb7u2_all
+  munin-plugins-java-2.0.6-4+deb7u2_all
   munin-plugins-openstack-1.20120627-1_all
   mupen64plus-1.99.5+1_all
   mupen64plus-audio-all-1.99.5+1_all
@@ -10988,13 +10962,13 @@ Packages:
   myspell-th-1:3.3.0-4_all
   myspell-tl-0.4-0-10_all
   myspell-uk-1.6.5-2_all
-  mysql-client-5.5.31+dfsg-0+wheezy1_all
-  mysql-common-5.5.31+dfsg-0+wheezy1_all
+  mysql-client-5.5.33+dfsg-0+wheezy1_all
+  mysql-common-5.5.33+dfsg-0+wheezy1_all
   mysql-mmm-agent-2.2.1-1.1_all
   mysql-mmm-common-2.2.1-1.1_all
   mysql-mmm-monitor-2.2.1-1.1_all
   mysql-mmm-tools-2.2.1-1.1_all
-  mysql-server-5.5.31+dfsg-0+wheezy1_all
+  mysql-server-5.5.33+dfsg-0+wheezy1_all
   mysql-utilities-1.0.5-1_all
   mysql-workbench-data-5.2.40+dfsg-2_all
   mysqltuner-1.2.0-1_all
@@ -11167,9 +11141,9 @@ Packages:
   nunit-2.6.0.12051+dfsg-2_all
   nunit-console-2.6.0.12051+dfsg-2_all
   nunit-gui-2.6.0.12051+dfsg-2_all
-  nut-2.6.4-2.3_all
-  nut-doc-2.6.4-2.3_all
-  nut-monitor-2.6.4-2.3_all
+  nut-2.6.4-2.3+deb7u1_all
+  nut-doc-2.6.4-2.3+deb7u1_all
+  nut-monitor-2.6.4-2.3+deb7u1_all
   nuvola-icon-theme-4:4.8.4-5_all
   nvi-doc-1.81.6-8.2_all
   nwchem-data-6.1-6_all
@@ -11764,7 +11738,7 @@ Packages:
   php-numbers-words-0.16.4-1_all
   php-openid-2.2.2-1.1_all
   php-pager-2.4.8-2_all
-  php-pear-5.4.4-14+deb7u5_all
+  php-pear-5.4.4-14+deb7u7_all
   php-radius-legacy-1.2.5-2.3+deb7u1_all
   php-services-json-1.0.3-1_all
   php-services-weather-1.4.2-3_all
@@ -11786,7 +11760,7 @@ Packages:
   php-xml-rpc2-1.1.1-1_all
   php-xml-rss-1.0.2-3_all
   php-xml-serializer-0.20.2-3_all
-  php5-5.4.4-14+deb7u5_all
+  php5-5.4.4-14+deb7u7_all
   phpbb3-3.0.10-4+deb7u1_all
   phpbb3-l10n-3.0.10-4+deb7u1_all
   phpldapadmin-1.2.2-5_all
@@ -11940,7 +11914,7 @@ Packages:
   printer-applet-4:4.8.4-1_all
   printer-driver-all-0.20120416_all
   printer-driver-all-enforce-0.20120416_all
-  printer-driver-postscript-hp-3.12.6-3.1_all
+  printer-driver-postscript-hp-3.12.6-3.1+deb7u1_all
   printer-driver-sag-gdi-0.1-3_all
   procmail-lib-1:2009.1202-2_all
   profphd-1.0.39-1_all
@@ -11979,14 +11953,14 @@ Packages:
   publican-debian-0.2_all
   pubtal-3.5-1_all
   puddletag-1.0.0~rc1-1_all
-  puppet-2.7.23-1~deb7u1_all
-  puppet-common-2.7.23-1~deb7u1_all
-  puppet-el-2.7.23-1~deb7u1_all
+  puppet-2.7.23-1~deb7u3_all
+  puppet-common-2.7.23-1~deb7u3_all
+  puppet-el-2.7.23-1~deb7u3_all
   puppet-lint-0.1.13-2_all
-  puppet-testsuite-2.7.23-1~deb7u1_all
-  puppetmaster-2.7.23-1~deb7u1_all
-  puppetmaster-common-2.7.23-1~deb7u1_all
-  puppetmaster-passenger-2.7.23-1~deb7u1_all
+  puppet-testsuite-2.7.23-1~deb7u3_all
+  puppetmaster-2.7.23-1~deb7u3_all
+  puppetmaster-common-2.7.23-1~deb7u3_all
+  puppetmaster-passenger-2.7.23-1~deb7u3_all
   pure-ftpd-common-1.0.36-1.1_all
   puredata-0.43.2-5_all
   puredata-dev-0.43.2-5_all
@@ -12487,7 +12461,7 @@ Packages:
   python-landslide-1.0.1-1_all
   python-larch-1.20121006-1_all
   python-launchpadlib-1.9.12-2_all
-  python-lazr.restfulclient-0.12.0-2_all
+  python-lazr.restfulclient-0.12.0-2+deb7u1_all
   python-lazr.uri-1.0.3-1_all
   python-lazyarray-0.1.0-1_all
   python-ldaptor-0.0.43+debian1-7_all
@@ -12601,7 +12575,7 @@ Packages:
   python-novnc-2012.1~e3+dfsg+1-4_all
   python-numm-0.4-1_all
   python-numpy-doc-1:1.6.2-1.2_all
-  python-nut-2.6.4-2.3_all
+  python-nut-2.6.4-2.3+deb7u1_all
   python-nwdiag-0.7.0-1_all
   python-nwsclient-1.6.4-8_all
   python-nwsserver-2.0.0-2_all
@@ -13594,7 +13568,7 @@ Packages:
   ruby-hoe-3.0.3-2_all
   ruby-htmlentities-4.3.1-1_all
   ruby-httpclient-2.2.4-2_all
-  ruby-i18n-0.6.0-3_all
+  ruby-i18n-0.6.0-3+deb7u1_all
   ruby-ihelp-0.4.5-3_all
   ruby-image-science-1.2.2-1.1_all
   ruby-imagesize-1:0.1.1-5_all
@@ -13767,9 +13741,9 @@ Packages:
   sagan-rules-10212010-r1-1_all
   sailcut-doc-1.3.5-2_all
   salliere-0.10-1_all
-  samba-common-2:3.6.6-6+deb7u1_all
-  samba-doc-2:3.6.6-6+deb7u1_all
-  samba-doc-pdf-2:3.6.6-6+deb7u1_all
+  samba-common-2:3.6.6-6+deb7u2_all
+  samba-doc-2:3.6.6-6+deb7u2_all
+  samba-doc-pdf-2:3.6.6-6+deb7u2_all
   samidare-0.7-1_all
   samizdat-0.7.0-1_all
   sanitizer-1.76-3_all
@@ -14114,7 +14088,7 @@ Packages:
   sphinx-common-1.1.3+dfsg-4_all
   sphinx-doc-1.1.3+dfsg-4_all
   spikeproxy-1.4.8-4.1_all
-  spip-2.1.17-1+deb7u2_all
+  spip-2.1.17-1+deb7u3_all
   splint-data-3.1.2.dfsg1-2_all
   splint-doc-html-3.1.2.dfsg1-2_all
   splix-2.0.0+svn306-2_all
@@ -14151,7 +14125,7 @@ Packages:
   sqwebmail-de-5.5.1-1_all
   srf-doc-0.1+dfsg-1_all
   srs-0.31-5_all
-  srtp-docs-1.4.4+20100615~dfsg-2_all
+  srtp-docs-1.4.4+20100615~dfsg-2+deb7u1_all
   ssake-3.8-2_all
   ssake-examples-3.8-2_all
   ssft-0.9.13_all
@@ -14256,8 +14230,8 @@ Packages:
   swe-standard-data-00004-1_all
   sweep-dev-0.9.3-6_all
   sweethome3d-3.5+dfsg-1_all
-  swfdec-gnome-1:0.8.11~git20120629-1_all
-  swfdec-mozilla-0.8.11~git20120629-1_all
+  swfdec-gnome-1:0.8.11~git20120629-1+deb7u1_all
+  swfdec-mozilla-0.8.11~git20120629-1+deb7u1_all
   swi-prolog-doc-5.6.59-1_all
   swift-1.4.8-2+deb7u1_all
   swift-account-1.4.8-2+deb7u1_all
@@ -15163,8 +15137,8 @@ Packages:
   tupi-data-0.1+git12-6_all
   turnin-ng-1.1-1_all
   turtleart-98-1_all
-  tuxguitar-1.2-13_all
-  tuxguitar-jsa-1.2-13_all
+  tuxguitar-1.2-13+deb7u1_all
+  tuxguitar-jsa-1.2-13+deb7u1_all
   tuxpaint-data-1:0.9.21-1.1_all
   tuxpaint-dev-1:0.9.21-1.1_all
   tuxpaint-stamps-default-2009.06.28-1_all
@@ -15182,12 +15156,12 @@ Packages:
   txt2man-1.5.5-4_all
   txt2regex-0.8-4_all
   txt2tags-2.6-3_all
-  typo3-4.5.19+dfsg1-5+wheezy1_all
-  typo3-database-4.5.19+dfsg1-5+wheezy1_all
-  typo3-dummy-4.5.19+dfsg1-5+wheezy1_all
-  typo3-src-4.5-4.5.19+dfsg1-5+wheezy1_all
-  tzdata-2013h-0wheezy1_all
-  tzdata-java-2013h-0wheezy1_all
+  typo3-4.5.19+dfsg1-5+wheezy2_all
+  typo3-database-4.5.19+dfsg1-5+wheezy2_all
+  typo3-dummy-4.5.19+dfsg1-5+wheezy2_all
+  typo3-src-4.5-4.5.19+dfsg1-5+wheezy2_all
+  tzdata-2013i-0wheezy1_all
+  tzdata-java-2013i-0wheezy1_all
   tzwatch-1.4.4-9_all
   uboot-envtools-20081215-3+2012.04.01-2_all
   uboot-mkimage-2012.04.01-2_all
@@ -15277,7 +15251,7 @@ Packages:
   valac-0.16-vapi-0.16.1-2_all
   valknut-translations-0.4.9-2_all
   vamp-plugin-sdk-doc-2.1-1_all
-  varnish-doc-3.0.2-2_all
+  varnish-doc-3.0.2-2+deb7u1_all
   vbackup-0.1.9-1_all
   vblade-persist-0.6-2_all
   vcheck-1.2.1-7_all
@@ -15310,7 +15284,7 @@ Packages:
   vim-latexsuite-20120125.768-2_all
   vim-lesstif-2:7.3.547-7_all
   vim-migemo-20110227-7_all
-  vim-puppet-2.7.23-1~deb7u1_all
+  vim-puppet-2.7.23-1~deb7u3_all
   vim-rails-4.5~20110829-1_all
   vim-runtime-2:7.3.547-7_all
   vim-scripts-20121007_all
@@ -15507,7 +15481,7 @@ Packages:
   wing-data-0.7-27.1_all
   winpdb-1.4.8-2_all
   wireless-regdb-2011.04.28-1_all
-  wireshark-doc-1.8.2-5wheezy7_all
+  wireshark-doc-1.8.2-5wheezy9_all
   wirish-2.0-21_all
   wise-doc-2.4.1-10_all
   witalian-1.7.5_all
@@ -15530,8 +15504,8 @@ Packages:
   woof-20091227-2_all
   wordnet-base-1:3.0-29_all
   wordnet-sense-index-1:3.0-29_all
-  wordpress-3.5.2+dfsg-1~deb7u1_all
-  wordpress-l10n-3.5.2+dfsg-1~deb7u1_all
+  wordpress-3.6.1+dfsg-1~deb7u1_all
+  wordpress-l10n-3.6.1+dfsg-1~deb7u1_all
   wordpress-openid-3.3.3-1_all
   wordpress-shibboleth-1.4-2_all
   wordpress-xrds-simple-1.0-1_all
@@ -15758,7 +15732,7 @@ Packages:
   xsane-common-0.998-3_all
   xscreensaver-screensaver-dizzy-0.3-1_all
   xsddiagram-0.10-1_all
-  xserver-common-2:1.12.4-6+deb7u1_all
+  xserver-common-2:1.12.4-6+deb7u2_all
   xserver-xorg-input-evdev-dev-1:2.7.0-1_all
   xserver-xorg-input-joystick-dev-1:1.6.1-1_all
   xserver-xorg-input-synaptics-dev-1.6.2-2_all
@@ -16144,19 +16118,19 @@ Packages:
   aolserver4-nsxml-1.5-2.1_amd64
   aosd-cat-0.2.7-1_amd64
   ap-utils-1.5-2_amd64
-  apache2-2.2.22-13_amd64
-  apache2-dbg-2.2.22-13_amd64
-  apache2-mpm-event-2.2.22-13_amd64
-  apache2-mpm-itk-2.2.22-13_amd64
-  apache2-mpm-prefork-2.2.22-13_amd64
-  apache2-mpm-worker-2.2.22-13_amd64
-  apache2-prefork-dev-2.2.22-13_amd64
-  apache2-suexec-2.2.22-13_amd64
-  apache2-suexec-custom-2.2.22-13_amd64
-  apache2-threaded-dev-2.2.22-13_amd64
-  apache2-utils-2.2.22-13_amd64
-  apache2.2-bin-2.2.22-13_amd64
-  apache2.2-common-2.2.22-13_amd64
+  apache2-2.2.22-13+deb7u1_amd64
+  apache2-dbg-2.2.22-13+deb7u1_amd64
+  apache2-mpm-event-2.2.22-13+deb7u1_amd64
+  apache2-mpm-itk-2.2.22-13+deb7u1_amd64
+  apache2-mpm-prefork-2.2.22-13+deb7u1_amd64
+  apache2-mpm-worker-2.2.22-13+deb7u1_amd64
+  apache2-prefork-dev-2.2.22-13+deb7u1_amd64
+  apache2-suexec-2.2.22-13+deb7u1_amd64
+  apache2-suexec-custom-2.2.22-13+deb7u1_amd64
+  apache2-threaded-dev-2.2.22-13+deb7u1_amd64
+  apache2-utils-2.2.22-13+deb7u1_amd64
+  apache2.2-bin-2.2.22-13+deb7u1_amd64
+  apache2.2-common-2.2.22-13+deb7u1_amd64
   apachetop-0.12.6-16_amd64
   apbs-1.3.0-2_amd64
   apcalc-2.12.4.4-3_amd64
@@ -16272,19 +16246,19 @@ Packages:
   aspic-1.05-4_amd64
   assimp-utils-3.0~dfsg-1_amd64
   assogiate-0.2.1-5_amd64
-  asterisk-1:1.8.13.1~dfsg-3_amd64
-  asterisk-dahdi-1:1.8.13.1~dfsg-3_amd64
-  asterisk-dbg-1:1.8.13.1~dfsg-3_amd64
+  asterisk-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-dahdi-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-dbg-1:1.8.13.1~dfsg1-3+deb7u3_amd64
   asterisk-espeak-2.1-1+b1_amd64
   asterisk-flite-2.1-1.1_amd64
-  asterisk-mobile-1:1.8.13.1~dfsg-3_amd64
-  asterisk-modules-1:1.8.13.1~dfsg-3_amd64
-  asterisk-mp3-1:1.8.13.1~dfsg-3_amd64
-  asterisk-mysql-1:1.8.13.1~dfsg-3_amd64
-  asterisk-ooh323-1:1.8.13.1~dfsg-3_amd64
-  asterisk-voicemail-1:1.8.13.1~dfsg-3_amd64
-  asterisk-voicemail-imapstorage-1:1.8.13.1~dfsg-3_amd64
-  asterisk-voicemail-odbcstorage-1:1.8.13.1~dfsg-3_amd64
+  asterisk-mobile-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-modules-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-mp3-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-mysql-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-ooh323-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-voicemail-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-voicemail-imapstorage-1:1.8.13.1~dfsg1-3+deb7u3_amd64
+  asterisk-voicemail-odbcstorage-1:1.8.13.1~dfsg1-3+deb7u3_amd64
   astronomical-almanac-5.6-4_amd64
   astyle-2.01-1_amd64
   asunder-2.2-1_amd64
@@ -16458,7 +16432,7 @@ Packages:
   barrybackup-gui-dbg-0.18.3-5_amd64
   barrydesktop-0.18.3-5_amd64
   barrydesktop-dbg-0.18.3-5_amd64
-  base-files-7.1wheezy3_amd64
+  base-files-7.1wheezy4_amd64
   base-passwd-3.5.26_amd64
   bash-4.2+dfsg-0.1_amd64
   bash-builtins-4.2+dfsg-0.1_amd64
@@ -16682,7 +16656,7 @@ Packages:
   brltty-speechd-4.4-10+deb7u1_amd64
   brltty-x11-4.4-10+deb7u1_amd64
   browser-history-2.8-15_amd64
-  browser-plugin-gnash-0.8.11~git20120629-1_amd64
+  browser-plugin-gnash-0.8.11~git20120629-1+deb7u1_amd64
   browser-plugin-lightspark-0.6.0.1-2_amd64
   browser-plugin-packagekit-0.7.6-3_amd64
   browser-plugin-vlc-2.0.0-2_amd64
@@ -16919,7 +16893,7 @@ Packages:
   cflow-1:1.4+dfsg1-2_amd64
   cfourcc-0.1.2-8_amd64
   cgdb-0.6.6-2_amd64
-  cgi-mapserver-6.0.1-3.2+deb7u1_amd64
+  cgi-mapserver-6.0.1-3.2+deb7u2_amd64
   cgiemail-1.6-37_amd64
   cgilib-0.6-1_amd64
   cgns-convert-3.1.3.4-1+b1_amd64
@@ -17280,8 +17254,8 @@ Packages:
   csv2latex-0.18-2_amd64
   csvtool-1.2.2-1+b1_amd64
   csync2-1.34-2.2+b1_amd64
-  ctdb-1.12+git20120201-3_amd64
-  ctdb-dbg-1.12+git20120201-3_amd64
+  ctdb-1.12+git20120201-4_amd64
+  ctdb-dbg-1.12+git20120201-4_amd64
   ctn-3.0.6-13+b2_amd64
   ctn-dev-3.0.6-13+b2_amd64
   ctorrent-1.3.4.dnh3.3.2-4_amd64
@@ -17305,7 +17279,7 @@ Packages:
   cups-pk-helper-0.2.3-3_amd64
   cups-ppdc-1.5.3-5+deb7u1_amd64
   cupt-2.5.9_amd64
-  curl-7.26.0-1+wheezy6_amd64
+  curl-7.26.0-1+wheezy8_amd64
   curlftpfs-0.9.2-5_amd64
   curtain-0.1-1_amd64
   curves-0.8.19_amd64
@@ -17447,7 +17421,7 @@ Packages:
   debconf-kde-helper-0.2-2_amd64
   debdelta-0.50+2_amd64
   debfoster-2.7-1.2_amd64
-  debian-installer-20130613+deb7u1+b1_amd64
+  debian-installer-20130613+deb7u1+b2_amd64
   debian-xcontrol-0.0.4-1.1+b2_amd64
   debianutils-4.3.2_amd64
   deborphan-1.7.28.8_amd64
@@ -17482,7 +17456,7 @@ Packages:
   devilspie2-0.20-1_amd64
   devio-1.2-1+b1_amd64
   devrplay3-3.3.2-14_amd64
-  devscripts-2.12.6+deb7u1_amd64
+  devscripts-2.12.6+deb7u2_amd64
   devtodo-0.1.20-6_amd64
   dfc-2.5.0-1_amd64
   dff-1.2.0+dfsg.1-1_amd64
@@ -18264,7 +18238,7 @@ Packages:
   ffe-0.2.8-1_amd64
   ffindex-0.9.6.1-1_amd64
   ffindex-dbg-0.9.6.1-1_amd64
-  ffmpeg-6:0.8.6-1_amd64
+  ffmpeg-6:0.8.9-1_amd64
   ffmpeg2theora-0.27-2_amd64
   ffmpegthumbnailer-2.0.7-2_amd64
   ffmpegthumbnailer-dbg-2.0.7-2_amd64
@@ -18689,7 +18663,7 @@ Packages:
   garlic-1.6-1.1_amd64
   garmin-ant-downloader-0:20110626-1_amd64
   garmin-forerunner-tools-0.10-3_amd64
-  gatling-0.12cvs20120114-3_amd64
+  gatling-0.12cvs20120114-4_amd64
   gauche-0.9.1-5.1_amd64
   gauche-c-wrapper-0.6.1-4.1_amd64
   gauche-dev-0.9.1-5.1_amd64
@@ -18955,9 +18929,9 @@ Packages:
   gigolo-dbg-0.4.1+dfsg-1_amd64
   gigtools-3.3.0-2_amd64
   gimmix-0.5.7.1-4_amd64
-  gimp-2.8.2-2_amd64
+  gimp-2.8.2-2+deb7u1_amd64
   gimp-cbmplugs-1.2.2-1_amd64
-  gimp-dbg-2.8.2-2_amd64
+  gimp-dbg-2.8.2-2+deb7u1_amd64
   gimp-dcraw-1.31-1.1_amd64
   gimp-dds-2.0.9-3_amd64
   gimp-dimage-color-1.1.0-3.1_amd64
@@ -19267,15 +19241,15 @@ Packages:
   gmysqlcc-0.3.0-2+b2_amd64
   gnac-0.2.4-1_amd64
   gnarwl-3.6.dfsg-6.2_amd64
-  gnash-0.8.11~git20120629-1_amd64
-  gnash-common-0.8.11~git20120629-1_amd64
-  gnash-cygnal-0.8.11~git20120629-1_amd64
-  gnash-dbg-0.8.11~git20120629-1_amd64
-  gnash-dev-0.8.11~git20120629-1_amd64
-  gnash-ext-fileio-0.8.11~git20120629-1_amd64
-  gnash-ext-lirc-0.8.11~git20120629-1_amd64
-  gnash-ext-mysql-0.8.11~git20120629-1_amd64
-  gnash-tools-0.8.11~git20120629-1_amd64
+  gnash-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-common-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-cygnal-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-dbg-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-dev-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-ext-fileio-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-ext-lirc-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-ext-mysql-0.8.11~git20120629-1+deb7u1_amd64
+  gnash-tools-0.8.11~git20120629-1+deb7u1_amd64
   gnat-4.6_amd64
   gnat-4.6-4.6.3-8_amd64
   gnat-4.6-base-4.6.3-8_amd64
@@ -19404,9 +19378,9 @@ Packages:
   gnunet-gtk-dbg-0.9.3-1_amd64
   gnunet-gtk-dev-0.9.3-1_amd64
   gnunet-server-0.9.3-7_amd64
-  gnupg-1.4.12-7+deb7u2_amd64
+  gnupg-1.4.12-7+deb7u3_amd64
   gnupg-agent-2.0.19-2+deb7u1_amd64
-  gnupg-curl-1.4.12-7+deb7u2_amd64
+  gnupg-curl-1.4.12-7+deb7u3_amd64
   gnupg-pkcs11-scd-0.7.3-1_amd64
   gnupg-pkcs11-scd-dbg-0.7.3-1_amd64
   gnupg2-2.0.19-2+deb7u1_amd64
@@ -19527,7 +19501,7 @@ Packages:
   gperiodic-2.0.10-7_amd64
   gpesyncd-2.0-1_amd64
   gpgsm-2.0.19-2+deb7u1_amd64
-  gpgv-1.4.12-7+deb7u2_amd64
+  gpgv-1.4.12-7+deb7u3_amd64
   gphoto2-2.4.14-1_amd64
   gphotofs-0.4.0-6_amd64
   gphpedit-0.9.98-2_amd64
@@ -19581,7 +19555,7 @@ Packages:
   graphicsmagick-1.3.16-1.1_amd64
   graphicsmagick-dbg-1.3.16-1.1_amd64
   graphthing-1.3.2-3.1_amd64
-  graphviz-2.26.3-14_amd64
+  graphviz-2.26.3-14+deb7u1_amd64
   grass-core-6.4.2-2_amd64
   grass-dev-6.4.2-2_amd64
   grass-gui-6.4.2-2_amd64
@@ -19941,8 +19915,8 @@ Packages:
   hpanel-0.3.2-4_amd64
   hpcc-1.4.1-2_amd64
   hping3-3.a2.ds2-6_amd64
-  hplip-3.12.6-3.1_amd64
-  hplip-dbg-3.12.6-3.1_amd64
+  hplip-3.12.6-3.1+deb7u1_amd64
+  hplip-dbg-3.12.6-3.1+deb7u1_amd64
   hpsockd-0.17+b1_amd64
   hscolour-1.19-3+b1_amd64
   hsetroot-1.0.2-1_amd64
@@ -20022,8 +19996,6 @@ Packages:
   icc-utils-1.4.0-8_amd64
   ice34-services-3.4.2-8.2_amd64
   ice34-translators-3.4.2-8.2_amd64
-  iceape-2.7.12-1_amd64
-  iceape-dbg-2.7.12-1_amd64
   icebox-3.4.2-8.2_amd64
   icebreaker-1.21-11_amd64
   icecast2-2.3.2-9+deb7u2_amd64
@@ -20580,7 +20552,7 @@ Packages:
   kerneltop-0.8-2.1_amd64
   ketm-0.0.6-22_amd64
   keurocalc-1.2.0-1_amd64
-  kexec-tools-1:2.0.3-1_amd64
+  kexec-tools-1:2.0.3-1+deb7u1_amd64
   kexi-1:2.4.4-3_amd64
   kexi-calligrasheets-driver-1:2.4.4-3_amd64
   kexi-map-form-widget-1:2.4.4-3_amd64
@@ -20598,17 +20570,17 @@ Packages:
   kfind-4:4.8.4-2_amd64
   kfloppy-4:4.8.4-1_amd64
   kfourinline-4:4.8.4-3_amd64
-  kfreebsd-headers-8-amd64-8.3-6_amd64
-  kfreebsd-headers-8.3-1-8.3-6_amd64
-  kfreebsd-headers-8.3-1-amd64-8.3-6_amd64
-  kfreebsd-headers-9-amd64-9.0-10+deb70.5_amd64
-  kfreebsd-headers-9.0-2-9.0-10+deb70.5_amd64
-  kfreebsd-headers-9.0-2-amd64-9.0-10+deb70.5_amd64
+  kfreebsd-headers-8-amd64-8.3-6+deb7u1_amd64
+  kfreebsd-headers-8.3-1-8.3-6+deb7u1_amd64
+  kfreebsd-headers-8.3-1-amd64-8.3-6+deb7u1_amd64
+  kfreebsd-headers-9-amd64-9.0-10+deb70.6_amd64
+  kfreebsd-headers-9.0-2-9.0-10+deb70.6_amd64
+  kfreebsd-headers-9.0-2-amd64-9.0-10+deb70.6_amd64
   kfreebsd-headers-amd64-9+1_amd64
-  kfreebsd-image-8-amd64-8.3-6_amd64
-  kfreebsd-image-8.3-1-amd64-8.3-6_amd64
-  kfreebsd-image-9-amd64-9.0-10+deb70.5_amd64
-  kfreebsd-image-9.0-2-amd64-9.0-10+deb70.5_amd64
+  kfreebsd-image-8-amd64-8.3-6+deb7u1_amd64
+  kfreebsd-image-8.3-1-amd64-8.3-6+deb7u1_amd64
+  kfreebsd-image-9-amd64-9.0-10+deb70.6_amd64
+  kfreebsd-image-9.0-2-amd64-9.0-10+deb70.6_amd64
   kfreebsd-image-amd64-9+1_amd64
   kftpgrabber-0.8.99~svn1214766-1_amd64
   kgamma-4:4.8.4-2_amd64
@@ -20646,7 +20618,7 @@ Packages:
   kiten-dbg-4:4.8.4-1_amd64
   kjots-4:4.4.11.1+l10n-3+b1_amd64
   kjumpingcube-4:4.8.4-3_amd64
-  klash-0.8.11~git20120629-1_amd64
+  klash-0.8.11~git20120629-1+deb7u1_amd64
   klatexformula-3.2.6-1_amd64
   klavaro-1.9.4-2_amd64
   kleopatra-4:4.4.11.1+l10n-3+b1_amd64
@@ -20705,7 +20677,7 @@ Packages:
   konq-plugins-4:4.8.4-2_amd64
   konqueror-4:4.8.4-2_amd64
   konqueror-nsplugins-4:4.8.4-2_amd64
-  konqueror-plugin-gnash-0.8.11~git20120629-1_amd64
+  konqueror-plugin-gnash-0.8.11~git20120629-1+deb7u1_amd64
   konquest-4:4.8.4-3_amd64
   konsole-4:4.8.4-2_amd64
   konsole-dbg-4:4.8.4-2_amd64
@@ -21199,15 +21171,15 @@ Packages:
   libapache2-mod-parser3-3.4.2-2_amd64
   libapache2-mod-passenger-3.0.13debian-1+deb7u1_amd64
   libapache2-mod-perl2-2.0.7-3_amd64
-  libapache2-mod-php5-5.4.4-14+deb7u5_amd64
-  libapache2-mod-php5filter-5.4.4-14+deb7u5_amd64
+  libapache2-mod-php5-5.4.4-14+deb7u7_amd64
+  libapache2-mod-php5filter-5.4.4-14+deb7u7_amd64
   libapache2-mod-proxy-html-3.0.1-1.1_amd64
   libapache2-mod-python-3.3.1-9+b3_amd64
   libapache2-mod-qos-10.8-1_amd64
   libapache2-mod-random-2.1-1_amd64
   libapache2-mod-removeip-1.0b-5_amd64
   libapache2-mod-rivet-2.0.5-1_amd64
-  libapache2-mod-rpaf-0.6-7_amd64
+  libapache2-mod-rpaf-0.6-7+wheezy1_amd64
   libapache2-mod-ruby-1.2.6-2_amd64
   libapache2-mod-ruid2-0.9.7-1_amd64
   libapache2-mod-ruwsgi-1.2.3+dfsg-5+deb7u1_amd64
@@ -21411,8 +21383,8 @@ Packages:
   libautounit-dev-0.20.1-4_amd64
   libautounit2-0.20.1-4_amd64
   libautovivification-perl-0.10-1+b1_amd64
-  libav-dbg-6:0.8.6-1_amd64
-  libav-tools-6:0.8.6-1_amd64
+  libav-dbg-6:0.8.9-1_amd64
+  libav-tools-6:0.8.9-1_amd64
   libavahi-client-dev-0.6.31-2_amd64
   libavahi-client3-0.6.31-2_amd64
   libavahi-common-data-0.6.31-2_amd64
@@ -21437,15 +21409,15 @@ Packages:
   libavc1394-0-0.5.4-2_amd64
   libavc1394-dev-0.5.4-2_amd64
   libavc1394-tools-0.5.4-2_amd64
-  libavcodec-dev-6:0.8.6-1_amd64
-  libavcodec-extra-53-6:0.8.6-1_amd64
-  libavcodec53-6:0.8.6-1_amd64
-  libavdevice-dev-6:0.8.6-1_amd64
-  libavdevice53-6:0.8.6-1_amd64
-  libavfilter-dev-6:0.8.6-1_amd64
-  libavfilter2-6:0.8.6-1_amd64
-  libavformat-dev-6:0.8.6-1_amd64
-  libavformat53-6:0.8.6-1_amd64
+  libavcodec-dev-6:0.8.9-1_amd64
+  libavcodec-extra-53-6:0.8.9-1_amd64
+  libavcodec53-6:0.8.9-1_amd64
+  libavdevice-dev-6:0.8.9-1_amd64
+  libavdevice53-6:0.8.9-1_amd64
+  libavfilter-dev-6:0.8.9-1_amd64
+  libavfilter2-6:0.8.9-1_amd64
+  libavformat-dev-6:0.8.9-1_amd64
+  libavformat53-6:0.8.9-1_amd64
   libavifile-0.7-bin-1:0.7.48~20090503.ds-13_amd64
   libavifile-0.7-dev-1:0.7.48~20090503.ds-13_amd64
   libavifile-0.7c2-1:0.7.48~20090503.ds-13_amd64
@@ -21453,8 +21425,8 @@ Packages:
   libavl1-0.3.5-3_amd64
   libavogadro-dev-1.0.3-5_amd64
   libavogadro1-1.0.3-5_amd64
-  libavutil-dev-6:0.8.6-1_amd64
-  libavutil51-6:0.8.6-1_amd64
+  libavutil-dev-6:0.8.9-1_amd64
+  libavutil51-6:0.8.9-1_amd64
   libaws-bin-2.10.2-4_amd64
   libaws-dbg-2.10.2-4_amd64
   libaws2.10.2-2.10.2-4_amd64
@@ -21693,19 +21665,19 @@ Packages:
   libbz2-ruby1.8-0.2.2-2_amd64
   libc-ares-dev-1.9.1-3_amd64
   libc-ares2-1.9.1-3_amd64
-  libc-bin-2.13-38_amd64
+  libc-bin-2.13-38+deb7u1_amd64
   libc-client2007e-8:2007f~dfsg-2_amd64
   libc-client2007e-dev-8:2007f~dfsg-2_amd64
-  libc-dev-bin-2.13-38_amd64
+  libc-dev-bin-2.13-38+deb7u1_amd64
   libc-icap-mod-clamav-1:0.1.6-1_amd64
   libc-icap-mod-urlcheck-1:0.1.6-1_amd64
-  libc6-2.13-38_amd64
-  libc6-dbg-2.13-38_amd64
-  libc6-dev-2.13-38_amd64
-  libc6-dev-i386-2.13-38_amd64
-  libc6-i386-2.13-38_amd64
-  libc6-pic-2.13-38_amd64
-  libc6-prof-2.13-38_amd64
+  libc6-2.13-38+deb7u1_amd64
+  libc6-dbg-2.13-38+deb7u1_amd64
+  libc6-dev-2.13-38+deb7u1_amd64
+  libc6-dev-i386-2.13-38+deb7u1_amd64
+  libc6-i386-2.13-38+deb7u1_amd64
+  libc6-pic-2.13-38+deb7u1_amd64
+  libc6-prof-2.13-38+deb7u1_amd64
   libcableswig-dev-0.1.0+cvs20111009-1_amd64
   libcaca-dev-0.99.beta18-1_amd64
   libcaca0-0.99.beta18-1_amd64
@@ -21825,7 +21797,7 @@ Packages:
   libcdk5-dev-5.0.20060507-4_amd64
   libcdparanoia-dev-3.10.2+debian-10.1_amd64
   libcdparanoia0-3.10.2+debian-10.1_amd64
-  libcdt4-2.26.3-14_amd64
+  libcdt4-2.26.3-14+deb7u1_amd64
   libcec-dev-1.6.2-1.1_amd64
   libcec1-1.6.2-1.1_amd64
   libcegui-mk2-0.7.6-0.7.6-2+b1_amd64
@@ -21853,7 +21825,7 @@ Packages:
   libcgns-dev-3.1.3.4-1+b1_amd64
   libcgns3.1-3.1.3.4-1+b1_amd64
   libcgns3.1-dbg-3.1.3.4-1+b1_amd64
-  libcgraph5-2.26.3-14_amd64
+  libcgraph5-2.26.3-14+deb7u1_amd64
   libcgroup-dev-0.38-1_amd64
   libcgroup1-0.38-1_amd64
   libcgsi-gsoap-dev-1.3.5-1_amd64
@@ -22166,7 +22138,7 @@ Packages:
   libct4-0.91-2+deb7u1_amd64
   libctapimkt0-1.0.1-1.1_amd64
   libctapimkt0-dev-1.0.1-1.1_amd64
-  libctdb-dev-1.12+git20120201-3_amd64
+  libctdb-dev-1.12+git20120201-4_amd64
   libctemplate-dev-2.2-3_amd64
   libctemplate2-2.2-3_amd64
   libctl-dev-3.1.0-5_amd64
@@ -22204,13 +22176,13 @@ Packages:
   libcupt2-dev-2.5.9_amd64
   libcurl-ocaml-0.5.3-2+b1_amd64
   libcurl-ocaml-dev-0.5.3-2+b1_amd64
-  libcurl3-7.26.0-1+wheezy6_amd64
-  libcurl3-dbg-7.26.0-1+wheezy6_amd64
-  libcurl3-gnutls-7.26.0-1+wheezy6_amd64
-  libcurl3-nss-7.26.0-1+wheezy6_amd64
-  libcurl4-gnutls-dev-7.26.0-1+wheezy6_amd64
-  libcurl4-nss-dev-7.26.0-1+wheezy6_amd64
-  libcurl4-openssl-dev-7.26.0-1+wheezy6_amd64
+  libcurl3-7.26.0-1+wheezy8_amd64
+  libcurl3-dbg-7.26.0-1+wheezy8_amd64
+  libcurl3-gnutls-7.26.0-1+wheezy8_amd64
+  libcurl3-nss-7.26.0-1+wheezy8_amd64
+  libcurl4-gnutls-dev-7.26.0-1+wheezy8_amd64
+  libcurl4-nss-dev-7.26.0-1+wheezy8_amd64
+  libcurl4-openssl-dev-7.26.0-1+wheezy8_amd64
   libcurses-ocaml-1.0.3-2_amd64
   libcurses-ocaml-dev-1.0.3-2_amd64
   libcurses-perl-1.28-1+b2_amd64
@@ -24289,8 +24261,8 @@ Packages:
   libgii1-1:1.0.2-4.1_amd64
   libgii1-dev-1:1.0.2-4.1_amd64
   libgii1-target-x-1:1.0.2-4.1_amd64
-  libgimp2.0-2.8.2-2_amd64
-  libgimp2.0-dev-2.8.2-2_amd64
+  libgimp2.0-2.8.2-2+deb7u1_amd64
+  libgimp2.0-dev-2.8.2-2+deb7u1_amd64
   libginac-dev-1.6.2-1_amd64
   libginac2-1.6.2-1_amd64
   libginac2-dbg-1.6.2-1_amd64
@@ -24354,7 +24326,7 @@ Packages:
   libglewmx1.7-1.7.0-3_amd64
   libglfw-dev-2.7.2-1_amd64
   libglfw2-2.7.2-1_amd64
-  libglib-object-introspection-perl-0.009-1_amd64
+  libglib-object-introspection-perl-0.009-1+deb7u1_amd64
   libglib-perl-3:1.260-1_amd64
   libglib2.0-0-2.33.12+really2.32.4-5_amd64
   libglib2.0-0-dbg-2.33.12+really2.32.4-5_amd64
@@ -24682,7 +24654,7 @@ Packages:
   libgrantlee-core0-0.1.4-1_amd64
   libgrantlee-dev-0.1.4-1_amd64
   libgrantlee-gui0-0.1.4-1_amd64
-  libgraph4-2.26.3-14_amd64
+  libgraph4-2.26.3-14+deb7u1_amd64
   libgraphics-libplot-perl-2.2.2-5+b2_amd64
   libgraphics-magick-perl-1.3.16-1.1_amd64
   libgraphicsmagick++1-dev-1.3.16-1.1_amd64
@@ -24695,7 +24667,7 @@ Packages:
   libgraphite2-dev-1.1.3-1_amd64
   libgraphite3-1:2.3.1-0.2_amd64
   libgraphite3-dbg-1:2.3.1-0.2_amd64
-  libgraphviz-dev-2.26.3-14_amd64
+  libgraphviz-dev-2.26.3-14+deb7u1_amd64
   libgretl1-1.9.9-1_amd64
   libgretl1-dev-1.9.9-1_amd64
   libgrib-api-1.9.16-1.9.16-2+b1_amd64
@@ -24928,19 +24900,19 @@ Packages:
   libgutenprintui2-dev-5.2.9-1_amd64
   libguytools2-2.0.1-1.1_amd64
   libguytools2-dev-2.0.1-1.1_amd64
-  libgv-guile-2.26.3-14_amd64
-  libgv-lua-2.26.3-14_amd64
-  libgv-perl-2.26.3-14_amd64
-  libgv-php5-2.26.3-14_amd64
-  libgv-python-2.26.3-14_amd64
-  libgv-ruby-2.26.3-14_amd64
-  libgv-tcl-2.26.3-14_amd64
-  libgvc5-2.26.3-14_amd64
-  libgvc5-plugins-gtk-2.26.3-14_amd64
+  libgv-guile-2.26.3-14+deb7u1_amd64
+  libgv-lua-2.26.3-14+deb7u1_amd64
+  libgv-perl-2.26.3-14+deb7u1_amd64
+  libgv-php5-2.26.3-14+deb7u1_amd64
+  libgv-python-2.26.3-14+deb7u1_amd64
+  libgv-ruby-2.26.3-14+deb7u1_amd64
+  libgv-tcl-2.26.3-14+deb7u1_amd64
+  libgvc5-2.26.3-14+deb7u1_amd64
+  libgvc5-plugins-gtk-2.26.3-14+deb7u1_amd64
   libgvnc-1.0-0-0.5.0-3.1_amd64
   libgvnc-1.0-0-dbg-0.5.0-3.1_amd64
   libgvnc-1.0-dev-0.5.0-3.1_amd64
-  libgvpr1-2.26.3-14_amd64
+  libgvpr1-2.26.3-14+deb7u1_amd64
   libgweather-3-0-3.4.1-1+build1_amd64
   libgweather-3-dev-3.4.1-1+build1_amd64
   libgwengui-fox16-0-4.3.3-1_amd64
@@ -25069,8 +25041,8 @@ Packages:
   libhogweed2-2.4-3_amd64
   libhpdf-2.2.1-2.2.1-1_amd64
   libhpdf-dev-2.2.1-1_amd64
-  libhpmud-dev-3.12.6-3.1_amd64
-  libhpmud0-3.12.6-3.1_amd64
+  libhpmud-dev-3.12.6-3.1+deb7u1_amd64
+  libhpmud0-3.12.6-3.1+deb7u1_amd64
   libhsclient-dev-1.1.0-7-g1044a28-1_amd64
   libhsm-bin-1:1.3.9-5_amd64
   libhtml-parser-perl-3.69-2_amd64
@@ -25963,9 +25935,9 @@ Packages:
   libmapistore0-1:1.0-3_amd64
   libmapnik2-2.0-2.0.0+ds1-3+b4_amd64
   libmapnik2-dev-2.0.0+ds1-3+b4_amd64
-  libmapscript-perl-6.0.1-3.2+deb7u1_amd64
-  libmapscript-ruby1.8-6.0.1-3.2+deb7u1_amd64
-  libmapscript-ruby1.9.1-6.0.1-3.2+deb7u1_amd64
+  libmapscript-perl-6.0.1-3.2+deb7u2_amd64
+  libmapscript-ruby1.8-6.0.1-3.2+deb7u2_amd64
+  libmapscript-ruby1.9.1-6.0.1-3.2+deb7u2_amd64
   libmarble-dev-4:4.8.4-3_amd64
   libmarblewidget13-4:4.8.4-3_amd64
   libmarc-charset-perl-1.33-1_amd64
@@ -26072,9 +26044,9 @@ Packages:
   libmhash-dev-0.9.9.9-1.1_amd64
   libmhash2-0.9.9.9-1.1_amd64
   libmicroblog4-4:4.8.4-2_amd64
-  libmicrohttpd-dbg-0.9.20-1_amd64
-  libmicrohttpd-dev-0.9.20-1_amd64
-  libmicrohttpd10-0.9.20-1_amd64
+  libmicrohttpd-dbg-0.9.20-1+deb7u1_amd64
+  libmicrohttpd-dev-0.9.20-1+deb7u1_amd64
+  libmicrohttpd10-0.9.20-1+deb7u1_amd64
   libmigemo-dbg-20110227-7_amd64
   libmigemo-dev-20110227-7_amd64
   libmigemo1-20110227-7_amd64
@@ -26295,12 +26267,12 @@ Packages:
   libmysql++3-3.1.0-2+b1_amd64
   libmysql-ocaml-1.1.1-1+b1_amd64
   libmysql-ocaml-dev-1.1.1-1+b1_amd64
-  libmysqlclient-dev-5.5.31+dfsg-0+wheezy1_amd64
-  libmysqlclient18-5.5.31+dfsg-0+wheezy1_amd64
+  libmysqlclient-dev-5.5.33+dfsg-0+wheezy1_amd64
+  libmysqlclient18-5.5.33+dfsg-0+wheezy1_amd64
   libmysqlcppconn-dev-1.1.0-4+b1_amd64
   libmysqlcppconn5-1.1.0-4+b1_amd64
-  libmysqld-dev-5.5.31+dfsg-0+wheezy1_amd64
-  libmysqld-pic-5.5.31+dfsg-0+wheezy1_amd64
+  libmysqld-dev-5.5.33+dfsg-0+wheezy1_amd64
+  libmysqld-pic-5.5.33+dfsg-0+wheezy1_amd64
   libmythes-1.2-0-2:1.2.2-1_amd64
   libmythes-dev-2:1.2.2-1_amd64
   libnabrit-dbg-0.4.1-1_amd64
@@ -26492,10 +26464,10 @@ Packages:
   libnsgif0-0.0.1-1.1_amd64
   libnsgif0-dbg-0.0.1-1.1_amd64
   libnsgif0-dev-0.0.1-1.1_amd64
-  libnspr4-2:4.9.2-1_amd64
-  libnspr4-0d-2:4.9.2-1_amd64
-  libnspr4-dbg-2:4.9.2-1_amd64
-  libnspr4-dev-2:4.9.2-1_amd64
+  libnspr4-2:4.9.2-1+deb7u1_amd64
+  libnspr4-0d-2:4.9.2-1+deb7u1_amd64
+  libnspr4-dbg-2:4.9.2-1+deb7u1_amd64
+  libnspr4-dev-2:4.9.2-1+deb7u1_amd64
   libnss-cache-0.10.2-1_amd64
   libnss-db-2.2.3pre1-4_amd64
   libnss-extrausers-0.6-3_amd64
@@ -26509,7 +26481,7 @@ Packages:
   libnss-pgsql2-1.4.0debian-5_amd64
   libnss-rainbow2-0.8.6-1_amd64
   libnss-sss-1.8.4-2_amd64
-  libnss-winbind-2:3.6.6-6+deb7u1_amd64
+  libnss-winbind-2:3.6.6-6+deb7u2_amd64
   libnss3-2:3.14.5-1_amd64
   libnss3-1d-2:3.14.5-1_amd64
   libnss3-dbg-2:3.14.5-1_amd64
@@ -26882,9 +26854,9 @@ Packages:
   libotfaux0-1.10.2+dfsg-2_amd64
   libotp0-heimdal-1.6~git20120403+dfsg1-2_amd64
   libotpw-dev-1.3-2_amd64
-  libotr2-3.2.1-1_amd64
-  libotr2-bin-3.2.1-1_amd64
-  libotr2-dev-3.2.1-1_amd64
+  libotr2-3.2.1-1+deb7u1_amd64
+  libotr2-bin-3.2.1-1+deb7u1_amd64
+  libotr2-dev-3.2.1-1+deb7u1_amd64
   libots-dev-0.5.0-2.1_amd64
   libots0-0.5.0-2.1_amd64
   libounit-ocaml-dev-1.1.1-1_amd64
@@ -26963,7 +26935,7 @@ Packages:
   libpam-shield-0.9.2-3.3_amd64
   libpam-shishi-1.0.1-2_amd64
   libpam-slurm-2.3.4-2+b1_amd64
-  libpam-smbpass-2:3.6.6-6+deb7u1_amd64
+  libpam-smbpass-2:3.6.6-6+deb7u2_amd64
   libpam-ssh-1.92-15_amd64
   libpam-sss-1.8.4-2_amd64
   libpam-systemd-44-11+deb7u4_amd64
@@ -26971,7 +26943,7 @@ Packages:
   libpam-tmpdir-0.09_amd64
   libpam-unix2-1:2.4.1-6_amd64
   libpam-usb-0.5.0-4_amd64
-  libpam-winbind-2:3.6.6-6+deb7u1_amd64
+  libpam-winbind-2:3.6.6-6+deb7u2_amd64
   libpam-yubico-2.12-1_amd64
   libpam0g-1.1.3-7.1_amd64
   libpam0g-dev-1.1.3-7.1_amd64
@@ -27023,7 +26995,7 @@ Packages:
   libpathfinder-dev-1.1.3-0.4+b1_amd64
   libpathfinder-nss-1-1.1.3-0.4+b1_amd64
   libpathfinder-openssl-1-1.1.3-0.4+b1_amd64
-  libpathplan4-2.26.3-14_amd64
+  libpathplan4-2.26.3-14+deb7u1_amd64
   libpawlib-lesstif3-dev-1:2.14.04.dfsg.2-8_amd64
   libpawlib-lesstif3-gfortran-1:2.14.04.dfsg.2-8_amd64
   libpawlib2-dev-1:2.14.04.dfsg.2-8_amd64
@@ -27120,7 +27092,7 @@ Packages:
   libphononexperimental4-4:4.6.0.0-3_amd64
   libphotos202-1-gfortran-20061220+dfsg3-2_amd64
   libphotos202-dev-20061220+dfsg3-2_amd64
-  libphp5-embed-5.4.4-14+deb7u5_amd64
+  libphp5-embed-5.4.4-14+deb7u7_amd64
   libphtools2-dev-20061220+dfsg3-2_amd64
   libphtools2-gfortran-20061220+dfsg3-2_amd64
   libphysfs-dev-2.0.2-6_amd64
@@ -27150,9 +27122,9 @@ Packages:
   libpisock-dev-0.12.5-5_amd64
   libpisock9-0.12.5-5_amd64
   libpisync1-0.12.5-5_amd64
-  libpixman-1-0-0.26.0-4_amd64
-  libpixman-1-0-dbg-0.26.0-4_amd64
-  libpixman-1-dev-0.26.0-4_amd64
+  libpixman-1-0-0.26.0-4+deb7u1_amd64
+  libpixman-1-0-dbg-0.26.0-4+deb7u1_amd64
+  libpixman-1-dev-0.26.0-4+deb7u1_amd64
   libpkcs11-helper1-1.09-1_amd64
   libpkcs11-helper1-dev-1.09-1_amd64
   libplasma-geolocation-interface4-4:4.8.4-6_amd64
@@ -27302,8 +27274,8 @@ Packages:
   libposixlock-ruby1.8-0.0.1-2_amd64
   libpostgresql-ocaml-1.18.0-1_amd64
   libpostgresql-ocaml-dev-1.18.0-1_amd64
-  libpostproc-dev-6:0.8.6-1_amd64
-  libpostproc52-6:0.8.6-1_amd64
+  libpostproc-dev-6:0.8.9-1_amd64
+  libpostproc52-6:0.8.9-1_amd64
   libpotrace-dev-1.10-1_amd64
   libpotrace0-1.10-1_amd64
   libpowerman0-2.3.5-1_amd64
@@ -28014,7 +27986,7 @@ Packages:
   libsane-extras-common-1.0.22.2_amd64
   libsane-extras-dbg-1.0.22.2_amd64
   libsane-extras-dev-1.0.22.2_amd64
-  libsane-hpaio-3.12.6-3.1_amd64
+  libsane-hpaio-3.12.6-3.1+deb7u1_amd64
   libsane-perl-0.05-2_amd64
   libsanlock-client1-2.2-2_amd64
   libsanlock-dev-2.2-2_amd64
@@ -28245,8 +28217,8 @@ Packages:
   libsm-dev-2:1.2.1-2_amd64
   libsm6-2:1.2.1-2_amd64
   libsm6-dbg-2:1.2.1-2_amd64
-  libsmbclient-2:3.6.6-6+deb7u1_amd64
-  libsmbclient-dev-2:3.6.6-6+deb7u1_amd64
+  libsmbclient-2:3.6.6-6+deb7u2_amd64
+  libsmbclient-dev-2:3.6.6-6+deb7u2_amd64
   libsmbclient-raw-dev-4.0.0~beta2+dfsg1-3.2_amd64
   libsmbclient-raw0-4.0.0~beta2+dfsg1-3.2_amd64
   libsmbios-bin-2.0.3.dfsg-1.1_amd64
@@ -28437,8 +28409,8 @@ Packages:
   libspice-client-gtk-2.0-dev-0.12-5_amd64
   libspice-client-gtk-3.0-1-0.12-5_amd64
   libspice-client-gtk-3.0-dev-0.12-5_amd64
-  libspice-server-dev-0.11.0-1_amd64
-  libspice-server1-0.11.0-1_amd64
+  libspice-server-dev-0.11.0-1+deb7u1_amd64
+  libspice-server1-0.11.0-1+deb7u1_amd64
   libspiro-dev-20071029-2_amd64
   libspiro0-20071029-2_amd64
   libspiro0-dbg-20071029-2_amd64
@@ -28476,8 +28448,8 @@ Packages:
   libsrecord0-1.58-1+b1_amd64
   libsrecord0-dbg-1.58-1+b1_amd64
   libsrf-dev-0.1+dfsg-1_amd64
-  libsrtp0-1.4.4+20100615~dfsg-2_amd64
-  libsrtp0-dev-1.4.4+20100615~dfsg-2_amd64
+  libsrtp0-1.4.4+20100615~dfsg-2+deb7u1_amd64
+  libsrtp0-dev-1.4.4+20100615~dfsg-2+deb7u1_amd64
   libss2-1.42.5-1.1_amd64
   libss2-dbg-1.42.5-1.1_amd64
   libss7-1-1.0.2-3_amd64
@@ -28492,11 +28464,11 @@ Packages:
   libssh2-1-dbg-1.4.2-1.1_amd64
   libssh2-1-dev-1.4.2-1.1_amd64
   libssh2-php-0.11.3-0.1+b2_amd64
-  libssl-dev-1.0.1e-2_amd64
+  libssl-dev-1.0.1e-2+deb7u4_amd64
   libssl-ocaml-0.4.6-1_amd64
   libssl-ocaml-dev-0.4.6-1_amd64
-  libssl1.0.0-1.0.1e-2_amd64
-  libssl1.0.0-dbg-1.0.1e-2_amd64
+  libssl1.0.0-1.0.1e-2+deb7u4_amd64
+  libssl1.0.0-dbg-1.0.1e-2+deb7u4_amd64
   libsslcommon2-0.16-6+deb7u1_amd64
   libsslcommon2-dev-0.16-6+deb7u1_amd64
   libssreflect-ocaml-1.3pl4-1_amd64
@@ -28626,8 +28598,8 @@ Packages:
   libsword-dev-1.6.2+dfsg-5_amd64
   libsword-utils-1.6.2+dfsg-5_amd64
   libsword9-1.6.2+dfsg-5_amd64
-  libswscale-dev-6:0.8.6-1_amd64
-  libswscale2-6:0.8.6-1_amd64
+  libswscale-dev-6:0.8.9-1_amd64
+  libswscale2-6:0.8.9-1_amd64
   libswt-cairo-gtk-3-jni-3.8.0~rc4-1_amd64
   libswt-glx-gtk-3-jni-3.8.0~rc4-1_amd64
   libswt-gnome-gtk-3-jni-3.8.0~rc4-1_amd64
@@ -28717,8 +28689,8 @@ Packages:
   libtango7-dev-7.2.6+dfsg-14_amd64
   libtaningia-dev-0.2.2-1_amd64
   libtaningia0-0.2.2-1_amd64
-  libtar-dev-1.2.16-1_amd64
-  libtar0-1.2.16-1_amd64
+  libtar-dev-1.2.16-1+deb7u1_amd64
+  libtar0-1.2.16-1+deb7u1_amd64
   libtarantool-dev-1.4.6+20120629+2158-1_amd64
   libtarantool1-1.4.6+20120629+2158-1_amd64
   libtarantool1-dbg-1.4.6+20120629+2158-1_amd64
@@ -29050,8 +29022,8 @@ Packages:
   libupnp6-dev-1:1.6.17-1.2_amd64
   libupower-glib-dev-0.9.17-1_amd64
   libupower-glib1-0.9.17-1_amd64
-  libupsclient1-2.6.4-2.3_amd64
-  libupsclient1-dev-2.6.4-2.3_amd64
+  libupsclient1-2.6.4-2.3+deb7u1_amd64
+  libupsclient1-dev-2.6.4-2.3+deb7u1_amd64
   libupse-dev-1.0.0-1_amd64
   libupse2-1.0.0-1_amd64
   libuptimed-dev-1:0.3.17-3.1_amd64
@@ -29141,8 +29113,8 @@ Packages:
   libvarconf-1.0-7-dbg-0.6.7-2_amd64
   libvarconf-dev-0.6.7-2_amd64
   libvariable-magic-perl-0.50-1_amd64
-  libvarnishapi-dev-3.0.2-2_amd64
-  libvarnishapi1-3.0.2-2_amd64
+  libvarnishapi-dev-3.0.2-2+deb7u1_amd64
+  libvarnishapi1-3.0.2-2+deb7u1_amd64
   libvbr-dev-2.6.8-4_amd64
   libvbr2-2.6.8-4_amd64
   libvc-dev-003.dfsg.1-12_amd64
@@ -29188,18 +29160,18 @@ Packages:
   libview2-dbg-0.6.6-2.1_amd64
   libvigraimpex-dev-1.7.1+dfsg1-3_amd64
   libvigraimpex3-1.7.1+dfsg1-3_amd64
-  libvips-dev-7.28.5-1_amd64
-  libvips-tools-7.28.5-1_amd64
-  libvips15-7.28.5-1_amd64
-  libvirt-bin-0.9.12-11+deb7u4_amd64
-  libvirt-dev-0.9.12-11+deb7u4_amd64
+  libvips-dev-7.28.5-1+deb7u1_amd64
+  libvips-tools-7.28.5-1+deb7u1_amd64
+  libvips15-7.28.5-1+deb7u1_amd64
+  libvirt-bin-0.9.12.3-1_amd64
+  libvirt-dev-0.9.12.3-1_amd64
   libvirt-glib-1.0-0-0.0.8-1_amd64
   libvirt-glib-1.0-0-dbg-0.0.8-1_amd64
   libvirt-glib-1.0-dev-0.0.8-1_amd64
   libvirt-ocaml-0.6.1.2-1_amd64
   libvirt-ocaml-dev-0.6.1.2-1_amd64
-  libvirt0-0.9.12-11+deb7u4_amd64
-  libvirt0-dbg-0.9.12-11+deb7u4_amd64
+  libvirt0-0.9.12.3-1_amd64
+  libvirt0-dbg-0.9.12.3-1_amd64
   libvirtodbc0-6.1.4+dfsg1-7_amd64
   libvirtuoso5.5-cil-6.1.4+dfsg1-7_amd64
   libvisca-dev-1.0.1-1_amd64
@@ -29287,8 +29259,8 @@ Packages:
   libwayland-dev-0.85.0-2_amd64
   libwayland0-0.85.0-2_amd64
   libwayland0-dbg-0.85.0-2_amd64
-  libwbclient-dev-2:3.6.6-6+deb7u1_amd64
-  libwbclient0-2:3.6.6-6+deb7u1_amd64
+  libwbclient-dev-2:3.6.6-6+deb7u2_amd64
+  libwbclient0-2:3.6.6-6+deb7u2_amd64
   libwbxml2-0-0.10.7-1_amd64
   libwbxml2-0-dbg-0.10.7-1_amd64
   libwbxml2-dev-0.10.7-1_amd64
@@ -29330,10 +29302,10 @@ Packages:
   libwind0-heimdal-1.6~git20120403+dfsg1-2_amd64
   libwings-dev-0.95.3-2_amd64
   libwings2-0.95.3-2_amd64
-  libwireshark-dev-1.8.2-5wheezy7_amd64
-  libwireshark2-1.8.2-5wheezy7_amd64
-  libwiretap-dev-1.8.2-5wheezy7_amd64
-  libwiretap2-1.8.2-5wheezy7_amd64
+  libwireshark-dev-1.8.2-5wheezy9_amd64
+  libwireshark2-1.8.2-5wheezy9_amd64
+  libwiretap-dev-1.8.2-5wheezy9_amd64
+  libwiretap2-1.8.2-5wheezy9_amd64
   libwmf-bin-0.2.8.4-10.3_amd64
   libwmf-dev-0.2.8.4-10.3_amd64
   libwmf0.2-7-0.2.8.4-10.3_amd64
@@ -29363,8 +29335,8 @@ Packages:
   libwraster3-dev-0.95.3-2_amd64
   libwreport-dev-2.4-1_amd64
   libwreport2-2.4-1_amd64
-  libwsutil-dev-1.8.2-5wheezy7_amd64
-  libwsutil2-1.8.2-5wheezy7_amd64
+  libwsutil-dev-1.8.2-5wheezy9_amd64
+  libwsutil2-1.8.2-5wheezy9_amd64
   libwt-dbg-3.2.1-2_amd64
   libwt-dev-3.2.1-2_amd64
   libwt32-3.2.1-2_amd64
@@ -29555,7 +29527,7 @@ Packages:
   libxdmf2-2.1.dfsg.1-5_amd64
   libxdo-dev-1:2.20100701.2961-3+deb7u3_amd64
   libxdo2-1:2.20100701.2961-3+deb7u3_amd64
-  libxdot4-2.26.3-14_amd64
+  libxdot4-2.26.3-14+deb7u1_amd64
   libxen-4.1-4.1.4-3+deb7u1_amd64
   libxen-dev-4.1.4-3+deb7u1_amd64
   libxen-ocaml-4.1.4-3+deb7u1_amd64
@@ -29592,9 +29564,9 @@ Packages:
   libxfixes-dev-1:5.0-4+deb7u1_amd64
   libxfixes3-1:5.0-4+deb7u1_amd64
   libxfixes3-dbg-1:5.0-4+deb7u1_amd64
-  libxfont-dev-1:1.4.5-2_amd64
-  libxfont1-1:1.4.5-2_amd64
-  libxfont1-dbg-1:1.4.5-2_amd64
+  libxfont-dev-1:1.4.5-3_amd64
+  libxfont1-1:1.4.5-3_amd64
+  libxfont1-dbg-1:1.4.5-3_amd64
   libxft-dev-2.3.1-1_amd64
   libxft2-2.3.1-1_amd64
   libxft2-dbg-2.3.1-1_amd64
@@ -29768,11 +29740,11 @@ Packages:
   libyajl-dev-2.0.4-2_amd64
   libyajl2-2.0.4-2_amd64
   libyajl2-dbg-2.0.4-2_amd64
-  libyaml-0-2-0.1.4-2_amd64
-  libyaml-0-2-dbg-0.1.4-2_amd64
+  libyaml-0-2-0.1.4-2+deb7u2_amd64
+  libyaml-0-2-dbg-0.1.4-2+deb7u2_amd64
   libyaml-cpp-dev-0.3.0-1_amd64
   libyaml-cpp0.3-0.3.0-1_amd64
-  libyaml-dev-0.1.4-2_amd64
+  libyaml-dev-0.1.4-2+deb7u2_amd64
   libyaml-libyaml-perl-0.38-3_amd64
   libyaml-syck-perl-1.20-1_amd64
   libyate4.1.0-4.1.0-1~dfsg-3_amd64
@@ -29917,24 +29889,24 @@ Packages:
   lintex-1.11-1_amd64
   linthesia-0.4.2-3_amd64
   linux-headers-2.6-amd64-3.2+46_amd64
-  linux-headers-3.2.0-4-all-3.2.51-1_amd64
-  linux-headers-3.2.0-4-all-amd64-3.2.51-1_amd64
-  linux-headers-3.2.0-4-amd64-3.2.51-1_amd64
-  linux-headers-3.2.0-4-common-3.2.51-1_amd64
-  linux-headers-3.2.0-4-common-rt-3.2.51-1_amd64
-  linux-headers-3.2.0-4-rt-amd64-3.2.51-1_amd64
+  linux-headers-3.2.0-4-all-3.2.54-2_amd64
+  linux-headers-3.2.0-4-all-amd64-3.2.54-2_amd64
+  linux-headers-3.2.0-4-amd64-3.2.54-2_amd64
+  linux-headers-3.2.0-4-common-3.2.54-2_amd64
+  linux-headers-3.2.0-4-common-rt-3.2.54-2_amd64
+  linux-headers-3.2.0-4-rt-amd64-3.2.54-2_amd64
   linux-headers-amd64-3.2+46_amd64
   linux-headers-rt-amd64-3.2+46_amd64
   linux-igd-1.0+cvs20070630-4_amd64
   linux-image-2.6-amd64-3.2+46_amd64
-  linux-image-3.2.0-4-amd64-3.2.51-1_amd64
-  linux-image-3.2.0-4-amd64-dbg-3.2.51-1_amd64
-  linux-image-3.2.0-4-rt-amd64-3.2.51-1_amd64
-  linux-image-3.2.0-4-rt-amd64-dbg-3.2.51-1_amd64
+  linux-image-3.2.0-4-amd64-3.2.54-2_amd64
+  linux-image-3.2.0-4-amd64-dbg-3.2.54-2_amd64
+  linux-image-3.2.0-4-rt-amd64-3.2.54-2_amd64
+  linux-image-3.2.0-4-rt-amd64-dbg-3.2.54-2_amd64
   linux-image-amd64-3.2+46_amd64
   linux-image-rt-amd64-3.2+46_amd64
   linux-kbuild-3.2-3.2.17-1_amd64
-  linux-libc-dev-3.2.51-1_amd64
+  linux-libc-dev-3.2.54-2_amd64
   linux-tools-3.2-3.2.17-1_amd64
   linux-wlan-ng-0.2.9+dfsg-5_amd64
   linuxdcpp-1.1.0-1+b2_amd64
@@ -30016,7 +29988,7 @@ Packages:
   loadlin-1.6f-1_amd64
   loadmeter-1.20-6_amd64
   loadwatch-1.0+1.1alpha1-5_amd64
-  locales-all-2.13-38_amd64
+  locales-all-2.13-38+deb7u1_amd64
   locate-4.4.2-4_amd64
   lockfile-progs-0.1.17_amd64
   lockout-0.2.3-2_amd64
@@ -30181,9 +30153,9 @@ Packages:
   lxappearance-dbg-0.5.2-1_amd64
   lxappearance-obconf-0.2.0-4_amd64
   lxappearance-obconf-dbg-0.2.0-4_amd64
-  lxc-0.8.0~rc1-8+deb7u1_amd64
-  lxc-dbg-0.8.0~rc1-8+deb7u1_amd64
-  lxc-dev-0.8.0~rc1-8+deb7u1_amd64
+  lxc-0.8.0~rc1-8+deb7u2_amd64
+  lxc-dbg-0.8.0~rc1-8+deb7u2_amd64
+  lxc-dev-0.8.0~rc1-8+deb7u2_amd64
   lxinput-0.3.2-1_amd64
   lxinput-dbg-0.3.2-1_amd64
   lxlauncher-0.2.2-3_amd64
@@ -30288,7 +30260,7 @@ Packages:
   mangler-1.2.4-1_amd64
   mango-lassi-001+dfsg-5_amd64
   mapnik-utils-2.0.0+ds1-3+b4_amd64
-  mapserver-bin-6.0.1-3.2+deb7u1_amd64
+  mapserver-bin-6.0.1-3.2+deb7u2_amd64
   maptool-0.5.0~svn5126+dfsg.1-3_amd64
   maq-0.7.1-5_amd64
   maqview-0.2.5-4_amd64
@@ -30376,7 +30348,7 @@ Packages:
   melt-0.8.0-4_amd64
   melting-4.3c-2_amd64
   members-20080128-5_amd64
-  memcached-1.4.13-0.2_amd64
+  memcached-1.4.13-0.2+deb7u1_amd64
   memcachedb-1.2.0-9_amd64
   memdump-1.01-6.1_amd64
   memlockd-1.1.1_amd64
@@ -30685,7 +30657,7 @@ Packages:
   mudita24-1.0.3+svn13-4_amd64
   mudita24-dbg-1.0.3+svn13-4_amd64
   mudlet-2.0-rc12-3_amd64
-  multiarch-support-2.13-38_amd64
+  multiarch-support-2.13-38+deb7u1_amd64
   multicat-2.0-3_amd64
   multiget-1.2.0-3_amd64
   multimail-0.49-2_amd64
@@ -30755,12 +30727,12 @@ Packages:
   myproxy-server-5.6-1_amd64
   myrescue-0.9.4-5+b1_amd64
   myspell-tools-1:3.1-24_amd64
-  mysql-client-5.5-5.5.31+dfsg-0+wheezy1_amd64
+  mysql-client-5.5-5.5.33+dfsg-0+wheezy1_amd64
   mysql-proxy-0.8.1-1.1+b1_amd64
-  mysql-server-5.5-5.5.31+dfsg-0+wheezy1_amd64
-  mysql-server-core-5.5-5.5.31+dfsg-0+wheezy1_amd64
-  mysql-source-5.5-5.5.31+dfsg-0+wheezy1_amd64
-  mysql-testsuite-5.5-5.5.31+dfsg-0+wheezy1_amd64
+  mysql-server-5.5-5.5.33+dfsg-0+wheezy1_amd64
+  mysql-server-core-5.5-5.5.33+dfsg-0+wheezy1_amd64
+  mysql-source-5.5-5.5.33+dfsg-0+wheezy1_amd64
+  mysql-testsuite-5.5-5.5.33+dfsg-0+wheezy1_amd64
   mysql-workbench-5.2.40+dfsg-2_amd64
   mysqltcl-3.051-1+b1_amd64
   mysqmail-courier-logger-0.4.9-10_amd64
@@ -31005,7 +30977,7 @@ Packages:
   ns2-dbg-2.35+dfsg-1_amd64
   nsca-2.9.1-2_amd64
   nsca-client-2.9.1-2_amd64
-  nscd-2.13-38_amd64
+  nscd-2.13-38+deb7u1_amd64
   nsd3-3.2.12-3+deb7u1_amd64
   nsis-2.46-7_amd64
   nslcd-0.8.10-4_amd64
@@ -31038,13 +31010,13 @@ Packages:
   numlockx-1.2-4_amd64
   numptyphysics-0.2+svn156-1.1_amd64
   nurpawiki-1.2.3-5+b17_amd64
-  nut-cgi-2.6.4-2.3_amd64
-  nut-client-2.6.4-2.3_amd64
+  nut-cgi-2.6.4-2.3+deb7u1_amd64
+  nut-client-2.6.4-2.3+deb7u1_amd64
   nut-nutrition-15.5-1_amd64
-  nut-powerman-pdu-2.6.4-2.3_amd64
-  nut-server-2.6.4-2.3_amd64
-  nut-snmp-2.6.4-2.3_amd64
-  nut-xml-2.6.4-2.3_amd64
+  nut-powerman-pdu-2.6.4-2.3+deb7u1_amd64
+  nut-server-2.6.4-2.3+deb7u1_amd64
+  nut-snmp-2.6.4-2.3+deb7u1_amd64
+  nut-xml-2.6.4-2.3+deb7u1_amd64
   nutcpc-2.4.3-2.2_amd64
   nuttcp-6.1.2-4_amd64
   nvclock-0.8b4+cvs20100914-4_amd64
@@ -31316,7 +31288,7 @@ Packages:
   opensp-1.5.2-10_amd64
   openssh-client-1:6.0p1-4_amd64
   openssh-server-1:6.0p1-4_amd64
-  openssl-1.0.1e-2_amd64
+  openssl-1.0.1e-2+deb7u4_amd64
   openssn-1.3-1_amd64
   openssn-dbg-1.3-1_amd64
   openswan-1:2.6.37-3_amd64
@@ -31570,18 +31542,18 @@ Packages:
   pdlzip-1.3-2_amd64
   pdlzip-dbg-1.3-2_amd64
   pdmenu-1.3.2_amd64
-  pdns-backend-geo-3.1-4_amd64
-  pdns-backend-ldap-3.1-4_amd64
-  pdns-backend-lua-3.1-4_amd64
-  pdns-backend-mysql-3.1-4_amd64
-  pdns-backend-pgsql-3.1-4_amd64
-  pdns-backend-pipe-3.1-4_amd64
-  pdns-backend-sqlite-3.1-4_amd64
-  pdns-backend-sqlite3-3.1-4_amd64
+  pdns-backend-geo-3.1-4.1_amd64
+  pdns-backend-ldap-3.1-4.1_amd64
+  pdns-backend-lua-3.1-4.1_amd64
+  pdns-backend-mysql-3.1-4.1_amd64
+  pdns-backend-pgsql-3.1-4.1_amd64
+  pdns-backend-pipe-3.1-4.1_amd64
+  pdns-backend-sqlite-3.1-4.1_amd64
+  pdns-backend-sqlite3-3.1-4.1_amd64
   pdns-recursor-3.3-3_amd64
   pdns-recursor-dbg-3.3-3_amd64
-  pdns-server-3.1-4_amd64
-  pdns-server-dbg-3.1-4_amd64
+  pdns-server-3.1-4.1_amd64
+  pdns-server-dbg-3.1-4.1_amd64
   pdnsd-1.2.8-par-3_amd64
   pdsh-2.27-2_amd64
   pearpc-0.4.0-5_amd64
@@ -31663,54 +31635,54 @@ Packages:
   php-wikidiff2-0.0.1+svn109581-1_amd64
   php-zeroc-ice-3.4.2-8.2_amd64
   php5-adodb-5.04-7+b1_amd64
-  php5-cgi-5.4.4-14+deb7u5_amd64
-  php5-cli-5.4.4-14+deb7u5_amd64
-  php5-common-5.4.4-14+deb7u5_amd64
-  php5-curl-5.4.4-14+deb7u5_amd64
-  php5-dbg-5.4.4-14+deb7u5_amd64
-  php5-dev-5.4.4-14+deb7u5_amd64
-  php5-enchant-5.4.4-14+deb7u5_amd64
+  php5-cgi-5.4.4-14+deb7u7_amd64
+  php5-cli-5.4.4-14+deb7u7_amd64
+  php5-common-5.4.4-14+deb7u7_amd64
+  php5-curl-5.4.4-14+deb7u7_amd64
+  php5-dbg-5.4.4-14+deb7u7_amd64
+  php5-dev-5.4.4-14+deb7u7_amd64
+  php5-enchant-5.4.4-14+deb7u7_amd64
   php5-exactimage-0.8.5-5+deb7u3_amd64
   php5-ffmpeg-0.6.0-2.2_amd64
-  php5-fpm-5.4.4-14+deb7u5_amd64
-  php5-gd-5.4.4-14+deb7u5_amd64
+  php5-fpm-5.4.4-14+deb7u7_amd64
+  php5-gd-5.4.4-14+deb7u7_amd64
   php5-gdcm-2.2.0-14.1_amd64
   php5-geoip-1.0.7-8_amd64
-  php5-gmp-5.4.4-14+deb7u5_amd64
+  php5-gmp-5.4.4-14+deb7u7_amd64
   php5-imagick-3.1.0~rc1-1+b2_amd64
-  php5-imap-5.4.4-14+deb7u5_amd64
-  php5-interbase-5.4.4-14+deb7u5_amd64
-  php5-intl-5.4.4-14+deb7u5_amd64
+  php5-imap-5.4.4-14+deb7u7_amd64
+  php5-interbase-5.4.4-14+deb7u7_amd64
+  php5-intl-5.4.4-14+deb7u7_amd64
   php5-lasso-2.3.6-2_amd64
-  php5-ldap-5.4.4-14+deb7u5_amd64
+  php5-ldap-5.4.4-14+deb7u7_amd64
   php5-librdf-1.0.14.1-1_amd64
-  php5-mapscript-6.0.1-3.2+deb7u1_amd64
-  php5-mcrypt-5.4.4-14+deb7u5_amd64
+  php5-mapscript-6.0.1-3.2+deb7u2_amd64
+  php5-mcrypt-5.4.4-14+deb7u7_amd64
   php5-memcache-3.0.6-6_amd64
   php5-memcached-2.0.1-6_amd64
   php5-ming-1:0.4.4-1.1_amd64
-  php5-mysql-5.4.4-14+deb7u5_amd64
-  php5-mysqlnd-5.4.4-14+deb7u5_amd64
-  php5-odbc-5.4.4-14+deb7u5_amd64
-  php5-pgsql-5.4.4-14+deb7u5_amd64
+  php5-mysql-5.4.4-14+deb7u7_amd64
+  php5-mysqlnd-5.4.4-14+deb7u7_amd64
+  php5-odbc-5.4.4-14+deb7u7_amd64
+  php5-pgsql-5.4.4-14+deb7u7_amd64
   php5-ps-1.3.7-1_amd64
-  php5-pspell-5.4.4-14+deb7u5_amd64
+  php5-pspell-5.4.4-14+deb7u7_amd64
   php5-radius-1.2.5-2.3+deb7u1_amd64
-  php5-recode-5.4.4-14+deb7u5_amd64
+  php5-recode-5.4.4-14+deb7u7_amd64
   php5-remctl-3.2-4_amd64
   php5-rrd-1.1.0-1_amd64
   php5-sasl-0.1.0-1.2+b1_amd64
-  php5-snmp-5.4.4-14+deb7u5_amd64
-  php5-sqlite-5.4.4-14+deb7u5_amd64
+  php5-snmp-5.4.4-14+deb7u7_amd64
+  php5-sqlite-5.4.4-14+deb7u7_amd64
   php5-svn-1.0.1-1.2_amd64
-  php5-sybase-5.4.4-14+deb7u5_amd64
-  php5-tidy-5.4.4-14+deb7u5_amd64
+  php5-sybase-5.4.4-14+deb7u7_amd64
+  php5-tidy-5.4.4-14+deb7u7_amd64
   php5-tokyo-tyrant-0.6.0-2+b1_amd64
   php5-vtkgdcm-2.2.0-14.1_amd64
   php5-xcache-2.0.0-4_amd64
   php5-xdebug-2.2.1-2_amd64
-  php5-xmlrpc-5.4.4-14+deb7u5_amd64
-  php5-xsl-5.4.4-14+deb7u5_amd64
+  php5-xmlrpc-5.4.4-14+deb7u7_amd64
+  php5-xsl-5.4.4-14+deb7u7_amd64
   phyml-2:20110919-1_amd64
   pi-1.3.2-1.2_amd64
   pia-3.102-3_amd64
@@ -31984,8 +31956,8 @@ Packages:
   printer-driver-escpr-1.1.1-2_amd64
   printer-driver-foo2zjs-20120510dfsg0-1_amd64
   printer-driver-gutenprint-5.2.9-1_amd64
-  printer-driver-hpcups-3.12.6-3.1_amd64
-  printer-driver-hpijs-3.12.6-3.1_amd64
+  printer-driver-hpcups-3.12.6-3.1+deb7u1_amd64
+  printer-driver-hpijs-3.12.6-3.1+deb7u1_amd64
   printer-driver-m2300w-0.51-7_amd64
   printer-driver-min12xxw-0.0.9-6_amd64
   printer-driver-pnm2ppa-1.13-4_amd64
@@ -32320,7 +32292,7 @@ Packages:
   python-gst0.10-dbg-0.10.22-3_amd64
   python-gst0.10-dev-0.10.22-3_amd64
   python-gst0.10-rtsp-0.10.8-3_amd64
-  python-gtk-gnash-0.8.11~git20120629-1_amd64
+  python-gtk-gnash-0.8.11~git20120629-1+deb7u1_amd64
   python-gtk-vnc-0.5.0-3.1_amd64
   python-gtk2-2.24.0-3+b1_amd64
   python-gtk2-dbg-2.24.0-3+b1_amd64
@@ -32398,7 +32370,7 @@ Packages:
   python-libtorrent-0.15.10-1+b1_amd64
   python-libtorrent-dbg-0.15.10-1+b1_amd64
   python-libuser-1:0.56.9.dfsg.1-1.2_amd64
-  python-libvirt-0.9.12-11+deb7u4_amd64
+  python-libvirt-0.9.12.3-1_amd64
   python-libxml2-2.8.0+dfsg1-7+nmu2_amd64
   python-libxml2-dbg-2.8.0+dfsg1-7+nmu2_amd64
   python-libxslt1-1.1.26-14.1_amd64
@@ -32424,7 +32396,7 @@ Packages:
   python-magics++-2.14.11-4_amd64
   python-mailutils-1:2.99.97-3_amd64
   python-mapnik2-2.0.0+ds1-3+b4_amd64
-  python-mapscript-6.0.1-3.2+deb7u1_amd64
+  python-mapscript-6.0.1-3.2+deb7u2_amd64
   python-markupsafe-0.15-1_amd64
   python-markupsafe-dbg-0.15-1_amd64
   python-mathgl-1.11.2-17_amd64
@@ -32748,7 +32720,7 @@ Packages:
   python-usbtc08-0.1.1-2_amd64
   python-utmp-0.8+nmu1+b1_amd64
   python-vigra-1.7.1+dfsg1-3_amd64
-  python-vipscc-7.28.5-1_amd64
+  python-vipscc-7.28.5-1+deb7u1_amd64
   python-visual-1:5.12-1.5_amd64
   python-vte-1:0.28.2-5_amd64
   python-vtk-5.8.0-13+b1_amd64
@@ -33470,8 +33442,8 @@ Packages:
   ruby-gpgme-2.0.0-2_amd64
   ruby-grib-0.2.2-3_amd64
   ruby-grib-dbg-0.2.2-3_amd64
-  ruby-gsl-1.14.7-1_amd64
-  ruby-gsl-dbg-1.14.7-1_amd64
+  ruby-gsl-1.14.7+dfsg-1_amd64
+  ruby-gsl-dbg-1.14.7+dfsg-1_amd64
   ruby-gstreamer-1.1.3-2+b1_amd64
   ruby-gstreamer-dbg-1.1.3-2+b1_amd64
   ruby-gtk2-1.1.3-2+b1_amd64
@@ -33509,7 +33481,7 @@ Packages:
   ruby-odbc-dbg-0.99994-4_amd64
   ruby-oily-png-1.0.2-2_amd64
   ruby-okular-4:4.8.4-1_amd64
-  ruby-opengl-0.60.1+dfsg1-2_amd64
+  ruby-opengl-0.60.1+dfsg2-1~wheezy1_amd64
   ruby-pango-1.1.3-2+b1_amd64
   ruby-pango-dbg-1.1.3-2+b1_amd64
   ruby-passenger-3.0.13debian-1+deb7u1_amd64
@@ -33579,7 +33551,7 @@ Packages:
   runlim-1.7-1_amd64
   rusers-0.17-8_amd64
   rusersd-0.17-8_amd64
-  rush-1.7+dfsg-1_amd64
+  rush-1.7+dfsg-1+deb7u1_amd64
   rwall-0.17-7_amd64
   rwalld-0.17-7_amd64
   rwho-0.17-12_amd64
@@ -33621,18 +33593,18 @@ Packages:
   saint-2.3.3-1_amd64
   sakura-3.0.4-2_amd64
   sam2p-0.49.1-1_amd64
-  samba-2:3.6.6-6+deb7u1_amd64
-  samba-common-bin-2:3.6.6-6+deb7u1_amd64
-  samba-dbg-2:3.6.6-6+deb7u1_amd64
+  samba-2:3.6.6-6+deb7u2_amd64
+  samba-common-bin-2:3.6.6-6+deb7u2_amd64
+  samba-dbg-2:3.6.6-6+deb7u2_amd64
   samba-dsdb-modules-4.0.0~beta2+dfsg1-3.2_amd64
-  samba-tools-2:3.6.6-6+deb7u1_amd64
+  samba-tools-2:3.6.6-6+deb7u2_amd64
   samba4-4.0.0~beta2+dfsg1-3.2_amd64
   samba4-clients-4.0.0~beta2+dfsg1-3.2_amd64
   samba4-common-bin-4.0.0~beta2+dfsg1-3.2_amd64
   samba4-dev-4.0.0~beta2+dfsg1-3.2_amd64
   samba4-testsuite-4.0.0~beta2+dfsg1-3.2_amd64
   samdump2-1.1.1-1.1_amd64
-  samhain-2.8.3a-1_amd64
+  samhain-2.8.3a-1+deb7u1_amd64
   sampleicc-tools-1.6.4-1+b1_amd64
   samplerate-programs-0.1.8-5_amd64
   samtools-0.1.18-1_amd64
@@ -33919,7 +33891,7 @@ Packages:
   smb-nat-1:1.0-4_amd64
   smb4k-1.0.1-1_amd64
   smbc-1.2.2-3_amd64
-  smbclient-2:3.6.6-6+deb7u1_amd64
+  smbclient-2:3.6.6-6+deb7u2_amd64
   smbnetfs-0.5.3a-1_amd64
   smc-1.9+git20120222-1+b1_amd64
   smcroute-0.95-1+deb7u1_amd64
@@ -34024,7 +33996,7 @@ Packages:
   spew-1.0.8-1_amd64
   spfquery-1.2.9-7_amd64
   sphinxsearch-2.0.4-1.1_amd64
-  spice-client-0.11.0-1_amd64
+  spice-client-0.11.0-1+deb7u1_amd64
   spice-client-gtk-0.12-5_amd64
   spice-vdagent-0.10.1-1_amd64
   spidermonkey-bin-17.0.10esr-1~deb7u1_amd64
@@ -34079,7 +34051,7 @@ Packages:
   sredird-2.2.1-1.1_amd64
   srg-1.3.6-1_amd64
   srptools-0.0.4-1.2_amd64
-  srtp-utils-1.4.4+20100615~dfsg-2_amd64
+  srtp-utils-1.4.4+20100615~dfsg-2+deb7u1_amd64
   ss-dev-2.0-1.42.5-1.1_amd64
   ssdeep-2.7-2_amd64
   ssed-3.62-7_amd64
@@ -34209,7 +34181,7 @@ Packages:
   swami-2.0.0+svn389-2_amd64
   swami-dbg-2.0.0+svn389-2_amd64
   swapspace-1.10-4_amd64
-  swat-2:3.6.6-6+deb7u1_amd64
+  swat-2:3.6.6-6+deb7u2_amd64
   swath-0.4.3-3_amd64
   sweep-0.9.3-6_amd64
   sweeper-4:4.8.4-1_amd64
@@ -34645,7 +34617,7 @@ Packages:
   trustedqsl-1.13-3_amd64
   tsdecrypt-8.1-1_amd64
   tse3play-0.3.1-4.3_amd64
-  tshark-1.8.2-5wheezy7_amd64
+  tshark-1.8.2-5wheezy9_amd64
   tsocks-1.8beta5-9.2_amd64
   tstools-1.11-1_amd64
   tsung-1.4.2-1.1_amd64
@@ -34677,10 +34649,10 @@ Packages:
   tuxcmd-0.6.70+dfsg-1_amd64
   tuxcmd-modules-0.6.70+ds-4_amd64
   tuxfootball-0.3.1-2_amd64
-  tuxguitar-alsa-1.2-13_amd64
-  tuxguitar-fluidsynth-1.2-13_amd64
-  tuxguitar-jack-1.2-13_amd64
-  tuxguitar-oss-1.2-13_amd64
+  tuxguitar-alsa-1.2-13+deb7u1_amd64
+  tuxguitar-fluidsynth-1.2-13+deb7u1_amd64
+  tuxguitar-jack-1.2-13+deb7u1_amd64
+  tuxguitar-oss-1.2-13+deb7u1_amd64
   tuxmath-1.8.0-4_amd64
   tuxonice-userui-1.1-1_amd64
   tuxpaint-1:0.9.21-1.1_amd64
@@ -34853,7 +34825,7 @@ Packages:
   usbutils-1:005-3_amd64
   usbview-1.1-1_amd64
   usepackage-1.8-1_amd64
-  user-mode-linux-3.2-2um-1+deb7u2+b1_amd64
+  user-mode-linux-3.2-2um-1+deb7u2+b2_amd64
   userinfo-2.2-3_amd64
   usermode-1.109-1_amd64
   userv-1.1.1_amd64
@@ -34943,8 +34915,8 @@ Packages:
   vamp-plugin-sdk-2.1-1_amd64
   vamps-0.99.2-4_amd64
   varmon-1.2.1-1_amd64
-  varnish-3.0.2-2_amd64
-  varnish-dbg-3.0.2-2_amd64
+  varnish-3.0.2-2+deb7u1_amd64
+  varnish-dbg-3.0.2-2+deb7u1_amd64
   vavoom-1.33-4_amd64
   vbetool-1.1-2_amd64
   vbindiff-3.0-beta3-1_amd64
@@ -35155,11 +35127,11 @@ Packages:
   wesnoth-1.10-server-1:1.10.3-3_amd64
   west-chamber-common-20100405+svn20111107.r124-1_amd64
   wfut-0.2.1-2_amd64
-  wget-1.13.4-3_amd64
+  wget-1.13.4-3+deb7u1_amd64
   whichman-2.4-7_amd64
   whiptail-0.52.14-11.1_amd64
   whitedune-0.30.10-1.1_amd64
-  whois-5.0.23_amd64
+  whois-5.1.1~deb7u1_amd64
   whowatch-1.6.0a-2_amd64
   why-2.30+dfsg-5+b1_amd64
   whysynth-20090403-1.2_amd64
@@ -35173,7 +35145,7 @@ Packages:
   wiipdf-1.4-2_amd64
   wildmidi-0.2.3.4-2.1_amd64
   wily-0.13.41-7.2_amd64
-  winbind-2:3.6.6-6+deb7u1_amd64
+  winbind-2:3.6.6-6+deb7u2_amd64
   winbind4-4.0.0~beta2+dfsg1-3.2_amd64
   windowlab-1.40-1_amd64
   wine-1.4.1-4_amd64
@@ -35186,10 +35158,10 @@ Packages:
   winwrangler-0.2.4-3_amd64
   wipe-0.22-1_amd64
   wireless-tools-30~pre9-8_amd64
-  wireshark-1.8.2-5wheezy7_amd64
-  wireshark-common-1.8.2-5wheezy7_amd64
-  wireshark-dbg-1.8.2-5wheezy7_amd64
-  wireshark-dev-1.8.2-5wheezy7_amd64
+  wireshark-1.8.2-5wheezy9_amd64
+  wireshark-common-1.8.2-5wheezy9_amd64
+  wireshark-dbg-1.8.2-5wheezy9_amd64
+  wireshark-dev-1.8.2-5wheezy9_amd64
   wise-2.4.1-10_amd64
   witty-examples-3.2.1-2_amd64
   wizznic-0.9.2-preview2+dfsg-1.1_amd64
@@ -35396,15 +35368,15 @@ Packages:
   xdiskusage-1.48-10.1_amd64
   xdm-1:1.1.11-1_amd64
   xdms-1.3.2-4_amd64
-  xdmx-2:1.12.4-6+deb7u1_amd64
-  xdmx-tools-2:1.12.4-6+deb7u1_amd64
+  xdmx-2:1.12.4-6+deb7u2_amd64
+  xdmx-tools-2:1.12.4-6+deb7u2_amd64
   xdotool-1:2.20100701.2961-3+deb7u3_amd64
   xdrawchem-2.0-2_amd64
   xdu-3.0-18_amd64
   xdvik-ja-22.84.16-j1.40+t1lib-1_amd64
   xen-hypervisor-4.1-amd64-4.1.4-3+deb7u1_amd64
   xen-linux-system-2.6-xen-amd64-3.2+46_amd64
-  xen-linux-system-3.2.0-4-amd64-3.2.51-1_amd64
+  xen-linux-system-3.2.0-4-amd64-3.2.54-2_amd64
   xen-linux-system-amd64-3.2+46_amd64
   xen-system-amd64-4.1.4-3+deb7u1_amd64
   xen-utils-4.1-4.1.4-3+deb7u1_amd64
@@ -35463,7 +35435,7 @@ Packages:
   xfce4-verve-plugin-1.0.0-1+b1_amd64
   xfce4-volumed-0.1.13-3_amd64
   xfce4-wavelan-plugin-0.5.11-1+b1_amd64
-  xfce4-weather-plugin-0.7.4-4_amd64
+  xfce4-weather-plugin-0.7.4-5_amd64
   xfce4-wmdock-plugin-0.3.4-1+b1_amd64
   xfce4-xkb-plugin-0.5.4.3-1+b1_amd64
   xfconf-4.8.1-1_amd64
@@ -35624,7 +35596,7 @@ Packages:
   xnbd-server-0.1.0-pre-hg20-e75b93a47722-3_amd64
   xnec2c-1:1.4-1_amd64
   xnecview-1.35-7.1_amd64
-  xnest-2:1.12.4-6+deb7u1_amd64
+  xnest-2:1.12.4-6+deb7u2_amd64
   xneur-0.15.0-1.1_amd64
   xneur-dbg-0.15.0-1.1_amd64
   xonix-1.4-29_amd64
@@ -35682,12 +35654,12 @@ Packages:
   xsdcxx-3.3.0.1-1.3_amd64
   xsel-1.2.0-1_amd64
   xsensors-0.70-2_amd64
-  xserver-xephyr-2:1.12.4-6+deb7u1_amd64
-  xserver-xfbdev-2:1.12.4-6+deb7u1_amd64
+  xserver-xephyr-2:1.12.4-6+deb7u2_amd64
+  xserver-xfbdev-2:1.12.4-6+deb7u2_amd64
   xserver-xorg-1:7.7+3~deb7u1_amd64
-  xserver-xorg-core-2:1.12.4-6+deb7u1_amd64
-  xserver-xorg-core-dbg-2:1.12.4-6+deb7u1_amd64
-  xserver-xorg-dev-2:1.12.4-6+deb7u1_amd64
+  xserver-xorg-core-2:1.12.4-6+deb7u2_amd64
+  xserver-xorg-core-dbg-2:1.12.4-6+deb7u2_amd64
+  xserver-xorg-dev-2:1.12.4-6+deb7u2_amd64
   xserver-xorg-input-acecad-1:1.5.0-1+b2_amd64
   xserver-xorg-input-aiptek-1:1.4.1-1+b2_amd64
   xserver-xorg-input-all-1:7.7+3~deb7u1_amd64
@@ -35791,7 +35763,7 @@ Packages:
   xulrunner-17.0-dbg-17.0.10esr-1~deb7u1_amd64
   xulrunner-dev-17.0.10esr-1~deb7u1_amd64
   xutils-dev-1:7.7~1_amd64
-  xvfb-2:1.12.4-6+deb7u1_amd64
+  xvfb-2:1.12.4-6+deb7u2_amd64
   xvier-1.0-7.5_amd64
   xview-clients-3.2p1.4-28.1_amd64
   xview-examples-3.2p1.4-28.1_amd64
@@ -36217,19 +36189,19 @@ Packages:
   aolserver4-nsxml-1.5-2.1_i386
   aosd-cat-0.2.7-1_i386
   ap-utils-1.5-2_i386
-  apache2-2.2.22-13_i386
-  apache2-dbg-2.2.22-13_i386
-  apache2-mpm-event-2.2.22-13_i386
-  apache2-mpm-itk-2.2.22-13_i386
-  apache2-mpm-prefork-2.2.22-13_i386
-  apache2-mpm-worker-2.2.22-13_i386
-  apache2-prefork-dev-2.2.22-13_i386
-  apache2-suexec-2.2.22-13_i386
-  apache2-suexec-custom-2.2.22-13_i386
-  apache2-threaded-dev-2.2.22-13_i386
-  apache2-utils-2.2.22-13_i386
-  apache2.2-bin-2.2.22-13_i386
-  apache2.2-common-2.2.22-13_i386
+  apache2-2.2.22-13+deb7u1_i386
+  apache2-dbg-2.2.22-13+deb7u1_i386
+  apache2-mpm-event-2.2.22-13+deb7u1_i386
+  apache2-mpm-itk-2.2.22-13+deb7u1_i386
+  apache2-mpm-prefork-2.2.22-13+deb7u1_i386
+  apache2-mpm-worker-2.2.22-13+deb7u1_i386
+  apache2-prefork-dev-2.2.22-13+deb7u1_i386
+  apache2-suexec-2.2.22-13+deb7u1_i386
+  apache2-suexec-custom-2.2.22-13+deb7u1_i386
+  apache2-threaded-dev-2.2.22-13+deb7u1_i386
+  apache2-utils-2.2.22-13+deb7u1_i386
+  apache2.2-bin-2.2.22-13+deb7u1_i386
+  apache2.2-common-2.2.22-13+deb7u1_i386
   apachetop-0.12.6-16_i386
   apbs-1.3.0-2_i386
   apcalc-2.12.4.4-3_i386
@@ -36346,19 +36318,19 @@ Packages:
   aspic-1.05-4_i386
   assimp-utils-3.0~dfsg-1_i386
   assogiate-0.2.1-5_i386
-  asterisk-1:1.8.13.1~dfsg-3_i386
-  asterisk-dahdi-1:1.8.13.1~dfsg-3_i386
-  asterisk-dbg-1:1.8.13.1~dfsg-3_i386
+  asterisk-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-dahdi-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-dbg-1:1.8.13.1~dfsg1-3+deb7u3_i386
   asterisk-espeak-2.1-1+b1_i386
   asterisk-flite-2.1-1.1_i386
-  asterisk-mobile-1:1.8.13.1~dfsg-3_i386
-  asterisk-modules-1:1.8.13.1~dfsg-3_i386
-  asterisk-mp3-1:1.8.13.1~dfsg-3_i386
-  asterisk-mysql-1:1.8.13.1~dfsg-3_i386
-  asterisk-ooh323-1:1.8.13.1~dfsg-3_i386
-  asterisk-voicemail-1:1.8.13.1~dfsg-3_i386
-  asterisk-voicemail-imapstorage-1:1.8.13.1~dfsg-3_i386
-  asterisk-voicemail-odbcstorage-1:1.8.13.1~dfsg-3_i386
+  asterisk-mobile-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-modules-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-mp3-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-mysql-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-ooh323-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-voicemail-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-voicemail-imapstorage-1:1.8.13.1~dfsg1-3+deb7u3_i386
+  asterisk-voicemail-odbcstorage-1:1.8.13.1~dfsg1-3+deb7u3_i386
   astronomical-almanac-5.6-4_i386
   astyle-2.01-1_i386
   asunder-2.2-1_i386
@@ -36534,7 +36506,7 @@ Packages:
   barrybackup-gui-dbg-0.18.3-5_i386
   barrydesktop-0.18.3-5_i386
   barrydesktop-dbg-0.18.3-5_i386
-  base-files-7.1wheezy3_i386
+  base-files-7.1wheezy4_i386
   base-passwd-3.5.26_i386
   bash-4.2+dfsg-0.1_i386
   bash-builtins-4.2+dfsg-0.1_i386
@@ -36758,7 +36730,7 @@ Packages:
   brltty-speechd-4.4-10+deb7u1_i386
   brltty-x11-4.4-10+deb7u1_i386
   browser-history-2.8-15_i386
-  browser-plugin-gnash-0.8.11~git20120629-1_i386
+  browser-plugin-gnash-0.8.11~git20120629-1+deb7u1_i386
   browser-plugin-lightspark-0.6.0.1-2_i386
   browser-plugin-packagekit-0.7.6-3_i386
   browser-plugin-vlc-2.0.0-2_i386
@@ -36996,7 +36968,7 @@ Packages:
   cflow-1:1.4+dfsg1-2_i386
   cfourcc-0.1.2-8_i386
   cgdb-0.6.6-2_i386
-  cgi-mapserver-6.0.1-3.2+deb7u1_i386
+  cgi-mapserver-6.0.1-3.2+deb7u2_i386
   cgiemail-1.6-37_i386
   cgilib-0.6-1_i386
   cgns-convert-3.1.3.4-1+b1_i386
@@ -37360,8 +37332,8 @@ Packages:
   csv2latex-0.18-2_i386
   csvtool-1.2.2-1+b1_i386
   csync2-1.34-2.2+b1_i386
-  ctdb-1.12+git20120201-3_i386
-  ctdb-dbg-1.12+git20120201-3_i386
+  ctdb-1.12+git20120201-4_i386
+  ctdb-dbg-1.12+git20120201-4_i386
   ctn-3.0.6-13+b2_i386
   ctn-dev-3.0.6-13+b2_i386
   ctorrent-1.3.4.dnh3.3.2-4_i386
@@ -37385,7 +37357,7 @@ Packages:
   cups-pk-helper-0.2.3-3_i386
   cups-ppdc-1.5.3-5+deb7u1_i386
   cupt-2.5.9_i386
-  curl-7.26.0-1+wheezy6_i386
+  curl-7.26.0-1+wheezy8_i386
   curlftpfs-0.9.2-5_i386
   curtain-0.1-1_i386
   curves-0.8.19+b2_i386
@@ -37527,7 +37499,7 @@ Packages:
   debconf-kde-helper-0.2-2_i386
   debdelta-0.50+2_i386
   debfoster-2.7-1.2_i386
-  debian-installer-20130613+deb7u1+b1_i386
+  debian-installer-20130613+deb7u1+b2_i386
   debian-xcontrol-0.0.4-1.1+b3_i386
   debianutils-4.3.2_i386
   deborphan-1.7.28.8_i386
@@ -37562,7 +37534,7 @@ Packages:
   devilspie2-0.20-1_i386
   devio-1.2-1+b1_i386
   devrplay3-3.3.2-14_i386
-  devscripts-2.12.6+deb7u1_i386
+  devscripts-2.12.6+deb7u2_i386
   devtodo-0.1.20-6_i386
   dfc-2.5.0-1_i386
   dff-1.2.0+dfsg.1-1_i386
@@ -38351,7 +38323,7 @@ Packages:
   ffe-0.2.8-1_i386
   ffindex-0.9.6.1-1_i386
   ffindex-dbg-0.9.6.1-1_i386
-  ffmpeg-6:0.8.6-1_i386
+  ffmpeg-6:0.8.9-1_i386
   ffmpeg2theora-0.27-2_i386
   ffmpegthumbnailer-2.0.7-2_i386
   ffmpegthumbnailer-dbg-2.0.7-2_i386
@@ -38780,7 +38752,7 @@ Packages:
   garlic-1.6-1.1_i386
   garmin-ant-downloader-0:20110626-1_i386
   garmin-forerunner-tools-0.10-3_i386
-  gatling-0.12cvs20120114-3_i386
+  gatling-0.12cvs20120114-4_i386
   gatos-0.0.5-19_i386
   gauche-0.9.1-5.1_i386
   gauche-c-wrapper-0.6.1-4.1_i386
@@ -39049,9 +39021,9 @@ Packages:
   gigolo-dbg-0.4.1+dfsg-1_i386
   gigtools-3.3.0-2_i386
   gimmix-0.5.7.1-4_i386
-  gimp-2.8.2-2_i386
+  gimp-2.8.2-2+deb7u1_i386
   gimp-cbmplugs-1.2.2-1_i386
-  gimp-dbg-2.8.2-2_i386
+  gimp-dbg-2.8.2-2+deb7u1_i386
   gimp-dcraw-1.31-1.1_i386
   gimp-dds-2.0.9-3_i386
   gimp-dimage-color-1.1.0-3.1_i386
@@ -39363,15 +39335,15 @@ Packages:
   gmysqlcc-0.3.0-2+b2_i386
   gnac-0.2.4-1_i386
   gnarwl-3.6.dfsg-6.2_i386
-  gnash-0.8.11~git20120629-1_i386
-  gnash-common-0.8.11~git20120629-1_i386
-  gnash-cygnal-0.8.11~git20120629-1_i386
-  gnash-dbg-0.8.11~git20120629-1_i386
-  gnash-dev-0.8.11~git20120629-1_i386
-  gnash-ext-fileio-0.8.11~git20120629-1_i386
-  gnash-ext-lirc-0.8.11~git20120629-1_i386
-  gnash-ext-mysql-0.8.11~git20120629-1_i386
-  gnash-tools-0.8.11~git20120629-1_i386
+  gnash-0.8.11~git20120629-1+deb7u1_i386
+  gnash-common-0.8.11~git20120629-1+deb7u1_i386
+  gnash-cygnal-0.8.11~git20120629-1+deb7u1_i386
+  gnash-dbg-0.8.11~git20120629-1+deb7u1_i386
+  gnash-dev-0.8.11~git20120629-1+deb7u1_i386
+  gnash-ext-fileio-0.8.11~git20120629-1+deb7u1_i386
+  gnash-ext-lirc-0.8.11~git20120629-1+deb7u1_i386
+  gnash-ext-mysql-0.8.11~git20120629-1+deb7u1_i386
+  gnash-tools-0.8.11~git20120629-1+deb7u1_i386
   gnat-4.6_i386
   gnat-4.6-4.6.3-8_i386
   gnat-4.6-base-4.6.3-8_i386
@@ -39509,9 +39481,9 @@ Packages:
   gnunet-gtk-dbg-0.9.3-1_i386
   gnunet-gtk-dev-0.9.3-1_i386
   gnunet-server-0.9.3-7_i386
-  gnupg-1.4.12-7+deb7u2_i386
+  gnupg-1.4.12-7+deb7u3_i386
   gnupg-agent-2.0.19-2+deb7u1_i386
-  gnupg-curl-1.4.12-7+deb7u2_i386
+  gnupg-curl-1.4.12-7+deb7u3_i386
   gnupg-pkcs11-scd-0.7.3-1_i386
   gnupg-pkcs11-scd-dbg-0.7.3-1_i386
   gnupg2-2.0.19-2+deb7u1_i386
@@ -39632,7 +39604,7 @@ Packages:
   gperiodic-2.0.10-7_i386
   gpesyncd-2.0-1_i386
   gpgsm-2.0.19-2+deb7u1_i386
-  gpgv-1.4.12-7+deb7u2_i386
+  gpgv-1.4.12-7+deb7u3_i386
   gphoto2-2.4.14-1_i386
   gphotofs-0.4.0-6_i386
   gphpedit-0.9.98-2_i386
@@ -39686,7 +39658,7 @@ Packages:
   graphicsmagick-1.3.16-1.1_i386
   graphicsmagick-dbg-1.3.16-1.1_i386
   graphthing-1.3.2-3.1_i386
-  graphviz-2.26.3-14_i386
+  graphviz-2.26.3-14+deb7u1_i386
   grass-core-6.4.2-2_i386
   grass-dev-6.4.2-2_i386
   grass-gui-6.4.2-2_i386
@@ -40044,8 +40016,8 @@ Packages:
   hpanel-0.3.2-4_i386
   hpcc-1.4.1-2_i386
   hping3-3.a2.ds2-6_i386
-  hplip-3.12.6-3.1_i386
-  hplip-dbg-3.12.6-3.1_i386
+  hplip-3.12.6-3.1+deb7u1_i386
+  hplip-dbg-3.12.6-3.1+deb7u1_i386
   hpsockd-0.17+b1_i386
   hscolour-1.19-3+b1_i386
   hsetroot-1.0.2-1_i386
@@ -40125,8 +40097,6 @@ Packages:
   icc-utils-1.4.0-8_i386
   ice34-services-3.4.2-8.2_i386
   ice34-translators-3.4.2-8.2_i386
-  iceape-2.7.12-1_i386
-  iceape-dbg-2.7.12-1_i386
   icebox-3.4.2-8.2_i386
   icebreaker-1.21-11_i386
   icecast2-2.3.2-9+deb7u2_i386
@@ -40683,7 +40653,7 @@ Packages:
   kerneltop-0.8-2.1_i386
   ketm-0.0.6-22_i386
   keurocalc-1.2.0-1_i386
-  kexec-tools-1:2.0.3-1_i386
+  kexec-tools-1:2.0.3-1+deb7u1_i386
   kexi-1:2.4.4-3_i386
   kexi-calligrasheets-driver-1:2.4.4-3_i386
   kexi-map-form-widget-1:2.4.4-3_i386
@@ -40703,43 +40673,43 @@ Packages:
   kfourinline-4:4.8.4-3_i386
   kfreebsd-headers-486-9+1_i386
   kfreebsd-headers-686-9+1_i386
-  kfreebsd-headers-8-486-8.3-6_i386
-  kfreebsd-headers-8-686-8.3-6_i386
-  kfreebsd-headers-8-686-smp-8.3-6_i386
-  kfreebsd-headers-8-xen-8.3-6_i386
-  kfreebsd-headers-8.3-1-8.3-6_i386
-  kfreebsd-headers-8.3-1-486-8.3-6_i386
-  kfreebsd-headers-8.3-1-686-8.3-6_i386
-  kfreebsd-headers-8.3-1-686-smp-8.3-6_i386
-  kfreebsd-headers-8.3-1-xen-8.3-6_i386
-  kfreebsd-headers-9-486-9.0-10+deb70.5_i386
-  kfreebsd-headers-9-686-9.0-10+deb70.5_i386
-  kfreebsd-headers-9-686-smp-9.0-10+deb70.5_i386
-  kfreebsd-headers-9-xen-9.0-10+deb70.5_i386
-  kfreebsd-headers-9.0-2-9.0-10+deb70.5_i386
-  kfreebsd-headers-9.0-2-486-9.0-10+deb70.5_i386
-  kfreebsd-headers-9.0-2-686-9.0-10+deb70.5_i386
-  kfreebsd-headers-9.0-2-686-smp-9.0-10+deb70.5_i386
-  kfreebsd-headers-9.0-2-xen-9.0-10+deb70.5_i386
+  kfreebsd-headers-8-486-8.3-6+deb7u1_i386
+  kfreebsd-headers-8-686-8.3-6+deb7u1_i386
+  kfreebsd-headers-8-686-smp-8.3-6+deb7u1_i386
+  kfreebsd-headers-8-xen-8.3-6+deb7u1_i386
+  kfreebsd-headers-8.3-1-8.3-6+deb7u1_i386
+  kfreebsd-headers-8.3-1-486-8.3-6+deb7u1_i386
+  kfreebsd-headers-8.3-1-686-8.3-6+deb7u1_i386
+  kfreebsd-headers-8.3-1-686-smp-8.3-6+deb7u1_i386
+  kfreebsd-headers-8.3-1-xen-8.3-6+deb7u1_i386
+  kfreebsd-headers-9-486-9.0-10+deb70.6_i386
+  kfreebsd-headers-9-686-9.0-10+deb70.6_i386
+  kfreebsd-headers-9-686-smp-9.0-10+deb70.6_i386
+  kfreebsd-headers-9-xen-9.0-10+deb70.6_i386
+  kfreebsd-headers-9.0-2-9.0-10+deb70.6_i386
+  kfreebsd-headers-9.0-2-486-9.0-10+deb70.6_i386
+  kfreebsd-headers-9.0-2-686-9.0-10+deb70.6_i386
+  kfreebsd-headers-9.0-2-686-smp-9.0-10+deb70.6_i386
+  kfreebsd-headers-9.0-2-xen-9.0-10+deb70.6_i386
   kfreebsd-headers-xen-9+1_i386
   kfreebsd-image-486-9+1_i386
   kfreebsd-image-686-9+1_i386
-  kfreebsd-image-8-486-8.3-6_i386
-  kfreebsd-image-8-686-8.3-6_i386
-  kfreebsd-image-8-686-smp-8.3-6_i386
-  kfreebsd-image-8-xen-8.3-6_i386
-  kfreebsd-image-8.3-1-486-8.3-6_i386
-  kfreebsd-image-8.3-1-686-8.3-6_i386
-  kfreebsd-image-8.3-1-686-smp-8.3-6_i386
-  kfreebsd-image-8.3-1-xen-8.3-6_i386
-  kfreebsd-image-9-486-9.0-10+deb70.5_i386
-  kfreebsd-image-9-686-9.0-10+deb70.5_i386
-  kfreebsd-image-9-686-smp-9.0-10+deb70.5_i386
-  kfreebsd-image-9-xen-9.0-10+deb70.5_i386
-  kfreebsd-image-9.0-2-486-9.0-10+deb70.5_i386
-  kfreebsd-image-9.0-2-686-9.0-10+deb70.5_i386
-  kfreebsd-image-9.0-2-686-smp-9.0-10+deb70.5_i386
-  kfreebsd-image-9.0-2-xen-9.0-10+deb70.5_i386
+  kfreebsd-image-8-486-8.3-6+deb7u1_i386
+  kfreebsd-image-8-686-8.3-6+deb7u1_i386
+  kfreebsd-image-8-686-smp-8.3-6+deb7u1_i386
+  kfreebsd-image-8-xen-8.3-6+deb7u1_i386
+  kfreebsd-image-8.3-1-486-8.3-6+deb7u1_i386
+  kfreebsd-image-8.3-1-686-8.3-6+deb7u1_i386
+  kfreebsd-image-8.3-1-686-smp-8.3-6+deb7u1_i386
+  kfreebsd-image-8.3-1-xen-8.3-6+deb7u1_i386
+  kfreebsd-image-9-486-9.0-10+deb70.6_i386
+  kfreebsd-image-9-686-9.0-10+deb70.6_i386
+  kfreebsd-image-9-686-smp-9.0-10+deb70.6_i386
+  kfreebsd-image-9-xen-9.0-10+deb70.6_i386
+  kfreebsd-image-9.0-2-486-9.0-10+deb70.6_i386
+  kfreebsd-image-9.0-2-686-9.0-10+deb70.6_i386
+  kfreebsd-image-9.0-2-686-smp-9.0-10+deb70.6_i386
+  kfreebsd-image-9.0-2-xen-9.0-10+deb70.6_i386
   kfreebsd-image-xen-9+1_i386
   kftpgrabber-0.8.99~svn1214766-1_i386
   kgamma-4:4.8.4-2_i386
@@ -40777,7 +40747,7 @@ Packages:
   kiten-dbg-4:4.8.4-1_i386
   kjots-4:4.4.11.1+l10n-3+b1_i386
   kjumpingcube-4:4.8.4-3_i386
-  klash-0.8.11~git20120629-1_i386
+  klash-0.8.11~git20120629-1+deb7u1_i386
   klatexformula-3.2.6-1_i386
   klavaro-1.9.4-2_i386
   kleopatra-4:4.4.11.1+l10n-3+b1_i386
@@ -40836,7 +40806,7 @@ Packages:
   konq-plugins-4:4.8.4-2_i386
   konqueror-4:4.8.4-2_i386
   konqueror-nsplugins-4:4.8.4-2_i386
-  konqueror-plugin-gnash-0.8.11~git20120629-1_i386
+  konqueror-plugin-gnash-0.8.11~git20120629-1+deb7u1_i386
   konquest-4:4.8.4-3_i386
   konsole-4:4.8.4-2_i386
   konsole-dbg-4:4.8.4-2_i386
@@ -41318,15 +41288,15 @@ Packages:
   libapache2-mod-parser3-3.4.2-2_i386
   libapache2-mod-passenger-3.0.13debian-1+deb7u1_i386
   libapache2-mod-perl2-2.0.7-3_i386
-  libapache2-mod-php5-5.4.4-14+deb7u5_i386
-  libapache2-mod-php5filter-5.4.4-14+deb7u5_i386
+  libapache2-mod-php5-5.4.4-14+deb7u7_i386
+  libapache2-mod-php5filter-5.4.4-14+deb7u7_i386
   libapache2-mod-proxy-html-3.0.1-1.1_i386
   libapache2-mod-python-3.3.1-9+b3_i386
   libapache2-mod-qos-10.8-1_i386
   libapache2-mod-random-2.1-1_i386
   libapache2-mod-removeip-1.0b-5_i386
   libapache2-mod-rivet-2.0.5-1_i386
-  libapache2-mod-rpaf-0.6-7_i386
+  libapache2-mod-rpaf-0.6-7+wheezy1_i386
   libapache2-mod-ruby-1.2.6-2_i386
   libapache2-mod-ruid2-0.9.7-1_i386
   libapache2-mod-ruwsgi-1.2.3+dfsg-5+deb7u1_i386
@@ -41530,8 +41500,8 @@ Packages:
   libautounit-dev-0.20.1-4_i386
   libautounit2-0.20.1-4_i386
   libautovivification-perl-0.10-1+b1_i386
-  libav-dbg-6:0.8.6-1_i386
-  libav-tools-6:0.8.6-1_i386
+  libav-dbg-6:0.8.9-1_i386
+  libav-tools-6:0.8.9-1_i386
   libavahi-client-dev-0.6.31-2_i386
   libavahi-client3-0.6.31-2_i386
   libavahi-common-data-0.6.31-2_i386
@@ -41556,15 +41526,15 @@ Packages:
   libavc1394-0-0.5.4-2_i386
   libavc1394-dev-0.5.4-2_i386
   libavc1394-tools-0.5.4-2_i386
-  libavcodec-dev-6:0.8.6-1_i386
-  libavcodec-extra-53-6:0.8.6-1_i386
-  libavcodec53-6:0.8.6-1_i386
-  libavdevice-dev-6:0.8.6-1_i386
-  libavdevice53-6:0.8.6-1_i386
-  libavfilter-dev-6:0.8.6-1_i386
-  libavfilter2-6:0.8.6-1_i386
-  libavformat-dev-6:0.8.6-1_i386
-  libavformat53-6:0.8.6-1_i386
+  libavcodec-dev-6:0.8.9-1_i386
+  libavcodec-extra-53-6:0.8.9-1_i386
+  libavcodec53-6:0.8.9-1_i386
+  libavdevice-dev-6:0.8.9-1_i386
+  libavdevice53-6:0.8.9-1_i386
+  libavfilter-dev-6:0.8.9-1_i386
+  libavfilter2-6:0.8.9-1_i386
+  libavformat-dev-6:0.8.9-1_i386
+  libavformat53-6:0.8.9-1_i386
   libavifile-0.7-bin-1:0.7.48~20090503.ds-13_i386
   libavifile-0.7-dev-1:0.7.48~20090503.ds-13_i386
   libavifile-0.7c2-1:0.7.48~20090503.ds-13_i386
@@ -41572,8 +41542,8 @@ Packages:
   libavl1-0.3.5-3_i386
   libavogadro-dev-1.0.3-5_i386
   libavogadro1-1.0.3-5_i386
-  libavutil-dev-6:0.8.6-1_i386
-  libavutil51-6:0.8.6-1_i386
+  libavutil-dev-6:0.8.9-1_i386
+  libavutil51-6:0.8.9-1_i386
   libaws-bin-2.10.2-4_i386
   libaws-dbg-2.10.2-4_i386
   libaws2.10.2-2.10.2-4_i386
@@ -41812,21 +41782,21 @@ Packages:
   libbz2-ruby1.8-0.2.2-2_i386
   libc-ares-dev-1.9.1-3_i386
   libc-ares2-1.9.1-3_i386
-  libc-bin-2.13-38_i386
+  libc-bin-2.13-38+deb7u1_i386
   libc-client2007e-8:2007f~dfsg-2_i386
   libc-client2007e-dev-8:2007f~dfsg-2_i386
-  libc-dev-bin-2.13-38_i386
+  libc-dev-bin-2.13-38+deb7u1_i386
   libc-icap-mod-clamav-1:0.1.6-1_i386
   libc-icap-mod-urlcheck-1:0.1.6-1_i386
-  libc6-2.13-38_i386
-  libc6-amd64-2.13-38_i386
-  libc6-dbg-2.13-38_i386
-  libc6-dev-2.13-38_i386
-  libc6-dev-amd64-2.13-38_i386
-  libc6-i686-2.13-38_i386
-  libc6-pic-2.13-38_i386
-  libc6-prof-2.13-38_i386
-  libc6-xen-2.13-38_i386
+  libc6-2.13-38+deb7u1_i386
+  libc6-amd64-2.13-38+deb7u1_i386
+  libc6-dbg-2.13-38+deb7u1_i386
+  libc6-dev-2.13-38+deb7u1_i386
+  libc6-dev-amd64-2.13-38+deb7u1_i386
+  libc6-i686-2.13-38+deb7u1_i386
+  libc6-pic-2.13-38+deb7u1_i386
+  libc6-prof-2.13-38+deb7u1_i386
+  libc6-xen-2.13-38+deb7u1_i386
   libcableswig-dev-0.1.0+cvs20111009-1_i386
   libcaca-dev-0.99.beta18-1_i386
   libcaca0-0.99.beta18-1_i386
@@ -41946,7 +41916,7 @@ Packages:
   libcdk5-dev-5.0.20060507-4_i386
   libcdparanoia-dev-3.10.2+debian-10.1_i386
   libcdparanoia0-3.10.2+debian-10.1_i386
-  libcdt4-2.26.3-14_i386
+  libcdt4-2.26.3-14+deb7u1_i386
   libcec-dev-1.6.2-1.1_i386
   libcec1-1.6.2-1.1_i386
   libcegui-mk2-0.7.6-0.7.6-2+b1_i386
@@ -41974,7 +41944,7 @@ Packages:
   libcgns-dev-3.1.3.4-1+b1_i386
   libcgns3.1-3.1.3.4-1+b1_i386
   libcgns3.1-dbg-3.1.3.4-1+b1_i386
-  libcgraph5-2.26.3-14_i386
+  libcgraph5-2.26.3-14+deb7u1_i386
   libcgroup-dev-0.38-1_i386
   libcgroup1-0.38-1_i386
   libcgsi-gsoap-dev-1.3.5-1_i386
@@ -42287,7 +42257,7 @@ Packages:
   libct4-0.91-2+deb7u1_i386
   libctapimkt0-1.0.1-1.1_i386
   libctapimkt0-dev-1.0.1-1.1_i386
-  libctdb-dev-1.12+git20120201-3_i386
+  libctdb-dev-1.12+git20120201-4_i386
   libctemplate-dev-2.2-3_i386
   libctemplate2-2.2-3_i386
   libctl-dev-3.1.0-5_i386
@@ -42325,13 +42295,13 @@ Packages:
   libcupt2-dev-2.5.9_i386
   libcurl-ocaml-0.5.3-2+b1_i386
   libcurl-ocaml-dev-0.5.3-2+b1_i386
-  libcurl3-7.26.0-1+wheezy6_i386
-  libcurl3-dbg-7.26.0-1+wheezy6_i386
-  libcurl3-gnutls-7.26.0-1+wheezy6_i386
-  libcurl3-nss-7.26.0-1+wheezy6_i386
-  libcurl4-gnutls-dev-7.26.0-1+wheezy6_i386
-  libcurl4-nss-dev-7.26.0-1+wheezy6_i386
-  libcurl4-openssl-dev-7.26.0-1+wheezy6_i386
+  libcurl3-7.26.0-1+wheezy8_i386
+  libcurl3-dbg-7.26.0-1+wheezy8_i386
+  libcurl3-gnutls-7.26.0-1+wheezy8_i386
+  libcurl3-nss-7.26.0-1+wheezy8_i386
+  libcurl4-gnutls-dev-7.26.0-1+wheezy8_i386
+  libcurl4-nss-dev-7.26.0-1+wheezy8_i386
+  libcurl4-openssl-dev-7.26.0-1+wheezy8_i386
   libcurses-ocaml-1.0.3-2_i386
   libcurses-ocaml-dev-1.0.3-2_i386
   libcurses-perl-1.28-1+b2_i386
@@ -44412,8 +44382,8 @@ Packages:
   libgii1-1:1.0.2-4.1_i386
   libgii1-dev-1:1.0.2-4.1_i386
   libgii1-target-x-1:1.0.2-4.1_i386
-  libgimp2.0-2.8.2-2_i386
-  libgimp2.0-dev-2.8.2-2_i386
+  libgimp2.0-2.8.2-2+deb7u1_i386
+  libgimp2.0-dev-2.8.2-2+deb7u1_i386
   libginac-dev-1.6.2-1_i386
   libginac2-1.6.2-1_i386
   libginac2-dbg-1.6.2-1_i386
@@ -44478,7 +44448,7 @@ Packages:
   libglewmx1.7-1.7.0-3_i386
   libglfw-dev-2.7.2-1_i386
   libglfw2-2.7.2-1_i386
-  libglib-object-introspection-perl-0.009-1_i386
+  libglib-object-introspection-perl-0.009-1+deb7u1_i386
   libglib-perl-3:1.260-1_i386
   libglib2.0-0-2.33.12+really2.32.4-5_i386
   libglib2.0-0-dbg-2.33.12+really2.32.4-5_i386
@@ -44808,7 +44778,7 @@ Packages:
   libgrantlee-core0-0.1.4-1_i386
   libgrantlee-dev-0.1.4-1_i386
   libgrantlee-gui0-0.1.4-1_i386
-  libgraph4-2.26.3-14_i386
+  libgraph4-2.26.3-14+deb7u1_i386
   libgraphics-libplot-perl-2.2.2-5+b2_i386
   libgraphics-magick-perl-1.3.16-1.1_i386
   libgraphicsmagick++1-dev-1.3.16-1.1_i386
@@ -44821,7 +44791,7 @@ Packages:
   libgraphite2-dev-1.1.3-1_i386
   libgraphite3-1:2.3.1-0.2_i386
   libgraphite3-dbg-1:2.3.1-0.2_i386
-  libgraphviz-dev-2.26.3-14_i386
+  libgraphviz-dev-2.26.3-14+deb7u1_i386
   libgretl1-1.9.9-1_i386
   libgretl1-dev-1.9.9-1_i386
   libgrib-api-1.9.16-1.9.16-2+b1_i386
@@ -45054,19 +45024,19 @@ Packages:
   libgutenprintui2-dev-5.2.9-1_i386
   libguytools2-2.0.1-1.1_i386
   libguytools2-dev-2.0.1-1.1_i386
-  libgv-guile-2.26.3-14_i386
-  libgv-lua-2.26.3-14_i386
-  libgv-perl-2.26.3-14_i386
-  libgv-php5-2.26.3-14_i386
-  libgv-python-2.26.3-14_i386
-  libgv-ruby-2.26.3-14_i386
-  libgv-tcl-2.26.3-14_i386
-  libgvc5-2.26.3-14_i386
-  libgvc5-plugins-gtk-2.26.3-14_i386
+  libgv-guile-2.26.3-14+deb7u1_i386
+  libgv-lua-2.26.3-14+deb7u1_i386
+  libgv-perl-2.26.3-14+deb7u1_i386
+  libgv-php5-2.26.3-14+deb7u1_i386
+  libgv-python-2.26.3-14+deb7u1_i386
+  libgv-ruby-2.26.3-14+deb7u1_i386
+  libgv-tcl-2.26.3-14+deb7u1_i386
+  libgvc5-2.26.3-14+deb7u1_i386
+  libgvc5-plugins-gtk-2.26.3-14+deb7u1_i386
   libgvnc-1.0-0-0.5.0-3.1_i386
   libgvnc-1.0-0-dbg-0.5.0-3.1_i386
   libgvnc-1.0-dev-0.5.0-3.1_i386
-  libgvpr1-2.26.3-14_i386
+  libgvpr1-2.26.3-14+deb7u1_i386
   libgweather-3-0-3.4.1-1+build1_i386
   libgweather-3-dev-3.4.1-1+build1_i386
   libgwengui-fox16-0-4.3.3-1_i386
@@ -45195,8 +45165,8 @@ Packages:
   libhogweed2-2.4-3_i386
   libhpdf-2.2.1-2.2.1-1_i386
   libhpdf-dev-2.2.1-1_i386
-  libhpmud-dev-3.12.6-3.1_i386
-  libhpmud0-3.12.6-3.1_i386
+  libhpmud-dev-3.12.6-3.1+deb7u1_i386
+  libhpmud0-3.12.6-3.1+deb7u1_i386
   libhsclient-dev-1.1.0-7-g1044a28-1_i386
   libhsm-bin-1:1.3.9-5_i386
   libhtml-parser-perl-3.69-2_i386
@@ -46089,9 +46059,9 @@ Packages:
   libmapistore0-1:1.0-3_i386
   libmapnik2-2.0-2.0.0+ds1-3+b4_i386
   libmapnik2-dev-2.0.0+ds1-3+b4_i386
-  libmapscript-perl-6.0.1-3.2+deb7u1_i386
-  libmapscript-ruby1.8-6.0.1-3.2+deb7u1_i386
-  libmapscript-ruby1.9.1-6.0.1-3.2+deb7u1_i386
+  libmapscript-perl-6.0.1-3.2+deb7u2_i386
+  libmapscript-ruby1.8-6.0.1-3.2+deb7u2_i386
+  libmapscript-ruby1.9.1-6.0.1-3.2+deb7u2_i386
   libmarble-dev-4:4.8.4-3_i386
   libmarblewidget13-4:4.8.4-3_i386
   libmarc-charset-perl-1.33-1_i386
@@ -46198,9 +46168,9 @@ Packages:
   libmhash-dev-0.9.9.9-1.1_i386
   libmhash2-0.9.9.9-1.1_i386
   libmicroblog4-4:4.8.4-2_i386
-  libmicrohttpd-dbg-0.9.20-1_i386
-  libmicrohttpd-dev-0.9.20-1_i386
-  libmicrohttpd10-0.9.20-1_i386
+  libmicrohttpd-dbg-0.9.20-1+deb7u1_i386
+  libmicrohttpd-dev-0.9.20-1+deb7u1_i386
+  libmicrohttpd10-0.9.20-1+deb7u1_i386
   libmigemo-dbg-20110227-7_i386
   libmigemo-dev-20110227-7_i386
   libmigemo1-20110227-7_i386
@@ -46421,12 +46391,12 @@ Packages:
   libmysql++3-3.1.0-2+b1_i386
   libmysql-ocaml-1.1.1-1_i386
   libmysql-ocaml-dev-1.1.1-1_i386
-  libmysqlclient-dev-5.5.31+dfsg-0+wheezy1_i386
-  libmysqlclient18-5.5.31+dfsg-0+wheezy1_i386
+  libmysqlclient-dev-5.5.33+dfsg-0+wheezy1_i386
+  libmysqlclient18-5.5.33+dfsg-0+wheezy1_i386
   libmysqlcppconn-dev-1.1.0-4+b1_i386
   libmysqlcppconn5-1.1.0-4+b1_i386
-  libmysqld-dev-5.5.31+dfsg-0+wheezy1_i386
-  libmysqld-pic-5.5.31+dfsg-0+wheezy1_i386
+  libmysqld-dev-5.5.33+dfsg-0+wheezy1_i386
+  libmysqld-pic-5.5.33+dfsg-0+wheezy1_i386
   libmythes-1.2-0-2:1.2.2-1_i386
   libmythes-dev-2:1.2.2-1_i386
   libnabrit-dbg-0.4.1-1_i386
@@ -46620,10 +46590,10 @@ Packages:
   libnsgif0-0.0.1-1.1_i386
   libnsgif0-dbg-0.0.1-1.1_i386
   libnsgif0-dev-0.0.1-1.1_i386
-  libnspr4-2:4.9.2-1_i386
-  libnspr4-0d-2:4.9.2-1_i386
-  libnspr4-dbg-2:4.9.2-1_i386
-  libnspr4-dev-2:4.9.2-1_i386
+  libnspr4-2:4.9.2-1+deb7u1_i386
+  libnspr4-0d-2:4.9.2-1+deb7u1_i386
+  libnspr4-dbg-2:4.9.2-1+deb7u1_i386
+  libnspr4-dev-2:4.9.2-1+deb7u1_i386
   libnss-cache-0.10.2-1_i386
   libnss-db-2.2.3pre1-4_i386
   libnss-extrausers-0.6-3_i386
@@ -46637,7 +46607,7 @@ Packages:
   libnss-pgsql2-1.4.0debian-5_i386
   libnss-rainbow2-0.8.6-1_i386
   libnss-sss-1.8.4-2_i386
-  libnss-winbind-2:3.6.6-6+deb7u1_i386
+  libnss-winbind-2:3.6.6-6+deb7u2_i386
   libnss3-2:3.14.5-1_i386
   libnss3-1d-2:3.14.5-1_i386
   libnss3-dbg-2:3.14.5-1_i386
@@ -47010,9 +46980,9 @@ Packages:
   libotfaux0-1.10.2+dfsg-2_i386
   libotp0-heimdal-1.6~git20120403+dfsg1-2_i386
   libotpw-dev-1.3-2_i386
-  libotr2-3.2.1-1_i386
-  libotr2-bin-3.2.1-1_i386
-  libotr2-dev-3.2.1-1_i386
+  libotr2-3.2.1-1+deb7u1_i386
+  libotr2-bin-3.2.1-1+deb7u1_i386
+  libotr2-dev-3.2.1-1+deb7u1_i386
   libots-dev-0.5.0-2.1_i386
   libots0-0.5.0-2.1_i386
   libounit-ocaml-dev-1.1.1-1_i386
@@ -47091,7 +47061,7 @@ Packages:
   libpam-shield-0.9.2-3.3_i386
   libpam-shishi-1.0.1-2_i386
   libpam-slurm-2.3.4-2+b1_i386
-  libpam-smbpass-2:3.6.6-6+deb7u1_i386
+  libpam-smbpass-2:3.6.6-6+deb7u2_i386
   libpam-ssh-1.92-15_i386
   libpam-sss-1.8.4-2_i386
   libpam-systemd-44-11+deb7u4_i386
@@ -47099,7 +47069,7 @@ Packages:
   libpam-tmpdir-0.09_i386
   libpam-unix2-1:2.4.1-6_i386
   libpam-usb-0.5.0-4_i386
-  libpam-winbind-2:3.6.6-6+deb7u1_i386
+  libpam-winbind-2:3.6.6-6+deb7u2_i386
   libpam-yubico-2.12-1_i386
   libpam0g-1.1.3-7.1_i386
   libpam0g-dev-1.1.3-7.1_i386
@@ -47151,7 +47121,7 @@ Packages:
   libpathfinder-dev-1.1.3-0.4+b1_i386
   libpathfinder-nss-1-1.1.3-0.4+b1_i386
   libpathfinder-openssl-1-1.1.3-0.4+b1_i386
-  libpathplan4-2.26.3-14_i386
+  libpathplan4-2.26.3-14+deb7u1_i386
   libpawlib-lesstif3-dev-1:2.14.04.dfsg.2-8_i386
   libpawlib-lesstif3-gfortran-1:2.14.04.dfsg.2-8_i386
   libpawlib2-dev-1:2.14.04.dfsg.2-8_i386
@@ -47248,7 +47218,7 @@ Packages:
   libphononexperimental4-4:4.6.0.0-3_i386
   libphotos202-1-gfortran-20061220+dfsg3-2_i386
   libphotos202-dev-20061220+dfsg3-2_i386
-  libphp5-embed-5.4.4-14+deb7u5_i386
+  libphp5-embed-5.4.4-14+deb7u7_i386
   libphtools2-dev-20061220+dfsg3-2_i386
   libphtools2-gfortran-20061220+dfsg3-2_i386
   libphysfs-dev-2.0.2-6_i386
@@ -47278,9 +47248,9 @@ Packages:
   libpisock-dev-0.12.5-5_i386
   libpisock9-0.12.5-5_i386
   libpisync1-0.12.5-5_i386
-  libpixman-1-0-0.26.0-4_i386
-  libpixman-1-0-dbg-0.26.0-4_i386
-  libpixman-1-dev-0.26.0-4_i386
+  libpixman-1-0-0.26.0-4+deb7u1_i386
+  libpixman-1-0-dbg-0.26.0-4+deb7u1_i386
+  libpixman-1-dev-0.26.0-4+deb7u1_i386
   libpkcs11-helper1-1.09-1_i386
   libpkcs11-helper1-dev-1.09-1_i386
   libplasma-geolocation-interface4-4:4.8.4-6_i386
@@ -47430,8 +47400,8 @@ Packages:
   libposixlock-ruby1.8-0.0.1-2_i386
   libpostgresql-ocaml-1.18.0-1_i386
   libpostgresql-ocaml-dev-1.18.0-1_i386
-  libpostproc-dev-6:0.8.6-1_i386
-  libpostproc52-6:0.8.6-1_i386
+  libpostproc-dev-6:0.8.9-1_i386
+  libpostproc52-6:0.8.9-1_i386
   libpotrace-dev-1.10-1_i386
   libpotrace0-1.10-1_i386
   libpowerman0-2.3.5-1_i386
@@ -48142,7 +48112,7 @@ Packages:
   libsane-extras-common-1.0.22.2_i386
   libsane-extras-dbg-1.0.22.2_i386
   libsane-extras-dev-1.0.22.2_i386
-  libsane-hpaio-3.12.6-3.1_i386
+  libsane-hpaio-3.12.6-3.1+deb7u1_i386
   libsane-perl-0.05-2_i386
   libsanlock-client1-2.2-2_i386
   libsanlock-dev-2.2-2_i386
@@ -48373,8 +48343,8 @@ Packages:
   libsm-dev-2:1.2.1-2_i386
   libsm6-2:1.2.1-2_i386
   libsm6-dbg-2:1.2.1-2_i386
-  libsmbclient-2:3.6.6-6+deb7u1_i386
-  libsmbclient-dev-2:3.6.6-6+deb7u1_i386
+  libsmbclient-2:3.6.6-6+deb7u2_i386
+  libsmbclient-dev-2:3.6.6-6+deb7u2_i386
   libsmbclient-raw-dev-4.0.0~beta2+dfsg1-3.2_i386
   libsmbclient-raw0-4.0.0~beta2+dfsg1-3.2_i386
   libsmbios-bin-2.0.3.dfsg-1.1_i386
@@ -48565,8 +48535,8 @@ Packages:
   libspice-client-gtk-2.0-dev-0.12-5_i386
   libspice-client-gtk-3.0-1-0.12-5_i386
   libspice-client-gtk-3.0-dev-0.12-5_i386
-  libspice-server-dev-0.11.0-1_i386
-  libspice-server1-0.11.0-1_i386
+  libspice-server-dev-0.11.0-1+deb7u1_i386
+  libspice-server1-0.11.0-1+deb7u1_i386
   libspiro-dev-20071029-2_i386
   libspiro0-20071029-2_i386
   libspiro0-dbg-20071029-2_i386
@@ -48604,8 +48574,8 @@ Packages:
   libsrecord0-1.58-1+b1_i386
   libsrecord0-dbg-1.58-1+b1_i386
   libsrf-dev-0.1+dfsg-1_i386
-  libsrtp0-1.4.4+20100615~dfsg-2_i386
-  libsrtp0-dev-1.4.4+20100615~dfsg-2_i386
+  libsrtp0-1.4.4+20100615~dfsg-2+deb7u1_i386
+  libsrtp0-dev-1.4.4+20100615~dfsg-2+deb7u1_i386
   libss2-1.42.5-1.1_i386
   libss2-dbg-1.42.5-1.1_i386
   libss7-1-1.0.2-3_i386
@@ -48620,11 +48590,11 @@ Packages:
   libssh2-1-dbg-1.4.2-1.1_i386
   libssh2-1-dev-1.4.2-1.1_i386
   libssh2-php-0.11.3-0.1+b2_i386
-  libssl-dev-1.0.1e-2_i386
+  libssl-dev-1.0.1e-2+deb7u4_i386
   libssl-ocaml-0.4.6-1_i386
   libssl-ocaml-dev-0.4.6-1_i386
-  libssl1.0.0-1.0.1e-2_i386
-  libssl1.0.0-dbg-1.0.1e-2_i386
+  libssl1.0.0-1.0.1e-2+deb7u4_i386
+  libssl1.0.0-dbg-1.0.1e-2+deb7u4_i386
   libsslcommon2-0.16-6+deb7u1_i386
   libsslcommon2-dev-0.16-6+deb7u1_i386
   libssreflect-ocaml-1.3pl4-1_i386
@@ -48756,8 +48726,8 @@ Packages:
   libsword-dev-1.6.2+dfsg-5_i386
   libsword-utils-1.6.2+dfsg-5_i386
   libsword9-1.6.2+dfsg-5_i386
-  libswscale-dev-6:0.8.6-1_i386
-  libswscale2-6:0.8.6-1_i386
+  libswscale-dev-6:0.8.9-1_i386
+  libswscale2-6:0.8.9-1_i386
   libswt-cairo-gtk-3-jni-3.8.0~rc4-1_i386
   libswt-glx-gtk-3-jni-3.8.0~rc4-1_i386
   libswt-gnome-gtk-3-jni-3.8.0~rc4-1_i386
@@ -48847,8 +48817,8 @@ Packages:
   libtango7-dev-7.2.6+dfsg-14_i386
   libtaningia-dev-0.2.2-1_i386
   libtaningia0-0.2.2-1_i386
-  libtar-dev-1.2.16-1_i386
-  libtar0-1.2.16-1_i386
+  libtar-dev-1.2.16-1+deb7u1_i386
+  libtar0-1.2.16-1+deb7u1_i386
   libtarantool-dev-1.4.6+20120629+2158-1_i386
   libtarantool1-1.4.6+20120629+2158-1_i386
   libtarantool1-dbg-1.4.6+20120629+2158-1_i386
@@ -49180,8 +49150,8 @@ Packages:
   libupnp6-dev-1:1.6.17-1.2_i386
   libupower-glib-dev-0.9.17-1_i386
   libupower-glib1-0.9.17-1_i386
-  libupsclient1-2.6.4-2.3_i386
-  libupsclient1-dev-2.6.4-2.3_i386
+  libupsclient1-2.6.4-2.3+deb7u1_i386
+  libupsclient1-dev-2.6.4-2.3+deb7u1_i386
   libupse-dev-1.0.0-1_i386
   libupse2-1.0.0-1_i386
   libuptimed-dev-1:0.3.17-3.1_i386
@@ -49271,8 +49241,8 @@ Packages:
   libvarconf-1.0-7-dbg-0.6.7-2_i386
   libvarconf-dev-0.6.7-2_i386
   libvariable-magic-perl-0.50-1_i386
-  libvarnishapi-dev-3.0.2-2_i386
-  libvarnishapi1-3.0.2-2_i386
+  libvarnishapi-dev-3.0.2-2+deb7u1_i386
+  libvarnishapi1-3.0.2-2+deb7u1_i386
   libvbr-dev-2.6.8-4_i386
   libvbr2-2.6.8-4_i386
   libvc-dev-003.dfsg.1-12_i386
@@ -49318,18 +49288,18 @@ Packages:
   libview2-dbg-0.6.6-2.1_i386
   libvigraimpex-dev-1.7.1+dfsg1-3_i386
   libvigraimpex3-1.7.1+dfsg1-3_i386
-  libvips-dev-7.28.5-1_i386
-  libvips-tools-7.28.5-1_i386
-  libvips15-7.28.5-1_i386
-  libvirt-bin-0.9.12-11+deb7u4_i386
-  libvirt-dev-0.9.12-11+deb7u4_i386
+  libvips-dev-7.28.5-1+deb7u1_i386
+  libvips-tools-7.28.5-1+deb7u1_i386
+  libvips15-7.28.5-1+deb7u1_i386
+  libvirt-bin-0.9.12.3-1_i386
+  libvirt-dev-0.9.12.3-1_i386
   libvirt-glib-1.0-0-0.0.8-1_i386
   libvirt-glib-1.0-0-dbg-0.0.8-1_i386
   libvirt-glib-1.0-dev-0.0.8-1_i386
   libvirt-ocaml-0.6.1.2-1_i386
   libvirt-ocaml-dev-0.6.1.2-1_i386
-  libvirt0-0.9.12-11+deb7u4_i386
-  libvirt0-dbg-0.9.12-11+deb7u4_i386
+  libvirt0-0.9.12.3-1_i386
+  libvirt0-dbg-0.9.12.3-1_i386
   libvirtodbc0-6.1.4+dfsg1-7_i386
   libvirtuoso5.5-cil-6.1.4+dfsg1-7_i386
   libvisca-dev-1.0.1-1_i386
@@ -49417,8 +49387,8 @@ Packages:
   libwayland-dev-0.85.0-2_i386
   libwayland0-0.85.0-2_i386
   libwayland0-dbg-0.85.0-2_i386
-  libwbclient-dev-2:3.6.6-6+deb7u1_i386
-  libwbclient0-2:3.6.6-6+deb7u1_i386
+  libwbclient-dev-2:3.6.6-6+deb7u2_i386
+  libwbclient0-2:3.6.6-6+deb7u2_i386
   libwbxml2-0-0.10.7-1_i386
   libwbxml2-0-dbg-0.10.7-1_i386
   libwbxml2-dev-0.10.7-1_i386
@@ -49474,10 +49444,10 @@ Packages:
   libwine-sane-1.4.1-4_i386
   libwings-dev-0.95.3-2_i386
   libwings2-0.95.3-2_i386
-  libwireshark-dev-1.8.2-5wheezy7_i386
-  libwireshark2-1.8.2-5wheezy7_i386
-  libwiretap-dev-1.8.2-5wheezy7_i386
-  libwiretap2-1.8.2-5wheezy7_i386
+  libwireshark-dev-1.8.2-5wheezy9_i386
+  libwireshark2-1.8.2-5wheezy9_i386
+  libwiretap-dev-1.8.2-5wheezy9_i386
+  libwiretap2-1.8.2-5wheezy9_i386
   libwmf-bin-0.2.8.4-10.3_i386
   libwmf-dev-0.2.8.4-10.3_i386
   libwmf0.2-7-0.2.8.4-10.3_i386
@@ -49507,8 +49477,8 @@ Packages:
   libwraster3-dev-0.95.3-2_i386
   libwreport-dev-2.4-1_i386
   libwreport2-2.4-1_i386
-  libwsutil-dev-1.8.2-5wheezy7_i386
-  libwsutil2-1.8.2-5wheezy7_i386
+  libwsutil-dev-1.8.2-5wheezy9_i386
+  libwsutil2-1.8.2-5wheezy9_i386
   libwt-dbg-3.2.1-2_i386
   libwt-dev-3.2.1-2_i386
   libwt32-3.2.1-2_i386
@@ -49699,7 +49669,7 @@ Packages:
   libxdmf2-2.1.dfsg.1-5_i386
   libxdo-dev-1:2.20100701.2961-3+deb7u3_i386
   libxdo2-1:2.20100701.2961-3+deb7u3_i386
-  libxdot4-2.26.3-14_i386
+  libxdot4-2.26.3-14+deb7u1_i386
   libxen-4.1-4.1.4-3+deb7u1_i386
   libxen-dev-4.1.4-3+deb7u1_i386
   libxen-ocaml-4.1.4-3+deb7u1_i386
@@ -49736,9 +49706,9 @@ Packages:
   libxfixes-dev-1:5.0-4+deb7u1_i386
   libxfixes3-1:5.0-4+deb7u1_i386
   libxfixes3-dbg-1:5.0-4+deb7u1_i386
-  libxfont-dev-1:1.4.5-2_i386
-  libxfont1-1:1.4.5-2_i386
-  libxfont1-dbg-1:1.4.5-2_i386
+  libxfont-dev-1:1.4.5-3_i386
+  libxfont1-1:1.4.5-3_i386
+  libxfont1-dbg-1:1.4.5-3_i386
   libxft-dev-2.3.1-1_i386
   libxft2-2.3.1-1_i386
   libxft2-dbg-2.3.1-1_i386
@@ -49912,11 +49882,11 @@ Packages:
   libyajl-dev-2.0.4-2_i386
   libyajl2-2.0.4-2_i386
   libyajl2-dbg-2.0.4-2_i386
-  libyaml-0-2-0.1.4-2_i386
-  libyaml-0-2-dbg-0.1.4-2_i386
+  libyaml-0-2-0.1.4-2+deb7u2_i386
+  libyaml-0-2-dbg-0.1.4-2+deb7u2_i386
   libyaml-cpp-dev-0.3.0-1_i386
   libyaml-cpp0.3-0.3.0-1_i386
-  libyaml-dev-0.1.4-2_i386
+  libyaml-dev-0.1.4-2+deb7u2_i386
   libyaml-libyaml-perl-0.38-3_i386
   libyaml-syck-perl-1.20-1_i386
   libyate4.1.0-4.1.0-1~dfsg-3_i386
@@ -50063,14 +50033,14 @@ Packages:
   linux-headers-2.6-486-3.2+46_i386
   linux-headers-2.6-686-pae-3.2+46_i386
   linux-headers-2.6-amd64-3.2+46_i386
-  linux-headers-3.2.0-4-486-3.2.51-1_i386
-  linux-headers-3.2.0-4-686-pae-3.2.51-1_i386
-  linux-headers-3.2.0-4-all-3.2.51-1_i386
-  linux-headers-3.2.0-4-all-i386-3.2.51-1_i386
-  linux-headers-3.2.0-4-amd64-3.2.51-1_i386
-  linux-headers-3.2.0-4-common-3.2.51-1_i386
-  linux-headers-3.2.0-4-common-rt-3.2.51-1_i386
-  linux-headers-3.2.0-4-rt-686-pae-3.2.51-1_i386
+  linux-headers-3.2.0-4-486-3.2.54-2_i386
+  linux-headers-3.2.0-4-686-pae-3.2.54-2_i386
+  linux-headers-3.2.0-4-all-3.2.54-2_i386
+  linux-headers-3.2.0-4-all-i386-3.2.54-2_i386
+  linux-headers-3.2.0-4-amd64-3.2.54-2_i386
+  linux-headers-3.2.0-4-common-3.2.54-2_i386
+  linux-headers-3.2.0-4-common-rt-3.2.54-2_i386
+  linux-headers-3.2.0-4-rt-686-pae-3.2.54-2_i386
   linux-headers-486-3.2+46_i386
   linux-headers-686-pae-3.2+46_i386
   linux-headers-amd64-3.2+46_i386
@@ -50081,12 +50051,12 @@ Packages:
   linux-image-2.6-686-bigmem-3.2+46_i386
   linux-image-2.6-686-pae-3.2+46_i386
   linux-image-2.6-amd64-3.2+46_i386
-  linux-image-3.2.0-4-486-3.2.51-1_i386
-  linux-image-3.2.0-4-686-pae-3.2.51-1_i386
-  linux-image-3.2.0-4-686-pae-dbg-3.2.51-1_i386
-  linux-image-3.2.0-4-amd64-3.2.51-1_i386
-  linux-image-3.2.0-4-rt-686-pae-3.2.51-1_i386
-  linux-image-3.2.0-4-rt-686-pae-dbg-3.2.51-1_i386
+  linux-image-3.2.0-4-486-3.2.54-2_i386
+  linux-image-3.2.0-4-686-pae-3.2.54-2_i386
+  linux-image-3.2.0-4-686-pae-dbg-3.2.54-2_i386
+  linux-image-3.2.0-4-amd64-3.2.54-2_i386
+  linux-image-3.2.0-4-rt-686-pae-3.2.54-2_i386
+  linux-image-3.2.0-4-rt-686-pae-dbg-3.2.54-2_i386
   linux-image-486-3.2+46_i386
   linux-image-686-3.2+46_i386
   linux-image-686-bigmem-3.2+46_i386
@@ -50094,7 +50064,7 @@ Packages:
   linux-image-amd64-3.2+46_i386
   linux-image-rt-686-pae-3.2+46_i386
   linux-kbuild-3.2-3.2.17-1_i386
-  linux-libc-dev-3.2.51-1_i386
+  linux-libc-dev-3.2.54-2_i386
   linux-tools-3.2-3.2.17-1_i386
   linux-wlan-ng-0.2.9+dfsg-5_i386
   linuxdcpp-1.1.0-1+b2_i386
@@ -50177,7 +50147,7 @@ Packages:
   loadlin-1.6f-1_i386
   loadmeter-1.20-6_i386
   loadwatch-1.0+1.1alpha1-5_i386
-  locales-all-2.13-38_i386
+  locales-all-2.13-38+deb7u1_i386
   locate-4.4.2-4_i386
   lockfile-progs-0.1.17_i386
   lockout-0.2.3-2_i386
@@ -50344,9 +50314,9 @@ Packages:
   lxappearance-dbg-0.5.2-1_i386
   lxappearance-obconf-0.2.0-4_i386
   lxappearance-obconf-dbg-0.2.0-4_i386
-  lxc-0.8.0~rc1-8+deb7u1_i386
-  lxc-dbg-0.8.0~rc1-8+deb7u1_i386
-  lxc-dev-0.8.0~rc1-8+deb7u1_i386
+  lxc-0.8.0~rc1-8+deb7u2_i386
+  lxc-dbg-0.8.0~rc1-8+deb7u2_i386
+  lxc-dev-0.8.0~rc1-8+deb7u2_i386
   lxinput-0.3.2-1_i386
   lxinput-dbg-0.3.2-1_i386
   lxlauncher-0.2.2-3_i386
@@ -50451,7 +50421,7 @@ Packages:
   mangler-1.2.4-1_i386
   mango-lassi-001+dfsg-5_i386
   mapnik-utils-2.0.0+ds1-3+b4_i386
-  mapserver-bin-6.0.1-3.2+deb7u1_i386
+  mapserver-bin-6.0.1-3.2+deb7u2_i386
   maptool-0.5.0~svn5126+dfsg.1-3_i386
   maq-0.7.1-5_i386
   maqview-0.2.5-4_i386
@@ -50539,7 +50509,7 @@ Packages:
   melt-0.8.0-4_i386
   melting-4.3c-2_i386
   members-20080128-5_i386
-  memcached-1.4.13-0.2_i386
+  memcached-1.4.13-0.2+deb7u1_i386
   memcachedb-1.2.0-9_i386
   memdump-1.01-6.1_i386
   memlockd-1.1.1_i386
@@ -50852,7 +50822,7 @@ Packages:
   mudita24-1.0.3+svn13-4_i386
   mudita24-dbg-1.0.3+svn13-4_i386
   mudlet-2.0-rc12-3_i386
-  multiarch-support-2.13-38_i386
+  multiarch-support-2.13-38+deb7u1_i386
   multicat-2.0-3_i386
   multiget-1.2.0-3_i386
   multimail-0.49-2_i386
@@ -50922,12 +50892,12 @@ Packages:
   myproxy-server-5.6-1_i386
   myrescue-0.9.4-5+b1_i386
   myspell-tools-1:3.1-24_i386
-  mysql-client-5.5-5.5.31+dfsg-0+wheezy1_i386
+  mysql-client-5.5-5.5.33+dfsg-0+wheezy1_i386
   mysql-proxy-0.8.1-1.1+b1_i386
-  mysql-server-5.5-5.5.31+dfsg-0+wheezy1_i386
-  mysql-server-core-5.5-5.5.31+dfsg-0+wheezy1_i386
-  mysql-source-5.5-5.5.31+dfsg-0+wheezy1_i386
-  mysql-testsuite-5.5-5.5.31+dfsg-0+wheezy1_i386
+  mysql-server-5.5-5.5.33+dfsg-0+wheezy1_i386
+  mysql-server-core-5.5-5.5.33+dfsg-0+wheezy1_i386
+  mysql-source-5.5-5.5.33+dfsg-0+wheezy1_i386
+  mysql-testsuite-5.5-5.5.33+dfsg-0+wheezy1_i386
   mysql-workbench-5.2.40+dfsg-2_i386
   mysqltcl-3.051-1+b1_i386
   mysqmail-courier-logger-0.4.9-10_i386
@@ -51172,7 +51142,7 @@ Packages:
   ns2-dbg-2.35+dfsg-1_i386
   nsca-2.9.1-2_i386
   nsca-client-2.9.1-2_i386
-  nscd-2.13-38_i386
+  nscd-2.13-38+deb7u1_i386
   nsd3-3.2.12-3+deb7u1_i386
   nsis-2.46-7_i386
   nslcd-0.8.10-4_i386
@@ -51205,13 +51175,13 @@ Packages:
   numlockx-1.2-4_i386
   numptyphysics-0.2+svn156-1.1_i386
   nurpawiki-1.2.3-5+b17_i386
-  nut-cgi-2.6.4-2.3_i386
-  nut-client-2.6.4-2.3_i386
+  nut-cgi-2.6.4-2.3+deb7u1_i386
+  nut-client-2.6.4-2.3+deb7u1_i386
   nut-nutrition-15.5-1_i386
-  nut-powerman-pdu-2.6.4-2.3_i386
-  nut-server-2.6.4-2.3_i386
-  nut-snmp-2.6.4-2.3_i386
-  nut-xml-2.6.4-2.3_i386
+  nut-powerman-pdu-2.6.4-2.3+deb7u1_i386
+  nut-server-2.6.4-2.3+deb7u1_i386
+  nut-snmp-2.6.4-2.3+deb7u1_i386
+  nut-xml-2.6.4-2.3+deb7u1_i386
   nutcpc-2.4.3-2.2_i386
   nuttcp-6.1.2-4_i386
   nvclock-0.8b4+cvs20100914-4_i386
@@ -51485,7 +51455,7 @@ Packages:
   opensp-1.5.2-10_i386
   openssh-client-1:6.0p1-4_i386
   openssh-server-1:6.0p1-4_i386
-  openssl-1.0.1e-2_i386
+  openssl-1.0.1e-2+deb7u4_i386
   openssn-1.3-1_i386
   openssn-dbg-1.3-1_i386
   openswan-1:2.6.37-3_i386
@@ -51740,18 +51710,18 @@ Packages:
   pdlzip-1.3-2_i386
   pdlzip-dbg-1.3-2_i386
   pdmenu-1.3.2_i386
-  pdns-backend-geo-3.1-4_i386
-  pdns-backend-ldap-3.1-4_i386
-  pdns-backend-lua-3.1-4_i386
-  pdns-backend-mysql-3.1-4_i386
-  pdns-backend-pgsql-3.1-4_i386
-  pdns-backend-pipe-3.1-4_i386
-  pdns-backend-sqlite-3.1-4_i386
-  pdns-backend-sqlite3-3.1-4_i386
+  pdns-backend-geo-3.1-4.1_i386
+  pdns-backend-ldap-3.1-4.1_i386
+  pdns-backend-lua-3.1-4.1_i386
+  pdns-backend-mysql-3.1-4.1_i386
+  pdns-backend-pgsql-3.1-4.1_i386
+  pdns-backend-pipe-3.1-4.1_i386
+  pdns-backend-sqlite-3.1-4.1_i386
+  pdns-backend-sqlite3-3.1-4.1_i386
   pdns-recursor-3.3-3_i386
   pdns-recursor-dbg-3.3-3_i386
-  pdns-server-3.1-4_i386
-  pdns-server-dbg-3.1-4_i386
+  pdns-server-3.1-4.1_i386
+  pdns-server-dbg-3.1-4.1_i386
   pdnsd-1.2.8-par-3_i386
   pdsh-2.27-2_i386
   pearpc-0.4.0-5_i386
@@ -51834,54 +51804,54 @@ Packages:
   php-wikidiff2-0.0.1+svn109581-1_i386
   php-zeroc-ice-3.4.2-8.2_i386
   php5-adodb-5.04-7+b1_i386
-  php5-cgi-5.4.4-14+deb7u5_i386
-  php5-cli-5.4.4-14+deb7u5_i386
-  php5-common-5.4.4-14+deb7u5_i386
-  php5-curl-5.4.4-14+deb7u5_i386
-  php5-dbg-5.4.4-14+deb7u5_i386
-  php5-dev-5.4.4-14+deb7u5_i386
-  php5-enchant-5.4.4-14+deb7u5_i386
+  php5-cgi-5.4.4-14+deb7u7_i386
+  php5-cli-5.4.4-14+deb7u7_i386
+  php5-common-5.4.4-14+deb7u7_i386
+  php5-curl-5.4.4-14+deb7u7_i386
+  php5-dbg-5.4.4-14+deb7u7_i386
+  php5-dev-5.4.4-14+deb7u7_i386
+  php5-enchant-5.4.4-14+deb7u7_i386
   php5-exactimage-0.8.5-5+deb7u3_i386
   php5-ffmpeg-0.6.0-2.2_i386
-  php5-fpm-5.4.4-14+deb7u5_i386
-  php5-gd-5.4.4-14+deb7u5_i386
+  php5-fpm-5.4.4-14+deb7u7_i386
+  php5-gd-5.4.4-14+deb7u7_i386
   php5-gdcm-2.2.0-14.1_i386
   php5-geoip-1.0.7-8_i386
-  php5-gmp-5.4.4-14+deb7u5_i386
+  php5-gmp-5.4.4-14+deb7u7_i386
   php5-imagick-3.1.0~rc1-1+b2_i386
-  php5-imap-5.4.4-14+deb7u5_i386
-  php5-interbase-5.4.4-14+deb7u5_i386
-  php5-intl-5.4.4-14+deb7u5_i386
+  php5-imap-5.4.4-14+deb7u7_i386
+  php5-interbase-5.4.4-14+deb7u7_i386
+  php5-intl-5.4.4-14+deb7u7_i386
   php5-lasso-2.3.6-2_i386
-  php5-ldap-5.4.4-14+deb7u5_i386
+  php5-ldap-5.4.4-14+deb7u7_i386
   php5-librdf-1.0.14.1-1_i386
-  php5-mapscript-6.0.1-3.2+deb7u1_i386
-  php5-mcrypt-5.4.4-14+deb7u5_i386
+  php5-mapscript-6.0.1-3.2+deb7u2_i386
+  php5-mcrypt-5.4.4-14+deb7u7_i386
   php5-memcache-3.0.6-6_i386
   php5-memcached-2.0.1-6_i386
   php5-ming-1:0.4.4-1.1_i386
-  php5-mysql-5.4.4-14+deb7u5_i386
-  php5-mysqlnd-5.4.4-14+deb7u5_i386
-  php5-odbc-5.4.4-14+deb7u5_i386
-  php5-pgsql-5.4.4-14+deb7u5_i386
+  php5-mysql-5.4.4-14+deb7u7_i386
+  php5-mysqlnd-5.4.4-14+deb7u7_i386
+  php5-odbc-5.4.4-14+deb7u7_i386
+  php5-pgsql-5.4.4-14+deb7u7_i386
   php5-ps-1.3.7-1_i386
-  php5-pspell-5.4.4-14+deb7u5_i386
+  php5-pspell-5.4.4-14+deb7u7_i386
   php5-radius-1.2.5-2.3+deb7u1_i386
-  php5-recode-5.4.4-14+deb7u5_i386
+  php5-recode-5.4.4-14+deb7u7_i386
   php5-remctl-3.2-4_i386
   php5-rrd-1.1.0-1_i386
   php5-sasl-0.1.0-1.2+b1_i386
-  php5-snmp-5.4.4-14+deb7u5_i386
-  php5-sqlite-5.4.4-14+deb7u5_i386
+  php5-snmp-5.4.4-14+deb7u7_i386
+  php5-sqlite-5.4.4-14+deb7u7_i386
   php5-svn-1.0.1-1.2_i386
-  php5-sybase-5.4.4-14+deb7u5_i386
-  php5-tidy-5.4.4-14+deb7u5_i386
+  php5-sybase-5.4.4-14+deb7u7_i386
+  php5-tidy-5.4.4-14+deb7u7_i386
   php5-tokyo-tyrant-0.6.0-2+b1_i386
   php5-vtkgdcm-2.2.0-14.1_i386
   php5-xcache-2.0.0-4_i386
   php5-xdebug-2.2.1-2_i386
-  php5-xmlrpc-5.4.4-14+deb7u5_i386
-  php5-xsl-5.4.4-14+deb7u5_i386
+  php5-xmlrpc-5.4.4-14+deb7u7_i386
+  php5-xsl-5.4.4-14+deb7u7_i386
   phyml-2:20110919-1_i386
   pi-1.3.2-1.2_i386
   pia-3.102-3_i386
@@ -52155,8 +52125,8 @@ Packages:
   printer-driver-escpr-1.1.1-2_i386
   printer-driver-foo2zjs-20120510dfsg0-1_i386
   printer-driver-gutenprint-5.2.9-1_i386
-  printer-driver-hpcups-3.12.6-3.1_i386
-  printer-driver-hpijs-3.12.6-3.1_i386
+  printer-driver-hpcups-3.12.6-3.1+deb7u1_i386
+  printer-driver-hpijs-3.12.6-3.1+deb7u1_i386
   printer-driver-m2300w-0.51-7_i386
   printer-driver-min12xxw-0.0.9-6_i386
   printer-driver-pnm2ppa-1.13-4_i386
@@ -52491,7 +52461,7 @@ Packages:
   python-gst0.10-dbg-0.10.22-3_i386
   python-gst0.10-dev-0.10.22-3_i386
   python-gst0.10-rtsp-0.10.8-3_i386
-  python-gtk-gnash-0.8.11~git20120629-1_i386
+  python-gtk-gnash-0.8.11~git20120629-1+deb7u1_i386
   python-gtk-vnc-0.5.0-3.1_i386
   python-gtk2-2.24.0-3+b1_i386
   python-gtk2-dbg-2.24.0-3+b1_i386
@@ -52569,7 +52539,7 @@ Packages:
   python-libtorrent-0.15.10-1+b1_i386
   python-libtorrent-dbg-0.15.10-1+b1_i386
   python-libuser-1:0.56.9.dfsg.1-1.2_i386
-  python-libvirt-0.9.12-11+deb7u4_i386
+  python-libvirt-0.9.12.3-1_i386
   python-libxml2-2.8.0+dfsg1-7+nmu2_i386
   python-libxml2-dbg-2.8.0+dfsg1-7+nmu2_i386
   python-libxslt1-1.1.26-14.1_i386
@@ -52595,7 +52565,7 @@ Packages:
   python-magics++-2.14.11-4_i386
   python-mailutils-1:2.99.97-3_i386
   python-mapnik2-2.0.0+ds1-3+b4_i386
-  python-mapscript-6.0.1-3.2+deb7u1_i386
+  python-mapscript-6.0.1-3.2+deb7u2_i386
   python-markupsafe-0.15-1_i386
   python-markupsafe-dbg-0.15-1_i386
   python-mathgl-1.11.2-17_i386
@@ -52919,7 +52889,7 @@ Packages:
   python-usbtc08-0.1.1-2_i386
   python-utmp-0.8+nmu1+b1_i386
   python-vigra-1.7.1+dfsg1-3_i386
-  python-vipscc-7.28.5-1_i386
+  python-vipscc-7.28.5-1+deb7u1_i386
   python-visual-1:5.12-1.5_i386
   python-vte-1:0.28.2-5_i386
   python-vtk-5.8.0-13+b1_i386
@@ -53644,8 +53614,8 @@ Packages:
   ruby-gpgme-2.0.0-2_i386
   ruby-grib-0.2.2-3_i386
   ruby-grib-dbg-0.2.2-3_i386
-  ruby-gsl-1.14.7-1_i386
-  ruby-gsl-dbg-1.14.7-1_i386
+  ruby-gsl-1.14.7+dfsg-1_i386
+  ruby-gsl-dbg-1.14.7+dfsg-1_i386
   ruby-gstreamer-1.1.3-2+b1_i386
   ruby-gstreamer-dbg-1.1.3-2+b1_i386
   ruby-gtk2-1.1.3-2+b1_i386
@@ -53683,7 +53653,7 @@ Packages:
   ruby-odbc-dbg-0.99994-4_i386
   ruby-oily-png-1.0.2-2_i386
   ruby-okular-4:4.8.4-1_i386
-  ruby-opengl-0.60.1+dfsg1-2_i386
+  ruby-opengl-0.60.1+dfsg2-1~wheezy1_i386
   ruby-pango-1.1.3-2+b1_i386
   ruby-pango-dbg-1.1.3-2+b1_i386
   ruby-passenger-3.0.13debian-1+deb7u1_i386
@@ -53753,7 +53723,7 @@ Packages:
   runlim-1.7-1_i386
   rusers-0.17-8_i386
   rusersd-0.17-8_i386
-  rush-1.7+dfsg-1_i386
+  rush-1.7+dfsg-1+deb7u1_i386
   rwall-0.17-7_i386
   rwalld-0.17-7_i386
   rwho-0.17-12_i386
@@ -53796,18 +53766,18 @@ Packages:
   saint-2.3.3-1_i386
   sakura-3.0.4-2_i386
   sam2p-0.49.1-1_i386
-  samba-2:3.6.6-6+deb7u1_i386
-  samba-common-bin-2:3.6.6-6+deb7u1_i386
-  samba-dbg-2:3.6.6-6+deb7u1_i386
+  samba-2:3.6.6-6+deb7u2_i386
+  samba-common-bin-2:3.6.6-6+deb7u2_i386
+  samba-dbg-2:3.6.6-6+deb7u2_i386
   samba-dsdb-modules-4.0.0~beta2+dfsg1-3.2_i386
-  samba-tools-2:3.6.6-6+deb7u1_i386
+  samba-tools-2:3.6.6-6+deb7u2_i386
   samba4-4.0.0~beta2+dfsg1-3.2_i386
   samba4-clients-4.0.0~beta2+dfsg1-3.2_i386
   samba4-common-bin-4.0.0~beta2+dfsg1-3.2_i386
   samba4-dev-4.0.0~beta2+dfsg1-3.2_i386
   samba4-testsuite-4.0.0~beta2+dfsg1-3.2_i386
   samdump2-1.1.1-1.1_i386
-  samhain-2.8.3a-1_i386
+  samhain-2.8.3a-1+deb7u1_i386
   sampleicc-tools-1.6.4-1+b1_i386
   samplerate-programs-0.1.8-5_i386
   samtools-0.1.18-1_i386
@@ -54097,7 +54067,7 @@ Packages:
   smb-nat-1:1.0-4_i386
   smb4k-1.0.1-1_i386
   smbc-1.2.2-3_i386
-  smbclient-2:3.6.6-6+deb7u1_i386
+  smbclient-2:3.6.6-6+deb7u2_i386
   smbnetfs-0.5.3a-1_i386
   smc-1.9+git20120222-1+b1_i386
   smcroute-0.95-1+deb7u1_i386
@@ -54202,7 +54172,7 @@ Packages:
   spew-1.0.8-1_i386
   spfquery-1.2.9-7_i386
   sphinxsearch-2.0.4-1.1_i386
-  spice-client-0.11.0-1_i386
+  spice-client-0.11.0-1+deb7u1_i386
   spice-client-gtk-0.12-5_i386
   spice-vdagent-0.10.1-1_i386
   spidermonkey-bin-17.0.10esr-1~deb7u1_i386
@@ -54257,7 +54227,7 @@ Packages:
   sredird-2.2.1-1.1_i386
   srg-1.3.6-1_i386
   srptools-0.0.4-1.2_i386
-  srtp-utils-1.4.4+20100615~dfsg-2_i386
+  srtp-utils-1.4.4+20100615~dfsg-2+deb7u1_i386
   ss-dev-2.0-1.42.5-1.1_i386
   ssdeep-2.7-2_i386
   ssed-3.62-7_i386
@@ -54388,7 +54358,7 @@ Packages:
   swami-2.0.0+svn389-2_i386
   swami-dbg-2.0.0+svn389-2_i386
   swapspace-1.10-4_i386
-  swat-2:3.6.6-6+deb7u1_i386
+  swat-2:3.6.6-6+deb7u2_i386
   swath-0.4.3-3_i386
   sweep-0.9.3-6_i386
   sweeper-4:4.8.4-1_i386
@@ -54824,7 +54794,7 @@ Packages:
   trustedqsl-1.13-3_i386
   tsdecrypt-8.1-1_i386
   tse3play-0.3.1-4.3_i386
-  tshark-1.8.2-5wheezy7_i386
+  tshark-1.8.2-5wheezy9_i386
   tsocks-1.8beta5-9.2_i386
   tstools-1.11-1_i386
   tsung-1.4.2-1.1_i386
@@ -54856,10 +54826,10 @@ Packages:
   tuxcmd-0.6.70+dfsg-1_i386
   tuxcmd-modules-0.6.70+ds-4_i386
   tuxfootball-0.3.1-2_i386
-  tuxguitar-alsa-1.2-13_i386
-  tuxguitar-fluidsynth-1.2-13_i386
-  tuxguitar-jack-1.2-13_i386
-  tuxguitar-oss-1.2-13_i386
+  tuxguitar-alsa-1.2-13+deb7u1_i386
+  tuxguitar-fluidsynth-1.2-13+deb7u1_i386
+  tuxguitar-jack-1.2-13+deb7u1_i386
+  tuxguitar-oss-1.2-13+deb7u1_i386
   tuxmath-1.8.0-4_i386
   tuxonice-userui-1.1-1_i386
   tuxpaint-1:0.9.21-1.1_i386
@@ -55032,7 +55002,7 @@ Packages:
   usbutils-1:005-3_i386
   usbview-1.1-1_i386
   usepackage-1.8-1_i386
-  user-mode-linux-3.2-2um-1+deb7u2+b1_i386
+  user-mode-linux-3.2-2um-1+deb7u2+b2_i386
   userinfo-2.2-3_i386
   usermode-1.109-1_i386
   userv-1.1.1_i386
@@ -55122,8 +55092,8 @@ Packages:
   vamp-plugin-sdk-2.1-1_i386
   vamps-0.99.2-4_i386
   varmon-1.2.1-1_i386
-  varnish-3.0.2-2_i386
-  varnish-dbg-3.0.2-2_i386
+  varnish-3.0.2-2+deb7u1_i386
+  varnish-dbg-3.0.2-2+deb7u1_i386
   vavoom-1.33-4_i386
   vbetool-1.1-2_i386
   vbindiff-3.0-beta3-1_i386
@@ -55334,11 +55304,11 @@ Packages:
   wesnoth-1.10-server-1:1.10.3-3_i386
   west-chamber-common-20100405+svn20111107.r124-1_i386
   wfut-0.2.1-2_i386
-  wget-1.13.4-3_i386
+  wget-1.13.4-3+deb7u1_i386
   whichman-2.4-7_i386
   whiptail-0.52.14-11.1_i386
   whitedune-0.30.10-1.1_i386
-  whois-5.0.23_i386
+  whois-5.1.1~deb7u1_i386
   whowatch-1.6.0a-2_i386
   why-2.30+dfsg-5+b1_i386
   whysynth-20090403-1.2_i386
@@ -55352,7 +55322,7 @@ Packages:
   wiipdf-1.4-2_i386
   wildmidi-0.2.3.4-2.1_i386
   wily-0.13.41-7.2_i386
-  winbind-2:3.6.6-6+deb7u1_i386
+  winbind-2:3.6.6-6+deb7u2_i386
   winbind4-4.0.0~beta2+dfsg1-3.2_i386
   windowlab-1.40-1_i386
   wine-1.4.1-4_i386
@@ -55365,10 +55335,10 @@ Packages:
   winwrangler-0.2.4-3_i386
   wipe-0.22-1_i386
   wireless-tools-30~pre9-8_i386
-  wireshark-1.8.2-5wheezy7_i386
-  wireshark-common-1.8.2-5wheezy7_i386
-  wireshark-dbg-1.8.2-5wheezy7_i386
-  wireshark-dev-1.8.2-5wheezy7_i386
+  wireshark-1.8.2-5wheezy9_i386
+  wireshark-common-1.8.2-5wheezy9_i386
+  wireshark-dbg-1.8.2-5wheezy9_i386
+  wireshark-dev-1.8.2-5wheezy9_i386
   wise-2.4.1-10_i386
   witty-examples-3.2.1-2_i386
   wizznic-0.9.2-preview2+dfsg-1.1_i386
@@ -55575,8 +55545,8 @@ Packages:
   xdiskusage-1.48-10.1_i386
   xdm-1:1.1.11-1_i386
   xdms-1.3.2-4_i386
-  xdmx-2:1.12.4-6+deb7u1_i386
-  xdmx-tools-2:1.12.4-6+deb7u1_i386
+  xdmx-2:1.12.4-6+deb7u2_i386
+  xdmx-tools-2:1.12.4-6+deb7u2_i386
   xdotool-1:2.20100701.2961-3+deb7u3_i386
   xdrawchem-2.0-2_i386
   xdu-3.0-18_i386
@@ -55584,8 +55554,8 @@ Packages:
   xen-hypervisor-4.1-amd64-4.1.4-3+deb7u1_i386
   xen-hypervisor-4.1-i386-4.1.4-3+deb7u1_i386
   xen-linux-system-2.6-xen-686-3.2+46_i386
-  xen-linux-system-3.2.0-4-686-pae-3.2.51-1_i386
-  xen-linux-system-3.2.0-4-amd64-3.2.51-1_i386
+  xen-linux-system-3.2.0-4-686-pae-3.2.54-2_i386
+  xen-linux-system-3.2.0-4-amd64-3.2.54-2_i386
   xen-linux-system-686-pae-3.2+46_i386
   xen-linux-system-amd64-3.2+46_i386
   xen-system-amd64-4.1.4-3+deb7u1_i386
@@ -55646,7 +55616,7 @@ Packages:
   xfce4-verve-plugin-1.0.0-1+b1_i386
   xfce4-volumed-0.1.13-3_i386
   xfce4-wavelan-plugin-0.5.11-1+b1_i386
-  xfce4-weather-plugin-0.7.4-4_i386
+  xfce4-weather-plugin-0.7.4-5_i386
   xfce4-wmdock-plugin-0.3.4-1+b1_i386
   xfce4-xkb-plugin-0.5.4.3-1+b1_i386
   xfconf-4.8.1-1_i386
@@ -55807,7 +55777,7 @@ Packages:
   xnbd-server-0.1.0-pre-hg20-e75b93a47722-3_i386
   xnec2c-1:1.4-1_i386
   xnecview-1.35-7.1_i386
-  xnest-2:1.12.4-6+deb7u1_i386
+  xnest-2:1.12.4-6+deb7u2_i386
   xneur-0.15.0-1.1_i386
   xneur-dbg-0.15.0-1.1_i386
   xonix-1.4-29_i386
@@ -55865,12 +55835,12 @@ Packages:
   xsdcxx-3.3.0.1-1.3_i386
   xsel-1.2.0-1_i386
   xsensors-0.70-2_i386
-  xserver-xephyr-2:1.12.4-6+deb7u1_i386
-  xserver-xfbdev-2:1.12.4-6+deb7u1_i386
+  xserver-xephyr-2:1.12.4-6+deb7u2_i386
+  xserver-xfbdev-2:1.12.4-6+deb7u2_i386
   xserver-xorg-1:7.7+3~deb7u1_i386
-  xserver-xorg-core-2:1.12.4-6+deb7u1_i386
-  xserver-xorg-core-dbg-2:1.12.4-6+deb7u1_i386
-  xserver-xorg-dev-2:1.12.4-6+deb7u1_i386
+  xserver-xorg-core-2:1.12.4-6+deb7u2_i386
+  xserver-xorg-core-dbg-2:1.12.4-6+deb7u2_i386
+  xserver-xorg-dev-2:1.12.4-6+deb7u2_i386
   xserver-xorg-input-acecad-1:1.5.0-1+b2_i386
   xserver-xorg-input-aiptek-1:1.4.1-1+b2_i386
   xserver-xorg-input-all-1:7.7+3~deb7u1_i386
@@ -55975,7 +55945,7 @@ Packages:
   xulrunner-17.0-dbg-17.0.10esr-1~deb7u1_i386
   xulrunner-dev-17.0.10esr-1~deb7u1_i386
   xutils-dev-1:7.7~1_i386
-  xvfb-2:1.12.4-6+deb7u1_i386
+  xvfb-2:1.12.4-6+deb7u2_i386
   xvier-1.0-7.5_i386
   xview-clients-3.2p1.4-28.1_i386
   xview-examples-3.2p1.4-28.1_i386
