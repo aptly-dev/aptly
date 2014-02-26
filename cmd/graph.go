@@ -25,6 +25,8 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	graph.SetDir(true)
 	graph.SetName("aptly")
 
+	existingNodes := map[string]bool{}
+
 	fmt.Printf("Loading mirrors...\n")
 
 	repoCollection := debian.NewRemoteRepoCollection(context.database)
@@ -43,6 +45,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 				repo.Name, repo.ArchiveRoot, repo.Distribution, strings.Join(repo.Components, ", "),
 				strings.Join(repo.Architectures, ", "), repo.NumPackages())),
 		})
+		existingNodes[repo.UUID] = true
 		return nil
 	})
 
@@ -53,6 +56,11 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	fmt.Printf("Loading snapshots...\n")
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
+
+	snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
+		existingNodes[snapshot.UUID] = true
+		return nil
+	})
 
 	err = snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
 		err := snapshotCollection.LoadComplete(snapshot)
@@ -74,11 +82,17 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 		if snapshot.SourceKind == "repo" {
 			for _, uuid := range snapshot.SourceIDs {
-				graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
+				_, exists := existingNodes[uuid]
+				if exists {
+					graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
+				}
 			}
 		} else if snapshot.SourceKind == "snapshot" {
 			for _, uuid := range snapshot.SourceIDs {
-				graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
+				_, exists := existingNodes[uuid]
+				if exists {
+					graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
+				}
 			}
 		}
 		return nil
@@ -100,7 +114,10 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			"label":     graphvizEscape(fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution, repo.Component, strings.Join(repo.Architectures, ", "))),
 		})
 
-		graph.AddEdge(graphvizEscape(repo.SnapshotUUID), "", graphvizEscape(repo.UUID), "", true, nil)
+		_, exists := existingNodes[repo.SnapshotUUID]
+		if exists {
+			graph.AddEdge(graphvizEscape(repo.SnapshotUUID), "", graphvizEscape(repo.UUID), "", true, nil)
+		}
 
 		return nil
 	})
