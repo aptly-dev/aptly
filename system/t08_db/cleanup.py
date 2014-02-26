@@ -81,14 +81,14 @@ class CleanupDB7Test(BaseTest):
     ]
     runCmd = "aptly db cleanup"
 
-# TODO: when repo drop is added
-# class CleanupDB8Test(BaseTest):
-#     """
-#     cleanup db: local repos dropped
-#     """
-#     fixtureCmds = [
-#         "aptly repo create local-repo",
-#         "aptly repo add local-repo ${files}",
-#         "aptly repo drop local-repo",
-#     ]
-#     runCmd = "aptly db cleanup"
+
+class CleanupDB8Test(BaseTest):
+    """
+    cleanup db: local repos dropped
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly repo drop local-repo",
+    ]
+    runCmd = "aptly db cleanup"
