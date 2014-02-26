@@ -11,43 +11,49 @@ else
 TRAVIS_TARGET=test
 endif
 
+ifeq ($(TRAVIS), true)
+GOM=$(HOME)/gopath/bin/gom
+else
+GOM=gom
+endif
+
 all: test check system-test
 
 prepare:
 	mkdir -p $(BINPATH)
 	go get github.com/mattn/gom
-	gom $(GOM_ENVIRONMENT) install
+	$(GOM) $(GOM_ENVIRONMENT) install
 
 coverage.out:
 	rm -f coverage.*.out
-	for i in $(PACKAGES); do gom test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
+	for i in $(PACKAGES); do $(GOM) test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
 	echo "mode: count" > coverage.out
 	grep -v -h "mode: count" coverage.*.out >> coverage.out
 	rm -f coverage.*.out
 
 coverage: coverage.out
-	gom exec go tool cover -html=coverage.out
+	$(GOM) exec go tool cover -html=coverage.out
 	rm -f coverage.out
 
 check:
-	gom exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
-	gom exec golint $(ALL_PACKAGES:%=./%)
+	$(GOM) exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
+	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
 
 system-test:
 ifeq ($(GOVERSION),$(filter $(GOVERSION),go1.2 devel))
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 endif
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	gom build -o $(BINPATH)/aptly
+	$(GOM) build -o $(BINPATH)/aptly
 	PATH=$(BINPATH)/:$(PATH) python system/run.py --long
 
 travis: $(TRAVIS_TARGET) system-test
 
 test:
-	gom test -v $(PACKAGES:%=./%) -gocheck.v=true
+	$(GOM) test -v $(PACKAGES:%=./%) -gocheck.v=true
 
 coveralls: coverage.out
-	gom build -o $(BINPATH)/goveralls github.com/mattn/goveralls
-	gom exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
+	$(GOM) build -o $(BINPATH)/goveralls github.com/mattn/goveralls
+	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
 
 .PHONY: coverage.out
