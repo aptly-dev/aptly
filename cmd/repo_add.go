@@ -8,6 +8,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -75,6 +76,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	}
 
 	processedFiles := []string{}
+	sort.Strings(packageFiles)
 
 	for _, file := range packageFiles {
 		var (
@@ -128,10 +130,14 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			err = context.packagePool.Import(sourceFile, p.Files[i].Checksums.MD5)
 			if err != nil {
 				context.progress.ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
-				continue
+				break
 			}
 
 			processedFiles = append(processedFiles, sourceFile)
+		}
+		if err != nil {
+			// some files haven't been imported
+			continue
 		}
 
 		err = packageCollection.Update(p)
