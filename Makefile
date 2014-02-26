@@ -21,7 +21,7 @@ all: test check system-test
 
 prepare:
 	mkdir -p $(BINPATH)
-	go get github.com/smira/gom
+	go get github.com/mattn/gom
 	$(GOM) $(GOM_ENVIRONMENT) install
 
 coverage.out:
