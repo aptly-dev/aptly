@@ -12,6 +12,7 @@ func makeCmdRepo() *commander.Command {
 		Subcommands: []*commander.Command{
 			makeCmdRepoAdd(),
 			makeCmdRepoCreate(),
+			makeCmdRepoDrop(),
 			makeCmdRepoList(),
 			makeCmdRepoShow(),
 		},
