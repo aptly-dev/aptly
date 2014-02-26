@@ -1,0 +1,3 @@
+Local repo `repo2` was used to create following snapshots:
+ * [local]: Snapshot from local repo [repo2]
+ERROR: won't delete local repo with snapshots, use -force to override
