@@ -53,6 +53,31 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	fmt.Printf("Loading local repos...\n")
+
+	localRepoCollection := debian.NewLocalRepoCollection(context.database)
+
+	err = localRepoCollection.ForEach(func(repo *debian.LocalRepo) error {
+		err := localRepoCollection.LoadComplete(repo)
+		if err != nil {
+			return err
+		}
+
+		graph.AddNode("aptly", graphvizEscape(repo.UUID), map[string]string{
+			"shape":     "Mrecord",
+			"style":     "filled",
+			"fillcolor": "mediumseagreen",
+			"label": graphvizEscape(fmt.Sprintf("{Repo %s|comment: %s|pkgs: %d}",
+				repo.Name, repo.Comment, repo.NumPackages())),
+		})
+		existingNodes[repo.UUID] = true
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("Loading snapshots...\n")
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
@@ -80,14 +105,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			"label":     graphvizEscape(fmt.Sprintf("{Snapshot %s|%s|pkgs: %d}", snapshot.Name, description, snapshot.NumPackages())),
 		})
 
-		if snapshot.SourceKind == "repo" {
-			for _, uuid := range snapshot.SourceIDs {
-				_, exists := existingNodes[uuid]
-				if exists {
-					graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
-				}
-			}
-		} else if snapshot.SourceKind == "snapshot" {
+		if snapshot.SourceKind == "repo" || snapshot.SourceKind == "local" || snapshot.SourceKind == "snapshot" {
 			for _, uuid := range snapshot.SourceIDs {
 				_, exists := existingNodes[uuid]
 				if exists {
