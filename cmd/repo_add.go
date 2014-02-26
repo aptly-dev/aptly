@@ -182,7 +182,7 @@ func makeCmdRepoAdd() *commander.Command {
 		UsageLine: "add <name> <package file.deb>|<directory> ...",
 		Short:     "add packages to local repository",
 		Long: `
-Commands adds packages to local repository. List of files or directories to be
+Command adds packages to local repository. List of files or directories to be
 scanned could be specified. If importing from directory, all files matching *.deb
 pattern would be scanned and added to the repository. For source packages, all required
 files are added as well automatically. By default, when importing
