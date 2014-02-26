@@ -1,0 +1,3 @@
+
+Snapshot snap6 successfully created.
+You can run 'aptly publish snapshot snap6' to publish snapshot as Debian repository.
