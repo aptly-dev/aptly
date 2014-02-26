@@ -15,6 +15,7 @@ all: test check system-test
 
 prepare:
 	mkdir -p $(BINPATH)
+	go get github.com/mattn/gom
 	gom $(GOM_ENVIRONMENT) install
 
 coverage.out:
