@@ -146,7 +146,10 @@ class BaseTest(object):
         try:
             #start = time.time()
             if not hasattr(command, "__iter__"):
-                params = {'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files")}
+                params = {
+                    'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"),
+                    'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
+                }
                 if self.fixtureWebServer:
                     params['url'] = self.webServerUrl
 

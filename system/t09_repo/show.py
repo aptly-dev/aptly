@@ -13,7 +13,10 @@ class ShowRepo2Test(BaseTest):
     """
     show local repo: -with-packages
     """
-    fixtureCmds = ["aptly repo create -comment=Cool repo2"]
+    fixtureCmds = [
+        "aptly repo create -comment=Cool repo2",
+        "aptly repo add repo2 ${files}"
+    ]
     runCmd = "aptly repo show -with-packages repo2"
 
 
