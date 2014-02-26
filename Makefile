@@ -1,64 +1,52 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-
-ifeq ($(TRAVIS), true)
-GOVERALLS?=$(HOME)/gopath/bin/goveralls
-SRCPATH?=$(HOME)/gopath/src
-BINPATH=$(HOME)/gopath/bin
-else
-GOVERALLS?=goveralls
-SRCPATH?=$(GOPATH)/src
-BINPATH?=$(GOPATH)/bin
-endif
+PACKAGES=database debian files http utils
+ALL_PACKAGES=aptly cmd console database debian files http utils
+BINPATH=$(abspath ./bin)
+GOM_ENVIRONMENT=-test
 
 ifeq ($(GOVERSION), go1.2)
 TRAVIS_TARGET=coveralls
-PREPARE_LIST=cover-prepare
+GOM_ENVIRONMENT+=-development
 else
 TRAVIS_TARGET=test
-PREPARE_LIST=
 endif
 
 all: test check system-test
 
-prepare: $(PREPARE_LIST)
-	go get -d -v ./...
-	go get launchpad.net/gocheck
-
-cover-prepare:
-	go get github.com/golang/lint/golint
-	go get github.com/mattn/goveralls
-	go get github.com/axw/gocov/gocov
-	go get code.google.com/p/go.tools/cmd/cover
+prepare:
+	mkdir -p $(BINPATH)
+	gom $(GOM_ENVIRONMENT) install
 
 coverage.out:
 	rm -f coverage.*.out
-	for i in database debian files http utils; do go test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
+	for i in $(PACKAGES); do gom test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
 	echo "mode: count" > coverage.out
 	grep -v -h "mode: count" coverage.*.out >> coverage.out
 	rm -f coverage.*.out
 
 coverage: coverage.out
-	go tool cover -html=coverage.out
+	gom exec go tool cover -html=coverage.out
 	rm -f coverage.out
 
 check:
-	go tool vet -all=true .
-	golint .
+	gom exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
+	gom exec golint $(ALL_PACKAGES:%=./%)
 
 system-test:
-ifeq ($(GOVERSION), go1.2)
+ifeq ($(GOVERSION),$(filter $(GOVERSION),go1.2 devel))
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 endif
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	go install
-	PATH=$(BINPATH):$(PATH) python system/run.py --long
+	gom build -o $(BINPATH)/aptly
+	PATH=$(BINPATH)/:$(PATH) python system/run.py --long
 
 travis: $(TRAVIS_TARGET) system-test
 
 test:
-	go test -v ./... -gocheck.v=true
+	gom test -v $(PACKAGES:%=./%) -gocheck.v=true
 
 coveralls: coverage.out
-	@$(GOVERALLS) -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
+	gom build -o $(BINPATH)/goveralls github.com/mattn/goveralls
+	gom exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
 
 .PHONY: coverage.out

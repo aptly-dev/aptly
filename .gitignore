@@ -26,3 +26,6 @@ coverage.html
 coverage*.out
 
 *.pyc
+
+vendor/
+bin/

@@ -1,0 +1,22 @@
+gom 'code.google.com/p/go-uuid/uuid', :commit => '5fac954758f5'
+gom 'code.google.com/p/go.crypto/ssh/terminal', :commit => '7aa593ce8cea'
+gom 'code.google.com/p/gographviz', :commit => '212766062629'
+gom 'code.google.com/p/snappy-go/snappy', :commit => '12e4b4183793'
+gom 'github.com/cheggaaa/pb', :commit => '74be7a1388046f374ac36e93d46f5d56e856f827'
+gom 'github.com/gonuts/commander', :commit => 'f8ba4e959ca914268227c3ebbd7f6bf0bb35541a'
+gom 'github.com/gonuts/flag', :commit => '741a6cbd37a30dedc93f817e7de6aaf0ca38a493'
+gom 'github.com/mkrautz/goar', :commit => '36eb5f3452b1283a211fa35bc00c646fd0db5c4b'
+gom 'github.com/syndtr/goleveldb/leveldb', :commit => '527a7b286bd095794af6c519627b7ed3d8fd067a'
+gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
+gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
+
+group :test do
+    gom 'launchpad.net/gocheck'
+end
+
+group :development do
+   gom 'github.com/golang/lint/golint'
+   gom 'github.com/mattn/goveralls'
+   gom 'github.com/axw/gocov/gocov'
+   gom 'code.google.com/p/go.tools/cmd/cover'
+end
