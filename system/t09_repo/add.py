@@ -188,6 +188,7 @@ class AddRepo9Test(BaseTest):
     ]
     runCmd = "aptly repo add repo9 ${files}/pyspi_0.6.1-1.3.dsc"
     outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+    gold_processor = BaseTest.expand_environ
 
     def prepare(self):
         super(AddRepo9Test, self).prepare()
