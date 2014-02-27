@@ -5,10 +5,10 @@ from snapshot:
 and result would be saved as new snapshot snap3.
 Loading packages (56800)...
 Building indexes...
-[0;32;49m[+][0;39;49m mame-0.146-5_amd64 added[0m
-[0;32;49m[+][0;39;49m unrar-1:4.1.4-1_amd64 added[0m
-[0;32;49m[+][0;39;49m mame-0.146-5_i386 added[0m
-[0;32;49m[+][0;39;49m unrar-1:4.1.4-1_i386 added[0m
+[0;32;49m[+][0;39;49m mame_0.146-5_amd64 added[0m
+[0;32;49m[+][0;39;49m unrar_1:4.1.4-1_amd64 added[0m
+[0;32;49m[+][0;39;49m mame_0.146-5_i386 added[0m
+[0;32;49m[+][0;39;49m unrar_1:4.1.4-1_i386 added[0m
 
 Snapshot snap3 successfully created.
 You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.

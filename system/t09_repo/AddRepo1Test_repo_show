@@ -2,4 +2,4 @@ Name: repo1
 Comment: Repo1
 Number of packages: 1
 Packages:
-  libboost-program-options-dev-1.49.0.1_i386
+  libboost-program-options-dev_1.49.0.1_i386

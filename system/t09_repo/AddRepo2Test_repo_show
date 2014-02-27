@@ -2,5 +2,5 @@ Name: repo2
 Comment: Repo2
 Number of packages: 2
 Packages:
-  pyspi-0.6.1-1.3_source
-  pyspi-0.6.1-1.4_source
+  pyspi_0.6.1-1.3_source
+  pyspi_0.6.1-1.4_source

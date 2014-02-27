@@ -2,6 +2,6 @@ Name: snap6
 Description: Snapshot from local repo [local-repo]
 Number of packages: 3
 Packages:
-  libboost-program-options-dev-1.49.0.1_i386
-  pyspi-0.6.1-1.3_source
-  pyspi-0.6.1-1.4_source
+  libboost-program-options-dev_1.49.0.1_i386
+  pyspi_0.6.1-1.3_source
+  pyspi_0.6.1-1.4_source

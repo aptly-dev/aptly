@@ -5,13 +5,13 @@ from snapshot:
 and result would be saved as new snapshot snap1.
 Loading packages (59125)...
 Building indexes...
-[0;31;49m[-][0;39;49m rsyslog-5.8.11-3_amd64 removed[0m
-[0;32;49m[+][0;39;49m rsyslog-7.4.4-1~bpo70+1_amd64 added[0m
-[0;31;49m[-][0;39;49m libestr0-0.1.1-2_amd64 removed[0m
-[0;32;49m[+][0;39;49m libestr0-0.1.9-1~bpo70+1_amd64 added[0m
-[0;32;49m[+][0;39;49m init-system-helpers-1.11~bpo70.1_all added[0m
-[0;31;49m[-][0;39;49m rsyslog-5.8.11-3_i386 removed[0m
-[0;32;49m[+][0;39;49m rsyslog-7.4.4-1~bpo70+1_i386 added[0m
-[0;31;49m[-][0;39;49m libestr0-0.1.1-2_i386 removed[0m
-[0;32;49m[+][0;39;49m libestr0-0.1.9-1~bpo70+1_i386 added[0m
+[0;31;49m[-][0;39;49m rsyslog_5.8.11-3_amd64 removed[0m
+[0;32;49m[+][0;39;49m rsyslog_7.4.4-1~bpo70+1_amd64 added[0m
+[0;31;49m[-][0;39;49m libestr0_0.1.1-2_amd64 removed[0m
+[0;32;49m[+][0;39;49m libestr0_0.1.9-1~bpo70+1_amd64 added[0m
+[0;32;49m[+][0;39;49m init-system-helpers_1.11~bpo70.1_all added[0m
+[0;31;49m[-][0;39;49m rsyslog_5.8.11-3_i386 removed[0m
+[0;32;49m[+][0;39;49m rsyslog_7.4.4-1~bpo70+1_i386 added[0m
+[0;31;49m[-][0;39;49m libestr0_0.1.1-2_i386 removed[0m
+[0;32;49m[+][0;39;49m libestr0_0.1.9-1~bpo70+1_i386 added[0m
 ERROR: unable to create snapshot: snapshot with name snap1 already exists
