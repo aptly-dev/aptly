@@ -14,6 +14,7 @@ func makeCmdRepo() *commander.Command {
 			makeCmdRepoCreate(),
 			makeCmdRepoDrop(),
 			makeCmdRepoList(),
+			makeCmdRepoRemove(),
 			makeCmdRepoShow(),
 		},
 		Flag: *flag.NewFlagSet("aptly-repo", flag.ExitOnError),
