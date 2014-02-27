@@ -183,10 +183,9 @@ func makeCmdRepoAdd() *commander.Command {
 		Short:     "add packages to local repository",
 		Long: `
 Command adds packages to local repository. List of files or directories to be
-scanned could be specified. If importing from directory, all files matching *.deb
+scanned could be specified. If importing from directory, all files matching *.deb and *.dsc
 pattern would be scanned and added to the repository. For source packages, all required
-files are added as well automatically. By default, when importing
-all successfully added files are removed.
+files are added as well automatically.
 
 ex:
   $ aptly repo add testing myapp-0.1.2.deb incoming/
