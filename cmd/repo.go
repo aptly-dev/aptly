@@ -11,9 +11,12 @@ func makeCmdRepo() *commander.Command {
 		Short:     "manage local package repositories",
 		Subcommands: []*commander.Command{
 			makeCmdRepoAdd(),
+			makeCmdRepoCopy(),
 			makeCmdRepoCreate(),
 			makeCmdRepoDrop(),
+			makeCmdRepoImport(),
 			makeCmdRepoList(),
+			makeCmdRepoMove(),
 			makeCmdRepoRemove(),
 			makeCmdRepoShow(),
 		},

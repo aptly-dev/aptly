@@ -33,7 +33,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 	} else if len(args) == 4 && args[1] == "from" && args[2] == "repo" {
-		// aptly snapshot create snap from repo mirror
+		// aptly snapshot create snap from repo repo
 		localRepoName, snapshotName := args[3], args[0]
 
 		localRepoCollection := debian.NewLocalRepoCollection(context.database)
