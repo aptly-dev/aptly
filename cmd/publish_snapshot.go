@@ -5,6 +5,7 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/utils"
 	"strings"
 )
 
@@ -100,6 +101,9 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		snapshot.Name, context.publishedStorage.PublicPath())
 	fmt.Printf("Now you can add following line to apt sources:\n")
 	fmt.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
+	if utils.StrSliceHasItem(published.Architectures, "source") {
+		fmt.Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
+	}
 	fmt.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
 	fmt.Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
 
