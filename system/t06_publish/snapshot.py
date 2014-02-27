@@ -406,3 +406,48 @@ class PublishSnapshot16Test(BaseTest):
         self.run_cmd(["gpg",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+
+class PublishSnapshot17Test(BaseTest):
+    """
+    publish snapshot: from local repo
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap17 from repo local-repo",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap17"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot17Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/source/Sources')
+        self.check_exists('public/dists/maverick/main/source/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
+
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/maverick/main/source/Sources', 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+
+        # verify signatures
+        self.run_cmd(["gpg", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
