@@ -1,0 +1,9 @@
+Name: repo1
+Comment: Cool
+Number of packages: 5
+Packages:
+  nginx_1.2.1-2.2+wheezy2_all
+  unpaper_0.4.2-1_amd64
+  libboost-program-options-dev_1.49.0.1_i386
+  pyspi_0.6.1-1.3_source
+  pyspi_0.6.1-1.4_source

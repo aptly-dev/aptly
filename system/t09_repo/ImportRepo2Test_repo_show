@@ -1,0 +1,24 @@
+Name: repo1
+Comment: Cool
+Number of packages: 20
+Packages:
+  gcc-4.7-base_4.7.2-5_amd64
+  libc-bin_2.13-38+deb7u1_amd64
+  libc6_2.13-38+deb7u1_amd64
+  libgcc1_1:4.7.2-5_amd64
+  multiarch-support_2.13-38+deb7u1_amd64
+  userinfo_2.2-3_amd64
+  dpkg_1.16.12_i386
+  gcc-4.7-base_4.7.2-5_i386
+  libboost-program-options-dev_1.49.0.1_i386
+  libbz2-1.0_1.0.6-4_i386
+  libc-bin_2.13-38+deb7u1_i386
+  libc6_2.13-38+deb7u1_i386
+  libgcc1_1:4.7.2-5_i386
+  liblzma5_5.1.1alpha+20120614-2_i386
+  libselinux1_2.1.9-5_i386
+  multiarch-support_2.13-38+deb7u1_i386
+  tar_1.26+dfsg-0.1_i386
+  zlib1g_1:1.2.7.dfsg-13_i386
+  pyspi_0.6.1-1.3_source
+  pyspi_0.6.1-1.4_source

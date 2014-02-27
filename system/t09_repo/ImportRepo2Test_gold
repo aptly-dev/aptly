@@ -1,0 +1,19 @@
+
+Loading packages...
+[o] dpkg_1.16.12_i386 imported
+[o] gcc-4.7-base_4.7.2-5_amd64 imported
+[o] gcc-4.7-base_4.7.2-5_i386 imported
+[o] libbz2-1.0_1.0.6-4_i386 imported
+[o] libc-bin_2.13-38+deb7u1_amd64 imported
+[o] libc-bin_2.13-38+deb7u1_i386 imported
+[o] libc6_2.13-38+deb7u1_amd64 imported
+[o] libc6_2.13-38+deb7u1_i386 imported
+[o] libgcc1_1:4.7.2-5_amd64 imported
+[o] libgcc1_1:4.7.2-5_i386 imported
+[o] liblzma5_5.1.1alpha+20120614-2_i386 imported
+[o] libselinux1_2.1.9-5_i386 imported
+[o] multiarch-support_2.13-38+deb7u1_amd64 imported
+[o] multiarch-support_2.13-38+deb7u1_i386 imported
+[o] tar_1.26+dfsg-0.1_i386 imported
+[o] userinfo_2.2-3_amd64 imported
+[o] zlib1g_1:1.2.7.dfsg-13_i386 imported
