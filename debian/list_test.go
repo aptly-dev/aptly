@@ -5,6 +5,7 @@ import (
 	"github.com/smira/aptly/database"
 	. "launchpad.net/gocheck"
 	"sort"
+	"strings"
 )
 
 type PackageListSuite struct {
@@ -218,6 +219,44 @@ func (s *PackageListSuite) TestSearch(c *C) {
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}), Equals, s.packages[3])
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}), Equals, s.packages[3])
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}), IsNil)
+}
+
+func (s *PackageListSuite) TestFilter(c *C) {
+	c.Check(func() { s.list.Filter([]string{"abcd_0.3_i386"}, false, nil, 0, nil) }, Panics, "list not indexed, can't filter")
+
+	_, err := s.il.Filter([]string{"app >3)"}, false, nil, 0, nil)
+	c.Check(err, ErrorMatches, "unable to parse dependency.*")
+
+	plString := func(l *PackageList) string {
+		list := make([]string, 0, l.Len())
+		for _, p := range l.packages {
+			list = append(list, p.String())
+		}
+
+		sort.Strings(list)
+
+		return strings.Join(list, " ")
+	}
+
+	result, err := s.il.Filter([]string{"app_1.1~bp1_i386"}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.1~bp1_i386")
+
+	result, err = s.il.Filter([]string{"app_1.1~bp1_i386", "dpkg_1.7_source", "dpkg_1.8_amd64"}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.1~bp1_i386 dpkg_1.7_source")
+
+	result, err = s.il.Filter([]string{"app", "dpkg (>>1.6.1-3)", "app (>=1.0)", "xyz", "aa (>>3.0)"}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 dpkg_1.7_i386 dpkg_1.7_source")
+
+	result, err = s.il.Filter([]string{"app {i386}"}, true, NewPackageList(), 0, []string{"i386"})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.1~bp1_i386 data_1.1~bp1_all dpkg_1.7_i386 lib_1.0_i386 mailer_3.5.8_i386")
+
+	result, err = s.il.Filter([]string{"app (>=0.9)", "lib", "data"}, true, NewPackageList(), 0, []string{"i386", "amd64"})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 data_1.1~bp1_all dpkg_1.6.1-3_amd64 dpkg_1.7_i386 lib_1.0_i386 mailer_3.5.8_i386")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {

@@ -331,21 +331,36 @@ func (l *PackageList) Search(dep Dependency) *Package {
 }
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
-func (l *PackageList) Filter(queries []string, withDependencies bool, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+func (l *PackageList) Filter(queries []string, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+	if !l.indexed {
+		panic("list not indexed, can't filter")
+	}
+
 	result := NewPackageList()
 
 	for _, query := range queries {
 		isDepQuery := strings.IndexAny(query, " (){}=<>") != -1
 
 		if !isDepQuery {
-			// try to interpret query as package key
-			p := l.packages[query]
-			if p != nil {
-				result.Add(p)
-				continue
+			// try to interpret query as package string representation
+
+			// convert Package.String() to Package.Key()
+			i := strings.Index(query, "_")
+			if i != -1 {
+				pkg, query := query[:i], query[i+1:]
+				j := strings.LastIndex(query, "_")
+				if j != -1 {
+					version, arch := query[:j], query[j+1:]
+					p := l.packages["P"+arch+" "+pkg+" "+version]
+					if p != nil {
+						result.Add(p)
+						continue
+					}
+				}
 			}
 		}
 
+		// try as dependency
 		dep, err := ParseDependency(query)
 		if err != nil {
 			if isDepQuery {
@@ -355,12 +370,46 @@ func (l *PackageList) Filter(queries []string, withDependencies bool, dependency
 			continue
 		}
 
-		_ = dep
-		// -> Search
+		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= dep.Pkg })
 
+		for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
+			p := l.packagesIndex[i]
+			if p.MatchesDependency(dep) {
+				result.Add(p)
+			}
+			i++
+		}
 	}
 
-	// -> Verify dependencies
+	if withDependencies {
+		added := result.Len()
+
+		dependencySource := NewPackageList()
+		dependencySource.Append(source)
+		dependencySource.Append(result)
+		dependencySource.PrepareIndex()
+
+		// while some new dependencies were discovered
+		for added > 0 {
+			added = 0
+
+			// find missing dependencies
+			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource)
+			if err != nil {
+				return nil, err
+			}
+
+			// try to satisfy dependencies
+			for _, dep := range missing {
+				p := l.Search(dep)
+				if p != nil {
+					result.Add(p)
+					dependencySource.Add(p)
+					added++
+				}
+			}
+		}
+	}
 
 	return result, nil
 }
