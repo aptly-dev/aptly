@@ -246,7 +246,7 @@ func (p *Package) Decode(input []byte) error {
 
 // String creates readable representation
 func (p *Package) String() string {
-	return fmt.Sprintf("%s-%s_%s", p.Name, p.Version, p.Architecture)
+	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
 }
 
 // MatchesArchitecture checks whether packages matches specified architecture
@@ -256,6 +256,37 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 	}
 
 	return p.Architecture == arch
+}
+
+// MatchesDependency checks whether package matches specified dependency
+func (p *Package) MatchesDependency(dep Dependency) bool {
+	if dep.Pkg != p.Name {
+		return false
+	}
+
+	if dep.Architecture != "" && !p.MatchesArchitecture(dep.Architecture) {
+		return false
+	}
+
+	if dep.Relation == VersionDontCare {
+		return true
+	}
+
+	r := CompareVersions(p.Version, dep.Version)
+	switch dep.Relation {
+	case VersionEqual:
+		return r == 0
+	case VersionLess:
+		return r < 0
+	case VersionGreater:
+		return r > 0
+	case VersionLessOrEqual:
+		return r <= 0
+	case VersionGreaterOrEqual:
+		return r >= 0
+	}
+
+	panic("unknown relation")
 }
 
 // GetDependencies compiles list of dependenices by flags from options

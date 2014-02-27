@@ -6,6 +6,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"sort"
+	"strings"
 )
 
 // Dependency options
@@ -320,38 +321,48 @@ func (l *PackageList) Search(dep Dependency) *Package {
 
 	for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
 		p := l.packagesIndex[i]
-		if p.MatchesArchitecture(dep.Architecture) {
-			if dep.Relation == VersionDontCare {
-				return p
-			}
-
-			r := CompareVersions(p.Version, dep.Version)
-			switch dep.Relation {
-			case VersionEqual:
-				if r == 0 {
-					return p
-				}
-			case VersionLess:
-				if r < 0 {
-					return p
-				}
-			case VersionGreater:
-				if r > 0 {
-					return p
-				}
-			case VersionLessOrEqual:
-				if r <= 0 {
-					return p
-				}
-			case VersionGreaterOrEqual:
-				if r >= 0 {
-					return p
-				}
-			}
+		if p.MatchesDependency(dep) {
+			return p
 		}
+
 		i++
 	}
 	return nil
+}
+
+// Filter filters package index by specified queries (ORed together), possibly pulling dependencies
+func (l *PackageList) Filter(queries []string, withDependencies bool, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+	result := NewPackageList()
+
+	for _, query := range queries {
+		isDepQuery := strings.IndexAny(query, " (){}=<>") != -1
+
+		if !isDepQuery {
+			// try to interpret query as package key
+			p := l.packages[query]
+			if p != nil {
+				result.Add(p)
+				continue
+			}
+		}
+
+		dep, err := ParseDependency(query)
+		if err != nil {
+			if isDepQuery {
+				return nil, err
+			}
+			// parsing failed, but probably that wasn't a dep query
+			continue
+		}
+
+		_ = dep
+		// -> Search
+
+	}
+
+	// -> Verify dependencies
+
+	return result, nil
 }
 
 // PackageRefList is a list of keys of packages, this is basis for snapshot

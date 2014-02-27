@@ -251,7 +251,7 @@ func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "libx", Relation: VersionEqual, Version: "1.5", Architecture: "source"}})
 
 	_, err = s.il.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.il)
-	c.Check(err, ErrorMatches, "unable to process package app-1.0_s390:.*")
+	c.Check(err, ErrorMatches, "unable to process package app_1.0_s390:.*")
 }
 
 func (s *PackageListSuite) TestArchitectures(c *C) {
@@ -416,15 +416,15 @@ func (s *PackageListSuite) TestDiff(c *C) {
 	c.Check(diffAB, HasLen, 4)
 
 	c.Check(diffAB[0].Left, IsNil)
-	c.Check(diffAB[0].Right.String(), Equals, "app-1.1~bp2_amd64")
+	c.Check(diffAB[0].Right.String(), Equals, "app_1.1~bp2_amd64")
 
-	c.Check(diffAB[1].Left.String(), Equals, "app-1.1~bp1_i386")
-	c.Check(diffAB[1].Right.String(), Equals, "app-1.1~bp2_i386")
+	c.Check(diffAB[1].Left.String(), Equals, "app_1.1~bp1_i386")
+	c.Check(diffAB[1].Right.String(), Equals, "app_1.1~bp2_i386")
 
-	c.Check(diffAB[2].Left.String(), Equals, "dpkg-1.7_i386")
+	c.Check(diffAB[2].Left.String(), Equals, "dpkg_1.7_i386")
 	c.Check(diffAB[2].Right, IsNil)
 
-	c.Check(diffAB[3].Left.String(), Equals, "xyz-3.0_sparc")
+	c.Check(diffAB[3].Left.String(), Equals, "xyz_3.0_sparc")
 	c.Check(diffAB[3].Right, IsNil)
 
 	diffBA, err := reflistB.Diff(reflistA, coll)
@@ -432,15 +432,15 @@ func (s *PackageListSuite) TestDiff(c *C) {
 	c.Check(diffBA, HasLen, 4)
 
 	c.Check(diffBA[0].Right, IsNil)
-	c.Check(diffBA[0].Left.String(), Equals, "app-1.1~bp2_amd64")
+	c.Check(diffBA[0].Left.String(), Equals, "app_1.1~bp2_amd64")
 
-	c.Check(diffBA[1].Right.String(), Equals, "app-1.1~bp1_i386")
-	c.Check(diffBA[1].Left.String(), Equals, "app-1.1~bp2_i386")
+	c.Check(diffBA[1].Right.String(), Equals, "app_1.1~bp1_i386")
+	c.Check(diffBA[1].Left.String(), Equals, "app_1.1~bp2_i386")
 
-	c.Check(diffBA[2].Right.String(), Equals, "dpkg-1.7_i386")
+	c.Check(diffBA[2].Right.String(), Equals, "dpkg_1.7_i386")
 	c.Check(diffBA[2].Left, IsNil)
 
-	c.Check(diffBA[3].Right.String(), Equals, "xyz-3.0_sparc")
+	c.Check(diffBA[3].Right.String(), Equals, "xyz_3.0_sparc")
 	c.Check(diffBA[3].Left, IsNil)
 
 }
