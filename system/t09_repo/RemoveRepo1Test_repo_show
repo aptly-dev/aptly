@@ -1,0 +1,5 @@
+Name: local-repo
+Comment: Cool
+Number of packages: 1
+Packages:
+  libboost-program-options-dev_1.49.0.1_i386
