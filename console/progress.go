@@ -12,6 +12,7 @@ const (
 	codePrint = iota
 	codeProgress
 	codeHideProgress
+	codeStop
 )
 
 type printTask struct {
@@ -37,7 +38,6 @@ var (
 // NewProgress creates new progress instance
 func NewProgress() *Progress {
 	return &Progress{
-		stop:    make(chan bool),
 		stopped: make(chan bool),
 		queue:   make(chan printTask, 100),
 	}
@@ -51,7 +51,7 @@ func (p *Progress) Start() {
 // Shutdown shuts down progress display
 func (p *Progress) Shutdown() {
 	p.ShutdownBar()
-	p.stop <- true
+	p.queue <- printTask{code: codeStop}
 	<-p.stopped
 }
 
@@ -136,27 +136,25 @@ func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
 
 func (p *Progress) worker() {
 	for {
-		select {
-		case task := <-p.queue:
-			switch task.code {
-			case codePrint:
-				if p.barShown {
-					fmt.Print("\r\033[2K")
-					p.barShown = false
-				}
-				fmt.Print(task.message)
-			case codeProgress:
-				if p.bar != nil {
-					fmt.Print("\r" + task.message)
-					p.barShown = true
-				}
-			case codeHideProgress:
-				if p.barShown {
-					fmt.Print("\r\033[2K")
-					p.barShown = false
-				}
+		task := <-p.queue
+		switch task.code {
+		case codePrint:
+			if p.barShown {
+				fmt.Print("\r\033[2K")
+				p.barShown = false
 			}
-		case <-p.stop:
+			fmt.Print(task.message)
+		case codeProgress:
+			if p.bar != nil {
+				fmt.Print("\r" + task.message)
+				p.barShown = true
+			}
+		case codeHideProgress:
+			if p.barShown {
+				fmt.Print("\r\033[2K")
+				p.barShown = false
+			}
+		case codeStop:
 			p.stopped <- true
 			return
 		}
