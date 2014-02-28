@@ -11,7 +11,7 @@ func makeCmdRepoImport() *commander.Command {
 		UsageLine: "import <src-mirror> <dst-repo> <package-spec> ...",
 		Short:     "import package from mirror and put it into local repo",
 		Long: `
-Commands import looks up packages matching <package-spec> in mirror <src-mirror>
+Command import looks up packages matching <package-spec> in mirror <src-mirror>
 and copies them to local repo <dst-repo>.
 
 ex:

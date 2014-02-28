@@ -11,7 +11,7 @@ func makeCmdRepoCopy() *commander.Command {
 		UsageLine: "copy <src-name> <dst-name> <package-spec> ...",
 		Short:     "copy packages between source repos",
 		Long: `
-Commands copy copies packages matching <package-spec> from local repo
+Command copy copies packages matching <package-spec> from local repo
 <src-name> to local repo <dst-name>.
 
 ex:

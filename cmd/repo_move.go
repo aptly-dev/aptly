@@ -168,7 +168,7 @@ func makeCmdRepoMove() *commander.Command {
 		UsageLine: "move <src-name> <dst-name> <package-spec> ...",
 		Short:     "move packages between source repos",
 		Long: `
-Commands move moves packages matching <package-spec> from local repo
+Command move moves packages matching <package-spec> from local repo
 <src-name> to local repo <dst-name>.
 
 ex:
