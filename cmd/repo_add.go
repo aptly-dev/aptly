@@ -85,6 +85,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			p      *debian.Package
 		)
 
+		candidateProcessedFiles := []string{}
 		isSourcePackage := strings.HasSuffix(file, ".dsc")
 
 		if isSourcePackage {
@@ -122,7 +123,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		processedFiles = append(processedFiles, file)
+		candidateProcessedFiles = append(candidateProcessedFiles, file)
 
 		// go over all files, except for the last one (.dsc/.deb itself)
 		for i := 0; i < len(p.Files)-1; i++ {
@@ -133,7 +134,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 				break
 			}
 
-			processedFiles = append(processedFiles, sourceFile)
+			candidateProcessedFiles = append(candidateProcessedFiles, sourceFile)
 		}
 		if err != nil {
 			// some files haven't been imported
@@ -153,6 +154,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		}
 
 		context.progress.ColoredPrintf("@g[+]@| %s added@|", p)
+		processedFiles = append(processedFiles, candidateProcessedFiles...)
 	}
 
 	repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
@@ -183,8 +185,8 @@ func makeCmdRepoAdd() *commander.Command {
 		Short:     "add packages to local repository",
 		Long: `
 Command adds packages to local repository. List of files or directories to be
-scanned could be specified. If importing from directory, all files matching *.deb and *.dsc
-pattern would be scanned and added to the repository. For source packages, all required
+scanned could be specified. If importing from directory, all files matching *.deb or *.dsc
+patterns would be scanned and added to the repository. For source packages, all required
 files are added as well automatically.
 
 ex:
