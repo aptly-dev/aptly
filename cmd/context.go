@@ -10,8 +10,12 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
+	"os"
 	"path/filepath"
+	"runtime"
+	"runtime/pprof"
 	"strings"
+	"time"
 )
 
 // Common context shared by all commands
@@ -23,6 +27,10 @@ var context struct {
 	publishedStorage  aptly.PublishedStorage
 	dependencyOptions int
 	architecturesList []string
+	// Debug features
+	fileCPUProfile *os.File
+	fileMemProfile *os.File
+	fileMemStats   *os.File
 }
 
 // InitContext initializes context with default settings
@@ -62,11 +70,73 @@ func InitContext(cmd *commander.Command) error {
 	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
 	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
 
+	if aptly.EnableDebug {
+		cpuprofile := cmd.Flag.Lookup("cpuprofile").Value.String()
+		if cpuprofile != "" {
+			context.fileCPUProfile, err = os.Create(cpuprofile)
+			if err != nil {
+				return err
+			}
+			pprof.StartCPUProfile(context.fileCPUProfile)
+		}
+
+		memprofile := cmd.Flag.Lookup("memprofile").Value.String()
+		if memprofile != "" {
+			context.fileMemProfile, err = os.Create(memprofile)
+			if err != nil {
+				return err
+			}
+		}
+
+		memstats := cmd.Flag.Lookup("memstats").Value.String()
+		if memstats != "" {
+			interval := cmd.Flag.Lookup("meminterval").Value.Get().(time.Duration)
+
+			context.fileMemStats, err = os.Create(memstats)
+			if err != nil {
+				return err
+			}
+
+			context.fileMemStats.WriteString("Time\tAlloc\tTotalAlloc\tSys\tLookups\tMallocst\tFrees\tLastGC\tNumGC\n")
+
+			go func() {
+				var stats runtime.MemStats
+				for {
+					runtime.ReadMemStats(&stats)
+					if context.fileMemStats != nil {
+						context.fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%dex\t%d\n",
+							time.Now().UnixNano(), stats.Alloc, stats.TotalAlloc, stats.Sys, stats.Lookups, stats.Mallocs,
+							stats.Frees, stats.LastGC, stats.NumGC))
+						time.Sleep(interval)
+					} else {
+						break
+					}
+				}
+			}()
+		}
+	}
+
 	return nil
 }
 
 // ShutdownContext shuts context down
 func ShutdownContext() {
+	if aptly.EnableDebug {
+		if context.fileMemProfile != nil {
+			pprof.WriteHeapProfile(context.fileMemProfile)
+			context.fileMemProfile.Close()
+			context.fileMemProfile = nil
+		}
+		if context.fileCPUProfile != nil {
+			pprof.StopCPUProfile()
+			context.fileCPUProfile.Close()
+			context.fileCPUProfile = nil
+		}
+		if context.fileMemProfile != nil {
+			context.fileMemProfile.Close()
+			context.fileMemProfile = nil
+		}
+	}
 	context.database.Close()
 	context.downloader.Shutdown()
 	context.progress.Shutdown()

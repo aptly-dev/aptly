@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/debian"
 	"os"
+	"time"
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
@@ -63,5 +65,12 @@ back as Debian repositories.`,
 	cmd.Flag.Bool("dep-follow-all-variants", false, "when processing dependencies, follow a & b if depdency is 'a|b'")
 	cmd.Flag.String("architectures", "", "list of architectures to consider during (comma-separated), default to all available")
 	cmd.Flag.String("config", "", "location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)")
+
+	if aptly.EnableDebug {
+		cmd.Flag.String("cpuprofile", "", "write cpu profile to file")
+		cmd.Flag.String("memprofile", "", "write memory profile to this file")
+		cmd.Flag.String("memstats", "", "write memory stats periodically to this file")
+		cmd.Flag.Duration("meminterval", 100*time.Millisecond, "memory stats dump interval")
+	}
 	return cmd
 }
