@@ -56,4 +56,8 @@ coveralls: coverage.out
 	$(GOM) build -o $(BINPATH)/goveralls github.com/mattn/goveralls
 	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
 
+mem.png: mem.dat mem.gp
+	gnuplot mem.gp
+	open mem.png
+
 .PHONY: coverage.out
