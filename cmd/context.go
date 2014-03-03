@@ -97,16 +97,18 @@ func InitContext(cmd *commander.Command) error {
 				return err
 			}
 
-			context.fileMemStats.WriteString("Time\tAlloc\tTotalAlloc\tSys\tLookups\tMallocst\tFrees\tLastGC\tNumGC\n")
+			context.fileMemStats.WriteString("# Time\tHeapSys\tHeapAlloc\tHeapIdle\tHeapReleased\n")
 
 			go func() {
 				var stats runtime.MemStats
+
+				start := time.Now().UnixNano()
+
 				for {
 					runtime.ReadMemStats(&stats)
 					if context.fileMemStats != nil {
-						context.fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%dex\t%d\n",
-							time.Now().UnixNano(), stats.Alloc, stats.TotalAlloc, stats.Sys, stats.Lookups, stats.Mallocs,
-							stats.Frees, stats.LastGC, stats.NumGC))
+						context.fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\n",
+							(time.Now().UnixNano()-start)/1000000, stats.HeapSys, stats.HeapAlloc, stats.HeapIdle, stats.HeapReleased))
 						time.Sleep(interval)
 					} else {
 						break
