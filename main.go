@@ -39,6 +39,7 @@ func loadConfig(command *commander.Command) error {
 			}
 			if !os.IsNotExist(err) {
 				fatal(fmt.Errorf("error loading config file %s: %s", configLocation, err))
+				return nil
 			}
 		}
 
@@ -65,6 +66,9 @@ func main() {
 	err = loadConfig(command)
 	if err != nil {
 		fatal(err)
+		return
+	}
+	if returnCode != 0 {
 		return
 	}
 

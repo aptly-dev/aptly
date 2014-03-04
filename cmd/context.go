@@ -139,7 +139,13 @@ func ShutdownContext() {
 			context.fileMemProfile = nil
 		}
 	}
-	context.database.Close()
-	context.downloader.Shutdown()
-	context.progress.Shutdown()
+	if context.database != nil {
+		context.database.Close()
+	}
+	if context.downloader != nil {
+		context.downloader.Shutdown()
+	}
+	if context.progress != nil {
+		context.progress.Shutdown()
+	}
 }
