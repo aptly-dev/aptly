@@ -535,7 +535,7 @@ MD5Sum:
  4059d198768f9f8dc9372dc1c54bc3c3               14 main/debian-installer/binary-powerpc/Packages.bz2
  9d10bb61e59bd799891ae4fbcf447ec9               29 main/debian-installer/binary-powerpc/Packages.gz
  3481d65651306df1596dca9078c2506a              135 main/source/Release
- dd09503813f711817457551858f6ec2f             2003 main/source/Sources
+ 0459b7e4512db5479cb982bac6e2f9a1             2003 main/source/Sources
  3d83a489f1bd3c04226aa6520b8a6d07              656 main/source/Sources.bz2
  b062b5b77094aeeb05ca8dbb1ecf68a9              592 main/source/Sources.gz
 SHA1:
@@ -575,7 +575,7 @@ SHA1:
  64a543afbb5f4bf728636bdcbbe7a2ed0804adc2               14 main/debian-installer/binary-powerpc/Packages.bz2
  3df6ca52b6e8ecfb4a8fac6b8e02c777e3c7960d               29 main/debian-installer/binary-powerpc/Packages.gz
  49cfec0c9b1df3a25e983a3ddf29d15b0e376e02              135 main/source/Release
- dfa81a35ac2eebcefdc51ae73486c480e277ef1b             2003 main/source/Sources
+ 6b92e0fc84307226172696fde59ca5f33f380b57             2003 main/source/Sources
  ecb8afea11030a5df46941cb8ec297ca24c85736              656 main/source/Sources.bz2
  923e71383969c91146f12fa8cd121397f2467a2e              592 main/source/Sources.gz
 SHA256:
@@ -615,7 +615,7 @@ SHA256:
  d3dda84eb03b9738d118eb2be78e246106900493c0ae07819ad60815134a8058               14 main/debian-installer/binary-powerpc/Packages.bz2
  825d493158fe0f50ca1acd70367aefa391170563af2e4ee9cedbcbe6796c8384               29 main/debian-installer/binary-powerpc/Packages.gz
  d683102993b6f11067ce86d73111f067e36a199e9dc1f4295c8b19c274dc9ef8              135 main/source/Release
- 4d911b084c12c71ce973743a3c27fc4efd18d7b8faa6ee936add9cca8e2c6ccf             2003 main/source/Sources
+ 45f868fd5d9efe611d67572ffcf96a00a5b9ec38ea5102753290c38c36b8c282             2003 main/source/Sources
  d178f1e310218d9f0f16c37d0780637f1cf3640a94a7fb0e24dc940c51b1e115              656 main/source/Sources.bz2
  080228b550da407fb8ac73fb30b37323468fd2b2de98dd56a324ee7d701f6103              592 main/source/Sources.gz`
 

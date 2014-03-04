@@ -2,7 +2,6 @@ package debian
 
 import (
 	"errors"
-	"github.com/smira/aptly/database"
 	. "launchpad.net/gocheck"
 	"sort"
 	"strings"
@@ -41,20 +40,20 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 
 	s.il = NewPackageList()
 	s.packages = []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386", Source: "lib (0.9)", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}},
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Provides: []string{"package-installer"}},
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", Source: "app", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Source: "postfix (1.3)", Provides: []string{"mail-agent"}},
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}},
-		&Package{Name: "app", Version: "1.0", Architecture: "s390", PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}},
-		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Provides: []string{"package-installer"}},
-		&Package{Name: "libx", Version: "1.5", Architecture: "arm", PreDepends: []string{"dpkg (>= 1.6)"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Provides: []string{"package-installer"}},
-		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any", IsSource: true},
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386", Source: "lib (0.9)", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"mail-agent"}}},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386", Provides: []string{"package-installer"}, deps: &PackageDependencies{}},
+		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all", Source: "app", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}}},
+		&Package{Name: "mailer", Version: "3.5.8", Architecture: "i386", Source: "postfix (1.3)", Provides: []string{"mail-agent"}, deps: &PackageDependencies{}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "amd64", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "arm", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}, Depends: []string{"lib (>> 0.9) | libx (>= 1.5)", "data (>= 1.0) | mail-agent"}}},
+		&Package{Name: "app", Version: "1.0", Architecture: "s390", deps: &PackageDependencies{PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}}},
+		&Package{Name: "aa", Version: "2.0-1", Architecture: "i386", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "amd64", Provides: []string{"package-installer"}, deps: &PackageDependencies{}},
+		&Package{Name: "libx", Version: "1.5", Architecture: "arm", deps: &PackageDependencies{PreDepends: []string{"dpkg (>= 1.6)"}}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "arm", Provides: []string{"package-installer"}, deps: &PackageDependencies{}},
+		&Package{Name: "dpkg", Version: "1.6.1-3", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
+		&Package{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
 	}
 	for _, p := range s.packages {
 		s.il.Add(p)
@@ -62,10 +61,10 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 	s.il.PrepareIndex()
 
 	s.sourcePackages = []*Package{
-		&Package{Name: "postfix", Version: "1.3", Architecture: "source", SourceArchitecture: "any", IsSource: true},
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "source", SourceArchitecture: "any", IsSource: true},
-		&Package{Name: "aa", Version: "2.0-1", Architecture: "source", SourceArchitecture: "any", IsSource: true},
-		&Package{Name: "lib", Version: "0.9", Architecture: "source", SourceArchitecture: "any", IsSource: true},
+		&Package{Name: "postfix", Version: "1.3", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
+		&Package{Name: "app", Version: "1.1~bp1", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
+		&Package{Name: "aa", Version: "2.0-1", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
+		&Package{Name: "lib", Version: "0.9", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
 	}
 
 }
@@ -301,245 +300,4 @@ func (s *PackageListSuite) TestArchitectures(c *C) {
 	archs = s.il.Architectures(false)
 	sort.Strings(archs)
 	c.Check(archs, DeepEquals, []string{"amd64", "arm", "i386", "s390"})
-}
-
-func (s *PackageListSuite) TestNewPackageListFromRefList(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
-	coll := NewPackageCollection(db)
-	coll.Update(s.p1)
-	coll.Update(s.p3)
-
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
-
-	reflist := NewPackageRefListFromPackageList(s.list)
-
-	_, err := NewPackageListFromRefList(reflist, coll)
-	c.Assert(err, ErrorMatches, "unable to load package with key.*")
-
-	coll.Update(s.p5)
-	coll.Update(s.p6)
-
-	list, err := NewPackageListFromRefList(reflist, coll)
-	c.Assert(err, IsNil)
-	c.Check(list.Len(), Equals, 4)
-	c.Check(list.Add(s.p4), ErrorMatches, "conflict in package.*")
-
-	list, err = NewPackageListFromRefList(nil, coll)
-	c.Assert(err, IsNil)
-	c.Check(list.Len(), Equals, 0)
-}
-
-func (s *PackageListSuite) TestNewPackageRefList(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
-
-	reflist := NewPackageRefListFromPackageList(s.list)
-	c.Assert(reflist.Len(), Equals, 4)
-	c.Check(reflist.Refs[0], DeepEquals, []byte(s.p1.Key()))
-	c.Check(reflist.Refs[1], DeepEquals, []byte(s.p6.Key()))
-	c.Check(reflist.Refs[2], DeepEquals, []byte(s.p5.Key()))
-	c.Check(reflist.Refs[3], DeepEquals, []byte(s.p3.Key()))
-
-	reflist = NewPackageRefList()
-	c.Check(reflist.Len(), Equals, 0)
-}
-
-func (s *PackageListSuite) TestPackageRefListEncodeDecode(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
-
-	reflist := NewPackageRefListFromPackageList(s.list)
-
-	reflist2 := &PackageRefList{}
-	err := reflist2.Decode(reflist.Encode())
-	c.Assert(err, IsNil)
-	c.Check(reflist2.Len(), Equals, reflist.Len())
-	c.Check(reflist2.Refs, DeepEquals, reflist.Refs)
-}
-
-func (s *PackageListSuite) TestPackageRefListForeach(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
-
-	reflist := NewPackageRefListFromPackageList(s.list)
-
-	Len := 0
-	err := reflist.ForEach(func([]byte) error {
-		Len++
-		return nil
-	})
-
-	c.Check(Len, Equals, 4)
-	c.Check(err, IsNil)
-
-	e := errors.New("b")
-
-	err = reflist.ForEach(func([]byte) error {
-		return e
-	})
-
-	c.Check(err, Equals, e)
-}
-
-func (s *PackageListSuite) TestSubstract(c *C) {
-	r1 := []byte("r1")
-	r2 := []byte("r2")
-	r3 := []byte("r3")
-	r4 := []byte("r4")
-	r5 := []byte("r5")
-
-	empty := &PackageRefList{Refs: [][]byte{}}
-	l1 := &PackageRefList{Refs: [][]byte{r1, r2, r3, r4}}
-	l2 := &PackageRefList{Refs: [][]byte{r1, r3}}
-	l3 := &PackageRefList{Refs: [][]byte{r2, r4}}
-	l4 := &PackageRefList{Refs: [][]byte{r4, r5}}
-	l5 := &PackageRefList{Refs: [][]byte{r1, r2, r3}}
-
-	c.Check(l1.Substract(empty), DeepEquals, l1)
-	c.Check(l1.Substract(l2), DeepEquals, l3)
-	c.Check(l1.Substract(l3), DeepEquals, l2)
-	c.Check(l1.Substract(l4), DeepEquals, l5)
-	c.Check(empty.Substract(l1), DeepEquals, empty)
-	c.Check(l2.Substract(l3), DeepEquals, l2)
-}
-
-func (s *PackageListSuite) TestDiff(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
-	coll := NewPackageCollection(db)
-
-	packages := []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
-		&Package{Name: "xyz", Version: "3.0", Architecture: "sparc"},     //6
-	}
-
-	for _, p := range packages {
-		coll.Update(p)
-	}
-
-	listA := NewPackageList()
-	listA.Add(packages[0])
-	listA.Add(packages[1])
-	listA.Add(packages[2])
-	listA.Add(packages[3])
-	listA.Add(packages[6])
-
-	listB := NewPackageList()
-	listB.Add(packages[0])
-	listB.Add(packages[2])
-	listB.Add(packages[4])
-	listB.Add(packages[5])
-
-	reflistA := NewPackageRefListFromPackageList(listA)
-	reflistB := NewPackageRefListFromPackageList(listB)
-
-	diffAA, err := reflistA.Diff(reflistA, coll)
-	c.Check(err, IsNil)
-	c.Check(diffAA, HasLen, 0)
-
-	diffAB, err := reflistA.Diff(reflistB, coll)
-	c.Check(err, IsNil)
-	c.Check(diffAB, HasLen, 4)
-
-	c.Check(diffAB[0].Left, IsNil)
-	c.Check(diffAB[0].Right.String(), Equals, "app_1.1~bp2_amd64")
-
-	c.Check(diffAB[1].Left.String(), Equals, "app_1.1~bp1_i386")
-	c.Check(diffAB[1].Right.String(), Equals, "app_1.1~bp2_i386")
-
-	c.Check(diffAB[2].Left.String(), Equals, "dpkg_1.7_i386")
-	c.Check(diffAB[2].Right, IsNil)
-
-	c.Check(diffAB[3].Left.String(), Equals, "xyz_3.0_sparc")
-	c.Check(diffAB[3].Right, IsNil)
-
-	diffBA, err := reflistB.Diff(reflistA, coll)
-	c.Check(err, IsNil)
-	c.Check(diffBA, HasLen, 4)
-
-	c.Check(diffBA[0].Right, IsNil)
-	c.Check(diffBA[0].Left.String(), Equals, "app_1.1~bp2_amd64")
-
-	c.Check(diffBA[1].Right.String(), Equals, "app_1.1~bp1_i386")
-	c.Check(diffBA[1].Left.String(), Equals, "app_1.1~bp2_i386")
-
-	c.Check(diffBA[2].Right.String(), Equals, "dpkg_1.7_i386")
-	c.Check(diffBA[2].Left, IsNil)
-
-	c.Check(diffBA[3].Right.String(), Equals, "xyz_3.0_sparc")
-	c.Check(diffBA[3].Left, IsNil)
-
-}
-
-func (s *PackageListSuite) TestMerge(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
-	coll := NewPackageCollection(db)
-
-	packages := []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
-		&Package{Name: "dpkg", Version: "1.0", Architecture: "i386"},     //6
-		&Package{Name: "xyz", Version: "1.0", Architecture: "sparc"},     //7
-	}
-
-	for _, p := range packages {
-		coll.Update(p)
-	}
-
-	listA := NewPackageList()
-	listA.Add(packages[0])
-	listA.Add(packages[1])
-	listA.Add(packages[2])
-	listA.Add(packages[3])
-	listA.Add(packages[7])
-
-	listB := NewPackageList()
-	listB.Add(packages[0])
-	listB.Add(packages[2])
-	listB.Add(packages[4])
-	listB.Add(packages[5])
-	listB.Add(packages[6])
-
-	reflistA := NewPackageRefListFromPackageList(listA)
-	reflistB := NewPackageRefListFromPackageList(listB)
-
-	toStrSlice := func(reflist *PackageRefList) (result []string) {
-		result = make([]string, reflist.Len())
-		for i, r := range reflist.Refs {
-			result[i] = string(r)
-		}
-		return
-	}
-
-	mergeAB := reflistA.Merge(reflistB, true)
-	mergeBA := reflistB.Merge(reflistA, true)
-
-	c.Check(toStrSlice(mergeAB), DeepEquals,
-		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 lib 1.0", "Psparc xyz 1.0"})
-	c.Check(toStrSlice(mergeBA), DeepEquals,
-		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
-
-	mergeABall := reflistA.Merge(reflistB, false)
-	mergeBAall := reflistB.Merge(reflistA, false)
-
-	c.Check(mergeABall, DeepEquals, mergeBAall)
-	c.Check(toStrSlice(mergeBAall), DeepEquals,
-		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
 }

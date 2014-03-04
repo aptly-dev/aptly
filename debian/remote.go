@@ -363,54 +363,31 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 					return err
 				}
 			}
-			list.Add(p)
-		}
-	}
-
-	progress.Printf("Saving packages to database...\n")
-
-	progress.InitBar(int64(list.Len()), false)
-
-	packageCollection.db.StartBatch()
-	count := 0
-
-	// Save package meta information to DB
-	err := list.ForEach(func(p *Package) error {
-		progress.AddBar(1)
-		count++
-		if count > 1000 {
-			count = 0
-			err := packageCollection.db.FinishBatch()
+			err = list.Add(p)
 			if err != nil {
 				return err
 			}
-			packageCollection.db.StartBatch()
+
+			err = packageCollection.Update(p)
+			if err != nil {
+				return err
+			}
 		}
-		return packageCollection.Update(p)
-	})
-	if err != nil {
-		return fmt.Errorf("unable to save packages to db: %s", err)
 	}
-
-	err = packageCollection.db.FinishBatch()
-	if err != nil {
-		return fmt.Errorf("unable to save packages to db: %s", err)
-	}
-
-	progress.ShutdownBar()
 
 	progress.Printf("Building download queue...\n")
 
 	// Build download queue
 	queued := make(map[string]PackageDownloadTask, list.Len())
-	count = 0
+	count := 0
 	downloadSize := int64(0)
 
-	err = list.ForEach(func(p *Package) error {
+	err := list.ForEach(func(p *Package) error {
 		list, err := p.DownloadList(packagePool)
 		if err != nil {
 			return err
 		}
+		p.files = nil
 
 		for _, task := range list {
 			key := task.RepoURI + "-" + task.DestinationPath

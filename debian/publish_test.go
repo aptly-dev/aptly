@@ -77,7 +77,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.packageCollection.Update(s.p2)
 	s.packageCollection.Update(s.p3)
 
-	poolPath, _ := s.packagePool.Path(s.p1.Files[0].Filename, s.p1.Files[0].Checksums.MD5)
+	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	f, err := os.Create(poolPath)
 	c.Assert(err, IsNil)

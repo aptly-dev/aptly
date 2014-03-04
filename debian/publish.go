@@ -162,6 +162,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 					return err
 				}
 
+				pkg.files = nil
+				pkg.deps = nil
+				pkg.extra = nil
+
 			}
 
 			return nil
