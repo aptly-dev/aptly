@@ -112,9 +112,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		}
 
 		if isSourcePackage {
-			p.Files = append(p.Files, debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums})
+			p.UpdateFiles(append(p.Files(), debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
 		} else {
-			p.Files = []debian.PackageFile{debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}}
+			p.UpdateFiles([]debian.PackageFile{debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
 		err = context.packagePool.Import(file, checksums.MD5)
@@ -126,9 +126,12 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		candidateProcessedFiles = append(candidateProcessedFiles, file)
 
 		// go over all files, except for the last one (.dsc/.deb itself)
-		for i := 0; i < len(p.Files)-1; i++ {
-			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(p.Files[i].Filename))
-			err = context.packagePool.Import(sourceFile, p.Files[i].Checksums.MD5)
+		for _, f := range p.Files() {
+			if filepath.Base(f.Filename) == filepath.Base(file) {
+				continue
+			}
+			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
+			err = context.packagePool.Import(sourceFile, f.Checksums.MD5)
 			if err != nil {
 				context.progress.ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
 				break
