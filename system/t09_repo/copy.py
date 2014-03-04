@@ -53,6 +53,9 @@ class CopyRepo3Test(BaseTest):
     runCmd = "aptly repo copy -with-deps repo1 repo2 'pyspi (>> 0.6.1-1.3)' libboost-program-options-dev_1.49.0.1_i386"
     expectedCode = 1
 
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
 
 class CopyRepo4Test(BaseTest):
     """
@@ -85,6 +88,9 @@ class CopyRepo5Test(BaseTest):
     ]
     runCmd = "aptly repo copy repo1 repo2 'pyspi >> 0.6.1-1.3)'"
     expectedCode = 1
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
 
 
 class CopyRepo6Test(BaseTest):

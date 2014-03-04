@@ -83,6 +83,9 @@ class ImportRepo5Test(BaseTest):
     runCmd = "aptly repo import wheezy-contrib repo1 'pyspi >> 0.6.1-1.3)'"
     expectedCode = 1
 
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
 
 class ImportRepo6Test(BaseTest):
     """

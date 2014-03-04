@@ -53,6 +53,9 @@ class MoveRepo3Test(BaseTest):
     runCmd = "aptly repo move -with-deps repo1 repo2 'pyspi (>> 0.6.1-1.3)' libboost-program-options-dev_1.49.0.1_i386"
     expectedCode = 1
 
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
 
 class MoveRepo4Test(BaseTest):
     """
@@ -85,6 +88,9 @@ class MoveRepo5Test(BaseTest):
     ]
     runCmd = "aptly repo move repo1 repo2 'pyspi >> 0.6.1-1.3)'"
     expectedCode = 1
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
 
 
 class MoveRepo6Test(BaseTest):

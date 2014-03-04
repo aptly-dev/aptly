@@ -9,9 +9,11 @@ import (
 	"path/filepath"
 )
 
+var returnCode = 0
+
 func fatal(err error) {
 	fmt.Printf("ERROR: %s\n", err)
-	os.Exit(1)
+	returnCode = 1
 }
 
 func loadConfig(command *commander.Command) error {
@@ -50,26 +52,32 @@ func loadConfig(command *commander.Command) error {
 }
 
 func main() {
+	defer func() { os.Exit(returnCode) }()
+
 	command := cmd.RootCommand()
 
 	err := command.Flag.Parse(os.Args[1:])
 	if err != nil {
 		fatal(err)
+		return
 	}
 
 	err = loadConfig(command)
 	if err != nil {
 		fatal(err)
+		return
 	}
 
 	err = cmd.InitContext(command)
 	if err != nil {
 		fatal(err)
+		return
 	}
 	defer cmd.ShutdownContext()
 
 	err = command.Dispatch(command.Flag.Args())
 	if err != nil {
 		fatal(err)
+		return
 	}
 }
