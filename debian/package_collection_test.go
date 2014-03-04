@@ -71,6 +71,10 @@ func (s *PackageCollectionSuite) TestByKey(c *C) {
 	p2, err := s.collection.ByKey(s.p.Key(""))
 	c.Assert(err, IsNil)
 	c.Assert(p2.Equals(s.p), Equals, true)
+
+	c.Check(p2.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)", "dpkg (>= 1.6)"})
+	c.Check(p2.Extra()["Priority"], Equals, "extra")
+	c.Check(p2.Files()[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
 }
 
 func (s *PackageCollectionSuite) TestByKeyOld_0_3(c *C) {
