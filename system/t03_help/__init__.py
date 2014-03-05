@@ -2,6 +2,7 @@
 Test help screens
 """
 
+import re
 from lib import BaseTest
 
 
@@ -10,6 +11,8 @@ class MainTest(BaseTest):
     main
     """
     runCmd = "aptly"
+
+    outputMatchPrepare = lambda _, s: re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
 
 
 class MirrorTest(BaseTest):
@@ -31,6 +34,8 @@ class MainHelpTest(BaseTest):
     main
     """
     runCmd = "aptly help"
+
+    outputMatchPrepare = lambda _, s: re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
 
 
 class MirrorHelpTest(BaseTest):

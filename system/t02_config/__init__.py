@@ -3,6 +3,7 @@ Test config file
 """
 
 import os
+import re
 import inspect
 from lib import BaseTest
 
@@ -42,6 +43,8 @@ class ConfigInFileTest(BaseTest):
     """
     runCmd = ["aptly", "-config=%s" % (os.path.join(os.path.dirname(inspect.getsourcefile(BadConfigTest)), "aptly.conf"), )]
     prepare = BaseTest.prepare_remove_all
+
+    outputMatchPrepare = lambda _, s: re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
 
 
 class ConfigInMissingFileTest(BaseTest):
