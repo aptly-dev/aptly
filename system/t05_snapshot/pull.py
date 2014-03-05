@@ -175,3 +175,23 @@ class PullSnapshot10Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly snapshot show --with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
+
+
+class PullSnapshot11Test(BaseTest):
+    """
+    pull snapshot: -no-remove
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-backports",
+    ]
+    runCmd = "aptly snapshot pull -no-remove snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
+    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+
+    def check(self):
+        def remove_created_at(s):
+            return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly snapshot show -with-packages snap3", "snapshot_show", match_prepare=remove_created_at)

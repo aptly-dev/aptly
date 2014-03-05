@@ -18,6 +18,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	noDeps := cmd.Flag.Lookup("no-deps").Value.Get().(bool)
+	noRemove := cmd.Flag.Lookup("no-remove").Value.Get().(bool)
 
 	snapshotCollection := debian.NewSnapshotCollection(context.database)
 	packageCollection := debian.NewPackageCollection(context.database)
@@ -107,12 +108,14 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 				continue
 			}
 
-			// Remove all packages with the same name and architecture
-			for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
-				packageList.Remove(p)
-				color.Printf("@r[-]@| %s removed", p)
-				fmt.Printf("\n")
-				p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
+			if !noRemove {
+				// Remove all packages with the same name and architecture
+				for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
+					packageList.Remove(p)
+					color.Printf("@r[-]@| %s removed", p)
+					fmt.Printf("\n")
+					p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
+				}
 			}
 
 			// Add new discovered package
@@ -187,6 +190,7 @@ ex.
 
 	cmd.Flag.Bool("dry-run", false, "don't create destination snapshot, just show what would be pulled")
 	cmd.Flag.Bool("no-deps", false, "don't process dependencies, just pull listed packages")
+	cmd.Flag.Bool("no-remove", false, "don't remove other package versions when pulling package")
 
 	return cmd
 }
