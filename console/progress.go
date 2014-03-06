@@ -101,6 +101,13 @@ func (p *Progress) AddBar(count int) {
 	}
 }
 
+// SetBar sets current position for progress bar
+func (p *Progress) SetBar(count int) {
+	if p.bar != nil {
+		p.bar.Set(count)
+	}
+}
+
 // Printf does printf but in safe manner: not overwriting progress bar
 func (p *Progress) Printf(msg string, a ...interface{}) {
 	p.queue <- printTask{code: codePrint, message: fmt.Sprintf(msg, a...)}

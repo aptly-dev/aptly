@@ -130,3 +130,8 @@ func (f *FakeDownloader) Pause() {
 // Resume does nothing
 func (f *FakeDownloader) Resume() {
 }
+
+// GetProgress returns Progress object
+func (f *FakeDownloader) GetProgress() aptly.Progress {
+	return nil
+}

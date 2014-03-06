@@ -54,6 +54,8 @@ type Progress interface {
 	ShutdownBar()
 	// AddBar increments progress for progress bar
 	AddBar(count int)
+	// SetBar sets current position for progress bar
+	SetBar(count int)
 	// Printf does printf but in safe manner: not overwriting progress bar
 	Printf(msg string, a ...interface{})
 	// ColoredPrintf does printf in colored way + newline
@@ -73,4 +75,6 @@ type Downloader interface {
 	// Shutdown stops downloader after current tasks are finished,
 	// but doesn't process rest of queue
 	Shutdown()
+	// GetProgress returns Progress object
+	GetProgress() Progress
 }

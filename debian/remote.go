@@ -342,6 +342,9 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 		}
 		defer packagesFile.Close()
 
+		stat, _ := packagesFile.Stat()
+		progress.InitBar(stat.Size(), true)
+
 		sreader := NewControlFileReader(packagesReader)
 
 		for {
@@ -352,6 +355,9 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 			if stanza == nil {
 				break
 			}
+
+			off, _ := packagesFile.Seek(0, 1)
+			progress.SetBar(int(off))
 
 			var p *Package
 
@@ -373,6 +379,8 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 				return err
 			}
 		}
+
+		progress.ShutdownBar()
 	}
 
 	progress.Printf("Building download queue...\n")

@@ -85,6 +85,11 @@ func (downloader *downloaderImpl) Resume() {
 	}
 }
 
+// GetProgress returns Progress object
+func (downloader *downloaderImpl) GetProgress() aptly.Progress {
+	return downloader.progress
+}
+
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
 	downloader.DownloadWithChecksum(url, destination, result, utils.ChecksumInfo{Size: -1}, false)
@@ -211,12 +216,20 @@ func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected 
 
 	tempfile := filepath.Join(tempdir, "buffer")
 
+	if expected.Size != -1 && downloader.GetProgress() != nil {
+		downloader.GetProgress().InitBar(expected.Size, true)
+	}
+
 	ch := make(chan error, 1)
 	downloader.DownloadWithChecksum(url, tempfile, ch, expected, ignoreMismatch)
 
 	err = <-ch
 	if err != nil {
 		return nil, err
+	}
+
+	if expected.Size != -1 && downloader.GetProgress() != nil {
+		downloader.GetProgress().ShutdownBar()
 	}
 
 	file, err := os.Open(tempfile)
