@@ -1,3 +1,4 @@
+import re
 from lib import BaseTest
 
 
@@ -12,6 +13,8 @@ class DiffSnapshot1Test(BaseTest):
         "aptly snapshot pull snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
     ]
     runCmd = "aptly snapshot diff snap1 snap3"
+    # trim trailing whitespace
+    outputMatchPrepare = lambda _, s: re.sub(r'\s*$', '', s, flags=re.MULTILINE)
 
 
 class DiffSnapshot2Test(BaseTest):
@@ -24,6 +27,8 @@ class DiffSnapshot2Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot diff snap1 snap2"
+    # trim trailing whitespace
+    outputMatchPrepare = lambda _, s: re.sub(r'\s*$', '', s, flags=re.MULTILINE)
 
 
 class DiffSnapshot3Test(BaseTest):
@@ -36,6 +41,8 @@ class DiffSnapshot3Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot diff -only-matching snap1 snap2"
+    # trim trailing whitespace
+    outputMatchPrepare = lambda _, s: re.sub(r'\s*$', '', s, flags=re.MULTILINE)
 
 
 class DiffSnapshot4Test(BaseTest):
