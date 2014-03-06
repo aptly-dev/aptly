@@ -18,6 +18,8 @@ type ConfigStructure struct {
 	GpgDisableSign         bool     `json:"gpgDisableSign"`
 	GpgDisableVerify       bool     `json:"gpgDisableVerify"`
 	DownloadSourcePackages bool     `json:"downloadSourcePackages"`
+	PpaDistributorID       string   `json:"ppaDistributorID"`
+	PpaCodename            string   `json:"ppaCodename"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -32,6 +34,8 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
+	PpaDistributorID:       "ubuntu",
+	PpaCodename:            "",
 }
 
 // LoadConfig loads configuration from json file

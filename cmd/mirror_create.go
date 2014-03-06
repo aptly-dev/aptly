@@ -6,18 +6,34 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
+	"strings"
 )
 
 func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	var err error
-	if len(args) < 3 {
+	if !(len(args) == 2 && strings.HasPrefix(args[1], "ppa:") || len(args) >= 3) {
 		cmd.Usage()
 		return err
 	}
 
 	downloadSources := utils.Config.DownloadSourcePackages || cmd.Flag.Lookup("with-sources").Value.Get().(bool)
 
-	repo, err := debian.NewRemoteRepo(args[0], args[1], args[2], args[3:], context.architecturesList, downloadSources)
+	var (
+		mirrorName, archiveURL, distribution string
+		components                           []string
+	)
+
+	mirrorName = args[0]
+	if len(args) == 2 {
+		archiveURL, distribution, components, err = debian.ParsePPA(args[1])
+		if err != nil {
+			return err
+		}
+	} else {
+		archiveURL, distribution, components = args[1], args[2], args[3:]
+	}
+
+	repo, err := debian.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.architecturesList, downloadSources)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
@@ -50,6 +66,9 @@ func makeCmdMirrorCreate() *commander.Command {
 		Short:     "create new mirror of Debian repository",
 		Long: `
 Create records information about new mirror and fetches Release file (it doesn't download packages).
+
+PPA url could specified in short format when running on Debian/Ubuntu:
+  $ aptly mirror create some_ppa ppa:user/project
 
 ex:
   $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main

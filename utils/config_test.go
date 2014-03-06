@@ -51,7 +51,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"dependencyFollowSource\": false,\n"+
 		"  \"gpgDisableSign\": false,\n"+
 		"  \"gpgDisableVerify\": false,\n"+
-		"  \"downloadSourcePackages\": false\n"+
+		"  \"downloadSourcePackages\": false,\n"+
+		"  \"ppaDistributorID\": \"\",\n"+
+		"  \"ppaCodename\": \"\"\n"+
 		"}")
 }
 
