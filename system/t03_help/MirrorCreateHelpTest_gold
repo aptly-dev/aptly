@@ -2,6 +2,9 @@ Usage: aptly mirror create <name> <archive url> <distribution> [<component1> ...
 
 Create records information about new mirror and fetches Release file (it doesn't download packages).
 
+PPA url could specified in short format when running on Debian/Ubuntu:
+  $ aptly mirror create some_ppa ppa:user/project
+
 ex:
   $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main
 

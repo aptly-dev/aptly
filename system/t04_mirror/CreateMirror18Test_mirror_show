@@ -1,0 +1,19 @@
+Name: mirror18
+Archive Root URL: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/
+Distribution: maverick
+Components: main
+Architectures: amd64, armel, i386, powerpc
+Download Sources: no
+Last update: never
+
+Information from release file:
+Architectures: amd64 armel i386 powerpc
+Codename: maverick
+Components: main
+Date: Mon, 22 Oct 2012 13:19:50 UTC
+Description:  Ubuntu Maverick 10.10
+
+Label: gnuplot
+Origin: LP-PPA-gladky-anton-gnuplot
+Suite: maverick
+Version: 10.10

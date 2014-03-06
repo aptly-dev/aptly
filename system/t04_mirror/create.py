@@ -188,3 +188,22 @@ class CreateMirror17Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror17", "mirror_show")
+
+
+class CreateMirror18Test(BaseTest):
+    """
+    create mirror: mirror with ppa URL
+    """
+    fixtureGpg = True
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    configOverride = {
+        "ppaDistributorID": "ubuntu",
+        "ppaCodename": "maverick",
+    }
+
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror18 ppa:gladky-anton/gnuplot"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror18", "mirror_show")
