@@ -73,6 +73,8 @@ class BaseTest(object):
         "dependencyFollowSource": False,
         "gpgDisableVerify": False,
         "gpgDisableSign": False,
+        "ppaDistributorID": "ubuntu",
+        "ppaCodename": "",
     }
     configOverride = {}
 

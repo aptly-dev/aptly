@@ -8,5 +8,7 @@
   "dependencyFollowSource": false,
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
-  "downloadSourcePackages": false
+  "downloadSourcePackages": false,
+  "ppaDistributorID": "ubuntu",
+  "ppaCodename": ""
 }
