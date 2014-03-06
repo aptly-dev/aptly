@@ -5,18 +5,18 @@ from snapshot:
 and result would be saved as new snapshot snap3.
 Loading packages (59786)...
 Building indexes...
-[0;31;49m[-][0;39;49m rsyslog_5.8.11-3_amd64 removed[0m
-[0;32;49m[+][0;39;49m rsyslog_7.4.4-1~bpo70+1_amd64 added[0m
-[0;31;49m[-][0;39;49m libestr0_0.1.1-2_amd64 removed[0m
-[0;32;49m[+][0;39;49m libestr0_0.1.9-1~bpo70+1_amd64 added[0m
-[0;32;49m[+][0;39;49m init-system-helpers_1.11~bpo70.1_all added[0m
-[0;32;49m[+][0;39;49m rsyslog_7.4.4-1~bpo70+1_source added[0m
-[0;32;49m[+][0;39;49m libestr_0.1.9-1~bpo70+1_source added[0m
-[0;32;49m[+][0;39;49m init-system-helpers_1.11~bpo70.1_source added[0m
-[0;31;49m[-][0;39;49m rsyslog_5.8.11-3_i386 removed[0m
-[0;32;49m[+][0;39;49m rsyslog_7.4.4-1~bpo70+1_i386 added[0m
-[0;31;49m[-][0;39;49m libestr0_0.1.1-2_i386 removed[0m
-[0;32;49m[+][0;39;49m libestr0_0.1.9-1~bpo70+1_i386 added[0m
+[-] rsyslog_5.8.11-3_amd64 removed
+[+] rsyslog_7.4.4-1~bpo70+1_amd64 added
+[-] libestr0_0.1.1-2_amd64 removed
+[+] libestr0_0.1.9-1~bpo70+1_amd64 added
+[+] init-system-helpers_1.11~bpo70.1_all added
+[+] rsyslog_7.4.4-1~bpo70+1_source added
+[+] libestr_0.1.9-1~bpo70+1_source added
+[+] init-system-helpers_1.11~bpo70.1_source added
+[-] rsyslog_5.8.11-3_i386 removed
+[+] rsyslog_7.4.4-1~bpo70+1_i386 added
+[-] libestr0_0.1.1-2_i386 removed
+[+] libestr0_0.1.9-1~bpo70+1_i386 added
 
 Snapshot snap3 successfully created.
 You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.

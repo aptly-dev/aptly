@@ -5,7 +5,6 @@ import (
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
-	"github.com/wsxiaoys/terminal/color"
 	"sort"
 	"strings"
 )
@@ -45,11 +44,11 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	fmt.Printf("Dependencies would be pulled into snapshot:\n    %s\nfrom snapshot:\n    %s\nand result would be saved as new snapshot %s.\n",
+	context.progress.Printf("Dependencies would be pulled into snapshot:\n    %s\nfrom snapshot:\n    %s\nand result would be saved as new snapshot %s.\n",
 		snapshot, source, args[2])
 
 	// Convert snapshot to package list
-	fmt.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
+	context.progress.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
 	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), packageCollection)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
@@ -60,7 +59,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	fmt.Printf("Building indexes...\n")
+	context.progress.Printf("Building indexes...\n")
 	packageList.PrepareIndex()
 	sourcePackageList.PrepareIndex()
 
@@ -103,8 +102,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			// Search for package that can satisfy dependencies
 			pkg := sourcePackageList.Search(dep)
 			if pkg == nil {
-				color.Printf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
-				fmt.Printf("\n")
+				context.progress.ColoredPrintf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
 				continue
 			}
 
@@ -112,16 +110,14 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 				// Remove all packages with the same name and architecture
 				for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
 					packageList.Remove(p)
-					color.Printf("@r[-]@| %s removed", p)
-					fmt.Printf("\n")
+					context.progress.ColoredPrintf("@r[-]@| %s removed", p)
 					p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
 				}
 			}
 
 			// Add new discovered package
 			packageList.Add(pkg)
-			color.Printf("@g[+]@| %s added", pkg)
-			fmt.Printf("\n")
+			context.progress.ColoredPrintf("@g[+]@| %s added", pkg)
 
 			if noDeps {
 				continue
@@ -133,8 +129,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 			missing, err := pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList)
 			if err != nil {
-				color.Printf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
-				fmt.Printf("\n")
+				context.progress.ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
 			}
 
 			// Append missing dependencies to the list of dependencies to satisfy
@@ -155,7 +150,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	if cmd.Flag.Lookup("dry-run").Value.Get().(bool) {
-		fmt.Printf("\nNot creating snapshot, as dry run was requested.\n")
+		context.progress.Printf("\nNot creating snapshot, as dry run was requested.\n")
 	} else {
 		// Create <destination> snapshot
 		destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
@@ -166,7 +161,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		fmt.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
+		context.progress.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
 	}
 	return err
 }

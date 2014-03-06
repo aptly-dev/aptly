@@ -5,10 +5,10 @@ from snapshot:
 and result would be saved as new snapshot snap3.
 Loading packages (56800)...
 Building indexes...
-[0;33;49m[!][0;39;49m [1;39;49mDependency lunar-landing [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy[0;39;49m[0m
-[0;33;49m[!][0;39;49m [1;39;49mDependency mars-landing (>= 1.0) [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy[0;39;49m[0m
-[0;33;49m[!][0;39;49m [1;39;49mDependency lunar-landing [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy[0;39;49m[0m
-[0;33;49m[!][0;39;49m [1;39;49mDependency mars-landing (>= 1.0) [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy[0;39;49m[0m
+[!] Dependency lunar-landing [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
+[!] Dependency mars-landing (>= 1.0) [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
+[!] Dependency lunar-landing [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
+[!] Dependency mars-landing (>= 1.0) [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
 
 Snapshot snap3 successfully created.
 You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.
