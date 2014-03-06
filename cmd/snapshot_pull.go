@@ -49,12 +49,12 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	// Convert snapshot to package list
 	context.progress.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
-	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), packageCollection)
+	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), packageCollection, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), packageCollection)
+	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), packageCollection, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}

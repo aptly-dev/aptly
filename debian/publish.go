@@ -105,7 +105,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 	}
 
 	// Load all packages
-	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection)
+	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection, nil)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}

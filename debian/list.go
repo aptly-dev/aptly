@@ -2,6 +2,7 @@ package debian
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"sort"
 	"strings"
@@ -49,7 +50,7 @@ func NewPackageList() *PackageList {
 }
 
 // NewPackageListFromRefList loads packages list from PackageRefList
-func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageCollection) (*PackageList, error) {
+func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageCollection, progress aptly.Progress) (*PackageList, error) {
 	// empty reflist
 	if reflist == nil {
 		return NewPackageList(), nil
@@ -57,13 +58,24 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 
 	result := &PackageList{packages: make(map[string]*Package, reflist.Len())}
 
+	if progress != nil {
+		progress.InitBar(int64(reflist.Len()), false)
+	}
+
 	err := reflist.ForEach(func(key []byte) error {
 		p, err := collection.ByKey(key)
 		if err != nil {
 			return fmt.Errorf("unable to load package with key %s: %s", key, err)
 		}
+		if progress != nil {
+			progress.AddBar(1)
+		}
 		return result.Add(p)
 	})
+
+	if progress != nil {
+		progress.ShutdownBar()
+	}
 
 	if err != nil {
 		return nil, err

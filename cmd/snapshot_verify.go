@@ -31,7 +31,9 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), packageCollection)
+	context.progress.Printf("Loading packages...\n")
+
+	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), packageCollection, context.progress)
 	if err != nil {
 		fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -43,7 +45,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 	}
 
 	for i := 1; i < len(snapshots); i++ {
-		pL, err := debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection)
+		pL, err := debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection, context.progress)
 		if err != nil {
 			fmt.Errorf("unable to load packages: %s", err)
 		}

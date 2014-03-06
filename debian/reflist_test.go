@@ -46,18 +46,18 @@ func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
 
 	reflist := NewPackageRefListFromPackageList(s.list)
 
-	_, err := NewPackageListFromRefList(reflist, coll)
+	_, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, ErrorMatches, "unable to load package with key.*")
 
 	coll.Update(s.p5)
 	coll.Update(s.p6)
 
-	list, err := NewPackageListFromRefList(reflist, coll)
+	list, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, IsNil)
 	c.Check(list.Len(), Equals, 4)
 	c.Check(list.Add(s.p4), ErrorMatches, "conflict in package.*")
 
-	list, err = NewPackageListFromRefList(nil, coll)
+	list, err = NewPackageListFromRefList(nil, coll, nil)
 	c.Assert(err, IsNil)
 	c.Check(list.Len(), Equals, 0)
 }

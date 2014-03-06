@@ -37,7 +37,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	context.progress.Printf("Loading packages...\n")
 
 	packageCollection := debian.NewPackageCollection(context.database)
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), packageCollection)
+	list, err := debian.NewPackageListFromRefList(repo.RefList(), packageCollection, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}

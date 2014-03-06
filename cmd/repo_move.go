@@ -75,12 +75,12 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	context.progress.Printf("Loading packages...\n")
 
 	packageCollection := debian.NewPackageCollection(context.database)
-	dstList, err := debian.NewPackageListFromRefList(dstRepo.RefList(), packageCollection)
+	dstList, err := debian.NewPackageListFromRefList(dstRepo.RefList(), packageCollection, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	srcList, err := debian.NewPackageListFromRefList(srcRefList, packageCollection)
+	srcList, err := debian.NewPackageListFromRefList(srcRefList, packageCollection, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
