@@ -9,10 +9,13 @@ import (
 	"path/filepath"
 )
 
-var returnCode = 0
+var (
+	returnCode   = 0
+	errorMessage string
+)
 
 func fatal(err error) {
-	fmt.Printf("ERROR: %s\n", err)
+	errorMessage = fmt.Sprintf("ERROR: %s\n", err)
 	returnCode = 1
 }
 
@@ -53,7 +56,12 @@ func loadConfig(command *commander.Command) error {
 }
 
 func main() {
-	defer func() { os.Exit(returnCode) }()
+	defer func() {
+		if errorMessage != "" {
+			fmt.Print(errorMessage)
+		}
+		os.Exit(returnCode)
+	}()
 
 	command := cmd.RootCommand()
 
