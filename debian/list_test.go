@@ -259,19 +259,19 @@ func (s *PackageListSuite) TestFilter(c *C) {
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {
-	missing, err := s.il.VerifyDependencies(0, []string{"i386"}, s.il)
+	missing, err := s.il.VerifyDependencies(0, []string{"i386"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{})
 
-	missing, err = s.il.VerifyDependencies(0, []string{"i386", "amd64"}, s.il)
+	missing, err = s.il.VerifyDependencies(0, []string{"i386", "amd64"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
 
-	missing, err = s.il.VerifyDependencies(0, []string{"arm"}, s.il)
+	missing, err = s.il.VerifyDependencies(0, []string{"arm"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{})
 
-	missing, err = s.il.VerifyDependencies(DepFollowAllVariants, []string{"arm"}, s.il)
+	missing, err = s.il.VerifyDependencies(DepFollowAllVariants, []string{"arm"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "arm"},
 		Dependency{Pkg: "mail-agent", Relation: VersionDontCare, Version: "", Architecture: "arm"}})
@@ -280,15 +280,15 @@ func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 		s.il.Add(p)
 	}
 
-	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il)
+	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "lib", Relation: VersionGreater, Version: "0.9", Architecture: "amd64"}})
 
-	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"arm"}, s.il)
+	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"arm"}, s.il, nil)
 	c.Check(err, IsNil)
 	c.Check(missing, DeepEquals, []Dependency{Dependency{Pkg: "libx", Relation: VersionEqual, Version: "1.5", Architecture: "source"}})
 
-	_, err = s.il.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.il)
+	_, err = s.il.VerifyDependencies(0, []string{"i386", "amd64", "s390"}, s.il, nil)
 	c.Check(err, ErrorMatches, "unable to process package app_1.0_s390:.*")
 }
 

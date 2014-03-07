@@ -70,7 +70,9 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
 
-	missing, err := packageList.VerifyDependencies(context.dependencyOptions, architecturesList, sourcePackageList)
+	context.progress.Printf("Verifying...\n")
+
+	missing, err := packageList.VerifyDependencies(context.dependencyOptions, architecturesList, sourcePackageList, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to verify dependencies: %s", err)
 	}

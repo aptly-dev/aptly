@@ -127,7 +127,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			pL := debian.NewPackageList()
 			pL.Add(pkg)
 
-			missing, err := pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList)
+			missing, err := pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList, nil)
 			if err != nil {
 				context.progress.ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
 			}

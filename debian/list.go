@@ -219,13 +219,21 @@ func depSliceDeduplicate(s []Dependency) []Dependency {
 // VerifyDependencies looks for missing dependencies in package list.
 //
 // Analysis would be peformed for each architecture, in specified sources
-func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList) ([]Dependency, error) {
+func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList, progress aptly.Progress) ([]Dependency, error) {
 	missing := make([]Dependency, 0, 128)
+
+	if progress != nil {
+		progress.InitBar(int64(l.Len())*int64(len(architectures)), false)
+	}
 
 	for _, arch := range architectures {
 		cache := make(map[string]bool, 2048)
 
 		for _, p := range l.packages {
+			if progress != nil {
+				progress.AddBar(1)
+			}
+
 			if !p.MatchesArchitecture(arch) {
 				continue
 			}
@@ -278,6 +286,10 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				}
 			}
 		}
+	}
+
+	if progress != nil {
+		progress.ShutdownBar()
 	}
 
 	return missing, nil
@@ -404,7 +416,7 @@ func (l *PackageList) Filter(queries []string, withDependencies bool, source *Pa
 			added = 0
 
 			// find missing dependencies
-			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource)
+			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, nil)
 			if err != nil {
 				return nil, err
 			}
