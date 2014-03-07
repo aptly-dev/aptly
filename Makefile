@@ -4,7 +4,7 @@ ALL_PACKAGES=aptly cmd console database debian files http utils
 BINPATH=$(abspath ./bin)
 GOM_ENVIRONMENT=-test
 
-ifeq ($(GOVERSION), go1.2)
+ifeq ($(GOVERSION), devel)
 TRAVIS_TARGET=coveralls
 GOM_ENVIRONMENT+=-development
 else
