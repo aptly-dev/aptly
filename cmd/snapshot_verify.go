@@ -76,9 +76,9 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 	}
 
 	if len(missing) == 0 {
-		fmt.Printf("All dependencies are satisfied.\n")
+		context.progress.Printf("All dependencies are satisfied.\n")
 	} else {
-		fmt.Printf("Missing dependencies (%d):\n", len(missing))
+		context.progress.Printf("Missing dependencies (%d):\n", len(missing))
 		deps := make([]string, len(missing))
 		i := 0
 		for _, dep := range missing {
@@ -89,7 +89,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		sort.Strings(deps)
 
 		for _, dep := range deps {
-			fmt.Printf("  %s\n", dep)
+			context.progress.Printf("  %s\n", dep)
 		}
 	}
 
