@@ -93,7 +93,7 @@ func (p *PublishedRepo) Decode(input []byte) error {
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
-func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, packageCollection *PackageCollection, signer utils.Signer) error {
+func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, packageCollection *PackageCollection, signer utils.Signer, progress aptly.Progress) error {
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
@@ -104,8 +104,12 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		return err
 	}
 
+	if progress != nil {
+		progress.Printf("Loading packages...\n")
+	}
+
 	// Load all packages
-	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection, nil)
+	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection, progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -126,8 +130,16 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 
 	generatedFiles := map[string]utils.ChecksumInfo{}
 
+	if progress != nil {
+		progress.Printf("Generating metadata files and linking package files...\n")
+	}
+
 	// For all architectures, generate release file
 	for _, arch := range p.Architectures {
+		if progress != nil {
+			progress.InitBar(int64(list.Len()), false)
+		}
+
 		var relativePath string
 		if arch == "source" {
 			relativePath = filepath.Join(p.Component, "source", "Sources")
@@ -147,6 +159,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		bufWriter := bufio.NewWriter(packagesFile)
 
 		err = list.ForEach(func(pkg *Package) error {
+			if progress != nil {
+				progress.AddBar(1)
+			}
 			if pkg.MatchesArchitecture(arch) {
 				err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, p.Component)
 				if err != nil {
@@ -205,6 +220,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		}
 		generatedFiles[relativePath+".bz2"] = checksumInfo
 
+		if progress != nil {
+			progress.ShutdownBar()
+		}
 	}
 
 	release := make(Stanza)
@@ -244,6 +262,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 
 	releaseFilename := releaseFile.Name()
 	releaseFile.Close()
+
+	// Signing files might output to console, so flush progress writer first
+	if progress != nil {
+		progress.Flush()
+	}
 
 	if signer != nil {
 		err = signer.DetachedSign(releaseFilename, releaseFilename+".gpg")

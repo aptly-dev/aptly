@@ -83,7 +83,7 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 	}
 
 	packageCollection := debian.NewPackageCollection(context.database)
-	err = published.Publish(context.packagePool, context.publishedStorage, packageCollection, signer)
+	err = published.Publish(context.packagePool, context.publishedStorage, packageCollection, signer, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -97,15 +97,15 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		prefix += "/"
 	}
 
-	fmt.Printf("\nSnapshot %s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
+	context.progress.Printf("\nSnapshot %s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
 		snapshot.Name, context.publishedStorage.PublicPath())
-	fmt.Printf("Now you can add following line to apt sources:\n")
-	fmt.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
+	context.progress.Printf("Now you can add following line to apt sources:\n")
+	context.progress.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
 	if utils.StrSliceHasItem(published.Architectures, "source") {
-		fmt.Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
+		context.progress.Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
 	}
-	fmt.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
-	fmt.Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
+	context.progress.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
+	context.progress.Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
 
 	return err
 }

@@ -154,7 +154,7 @@ func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
-	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, &NullSigner{})
+	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, &NullSigner{}, nil)
 	c.Assert(err, IsNil)
 
 	c.Check(s.repo.Architectures, DeepEquals, []string{"i386"})
@@ -191,7 +191,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
-	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, nil)
+	err := s.repo.Publish(s.packagePool, s.publishedStorage, s.packageCollection, nil, nil)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"), PathExists)

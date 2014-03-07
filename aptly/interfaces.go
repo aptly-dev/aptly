@@ -48,6 +48,8 @@ type Progress interface {
 	Start()
 	// Shutdown shuts down progress display
 	Shutdown()
+	// Flush returns when all queued messages are sent
+	Flush()
 	// InitBar starts progressbar for count bytes or count items
 	InitBar(count int64, isBytes bool)
 	// ShutdownBar stops progress bar and hides it

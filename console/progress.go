@@ -13,11 +13,13 @@ const (
 	codeProgress
 	codeHideProgress
 	codeStop
+	codeFlush
 )
 
 type printTask struct {
 	code    int
 	message string
+	reply   chan bool
 }
 
 // Progress is a progress displaying subroutine, it allows to show download and other operations progress
@@ -53,6 +55,13 @@ func (p *Progress) Shutdown() {
 	p.ShutdownBar()
 	p.queue <- printTask{code: codeStop}
 	<-p.stopped
+}
+
+// Flush waits for all queued messages to be displayed
+func (p *Progress) Flush() {
+	ch := make(chan bool)
+	p.queue <- printTask{code: codeFlush, reply: ch}
+	<-ch
 }
 
 // InitBar starts progressbar for count bytes or count items
@@ -161,6 +170,8 @@ func (p *Progress) worker() {
 				fmt.Print("\r\033[2K")
 				p.barShown = false
 			}
+		case codeFlush:
+			task.reply <- true
 		case codeStop:
 			p.stopped <- true
 			return
