@@ -66,6 +66,16 @@ func (l *levelDB) Put(key []byte, value []byte) error {
 		l.batch.Put(key, value)
 		return nil
 	}
+	old, err := l.db.Get(key, nil)
+	if err != nil {
+		if err != leveldb.ErrNotFound {
+			return err
+		}
+	} else {
+		if bytes.Compare(old, value) == 0 {
+			return nil
+		}
+	}
 	return l.db.Put(key, value, nil)
 }
 
