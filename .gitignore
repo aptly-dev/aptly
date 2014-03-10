@@ -29,3 +29,7 @@ coverage*.out
 
 vendor/
 bin/
+
+gen
+man/aptly.1.html
+man/aptly.1.ronn

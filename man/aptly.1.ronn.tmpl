@@ -1,0 +1,176 @@
+{{define "main"}}aptly(1) -- {{.Short}}
+=============================================
+
+## SYNOPSIS
+
+Common command format:
+
+  `aptly` [<global options>...] <command> <subcommand> [<options>...] <arguments>
+
+aptly has integrated help that matches contents of this manual page, to get help, prepend
+`help` to command name:
+
+   `aptly` `help` `mirror` `create`
+
+## DESCRIPTION
+
+{{.Long}}
+
+## CONFIGURATION
+
+aptly looks for configuration file in `/etc/aptly.conf` and `~/.aptly.conf`, if no config file
+found, new one is created. If `-config=` flag is specified, aptly would use config file at specified
+location. Also aptly needs root directory for database, package and published repository storage.
+If not specified, directory defaults to `~/.aptly`, it will be created if missing.
+
+Configuration file is stored in JSON format (default values shown below):
+
+    {
+      "rootDir": "$HOME/.aptly",
+      "downloadConcurrency": 4,
+      "architectures": [],
+      "dependencyFollowSuggests": false,
+      "dependencyFollowRecommends": false
+      "dependencyFollowAllVariants": false,
+      "dependencyFollowSource": false,
+      "gpgDisableSign": false,
+      "gpgDisableVerify": false,
+      "downloadSourcePackages": false,
+      "ppaDistributorID": "ubuntu",
+      "ppaCodename": ""
+    }
+
+Options:
+
+  * `rootDir`:
+    is root of directory storage to store database (`rootDir`/db), downloaded packages (`rootDir`/pool) and
+    published repositories (`rootDir`/public)
+
+  * `downloadConcurrency`:
+    is a number of parallel download threads to use when downloading packages
+
+  * `architectures`:
+    is a list of architectures to process; if left empty defaults to all available architectures; could be
+    overridden with option `-architectures`
+
+  * `dependencyFollowSuggests`:
+    follow contents of `Suggests:` field when processing dependencies for the package
+
+  * `dependencyFollowRecommends`:
+    follow contents of `Recommends:` field when processing dependencies for the package
+
+  * `dependencyFollowAllVariants`:
+    when dependency looks like `package-a | package-b`, follow both variants always
+
+  * `dependencyFollowSource`:
+    follow dependency from binary package to source package
+
+  * `gpgDisableSign`:
+    don't sign published repositories with gpg(1), also can be disabled on
+    per-repo basis using `-skip-signing` flag when publishing
+
+  * `gpgDisableVerify`:
+    don't verify remote mirrors with gpg(1), also can be disabled on
+    per-mirror basis using `-ignore-signatures` flag when creating and updating mirrors
+
+  * `downloadSourcePackages`:
+    if enabled, all mirrors created would have flag set to download source packages;
+    this setting could be controlled on per-mirror basis with `-with-sources` flag
+
+  * `ppaDistributorID`, `ppaCodename`:
+    specifies paramaters for short PPA url expansion, if left blank they default
+    to output of `lsb_release` command
+
+## PACKAGE SPEC
+
+Some commands accept package specs to identify list of packages to process.
+Package spec is a list of following search conditions:
+
+  * direct package reference:
+    reference to exaclty one package. Format is identical to the way aptly lists packages in
+    show commands with `-with-packages` flag: `name_version_arch`,
+    e.g.: `libmysqlclient18_5.5.35-rel33.0-611.squeeze_amd64`
+
+  * dependency condition:
+    syntax follows Debian dependency specification: package_name followed by optional version specification and architecture limit.
+
+Examples:
+
+  * `mysql-client`:
+     matches package mysql-client of any version and architecture (including source)
+
+  * `mysql-client (>= 3.6)`:
+     matches package mysql-client with version greater or equal to 3.6. Valid operators for
+     version are: `>=`, `<=`, `=`, `>>` (strictly greater), `<<` (strictly less).
+
+  * `mysql-client {i386}`:
+     matches package `mysql-client` on architecture `i386`, architecture `all` matches all architectures but source.
+
+  * `mysql-client (>= 3.6) {i386}`:
+      version and architecture conditions combined.
+
+When specified on command line, condition may have to be quoted according to shell rules, so that it stays single argument:
+
+  `aptly repo import percona stable 'mysql-client (>= 3.6)'`
+
+
+## GLOBAL OPTIONS
+
+{{template "options" .}}
+
+{{template "command" findCommand . "mirror"}}
+
+{{template "command" findCommand . "repo"}}
+
+{{template "command" findCommand . "snapshot"}}
+
+{{template "command" findCommand . "publish"}}
+
+{{template "command" findCommand . "db"}}
+
+{{template "command" findCommand . "serve"}}
+
+{{template "command" findCommand . "graph"}}
+
+## ENVIRONMENT
+
+If environment variable `HTTP_PROXY` is set `aptly` would use its value
+to proxy all HTTP requests.
+
+## RETURN VALUES
+
+`aptly` exists with 0 on success and with 1 on failure.
+
+## AUTHORS
+
+Andrey Smirnov (me@smira.ru)
+
+{{end}}
+
+{{/* command list */}}
+{{define "command"}}
+{{if .Runnable}}
+## {{toUpper .Short}}
+
+{{capitalize .Parent.FullSpacedName}} {{capitalize .UsageLine}}
+
+{{.Long}}
+
+{{if (allFlags .Flag | len) gt 0}}
+Options:
+
+{{template "options" .}}
+{{end}}
+
+{{end}}
+
+{{range .Subcommands}}{{template "command" .}}{{end}}
+{{end}}
+
+{{/* options layout */}}
+{{define "options"}}
+{{range allFlags .Flag}}
+  * -`{{.Name}}`={{.DefValue}}:
+    {{.Usage}}
+{{end}}
+{{end}}

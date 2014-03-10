@@ -1,0 +1,778 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "APTLY" "1" "March 2014" "" ""
+.
+.SH "NAME"
+\fBaptly\fR \- Debian repository management tool
+.
+.SH "SYNOPSIS"
+Common command format:
+.
+.P
+\fBaptly\fR [\fIglobal options\fR\.\.\.] \fIcommand\fR \fIsubcommand\fR [\fIoptions\fR\.\.\.] \fIarguments\fR
+.
+.P
+aptly has integrated help that matches contents of this manual page, to get help, prepend \fBhelp\fR to command name:
+.
+.P
+\fBaptly\fR \fBhelp\fR \fBmirror\fR \fBcreate\fR
+.
+.SH "DESCRIPTION"
+aptly is a tool to create partial and full mirrors of remote repositories, manage local repositories, filter them, merge, upgrade individual packages, take snapshots and publish them back as Debian repositories\.
+.
+.P
+aptly goal is to establish repeatiblity and controlled changes in package environment\. aptly allows to fix set of packages in repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
+.
+.SH "CONFIGURATION"
+aptly looks for configuration file in \fB/etc/aptly\.conf\fR and \fB~/\.aptly\.conf\fR, if no config file found, new one is created\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly\fR, it will be created if missing\.
+.
+.P
+Configuration file is stored in JSON format (default values shown below):
+.
+.IP "" 4
+.
+.nf
+
+{
+  "rootDir": "$HOME/\.aptly",
+  "downloadConcurrency": 4,
+  "architectures": [],
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": false
+  "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
+  "gpgDisableSign": false,
+  "gpgDisableVerify": false,
+  "downloadSourcePackages": false,
+  "ppaDistributorID": "ubuntu",
+  "ppaCodename": ""
+}
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\fBrootDir\fR
+is root of directory storage to store database (\fBrootDir\fR/db), downloaded packages (\fBrootDir\fR/pool) and published repositories (\fBrootDir\fR/public)
+.
+.TP
+\fBdownloadConcurrency\fR
+is a number of parallel download threads to use when downloading packages
+.
+.TP
+\fBarchitectures\fR
+is a list of architectures to process; if left empty defaults to all available architectures; could be overridden with option \fB\-architectures\fR
+.
+.TP
+\fBdependencyFollowSuggests\fR
+follow contents of \fBSuggests:\fR field when processing dependencies for the package
+.
+.TP
+\fBdependencyFollowRecommends\fR
+follow contents of \fBRecommends:\fR field when processing dependencies for the package
+.
+.TP
+\fBdependencyFollowAllVariants\fR
+when dependency looks like \fBpackage\-a | package\-b\fR, follow both variants always
+.
+.TP
+\fBdependencyFollowSource\fR
+follow dependency from binary package to source package
+.
+.TP
+\fBgpgDisableSign\fR
+don\'t sign published repositories with gpg(1), also can be disabled on per\-repo basis using \fB\-skip\-signing\fR flag when publishing
+.
+.TP
+\fBgpgDisableVerify\fR
+don\'t verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
+.
+.TP
+\fBdownloadSourcePackages\fR
+if enabled, all mirrors created would have flag set to download source packages; this setting could be controlled on per\-mirror basis with \fB\-with\-sources\fR flag
+.
+.TP
+\fBppaDistributorID\fR, \fBppaCodename\fR
+specifies paramaters for short PPA url expansion, if left blank they default to output of \fBlsb_release\fR command
+.
+.SH "PACKAGE SPEC"
+Some commands accept package specs to identify list of packages to process\. Package spec is a list of following search conditions:
+.
+.TP
+direct package reference
+reference to exaclty one package\. Format is identical to the way aptly lists packages in show commands with \fB\-with\-packages\fR flag: \fBname_version_arch\fR, e\.g\.: \fBlibmysqlclient18_5\.5\.35\-rel33\.0\-611\.squeeze_amd64\fR
+.
+.TP
+dependency condition
+syntax follows Debian dependency specification: package_name followed by optional version specification and architecture limit\.
+.
+.P
+Examples:
+.
+.TP
+\fBmysql\-client\fR
+matches package mysql\-client of any version and architecture (including source)
+.
+.TP
+\fBmysql\-client (>= 3\.6)\fR
+matches package mysql\-client with version greater or equal to 3\.6\. Valid operators for version are: \fB>=\fR, \fB<=\fR, \fB=\fR, \fB>>\fR (strictly greater), \fB<<\fR (strictly less)\.
+.
+.TP
+\fBmysql\-client {i386}\fR
+matches package \fBmysql\-client\fR on architecture \fBi386\fR, architecture \fBall\fR matches all architectures but source\.
+.
+.TP
+\fBmysql\-client (>= 3\.6) {i386}\fR
+version and architecture conditions combined\.
+.
+.P
+When specified on command line, condition may have to be quoted according to shell rules, so that it stays single argument:
+.
+.P
+\fBaptly repo import percona stable \'mysql\-client (>= 3\.6)\'\fR
+.
+.SH "GLOBAL OPTIONS"
+.
+.TP
+\-\fBarchitectures\fR=
+list of architectures to consider during (comma\-separated), default to all available
+.
+.TP
+\-\fBconfig\fR=
+location of configuration file (default locations are /etc/aptly\.conf, ~/\.aptly\.conf)
+.
+.TP
+\-\fBcpuprofile\fR=
+write cpu profile to file
+.
+.TP
+\-\fBdep\-follow\-all\-variants\fR=false
+when processing dependencies, follow a & b if depdency is \'a|b\'
+.
+.TP
+\-\fBdep\-follow\-recommends\fR=false
+when processing dependencies, follow Recommends
+.
+.TP
+\-\fBdep\-follow\-source\fR=false
+when processing dependencies, follow from binary to Source packages
+.
+.TP
+\-\fBdep\-follow\-suggests\fR=false
+when processing dependencies, follow Suggests
+.
+.TP
+\-\fBmeminterval\fR=100ms
+memory stats dump interval
+.
+.TP
+\-\fBmemprofile\fR=
+write memory profile to this file
+.
+.TP
+\-\fBmemstats\fR=
+write memory stats periodically to this file
+.
+.SH "CREATE NEW MIRROR"
+\fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \.\.\.]
+.
+.P
+Creates mirror \fIname\fR of remote repository, aptly supports both regular and flat Debian repositories exported via HTTP\. aptly would try download Release file from remote repository and verify its signature\.
+.
+.P
+PPA urls could specified in short format:
+.
+.P
+$ aptly mirror create \fIname\fR ppa:\fIuser\fR/\fIproject\fR
+.
+.P
+Example:
+.
+.P
+$ aptly mirror create wheezy\-main http://mirror\.yandex\.ru/debian/ wheezy main
+.
+.P
+Options:
+.
+.TP
+\-\fBignore\-signatures\fR=false
+disable verification of Release file signatures
+.
+.TP
+\-\fBkeyring\fR=
+gpg keyring to use when verifying Release file (could be specified multiple times)
+.
+.TP
+\-\fBwith\-sources\fR=false
+download source packages in addition to binary packages
+.
+.SH "LIST MIRRORS"
+\fBaptly\fR \fBmirror\fR \fBlist\fR
+.
+.P
+List shows full list of remote repository mirrors\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror list
+.
+.SH "SHOW DETAILS ABOUT MIRROR"
+\fBaptly\fR \fBmirror\fR \fBshow\fR \fIname\fR
+.
+.P
+Shows detailed information about mirror\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror show wheezy\-main
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-packages\fR=false
+show detailed list of packages and versions stored in the mirror
+.
+.SH "DELETE MIRROR"
+\fBaptly\fR \fBmirror\fR \fBdrop\fR \fIname\fR
+.
+.P
+Drop deletes information about remote repository mirror \fIname\fR\. Package data is not deleted (it could be still used by other mirrors or snapshots)\. If mirror is used as source to create a snapshot, aptly would refuse to delete such mirror, use flag \-force to override\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror drop wheezy\-main
+.
+.P
+Options:
+.
+.TP
+\-\fBforce\fR=false
+force mirror deletion even if used by snapshots
+.
+.SH "UPDATE MIRROR"
+\fBaptly\fR \fBmirror\fR \fBupdate\fR \fIname\fR
+.
+.P
+Updates remote mirror (downloads package files and meta information)\. When mirror is created, this command should be run for the first time to fetch mirror contents\. This command could be run many times to get updated repository contents\. If interrupted, command could be restarted safely\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror update wheezy\-main
+.
+.P
+Options:
+.
+.TP
+\-\fBignore\-checksums\fR=false
+ignore checksum mismatches while downloading package files and metadata
+.
+.TP
+\-\fBignore\-signatures\fR=false
+disable verification of Release file signatures
+.
+.TP
+\-\fBkeyring\fR=
+gpg keyring to use when verifying Release file (could be specified multiple times)
+.
+.SH "ADD PACKAGES TO LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
+.
+.P
+Command adds packages to local repository from \.deb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would be created and added to database\. Files would be imported to internal package pool\. For source packages, all required files are added as well automatically\. Extra files for source package should be in the same directory as *\.dsc file\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo add testing myapp\-0\.1\.2\.deb incoming/
+.
+.P
+Options:
+.
+.TP
+\-\fBremove\-files\fR=false
+remove files that have been imported successfully into repository
+.
+.SH "COPY PACKAGES BETWEEN LOCAL REPOSITORIES"
+\fBaptly\fR \fBrepo\fR \fBcopy\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-spec\fR \fB\.\.\.\fR
+.
+.P
+Command copy copies packages matching \fIpackage\-spec\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo copy testing stable \'myapp (=0\.1\.12)\'
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\'t copy, just show what would be copied
+.
+.TP
+\-\fBwith\-deps\fR=false
+follow dependencies when processing package\-spec
+.
+.SH "CREATE LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBcreate\fR \fIname\fR
+.
+.P
+Create local package repository\. Repository would be empty when created, packages could be added from files, copied or moved from another local repository or imported from the mirror\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo create testing
+.
+.P
+Options:
+.
+.TP
+\-\fBcomment\fR=
+any text that would be used to described local repository
+.
+.SH "DELETE LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBdrop\fR \fIname\fR
+.
+.P
+Drop deletes information about local repo\. Package data is not deleted (it could be still used by other mirrors or snapshots)\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo drop local\-repo
+.
+.P
+Options:
+.
+.TP
+\-\fBforce\fR=false
+force local repo deletion even if used by snapshots
+.
+.SH "IMPORT PACKAGES FROM MIRROR TO LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBimport\fR \fIsrc\-mirror\fR \fIdst\-repo\fR \fIpackage\-spec\fR \fB\.\.\.\fR
+.
+.P
+Command import looks up packages matching \fIpackage\-spec\fR in mirror \fIsrc\-mirror\fR and copies them to local repo \fIdst\-repo\fR\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo import wheezy\-main testing nginx
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\'t import, just show what would be imported
+.
+.TP
+\-\fBwith\-deps\fR=false
+follow dependencies when processing package\-spec
+.
+.SH "LIST LOCAL REPOSITORIES"
+\fBaptly\fR \fBrepo\fR \fBlist\fR
+.
+.P
+List shows full list of local package repositories\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo list
+.
+.SH "MOVE PACKAGES BETWEEN LOCAL REPOSITORIES"
+\fBaptly\fR \fBrepo\fR \fBmove\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-spec\fR \fB\.\.\.\fR
+.
+.P
+Command move moves packages matching \fIpackage\-spec\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo move testing stable \'myapp (=0\.1\.12)\'
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\'t move, just show what would be moved
+.
+.TP
+\-\fBwith\-deps\fR=false
+follow dependencies when processing package\-spec
+.
+.SH "REMOVE PACKAGES FROM LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBremove\fR \fIname\fR \fIpackage\-spec\fR \fB\.\.\.\fR
+.
+.P
+Commands removes packages matching \fIpackage\-spec\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \'aptly db cleanup\'\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo remove testing \'myapp (=0\.1\.12)\'
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\'t remove, just show what would be removed
+.
+.SH "SHOW DETAILS ABOUT LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBshow\fR \fIname\fR
+.
+.P
+Show shows full information about local package repository\.
+.
+.P
+ex: $ aptly repo show testing
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-packages\fR=false
+show list of packages
+.
+.SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
+\fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
+.
+.P
+Command create \fIname\fR from mirror makes persistent immutable snapshot of remote repository mirror\. Snapshot could be published or further modified using merge, pull and other aptly features\.
+.
+.P
+Command create \fIname\fR from repo makes persistent immutable snapshot of local repository\. Snapshot could be processed as mirror snapshots, and mixed with snapshots of remote mirrors\.
+.
+.P
+Command create \fIname\fR empty creates empty snapshot that could be used as a basis for snapshot pull operations, for example\. As snapshots are immutable, creating one empty snapshot should be enough\.
+.
+.P
+Example:
+.
+.P
+$ aptly snapshot create wheezy\-main\-today from mirror wheezy\-main
+.
+.SH "LIST SNAPSHOTS"
+\fBaptly\fR \fBsnapshot\fR \fBlist\fR
+.
+.P
+Command list shows full list of snapshots created\.
+.
+.P
+Example:
+.
+.P
+$ aptly snapshot list
+.
+.SH "SHOWS DETAILS ABOUT SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBshow\fR \fIname\fR
+.
+.P
+Command show displays full information about snapshot\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot show wheezy\-main
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-packages\fR=false
+show list of packages
+.
+.SH "VERIFY DEPENDENCIES IN SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBverify\fR \fIname\fR [\fIsource\fR \.\.\.]
+.
+.P
+Verify does depenency resolution in snapshot \fIname\fR, possibly using additional snapshots \fIsource\fR as dependency sources\. All unsatisfied dependencies are printed\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot verify wheezy\-main wheezy\-contrib wheezy\-non\-free
+.
+.fi
+.
+.IP "" 0
+.
+.SH "PULL PACKAGES FROM ANOTHER SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-name\fR \fB\.\.\.\fR
+.
+.P
+Command pull pulls new packages along with its dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as result of this process\. Packages could be specified simply as \'package\-name\' or as dependency \'package\-name (>= version)\'\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot pull wheezy\-main wheezy\-backports wheezy\-new\-xorg xorg\-server\-server
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\'t create destination snapshot, just show what would be pulled
+.
+.TP
+\-\fBno\-deps\fR=false
+don\'t process dependencies, just pull listed packages
+.
+.TP
+\-\fBno\-remove\fR=false
+don\'t remove other package versions when pulling package
+.
+.SH "DIFFERENCE BETWEEN TWO SNAPSHOTS"
+\fBaptly\fR \fBsnapshot\fR \fBdiff\fR \fIname\-a\fR \fIname\-b\fR
+.
+.P
+Displays difference in packages between two snapshots\. Snapshot is a list of packages, so difference between snapshots is a difference between package lists\. Package could be either completely missing in one snapshot, or package is present in both snapshots with different versions\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot diff \-only\-matching wheezy\-main wheezy\-backports
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBonly\-matching\fR=false
+display diff only for matching packages (don\'t display missing packages)
+.
+.SH "MERGES SNAPSHOTS"
+\fBaptly\fR \fBsnapshot\fR \fBmerge\fR \fIdestination\fR \fIsource\fR [\fIsource\fR\.\.\.]
+.
+.P
+Merge merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. Packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot merge wheezy\-w\-backports wheezy\-main wheezy\-backports
+.
+.fi
+.
+.IP "" 0
+.
+.SH "DELETE SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBdrop\fR \fIname\fR
+.
+.P
+Drop removes information about snapshot\. If snapshot is published, it can\'t be dropped\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot drop wheezy\-main
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBforce\fR=false
+remove snapshot even if it was used as source for other snapshots
+.
+.SH "PUBLISH SNAPSHOT"
+\fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [\fIprefix\fR]
+.
+.P
+Command publish publishes snapshot as Debian repository ready to be consumed by apt tools\. Published repostiories appear under rootDir/public directory\. Valid GPG key is required for publishing\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish snapshot wheezy\-main
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBcomponent\fR=
+component name to publish
+.
+.TP
+\-\fBdistribution\fR=
+distribution name to publish
+.
+.TP
+\-\fBgpg\-key\fR=
+GPG key ID to use when signing the release
+.
+.TP
+\-\fBkeyring\fR=
+GPG keyring to use (instead of default)
+.
+.TP
+\-\fBsecret\-keyring\fR=
+GPG secret keyring to use (instead of default)
+.
+.TP
+\-\fBskip\-signing\fR=false
+don\'t sign Release files with GPG
+.
+.SH "LIST OF PUBLISHED REPOSITORIES"
+\fBaptly\fR \fBpublish\fR \fBlist\fR
+.
+.P
+Display list of currently published snapshots\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish list
+.
+.fi
+.
+.IP "" 0
+.
+.SH "REMOVE PUBLISHED REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [\fIprefix\fR]
+.
+.P
+Command removes whatever has been published under specified \fIprefix\fR and \fIdistribution\fR name\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish drop wheezy
+.
+.fi
+.
+.IP "" 0
+.
+.SH "CLEANUP DB AND PACKAGE POOL"
+\fBaptly\fR \fBdb\fR \fBcleanup\fR
+.
+.P
+Database cleanup removes information about unreferenced packages and removes files in the package pool that aren\'t used by packages anymore
+.
+.P
+Example:
+.
+.P
+$ aptly db cleanup
+.
+.SH "HTTP SERVE PUBLISHED REPOSITORIES"
+\fBaptly\fR \fBserve\fR
+.
+.P
+Command serve starts embedded HTTP server (not suitable for real production usage) to serve contents of public/ subdirectory of aptly\'s root that contains published repositories\.
+.
+.P
+Example:
+.
+.P
+$ aptly serve \-listen=:8080
+.
+.P
+Options:
+.
+.TP
+\-\fBlisten\fR=:8080
+host:port for HTTP listening
+.
+.SH "RENDER GRAPH OF RELATIONSHIPS"
+\fBaptly\fR \fBgraph\fR
+.
+.P
+Command graph displays relationship between mirrors, local repositories, snapshots and published repositories using graphviz package to render graph as image\.
+.
+.P
+Example:
+.
+.P
+$ aptly graph
+.
+.SH "ENVIRONMENT"
+If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
+.
+.SH "RETURN VALUES"
+\fBaptly\fR exists with 0 on success and with 1 on failure\.
+.
+.SH "AUTHORS"
+Andrey Smirnov (me@smira\.ru)
