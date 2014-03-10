@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gonuts/commander"
+	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
 	"sort"
@@ -143,4 +144,23 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		context.progress.Printf("Disk space freed: %.2f GiB...\n", float64(totalSize)/1024.0/1024.0/1024.0)
 	}
 	return err
+}
+
+func makeCmdDbCleanup() *commander.Command {
+	cmd := &commander.Command{
+		Run:       aptlyDbCleanup,
+		UsageLine: "cleanup",
+		Short:     "cleanup DB and package pool",
+		Long: `
+Database cleanup removes information about unreferenced packages and removes
+files in the package pool that aren't used by packages anymore
+
+Example:
+
+  $ aptly db cleanup
+`,
+		Flag: *flag.NewFlagSet("aptly-db-cleanup", flag.ExitOnError),
+	}
+
+	return cmd
 }

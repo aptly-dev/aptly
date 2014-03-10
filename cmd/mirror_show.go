@@ -67,17 +67,18 @@ func makeCmdMirrorShow() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorShow,
 		UsageLine: "show <name>",
-		Short:     "show details about remote repository mirror",
+		Short:     "show details about mirror",
 		Long: `
-Show shows full information about mirror.
+Shows detailed information about mirror.
 
-ex:
+Example:
+
   $ aptly mirror show wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
 
-	cmd.Flag.Bool("with-packages", false, "show list of packages")
+	cmd.Flag.Bool("with-packages", false, "show detailed list of packages and versions stored in the mirror")
 
 	return cmd
 }

@@ -54,11 +54,12 @@ func makeCmdPublishList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishList,
 		UsageLine: "list",
-		Short:     "displays list of published repositories",
+		Short:     "list of published repositories",
 		Long: `
-Display command displays list of currently published snapshots with information about published root.
+Display list of currently published snapshots.
 
-ex.
+Example:
+
     $ aptly publish list
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-list", flag.ExitOnError),

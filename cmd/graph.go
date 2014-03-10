@@ -194,12 +194,14 @@ func makeCmdGraph() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyGraph,
 		UsageLine: "graph",
-		Short:     "display graph of dependencies between aptly objects (requires graphviz)",
+		Short:     "render graph of relationships",
 		Long: `
-Command graph displays relationship between mirrors, snapshots and published repositories using
-graphviz package to render graph as image.
+Command graph displays relationship between mirrors, local repositories,
+snapshots and published repositories using graphviz package to render
+graph as image.
 
-ex:
+Example:
+
   $ aptly graph
 `,
 		Flag: *flag.NewFlagSet("aptly-graph", flag.ExitOnError),

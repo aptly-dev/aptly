@@ -170,14 +170,16 @@ func makeCmdSnapshotPull() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotPull,
 		UsageLine: "pull <name> <source> <destination> <package-name> ...",
-		Short:     "performs partial upgrades (pulls new packages) from another snapshot",
+		Short:     "pull packages from another snapshot",
 		Long: `
-Command pull pulls new packages along with its dependencies in <name> snapshot
-from <source> snapshot. Also can upgrade package version from one snapshot into
-another, once again along with dependencies. New snapshot <destination> is created as result of this
-process. Packages could be specified simply as 'package-name' or as dependency 'package-name (>= version)'.
+Command pull pulls new packages along with its dependencies to snapshot <name>
+from snapshot <source>. Pull can upgrade package version in <name> with
+versions from <source> following dependencies. New snapshot <destination>
+is created as result of this process. Packages could be specified simply
+as 'package-name' or as dependency 'package-name (>= version)'.
 
-ex.
+Example:
+
     $ aptly snapshot pull wheezy-main wheezy-backports wheezy-new-xorg xorg-server-server
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-pull", flag.ExitOnError),

@@ -48,11 +48,12 @@ func makeCmdRepoList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoList,
 		UsageLine: "list",
-		Short:     "list local package repositories",
+		Short:     "list local repositories",
 		Long: `
 List shows full list of local package repositories.
 
-ex:
+Example:
+
   $ aptly repo list
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-list", flag.ExitOnError),

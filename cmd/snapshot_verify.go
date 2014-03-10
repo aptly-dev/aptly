@@ -102,12 +102,14 @@ func makeCmdSnapshotVerify() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotVerify,
 		UsageLine: "verify <name> [<source> ...]",
-		Short:     "verifies that dependencies are satisfied in snapshot",
+		Short:     "verify dependencies in snapshot",
 		Long: `
-Verify does depenency resolution in snapshot, possibly using additional snapshots as dependency sources.
-All unsatisfied dependencies are returned.
+Verify does depenency resolution in snapshot <name>, possibly using additional
+snapshots <source> as dependency sources. All unsatisfied dependencies are
+printed.
 
-ex.
+Example:
+
     $ aptly snapshot verify wheezy-main wheezy-contrib wheezy-non-free
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),

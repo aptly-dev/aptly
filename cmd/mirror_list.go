@@ -43,16 +43,16 @@ func makeCmdMirrorList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorList,
 		UsageLine: "list",
-		Short:     "list mirrors of remote repositories",
+		Short:     "list mirrors",
 		Long: `
-List shows full list of remote repositories.
+List shows full list of remote repository mirrors.
 
-ex:
+Example:
+
   $ aptly mirror list
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-list", flag.ExitOnError),
 	}
-	cmd.Flag.Bool("v", false, "enable verbose output")
 
 	return cmd
 }

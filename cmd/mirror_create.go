@@ -63,21 +63,24 @@ func makeCmdMirrorCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorCreate,
 		UsageLine: "create <name> <archive url> <distribution> [<component1> ...]",
-		Short:     "create new mirror of Debian repository",
+		Short:     "create new mirror",
 		Long: `
-Create records information about new mirror and fetches Release file (it doesn't download packages).
+Creates mirror <name> of remote repository, aptly supports both regular and flat Debian repositories exported
+via HTTP. aptly would try download Release file from remote repository and verify its signature.
 
-PPA url could specified in short format when running on Debian/Ubuntu:
-  $ aptly mirror create some_ppa ppa:user/project
+PPA urls could specified in short format:
 
-ex:
+  $ aptly mirror create <name> ppa:<user>/<project>
+
+Example:
+
   $ aptly mirror create wheezy-main http://mirror.yandex.ru/debian/ wheezy main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-create", flag.ExitOnError),
 	}
 
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
-	cmd.Flag.Bool("with-sources", false, "download source packages")
+	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
 	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd

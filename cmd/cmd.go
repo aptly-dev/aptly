@@ -45,7 +45,14 @@ func RootCommand() *commander.Command {
 aptly is a tool to create partial and full mirrors of remote
 repositories, manage local repositories, filter them, merge,
 upgrade individual packages, take snapshots and publish them
-back as Debian repositories.`,
+back as Debian repositories.
+
+aptly goal is to establish repeatiblity and controlled changes
+in package environment. aptly allows to fix set of packages in
+repository, so that package installation and upgrade becomes
+deterministic. At the same time aptly allows to perform controlled,
+fine-grained changes in repository contents to transition your
+package environment to new version.`,
 		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
 			makeCmdDb(),

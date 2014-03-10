@@ -31,17 +31,20 @@ func makeCmdRepoCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoCreate,
 		UsageLine: "create <name>",
-		Short:     "create new local package repository",
+		Short:     "create local repository",
 		Long: `
-Creates new empty local package repository.
+Create local package repository. Repository would be empty when
+created, packages could be added from files, copied or moved from
+another local repository or imported from the mirror.
 
-ex:
+Example:
+
   $ aptly repo create testing
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-create", flag.ExitOnError),
 	}
 
-	cmd.Flag.String("comment", "", "comment for the repository")
+	cmd.Flag.String("comment", "", "any text that would be used to described local repository")
 
 	return cmd
 }

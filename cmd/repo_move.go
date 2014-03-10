@@ -166,12 +166,13 @@ func makeCmdRepoMove() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoMoveCopyImport,
 		UsageLine: "move <src-name> <dst-name> <package-spec> ...",
-		Short:     "move packages between source repos",
+		Short:     "move packages between local repositories",
 		Long: `
 Command move moves packages matching <package-spec> from local repo
 <src-name> to local repo <dst-name>.
 
-ex:
+Example:
+
   $ aptly repo move testing stable 'myapp (=0.1.12)'
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-move", flag.ExitOnError),

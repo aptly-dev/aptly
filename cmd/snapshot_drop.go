@@ -70,7 +70,8 @@ func makeCmdSnapshotDrop() *commander.Command {
 Drop removes information about snapshot. If snapshot is published,
 it can't be dropped.
 
-ex.
+Example:
+
     $ aptly snapshot drop wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-drop", flag.ExitOnError),

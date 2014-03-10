@@ -48,7 +48,8 @@ func makeCmdSnapshotShow() *commander.Command {
 		Long: `
 Command show displays full information about snapshot.
 
-ex.
+Example:
+
     $ aptly snapshot show wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),

@@ -67,11 +67,13 @@ func makeCmdRepoRemove() *commander.Command {
 		UsageLine: "remove <name> <package-spec> ...",
 		Short:     "remove packages from local repository",
 		Long: `
-Commands removes packages matching specs from local repository. If removed
-packages are not referenced by other repos or snapshots, they can be removed
-completely (including files) by running 'aptly db cleanup'.
+Commands removes packages matching <package-spec> from local repository
+<name>. If removed packages are not referenced by other repos or
+snapshots, they can be removed completely (including files) by running
+'aptly db cleanup'.
 
-ex:
+Example:
+
   $ aptly repo remove testing 'myapp (=0.1.12)'
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-add", flag.ExitOnError),

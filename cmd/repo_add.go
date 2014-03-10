@@ -187,12 +187,14 @@ func makeCmdRepoAdd() *commander.Command {
 		UsageLine: "add <name> <package file.deb>|<directory> ...",
 		Short:     "add packages to local repository",
 		Long: `
-Command adds packages to local repository. List of files or directories to be
-scanned could be specified. If importing from directory, all files matching *.deb or *.dsc
-patterns would be scanned and added to the repository. For source packages, all required
-files are added as well automatically.
+Command adds packages to local repository from .deb (binary packages) and .dsc (source packages) files.
+When importing from directory aptly would do recursive scan looking for all files matching *.deb or *.dsc
+patterns. Every file discovered would be analyzed to extract metadata, package would be created and added
+to database. Files would be imported to internal package pool. For source packages, all required files are
+added as well automatically. Extra files for source package should be in the same directory as *.dsc file.
 
-ex:
+Example:
+
   $ aptly repo add testing myapp-0.1.2.deb incoming/
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-add", flag.ExitOnError),

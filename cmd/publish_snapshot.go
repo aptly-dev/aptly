@@ -114,11 +114,14 @@ func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshot,
 		UsageLine: "snapshot <name> [<prefix>]",
-		Short:     "makes Debian repository out of snapshot",
+		Short:     "publish snapshot",
 		Long: `
-Command publish oublishes snapshot as Debian repository ready to be used by apt tools.
+Command publish publishes snapshot as Debian repository ready to be consumed
+by apt tools. Published repostiories appear under rootDir/public directory.
+Valid GPG key is required for publishing.
 
-ex.
+Example:
+
     $ aptly publish snapshot wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-snapshot", flag.ExitOnError),

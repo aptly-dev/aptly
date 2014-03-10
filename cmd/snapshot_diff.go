@@ -95,11 +95,15 @@ func makeCmdSnapshotDiff() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotDiff,
 		UsageLine: "diff <name-a> <name-b>",
-		Short:     "calculates difference in packages between two snapshots",
+		Short:     "difference between two snapshots",
 		Long: `
-Command diff shows list of missing and new packages, difference in package versions between two snapshots.
+Displays difference in packages between two snapshots. Snapshot is a list
+of packages, so difference between snapshots is a difference between package
+lists. Package could be either completely missing in one snapshot, or package
+is present in both snapshots with different versions.
 
-ex.
+Example:
+
     $ aptly snapshot diff -only-matching wheezy-main wheezy-backports
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-diff", flag.ExitOnError),

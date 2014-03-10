@@ -59,11 +59,14 @@ func makeCmdMirrorUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorUpdate,
 		UsageLine: "update <name>",
-		Short:     "update packages from remote mirror",
+		Short:     "update mirror",
 		Long: `
-Update downloads list of packages and package files.
+Updates remote mirror (downloads package files and meta information). When mirror is created,
+this command should be run for the first time to fetch mirror contents. This command could be
+run many times to get updated repository contents. If interrupted, command could be restarted safely.
 
-ex:
+Example:
+
   $ aptly mirror update wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-mirror-update", flag.ExitOnError),

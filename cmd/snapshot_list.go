@@ -46,11 +46,12 @@ func makeCmdSnapshotList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotList,
 		UsageLine: "list",
-		Short:     "lists snapshots",
+		Short:     "list snapshots",
 		Long: `
 Command list shows full list of snapshots created.
 
-ex:
+Example:
+
   $ aptly snapshot list
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-list", flag.ExitOnError),

@@ -60,13 +60,16 @@ func makeCmdSnapshotMerge() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotMerge,
 		UsageLine: "merge <destination> <source> [<source>...]",
-		Short:     "merges snapshots into one, replacing matching packages",
+		Short:     "merges snapshots",
 		Long: `
-Merge merges several snapshots into one. Merge happens from left to right. Packages with the same
-name-architecture pair are replaced during merge (package from latest snapshot on the list wins).
-If run with only one source snapshot, merge copies source into destination.
+Merge merges several <source> snapshots into one <destination> snapshot.
+Merge happens from left to right. Packages with the same name-architecture
+pair are replaced during merge (package from latest snapshot on the list
+wins). If run with only one source snapshot, merge copies <source> into
+<destination>.
 
-ex.
+Example:
+
     $ aptly snapshot merge wheezy-w-backports wheezy-main wheezy-backports
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-merge", flag.ExitOnError),

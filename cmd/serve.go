@@ -95,12 +95,13 @@ func makeCmdServe() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyServe,
 		UsageLine: "serve",
-		Short:     "start embedded HTTP server to serve published repositories",
+		Short:     "HTTP serve published repositories",
 		Long: `
 Command serve starts embedded HTTP server (not suitable for real production usage) to serve
 contents of public/ subdirectory of aptly's root that contains published repositories.
 
-ex:
+Example:
+
   $ aptly serve -listen=:8080
 `,
 		Flag: *flag.NewFlagSet("aptly-serve", flag.ExitOnError),

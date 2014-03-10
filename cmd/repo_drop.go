@@ -51,12 +51,13 @@ func makeCmdRepoDrop() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoDrop,
 		UsageLine: "drop <name>",
-		Short:     "delete local repo",
+		Short:     "delete local repository",
 		Long: `
 Drop deletes information about local repo. Package data is not deleted
 (it could be still used by other mirrors or snapshots).
 
-ex:
+Example:
+
   $ aptly repo drop local-repo
 `,
 		Flag: *flag.NewFlagSet("aptly-repo-drop", flag.ExitOnError),

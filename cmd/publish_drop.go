@@ -37,11 +37,13 @@ func makeCmdPublishDrop() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishDrop,
 		UsageLine: "drop <distribution> [<prefix>]",
-		Short:     "removes files of published repository",
+		Short:     "remove published repository",
 		Long: `
-Command removes whatever has been published under specified prefix and distribution name.
+Command removes whatever has been published under specified <prefix> and
+<distribution> name.
 
-ex.
+Example:
+
     $ aptly publish drop wheezy
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-drop", flag.ExitOnError),

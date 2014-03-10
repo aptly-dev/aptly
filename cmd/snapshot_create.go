@@ -78,19 +78,23 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
-		UsageLine: "create <name> from mirror <mirror-name> | from repo <repo-name> | create <name> empty",
-		Short:     "creates immutable snapshot of mirror (local repo) contents",
+		UsageLine: "create <name> from mirror <mirror-name> | from repo <repo-name> | empty",
+		Short:     "creates snapshot of mirror (local repository) contents",
 		Long: `
-Command create .. from mirror makes persistent immutable snapshot of remote repository mirror. Snapshot could be
-published or further modified using merge, pull and other aptly features.
+Command create <name> from mirror makes persistent immutable snapshot of remote
+repository mirror. Snapshot could be published or further modified using
+merge, pull and other aptly features.
 
-Command create .. from repo makes persistent immutable snapshot of local repository. Snapshot could be processed
-as mirror snapshots, and mixed with snapshots of remote mirrors.
+Command create <name> from repo makes persistent immutable snapshot of local
+repository. Snapshot could be processed as mirror snapshots, and mixed with
+snapshots of remote mirrors.
 
-Command create .. empty creates empty snapshot that could be used as a basis for snapshot pull operations, for example.
-As snapshots are immutable, creating one empty snapshot should be enough.
+Command create <name> empty creates empty snapshot that could be used as a
+basis for snapshot pull operations, for example. As snapshots are immutable,
+creating one empty snapshot should be enough.
 
-ex.
+Example:
+
   $ aptly snapshot create wheezy-main-today from mirror wheezy-main
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-create", flag.ExitOnError),
