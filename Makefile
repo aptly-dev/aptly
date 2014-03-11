@@ -1,7 +1,7 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 PACKAGES=database debian files http utils
 ALL_PACKAGES=aptly cmd console database debian files http utils
-BINPATH=$(abspath ./bin)
+BINPATH=$(abspath ./_vendor/bin)
 GOM_ENVIRONMENT=-test
 
 ifeq ($(GOVERSION), devel)
@@ -20,8 +20,7 @@ endif
 all: test check system-test
 
 prepare:
-	mkdir -p $(BINPATH)
-	go get github.com/mattn/gom
+	go get -u github.com/mattn/gom
 	$(GOM) $(GOM_ENVIRONMENT) install
 
 coverage.out:
@@ -36,11 +35,11 @@ coverage: coverage.out
 	rm -f coverage.out
 
 check:
-	$(GOM) exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
+	$(GOM) exec go tool vet -all=true -shadow=true $(ALL_PACKAGES:%=./%)
 	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
 
 system-test:
-ifeq ($(GOVERSION),$(filter $(GOVERSION),go1.2 devel))
+ifeq ($(GOVERSION),$(filter $(GOVERSION),go1.2 go1.2.1 devel))
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 endif
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
@@ -50,11 +49,10 @@ endif
 travis: $(TRAVIS_TARGET) system-test
 
 test:
-	$(GOM) test -v $(PACKAGES:%=./%) -gocheck.v=true
+	$(GOM) test -v ./... -gocheck.v=true
 
 coveralls: coverage.out
-	$(GOM) build -o $(BINPATH)/goveralls github.com/mattn/goveralls
-	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken $(COVERALLS_TOKEN)
+	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken=$(COVERALLS_TOKEN)
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp

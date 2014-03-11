@@ -27,8 +27,7 @@ coverage*.out
 
 *.pyc
 
-vendor/
-bin/
+_vendor/
 
 gen
 man/aptly.1.html
