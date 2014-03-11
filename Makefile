@@ -3,6 +3,7 @@ PACKAGES=database debian files http utils
 ALL_PACKAGES=aptly cmd console database debian files http utils
 BINPATH=$(abspath ./_vendor/bin)
 GOM_ENVIRONMENT=-test
+PYTHON?=python
 
 ifeq ($(GOVERSION), devel)
 TRAVIS_TARGET=coveralls
@@ -38,13 +39,15 @@ check:
 	$(GOM) exec go tool vet -all=true -shadow=true $(ALL_PACKAGES:%=./%)
 	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
 
-system-test:
+install:
+	$(GOM) build -o $(BINPATH)/aptly
+
+system-test: install
 ifeq ($(GOVERSION),$(filter $(GOVERSION),go1.2 go1.2.1 devel))
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 endif
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	$(GOM) build -o $(BINPATH)/aptly
-	PATH=$(BINPATH)/:$(PATH) python system/run.py --long
+	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long
 
 travis: $(TRAVIS_TARGET) system-test
 
