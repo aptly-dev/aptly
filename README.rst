@@ -32,6 +32,23 @@ Current limitations:
 Download
 --------
 
+To install aptly on Debian/Ubuntu, add new repository to /etc/apt/sources.list::
+
+    deb http://repo.aptly.info/ squeeze main
+
+And import key that is used to sign the release::
+
+    $ gpg --keyserver keys.gnupg.net --recv-keys 2A194991
+    $ gpg -a --export 2A194991 | sudo apt-key add -
+
+After that you can install aptly as any other software package::
+
+    $ apt-get update
+    $ apt-get install aptly
+
+Don't worry about squeeze part in repo name: aptly package should work on Debian squeeze+,
+Ubuntu 10.0+. Package contains aptly binary, man page and bash completion.
+
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
 If you have Go environment set up, you can build aptly from source by running (go 1.1+ required)::
