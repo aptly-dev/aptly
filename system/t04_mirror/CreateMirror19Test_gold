@@ -1,0 +1,6 @@
+Downloading http://security.debian.org/dists/wheezy/updates/InRelease...
+gpgv:  RSA key ID 46925553
+gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
+
+Mirror [mirror19]: http://security.debian.org/ wheezy/updates [src] successfully added.
+You can run 'aptly mirror update mirror19' to download repository contents.

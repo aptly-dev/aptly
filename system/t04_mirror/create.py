@@ -207,3 +207,20 @@ class CreateMirror18Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror18", "mirror_show")
+
+
+class CreateMirror19Test(BaseTest):
+    """
+    create mirror: mirror with / in components
+    """
+    fixtureGpg = True
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    runCmd = "aptly -architectures='i386' mirror create -with-sources mirror19 http://security.debian.org/ wheezy/updates main"
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror19", "mirror_show", match_prepare=removeDates)

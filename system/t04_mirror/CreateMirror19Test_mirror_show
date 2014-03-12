@@ -1,0 +1,20 @@
+Name: mirror19
+Archive Root URL: http://security.debian.org/
+Distribution: wheezy/updates
+Components: main
+Architectures: i386
+Download Sources: yes
+Last update: never
+
+Information from release file:
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
+Codename: wheezy
+Components: updates/main updates/contrib updates/non-free
+Date: Tue, 11 Mar 2014 21:11:28 UTC
+Description:  Debian 7.0 Security Updates
+
+Label: Debian-Security
+Origin: Debian
+Suite: stable
+Valid-Until: Fri, 21 Mar 2014 21:11:28 UTC
+Version: 7.0
