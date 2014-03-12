@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -246,6 +247,9 @@ ok:
 		}
 
 		components := strings.Split(stanza["Components"], " ")
+		for i := range components {
+			components[i] = path.Base(components[i])
+		}
 		if len(repo.Components) == 0 {
 			repo.Components = components
 		} else {
