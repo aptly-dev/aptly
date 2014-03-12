@@ -60,7 +60,9 @@ func main() {
 		if errorMessage != "" {
 			fmt.Print(errorMessage)
 		}
-		os.Exit(returnCode)
+		if returnCode != 0 {
+			os.Exit(returnCode)
+		}
 	}()
 
 	command := cmd.RootCommand()
