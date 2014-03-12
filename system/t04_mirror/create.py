@@ -216,7 +216,7 @@ class CreateMirror19Test(BaseTest):
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
-    runCmd = "aptly -architectures='i386' mirror create -with-sources mirror19 http://security.debian.org/ wheezy/updates main"
+    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://security.debian.org/ wheezy/updates main"
 
     def check(self):
         def removeDates(s):
