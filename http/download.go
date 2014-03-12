@@ -218,18 +218,16 @@ func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected 
 
 	if expected.Size != -1 && downloader.GetProgress() != nil {
 		downloader.GetProgress().InitBar(expected.Size, true)
+		defer downloader.GetProgress().ShutdownBar()
 	}
 
 	ch := make(chan error, 1)
 	downloader.DownloadWithChecksum(url, tempfile, ch, expected, ignoreMismatch)
 
 	err = <-ch
+
 	if err != nil {
 		return nil, err
-	}
-
-	if expected.Size != -1 && downloader.GetProgress() != nil {
-		downloader.GetProgress().ShutdownBar()
 	}
 
 	file, err := os.Open(tempfile)
