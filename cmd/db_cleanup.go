@@ -143,6 +143,10 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 		context.progress.Printf("Disk space freed: %.2f GiB...\n", float64(totalSize)/1024.0/1024.0/1024.0)
 	}
+
+	context.progress.Printf("Compacting database...\n")
+	err = context.database.CompactDB()
+
 	return err
 }
 

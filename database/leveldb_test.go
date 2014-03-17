@@ -122,3 +122,11 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 	s.db.StartBatch()
 	c.Check(func() { s.db.StartBatch() }, Panics, "batch already started")
 }
+
+func (s *LevelDBSuite) TestCompactDB(c *C) {
+	s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
+	s.db.Put([]byte{0x80, 0x03}, []byte{0x03})
+	s.db.Put([]byte{0x80, 0x02}, []byte{0x02})
+
+	c.Check(s.db.CompactDB(), IsNil)
+}

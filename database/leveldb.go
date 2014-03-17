@@ -7,6 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 // Errors for Storage
@@ -24,6 +25,7 @@ type Storage interface {
 	Close() error
 	StartBatch()
 	FinishBatch() error
+	CompactDB() error
 }
 
 type levelDB struct {
@@ -49,6 +51,7 @@ func OpenDB(path string) (Storage, error) {
 	return &levelDB{db: db}, nil
 }
 
+// Get key value from database
 func (l *levelDB) Get(key []byte) ([]byte, error) {
 	value, err := l.db.Get(key, nil)
 	if err != nil {
@@ -61,6 +64,7 @@ func (l *levelDB) Get(key []byte) ([]byte, error) {
 	return value, nil
 }
 
+// Put saves key to database, if key has the same value in DB already, it is not saved
 func (l *levelDB) Put(key []byte, value []byte) error {
 	if l.batch != nil {
 		l.batch.Put(key, value)
@@ -79,6 +83,7 @@ func (l *levelDB) Put(key []byte, value []byte) error {
 	return l.db.Put(key, value, nil)
 }
 
+// Delete removes key from DB
 func (l *levelDB) Delete(key []byte) error {
 	if l.batch != nil {
 		l.batch.Delete(key)
@@ -87,6 +92,7 @@ func (l *levelDB) Delete(key []byte) error {
 	return l.db.Delete(key, nil)
 }
 
+// KeysByPrefix returns all keys that start with prefix
 func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
 
@@ -103,6 +109,7 @@ func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	return result
 }
 
+// FetchByPrefix returns all values with keys that start with prefix
 func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
 
@@ -119,10 +126,14 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 	return result
 }
 
+// Close finishes DB work
 func (l *levelDB) Close() error {
 	return l.db.Close()
 }
 
+// StartBatch starts batch processing of keys
+//
+// All subsequent Get, Put and Delete would work on batch
 func (l *levelDB) StartBatch() {
 	if l.batch != nil {
 		panic("batch already started")
@@ -130,6 +141,7 @@ func (l *levelDB) StartBatch() {
 	l.batch = new(leveldb.Batch)
 }
 
+// FinishBatch finalizes the batch, saving operations
 func (l *levelDB) FinishBatch() error {
 	if l.batch == nil {
 		panic("no batch")
@@ -137,4 +149,9 @@ func (l *levelDB) FinishBatch() error {
 	err := l.db.Write(l.batch, nil)
 	l.batch = nil
 	return err
+}
+
+// CompactDB compacts database by merging layers
+func (l *levelDB) CompactDB() error {
+	return l.db.CompactRange(util.Range{})
 }
