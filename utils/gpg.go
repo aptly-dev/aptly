@@ -89,6 +89,9 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--detach-sign", source)
 	cmd := exec.Command("gpg", args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
@@ -99,6 +102,9 @@ func (g *GpgSigner) ClearSign(source string, destination string) error {
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--clearsign", source)
 	cmd := exec.Command("gpg", args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
