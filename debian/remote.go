@@ -421,7 +421,7 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 	// free up package list, we don't need it after this point
 	list = nil
 
-	progress.Printf("Download queue: %d items, %.2f GiB size\n", count, float64(downloadSize)/(1024.0*1024.0*1024.0))
+	progress.Printf("Download queue: %d items (%s)\n", count, utils.HumanBytes(downloadSize))
 
 	progress.InitBar(downloadSize, true)
 
