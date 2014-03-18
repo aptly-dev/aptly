@@ -25,6 +25,7 @@ var context struct {
 	database          database.Storage
 	packagePool       aptly.PackagePool
 	publishedStorage  aptly.PublishedStorage
+	collectionFactory *debian.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
 	// Debug features
@@ -66,6 +67,8 @@ func InitContext(cmd *commander.Command) error {
 	if err != nil {
 		return fmt.Errorf("can't open database: %s", err)
 	}
+
+	context.collectionFactory = debian.NewCollectionFactory(context.database)
 
 	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
 	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
