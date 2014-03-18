@@ -96,3 +96,14 @@ class CreateSnapshot8Test(BaseTest):
     ]
     runCmd = "aptly snapshot create snap8 from repo local-repo"
     expectedCode = 1
+
+
+class CreateSnapshot9Test(BaseTest):
+    """
+    create snapshot: from empty repo
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+    ]
+    runCmd = "aptly snapshot create snap9 from repo local-repo"
+    expectedCode = 1
