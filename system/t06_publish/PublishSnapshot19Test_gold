@@ -1,0 +1,10 @@
+Loading packages...
+Generating metadata files and linking package files...
+
+Snapshot snap5 has been successfully published.
+Please setup your webserver to serve directory '${HOME}/.aptly/public' with autoindexing.
+Now you can add following line to apt sources:
+  deb http://your-server/ maverick main
+Don't forget to add your GPG key to apt with apt-key.
+
+You can also use `aptly serve` to publish your repositories over HTTP quickly.

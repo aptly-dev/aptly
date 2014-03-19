@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
@@ -16,19 +15,17 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	snapshot, err := snapshotCollection.ByName(name)
+	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	publishedRepoCollection := debian.NewPublishedRepoCollection(context.database)
-	published := publishedRepoCollection.BySnapshot(snapshot)
+	published := context.collectionFactory.PublishedRepoCollection().BySnapshot(snapshot)
 
 	if len(published) > 0 {
 		fmt.Printf("Snapshot `%s` is published currently:\n", snapshot.Name)
 		for _, repo := range published {
-			err = publishedRepoCollection.LoadComplete(repo, snapshotCollection)
+			err = context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
 			if err != nil {
 				return fmt.Errorf("unable to load published: %s", err)
 			}
@@ -40,7 +37,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 
 	force := cmd.Flag.Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshots := snapshotCollection.BySnapshotSource(snapshot)
+		snapshots := context.collectionFactory.SnapshotCollection().BySnapshotSource(snapshot)
 		if len(snapshots) > 0 {
 			fmt.Printf("Snapshot `%s` was used as a source in following snapshots:\n", snapshot.Name)
 			for _, snap := range snapshots {
@@ -51,7 +48,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = snapshotCollection.Drop(snapshot)
+	err = context.collectionFactory.SnapshotCollection().Drop(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

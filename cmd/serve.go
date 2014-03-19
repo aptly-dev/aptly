@@ -15,10 +15,7 @@ import (
 func aptlyServe(cmd *commander.Command, args []string) error {
 	var err error
 
-	publishedCollection := debian.NewPublishedRepoCollection(context.database)
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-
-	if publishedCollection.Len() == 0 {
+	if context.collectionFactory.PublishedRepoCollection().Len() == 0 {
 		fmt.Printf("No published repositories, unable to serve.\n")
 		return nil
 	}
@@ -40,11 +37,11 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Serving published repositories, recommended apt sources list:\n\n")
 
-	sources := make(sort.StringSlice, 0, publishedCollection.Len())
-	published := make(map[string]*debian.PublishedRepo, publishedCollection.Len())
+	sources := make(sort.StringSlice, 0, context.collectionFactory.PublishedRepoCollection().Len())
+	published := make(map[string]*debian.PublishedRepo, context.collectionFactory.PublishedRepoCollection().Len())
 
-	err = publishedCollection.ForEach(func(repo *debian.PublishedRepo) error {
-		err := publishedCollection.LoadComplete(repo, snapshotCollection)
+	err = context.collectionFactory.PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
+		err := context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
 		if err != nil {
 			return err
 		}

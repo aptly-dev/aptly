@@ -210,7 +210,8 @@ class PublishSnapshot6Test(BaseTest):
     fixtureDB = True
     fixtureCmds = [
         "aptly snapshot create snap from mirror gnuplot-maverick",
-        "aptly snapshot merge snap6 snap"
+        "aptly snapshot create snap2 from mirror wheezy-main",
+        "aptly snapshot merge snap6 snap2 snap"
     ]
     runCmd = "aptly publish snapshot snap6"
     expectedCode = 1
@@ -451,3 +452,34 @@ class PublishSnapshot17Test(BaseTest):
         self.run_cmd(["gpg",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+
+class PublishSnapshot18Test(BaseTest):
+    """
+    publish snapshot: specify distribution from local repo
+    """
+    fixtureCmds = [
+        "aptly repo create repo1",
+        "aptly repo add repo1 ${files}",
+        "aptly snapshot create snap1 from repo repo1",
+    ]
+    runCmd = "aptly publish snapshot snap1"
+    expectedCode = 1
+
+
+class PublishSnapshot19Test(BaseTest):
+    """
+    publish snapshot: guess distribution from long chain
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 from mirror gnuplot-maverick",
+        "aptly snapshot create snap3 from mirror gnuplot-maverick",
+        "aptly snapshot merge snap4 snap1 snap2",
+        "aptly snapshot pull snap4 snap1 snap5 gnuplot",
+
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap5"
+    gold_processor = BaseTest.expand_environ

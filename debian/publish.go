@@ -26,14 +26,44 @@ type PublishedRepo struct {
 	Component    string
 	// Architectures is a list of all architectures published
 	Architectures []string
-	// Snapshot as a source of publishing
-	SnapshotUUID string
+	// SourceKind is "local"/"repo"
+	SourceKind string
+	// SourceUUID is UUID of either snapshot or local repo
+	SourceUUID string `codec:"SnapshotUUID"`
 
-	snapshot *Snapshot
+	snapshot  *Snapshot
+	localRepo *LocalRepo
 }
 
 // NewPublishedRepo creates new published repository
-func NewPublishedRepo(prefix string, distribution string, component string, architectures []string, snapshot *Snapshot) (*PublishedRepo, error) {
+//
+// prefix specifies publishing prefix
+// distribution, component and architectures are user-defined properties
+// source could either be *Snapshot or *LocalRepo
+func NewPublishedRepo(prefix string, distribution string, component string, architectures []string, source interface{}, collectionFactory *CollectionFactory) (*PublishedRepo, error) {
+	var ok bool
+
+	result := &PublishedRepo{
+		UUID:          uuid.New(),
+		Architectures: architectures,
+	}
+
+	// figure out source
+	result.snapshot, ok = source.(*Snapshot)
+	if ok {
+		result.SourceKind = "snapshot"
+		result.SourceUUID = result.snapshot.UUID
+	} else {
+		result.localRepo, ok = source.(*LocalRepo)
+		if ok {
+			result.SourceKind = "local"
+			result.SourceUUID = result.localRepo.UUID
+		} else {
+			panic("unknown source kind")
+		}
+	}
+
+	// clean & verify prefix
 	prefix = filepath.Clean(prefix)
 	if strings.HasPrefix(prefix, "/") {
 		prefix = prefix[1:]
@@ -43,32 +73,104 @@ func NewPublishedRepo(prefix string, distribution string, component string, arch
 	}
 	prefix = filepath.Clean(prefix)
 
-	for _, component := range strings.Split(prefix, "/") {
-		if component == ".." || component == "dists" || component == "pool" {
+	for _, part := range strings.Split(prefix, "/") {
+		if part == ".." || part == "dists" || part == "pool" {
 			return nil, fmt.Errorf("invalid prefix %s", prefix)
 		}
 	}
 
-	return &PublishedRepo{
-		UUID:          uuid.New(),
-		Prefix:        prefix,
-		Distribution:  distribution,
-		Component:     component,
-		Architectures: architectures,
-		SnapshotUUID:  snapshot.UUID,
-		snapshot:      snapshot,
-	}, nil
+	result.Prefix = prefix
+
+	// guessing distribution & component
+	if component == "" || distribution == "" {
+		var (
+			head              interface{}
+			current           = []interface{}{source}
+			rootComponents    = []string{}
+			rootDistributions = []string{}
+		)
+
+		// walk up the tree from current source up to roots (local or remote repos)
+		// and collect information about distribution and components
+		for len(current) > 0 {
+			head, current = current[0], current[1:]
+
+			if snapshot, ok := head.(*Snapshot); ok {
+				for _, uuid := range snapshot.SourceIDs {
+					if snapshot.SourceKind == "repo" {
+						remoteRepo, err := collectionFactory.RemoteRepoCollection().ByUUID(uuid)
+						if err != nil {
+							continue
+						}
+						current = append(current, remoteRepo)
+					} else if snapshot.SourceKind == "local" {
+						localRepo, err := collectionFactory.LocalRepoCollection().ByUUID(uuid)
+						if err != nil {
+							continue
+						}
+						current = append(current, localRepo)
+					} else if snapshot.SourceKind == "snapshot" {
+						snap, err := collectionFactory.SnapshotCollection().ByUUID(uuid)
+						if err != nil {
+							continue
+						}
+						current = append(current, snap)
+					}
+				}
+			} else if localRepo, ok := head.(*LocalRepo); ok {
+				if localRepo.DefaultDistribution != "" {
+					rootDistributions = append(rootDistributions, localRepo.DefaultDistribution)
+				}
+				if localRepo.DefaultComponent != "" {
+					rootComponents = append(rootComponents, localRepo.DefaultComponent)
+				}
+			} else if remoteRepo, ok := head.(*RemoteRepo); ok {
+				if remoteRepo.Distribution != "" {
+					rootDistributions = append(rootDistributions, remoteRepo.Distribution)
+				}
+				rootComponents = append(rootComponents, remoteRepo.Components...)
+			} else {
+				panic("unknown type")
+			}
+		}
+
+		if distribution == "" {
+			sort.Strings(rootDistributions)
+			if len(rootDistributions) > 0 && rootDistributions[0] == rootDistributions[len(rootDistributions)-1] {
+				distribution = rootDistributions[0]
+			} else {
+				return nil, fmt.Errorf("unable to guess distribution name, please specify explicitly")
+			}
+		}
+
+		if component == "" {
+			sort.Strings(rootComponents)
+			if len(rootComponents) > 0 && rootComponents[0] == rootComponents[len(rootComponents)-1] {
+				component = rootComponents[0]
+			} else {
+				component = "main"
+			}
+		}
+	}
+
+	result.Distribution, result.Component = distribution, component
+
+	return result, nil
 }
 
 // String returns human-readable represenation of PublishedRepo
 func (p *PublishedRepo) String() string {
-	var archs string
+	var source string
 
-	if len(p.Architectures) > 0 {
-		archs = fmt.Sprintf(" [%s]", strings.Join(p.Architectures, ", "))
+	if p.snapshot != nil {
+		source = p.snapshot.String()
+	} else if p.localRepo != nil {
+		source = p.localRepo.String()
+	} else {
+		panic("no snapshot/localRepo")
 	}
 
-	return fmt.Sprintf("%s/%s (%s)%s publishes %s", p.Prefix, p.Distribution, p.Component, archs, p.snapshot.String())
+	return fmt.Sprintf("%s/%s (%s) [%s] publishes %s", p.Prefix, p.Distribution, p.Component, strings.Join(p.Architectures, ", "), source)
 }
 
 // Key returns unique key identifying PublishedRepo
@@ -89,11 +191,21 @@ func (p *PublishedRepo) Encode() []byte {
 // Decode decodes msgpack representation into PublishedRepo
 func (p *PublishedRepo) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
-	return decoder.Decode(p)
+	err := decoder.Decode(p)
+	if err != nil {
+		return err
+	}
+
+	// old PublishedRepo were publishing only snapshots
+	if p.SourceKind == "" {
+		p.SourceKind = "snapshot"
+	}
+
+	return nil
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
-func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, packageCollection *PackageCollection, signer utils.Signer, progress aptly.Progress) error {
+func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
@@ -108,8 +220,18 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		progress.Printf("Loading packages...\n")
 	}
 
+	var refList *PackageRefList
+
+	if p.snapshot != nil {
+		refList = p.snapshot.RefList()
+	} else if p.localRepo != nil {
+		refList = p.localRepo.RefList()
+	} else {
+		panic("no source")
+	}
+
 	// Load all packages
-	list, err := NewPackageListFromRefList(p.snapshot.RefList(), packageCollection, progress)
+	list, err := NewPackageListFromRefList(refList, collectionFactory.PackageCollection(), progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -373,14 +495,18 @@ func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
 }
 
 // LoadComplete loads additional information for remote repo
-func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, snapshotCollection *SnapshotCollection) error {
-	snapshot, err := snapshotCollection.ByUUID(repo.SnapshotUUID)
-	if err != nil {
-		return err
+func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) error {
+	var err error
+
+	if repo.SourceKind == "snapshot" {
+		repo.snapshot, err = collectionFactory.SnapshotCollection().ByUUID(repo.SourceUUID)
+	} else if repo.SourceKind == "local" {
+		repo.localRepo, err = collectionFactory.LocalRepoCollection().ByUUID(repo.SourceUUID)
+	} else {
+		panic("unknown SourceKind")
 	}
 
-	repo.snapshot = snapshot
-	return nil
+	return err
 }
 
 // ByPrefixDistribution looks up repository by prefix & distribution
@@ -407,7 +533,18 @@ func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, 
 func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*PublishedRepo {
 	result := make([]*PublishedRepo, 0)
 	for _, r := range collection.list {
-		if r.SnapshotUUID == snapshot.UUID {
+		if r.SourceKind == "snapshot" && r.SourceUUID == snapshot.UUID {
+			result = append(result, r)
+		}
+	}
+	return result
+}
+
+// ByLocalRepo looks up repository by local repo source
+func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*PublishedRepo {
+	result := make([]*PublishedRepo, 0)
+	for _, r := range collection.list {
+		if r.SourceKind == "local" && r.SourceUUID == repo.UUID {
 			result = append(result, r)
 		}
 	}

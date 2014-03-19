@@ -132,9 +132,9 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			"label":     graphvizEscape(fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution, repo.Component, strings.Join(repo.Architectures, ", "))),
 		})
 
-		_, exists := existingNodes[repo.SnapshotUUID]
+		_, exists := existingNodes[repo.SourceUUID]
 		if exists {
-			graph.AddEdge(graphvizEscape(repo.SnapshotUUID), "", graphvizEscape(repo.UUID), "", true, nil)
+			graph.AddEdge(graphvizEscape(repo.SourceUUID), "", graphvizEscape(repo.UUID), "", true, nil)
 		}
 
 		return nil

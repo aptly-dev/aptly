@@ -25,55 +25,27 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		prefix = ""
 	}
 
-	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
-
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	snapshot, err := snapshotCollection.ByName(name)
+	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(snapshot)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
-	}
-
-	var sourceRepo *debian.RemoteRepo
-
-	if snapshot.SourceKind == "repo" && len(snapshot.SourceIDs) == 1 {
-		repoCollection := debian.NewRemoteRepoCollection(context.database)
-
-		sourceRepo, _ = repoCollection.ByUUID(snapshot.SourceIDs[0])
 	}
 
 	component := cmd.Flag.Lookup("component").Value.String()
-	if component == "" {
-		if sourceRepo != nil && len(sourceRepo.Components) == 1 {
-			component = sourceRepo.Components[0]
-		} else {
-			component = "main"
-		}
-	}
-
 	distribution := cmd.Flag.Lookup("distribution").Value.String()
-	if distribution == "" {
-		if sourceRepo != nil {
-			distribution = sourceRepo.Distribution
-		}
 
-		if distribution == "" {
-			return fmt.Errorf("unable to guess distribution name, please specify explicitly")
-		}
-	}
-
-	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot)
+	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot, context.collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	duplicate := publishedCollecton.CheckDuplicate(published)
+	duplicate := context.collectionFactory.PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
-		publishedCollecton.LoadComplete(duplicate, snapshotCollection)
+		context.collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, context.collectionFactory)
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 	}
 
@@ -82,18 +54,20 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	packageCollection := debian.NewPackageCollection(context.database)
-	err = published.Publish(context.packagePool, context.publishedStorage, packageCollection, signer, context.progress)
+	err = published.Publish(context.packagePool, context.publishedStorage, context.collectionFactory, signer, context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	err = publishedCollecton.Add(published)
+	err = context.collectionFactory.PublishedRepoCollection().Add(published)
 	if err != nil {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+	prefix, component, distribution = published.Prefix, published.Component, published.Distribution
+	if prefix == "." {
+		prefix = ""
+	} else if !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
 	}
 
