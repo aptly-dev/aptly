@@ -17,6 +17,10 @@ type LocalRepo struct {
 	Name string
 	// Comment
 	Comment string
+	// DefaultDistribution
+	DefaultDistribution string `codec:",omitempty"`
+	// DefaultComponent
+	DefaultComponent string `codec:",omitempty"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 }
