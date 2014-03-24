@@ -22,9 +22,9 @@ func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
 	packageCollection := debian.NewPackageCollection(context.database)
 
 	err = reflist.ForEach(func(key []byte) error {
-		p, err := packageCollection.ByKey(key)
-		if err != nil {
-			return err
+		p, err2 := packageCollection.ByKey(key)
+		if err2 != nil {
+			return err2
 		}
 		fmt.Printf("  %s\n", p)
 		return nil

@@ -45,15 +45,15 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	packageFiles := []string{}
 
 	for _, location := range args[1:] {
-		info, err := os.Stat(location)
-		if err != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err)
+		info, err2 := os.Stat(location)
+		if err2 != nil {
+			context.progress.ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err2)
 			continue
 		}
 		if info.IsDir() {
-			err = filepath.Walk(location, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
+			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
+				if err3 != nil {
+					return err3
 				}
 				if info.IsDir() {
 					return nil
@@ -81,7 +81,6 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	for _, file := range packageFiles {
 		var (
 			stanza debian.Stanza
-			err    error
 			p      *debian.Package
 		)
 
@@ -106,7 +105,8 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		checksums, err := utils.ChecksumsForFile(file)
+		var checksums utils.ChecksumInfo
+		checksums, err = utils.ChecksumsForFile(file)
 		if err != nil {
 			return err
 		}

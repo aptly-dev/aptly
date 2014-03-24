@@ -51,23 +51,24 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 		srcRefList = srcRepo.RefList()
 	} else if command == "import" {
+		var srcRemoteRepo *debian.RemoteRepo
 		repoCollection := debian.NewRemoteRepoCollection(context.database)
 
-		srcRepo, err := repoCollection.ByName(args[0])
+		srcRemoteRepo, err = repoCollection.ByName(args[0])
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
 
-		err = repoCollection.LoadComplete(srcRepo)
+		err = repoCollection.LoadComplete(srcRemoteRepo)
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
 
-		if srcRepo.RefList() == nil {
+		if srcRemoteRepo.RefList() == nil {
 			return fmt.Errorf("unable to %s: mirror not updated", command)
 		}
 
-		srcRefList = srcRepo.RefList()
+		srcRefList = srcRemoteRepo.RefList()
 	} else {
 		panic("unexpected command")
 	}

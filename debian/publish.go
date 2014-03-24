@@ -10,6 +10,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -273,7 +274,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 			return err
 		}
 
-		packagesFile, err := publishedStorage.CreateFile(filepath.Join(basePath, relativePath))
+		var packagesFile *os.File
+		packagesFile, err = publishedStorage.CreateFile(filepath.Join(basePath, relativePath))
 		if err != nil {
 			return fmt.Errorf("unable to creates Packages file: %s", err)
 		}
@@ -324,7 +326,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 
 		packagesFile.Close()
 
-		checksumInfo, err := publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath))
+		var checksumInfo utils.ChecksumInfo
+		checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath))
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}

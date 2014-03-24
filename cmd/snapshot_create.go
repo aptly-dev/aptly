@@ -15,10 +15,12 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 
 	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" {
 		// aptly snapshot create snap from mirror mirror
+		var repo *debian.RemoteRepo
+
 		repoName, snapshotName := args[3], args[0]
 
 		repoCollection := debian.NewRemoteRepoCollection(context.database)
-		repo, err := repoCollection.ByName(repoName)
+		repo, err = repoCollection.ByName(repoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -34,10 +36,12 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		}
 	} else if len(args) == 4 && args[1] == "from" && args[2] == "repo" {
 		// aptly snapshot create snap from repo repo
+		var repo *debian.LocalRepo
+
 		localRepoName, snapshotName := args[3], args[0]
 
 		localRepoCollection := debian.NewLocalRepoCollection(context.database)
-		repo, err := localRepoCollection.ByName(localRepoName)
+		repo, err = localRepoCollection.ByName(localRepoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}

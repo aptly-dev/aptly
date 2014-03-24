@@ -94,13 +94,13 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	context.progress.InitBar(int64(existingPackageRefs.Len()), false)
 
 	err = existingPackageRefs.ForEach(func(key []byte) error {
-		pkg, err := packageCollection.ByKey(key)
-		if err != nil {
-			return err
+		pkg, err2 := packageCollection.ByKey(key)
+		if err2 != nil {
+			return err2
 		}
-		paths, err := pkg.FilepathList(context.packagePool)
-		if err != nil {
-			return err
+		paths, err2 := pkg.FilepathList(context.packagePool)
+		if err2 != nil {
+			return err2
 		}
 		referencedFiles = append(referencedFiles, paths...)
 		context.progress.AddBar(1)

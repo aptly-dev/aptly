@@ -63,9 +63,9 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 	}
 
 	err := reflist.ForEach(func(key []byte) error {
-		p, err := collection.ByKey(key)
-		if err != nil {
-			return fmt.Errorf("unable to load package with key %s: %s", key, err)
+		p, err2 := collection.ByKey(key)
+		if err2 != nil {
+			return fmt.Errorf("unable to load package with key %s: %s", key, err2)
 		}
 		if progress != nil {
 			progress.AddBar(1)

@@ -170,8 +170,8 @@ func (repo *RemoteRepo) PackageURL(filename string) *url.URL {
 // Fetch updates information about repository
 func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error {
 	var (
-		release *os.File
-		err     error
+		release, inrelease, releasesig *os.File
+		err                            error
 	)
 
 	if verifier == nil {
@@ -182,7 +182,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error
 		}
 	} else {
 		// 1. try InRelease file
-		inrelease, err := http.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
+		inrelease, err = http.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
 		if err != nil {
 			goto splitsignature
 		}
@@ -209,7 +209,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error
 			return err
 		}
 
-		releasesig, err := http.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
+		releasesig, err = http.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
 		if err != nil {
 			return err
 		}
@@ -275,7 +275,8 @@ ok:
 				return fmt.Errorf("unparseable hash sum line: %#v", line)
 			}
 
-			size, err := strconv.ParseInt(parts[1], 10, 64)
+			var size int64
+			size, err = strconv.ParseInt(parts[1], 10, 64)
 			if err != nil {
 				return fmt.Errorf("unable to parse size: %s", err)
 			}
@@ -395,9 +396,9 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 	downloadSize := int64(0)
 
 	err := list.ForEach(func(p *Package) error {
-		list, err := p.DownloadList(packagePool)
-		if err != nil {
-			return err
+		list, err2 := p.DownloadList(packagePool)
+		if err2 != nil {
+			return err2
 		}
 		p.files = nil
 

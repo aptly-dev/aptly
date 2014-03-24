@@ -44,8 +44,9 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		fmt.Errorf("unable to merge sources: %s", err)
 	}
 
+	var pL *debian.PackageList
 	for i := 1; i < len(snapshots); i++ {
-		pL, err := debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection, context.progress)
+		pL, err = debian.NewPackageListFromRefList(snapshots[i].RefList(), packageCollection, context.progress)
 		if err != nil {
 			fmt.Errorf("unable to load packages: %s", err)
 		}
