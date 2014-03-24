@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Convert bytes to human readable string
+// HumanBytes converts bytes to human readable string
 func HumanBytes(i int64) (result string) {
 	switch {
 	case i > (512 * 1024 * 1024 * 1024):
