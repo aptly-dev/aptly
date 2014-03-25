@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
@@ -16,16 +15,14 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	repo, err := repoCollection.ByName(name)
+	repo, err := context.collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
 	force := cmd.Flag.Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshotCollection := debian.NewSnapshotCollection(context.database)
-		snapshots := snapshotCollection.ByRemoteRepoSource(repo)
+		snapshots := context.collectionFactory.SnapshotCollection().ByRemoteRepoSource(repo)
 
 		if len(snapshots) > 0 {
 			fmt.Printf("Mirror `%s` was used to create following snapshots:\n", repo.Name)
@@ -37,7 +34,7 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = repoCollection.Drop(repo)
+	err = context.collectionFactory.RemoteRepoCollection().Drop(repo)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

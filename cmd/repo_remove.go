@@ -16,21 +16,19 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-	repo, err := localRepoCollection.ByName(name)
+	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	err = localRepoCollection.LoadComplete(repo)
+	err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
 	context.progress.Printf("Loading packages...\n")
 
-	packageCollection := debian.NewPackageCollection(context.database)
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), packageCollection, context.progress)
+	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.collectionFactory.PackageCollection(), context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -52,7 +50,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 	} else {
 		repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
 
-		err = localRepoCollection.Update(repo)
+		err = context.collectionFactory.LocalRepoCollection().Update(repo)
 		if err != nil {
 			return fmt.Errorf("unable to save: %s", err)
 		}

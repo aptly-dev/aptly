@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlyRepoShow(cmd *commander.Command, args []string) error {
@@ -16,13 +15,12 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-	repo, err := localRepoCollection.ByName(name)
+	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = localRepoCollection.LoadComplete(repo)
+	err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}

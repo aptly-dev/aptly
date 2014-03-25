@@ -72,7 +72,7 @@ type RemoteRepoSuite struct {
 	downloader        *http.FakeDownloader
 	progress          aptly.Progress
 	db                database.Storage
-	packageCollection *PackageCollection
+	collectionFactory *CollectionFactory
 	packagePool       aptly.PackagePool
 }
 
@@ -84,7 +84,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
 	s.db, _ = database.OpenDB(c.MkDir())
-	s.packageCollection = NewPackageCollection(s.db)
+	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir())
 	s.SetUpPackages()
 	s.progress.Start()
@@ -246,12 +246,12 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
-	err = s.repo.Download(s.progress, s.downloader, s.packageCollection, s.packagePool, false)
+	err = s.repo.Download(s.progress, s.downloader, s.collectionFactory, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
 
-	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	result, err := pkg.VerifyFiles(s.packagePool)
@@ -279,12 +279,12 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
 	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
-	err = s.repo.Download(s.progress, s.downloader, s.packageCollection, s.packagePool, false)
+	err = s.repo.Download(s.progress, s.downloader, s.collectionFactory, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 	c.Assert(s.repo.packageRefs, NotNil)
 
-	pkg, err := s.packageCollection.ByKey(s.repo.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	result, err := pkg.VerifyFiles(s.packagePool)
@@ -293,7 +293,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 
-	pkg, err = s.packageCollection.ByKey(s.repo.packageRefs.Refs[1])
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
 
 	result, err = pkg.VerifyFiles(s.packagePool)
@@ -314,12 +314,12 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(s.progress, downloader, s.packageCollection, s.packagePool, false)
+	err = s.flat.Download(s.progress, downloader, s.collectionFactory, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)
 
-	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	result, err := pkg.VerifyFiles(s.packagePool)
@@ -348,12 +348,12 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(s.progress, downloader, s.packageCollection, s.packagePool, false)
+	err = s.flat.Download(s.progress, downloader, s.collectionFactory, s.packagePool, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 	c.Assert(s.flat.packageRefs, NotNil)
 
-	pkg, err := s.packageCollection.ByKey(s.flat.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	result, err := pkg.VerifyFiles(s.packagePool)
@@ -362,7 +362,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 
-	pkg, err = s.packageCollection.ByKey(s.flat.packageRefs.Refs[1])
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
 
 	result, err = pkg.VerifyFiles(s.packagePool)

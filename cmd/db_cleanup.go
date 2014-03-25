@@ -22,9 +22,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	existingPackageRefs := debian.NewPackageRefList()
 
 	context.progress.Printf("Loading mirrors, local repos and snapshots...\n")
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	err = repoCollection.ForEach(func(repo *debian.RemoteRepo) error {
-		err := repoCollection.LoadComplete(repo)
+	err = context.collectionFactory.RemoteRepoCollection().ForEach(func(repo *debian.RemoteRepo) error {
+		err := context.collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
@@ -37,9 +36,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-	err = localRepoCollection.ForEach(func(repo *debian.LocalRepo) error {
-		err := localRepoCollection.LoadComplete(repo)
+	err = context.collectionFactory.LocalRepoCollection().ForEach(func(repo *debian.LocalRepo) error {
+		err := context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
@@ -52,9 +50,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	err = snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
-		err := snapshotCollection.LoadComplete(snapshot)
+	err = context.collectionFactory.SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
+		err := context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return err
 		}
@@ -67,8 +64,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	// ... and compare it to the list of all packages
 	context.progress.Printf("Loading list of all packages...\n")
-	packageCollection := debian.NewPackageCollection(context.database)
-	allPackageRefs := packageCollection.AllPackageRefs()
+	allPackageRefs := context.collectionFactory.PackageCollection().AllPackageRefs()
 
 	toDelete := allPackageRefs.Substract(existingPackageRefs)
 
@@ -77,7 +73,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	context.database.StartBatch()
 	err = toDelete.ForEach(func(ref []byte) error {
-		return packageCollection.DeleteByKey(ref)
+		return context.collectionFactory.PackageCollection().DeleteByKey(ref)
 	})
 	if err != nil {
 		return err
@@ -94,7 +90,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	context.progress.InitBar(int64(existingPackageRefs.Len()), false)
 
 	err = existingPackageRefs.ForEach(func(key []byte) error {
-		pkg, err2 := packageCollection.ByKey(key)
+		pkg, err2 := context.collectionFactory.PackageCollection().ByKey(key)
 		if err2 != nil {
 			return err2
 		}

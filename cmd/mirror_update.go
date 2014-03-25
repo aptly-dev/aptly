@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
@@ -16,13 +15,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	repo, err := repoCollection.ByName(name)
+	repo, err := context.collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = repoCollection.LoadComplete(repo)
+	err = context.collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -39,14 +37,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	packageCollection := debian.NewPackageCollection(context.database)
-
-	err = repo.Download(context.progress, context.downloader, packageCollection, context.packagePool, ignoreMismatch)
+	err = repo.Download(context.progress, context.downloader, context.collectionFactory, context.packagePool, ignoreMismatch)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = repoCollection.Update(repo)
+	err = context.collectionFactory.RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}

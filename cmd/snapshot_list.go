@@ -15,15 +15,13 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-
-	if snapshotCollection.Len() > 0 {
+	if context.collectionFactory.SnapshotCollection().Len() > 0 {
 		fmt.Printf("List of snapshots:\n")
 
-		snapshots := make([]string, snapshotCollection.Len())
+		snapshots := make([]string, context.collectionFactory.SnapshotCollection().Len())
 
 		i := 0
-		snapshotCollection.ForEach(func(snapshot *debian.Snapshot) error {
+		context.collectionFactory.SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
 			snapshots[i] = snapshot.String()
 			i++
 			return nil

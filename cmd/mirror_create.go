@@ -48,9 +48,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to fetch mirror: %s", err)
 	}
 
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-
-	err = repoCollection.Add(repo)
+	err = context.collectionFactory.RemoteRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add mirror: %s", err)
 	}

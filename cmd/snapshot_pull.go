@@ -19,27 +19,24 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	noDeps := cmd.Flag.Lookup("no-deps").Value.Get().(bool)
 	noRemove := cmd.Flag.Lookup("no-remove").Value.Get().(bool)
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	packageCollection := debian.NewPackageCollection(context.database)
-
 	// Load <name> snapshot
-	snapshot, err := snapshotCollection.ByName(args[0])
+	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(snapshot)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
 	// Load <source> snapshot
-	source, err := snapshotCollection.ByName(args[1])
+	source, err := context.collectionFactory.SnapshotCollection().ByName(args[1])
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(source)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(source)
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
@@ -49,12 +46,12 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	// Convert snapshot to package list
 	context.progress.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
-	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), packageCollection, context.progress)
+	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), context.collectionFactory.PackageCollection(), context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), packageCollection, context.progress)
+	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), context.collectionFactory.PackageCollection(), context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -157,7 +154,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
 			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
 
-		err = snapshotCollection.Add(destination)
+		err = context.collectionFactory.SnapshotCollection().Add(destination)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}

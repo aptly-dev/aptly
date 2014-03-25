@@ -19,13 +19,12 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 
 		repoName, snapshotName := args[3], args[0]
 
-		repoCollection := debian.NewRemoteRepoCollection(context.database)
-		repo, err = repoCollection.ByName(repoName)
+		repo, err = context.collectionFactory.RemoteRepoCollection().ByName(repoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = repoCollection.LoadComplete(repo)
+		err = context.collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -40,13 +39,12 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 
 		localRepoName, snapshotName := args[3], args[0]
 
-		localRepoCollection := debian.NewLocalRepoCollection(context.database)
-		repo, err = localRepoCollection.ByName(localRepoName)
+		repo, err = context.collectionFactory.LocalRepoCollection().ByName(localRepoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = localRepoCollection.LoadComplete(repo)
+		err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -67,9 +65,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-
-	err = snapshotCollection.Add(snapshot)
+	err = context.collectionFactory.SnapshotCollection().Add(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to add snapshot: %s", err)
 	}

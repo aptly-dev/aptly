@@ -19,10 +19,8 @@ func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
 		return
 	}
 
-	packageCollection := debian.NewPackageCollection(context.database)
-
 	err = reflist.ForEach(func(key []byte) error {
-		p, err2 := packageCollection.ByKey(key)
+		p, err2 := context.collectionFactory.PackageCollection().ByKey(key)
 		if err2 != nil {
 			return err2
 		}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlySnapshotShow(cmd *commander.Command, args []string) error {
@@ -16,13 +15,12 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	snapshot, err := snapshotCollection.ByName(name)
+	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(snapshot)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}

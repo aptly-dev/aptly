@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlyPublishDrop(cmd *commander.Command, args []string) error {
@@ -21,9 +20,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 		prefix = args[1]
 	}
 
-	publishedCollecton := debian.NewPublishedRepoCollection(context.database)
-
-	err = publishedCollecton.Remove(context.publishedStorage, prefix, distribution)
+	err = context.collectionFactory.PublishedRepoCollection().Remove(context.publishedStorage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}

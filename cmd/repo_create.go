@@ -16,9 +16,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 
 	repo := debian.NewLocalRepo(args[0], cmd.Flag.Lookup("comment").Value.String())
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-
-	err = localRepoCollection.Add(repo)
+	err = context.collectionFactory.LocalRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add local repo: %s", err)
 	}

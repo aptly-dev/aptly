@@ -315,7 +315,7 @@ ok:
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, packageCollection *PackageCollection, packagePool aptly.PackagePool, ignoreMismatch bool) error {
+func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory, packagePool aptly.PackagePool, ignoreMismatch bool) error {
 	list := NewPackageList()
 
 	progress.Printf("Downloading & parsing package files...\n")
@@ -379,7 +379,7 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, pa
 				return err
 			}
 
-			err = packageCollection.Update(p)
+			err = collectionFactory.PackageCollection().Update(p)
 			if err != nil {
 				return err
 			}

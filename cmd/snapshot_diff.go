@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
@@ -16,33 +15,30 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 
 	onlyMatching := cmd.Flag.Lookup("only-matching").Value.Get().(bool)
 
-	snapshotCollection := debian.NewSnapshotCollection(context.database)
-	packageCollection := debian.NewPackageCollection(context.database)
-
 	// Load <name-a> snapshot
-	snapshotA, err := snapshotCollection.ByName(args[0])
+	snapshotA, err := context.collectionFactory.SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(snapshotA)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshotA)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
 	// Load <name-b> snapshot
-	snapshotB, err := snapshotCollection.ByName(args[1])
+	snapshotB, err := context.collectionFactory.SnapshotCollection().ByName(args[1])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
-	err = snapshotCollection.LoadComplete(snapshotB)
+	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshotB)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), packageCollection)
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.collectionFactory.PackageCollection())
 	if err != nil {
 		return fmt.Errorf("unable to calculate diff: %s", err)
 	}

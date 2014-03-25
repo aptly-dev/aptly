@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
 	"strings"
 )
@@ -18,13 +17,12 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repoCollection := debian.NewRemoteRepoCollection(context.database)
-	repo, err := repoCollection.ByName(name)
+	repo, err := context.collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = repoCollection.LoadComplete(repo)
+	err = context.collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}

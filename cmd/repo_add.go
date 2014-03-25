@@ -23,21 +23,19 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	verifier := &utils.GpgVerifier{}
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-	repo, err := localRepoCollection.ByName(name)
+	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	err = localRepoCollection.LoadComplete(repo)
+	err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
 	context.progress.Printf("Loading packages...\n")
 
-	packageCollection := debian.NewPackageCollection(context.database)
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), packageCollection, context.progress)
+	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.collectionFactory.PackageCollection(), context.progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -144,7 +142,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		err = packageCollection.Update(p)
+		err = context.collectionFactory.PackageCollection().Update(p)
 		if err != nil {
 			context.progress.ColoredPrintf("@y[!]@| @!Unable to save package %s: %s@|", p, err)
 			continue
@@ -162,7 +160,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
 
-	err = localRepoCollection.Update(repo)
+	err = context.collectionFactory.LocalRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to save: %s", err)
 	}
