@@ -29,6 +29,7 @@ func makeCmdPublish() *commander.Command {
 		UsageLine: "publish",
 		Short:     "manage published repositories",
 		Subcommands: []*commander.Command{
+			makeCmdPublishRepo(),
 			makeCmdPublishSnapshot(),
 			makeCmdPublishList(),
 			makeCmdPublishDrop(),

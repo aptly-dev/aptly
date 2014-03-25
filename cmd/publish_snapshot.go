@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
+func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
@@ -25,20 +25,45 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		prefix = ""
 	}
 
-	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
-	if err != nil {
-		return fmt.Errorf("unable to publish: %s", err)
-	}
+	var (
+		source  interface{}
+		message string
+	)
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
-	if err != nil {
-		return fmt.Errorf("unable to publish: %s", err)
+	if cmd.Name() == "snapshot" {
+		snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
+		if err != nil {
+			return fmt.Errorf("unable to publish: %s", err)
+		}
+
+		err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		if err != nil {
+			return fmt.Errorf("unable to publish: %s", err)
+		}
+
+		source = snapshot
+		message = fmt.Sprintf("Snapshot %s", snapshot.Name)
+	} else if cmd.Name() == "repo" {
+		localRepo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
+		if err != nil {
+			return fmt.Errorf("unable to publish: %s", err)
+		}
+
+		err = context.collectionFactory.LocalRepoCollection().LoadComplete(localRepo)
+		if err != nil {
+			return fmt.Errorf("unable to publish: %s", err)
+		}
+
+		source = localRepo
+		message = fmt.Sprintf("Local repo %s", localRepo.Name)
+	} else {
+		panic("unknown command")
 	}
 
 	component := cmd.Flag.Lookup("component").Value.String()
 	distribution := cmd.Flag.Lookup("distribution").Value.String()
 
-	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, snapshot, context.collectionFactory)
+	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, source, context.collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -71,8 +96,8 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 		prefix += "/"
 	}
 
-	context.progress.Printf("\nSnapshot %s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
-		snapshot.Name, context.publishedStorage.PublicPath())
+	context.progress.Printf("\n%s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
+		message, context.publishedStorage.PublicPath())
 	context.progress.Printf("Now you can add following line to apt sources:\n")
 	context.progress.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
 	if utils.StrSliceHasItem(published.Architectures, "source") {
@@ -86,11 +111,11 @@ func aptlyPublishSnapshot(cmd *commander.Command, args []string) error {
 
 func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyPublishSnapshot,
+		Run:       aptlyPublishSnapshotOrRepo,
 		UsageLine: "snapshot <name> [<prefix>]",
 		Short:     "publish snapshot",
 		Long: `
-Command publish publishes snapshot as Debian repository ready to be consumed
+Command publishes snapshot as Debian repository ready to be consumed
 by apt tools. Published repostiories appear under rootDir/public directory.
 Valid GPG key is required for publishing.
 
