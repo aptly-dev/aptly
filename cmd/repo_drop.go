@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/smira/aptly/debian"
 )
 
 func aptlyRepoDrop(cmd *commander.Command, args []string) error {
@@ -16,16 +15,28 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	localRepoCollection := debian.NewLocalRepoCollection(context.database)
-	repo, err := localRepoCollection.ByName(name)
+	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
+	published := context.collectionFactory.PublishedRepoCollection().ByLocalRepo(repo)
+	if len(published) > 0 {
+		fmt.Printf("Local repo `%s` is published currently:\n", repo.Name)
+		for _, repo := range published {
+			err = context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
+			if err != nil {
+				return fmt.Errorf("unable to load published: %s", err)
+			}
+			fmt.Printf(" * %s\n", repo)
+		}
+
+		return fmt.Errorf("unable to drop: local repo is published")
+	}
+
 	force := cmd.Flag.Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshotCollection := debian.NewSnapshotCollection(context.database)
-		snapshots := snapshotCollection.ByLocalRepoSource(repo)
+		snapshots := context.collectionFactory.SnapshotCollection().ByLocalRepoSource(repo)
 
 		if len(snapshots) > 0 {
 			fmt.Printf("Local repo `%s` was used to create following snapshots:\n", repo.Name)
@@ -37,7 +48,7 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = localRepoCollection.Drop(repo)
+	err = context.collectionFactory.LocalRepoCollection().Drop(repo)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
