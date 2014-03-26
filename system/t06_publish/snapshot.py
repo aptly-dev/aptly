@@ -483,3 +483,76 @@ class PublishSnapshot19Test(BaseTest):
     ]
     runCmd = "aptly publish snapshot -skip-signing snap5"
     gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot20Test(BaseTest):
+    """
+    publish snapshot: guess distribution from long chain including local repo
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly repo create -distribution=maverick local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap2 from repo local-repo",
+        "aptly snapshot merge snap3 snap1 snap2",
+
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap3"
+    gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot21Test(BaseTest):
+    """
+    publish snapshot: conflict in distributions
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly repo create -distribution=squeeze local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap2 from repo local-repo",
+        "aptly snapshot merge snap3 snap1 snap2",
+
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap3"
+    gold_processor = BaseTest.expand_environ
+    expectedCode = 1
+
+
+class PublishSnapshot22Test(BaseTest):
+    """
+    publish snapshot: conflict in components
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly repo create -component=contrib -distribution=maverick local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap2 from repo local-repo",
+        "aptly snapshot merge snap3 snap1 snap2",
+
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap3"
+    gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot23Test(BaseTest):
+    """
+    publish snapshot: distribution empty plus distribution maverick
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap2 from repo local-repo",
+        "aptly snapshot merge snap3 snap1 snap2",
+
+    ]
+    runCmd = "aptly publish snapshot -skip-signing snap3"
+    gold_processor = BaseTest.expand_environ

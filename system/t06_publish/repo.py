@@ -306,3 +306,37 @@ class PublishRepo13Test(BaseTest):
     ]
     runCmd = "aptly publish repo --distribution=mars --skip-signing local-repo"
     expectedCode = 1
+
+
+class PublishRepo14Test(BaseTest):
+    """
+    publish repo: publishing defaults from local repo
+    """
+    fixtureCmds = [
+        "aptly repo create -distribution=maverick -component=contrib local-repo",
+        "aptly repo add local-repo ${files}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo14Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/contrib/source/Sources')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
+
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
