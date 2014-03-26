@@ -1,0 +1,3 @@
+Local repo `repo5` is published currently:
+ * ./squeeze (main) [i386, source] publishes [repo5]
+ERROR: unable to drop: local repo is published
