@@ -46,3 +46,16 @@ class DropRepo4Test(BaseTest):
     """
     runCmd = "aptly repo drop repo4"
     expectedCode = 1
+
+
+class DropRepo5Test(BaseTest):
+    """
+    drop repo: published
+    """
+    fixtureCmds = [
+        "aptly repo create repo5",
+        "aptly repo add repo5 ${files}",
+        "aptly publish repo -skip-signing -distribution=squeeze repo5",
+    ]
+    runCmd = "aptly repo drop repo5"
+    expectedCode = 1
