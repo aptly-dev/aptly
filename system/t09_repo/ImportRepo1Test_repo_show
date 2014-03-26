@@ -1,5 +1,7 @@
 Name: repo1
 Comment: Cool
+Default Distribution: squeeze
+Default Component: main
 Number of packages: 5
 Packages:
   nginx_1.2.1-2.2+wheezy2_all

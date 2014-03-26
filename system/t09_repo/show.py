@@ -5,7 +5,7 @@ class ShowRepo1Test(BaseTest):
     """
     show local repo: regular
     """
-    fixtureCmds = ["aptly repo create -comment=Cool repo1"]
+    fixtureCmds = ["aptly repo create -comment=Cool -distribution=squeeze repo1"]
     runCmd = "aptly repo show repo1"
 
 
@@ -14,7 +14,7 @@ class ShowRepo2Test(BaseTest):
     show local repo: -with-packages
     """
     fixtureCmds = [
-        "aptly repo create -comment=Cool repo2",
+        "aptly repo create -comment=Cool -distribution=wheezy -component=contrib repo2",
         "aptly repo add repo2 ${files}"
     ]
     runCmd = "aptly repo show -with-packages repo2"

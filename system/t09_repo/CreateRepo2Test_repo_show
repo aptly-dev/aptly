@@ -1,3 +1,5 @@
 Name: repo2
 Comment: Repository2
+Default Distribution: maverick
+Default Component: non-free
 Number of packages: 0

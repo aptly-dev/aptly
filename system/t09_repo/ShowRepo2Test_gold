@@ -1,5 +1,7 @@
 Name: repo2
 Comment: Cool
+Default Distribution: wheezy
+Default Component: contrib
 Number of packages: 3
 Packages:
   libboost-program-options-dev_1.49.0.1_i386

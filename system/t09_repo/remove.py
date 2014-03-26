@@ -6,7 +6,7 @@ class RemoveRepo1Test(BaseTest):
     remove from local repo: as dep
     """
     fixtureCmds = [
-        "aptly repo create -comment=Cool local-repo",
+        "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
     ]
     runCmd = "aptly repo remove local-repo pyspi some"
@@ -24,7 +24,7 @@ class RemoveRepo2Test(BaseTest):
     remove from local repo: as dep with version, key
     """
     fixtureCmds = [
-        "aptly repo create -comment=Cool local-repo",
+        "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
     ]
     runCmd = "aptly repo remove local-repo 'pyspi (>> 0.6.1-1.3)' libboost-program-options-dev_1.49.0.1_i386"
@@ -50,7 +50,7 @@ class RemoveRepo4Test(BaseTest):
     remove from local repo: dry run
     """
     fixtureCmds = [
-        "aptly repo create -comment=Cool local-repo",
+        "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
     ]
     runCmd = "aptly repo remove -dry-run local-repo 'pyspi (>> 0.6.1-1.3)' libboost-program-options-dev_1.49.0.1_i386"

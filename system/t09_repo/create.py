@@ -14,9 +14,9 @@ class CreateRepo1Test(BaseTest):
 
 class CreateRepo2Test(BaseTest):
     """
-    create local repo: regular repo with comment
+    create local repo: regular repo with comment & publishing defaults
     """
-    runCmd = "aptly repo create -comment=Repository2 repo2"
+    runCmd = "aptly repo create -comment=Repository2 -distribution=maverick -component=non-free repo2"
 
     def check(self):
         self.check_output()

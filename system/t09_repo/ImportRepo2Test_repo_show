@@ -1,5 +1,7 @@
 Name: repo1
 Comment: Cool
+Default Distribution: squeeze
+Default Component: main
 Number of packages: 20
 Packages:
   gcc-4.7-base_4.7.2-5_amd64

@@ -15,6 +15,8 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	}
 
 	repo := debian.NewLocalRepo(args[0], cmd.Flag.Lookup("comment").Value.String())
+	repo.DefaultDistribution = cmd.Flag.Lookup("distribution").Value.String()
+	repo.DefaultComponent = cmd.Flag.Lookup("component").Value.String()
 
 	err = context.collectionFactory.LocalRepoCollection().Add(repo)
 	if err != nil {
@@ -43,6 +45,8 @@ Example:
 	}
 
 	cmd.Flag.String("comment", "", "any text that would be used to described local repository")
+	cmd.Flag.String("distribution", "", "default distribution when publishing")
+	cmd.Flag.String("component", "main", "default component when publishing")
 
 	return cmd
 }

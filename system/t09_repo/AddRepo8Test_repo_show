@@ -1,5 +1,7 @@
 Name: repo8
 Comment: Repo8
+Default Distribution: squeeze
+Default Component: main
 Number of packages: 1
 Packages:
   pyspi_0.6.1-1.3_source

@@ -1,3 +1,5 @@
 Name: repo5
 Comment: Repo5
+Default Distribution: squeeze
+Default Component: main
 Number of packages: 0

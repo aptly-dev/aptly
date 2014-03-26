@@ -1,4 +1,6 @@
 Name: repo1
 Comment: Cool
+Default Distribution: squeeze
+Default Component: main
 Number of packages: 0
 Packages:
