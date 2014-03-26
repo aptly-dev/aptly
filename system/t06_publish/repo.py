@@ -196,7 +196,6 @@ class PublishRepo6Test(BaseTest):
     publish repo: double publish under root
     """
     fixtureDB = True
-    fixturePool = True
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}",
@@ -211,7 +210,6 @@ class PublishRepo7Test(BaseTest):
     publish repo: double publish under prefix
     """
     fixtureDB = True
-    fixturePool = True
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}",
@@ -273,7 +271,6 @@ class PublishRepo12Test(BaseTest):
     publish repo: -skip-signing
     """
     fixtureDB = True
-    fixturePool = True
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}",
