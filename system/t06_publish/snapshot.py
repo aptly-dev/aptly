@@ -490,7 +490,7 @@ class PublishSnapshot20Test(BaseTest):
     publish snapshot: guess distribution from long chain including local repo
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
         "aptly repo create -distribution=maverick local-repo",
@@ -508,7 +508,7 @@ class PublishSnapshot21Test(BaseTest):
     publish snapshot: conflict in distributions
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
         "aptly repo create -distribution=squeeze local-repo",
@@ -527,7 +527,7 @@ class PublishSnapshot22Test(BaseTest):
     publish snapshot: conflict in components
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
         "aptly repo create -component=contrib -distribution=maverick local-repo",
@@ -545,7 +545,7 @@ class PublishSnapshot23Test(BaseTest):
     publish snapshot: distribution empty plus distribution maverick
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
         "aptly repo create local-repo",
