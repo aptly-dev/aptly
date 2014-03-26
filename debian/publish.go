@@ -238,7 +238,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 	}
 
 	if list.Len() == 0 {
-		return fmt.Errorf("snapshot is empty")
+		return fmt.Errorf("source is empty")
 	}
 
 	if len(p.Architectures) == 0 {
