@@ -1,0 +1,5 @@
+Name: repo2
+Comment: Lala
+Default Distribution: wheezy
+Default Component: contrib
+Number of packages: 0
