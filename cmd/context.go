@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gonuts/commander"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
@@ -10,6 +9,7 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
 	"os"
 	"path/filepath"
 	"runtime"

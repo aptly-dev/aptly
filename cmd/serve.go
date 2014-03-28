@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 	"net"
 	"net/http"
 	"os"

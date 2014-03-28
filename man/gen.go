@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 	"github.com/smira/aptly/cmd"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 	"log"
 	"os"
 	"os/exec"

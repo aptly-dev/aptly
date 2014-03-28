@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 func aptlyVersion(cmd *commander.Command, args []string) error {

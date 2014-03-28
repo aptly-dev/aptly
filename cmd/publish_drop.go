@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 func aptlyPublishDrop(cmd *commander.Command, args []string) error {
