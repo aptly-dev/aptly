@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 )
 
 func makeCmdRepo() *commander.Command {
@@ -21,6 +20,5 @@ func makeCmdRepo() *commander.Command {
 			makeCmdRepoRemove(),
 			makeCmdRepoShow(),
 		},
-		Flag: *flag.NewFlagSet("aptly-repo", flag.ExitOnError),
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"sort"
 )
 
@@ -54,7 +53,6 @@ Example:
 
   $ aptly repo list
 `,
-		Flag: *flag.NewFlagSet("aptly-repo-list", flag.ExitOnError),
 	}
 
 	return cmd

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"io"
 	"io/ioutil"
 	"os"
@@ -196,7 +195,6 @@ Example:
 
   $ aptly graph
 `,
-		Flag: *flag.NewFlagSet("aptly-graph", flag.ExitOnError),
 	}
 
 	return cmd

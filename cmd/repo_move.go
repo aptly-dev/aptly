@@ -86,7 +86,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 	var architecturesList []string
 
-	withDeps := cmd.Flag.Lookup("with-deps").Value.Get().(bool)
+	withDeps := context.flags.Lookup("with-deps").Value.Get().(bool)
 
 	if withDeps {
 		dstList.PrepareIndex()
@@ -136,7 +136,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
 
-	if cmd.Flag.Lookup("dry-run").Value.Get().(bool) {
+	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.progress.Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
 		dstRepo.UpdateRefList(debian.NewPackageRefListFromPackageList(dstList))

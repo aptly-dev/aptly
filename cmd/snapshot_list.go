@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"sort"
 )
 
@@ -52,7 +51,6 @@ Example:
 
   $ aptly snapshot list
 `,
-		Flag: *flag.NewFlagSet("aptly-snapshot-list", flag.ExitOnError),
 	}
 
 	return cmd

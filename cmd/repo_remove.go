@@ -45,7 +45,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 		return nil
 	})
 
-	if cmd.Flag.Lookup("dry-run").Value.Get().(bool) {
+	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.progress.Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
 		repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))

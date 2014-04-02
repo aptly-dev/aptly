@@ -14,9 +14,9 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	repo := debian.NewLocalRepo(args[0], cmd.Flag.Lookup("comment").Value.String())
-	repo.DefaultDistribution = cmd.Flag.Lookup("distribution").Value.String()
-	repo.DefaultComponent = cmd.Flag.Lookup("component").Value.String()
+	repo := debian.NewLocalRepo(args[0], context.flags.Lookup("comment").Value.String())
+	repo.DefaultDistribution = context.flags.Lookup("distribution").Value.String()
+	repo.DefaultComponent = context.flags.Lookup("component").Value.String()
 
 	err = context.collectionFactory.LocalRepoCollection().Add(repo)
 	if err != nil {

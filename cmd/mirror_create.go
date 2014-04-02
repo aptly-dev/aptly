@@ -16,7 +16,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	downloadSources := utils.Config.DownloadSourcePackages || cmd.Flag.Lookup("with-sources").Value.Get().(bool)
+	downloadSources := utils.Config.DownloadSourcePackages || context.flags.Lookup("with-sources").Value.Get().(bool)
 
 	var (
 		mirrorName, archiveURL, distribution string
@@ -38,7 +38,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
-	verifier, err := getVerifier(cmd)
+	verifier, err := getVerifier(context.flags)
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
@@ -79,7 +79,7 @@ Example:
 
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
-	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
+	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd
 }

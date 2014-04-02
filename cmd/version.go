@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 )
 
 func aptlyVersion(cmd *commander.Command, args []string) error {
@@ -23,6 +22,5 @@ Shows aptly version.
 ex:
   $ aptly version
 `,
-		Flag: *flag.NewFlagSet("aptly-version", flag.ExitOnError),
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"sort"
 )
 
@@ -110,7 +109,6 @@ Example:
 
     $ aptly snapshot verify wheezy-main wheezy-contrib wheezy-non-free
 `,
-		Flag: *flag.NewFlagSet("aptly-snapshot-verify", flag.ExitOnError),
 	}
 
 	return cmd

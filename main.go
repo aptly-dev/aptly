@@ -67,7 +67,7 @@ func main() {
 
 	command := cmd.RootCommand()
 
-	err := command.Flag.Parse(os.Args[1:])
+	flags, args, err := command.ParseFlags(os.Args[1:])
 	if err != nil {
 		fatal(err)
 		return
@@ -82,14 +82,14 @@ func main() {
 		return
 	}
 
-	err = cmd.InitContext(command)
+	err = cmd.InitContext(flags)
 	if err != nil {
 		fatal(err)
 		return
 	}
 	defer cmd.ShutdownContext()
 
-	err = command.Dispatch(command.Flag.Args())
+	err = command.Dispatch(args)
 	if err != nil {
 		fatal(err)
 		return

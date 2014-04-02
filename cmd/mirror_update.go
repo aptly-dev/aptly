@@ -25,9 +25,9 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	ignoreMismatch := cmd.Flag.Lookup("ignore-checksums").Value.Get().(bool)
+	ignoreMismatch := context.flags.Lookup("ignore-checksums").Value.Get().(bool)
 
-	verifier, err := getVerifier(cmd)
+	verifier, err := getVerifier(context.flags)
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
@@ -70,7 +70,7 @@ Example:
 
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
-	cmd.Flag.Var(&keyRings, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
+	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd
 }

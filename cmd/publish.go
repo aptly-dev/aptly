@@ -6,14 +6,14 @@ import (
 	"github.com/smira/flag"
 )
 
-func getSigner(cmd *commander.Command) (utils.Signer, error) {
-	if cmd.Flag.Lookup("skip-signing").Value.Get().(bool) || utils.Config.GpgDisableSign {
+func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
+	if flags.Lookup("skip-signing").Value.Get().(bool) || utils.Config.GpgDisableSign {
 		return nil, nil
 	}
 
 	signer := &utils.GpgSigner{}
-	signer.SetKey(cmd.Flag.Lookup("gpg-key").Value.String())
-	signer.SetKeyRing(cmd.Flag.Lookup("keyring").Value.String(), cmd.Flag.Lookup("secret-keyring").Value.String())
+	signer.SetKey(flags.Lookup("gpg-key").Value.String())
+	signer.SetKeyRing(flags.Lookup("keyring").Value.String(), flags.Lookup("secret-keyring").Value.String())
 
 	err := signer.Init()
 	if err != nil {
@@ -34,6 +34,5 @@ func makeCmdPublish() *commander.Command {
 			makeCmdPublishList(),
 			makeCmdPublishDrop(),
 		},
-		Flag: *flag.NewFlagSet("aptly-publish", flag.ExitOnError),
 	}
 }

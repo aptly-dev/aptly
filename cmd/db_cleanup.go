@@ -5,7 +5,6 @@ import (
 	"github.com/smira/aptly/debian"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"sort"
 )
 
@@ -159,7 +158,6 @@ Example:
 
   $ aptly db cleanup
 `,
-		Flag: *flag.NewFlagSet("aptly-db-cleanup", flag.ExitOnError),
 	}
 
 	return cmd

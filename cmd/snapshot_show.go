@@ -30,7 +30,7 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Description: %s\n", snapshot.Description)
 	fmt.Printf("Number of packages: %d\n", snapshot.NumPackages())
 
-	withPackages := cmd.Flag.Lookup("with-packages").Value.Get().(bool)
+	withPackages := context.flags.Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
 		ListPackagesRefList(snapshot.RefList())
 	}

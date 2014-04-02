@@ -9,7 +9,7 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
+	"github.com/smira/flag"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -28,6 +28,7 @@ var context struct {
 	collectionFactory *debian.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
+	flags             *flag.FlagSet
 	// Debug features
 	fileCPUProfile *os.File
 	fileMemProfile *os.File
@@ -35,25 +36,27 @@ var context struct {
 }
 
 // InitContext initializes context with default settings
-func InitContext(cmd *commander.Command) error {
+func InitContext(flags *flag.FlagSet) error {
 	var err error
 
+	context.flags = flags
+
 	context.dependencyOptions = 0
-	if utils.Config.DepFollowSuggests || cmd.Flag.Lookup("dep-follow-suggests").Value.Get().(bool) {
+	if utils.Config.DepFollowSuggests || flags.Lookup("dep-follow-suggests").Value.Get().(bool) {
 		context.dependencyOptions |= debian.DepFollowSuggests
 	}
-	if utils.Config.DepFollowRecommends || cmd.Flag.Lookup("dep-follow-recommends").Value.Get().(bool) {
+	if utils.Config.DepFollowRecommends || flags.Lookup("dep-follow-recommends").Value.Get().(bool) {
 		context.dependencyOptions |= debian.DepFollowRecommends
 	}
-	if utils.Config.DepFollowAllVariants || cmd.Flag.Lookup("dep-follow-all-variants").Value.Get().(bool) {
+	if utils.Config.DepFollowAllVariants || flags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
 		context.dependencyOptions |= debian.DepFollowAllVariants
 	}
-	if utils.Config.DepFollowSource || cmd.Flag.Lookup("dep-follow-source").Value.Get().(bool) {
+	if utils.Config.DepFollowSource || flags.Lookup("dep-follow-source").Value.Get().(bool) {
 		context.dependencyOptions |= debian.DepFollowSource
 	}
 
 	context.architecturesList = utils.Config.Architectures
-	optionArchitectures := cmd.Flag.Lookup("architectures").Value.String()
+	optionArchitectures := flags.Lookup("architectures").Value.String()
 	if optionArchitectures != "" {
 		context.architecturesList = strings.Split(optionArchitectures, ",")
 	}
@@ -74,7 +77,7 @@ func InitContext(cmd *commander.Command) error {
 	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
 
 	if aptly.EnableDebug {
-		cpuprofile := cmd.Flag.Lookup("cpuprofile").Value.String()
+		cpuprofile := flags.Lookup("cpuprofile").Value.String()
 		if cpuprofile != "" {
 			context.fileCPUProfile, err = os.Create(cpuprofile)
 			if err != nil {
@@ -83,7 +86,7 @@ func InitContext(cmd *commander.Command) error {
 			pprof.StartCPUProfile(context.fileCPUProfile)
 		}
 
-		memprofile := cmd.Flag.Lookup("memprofile").Value.String()
+		memprofile := flags.Lookup("memprofile").Value.String()
 		if memprofile != "" {
 			context.fileMemProfile, err = os.Create(memprofile)
 			if err != nil {
@@ -91,9 +94,9 @@ func InitContext(cmd *commander.Command) error {
 			}
 		}
 
-		memstats := cmd.Flag.Lookup("memstats").Value.String()
+		memstats := flags.Lookup("memstats").Value.String()
 		if memstats != "" {
-			interval := cmd.Flag.Lookup("meminterval").Value.Get().(time.Duration)
+			interval := flags.Lookup("meminterval").Value.Get().(time.Duration)
 
 			context.fileMemStats, err = os.Create(memstats)
 			if err != nil {

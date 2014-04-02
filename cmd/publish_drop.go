@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 )
 
 func aptlyPublishDrop(cmd *commander.Command, args []string) error {
@@ -43,7 +42,6 @@ Example:
 
     $ aptly publish drop wheezy
 `,
-		Flag: *flag.NewFlagSet("aptly-publish-drop", flag.ExitOnError),
 	}
 
 	return cmd

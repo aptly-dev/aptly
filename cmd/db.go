@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 )
 
 func makeCmdDb() *commander.Command {
@@ -12,6 +11,5 @@ func makeCmdDb() *commander.Command {
 		Subcommands: []*commander.Command{
 			makeCmdDbCleanup(),
 		},
-		Flag: *flag.NewFlagSet("aptly-db", flag.ExitOnError),
 	}
 }

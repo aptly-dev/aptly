@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 )
 
 func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
@@ -97,7 +96,6 @@ Example:
 
   $ aptly snapshot create wheezy-main-today from mirror wheezy-main
 `,
-		Flag: *flag.NewFlagSet("aptly-snapshot-create", flag.ExitOnError),
 	}
 
 	return cmd

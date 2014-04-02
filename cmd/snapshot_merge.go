@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"strings"
 )
 
@@ -70,7 +69,6 @@ Example:
 
     $ aptly snapshot merge wheezy-w-backports wheezy-main wheezy-backports
 `,
-		Flag: *flag.NewFlagSet("aptly-snapshot-merge", flag.ExitOnError),
 	}
 
 	return cmd

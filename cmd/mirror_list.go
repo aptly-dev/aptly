@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/smira/aptly/debian"
 	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"sort"
 )
 
@@ -49,7 +48,6 @@ Example:
 
   $ aptly mirror list
 `,
-		Flag: *flag.NewFlagSet("aptly-mirror-list", flag.ExitOnError),
 	}
 
 	return cmd

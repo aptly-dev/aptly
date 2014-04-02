@@ -29,7 +29,7 @@ Example:
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
-	cmd.Flag.String("keyring", "", "GPG keyring to use (instead of default)")
+	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 

@@ -165,7 +165,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save: %s", err)
 	}
 
-	if cmd.Flag.Lookup("remove-files").Value.Get().(bool) {
+	if context.flags.Lookup("remove-files").Value.Get().(bool) {
 		processedFiles = utils.StrSliceDeduplicate(processedFiles)
 
 		for _, file := range processedFiles {

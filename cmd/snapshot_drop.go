@@ -35,7 +35,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to drop: snapshot is published")
 	}
 
-	force := cmd.Flag.Lookup("force").Value.Get().(bool)
+	force := context.flags.Lookup("force").Value.Get().(bool)
 	if !force {
 		snapshots := context.collectionFactory.SnapshotCollection().BySnapshotSource(snapshot)
 		if len(snapshots) > 0 {

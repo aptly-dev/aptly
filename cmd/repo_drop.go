@@ -34,7 +34,7 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to drop: local repo is published")
 	}
 
-	force := cmd.Flag.Lookup("force").Value.Get().(bool)
+	force := context.flags.Lookup("force").Value.Get().(bool)
 	if !force {
 		snapshots := context.collectionFactory.SnapshotCollection().ByLocalRepoSource(repo)
 

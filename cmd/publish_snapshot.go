@@ -60,8 +60,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		panic("unknown command")
 	}
 
-	component := cmd.Flag.Lookup("component").Value.String()
-	distribution := cmd.Flag.Lookup("distribution").Value.String()
+	component := context.flags.Lookup("component").Value.String()
+	distribution := context.flags.Lookup("distribution").Value.String()
 
 	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, source, context.collectionFactory)
 	if err != nil {
@@ -74,7 +74,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 	}
 
-	signer, err := getSigner(cmd)
+	signer, err := getSigner(context.flags)
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
@@ -128,7 +128,7 @@ Example:
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
-	cmd.Flag.String("keyring", "", "GPG keyring to use (instead of default)")
+	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 

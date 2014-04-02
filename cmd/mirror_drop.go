@@ -20,7 +20,7 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	force := cmd.Flag.Lookup("force").Value.Get().(bool)
+	force := context.flags.Lookup("force").Value.Get().(bool)
 	if !force {
 		snapshots := context.collectionFactory.SnapshotCollection().ByRemoteRepoSource(repo)
 

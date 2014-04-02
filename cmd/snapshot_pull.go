@@ -16,8 +16,8 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	noDeps := cmd.Flag.Lookup("no-deps").Value.Get().(bool)
-	noRemove := cmd.Flag.Lookup("no-remove").Value.Get().(bool)
+	noDeps := context.flags.Lookup("no-deps").Value.Get().(bool)
+	noRemove := context.flags.Lookup("no-remove").Value.Get().(bool)
 
 	// Load <name> snapshot
 	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(args[0])
@@ -147,7 +147,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	if cmd.Flag.Lookup("dry-run").Value.Get().(bool) {
+	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.progress.Printf("\nNot creating snapshot, as dry run was requested.\n")
 	} else {
 		// Create <destination> snapshot
