@@ -7,6 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/syndtr/goleveldb/leveldb/storage"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
@@ -49,6 +50,24 @@ func OpenDB(path string) (Storage, error) {
 		return nil, err
 	}
 	return &levelDB{db: db}, nil
+}
+
+// RecoverDB recovers LevelDB database from corruption
+func RecoverDB(path string) error {
+	stor, err := storage.OpenFile("/Users/smira/.aptly/db/")
+	if err != nil {
+		return err
+	}
+
+	db, err := leveldb.Recover(stor, nil)
+	if err != nil {
+		return err
+	}
+
+	db.Close()
+	stor.Close()
+
+	return nil
 }
 
 // Get key value from database

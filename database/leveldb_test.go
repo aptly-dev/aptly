@@ -11,7 +11,8 @@ func Test(t *testing.T) {
 }
 
 type LevelDBSuite struct {
-	db Storage
+	path string
+	db   Storage
 }
 
 var _ = Suite(&LevelDBSuite{})
@@ -19,13 +20,37 @@ var _ = Suite(&LevelDBSuite{})
 func (s *LevelDBSuite) SetUpTest(c *C) {
 	var err error
 
-	s.db, err = OpenDB(c.MkDir())
+	s.path = c.MkDir()
+	s.db, err = OpenDB(s.path)
 	c.Assert(err, IsNil)
 }
 
 func (s *LevelDBSuite) TearDownTest(c *C) {
 	err := s.db.Close()
 	c.Assert(err, IsNil)
+}
+
+func (s *LevelDBSuite) TestRecoverDB(c *C) {
+	var (
+		key   = []byte("key")
+		value = []byte("value")
+	)
+
+	err := s.db.Put(key, value)
+	c.Check(err, IsNil)
+
+	err = s.db.Close()
+	c.Check(err, IsNil)
+
+	err = RecoverDB(s.path)
+	c.Check(err, IsNil)
+
+	s.db, err = OpenDB(s.path)
+	c.Check(err, IsNil)
+
+	result, err := s.db.Get(key)
+	c.Assert(err, IsNil)
+	c.Assert(result, DeepEquals, value)
 }
 
 func (s *LevelDBSuite) TestGetPut(c *C) {
