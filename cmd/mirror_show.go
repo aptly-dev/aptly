@@ -17,12 +17,12 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.collectionFactory.RemoteRepoCollection().ByName(name)
+	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}

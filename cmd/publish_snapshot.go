@@ -31,12 +31,12 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	)
 
 	if cmd.Name() == "snapshot" {
-		snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
+		snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
@@ -44,12 +44,12 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		source = snapshot
 		message = fmt.Sprintf("Snapshot %s", snapshot.Name)
 	} else if cmd.Name() == "repo" {
-		localRepo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
+		localRepo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = context.collectionFactory.LocalRepoCollection().LoadComplete(localRepo)
+		err = context.CollectionFactory().LocalRepoCollection().LoadComplete(localRepo)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
@@ -63,14 +63,14 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	component := context.flags.Lookup("component").Value.String()
 	distribution := context.flags.Lookup("distribution").Value.String()
 
-	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.architecturesList, source, context.collectionFactory)
+	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.ArchitecturesList(), source, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	duplicate := context.collectionFactory.PublishedRepoCollection().CheckDuplicate(published)
+	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
-		context.collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, context.collectionFactory)
+		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 	}
 
@@ -79,12 +79,12 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	err = published.Publish(context.packagePool, context.publishedStorage, context.collectionFactory, signer, context.progress)
+	err = published.Publish(context.PackagePool(), context.PublishedStorage(), context.CollectionFactory(), signer, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	err = context.collectionFactory.PublishedRepoCollection().Add(published)
+	err = context.CollectionFactory().PublishedRepoCollection().Add(published)
 	if err != nil {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
@@ -96,15 +96,15 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		prefix += "/"
 	}
 
-	context.progress.Printf("\n%s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
-		message, context.publishedStorage.PublicPath())
-	context.progress.Printf("Now you can add following line to apt sources:\n")
-	context.progress.Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
+	context.Progress().Printf("\n%s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
+		message, context.PublishedStorage().PublicPath())
+	context.Progress().Printf("Now you can add following line to apt sources:\n")
+	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
 	if utils.StrSliceHasItem(published.Architectures, "source") {
-		context.progress.Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
+		context.Progress().Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
 	}
-	context.progress.Printf("Don't forget to add your GPG key to apt with apt-key.\n")
-	context.progress.Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
+	context.Progress().Printf("Don't forget to add your GPG key to apt with apt-key.\n")
+	context.Progress().Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
 
 	return err
 }

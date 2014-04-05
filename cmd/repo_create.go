@@ -18,7 +18,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	repo.DefaultDistribution = context.flags.Lookup("distribution").Value.String()
 	repo.DefaultComponent = context.flags.Lookup("component").Value.String()
 
-	err = context.collectionFactory.LocalRepoCollection().Add(repo)
+	err = context.CollectionFactory().LocalRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add local repo: %s", err)
 	}

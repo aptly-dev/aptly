@@ -15,12 +15,12 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
+	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}

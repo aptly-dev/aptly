@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/debian"
-	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"strings"
@@ -16,7 +15,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	downloadSources := utils.Config.DownloadSourcePackages || context.flags.Lookup("with-sources").Value.Get().(bool)
+	downloadSources := context.Config().DownloadSourcePackages || context.flags.Lookup("with-sources").Value.Get().(bool)
 
 	var (
 		mirrorName, archiveURL, distribution string
@@ -33,7 +32,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		archiveURL, distribution, components = args[1], args[2], args[3:]
 	}
 
-	repo, err := debian.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.architecturesList, downloadSources)
+	repo, err := debian.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.ArchitecturesList(), downloadSources)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
@@ -43,12 +42,12 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
 
-	err = repo.Fetch(context.downloader, verifier)
+	err = repo.Fetch(context.Downloader(), verifier)
 	if err != nil {
 		return fmt.Errorf("unable to fetch mirror: %s", err)
 	}
 
-	err = context.collectionFactory.RemoteRepoCollection().Add(repo)
+	err = context.CollectionFactory().RemoteRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add mirror: %s", err)
 	}

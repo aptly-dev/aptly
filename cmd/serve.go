@@ -15,7 +15,7 @@ import (
 func aptlyServe(cmd *commander.Command, args []string) error {
 	var err error
 
-	if context.collectionFactory.PublishedRepoCollection().Len() == 0 {
+	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
 		fmt.Printf("No published repositories, unable to serve.\n")
 		return nil
 	}
@@ -37,11 +37,11 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Serving published repositories, recommended apt sources list:\n\n")
 
-	sources := make(sort.StringSlice, 0, context.collectionFactory.PublishedRepoCollection().Len())
-	published := make(map[string]*debian.PublishedRepo, context.collectionFactory.PublishedRepoCollection().Len())
+	sources := make(sort.StringSlice, 0, context.CollectionFactory().PublishedRepoCollection().Len())
+	published := make(map[string]*debian.PublishedRepo, context.CollectionFactory().PublishedRepoCollection().Len())
 
-	err = context.collectionFactory.PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
-		err := context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
+	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
+		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
 		if err != nil {
 			return err
 		}
@@ -77,11 +77,12 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	context.database.Close()
+	publicPath := context.PublishedStorage().PublicPath()
+	ShutdownContext()
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)
 
-	err = http.ListenAndServe(listen, http.FileServer(http.Dir(context.publishedStorage.PublicPath())))
+	err = http.ListenAndServe(listen, http.FileServer(http.Dir(publicPath)))
 	if err != nil {
 		return fmt.Errorf("unable to serve: %s", err)
 	}

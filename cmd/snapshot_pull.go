@@ -20,51 +20,51 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	noRemove := context.flags.Lookup("no-remove").Value.Get().(bool)
 
 	// Load <name> snapshot
-	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(args[0])
+	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
 	// Load <source> snapshot
-	source, err := context.collectionFactory.SnapshotCollection().ByName(args[1])
+	source, err := context.CollectionFactory().SnapshotCollection().ByName(args[1])
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(source)
+	err = context.CollectionFactory().SnapshotCollection().LoadComplete(source)
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	context.progress.Printf("Dependencies would be pulled into snapshot:\n    %s\nfrom snapshot:\n    %s\nand result would be saved as new snapshot %s.\n",
+	context.Progress().Printf("Dependencies would be pulled into snapshot:\n    %s\nfrom snapshot:\n    %s\nand result would be saved as new snapshot %s.\n",
 		snapshot, source, args[2])
 
 	// Convert snapshot to package list
-	context.progress.Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
-	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), context.collectionFactory.PackageCollection(), context.progress)
+	context.Progress().Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
+	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), context.collectionFactory.PackageCollection(), context.progress)
+	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	context.progress.Printf("Building indexes...\n")
+	context.Progress().Printf("Building indexes...\n")
 	packageList.PrepareIndex()
 	sourcePackageList.PrepareIndex()
 
 	// Calculate architectures
 	var architecturesList []string
 
-	if len(context.architecturesList) > 0 {
-		architecturesList = context.architecturesList
+	if len(context.ArchitecturesList()) > 0 {
+		architecturesList = context.ArchitecturesList()
 	} else {
 		architecturesList = packageList.Architectures(false)
 	}
@@ -99,7 +99,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			// Search for package that can satisfy dependencies
 			pkg := sourcePackageList.Search(dep)
 			if pkg == nil {
-				context.progress.ColoredPrintf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
+				context.Progress().ColoredPrintf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
 				continue
 			}
 
@@ -107,14 +107,14 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 				// Remove all packages with the same name and architecture
 				for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
 					packageList.Remove(p)
-					context.progress.ColoredPrintf("@r[-]@| %s removed", p)
+					context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 					p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
 				}
 			}
 
 			// Add new discovered package
 			packageList.Add(pkg)
-			context.progress.ColoredPrintf("@g[+]@| %s added", pkg)
+			context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
 
 			if noDeps {
 				continue
@@ -125,9 +125,9 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			pL.Add(pkg)
 
 			var missing []debian.Dependency
-			missing, err = pL.VerifyDependencies(context.dependencyOptions, []string{arch}, packageList, nil)
+			missing, err = pL.VerifyDependencies(context.DependencyOptions(), []string{arch}, packageList, nil)
 			if err != nil {
-				context.progress.ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
+				context.Progress().ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
 			}
 
 			// Append missing dependencies to the list of dependencies to satisfy
@@ -148,18 +148,18 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	if context.flags.Lookup("dry-run").Value.Get().(bool) {
-		context.progress.Printf("\nNot creating snapshot, as dry run was requested.\n")
+		context.Progress().Printf("\nNot creating snapshot, as dry run was requested.\n")
 	} else {
 		// Create <destination> snapshot
 		destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
 			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
 
-		err = context.collectionFactory.SnapshotCollection().Add(destination)
+		err = context.CollectionFactory().SnapshotCollection().Add(destination)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		context.progress.Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
+		context.Progress().Printf("\nSnapshot %s successfully created.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
 	}
 	return err
 }

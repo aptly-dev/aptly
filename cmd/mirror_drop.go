@@ -15,14 +15,14 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.collectionFactory.RemoteRepoCollection().ByName(name)
+	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
 	force := context.flags.Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshots := context.collectionFactory.SnapshotCollection().ByRemoteRepoSource(repo)
+		snapshots := context.CollectionFactory().SnapshotCollection().ByRemoteRepoSource(repo)
 
 		if len(snapshots) > 0 {
 			fmt.Printf("Mirror `%s` was used to create following snapshots:\n", repo.Name)
@@ -34,7 +34,7 @@ func aptlyMirrorDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = context.collectionFactory.RemoteRepoCollection().Drop(repo)
+	err = context.CollectionFactory().RemoteRepoCollection().Drop(repo)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

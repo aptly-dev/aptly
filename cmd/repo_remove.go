@@ -16,19 +16,19 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
+	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
+	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	context.progress.Printf("Loading packages...\n")
+	context.Progress().Printf("Loading packages...\n")
 
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.collectionFactory.PackageCollection(), context.progress)
+	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -41,16 +41,16 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	toRemove.ForEach(func(p *debian.Package) error {
 		list.Remove(p)
-		context.progress.ColoredPrintf("@r[-]@| %s removed", p)
+		context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 		return nil
 	})
 
 	if context.flags.Lookup("dry-run").Value.Get().(bool) {
-		context.progress.Printf("\nChanges not saved, as dry run has been requested.\n")
+		context.Progress().Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
 		repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
 
-		err = context.collectionFactory.LocalRepoCollection().Update(repo)
+		err = context.CollectionFactory().LocalRepoCollection().Update(repo)
 		if err != nil {
 			return fmt.Errorf("unable to save: %s", err)
 		}

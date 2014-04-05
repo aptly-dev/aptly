@@ -8,7 +8,7 @@ import (
 )
 
 func getVerifier(flags *flag.FlagSet) (utils.Verifier, error) {
-	if utils.Config.GpgDisableVerify || flags.Lookup("ignore-signatures").Value.Get().(bool) {
+	if context.Config().GpgDisableVerify || flags.Lookup("ignore-signatures").Value.Get().(bool) {
 		return nil, nil
 	}
 

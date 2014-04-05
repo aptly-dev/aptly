@@ -14,11 +14,11 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if context.collectionFactory.RemoteRepoCollection().Len() > 0 {
+	if context.CollectionFactory().RemoteRepoCollection().Len() > 0 {
 		fmt.Printf("List of mirrors:\n")
-		repos := make([]string, context.collectionFactory.RemoteRepoCollection().Len())
+		repos := make([]string, context.CollectionFactory().RemoteRepoCollection().Len())
 		i := 0
-		context.collectionFactory.RemoteRepoCollection().ForEach(func(repo *debian.RemoteRepo) error {
+		context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *debian.RemoteRepo) error {
 			repos[i] = repo.String()
 			i++
 			return nil

@@ -16,20 +16,20 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	snapshots := make([]*debian.Snapshot, len(args))
 	for i := range snapshots {
-		snapshots[i], err = context.collectionFactory.SnapshotCollection().ByName(args[i])
+		snapshots[i], err = context.CollectionFactory().SnapshotCollection().ByName(args[i])
 		if err != nil {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
 
-		err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshots[i])
+		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshots[i])
 		if err != nil {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
 	}
 
-	context.progress.Printf("Loading packages...\n")
+	context.Progress().Printf("Loading packages...\n")
 
-	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), context.collectionFactory.PackageCollection(), context.progress)
+	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -42,7 +42,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	var pL *debian.PackageList
 	for i := 1; i < len(snapshots); i++ {
-		pL, err = debian.NewPackageListFromRefList(snapshots[i].RefList(), context.collectionFactory.PackageCollection(), context.progress)
+		pL, err = debian.NewPackageListFromRefList(snapshots[i].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 		if err != nil {
 			fmt.Errorf("unable to load packages: %s", err)
 		}
@@ -57,8 +57,8 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	var architecturesList []string
 
-	if len(context.architecturesList) > 0 {
-		architecturesList = context.architecturesList
+	if len(context.ArchitecturesList()) > 0 {
+		architecturesList = context.ArchitecturesList()
 	} else {
 		architecturesList = packageList.Architectures(true)
 	}
@@ -67,17 +67,17 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
 
-	context.progress.Printf("Verifying...\n")
+	context.Progress().Printf("Verifying...\n")
 
-	missing, err := packageList.VerifyDependencies(context.dependencyOptions, architecturesList, sourcePackageList, context.progress)
+	missing, err := packageList.VerifyDependencies(context.DependencyOptions(), architecturesList, sourcePackageList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to verify dependencies: %s", err)
 	}
 
 	if len(missing) == 0 {
-		context.progress.Printf("All dependencies are satisfied.\n")
+		context.Progress().Printf("All dependencies are satisfied.\n")
 	} else {
-		context.progress.Printf("Missing dependencies (%d):\n", len(missing))
+		context.Progress().Printf("Missing dependencies (%d):\n", len(missing))
 		deps := make([]string, len(missing))
 		i := 0
 		for _, dep := range missing {
@@ -88,7 +88,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		sort.Strings(deps)
 
 		for _, dep := range deps {
-			context.progress.Printf("  %s\n", dep)
+			context.Progress().Printf("  %s\n", dep)
 		}
 	}
 

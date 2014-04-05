@@ -16,37 +16,37 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 	onlyMatching := context.flags.Lookup("only-matching").Value.Get().(bool)
 
 	// Load <name-a> snapshot
-	snapshotA, err := context.collectionFactory.SnapshotCollection().ByName(args[0])
+	snapshotA, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshotA)
+	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotA)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
 	// Load <name-b> snapshot
-	snapshotB, err := context.collectionFactory.SnapshotCollection().ByName(args[1])
+	snapshotB, err := context.CollectionFactory().SnapshotCollection().ByName(args[1])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
-	err = context.collectionFactory.SnapshotCollection().LoadComplete(snapshotB)
+	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotB)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.collectionFactory.PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.CollectionFactory().PackageCollection())
 	if err != nil {
 		return fmt.Errorf("unable to calculate diff: %s", err)
 	}
 
 	if len(diff) == 0 {
-		context.progress.Printf("Snapshots are identical.\n")
+		context.Progress().Printf("Snapshots are identical.\n")
 	} else {
-		context.progress.Printf("  Arch   | Package                                  | Version in A                             | Version in B\n")
+		context.Progress().Printf("  Arch   | Package                                  | Version in A                             | Version in B\n")
 		for _, pdiff := range diff {
 			if onlyMatching && (pdiff.Left == nil || pdiff.Right == nil) {
 				continue
@@ -80,7 +80,7 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 				}
 			}
 
-			context.progress.ColoredPrintf(code+" %-6s | %-40s | %-40s | %-40s", arch, pkg, verA, verB)
+			context.Progress().ColoredPrintf(code+" %-6s | %-40s | %-40s | %-40s", arch, pkg, verA, verB)
 		}
 	}
 

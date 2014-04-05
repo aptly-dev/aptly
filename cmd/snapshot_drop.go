@@ -15,17 +15,17 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshot, err := context.collectionFactory.SnapshotCollection().ByName(name)
+	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	published := context.collectionFactory.PublishedRepoCollection().BySnapshot(snapshot)
+	published := context.CollectionFactory().PublishedRepoCollection().BySnapshot(snapshot)
 
 	if len(published) > 0 {
 		fmt.Printf("Snapshot `%s` is published currently:\n", snapshot.Name)
 		for _, repo := range published {
-			err = context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
+			err = context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
 			if err != nil {
 				return fmt.Errorf("unable to load published: %s", err)
 			}
@@ -37,7 +37,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 
 	force := context.flags.Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshots := context.collectionFactory.SnapshotCollection().BySnapshotSource(snapshot)
+		snapshots := context.CollectionFactory().SnapshotCollection().BySnapshotSource(snapshot)
 		if len(snapshots) > 0 {
 			fmt.Printf("Snapshot `%s` was used as a source in following snapshots:\n", snapshot.Name)
 			for _, snap := range snapshots {
@@ -48,7 +48,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = context.collectionFactory.SnapshotCollection().Drop(snapshot)
+	err = context.CollectionFactory().SnapshotCollection().Drop(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

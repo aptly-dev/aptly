@@ -19,7 +19,9 @@ import (
 )
 
 // Common context shared by all commands
-var context struct {
+type AptlyContext struct {
+	flags *flag.FlagSet
+
 	progress          aptly.Progress
 	downloader        aptly.Downloader
 	database          database.Storage
@@ -28,53 +30,146 @@ var context struct {
 	collectionFactory *debian.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
-	flags             *flag.FlagSet
 	// Debug features
 	fileCPUProfile *os.File
 	fileMemProfile *os.File
 	fileMemStats   *os.File
 }
 
+var context *AptlyContext
+
+func (context *AptlyContext) Config() *utils.ConfigStructure {
+	return &utils.Config
+}
+
+func (context *AptlyContext) DependencyOptions() int {
+	if context.dependencyOptions == -1 {
+		context.dependencyOptions = 0
+		if context.Config().DepFollowSuggests || context.flags.Lookup("dep-follow-suggests").Value.Get().(bool) {
+			context.dependencyOptions |= debian.DepFollowSuggests
+		}
+		if context.Config().DepFollowRecommends || context.flags.Lookup("dep-follow-recommends").Value.Get().(bool) {
+			context.dependencyOptions |= debian.DepFollowRecommends
+		}
+		if context.Config().DepFollowAllVariants || context.flags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
+			context.dependencyOptions |= debian.DepFollowAllVariants
+		}
+		if context.Config().DepFollowSource || context.flags.Lookup("dep-follow-source").Value.Get().(bool) {
+			context.dependencyOptions |= debian.DepFollowSource
+		}
+	}
+
+	return context.dependencyOptions
+}
+
+func (context *AptlyContext) ArchitecturesList() []string {
+	if context.architecturesList == nil {
+		context.architecturesList = context.Config().Architectures
+		optionArchitectures := context.flags.Lookup("architectures").Value.String()
+		if optionArchitectures != "" {
+			context.architecturesList = strings.Split(optionArchitectures, ",")
+		}
+	}
+
+	return context.architecturesList
+}
+
+func (context *AptlyContext) Progress() aptly.Progress {
+	if context.progress == nil {
+		context.progress = console.NewProgress()
+		context.progress.Start()
+	}
+
+	return context.progress
+}
+
+func (context *AptlyContext) Downloader() aptly.Downloader {
+	if context.downloader == nil {
+		context.downloader = http.NewDownloader(context.Config().DownloadConcurrency, context.Progress())
+	}
+
+	return context.downloader
+}
+
+func (context *AptlyContext) DBPath() string {
+	return filepath.Join(context.Config().RootDir, "db")
+}
+
+func (context *AptlyContext) Database() (database.Storage, error) {
+	if context.database == nil {
+		var err error
+
+		context.database, err = database.OpenDB(context.DBPath())
+		if err != nil {
+			return nil, fmt.Errorf("can't open database: %s", err)
+		}
+	}
+
+	return context.database, nil
+}
+
+func (context *AptlyContext) CollectionFactory() *debian.CollectionFactory {
+	if context.collectionFactory == nil {
+		db, err := context.Database()
+		if err != nil {
+			panic(err)
+		}
+		context.collectionFactory = debian.NewCollectionFactory(db)
+	}
+
+	return context.collectionFactory
+}
+
+func (context *AptlyContext) PackagePool() aptly.PackagePool {
+	if context.packagePool == nil {
+		context.packagePool = files.NewPackagePool(context.Config().RootDir)
+	}
+
+	return context.packagePool
+}
+
+func (context *AptlyContext) PublishedStorage() aptly.PublishedStorage {
+	if context.publishedStorage == nil {
+		context.publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
+	}
+
+	return context.publishedStorage
+}
+
+// ShutdownContext shuts context down
+func ShutdownContext() {
+	if aptly.EnableDebug {
+		if context.fileMemProfile != nil {
+			pprof.WriteHeapProfile(context.fileMemProfile)
+			context.fileMemProfile.Close()
+			context.fileMemProfile = nil
+		}
+		if context.fileCPUProfile != nil {
+			pprof.StopCPUProfile()
+			context.fileCPUProfile.Close()
+			context.fileCPUProfile = nil
+		}
+		if context.fileMemProfile != nil {
+			context.fileMemProfile.Close()
+			context.fileMemProfile = nil
+		}
+	}
+	if context.database != nil {
+		context.database.Close()
+	}
+	if context.downloader != nil {
+		context.downloader.Shutdown()
+	}
+	if context.progress != nil {
+		context.progress.Shutdown()
+	}
+}
+
 // InitContext initializes context with default settings
 func InitContext(flags *flag.FlagSet) error {
 	var err error
 
-	context.flags = flags
-
-	context.dependencyOptions = 0
-	if utils.Config.DepFollowSuggests || flags.Lookup("dep-follow-suggests").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowSuggests
-	}
-	if utils.Config.DepFollowRecommends || flags.Lookup("dep-follow-recommends").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowRecommends
-	}
-	if utils.Config.DepFollowAllVariants || flags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowAllVariants
-	}
-	if utils.Config.DepFollowSource || flags.Lookup("dep-follow-source").Value.Get().(bool) {
-		context.dependencyOptions |= debian.DepFollowSource
-	}
-
-	context.architecturesList = utils.Config.Architectures
-	optionArchitectures := flags.Lookup("architectures").Value.String()
-	if optionArchitectures != "" {
-		context.architecturesList = strings.Split(optionArchitectures, ",")
-	}
-
-	context.progress = console.NewProgress()
-	context.progress.Start()
-
-	context.downloader = http.NewDownloader(utils.Config.DownloadConcurrency, context.progress)
-
-	context.database, err = database.OpenDB(filepath.Join(utils.Config.RootDir, "db"))
-	if err != nil {
-		return fmt.Errorf("can't open database: %s", err)
-	}
-
-	context.collectionFactory = debian.NewCollectionFactory(context.database)
-
-	context.packagePool = files.NewPackagePool(utils.Config.RootDir)
-	context.publishedStorage = files.NewPublishedStorage(utils.Config.RootDir)
+	context = &AptlyContext{flags: flags, dependencyOptions: -1}
 
 	if aptly.EnableDebug {
 		cpuprofile := flags.Lookup("cpuprofile").Value.String()
@@ -125,33 +220,4 @@ func InitContext(flags *flag.FlagSet) error {
 	}
 
 	return nil
-}
-
-// ShutdownContext shuts context down
-func ShutdownContext() {
-	if aptly.EnableDebug {
-		if context.fileMemProfile != nil {
-			pprof.WriteHeapProfile(context.fileMemProfile)
-			context.fileMemProfile.Close()
-			context.fileMemProfile = nil
-		}
-		if context.fileCPUProfile != nil {
-			pprof.StopCPUProfile()
-			context.fileCPUProfile.Close()
-			context.fileCPUProfile = nil
-		}
-		if context.fileMemProfile != nil {
-			context.fileMemProfile.Close()
-			context.fileMemProfile = nil
-		}
-	}
-	if context.database != nil {
-		context.database.Close()
-	}
-	if context.downloader != nil {
-		context.downloader.Shutdown()
-	}
-	if context.progress != nil {
-		context.progress.Shutdown()
-	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
-	if flags.Lookup("skip-signing").Value.Get().(bool) || utils.Config.GpgDisableSign {
+	if flags.Lookup("skip-signing").Value.Get().(bool) || context.Config().GpgDisableSign {
 		return nil, nil
 	}
 

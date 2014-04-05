@@ -20,7 +20,7 @@ func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
 	}
 
 	err = reflist.ForEach(func(key []byte) error {
-		p, err2 := context.collectionFactory.PackageCollection().ByKey(key)
+		p, err2 := context.CollectionFactory().PackageCollection().ByKey(key)
 		if err2 != nil {
 			return err2
 		}

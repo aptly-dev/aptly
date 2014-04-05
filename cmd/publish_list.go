@@ -14,15 +14,15 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if context.collectionFactory.PublishedRepoCollection().Len() == 0 {
+	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
 		fmt.Printf("No snapshots have been published. Publish a snapshot by running `aptly publish snapshot ...`.\n")
 		return err
 	}
 
-	published := make([]string, 0, context.collectionFactory.PublishedRepoCollection().Len())
+	published := make([]string, 0, context.CollectionFactory().PublishedRepoCollection().Len())
 
-	err = context.collectionFactory.PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
-		err := context.collectionFactory.PublishedRepoCollection().LoadComplete(repo, context.collectionFactory)
+	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
+		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
 		if err != nil {
 			return err
 		}

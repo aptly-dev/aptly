@@ -23,19 +23,19 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	verifier := &utils.GpgVerifier{}
 
-	repo, err := context.collectionFactory.LocalRepoCollection().ByName(name)
+	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	err = context.collectionFactory.LocalRepoCollection().LoadComplete(repo)
+	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	context.progress.Printf("Loading packages...\n")
+	context.Progress().Printf("Loading packages...\n")
 
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.collectionFactory.PackageCollection(), context.progress)
+	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -45,7 +45,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	for _, location := range args[1:] {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err2)
+			context.Progress().ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err2)
 			continue
 		}
 		if info.IsDir() {
@@ -67,7 +67,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".dsc") {
 				packageFiles = append(packageFiles, location)
 			} else {
-				context.progress.ColoredPrintf("@y[!]@| @!Unknwon file extenstion: %s@|", location)
+				context.Progress().ColoredPrintf("@y[!]@| @!Unknwon file extenstion: %s@|", location)
 				continue
 			}
 		}
@@ -99,7 +99,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			p = debian.NewPackageFromControlFile(stanza)
 		}
 		if err != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to read file %s: %s@|", file, err)
+			context.Progress().ColoredPrintf("@y[!]@| @!Unable to read file %s: %s@|", file, err)
 			continue
 		}
 
@@ -115,9 +115,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			p.UpdateFiles([]debian.PackageFile{debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
-		err = context.packagePool.Import(file, checksums.MD5)
+		err = context.PackagePool().Import(file, checksums.MD5)
 		if err != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", file, err)
+			context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", file, err)
 			continue
 		}
 
@@ -129,9 +129,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 				continue
 			}
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = context.packagePool.Import(sourceFile, f.Checksums.MD5)
+			err = context.PackagePool().Import(sourceFile, f.Checksums.MD5)
 			if err != nil {
-				context.progress.ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
+				context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
 				break
 			}
 
@@ -142,25 +142,25 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		err = context.collectionFactory.PackageCollection().Update(p)
+		err = context.CollectionFactory().PackageCollection().Update(p)
 		if err != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to save package %s: %s@|", p, err)
+			context.Progress().ColoredPrintf("@y[!]@| @!Unable to save package %s: %s@|", p, err)
 			continue
 		}
 
 		err = list.Add(p)
 		if err != nil {
-			context.progress.ColoredPrintf("@y[!]@| @!Unable to add package to repo %s: %s@|", p, err)
+			context.Progress().ColoredPrintf("@y[!]@| @!Unable to add package to repo %s: %s@|", p, err)
 			continue
 		}
 
-		context.progress.ColoredPrintf("@g[+]@| %s added@|", p)
+		context.Progress().ColoredPrintf("@g[+]@| %s added@|", p)
 		processedFiles = append(processedFiles, candidateProcessedFiles...)
 	}
 
 	repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
 
-	err = context.collectionFactory.LocalRepoCollection().Update(repo)
+	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to save: %s", err)
 	}
