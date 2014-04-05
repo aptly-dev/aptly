@@ -192,6 +192,9 @@ class BaseTest(object):
         with open(os.path.join(os.environ["HOME"], ".aptly", path), "r") as f:
             return f.read()
 
+    def delete_file(self, path):
+        os.unlink(os.path.join(os.environ["HOME"], ".aptly", path))
+
     def check_file_contents(self, path, gold_name, match_prepare=None):
         contents = self.read_file(path)
 
