@@ -54,7 +54,7 @@ func OpenDB(path string) (Storage, error) {
 
 // RecoverDB recovers LevelDB database from corruption
 func RecoverDB(path string) error {
-	stor, err := storage.OpenFile("/Users/smira/.aptly/db/")
+	stor, err := storage.OpenFile(path)
 	if err != nil {
 		return err
 	}
