@@ -10,6 +10,7 @@ func makeCmdDb() *commander.Command {
 		Short:     "manage aptly's internal database and package pool",
 		Subcommands: []*commander.Command{
 			makeCmdDbCleanup(),
+			makeCmdDbRecover(),
 		},
 	}
 }
