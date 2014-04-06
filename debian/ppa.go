@@ -11,14 +11,14 @@ import (
 var ppaRegexp = regexp.MustCompile("^ppa:([^/]+)/(.+)$")
 
 // ParsePPA converts ppa URL like ppa:user/ppa-name to full HTTP url
-func ParsePPA(ppaURL string) (url string, distribution string, components []string, err error) {
+func ParsePPA(ppaURL string, config *utils.ConfigStructure) (url string, distribution string, components []string, err error) {
 	matches := ppaRegexp.FindStringSubmatch(ppaURL)
 	if matches == nil {
 		err = fmt.Errorf("unable to parse ppa URL: %v", ppaURL)
 		return
 	}
 
-	distributorID := utils.Config.PpaDistributorID
+	distributorID := config.PpaDistributorID
 	if distributorID == "" {
 		distributorID, err = getDistributorID()
 		if err != nil {
@@ -27,7 +27,7 @@ func ParsePPA(ppaURL string) (url string, distribution string, components []stri
 		}
 	}
 
-	codename := utils.Config.PpaCodename
+	codename := config.PpaCodename
 	if codename == "" {
 		codename, err = getCodename()
 		if err != nil {

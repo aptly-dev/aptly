@@ -6,27 +6,19 @@ import (
 )
 
 type PpaSuite struct {
-	savedConfig utils.ConfigStructure
+	config utils.ConfigStructure
 }
 
 var _ = Suite(&PpaSuite{})
 
-func (s *PpaSuite) SetUpTest(c *C) {
-	s.savedConfig = utils.Config
-}
-
-func (s *PpaSuite) TearDownTest(c *C) {
-	utils.Config = s.savedConfig
-}
-
 func (s *PpaSuite) TestParsePPA(c *C) {
-	_, _, _, err := ParsePPA("ppa:dedeed")
+	_, _, _, err := ParsePPA("ppa:dedeed", &s.config)
 	c.Check(err, ErrorMatches, "unable to parse ppa URL.*")
 
-	utils.Config.PpaDistributorID = "debian"
-	utils.Config.PpaCodename = "wheezy"
+	s.config.PpaDistributorID = "debian"
+	s.config.PpaCodename = "wheezy"
 
-	url, distribution, components, err := ParsePPA("ppa:user/project")
+	url, distribution, components, err := ParsePPA("ppa:user/project", &s.config)
 	c.Check(err, IsNil)
 	c.Check(url, Equals, "http://ppa.launchpad.net/user/project/debian")
 	c.Check(distribution, Equals, "wheezy")

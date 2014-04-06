@@ -24,7 +24,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 
 	mirrorName = args[0]
 	if len(args) == 2 {
-		archiveURL, distribution, components, err = debian.ParsePPA(args[1])
+		archiveURL, distribution, components, err = debian.ParsePPA(args[1], context.Config())
 		if err != nil {
 			return err
 		}
