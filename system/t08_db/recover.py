@@ -1,12 +1,11 @@
 from lib import BaseTest
 
 
-# Waiting for PR
-# class RecoverDB1Test(BaseTest):
-#     """
-#     recover db: no DB
-#     """
-#     runCmd = "aptly db recover"
+class RecoverDB1Test(BaseTest):
+    """
+    recover db: no DB
+    """
+    runCmd = "aptly db recover"
 
 
 class RecoverDB2Test(BaseTest):
