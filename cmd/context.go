@@ -20,7 +20,8 @@ import (
 
 // Common context shared by all commands
 type AptlyContext struct {
-	flags *flag.FlagSet
+	flags        *flag.FlagSet
+	configLoaded bool
 
 	progress          aptly.Progress
 	downloader        aptly.Downloader
@@ -38,7 +39,51 @@ type AptlyContext struct {
 
 var context *AptlyContext
 
+type FatalError struct {
+	ReturnCode int
+	Message    string
+}
+
+func Fatal(err error) {
+	panic(&FatalError{ReturnCode: 1, Message: err.Error()})
+}
+
 func (context *AptlyContext) Config() *utils.ConfigStructure {
+	if !context.configLoaded {
+		var err error
+
+		configLocation := context.flags.Lookup("config").Value.String()
+		if configLocation != "" {
+			err = utils.LoadConfig(configLocation, &utils.Config)
+
+			if err != nil {
+				Fatal(err)
+			}
+		} else {
+			configLocations := []string{
+				filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
+				"/etc/aptly.conf",
+			}
+
+			for _, configLocation := range configLocations {
+				err = utils.LoadConfig(configLocation, &utils.Config)
+				if err == nil {
+					break
+				}
+				if !os.IsNotExist(err) {
+					Fatal(fmt.Errorf("error loading config file %s: %s", configLocation, err))
+				}
+			}
+
+			if err != nil {
+				fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+				utils.SaveConfig(configLocations[0], &utils.Config)
+			}
+		}
+
+		context.configLoaded = true
+
+	}
 	return &utils.Config
 }
 
@@ -112,7 +157,7 @@ func (context *AptlyContext) CollectionFactory() *debian.CollectionFactory {
 	if context.collectionFactory == nil {
 		db, err := context.Database()
 		if err != nil {
-			panic(err)
+			Fatal(err)
 		}
 		context.collectionFactory = debian.NewCollectionFactory(db)
 	}
