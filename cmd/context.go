@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// Common context shared by all commands
+// AptlyContext is a common context shared by all commands
 type AptlyContext struct {
 	flags        *flag.FlagSet
 	configLoaded bool
@@ -39,15 +39,19 @@ type AptlyContext struct {
 
 var context *AptlyContext
 
+// FatalError is type for panicking to abort execution with non-zero
+// exit code and print meaningful explanation
 type FatalError struct {
 	ReturnCode int
 	Message    string
 }
 
+// Fatal panics and aborts execution with exit code 1
 func Fatal(err error) {
 	panic(&FatalError{ReturnCode: 1, Message: err.Error()})
 }
 
+// Config loads and returns current configuration
 func (context *AptlyContext) Config() *utils.ConfigStructure {
 	if !context.configLoaded {
 		var err error
@@ -87,6 +91,7 @@ func (context *AptlyContext) Config() *utils.ConfigStructure {
 	return &utils.Config
 }
 
+// DependencyOptions calculates options related to dependecy handling
 func (context *AptlyContext) DependencyOptions() int {
 	if context.dependencyOptions == -1 {
 		context.dependencyOptions = 0
@@ -107,6 +112,7 @@ func (context *AptlyContext) DependencyOptions() int {
 	return context.dependencyOptions
 }
 
+// ArchitecturesList returns list of architectures fixed via command line or config
 func (context *AptlyContext) ArchitecturesList() []string {
 	if context.architecturesList == nil {
 		context.architecturesList = context.Config().Architectures
@@ -119,6 +125,7 @@ func (context *AptlyContext) ArchitecturesList() []string {
 	return context.architecturesList
 }
 
+// Progress creates or returns Progress object
 func (context *AptlyContext) Progress() aptly.Progress {
 	if context.progress == nil {
 		context.progress = console.NewProgress()
@@ -128,6 +135,7 @@ func (context *AptlyContext) Progress() aptly.Progress {
 	return context.progress
 }
 
+// Downloader returns instance of current downloader
 func (context *AptlyContext) Downloader() aptly.Downloader {
 	if context.downloader == nil {
 		context.downloader = http.NewDownloader(context.Config().DownloadConcurrency, context.Progress())
@@ -136,10 +144,12 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 	return context.downloader
 }
 
+// DBPath builds path to database
 func (context *AptlyContext) DBPath() string {
 	return filepath.Join(context.Config().RootDir, "db")
 }
 
+// Database opens and returns current instance of database
 func (context *AptlyContext) Database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
@@ -153,6 +163,7 @@ func (context *AptlyContext) Database() (database.Storage, error) {
 	return context.database, nil
 }
 
+// CollectionFactory builds factory producing all kinds of collections
 func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
 	if context.collectionFactory == nil {
 		db, err := context.Database()
@@ -165,6 +176,7 @@ func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
 	return context.collectionFactory
 }
 
+// PackagePool returns instance of PackagePool
 func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	if context.packagePool == nil {
 		context.packagePool = files.NewPackagePool(context.Config().RootDir)
@@ -173,6 +185,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	return context.packagePool
 }
 
+// PublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) PublishedStorage() aptly.PublishedStorage {
 	if context.publishedStorage == nil {
 		context.publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
