@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"code.google.com/p/gographviz"
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"io"
 	"io/ioutil"
@@ -28,7 +28,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Loading mirrors...\n")
 
-	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *debian.RemoteRepo) error {
+	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
@@ -52,7 +52,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Loading local repos...\n")
 
-	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *debian.LocalRepo) error {
+	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
@@ -75,12 +75,12 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Loading snapshots...\n")
 
-	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
+	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
 		existingNodes[snapshot.UUID] = true
 		return nil
 	})
 
-	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
+	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
 		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return err
@@ -115,7 +115,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Loading published repos...\n")
 
-	context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
+	context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
 		graph.AddNode("aptly", graphvizEscape(repo.UUID), map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",

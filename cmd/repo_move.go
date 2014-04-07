@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"sort"
@@ -28,8 +28,8 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	}
 
 	var (
-		srcRefList *debian.PackageRefList
-		srcRepo    *debian.LocalRepo
+		srcRefList *deb.PackageRefList
+		srcRepo    *deb.LocalRepo
 	)
 
 	if command == "copy" || command == "move" {
@@ -49,7 +49,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 		srcRefList = srcRepo.RefList()
 	} else if command == "import" {
-		var srcRemoteRepo *debian.RemoteRepo
+		var srcRemoteRepo *deb.RemoteRepo
 
 		srcRemoteRepo, err = context.CollectionFactory().RemoteRepoCollection().ByName(args[0])
 		if err != nil {
@@ -72,12 +72,12 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
-	dstList, err := debian.NewPackageListFromRefList(dstRepo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	dstList, err := deb.NewPackageListFromRefList(dstRepo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	srcList, err := debian.NewPackageListFromRefList(srcRefList, context.CollectionFactory().PackageCollection(), context.Progress())
+	srcList, err := deb.NewPackageListFromRefList(srcRefList, context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -120,7 +120,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		verb = "imported"
 	}
 
-	err = toProcess.ForEach(func(p *debian.Package) error {
+	err = toProcess.ForEach(func(p *deb.Package) error {
 		err = dstList.Add(p)
 		if err != nil {
 			return err
@@ -139,7 +139,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
-		dstRepo.UpdateRefList(debian.NewPackageRefListFromPackageList(dstList))
+		dstRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(dstList))
 
 		err = context.CollectionFactory().LocalRepoCollection().Update(dstRepo)
 		if err != nil {
@@ -147,7 +147,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 
 		if command == "move" {
-			srcRepo.UpdateRefList(debian.NewPackageRefListFromPackageList(srcList))
+			srcRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(srcList))
 
 			err = context.CollectionFactory().LocalRepoCollection().Update(srcRepo)
 			if err != nil {

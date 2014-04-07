@@ -1,4 +1,4 @@
-package debian
+package deb
 
 import (
 	"archive/tar"

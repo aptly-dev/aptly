@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"sort"
@@ -18,10 +18,10 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	}
 
 	// collect information about references packages...
-	existingPackageRefs := debian.NewPackageRefList()
+	existingPackageRefs := deb.NewPackageRefList()
 
 	context.Progress().Printf("Loading mirrors, local repos and snapshots...\n")
-	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *debian.RemoteRepo) error {
+	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
@@ -35,7 +35,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *debian.LocalRepo) error {
+	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
@@ -49,7 +49,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
+	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
 		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return err

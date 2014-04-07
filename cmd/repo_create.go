@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -14,7 +14,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	repo := debian.NewLocalRepo(args[0], context.flags.Lookup("comment").Value.String())
+	repo := deb.NewLocalRepo(args[0], context.flags.Lookup("comment").Value.String())
 	repo.DefaultDistribution = context.flags.Lookup("distribution").Value.String()
 	repo.DefaultComponent = context.flags.Lookup("component").Value.String()
 

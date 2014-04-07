@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"sort"
 )
@@ -20,7 +20,7 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		snapshots := make([]string, context.CollectionFactory().SnapshotCollection().Len())
 
 		i := 0
-		context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *debian.Snapshot) error {
+		context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
 			snapshots[i] = snapshot.String()
 			i++
 			return nil

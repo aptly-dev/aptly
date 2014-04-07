@@ -1,4 +1,4 @@
-package debian
+package deb
 
 import (
 	"github.com/smira/aptly/utils"

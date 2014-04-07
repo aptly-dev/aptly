@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"sort"
 )
@@ -14,7 +14,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	snapshots := make([]*debian.Snapshot, len(args))
+	snapshots := make([]*deb.Snapshot, len(args))
 	for i := range snapshots {
 		snapshots[i], err = context.CollectionFactory().SnapshotCollection().ByName(args[i])
 		if err != nil {
@@ -29,20 +29,20 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
-	packageList, err := debian.NewPackageListFromRefList(snapshots[0].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	packageList, err := deb.NewPackageListFromRefList(snapshots[0].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	sourcePackageList := debian.NewPackageList()
+	sourcePackageList := deb.NewPackageList()
 	err = sourcePackageList.Append(packageList)
 	if err != nil {
 		fmt.Errorf("unable to merge sources: %s", err)
 	}
 
-	var pL *debian.PackageList
+	var pL *deb.PackageList
 	for i := 1; i < len(snapshots); i++ {
-		pL, err = debian.NewPackageListFromRefList(snapshots[i].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+		pL, err = deb.NewPackageListFromRefList(snapshots[i].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 		if err != nil {
 			fmt.Errorf("unable to load packages: %s", err)
 		}

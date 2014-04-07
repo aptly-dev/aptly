@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"strings"
@@ -24,7 +24,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 
 	mirrorName = args[0]
 	if len(args) == 2 {
-		archiveURL, distribution, components, err = debian.ParsePPA(args[1], context.Config())
+		archiveURL, distribution, components, err = deb.ParsePPA(args[1], context.Config())
 		if err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		archiveURL, distribution, components = args[1], args[2], args[3:]
 	}
 
-	repo, err := debian.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.ArchitecturesList(), downloadSources)
+	repo, err := deb.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.ArchitecturesList(), downloadSources)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}

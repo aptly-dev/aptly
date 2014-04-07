@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -38,9 +38,9 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 	fmt.Printf("Serving published repositories, recommended apt sources list:\n\n")
 
 	sources := make(sort.StringSlice, 0, context.CollectionFactory().PublishedRepoCollection().Len())
-	published := make(map[string]*debian.PublishedRepo, context.CollectionFactory().PublishedRepoCollection().Len())
+	published := make(map[string]*deb.PublishedRepo, context.CollectionFactory().PublishedRepoCollection().Len())
 
-	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *debian.PublishedRepo) error {
+	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
 		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
 		if err != nil {
 			return err

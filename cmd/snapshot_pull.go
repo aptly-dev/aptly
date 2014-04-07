@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"sort"
@@ -46,12 +46,12 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	// Convert snapshot to package list
 	context.Progress().Printf("Loading packages (%d)...\n", snapshot.RefList().Len()+source.RefList().Len())
-	packageList, err := debian.NewPackageListFromRefList(snapshot.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	packageList, err := deb.NewPackageListFromRefList(snapshot.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	sourcePackageList, err := debian.NewPackageListFromRefList(source.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	sourcePackageList, err := deb.NewPackageListFromRefList(source.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -76,9 +76,9 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	// Initial dependencies out of arguments
-	initialDependencies := make([]debian.Dependency, len(args)-3)
+	initialDependencies := make([]deb.Dependency, len(args)-3)
 	for i, arg := range args[3:] {
-		initialDependencies[i], err = debian.ParseDependency(arg)
+		initialDependencies[i], err = deb.ParseDependency(arg)
 		if err != nil {
 			return fmt.Errorf("unable to parse argument: %s", err)
 		}
@@ -86,7 +86,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	// Perform pull
 	for _, arch := range architecturesList {
-		dependencies := make([]debian.Dependency, len(initialDependencies), 128)
+		dependencies := make([]deb.Dependency, len(initialDependencies), 128)
 		for i := range dependencies {
 			dependencies[i] = initialDependencies[i]
 			dependencies[i].Architecture = arch
@@ -105,10 +105,10 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 			if !noRemove {
 				// Remove all packages with the same name and architecture
-				for p := packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
+				for p := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
 					packageList.Remove(p)
 					context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
-					p = packageList.Search(debian.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
+					p = packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
 				}
 			}
 
@@ -121,10 +121,10 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			}
 
 			// Find missing dependencies for single added package
-			pL := debian.NewPackageList()
+			pL := deb.NewPackageList()
 			pL.Add(pkg)
 
-			var missing []debian.Dependency
+			var missing []deb.Dependency
 			missing, err = pL.VerifyDependencies(context.DependencyOptions(), []string{arch}, packageList, nil)
 			if err != nil {
 				context.Progress().ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
@@ -151,7 +151,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		context.Progress().Printf("\nNot creating snapshot, as dry run was requested.\n")
 	} else {
 		// Create <destination> snapshot
-		destination := debian.NewSnapshotFromPackageList(args[2], []*debian.Snapshot{snapshot, source}, packageList,
+		destination := deb.NewSnapshotFromPackageList(args[2], []*deb.Snapshot{snapshot, source}, packageList,
 			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
 
 		err = context.CollectionFactory().SnapshotCollection().Add(destination)

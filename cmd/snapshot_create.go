@@ -2,19 +2,19 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 )
 
 func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 	var (
 		err      error
-		snapshot *debian.Snapshot
+		snapshot *deb.Snapshot
 	)
 
 	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" {
 		// aptly snapshot create snap from mirror mirror
-		var repo *debian.RemoteRepo
+		var repo *deb.RemoteRepo
 
 		repoName, snapshotName := args[3], args[0]
 
@@ -28,13 +28,13 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		snapshot, err = debian.NewSnapshotFromRepository(snapshotName, repo)
+		snapshot, err = deb.NewSnapshotFromRepository(snapshotName, repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 	} else if len(args) == 4 && args[1] == "from" && args[2] == "repo" {
 		// aptly snapshot create snap from repo repo
-		var repo *debian.LocalRepo
+		var repo *deb.LocalRepo
 
 		localRepoName, snapshotName := args[3], args[0]
 
@@ -48,7 +48,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		snapshot, err = debian.NewSnapshotFromLocalRepo(snapshotName, repo)
+		snapshot, err = deb.NewSnapshotFromLocalRepo(snapshotName, repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -56,9 +56,9 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		// aptly snapshot create snap empty
 		snapshotName := args[0]
 
-		packageList := debian.NewPackageList()
+		packageList := deb.NewPackageList()
 
-		snapshot = debian.NewSnapshotFromPackageList(snapshotName, nil, packageList, "Created as empty")
+		snapshot = deb.NewSnapshotFromPackageList(snapshotName, nil, packageList, "Created as empty")
 	} else {
 		cmd.Usage()
 		return err

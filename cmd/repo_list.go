@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"sort"
 )
@@ -18,7 +18,7 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 		fmt.Printf("List of mirrors:\n")
 		repos := make([]string, context.CollectionFactory().LocalRepoCollection().Len())
 		i := 0
-		context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *debian.LocalRepo) error {
+		context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 			err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 			if err != nil {
 				return err

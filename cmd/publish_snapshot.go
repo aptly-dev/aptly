@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -63,7 +63,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	component := context.flags.Lookup("component").Value.String()
 	distribution := context.flags.Lookup("distribution").Value.String()
 
-	published, err := debian.NewPublishedRepo(prefix, distribution, component, context.ArchitecturesList(), source, context.CollectionFactory())
+	published, err := deb.NewPublishedRepo(prefix, distribution, component, context.ArchitecturesList(), source, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"strings"
 )
@@ -14,7 +14,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	sources := make([]*debian.Snapshot, len(args)-1)
+	sources := make([]*deb.Snapshot, len(args)-1)
 
 	for i := 0; i < len(args)-1; i++ {
 		sources[i], err = context.CollectionFactory().SnapshotCollection().ByName(args[i+1])
@@ -40,7 +40,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	}
 
 	// Create <destination> snapshot
-	destination := debian.NewSnapshotFromRefList(args[0], sources, result,
+	destination := deb.NewSnapshotFromRefList(args[0], sources, result,
 		fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
 
 	err = context.CollectionFactory().SnapshotCollection().Add(destination)

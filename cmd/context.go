@@ -5,7 +5,7 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
@@ -28,7 +28,7 @@ type AptlyContext struct {
 	database          database.Storage
 	packagePool       aptly.PackagePool
 	publishedStorage  aptly.PublishedStorage
-	collectionFactory *debian.CollectionFactory
+	collectionFactory *deb.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
 	// Debug features
@@ -91,16 +91,16 @@ func (context *AptlyContext) DependencyOptions() int {
 	if context.dependencyOptions == -1 {
 		context.dependencyOptions = 0
 		if context.Config().DepFollowSuggests || context.flags.Lookup("dep-follow-suggests").Value.Get().(bool) {
-			context.dependencyOptions |= debian.DepFollowSuggests
+			context.dependencyOptions |= deb.DepFollowSuggests
 		}
 		if context.Config().DepFollowRecommends || context.flags.Lookup("dep-follow-recommends").Value.Get().(bool) {
-			context.dependencyOptions |= debian.DepFollowRecommends
+			context.dependencyOptions |= deb.DepFollowRecommends
 		}
 		if context.Config().DepFollowAllVariants || context.flags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
-			context.dependencyOptions |= debian.DepFollowAllVariants
+			context.dependencyOptions |= deb.DepFollowAllVariants
 		}
 		if context.Config().DepFollowSource || context.flags.Lookup("dep-follow-source").Value.Get().(bool) {
-			context.dependencyOptions |= debian.DepFollowSource
+			context.dependencyOptions |= deb.DepFollowSource
 		}
 	}
 
@@ -153,13 +153,13 @@ func (context *AptlyContext) Database() (database.Storage, error) {
 	return context.database, nil
 }
 
-func (context *AptlyContext) CollectionFactory() *debian.CollectionFactory {
+func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
 	if context.collectionFactory == nil {
 		db, err := context.Database()
 		if err != nil {
 			Fatal(err)
 		}
-		context.collectionFactory = debian.NewCollectionFactory(db)
+		context.collectionFactory = deb.NewCollectionFactory(db)
 	}
 
 	return context.collectionFactory

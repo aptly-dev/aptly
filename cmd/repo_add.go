@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -35,7 +35,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -78,25 +78,25 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	for _, file := range packageFiles {
 		var (
-			stanza debian.Stanza
-			p      *debian.Package
+			stanza deb.Stanza
+			p      *deb.Package
 		)
 
 		candidateProcessedFiles := []string{}
 		isSourcePackage := strings.HasSuffix(file, ".dsc")
 
 		if isSourcePackage {
-			stanza, err = debian.GetControlFileFromDsc(file, verifier)
+			stanza, err = deb.GetControlFileFromDsc(file, verifier)
 
 			if err == nil {
 				stanza["Package"] = stanza["Source"]
 				delete(stanza, "Source")
 
-				p, err = debian.NewSourcePackageFromControlFile(stanza)
+				p, err = deb.NewSourcePackageFromControlFile(stanza)
 			}
 		} else {
-			stanza, err = debian.GetControlFileFromDeb(file)
-			p = debian.NewPackageFromControlFile(stanza)
+			stanza, err = deb.GetControlFileFromDeb(file)
+			p = deb.NewPackageFromControlFile(stanza)
 		}
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to read file %s: %s@|", file, err)
@@ -110,9 +110,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		}
 
 		if isSourcePackage {
-			p.UpdateFiles(append(p.Files(), debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
+			p.UpdateFiles(append(p.Files(), deb.PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
 		} else {
-			p.UpdateFiles([]debian.PackageFile{debian.PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
+			p.UpdateFiles([]deb.PackageFile{deb.PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
 		err = context.PackagePool().Import(file, checksums.MD5)
@@ -158,7 +158,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		processedFiles = append(processedFiles, candidateProcessedFiles...)
 	}
 
-	repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
+	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
 	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
 	if err != nil {

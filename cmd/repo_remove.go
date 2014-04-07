@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -28,7 +28,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
-	list, err := debian.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -39,7 +39,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	toRemove.ForEach(func(p *debian.Package) error {
+	toRemove.ForEach(func(p *deb.Package) error {
 		list.Remove(p)
 		context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 		return nil
@@ -48,7 +48,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
-		repo.UpdateRefList(debian.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
 		err = context.CollectionFactory().LocalRepoCollection().Update(repo)
 		if err != nil {

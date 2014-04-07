@@ -4,7 +4,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/debian"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"os"
@@ -12,7 +12,7 @@ import (
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
-func ListPackagesRefList(reflist *debian.PackageRefList) (err error) {
+func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
 	fmt.Printf("Packages:\n")
 
 	if reflist == nil {
