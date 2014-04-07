@@ -1,2 +1,2 @@
-// Package debian implements Debian-specific repository handling
+// Package deb implements Debian-specific repository handling
 package deb
