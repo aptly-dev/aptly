@@ -6,7 +6,7 @@ gom 'github.com/cheggaaa/pb', :commit => '74be7a1388046f374ac36e93d46f5d56e856f8
 gom 'github.com/smira/commander'
 gom 'github.com/smira/flag'
 gom 'github.com/mkrautz/goar', :commit => '36eb5f3452b1283a211fa35bc00c646fd0db5c4b'
-gom 'github.com/syndtr/goleveldb/leveldb', :commit => '10d60cdc520ecba81d86e98faea1e28755c80841'
+gom 'github.com/syndtr/goleveldb/leveldb', :commit => 'ff3719c6816e2cd194f05058452d660608e178ac'
 gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 
