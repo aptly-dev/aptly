@@ -99,6 +99,20 @@ func (s *PublishedRepoSuite) TearDownTest(c *C) {
 	s.db.Close()
 }
 
+func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
+	c.Check(s.repo.snapshot, Equals, s.snapshot)
+	c.Check(s.repo.SourceKind, Equals, "snapshot")
+	c.Check(s.repo.SourceUUID, Equals, s.snapshot.UUID)
+
+	c.Check(s.repo2.localRepo, Equals, s.localRepo)
+	c.Check(s.repo2.SourceKind, Equals, "local")
+	c.Check(s.repo2.SourceUUID, Equals, s.localRepo.UUID)
+	c.Check(s.repo2.packageRefs.Len(), Equals, 3)
+
+	c.Check(s.repo.RefList().Len(), Equals, 3)
+	c.Check(s.repo2.RefList().Len(), Equals, 3)
+}
+
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 
 	for _, t := range []struct {
@@ -266,6 +280,10 @@ func (s *PublishedRepoSuite) TestKey(c *C) {
 	c.Check(s.repo.Key(), DeepEquals, []byte("Uppa>>squeeze"))
 }
 
+func (s *PublishedRepoSuite) TestRefKey(c *C) {
+	c.Check(s.repo.RefKey(), DeepEquals, []byte("E"+s.repo.UUID))
+}
+
 func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
 	encoded := s.repo.Encode()
 	repo := &PublishedRepo{}
@@ -280,6 +298,7 @@ func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
 	err = repo2.Decode(encoded2)
 
 	s.repo2.localRepo = nil
+	s.repo2.packageRefs = nil
 	c.Assert(err, IsNil)
 	c.Assert(repo2, DeepEquals, s.repo2)
 }
@@ -376,12 +395,15 @@ func (s *PublishedRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.snapshot, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
 	c.Assert(r.snapshot.UUID, Equals, s.repo1.snapshot.UUID)
+	c.Assert(r.RefList().Len(), Equals, 0)
 
 	r, err = collection.ByPrefixDistribution("ppa", "precise")
 	c.Assert(err, IsNil)
 	c.Assert(r.localRepo, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
 	c.Assert(r.localRepo.UUID, Equals, s.repo4.localRepo.UUID)
+	c.Assert(r.packageRefs.Len(), Equals, 0)
+	c.Assert(r.RefList().Len(), Equals, 0)
 }
 
 func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
@@ -411,6 +433,13 @@ func (s *PublishedRepoCollectionSuite) TestBySnapshot(c *C) {
 
 	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1})
 	c.Check(s.collection.BySnapshot(s.snap2), DeepEquals, []*PublishedRepo{s.repo2})
+}
+
+func (s *PublishedRepoCollectionSuite) TestByLocalRepo(c *C) {
+	c.Check(s.collection.Add(s.repo1), IsNil)
+	c.Check(s.collection.Add(s.repo4), IsNil)
+
+	c.Check(s.collection.ByLocalRepo(s.localRepo), DeepEquals, []*PublishedRepo{s.repo4})
 }
 
 type PublishedRepoRemoveSuite struct {

@@ -32,8 +32,9 @@ type PublishedRepo struct {
 	// SourceUUID is UUID of either snapshot or local repo
 	SourceUUID string `codec:"SnapshotUUID"`
 
-	snapshot  *Snapshot
-	localRepo *LocalRepo
+	snapshot    *Snapshot
+	localRepo   *LocalRepo
+	packageRefs *PackageRefList
 }
 
 // NewPublishedRepo creates new published repository
@@ -59,6 +60,7 @@ func NewPublishedRepo(prefix string, distribution string, component string, arch
 		if ok {
 			result.SourceKind = "local"
 			result.SourceUUID = result.localRepo.UUID
+			result.packageRefs = result.localRepo.RefList()
 		} else {
 			panic("unknown source kind")
 		}
@@ -179,6 +181,19 @@ func (p *PublishedRepo) Key() []byte {
 	return []byte("U" + p.Prefix + ">>" + p.Distribution)
 }
 
+// RefKey is a unique id for package reference list
+func (p *PublishedRepo) RefKey() []byte {
+	return []byte("E" + p.UUID)
+}
+
+// RefList returns list of package refs in local repo
+func (p *PublishedRepo) RefList() *PackageRefList {
+	if p.SourceKind == "local" {
+		return p.packageRefs
+	}
+	return p.snapshot.RefList()
+}
+
 // Encode does msgpack encoding of PublishedRepo
 func (p *PublishedRepo) Encode() []byte {
 	var buf bytes.Buffer
@@ -206,7 +221,8 @@ func (p *PublishedRepo) Decode(input []byte) error {
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
-func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
+func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage,
+	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
@@ -489,22 +505,44 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 }
 
 // Update stores updated information about repo in DB
-func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
-	err := collection.db.Put(repo.Key(), repo.Encode())
+func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) (err error) {
+	err = collection.db.Put(repo.Key(), repo.Encode())
 	if err != nil {
-		return err
+		return
 	}
-	return nil
+
+	if repo.SourceKind == "local" {
+		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
+	}
+	return
 }
 
 // LoadComplete loads additional information for remote repo
-func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) error {
-	var err error
-
+func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) (err error) {
 	if repo.SourceKind == "snapshot" {
 		repo.snapshot, err = collectionFactory.SnapshotCollection().ByUUID(repo.SourceUUID)
+		if err != nil {
+			return
+		}
+		err = collectionFactory.SnapshotCollection().LoadComplete(repo.snapshot)
 	} else if repo.SourceKind == "local" {
 		repo.localRepo, err = collectionFactory.LocalRepoCollection().ByUUID(repo.SourceUUID)
+		if err != nil {
+			return
+		}
+		err = collectionFactory.LocalRepoCollection().LoadComplete(repo.localRepo)
+		if err != nil {
+			return
+		}
+
+		var encoded []byte
+		encoded, err = collection.db.Get(repo.RefKey())
+		if err != nil {
+			return err
+		}
+
+		repo.packageRefs = &PackageRefList{}
+		err = repo.packageRefs.Decode(encoded)
 	} else {
 		panic("unknown SourceKind")
 	}
@@ -603,5 +641,9 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
-	return collection.db.Delete(repo.Key())
+	err = collection.db.Delete(repo.Key())
+	if err != nil {
+		return err
+	}
+	return collection.db.Delete(repo.RefKey())
 }
