@@ -126,9 +126,10 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	if len(filesToDelete) > 0 {
 		context.Progress().InitBar(int64(len(filesToDelete)), false)
-		totalSize := int64(0)
+
+		var size, totalSize int64
 		for _, file := range filesToDelete {
-			size, err := context.PackagePool().Remove(file)
+			size, err = context.PackagePool().Remove(file)
 			if err != nil {
 				return err
 			}

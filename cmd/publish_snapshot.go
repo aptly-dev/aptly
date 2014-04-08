@@ -31,7 +31,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	)
 
 	if cmd.Name() == "snapshot" {
-		snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+		var snapshot *deb.Snapshot
+		snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(name)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
@@ -44,7 +45,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		source = snapshot
 		message = fmt.Sprintf("Snapshot %s", snapshot.Name)
 	} else if cmd.Name() == "repo" {
-		localRepo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+		var localRepo *deb.LocalRepo
+		localRepo, err = context.CollectionFactory().LocalRepoCollection().ByName(name)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}
