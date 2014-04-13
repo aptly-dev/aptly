@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+  "container/list"
+  "regexp"
 )
 
 // RemoteRepo represents remote (fetchable) Debian repository.
@@ -568,7 +570,24 @@ func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error)
 			return r, nil
 		}
 	}
-	return nil, fmt.Errorf("mirror with name %s not found", name)
+	return nil, fmt.Errorf("mirror with name %s not found. Use 'aptly mirror list' to display the availbe mirror", name)
+}
+
+// ByRegexp looks for repository matching a regular expression
+func (collection *RemoteRepoCollection) ByRegexp(aregexp string) (*list.List, error) {
+  repo_list := list.New()
+  for _, r := range collection.list {
+    // add the repository name to the list if it matches
+    matched, _ := regexp.MatchString(aregexp, r.Name)
+    if true == matched{
+      repo_list.PushBack(r.Name)
+    }
+  }
+  if 0 == repo_list.Len(){
+  // return empty list in case the regular expression was no match
+    return nil, fmt.Errorf("no mirror name matching %s was found. Use 'aptly mirror list' to display the availbe mirror", aregexp)
+  }
+  return repo_list,nil
 }
 
 // ByUUID looks up repository by uuid

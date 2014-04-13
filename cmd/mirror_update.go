@@ -6,6 +6,24 @@ import (
 	"github.com/smira/flag"
 )
 
+func aptlyMirrorUpdates(cmd *commander.Command, args []string) error {
+	var err error
+	if len(args) != 1 {
+		cmd.Usage()
+		return err
+	}
+  repo_regexp := args[0]
+  repo, err := context.CollectionFactory().RemoteRepoCollection().ByRegexp(repo_regexp)
+  if nil != repo{
+  for e := repo.Front(); e != nil; e = e.Next() {
+      // there is probably a better way to do directly use e.Value as a string...  
+      result := fmt.Sprintf("%s", e.Value)
+      aptlyMirrorUpdate(cmd, []string{result})
+    }
+  }
+  return err
+}
+
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 1 {
@@ -53,7 +71,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 func makeCmdMirrorUpdate() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyMirrorUpdate,
+		Run:       aptlyMirrorUpdates,
 		UsageLine: "update <name>",
 		Short:     "update mirror",
 		Long: `
