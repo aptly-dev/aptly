@@ -57,7 +57,7 @@ If you have Go environment set up, you can build aptly from source by running (g
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
     cd $GOPATH/src/github.com/smira/aptly
-    gom install
+    gom -production install
     gom build -o $GOPATH/bin/aptly
 
 Aptly is using `gom <https://github.com/mattn/gom>`_ to fix external dependencies, so regular ``go get github.com/smira/aptly``
