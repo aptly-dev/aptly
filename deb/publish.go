@@ -25,6 +25,8 @@ type PublishedRepo struct {
 	Prefix       string
 	Distribution string
 	Component    string
+	Origin       string
+	Label        string
 	// Architectures is a list of all architectures published
 	Architectures []string
 	// SourceKind is "local"/"repo"
@@ -173,7 +175,17 @@ func (p *PublishedRepo) String() string {
 		panic("no snapshot/localRepo")
 	}
 
-	return fmt.Sprintf("%s/%s (%s) [%s] publishes %s", p.Prefix, p.Distribution, p.Component, strings.Join(p.Architectures, ", "), source)
+	var extra string
+
+	if p.Origin != "" {
+		extra += fmt.Sprintf(", origin: %s", p.Origin)
+	}
+
+	if p.Label != "" {
+		extra += fmt.Sprintf(", label: %s", p.Label)
+	}
+
+	return fmt.Sprintf("%s/%s (%s%s) [%s] publishes %s", p.Prefix, p.Distribution, p.Component, extra, strings.Join(p.Architectures, ", "), source)
 }
 
 // Key returns unique key identifying PublishedRepo
@@ -367,8 +379,16 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 	}
 
 	release := make(Stanza)
-	release["Origin"] = p.Prefix + " " + p.Distribution
-	release["Label"] = p.Prefix + " " + p.Distribution
+	if p.Origin == "" {
+		release["Origin"] = p.Prefix + " " + p.Distribution
+	} else {
+		release["Origin"] = p.Origin
+	}
+	if p.Label == "" {
+		release["Label"] = p.Prefix + " " + p.Distribution
+	} else {
+		release["Label"] = p.Label
+	}
 	release["Codename"] = p.Distribution
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Components"] = p.Component

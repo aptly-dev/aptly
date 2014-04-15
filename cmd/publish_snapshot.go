@@ -69,6 +69,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
+	published.Origin = cmd.Flag.Lookup("origin").Value.String()
+	published.Label = cmd.Flag.Lookup("label").Value.String()
 
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
@@ -133,6 +135,8 @@ Example:
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
+	cmd.Flag.String("origin", "", "origin name to publish")
+	cmd.Flag.String("label", "", "label to publish")
 
 	return cmd
 }

@@ -1,3 +1,5 @@
 Published repositories:
   * ./maverick (main) [amd64, i386] publishes [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
   * ppa/smira/wheezy (contrib) [amd64] publishes [snap2]: Merged from sources: 'snap1'
+  * ppa/tr1/maverick (main, origin: origin1) [amd64, i386] publishes [snap2]: Merged from sources: 'snap1'
+  * ppa/tr2/maverick (main, label: label1) [amd64, i386] publishes [snap2]: Merged from sources: 'snap1'

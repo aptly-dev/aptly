@@ -274,6 +274,12 @@ func (s *PublishedRepoSuite) TestString(c *C) {
 	repo, _ = NewPublishedRepo("", "squeeze", "main", []string{"i386", "amd64"}, s.snapshot, s.factory)
 	c.Check(repo.String(), Equals,
 		"./squeeze (main) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+	repo.Origin = "myorigin"
+	c.Check(repo.String(), Equals,
+		"./squeeze (main, origin: myorigin) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+	repo.Label = "mylabel"
+	c.Check(repo.String(), Equals,
+		"./squeeze (main, origin: myorigin, label: mylabel) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
 }
 
 func (s *PublishedRepoSuite) TestKey(c *C) {

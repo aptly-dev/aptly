@@ -556,3 +556,22 @@ class PublishSnapshot23Test(BaseTest):
     ]
     runCmd = "aptly publish snapshot -skip-signing snap3"
     gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot24Test(BaseTest):
+    """
+    publish snapshot: custom origin
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap24 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 snap24"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot24Test, self).check()
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
