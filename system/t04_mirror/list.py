@@ -19,3 +19,18 @@ class ListMirror2Test(BaseTest):
     list mirrors: empty list
     """
     runCmd = "aptly mirror list"
+
+
+class ListMirror3Test(BaseTest):
+    """
+    list mirrors: raw list
+    """
+    fixtureDB = True
+    runCmd = "aptly -raw mirror list"
+
+
+class ListMirror4Test(BaseTest):
+    """
+    list mirrors: raw empty list
+    """
+    runCmd = "aptly -raw mirror list"

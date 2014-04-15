@@ -14,26 +14,39 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if context.CollectionFactory().SnapshotCollection().Len() > 0 {
-		fmt.Printf("List of snapshots:\n")
+	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 
-		snapshots := make([]string, context.CollectionFactory().SnapshotCollection().Len())
+	snapshots := make([]string, context.CollectionFactory().SnapshotCollection().Len())
 
-		i := 0
-		context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
+	i := 0
+	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
+		if raw {
+			snapshots[i] = snapshot.Name
+		} else {
 			snapshots[i] = snapshot.String()
-			i++
-			return nil
-		})
-
-		sort.Strings(snapshots)
-		for _, snapshot := range snapshots {
-			fmt.Printf(" * %s\n", snapshot)
 		}
+		i++
+		return nil
+	})
 
-		fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
+	sort.Strings(snapshots)
+
+	if raw {
+		for _, snapshot := range snapshots {
+			fmt.Printf("%s\n", snapshot)
+		}
 	} else {
-		fmt.Printf("\nNo snapshots found, create one with `aptly snapshot create...`.\n")
+		if len(snapshots) > 0 {
+			fmt.Printf("List of snapshots:\n")
+
+			for _, snapshot := range snapshots {
+				fmt.Printf(" * %s\n", snapshot)
+			}
+
+			fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
+		} else {
+			fmt.Printf("\nNo snapshots found, create one with `aptly snapshot create...`.\n")
+		}
 	}
 	return err
 
@@ -52,6 +65,8 @@ Example:
   $ aptly snapshot list
 `,
 	}
+
+	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd
 }

@@ -14,24 +14,37 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if context.CollectionFactory().RemoteRepoCollection().Len() > 0 {
-		fmt.Printf("List of mirrors:\n")
-		repos := make([]string, context.CollectionFactory().RemoteRepoCollection().Len())
-		i := 0
-		context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+
+	repos := make([]string, context.CollectionFactory().RemoteRepoCollection().Len())
+	i := 0
+	context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+		if raw {
+			repos[i] = repo.Name
+		} else {
 			repos[i] = repo.String()
-			i++
-			return nil
-		})
-
-		sort.Strings(repos)
-		for _, repo := range repos {
-			fmt.Printf(" * %s\n", repo)
 		}
+		i++
+		return nil
+	})
 
-		fmt.Printf("\nTo get more information about mirror, run `aptly mirror show <name>`.\n")
+	sort.Strings(repos)
+
+	if raw {
+		for _, repo := range repos {
+			fmt.Printf("%s\n", repo)
+		}
 	} else {
-		fmt.Printf("No mirrors found, create one with `aptly mirror create ...`.\n")
+		if len(repos) > 0 {
+			fmt.Printf("List of mirrors:\n")
+			for _, repo := range repos {
+				fmt.Printf(" * %s\n", repo)
+			}
+
+			fmt.Printf("\nTo get more information about mirror, run `aptly mirror show <name>`.\n")
+		} else {
+			fmt.Printf("No mirrors found, create one with `aptly mirror create ...`.\n")
+		}
 	}
 	return err
 }
@@ -49,6 +62,8 @@ Example:
   $ aptly mirror list
 `,
 	}
+
+	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd
 }
