@@ -448,6 +448,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 //
 // It can remove prefix fully, and part of pool (for specific component)
 func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, removePrefix, removePoolComponent bool) error {
+	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
 		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"))
 		if err != nil {
@@ -457,16 +458,23 @@ func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, rem
 		return publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"))
 	}
 
+	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
 	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution))
 	if err != nil {
 		return err
 	}
 
+	// III. Complex: there are no other publishes with the same prefix + component
 	if removePoolComponent {
 		err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component))
 		if err != nil {
 			return err
 		}
+	} else {
+		/// IV: Hard: should have removed published files from the pool + component
+		/// that are unique to this published repo
+
+		/// XXX: TODO
 	}
 	return nil
 }
