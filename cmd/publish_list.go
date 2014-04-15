@@ -14,10 +14,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
-		fmt.Printf("No snapshots have been published. Publish a snapshot by running `aptly publish snapshot ...`.\n")
-		return err
-	}
+	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 
 	published := make([]string, 0, context.CollectionFactory().PublishedRepoCollection().Len())
 
@@ -27,7 +24,11 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 			return err
 		}
 
-		published = append(published, repo.String())
+		if raw {
+			published = append(published, fmt.Sprintf("%s %s", repo.Prefix, repo.Distribution))
+		} else {
+			published = append(published, repo.String())
+		}
 		return nil
 	})
 
@@ -37,10 +38,21 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 
 	sort.Strings(published)
 
-	fmt.Printf("Published repositories:\n")
+	if raw {
+		for _, info := range published {
+			fmt.Printf("%s\n", info)
+		}
+	} else {
+		if len(published) == 0 {
+			fmt.Printf("No snapshots/local repos have been published. Publish a snapshot by running `aptly publish snapshot ...`.\n")
+			return err
+		}
 
-	for _, description := range published {
-		fmt.Printf("  * %s\n", description)
+		fmt.Printf("Published repositories:\n")
+
+		for _, description := range published {
+			fmt.Printf("  * %s\n", description)
+		}
 	}
 
 	return err
@@ -59,6 +71,8 @@ Example:
     $ aptly publish list
 `,
 	}
+
+	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd
 }
