@@ -28,6 +28,7 @@ type downloaderImpl struct {
 	unpause  chan bool
 	progress aptly.Progress
 	threads  int
+	client   *http.Client
 }
 
 // downloadTask represents single item in queue
@@ -50,6 +51,7 @@ func NewDownloader(threads int, progress aptly.Progress) aptly.Downloader {
 		unpause:  make(chan bool),
 		threads:  threads,
 		progress: progress,
+		client:   &http.Client{Transport: &http.Transport{DisableCompression: true}},
 	}
 
 	for i := 0; i < downloader.threads; i++ {
@@ -105,7 +107,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination s
 func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	downloader.progress.Printf("Downloading %s...\n", task.url)
 
-	resp, err := http.Get(task.url)
+	resp, err := downloader.client.Get(task.url)
 	if err != nil {
 		task.result <- err
 		return
