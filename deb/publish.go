@@ -34,9 +34,14 @@ type PublishedRepo struct {
 	// SourceUUID is UUID of either snapshot or local repo
 	SourceUUID string `codec:"SnapshotUUID"`
 
-	snapshot    *Snapshot
-	localRepo   *LocalRepo
+	// Pointer to snapshot if SourceKind == "snapshot"
+	snapshot *Snapshot
+	// Pointer to local repo if SourceKind == "local"
+	localRepo *LocalRepo
+	// Package references is SourceKind == "local"
 	packageRefs *PackageRefList
+	// Old (currently created) package references
+	oldRefs *PackageRefList
 }
 
 // NewPublishedRepo creates new published repository
@@ -203,7 +208,10 @@ func (p *PublishedRepo) RefList() *PackageRefList {
 	if p.SourceKind == "local" {
 		return p.packageRefs
 	}
-	return p.snapshot.RefList()
+	if p.SourceKind == "snapshot" {
+		return p.snapshot.RefList()
+	}
+	panic("unknown source")
 }
 
 // Encode does msgpack encoding of PublishedRepo
@@ -249,18 +257,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		progress.Printf("Loading packages...\n")
 	}
 
-	var refList *PackageRefList
-
-	if p.snapshot != nil {
-		refList = p.snapshot.RefList()
-	} else if p.localRepo != nil {
-		refList = p.localRepo.RefList()
-	} else {
-		panic("no source")
-	}
-
 	// Load all packages
-	list, err := NewPackageListFromRefList(refList, collectionFactory.PackageCollection(), progress)
+	list, err := NewPackageListFromRefList(p.RefList(), collectionFactory.PackageCollection(), progress)
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
