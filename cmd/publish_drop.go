@@ -25,7 +25,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	context.Progress().Printf("\nPublished repositroy has been removed successfully.\n")
+	context.Progress().Printf("\nPublished repository has been removed successfully.\n")
 
 	return err
 }
