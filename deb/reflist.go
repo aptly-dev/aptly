@@ -286,38 +286,43 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 	}
 
 	if newestWins {
-		// A running tab of packages observed during a merge. Used when -latest
-		// is passed to ensure the newest version is carried into the snapshot.
-		latestRefs := make(map[string][]byte)
+		// A running tab of package references we want to keep. Only the latest
+		// package reference is kept.
+		latestRefs := make(map[string]int)
 
-		for _, ref := range result.Refs {
+		for i, ref := range result.Refs {
 			partsL := bytes.Split(ref, []byte(" "))
 			archL, nameL, verL := partsL[0][1:], partsL[1], partsL[2]
 			pkgId := string(nameL) + "." + string(archL)
 
 			// If the package hasn't been seen before, just add it.
 			if _, ok := latestRefs[pkgId]; !ok {
-				latestRefs[pkgId] = ref
-				il++
-				ir++
+				latestRefs[pkgId] = i
 				continue
 			}
 
 			// If we've already seen this package, check if this version is
 			// newer. If it is, replace the older ref.
-			partsR := bytes.Split(latestRefs[pkgId], []byte(" "))
+			partsR := bytes.Split(result.Refs[latestRefs[pkgId]], []byte(" "))
 			verR := partsR[2]
 
 			vres := CompareVersions(string(verL), string(verR))
 			if vres > 0 {
-				latestRefs[pkgId] = ref
+				latestRefs[pkgId] = i
 			}
 		}
 
-		// Replace the result with the merged copy of latest-only refs.
-		result.Refs = [][]byte{}
-		for _, ref := range latestRefs {
-			result.Refs = append(result.Refs, ref)
+		offset := 0
+	OUTER:
+		for i, _ := range result.Refs {
+			for _, ki := range latestRefs {
+				if ki == i {
+					continue OUTER
+				}
+			}
+			idx := i - offset
+			result.Refs = append(result.Refs[0:idx], result.Refs[idx+1:]...)
+			offset++
 		}
 	}
 
