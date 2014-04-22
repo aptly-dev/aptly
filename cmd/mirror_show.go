@@ -67,7 +67,7 @@ func makeCmdMirrorShow() *commander.Command {
 		UsageLine: "show <name>",
 		Short:     "show details about mirror",
 		Long: `
-Shows detailed information about mirror.
+Shows detailed information about the mirror.
 
 Example:
 

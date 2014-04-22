@@ -45,7 +45,7 @@ func makeCmdRepoShow() *commander.Command {
 		UsageLine: "show <name>",
 		Short:     "show details about local repository",
 		Long: `
-Show shows full information about local package repository.
+Show command shows full information about local package repository.
 
 ex:
   $ aptly repo show testing

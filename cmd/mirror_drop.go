@@ -51,7 +51,7 @@ func makeCmdMirrorDrop() *commander.Command {
 		Short:     "delete mirror",
 		Long: `
 Drop deletes information about remote repository mirror <name>. Package data is not deleted
-(it could be still used by other mirrors or snapshots).  If mirror is used as source
+(since it could still be used by other mirrors or snapshots).  If mirror is used as source
 to create a snapshot, aptly would refuse to delete such mirror, use flag -force to override.
 
 Example:

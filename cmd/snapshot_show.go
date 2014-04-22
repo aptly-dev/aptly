@@ -44,7 +44,7 @@ func makeCmdSnapshotShow() *commander.Command {
 		UsageLine: "show <name>",
 		Short:     "shows details about snapshot",
 		Long: `
-Command show displays full information about snapshot.
+Command show displays full information about a snapshot.
 
 Example:
 

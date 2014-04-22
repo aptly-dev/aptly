@@ -26,8 +26,8 @@ func makeCmdDbRecover() *commander.Command {
 		UsageLine: "recover",
 		Short:     "recover DB after crash",
 		Long: `
-Database recover does its best to recover database after crash.
-It is recommended to backup DB before running recover.
+Database recover does its' best to recover the database after a crash.
+It is recommended to backup the DB before running recover.
 
 Example:
 
