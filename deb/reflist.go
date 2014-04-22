@@ -226,6 +226,10 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 	newestWins bool) (result *PackageRefList) {
 
+	// A running tab of packages observed during a merge. Used when -newest is
+	// passed to make sure only the newest version is carried into the snapshot.
+	var seen []string
+
 	// pointer to left and right reflists
 	il, ir := 0, 0
 	// length of reflists
@@ -234,6 +238,7 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 	result = &PackageRefList{}
 	result.Refs = make([][]byte, 0, ll+lr)
 
+OUTER:
 	// until we reached end of both lists
 	for il < ll || ir < lr {
 		// if we've exhausted left list, pull the rest from the right
@@ -275,12 +280,25 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 			}
 			if newestWins {
 				partsL := bytes.Split(rl, []byte(" "))
-				verL := string(partsL[2])
+				nameL, archL, verL := partsL[0][1:], partsL[1], partsL[2]
+				pkgL := string(nameL) + "." + string(archL)
 
 				partsR := bytes.Split(rr, []byte(" "))
-				verR := string(partsR[2])
+				verR := partsR[2]
 
-				vres := CompareVersions(verL, verR)
+				// If we've already seen this package, regardless of version,
+				// just skip it.
+				for _, s := range seen {
+					if s == pkgL {
+						il++
+						ir++
+						continue OUTER
+					}
+				}
+
+				seen = append(seen, pkgL)
+
+				vres := CompareVersions(string(verL), string(verR))
 				if vres <= 0 {
 					result.Refs = append(result.Refs, r.Refs[ir])
 					il++
@@ -297,7 +315,6 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 				result.Refs = append(result.Refs, r.Refs[ir])
 				ir++
 			}
-
 		}
 	}
 
