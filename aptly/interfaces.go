@@ -38,6 +38,8 @@ type PublishedStorage interface {
 	LinkFromPool(prefix string, component string, poolDirectory string, sourcePool PackagePool, sourcePath string) (string, error)
 	// ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
 	ChecksumsForFile(path string) (utils.ChecksumInfo, error)
+	// RenameFile renames (moves) file
+	RenameFile(oldName, newName string) error
 }
 
 // Progress is a progress displaying entity, it allows progress bars & simple prints

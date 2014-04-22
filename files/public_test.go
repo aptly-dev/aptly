@@ -44,6 +44,21 @@ func (s *PublishedStorageSuite) TestCreateFile(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *PublishedStorageSuite) TestRenameFile(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	c.Assert(err, IsNil)
+	defer file.Close()
+
+	err = s.storage.RenameFile("ppa/dists/squeeze/Release", "ppa/dists/squeeze/InRelease")
+	c.Check(err, IsNil)
+
+	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/InRelease"))
+	c.Assert(err, IsNil)
+}
+
 func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)

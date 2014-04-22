@@ -81,3 +81,8 @@ func (storage *PublishedStorage) LinkFromPool(prefix string, component string, p
 func (storage *PublishedStorage) ChecksumsForFile(path string) (utils.ChecksumInfo, error) {
 	return utils.ChecksumsForFile(filepath.Join(storage.rootPath, path))
 }
+
+// RenameFile renames (moves) file
+func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
+	return os.Rename(filepath.Join(storage.rootPath, oldName), filepath.Join(storage.rootPath, newName))
+}
