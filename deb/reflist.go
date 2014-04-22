@@ -296,8 +296,8 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 			nameL, archL, verL := partsL[0][1:], partsL[1], partsL[2]
 			pkgL := string(nameL) + "." + string(archL)
 
-			// If we've already seen this package, regardless of version,
-			// just skip it.
+			// If we've already seen this package, check if this version is
+			// newer. If it is, replace the older ref.
 			if _, ok := refs[pkgL]; ok {
 				vres := CompareVersions(string(verL), string(refs[pkgL]))
 				if vres <= 0 {

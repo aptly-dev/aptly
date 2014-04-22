@@ -28,12 +28,12 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	newest := context.flags.Lookup("newest").Value.Get().(bool)
+	latest := context.flags.Lookup("latest").Value.Get().(bool)
 
 	result := sources[0].RefList()
 
 	for i := 1; i < len(sources); i++ {
-		if newest {
+		if latest {
 			result = result.Merge(sources[i].RefList(), false, true)
 		} else {
 			result = result.Merge(sources[i].RefList(), true, false)
@@ -77,7 +77,7 @@ Example:
 `,
 	}
 
-	cmd.Flag.Bool("newest", false, "Take newest package of set during merge")
+	cmd.Flag.Bool("latest", false, "Use only the latest version of all packages")
 
 	return cmd
 }
