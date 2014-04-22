@@ -31,7 +31,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	result := sources[0].RefList()
 
 	for i := 1; i < len(sources); i++ {
-		result = result.Merge(sources[i].RefList(), true)
+		result = result.Merge(sources[i].RefList(), true, true)
 	}
 
 	sourceDescription := make([]string, len(sources))

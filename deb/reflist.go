@@ -219,9 +219,13 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 	return
 }
 
-// Merge merges reflist r into current reflist. If overrideMatching, merge replaces matching packages (by architecture/name)
-// with reference from r, otherwise all packages are saved.
-func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result *PackageRefList) {
+// Merge merges reflist r into current reflist. If overrideMatching, merge
+// replaces matching packages (by architecture/name) with reference from r. If
+// newestWins, compare versions between common packages and take the latest from
+// the set. Otherwise, all packages are saved.
+func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
+	newestWins bool) (result *PackageRefList) {
+
 	// pointer to left and right reflists
 	il, ir := 0, 0
 	// length of reflists
@@ -263,6 +267,21 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 
 				if bytes.Compare(archL, archR) == 0 && bytes.Compare(nameL, nameR) == 0 {
 					// override with package from the right
+					result.Refs = append(result.Refs, r.Refs[ir])
+					il++
+					ir++
+					continue
+				}
+			}
+			if newestWins {
+				partsL := bytes.Split(rl, []byte(" "))
+				verL := string(partsL[2])
+
+				partsR := bytes.Split(rr, []byte(" "))
+				verR := string(partsR[2])
+
+				vres := CompareVersions(verL, verR)
+				if vres <= 0 {
 					result.Refs = append(result.Refs, r.Refs[ir])
 					il++
 					ir++
