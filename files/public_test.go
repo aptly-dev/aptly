@@ -123,9 +123,8 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		err = ioutil.WriteFile(t.sourcePath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
 
-		path, err := s.storage.LinkFromPool(t.prefix, t.component, t.poolDirectory, pool, t.sourcePath)
+		err = s.storage.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), pool, t.sourcePath)
 		c.Assert(err, IsNil)
-		c.Assert(path, Equals, t.expectedFilename)
 
 		st, err := os.Stat(filepath.Join(s.storage.rootPath, t.prefix, t.expectedFilename))
 		c.Assert(err, IsNil)

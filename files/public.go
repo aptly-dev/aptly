@@ -47,34 +47,29 @@ func (storage *PublishedStorage) RemoveDirs(path string) error {
 
 // LinkFromPool links package file from pool to dist's pool location
 //
-// prefix is publishing prefix for this repo (e.g. empty or "ppa/")
-// component is component name when publishing (e.g. main)
-// poolDirectory is desired location in pool (like liba/libav/)
+// publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(prefix string, component string, poolDirectory string, sourcePool aptly.PackagePool, sourcePath string) (string, error) {
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool, sourcePath string) error {
 	// verify that package pool is local pool is filesystem pool
 	_ = sourcePool.(*PackagePool)
 
 	baseName := filepath.Base(sourcePath)
-
-	relPath := filepath.Join("pool", component, poolDirectory, baseName)
-	poolPath := filepath.Join(storage.rootPath, prefix, "pool", component, poolDirectory)
+	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
 	err := os.MkdirAll(poolPath, 0755)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	_, err = os.Stat(filepath.Join(poolPath, baseName))
 	if err == nil { // already exists, skip
-		return relPath, nil
+		return nil
 	}
 
-	err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
-	return relPath, err
+	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
 }
 
 // ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path

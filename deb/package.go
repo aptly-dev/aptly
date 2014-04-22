@@ -388,16 +388,18 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 			return err
 		}
 
-		relPath, err := publishedStorage.LinkFromPool(prefix, component, poolDir, packagePool, sourcePath)
+		relPath := filepath.Join("pool", component, poolDir)
+		publishedDirectory := filepath.Join(prefix, relPath)
+
+		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath)
 		if err != nil {
 			return err
 		}
 
-		dir := filepath.Dir(relPath)
 		if p.IsSource {
-			p.Extra()["Directory"] = dir
+			p.Extra()["Directory"] = relPath
 		} else {
-			p.Files()[i].downloadPath = dir
+			p.Files()[i].downloadPath = relPath
 		}
 	}
 
