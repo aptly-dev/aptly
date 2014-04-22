@@ -28,10 +28,16 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		}
 	}
 
+	newest := context.flags.Lookup("newest").Value.Get().(bool)
+
 	result := sources[0].RefList()
 
 	for i := 1; i < len(sources); i++ {
-		result = result.Merge(sources[i].RefList(), true, true)
+		if newest {
+			result = result.Merge(sources[i].RefList(), false, true)
+		} else {
+			result = result.Merge(sources[i].RefList(), true, false)
+		}
 	}
 
 	sourceDescription := make([]string, len(sources))
@@ -70,6 +76,8 @@ Example:
     $ aptly snapshot merge wheezy-w-backports wheezy-main wheezy-backports
 `,
 	}
+
+	cmd.Flag.Bool("newest", false, "Take newest package of set during merge")
 
 	return cmd
 }
