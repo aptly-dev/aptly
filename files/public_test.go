@@ -84,7 +84,7 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	c.Assert(err, IsNil)
 	defer file.Close()
 
-	err = s.storage.RemoveDirs("ppa/dists/")
+	err = s.storage.RemoveDirs("ppa/dists/", nil)
 
 	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
 	c.Assert(err, NotNil)

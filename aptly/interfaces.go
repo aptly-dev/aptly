@@ -33,7 +33,7 @@ type PublishedStorage interface {
 	// CreateFile creates file for writing under public path
 	CreateFile(path string) (*os.File, error)
 	// RemoveDirs removes directory structure under public path
-	RemoveDirs(path string) error
+	RemoveDirs(path string, progress Progress) error
 	// Remove removes single file under public path
 	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location

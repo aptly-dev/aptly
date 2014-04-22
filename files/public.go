@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"os"
@@ -41,14 +40,15 @@ func (storage *PublishedStorage) CreateFile(path string) (*os.File, error) {
 // Remove removes single file under public path
 func (storage *PublishedStorage) Remove(path string) error {
 	filepath := filepath.Join(storage.rootPath, path)
-	fmt.Printf("Removing %s...\n", filepath)
 	return os.Remove(filepath)
 }
 
 // RemoveDirs removes directory structure under public path
-func (storage *PublishedStorage) RemoveDirs(path string) error {
+func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
 	filepath := filepath.Join(storage.rootPath, path)
-	fmt.Printf("Removing %s...\n", filepath)
+	if progress != nil {
+		progress.Printf("Removing %s...\n", filepath)
+	}
 	return os.RemoveAll(filepath)
 }
 
