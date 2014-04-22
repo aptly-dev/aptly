@@ -44,6 +44,23 @@ func (s *PublishedStorageSuite) TestCreateFile(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *PublishedStorageSuite) TestFilelist(c *C) {
+	err := s.storage.MkDir("ppa/pool/main/a/ab/")
+	c.Assert(err, IsNil)
+
+	file, err := s.storage.CreateFile("ppa/pool/main/a/ab/a.deb")
+	c.Assert(err, IsNil)
+	defer file.Close()
+
+	file2, err := s.storage.CreateFile("ppa/pool/main/a/ab/b.deb")
+	c.Assert(err, IsNil)
+	defer file2.Close()
+
+	list, err := s.storage.Filelist("ppa/pool/main/")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a/ab/a.deb", "a/ab/b.deb"})
+}
+
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
@@ -68,6 +85,21 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	defer file.Close()
 
 	err = s.storage.RemoveDirs("ppa/dists/")
+
+	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
+	c.Assert(err, NotNil)
+	c.Assert(os.IsNotExist(err), Equals, true)
+}
+
+func (s *PublishedStorageSuite) TestRemove(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	c.Assert(err, IsNil)
+	defer file.Close()
+
+	err = s.storage.Remove("ppa/dists/squeeze/Release")
 
 	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
 	c.Assert(err, NotNil)

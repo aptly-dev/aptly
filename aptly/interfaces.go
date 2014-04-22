@@ -34,8 +34,12 @@ type PublishedStorage interface {
 	CreateFile(path string) (*os.File, error)
 	// RemoveDirs removes directory structure under public path
 	RemoveDirs(path string) error
+	// Remove removes single file under public path
+	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location
-	LinkFromPool(prefix string, component string, poolDirectory string, sourcePool PackagePool, sourcePath string) (string, error)
+	LinkFromPool(publishedDirectory string, sourcePool PackagePool, sourcePath string) error
+	// Filelist returns list of files under prefix
+	Filelist(prefix string) ([]string, error)
 	// ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
 	ChecksumsForFile(path string) (utils.ChecksumInfo, error)
 	// RenameFile renames (moves) file

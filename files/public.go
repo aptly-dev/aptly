@@ -38,6 +38,13 @@ func (storage *PublishedStorage) CreateFile(path string) (*os.File, error) {
 	return os.Create(filepath.Join(storage.rootPath, path))
 }
 
+// Remove removes single file under public path
+func (storage *PublishedStorage) Remove(path string) error {
+	filepath := filepath.Join(storage.rootPath, path)
+	fmt.Printf("Removing %s...\n", filepath)
+	return os.Remove(filepath)
+}
+
 // RemoveDirs removes directory structure under public path
 func (storage *PublishedStorage) RemoveDirs(path string) error {
 	filepath := filepath.Join(storage.rootPath, path)
@@ -70,6 +77,24 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	}
 
 	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
+}
+
+// Filelist returns list of files under prefix
+func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
+	root := filepath.Join(storage.rootPath, prefix)
+	result := []string{}
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			result = append(result, path[len(root)+1:])
+		}
+		return nil
+	})
+
+	return result, err
 }
 
 // ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
