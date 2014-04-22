@@ -488,34 +488,32 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 // RemoveFiles removes files that were created by Publish
 //
 // It can remove prefix fully, and part of pool (for specific component)
-func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, removePrefix, removePoolComponent bool) error {
+func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, removePrefix, removePoolComponent bool, progress aptly.Progress) error {
 	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
-		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"))
+		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"), progress)
 		if err != nil {
 			return err
 		}
 
-		return publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"))
+		return publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"), progress)
 	}
 
 	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
-	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution))
+	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
 	if err != nil {
 		return err
 	}
 
 	// III. Complex: there are no other publishes with the same prefix + component
 	if removePoolComponent {
-		err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component))
+		err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool", p.Component), progress)
 		if err != nil {
 			return err
 		}
 	} else {
 		/// IV: Hard: should have removed published files from the pool + component
 		/// that are unique to this published repo
-
-		/// XXX: TODO
 	}
 	return nil
 }
@@ -686,7 +684,7 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix, c
 	referencedFiles := []string{}
 
 	if progress != nil {
-		progress.Printf("Cleaning up prefix %s component %s...\n", prefix, component)
+		progress.Printf("Cleaning up prefix %#v component %#v...\n", prefix, component)
 	}
 
 	for _, r := range collection.list {
@@ -763,7 +761,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 		}
 	}
 
-	err = repo.RemoveFiles(publishedStorage, removePrefix, removePoolComponent)
+	err = repo.RemoveFiles(publishedStorage, removePrefix, removePoolComponent, progress)
 	if err != nil {
 		return err
 	}

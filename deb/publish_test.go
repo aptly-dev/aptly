@@ -499,7 +499,7 @@ func (s *PublishedRepoRemoveSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, false, false)
+	s.repo1.RemoveFiles(s.publishedStorage, false, false, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -511,7 +511,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, false, true)
+	s.repo1.RemoveFiles(s.publishedStorage, false, true, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -523,7 +523,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, true, true)
+	s.repo1.RemoveFiles(s.publishedStorage, true, true, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
@@ -535,7 +535,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
-	s.repo2.RemoveFiles(s.publishedStorage, true, true)
+	s.repo2.RemoveFiles(s.publishedStorage, true, true, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
