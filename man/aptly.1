@@ -22,7 +22,7 @@ aptly has integrated help that matches contents of this manual page, to get help
 aptly is a tool to create partial and full mirrors of remote repositories, manage local repositories, filter them, merge, upgrade individual packages, take snapshots and publish them back as Debian repositories\.
 .
 .P
-aptly goal is to establish repeatiblity and controlled changes in package environment\. aptly allows to fix set of packages in repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
+aptly\(cqs goal is to establish repeatability and controlled changes in a package\-centric environment\. aptly allows to fix a set of packages in a repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
 .
 .SH "CONFIGURATION"
 aptly looks for configuration file in \fB/etc/aptly\.conf\fR and \fB~/\.aptly\.conf\fR, if no config file found, new one is created\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly\fR, it will be created if missing\.
@@ -166,7 +166,7 @@ when processing dependencies, follow Suggests
 \fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \|\.\|\.\|\.]
 .
 .P
-Creates mirror \fIname\fR of remote repository, aptly supports both regular and flat Debian repositories exported via HTTP\. aptly would try download Release file from remote repository and verify its signature\.
+Creates mirror \fIname\fR of remote repository, aptly supports both regular and flat Debian repositories exported via HTTP\. aptly would try download Release file from remote repository and verify its\(cq signature\.
 .
 .P
 PPA urls could specified in short format:
@@ -218,7 +218,7 @@ display list in machine\-readable format
 \fBaptly\fR \fBmirror\fR \fBshow\fR \fIname\fR
 .
 .P
-Shows detailed information about mirror\.
+Shows detailed information about the mirror\.
 .
 .P
 Example:
@@ -237,7 +237,7 @@ show detailed list of packages and versions stored in the mirror
 \fBaptly\fR \fBmirror\fR \fBdrop\fR \fIname\fR
 .
 .P
-Drop deletes information about remote repository mirror \fIname\fR\. Package data is not deleted (it could be still used by other mirrors or snapshots)\. If mirror is used as source to create a snapshot, aptly would refuse to delete such mirror, use flag \-force to override\.
+Drop deletes information about remote repository mirror \fIname\fR\. Package data is not deleted (since it could still be used by other mirrors or snapshots)\. If mirror is used as source to create a snapshot, aptly would refuse to delete such mirror, use flag \-force to override\.
 .
 .P
 Example:
@@ -256,7 +256,7 @@ force mirror deletion even if used by snapshots
 \fBaptly\fR \fBmirror\fR \fBupdate\fR \fIname\fR
 .
 .P
-Updates remote mirror (downloads package files and meta information)\. When mirror is created, this command should be run for the first time to fetch mirror contents\. This command could be run many times to get updated repository contents\. If interrupted, command could be restarted safely\.
+Updates remote mirror (downloads package files and meta information)\. When mirror is created, this command should be run for the first time to fetch mirror contents\. This command can be run multiple times to get updated repository contents\. If interrupted, command can be safely restarted\.
 .
 .P
 Example:
@@ -283,7 +283,7 @@ gpg keyring to use when verifying Release file (could be specified multiple time
 \fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
 .
 .P
-Command adds packages to local repository from \.deb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would be created and added to database\. Files would be imported to internal package pool\. For source packages, all required files are added as well automatically\. Extra files for source package should be in the same directory as *\.dsc file\.
+Command adds packages to local repository from \.deb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would then be created and added to the database\. Files would be imported to internal package pool\. For source packages, all required files are added automatically as well\. Extra files for source package should be in the same directory as *\.dsc file\.
 .
 .P
 Example:
@@ -352,7 +352,7 @@ default distribution when publishing
 \fBaptly\fR \fBrepo\fR \fBdrop\fR \fIname\fR
 .
 .P
-Drop deletes information about local repo\. Package data is not deleted (it could be still used by other mirrors or snapshots)\.
+Drop information about deletions from local repo\. Package data is not deleted (since it could be still used by other mirrors or snapshots)\.
 .
 .P
 Example:
@@ -421,7 +421,7 @@ follow dependencies when processing package\-spec
 \fBaptly\fR \fBrepo\fR \fBlist\fR
 .
 .P
-List shows full list of local package repositories\.
+List command shows full list of local package repositories\.
 .
 .P
 Example:
@@ -482,7 +482,7 @@ don\(cqt remove, just show what would be removed
 \fBaptly\fR \fBrepo\fR \fBshow\fR \fIname\fR
 .
 .P
-Show shows full information about local package repository\.
+Show command shows full information about local package repository\.
 .
 .P
 ex: $ aptly repo show testing
@@ -535,7 +535,7 @@ display list in machine\-readable format
 \fBaptly\fR \fBsnapshot\fR \fBshow\fR \fIname\fR
 .
 .P
-Command show displays full information about snapshot\.
+Command show displays full information about a snapshot\.
 .
 .P
 Example:
@@ -561,7 +561,7 @@ show list of packages
 \fBaptly\fR \fBsnapshot\fR \fBverify\fR \fIname\fR [\fIsource\fR \|\.\|\.\|\.]
 .
 .P
-Verify does depenency resolution in snapshot \fIname\fR, possibly using additional snapshots \fIsource\fR as dependency sources\. All unsatisfied dependencies are printed\.
+Verify does dependency resolution in snapshot \fIname\fR, possibly using additional snapshots \fIsource\fR as dependency sources\. All unsatisfied dependencies are printed\.
 .
 .P
 Example:
@@ -580,7 +580,7 @@ $ aptly snapshot verify wheezy\-main wheezy\-contrib wheezy\-non\-free
 \fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-name\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Command pull pulls new packages along with its dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as dependency \(cqpackage\-name (>= version)\(cq\.
+Command pull pulls new packages along with its\(cq dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as dependency \(cqpackage\-name (>= version)\(cq\.
 .
 .P
 Example:
@@ -640,7 +640,7 @@ display diff only for matching packages (don\(cqt display missing packages)
 \fBaptly\fR \fBsnapshot\fR \fBmerge\fR \fIdestination\fR \fIsource\fR [\fIsource\fR\|\.\|\.\|\.]
 .
 .P
-Merge merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. Packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
+Merge command merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. Packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
 .
 .P
 Example:
@@ -659,7 +659,7 @@ $ aptly snapshot merge wheezy\-w\-backports wheezy\-main wheezy\-backports
 \fBaptly\fR \fBsnapshot\fR \fBdrop\fR \fIname\fR
 .
 .P
-Drop removes information about snapshot\. If snapshot is published, it can\(cqt be dropped\.
+Drop removes information about a snapshot\. If snapshot is published, it can\(cqt be dropped\.
 .
 .P
 Example:
@@ -680,6 +680,51 @@ Options:
 .TP
 \-\fBforce\fR=false
 remove snapshot even if it was used as source for other snapshots
+.
+.SH "REMOVE PUBLISHED REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [\fIprefix\fR]
+.
+.P
+Command removes whatever has been published under specified \fIprefix\fR and \fIdistribution\fR name\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish drop wheezy
+.
+.fi
+.
+.IP "" 0
+.
+.SH "LIST OF PUBLISHED REPOSITORIES"
+\fBaptly\fR \fBpublish\fR \fBlist\fR
+.
+.P
+Display list of currently published snapshots\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish list
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBraw\fR=false
+display list in machine\-readable format
 .
 .SH "PUBLISH LOCAL REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBrepo\fR \fIname\fR [\fIprefix\fR]
@@ -792,11 +837,11 @@ GPG secret keyring to use (instead of default)
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
 .
-.SH "LIST OF PUBLISHED REPOSITORIES"
-\fBaptly\fR \fBpublish\fR \fBlist\fR
+.SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
+\fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [\fIprefix\fR] \fInew\-snapshot\fR
 .
 .P
-Display list of currently published snapshots\.
+Command switches in\-place published repository with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
 .
 .P
 Example:
@@ -805,7 +850,7 @@ Example:
 .
 .nf
 
-$ aptly publish list
+$ aptly publish update wheezy ppa wheezy\-7\.5
 .
 .fi
 .
@@ -815,14 +860,26 @@ $ aptly publish list
 Options:
 .
 .TP
-\-\fBraw\fR=false
-display list in machine\-readable format
+\-\fBgpg\-key\fR=
+GPG key ID to use when signing the release
 .
-.SH "REMOVE PUBLISHED REPOSITORY"
-\fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [\fIprefix\fR]
+.TP
+\-\fBkeyring\fR=
+GPG keyring to use (instead of default)
+.
+.TP
+\-\fBsecret\-keyring\fR=
+GPG secret keyring to use (instead of default)
+.
+.TP
+\-\fBskip\-signing\fR=false
+don\(cqt sign Release files with GPG
+.
+.SH "UPDATE PUBLISHED LOCAL REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBupdate\fR \fIdistribution\fR [\fIprefix\fR]
 .
 .P
-Command removes whatever has been published under specified \fIprefix\fR and \fIdistribution\fR name\.
+Command re\-publishes (updates) published local repository\. \fIdistribution\fR and \fIprefix\fR should be occupied with local repository published using command aptly publish repo\. Update happens in\-place with minimum possible downtime for published repository\.
 .
 .P
 Example:
@@ -831,11 +888,30 @@ Example:
 .
 .nf
 
-$ aptly publish drop wheezy
+$ aptly publish update wheezy ppa
 .
 .fi
 .
 .IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBgpg\-key\fR=
+GPG key ID to use when signing the release
+.
+.TP
+\-\fBkeyring\fR=
+GPG keyring to use (instead of default)
+.
+.TP
+\-\fBsecret\-keyring\fR=
+GPG secret keyring to use (instead of default)
+.
+.TP
+\-\fBskip\-signing\fR=false
+don\(cqt sign Release files with GPG
 .
 .SH "CLEANUP DB AND PACKAGE POOL"
 \fBaptly\fR \fBdb\fR \fBcleanup\fR
@@ -853,7 +929,7 @@ $ aptly db cleanup
 \fBaptly\fR \fBdb\fR \fBrecover\fR
 .
 .P
-Database recover does its best to recover database after crash\. It is recommended to backup DB before running recover\.
+Database recover does its\(cq best to recover the database after a crash\. It is recommended to backup the DB before running recover\.
 .
 .P
 Example:
@@ -884,7 +960,7 @@ host:port for HTTP listening
 \fBaptly\fR \fBgraph\fR
 .
 .P
-Command graph displays relationship between mirrors, local repositories, snapshots and published repositories using graphviz package to render graph as image\.
+Command graph displays relationship between mirrors, local repositories, snapshots and published repositories using graphviz package to render graph as an image\.
 .
 .P
 Example:
