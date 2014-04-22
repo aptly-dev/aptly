@@ -1,0 +1,109 @@
+
+
+
+
+ .
+ .
+ .
+ .
+ .
+ .
+ .
+ .
+ C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
+ C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
+ C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
+ C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
+ Data files and self-defined functions can be manipulated by the internal
+ Data files and self-defined functions can be manipulated by the internal
+ Data files and self-defined functions can be manipulated by the internal
+ Data files and self-defined functions can be manipulated by the internal
+ Gnuplot is a portable command-line driven interactive data and function
+ Gnuplot is a portable command-line driven interactive data and function
+ Gnuplot is a portable command-line driven interactive data and function
+ Gnuplot is a portable command-line driven interactive data and function
+ This package contains the additional documentation.
+ This package contains the terminal driver that enables gnuplot to plot
+ This package is for transition and to install a full-featured gnuplot
+ This package is for working without an X server.
+ and can work with complex numbers.
+ and can work with complex numbers.
+ and can work with complex numbers.
+ and can work with complex numbers.
+ for many printers, (La)TeX, (x)fig, Postscript, and so on. The X11-output
+ for many printers, (La)TeX, (x)fig, Postscript, and so on. The X11-output
+ for many printers, (La)TeX, (x)fig, Postscript, and so on. The X11-output
+ for many printers, (La)TeX, (x)fig, Postscript, and so on. The X11-output
+ gnuplot.
+ images interactively under X11. Most users will want this, it is however
+ is packaged in gnuplot-x11.
+ is packaged in gnuplot-x11.
+ is packaged in gnuplot-x11.
+ is packaged in gnuplot-x11.
+ packaged separately so that low-end systems don't need X installed to use
+ plotting utility that supports lots of output formats, including drivers
+ plotting utility that supports lots of output formats, including drivers
+ plotting utility that supports lots of output formats, including drivers
+ plotting utility that supports lots of output formats, including drivers
+ supporting the X11-output.
+Architecture: all
+Architecture: all
+Architecture: i386
+Architecture: i386
+Depends: dpkg (>= 1.15.4) | install-info
+Depends: gnuplot-nox (>= 4.6.1-1~maverick2), gnuplot-x11 (>= 4.6.1-1~maverick2)
+Depends: gnuplot-nox (>= 4.6.1-1~maverick2), libc6 (>= 2.11), libcairo2 (>= 1.6.0), libedit2 (>= 2.5.cvs.20010821-1), libgcc1 (>= 1:4.1.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libglib2.0-0 (>= 2.12.0), liblua5.1-0, libpango1.0-0 (>= 1.14.0), libstdc++6 (>= 4.1.1), libwxbase2.8-0 (>= 2.8.11.0), libwxgtk2.8-0 (>= 2.8.11.0), libx11-6
+Depends: libc6 (>= 2.11), libcairo2 (>= 1.6.0), libedit2 (>= 2.5.cvs.20010821-1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libglib2.0-0 (>= 2.12.0), liblua5.1-0, libpango1.0-0 (>= 1.14.0)
+Description: Command-line driven interactive plotting program
+Description: Command-line driven interactive plotting program
+Description: Command-line driven interactive plotting program
+Description: Command-line driven interactive plotting program
+Filename: pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb
+Filename: pool/main/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_i386.deb
+Filename: pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb
+Filename: pool/main/g/gnuplot/gnuplot_4.6.1-1~maverick2_all.deb
+Installed-Size: 1604
+Installed-Size: 20
+Installed-Size: 2536
+Installed-Size: 5572
+MD5sum: 25a5028811171f2f1fa157a2f6953e82
+MD5sum: 4912a4464d5588f685c4aa6cfc6be46c
+MD5sum: a7ef16004b62fd78acb77edb058ea1c1
+MD5sum: fcad938905d0ace50a6ce0c73b2c6583
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Package: gnuplot
+Package: gnuplot-doc
+Package: gnuplot-nox
+Package: gnuplot-x11
+Priority: optional
+Priority: optional
+Priority: optional
+Priority: optional
+Recommends: groff, ttf-liberation
+Replaces: gnuplot (<< 4.0.0)
+Replaces: gnuplot (<< 4.0.0)
+SHA1: 02f9a93097a8f798a054e26154dbe5789088c069
+SHA1: 4a50deb413e05f77b31687405465b1229b3be328
+SHA1: 629c3e62f787b0af47b184beb0460dd261c9ca4d
+SHA1: 837dd002143054ca01d3b01cae410cc4b4fe10c4
+Section: doc
+Section: math
+Section: math
+Section: math
+Size: 1046
+Size: 1046496
+Size: 2675242
+Size: 724388
+Source: 
+Source: gnuplot
+Source: gnuplot
+Source: gnuplot
+Suggests: gnuplot-doc (>= 4.6.1-1~maverick2)
+Suggests: gnuplot-x11 (>= 4.6.1-1~maverick2), gnuplot-doc (>= 4.6.1-1~maverick2)
+Version: 4.6.1-1~maverick2
+Version: 4.6.1-1~maverick2
+Version: 4.6.1-1~maverick2
+Version: 4.6.1-1~maverick2

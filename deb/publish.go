@@ -223,6 +223,16 @@ func (p *PublishedRepo) UpdateLocalRepo() {
 	p.rePublishing = true
 }
 
+func (p *PublishedRepo) UpdateSnapshot(snapshot *Snapshot) {
+	if p.SourceKind != "snapshot" {
+		panic("not snapshot publish")
+	}
+
+	p.snapshot = snapshot
+	p.SourceUUID = snapshot.UUID
+	p.rePublishing = true
+}
+
 // Encode does msgpack encoding of PublishedRepo
 func (p *PublishedRepo) Encode() []byte {
 	var buf bytes.Buffer
