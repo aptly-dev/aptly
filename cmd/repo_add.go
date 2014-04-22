@@ -187,9 +187,9 @@ func makeCmdRepoAdd() *commander.Command {
 		Long: `
 Command adds packages to local repository from .deb (binary packages) and .dsc (source packages) files.
 When importing from directory aptly would do recursive scan looking for all files matching *.deb or *.dsc
-patterns. Every file discovered would be analyzed to extract metadata, package would be created and added
-to database. Files would be imported to internal package pool. For source packages, all required files are
-added as well automatically. Extra files for source package should be in the same directory as *.dsc file.
+patterns. Every file discovered would be analyzed to extract metadata, package would then be created and added
+to the database. Files would be imported to internal package pool. For source packages, all required files are
+added automatically as well. Extra files for source package should be in the same directory as *.dsc file.
 
 Example:
 

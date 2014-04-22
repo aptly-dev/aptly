@@ -64,7 +64,7 @@ func makeCmdSnapshotDrop() *commander.Command {
 		UsageLine: "drop <name>",
 		Short:     "delete snapshot",
 		Long: `
-Drop removes information about snapshot. If snapshot is published,
+Drop removes information about a snapshot. If snapshot is published,
 it can't be dropped.
 
 Example:

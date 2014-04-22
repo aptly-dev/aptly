@@ -61,7 +61,7 @@ func makeCmdRepoList() *commander.Command {
 		UsageLine: "list",
 		Short:     "list local repositories",
 		Long: `
-List shows full list of local package repositories.
+List command shows full list of local package repositories.
 
 Example:
 

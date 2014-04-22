@@ -59,7 +59,7 @@ func makeCmdSnapshotMerge() *commander.Command {
 		UsageLine: "merge <destination> <source> [<source>...]",
 		Short:     "merges snapshots",
 		Long: `
-Merge merges several <source> snapshots into one <destination> snapshot.
+Merge command merges several <source> snapshots into one <destination> snapshot.
 Merge happens from left to right. Packages with the same name-architecture
 pair are replaced during merge (package from latest snapshot on the list
 wins). If run with only one source snapshot, merge copies <source> into

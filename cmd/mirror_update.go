@@ -58,8 +58,8 @@ func makeCmdMirrorUpdate() *commander.Command {
 		Short:     "update mirror",
 		Long: `
 Updates remote mirror (downloads package files and meta information). When mirror is created,
-this command should be run for the first time to fetch mirror contents. This command could be
-run many times to get updated repository contents. If interrupted, command could be restarted safely.
+this command should be run for the first time to fetch mirror contents. This command can be
+run multiple times to get updated repository contents. If interrupted, command can be safely restarted.
 
 Example:
 
