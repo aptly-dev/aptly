@@ -45,9 +45,9 @@ repositories, manage local repositories, filter them, merge,
 upgrade individual packages, take snapshots and publish them
 back as Debian repositories.
 
-aptly goal is to establish repeatiblity and controlled changes
-in package environment. aptly allows to fix set of packages in
-repository, so that package installation and upgrade becomes
+aptly's goal is to establish repeatability and controlled changes
+in a package-centric environment. aptly allows to fix a set of packages
+in a repository, so that package installation and upgrade becomes
 deterministic. At the same time aptly allows to perform controlled,
 fine-grained changes in repository contents to transition your
 package environment to new version.`,

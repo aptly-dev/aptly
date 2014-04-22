@@ -64,8 +64,8 @@ func makeCmdRepoDrop() *commander.Command {
 		UsageLine: "drop <name>",
 		Short:     "delete local repository",
 		Long: `
-Drop deletes information about local repo. Package data is not deleted
-(it could be still used by other mirrors or snapshots).
+Drop information about deletions from local repo. Package data is not deleted
+(since it could be still used by other mirrors or snapshots).
 
 Example:
 

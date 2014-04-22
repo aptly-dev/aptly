@@ -101,7 +101,7 @@ func makeCmdSnapshotVerify() *commander.Command {
 		UsageLine: "verify <name> [<source> ...]",
 		Short:     "verify dependencies in snapshot",
 		Long: `
-Verify does depenency resolution in snapshot <name>, possibly using additional
+Verify does dependency resolution in snapshot <name>, possibly using additional
 snapshots <source> as dependency sources. All unsatisfied dependencies are
 printed.
 

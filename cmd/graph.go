@@ -189,7 +189,7 @@ func makeCmdGraph() *commander.Command {
 		Long: `
 Command graph displays relationship between mirrors, local repositories,
 snapshots and published repositories using graphviz package to render
-graph as image.
+graph as an image.
 
 Example:
 
