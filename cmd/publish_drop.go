@@ -19,7 +19,8 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 		prefix = args[1]
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().Remove(context.PublishedStorage(), prefix, distribution)
+	err = context.CollectionFactory().PublishedRepoCollection().Remove(context.PublishedStorage(), prefix, distribution,
+		context.CollectionFactory(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}

@@ -678,8 +678,69 @@ func (collection *PublishedRepoCollection) Len() int {
 	return len(collection.list)
 }
 
+// CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
+func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix, component string,
+	publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+
+	var err error
+	referencedFiles := []string{}
+
+	if progress != nil {
+		progress.Printf("Cleaning up prefix %s component %s...\n", prefix, component)
+	}
+
+	for _, r := range collection.list {
+		if r.Prefix == prefix && r.Component == component {
+			err = collection.LoadComplete(r, collectionFactory)
+			if err != nil {
+				return err
+			}
+
+			packageList, err := NewPackageListFromRefList(r.RefList(), collectionFactory.PackageCollection(), progress)
+			if err != nil {
+				return err
+			}
+
+			packageList.ForEach(func(p *Package) error {
+				poolDir, err := p.PoolDirectory()
+				if err != nil {
+					return err
+				}
+
+				for _, f := range p.Files() {
+					referencedFiles = append(referencedFiles, filepath.Join(poolDir, f.Filename))
+				}
+
+				return nil
+			})
+		}
+	}
+
+	sort.Strings(referencedFiles)
+
+	rootPath := filepath.Join(prefix, "pool", component)
+	existingFiles, err := publishedStorage.Filelist(rootPath)
+	if err != nil {
+		return err
+	}
+
+	sort.Strings(existingFiles)
+
+	filesToDelete := utils.StrSlicesSubstract(existingFiles, referencedFiles)
+
+	for _, file := range filesToDelete {
+		err = publishedStorage.Remove(filepath.Join(rootPath, file))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Remove removes published repository, cleaning up directories, files
-func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.PublishedStorage, prefix, distribution string) error {
+func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.PublishedStorage, prefix, distribution string,
+	collectionFactory *CollectionFactory, progress aptly.Progress) error {
 	repo, err := collection.ByPrefixDistribution(prefix, distribution)
 	if err != nil {
 		return err
@@ -709,6 +770,13 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
+
+	if !removePrefix && !removePoolComponent {
+		err = collection.CleanupPrefixComponentFiles(repo.Prefix, repo.Component, publishedStorage, collectionFactory, progress)
+		if err != nil {
+			return err
+		}
+	}
 
 	err = collection.db.Delete(repo.Key())
 	if err != nil {
