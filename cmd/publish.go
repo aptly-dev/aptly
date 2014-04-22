@@ -31,6 +31,7 @@ func makeCmdPublish() *commander.Command {
 		Subcommands: []*commander.Command{
 			makeCmdPublishRepo(),
 			makeCmdPublishSnapshot(),
+			makeCmdPublishUpdate(),
 			makeCmdPublishList(),
 			makeCmdPublishDrop(),
 		},

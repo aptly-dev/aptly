@@ -1,0 +1,42 @@
+
+
+ 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz
+ 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz
+ 56c8a9b1f4ab636052be8966690998cbe865cd6c 1782 pyspi_0.6.1-1.3.dsc
+ 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz
+ 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz
+ 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz
+ 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz
+ 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz
+ b72cb94699298a117b7c82641c68b6fd 1782 pyspi_0.6.1-1.3.dsc
+ d494aaf526f1ec6b02f14c2f81e060a5722d6532ddc760ec16972e45c2625989 1782 pyspi_0.6.1-1.3.dsc
+ def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz
+ def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz
+Architecture: any
+Architecture: any
+Binary: python-at-spi
+Binary: python-at-spi
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Checksums-Sha1: 5005fbd1f30637edc1d380b30f45db9b79100d07 893 pyspi-0.6.1-1.3.stripped.dsc
+Checksums-Sha1: 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz
+Checksums-Sha256: 289d3aefa970876e9c43686ce2b02f478d7f3ed35a713928464a98d54ae4fca3 893 pyspi-0.6.1-1.3.stripped.dsc
+Checksums-Sha256: 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz
+Directory: pool/main/p/pyspi
+Directory: pool/main/p/pyspi
+Files: 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz
+Files: 2f5bd47cf38852b6fc927a50f98c1448 893 pyspi-0.6.1-1.3.stripped.dsc
+Format: 1.0
+Format: 1.0
+Homepage: http://people.redhat.com/zcerza/dogtail
+Homepage: http://people.redhat.com/zcerza/dogtail
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Package: pyspi
+Package: pyspi
+Standards-Version: 3.7.3
+Standards-Version: 3.7.3
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Version: 0.6.1-1.3
+Version: 0.6.1-1.4
