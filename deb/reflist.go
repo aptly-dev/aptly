@@ -290,36 +290,32 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 // are done in-place. This implements a "latest wins" approach which can be used
 // while merging two or more snapshots together.
 func FilterLatestRefs(r *PackageRefList) {
-	// A running tab of latest seen package refs.
-	latestRefs := make(map[string]int)
+	var (
+		lastArch, lastName, lastVer []byte
+		arch, name, ver             []byte
+		parts                       [][]byte
+	)
 
 	for i := 0; i < len(r.Refs); i++ {
-		partsL := bytes.Split(r.Refs[i], []byte(" "))
-		archL, nameL, verL := partsL[0][1:], partsL[1], partsL[2]
-		pkgId := string(nameL) + "." + string(archL)
+		parts = bytes.Split(r.Refs[i][1:], []byte(" "))
+		arch, name, ver = parts[0], parts[1], parts[2]
 
-		// If the package hasn't been seen before, add it and advance.
-		if _, ok := latestRefs[pkgId]; !ok {
-			latestRefs[pkgId] = i
-			continue
+		if bytes.Equal(arch, lastArch) && bytes.Equal(name, lastName) {
+			// Two packages are identical, check version and only one wins
+			vres := CompareVersions(string(ver), string(lastVer))
+
+			// Remove the older or duplicate refs from the result
+			if vres > 0 {
+				r.Refs = append(r.Refs[:i-1], r.Refs[i:]...)
+			} else {
+				r.Refs = append(r.Refs[:i], r.Refs[i+1:]...)
+			}
+
+			// Compensate for the reduced set
+			i -= 1
 		}
 
-		// If we've already seen this package, check versions
-		partsR := bytes.Split(r.Refs[latestRefs[pkgId]], []byte(" "))
-		verR := partsR[2]
-		vres := CompareVersions(string(verL), string(verR))
-
-		// Remove the older or duplicate refs from the result
-		if vres > 0 {
-			old := latestRefs[pkgId]
-			r.Refs = append(r.Refs[0:old], r.Refs[old+1:]...)
-			latestRefs[pkgId] = i - 1
-		} else {
-			r.Refs = append(r.Refs[0:i], r.Refs[i+1:]...)
-		}
-
-		// Compensate for the reduced set
-		i -= 1
+		lastArch, lastName, lastVer = arch, name, ver
 	}
 
 	return
