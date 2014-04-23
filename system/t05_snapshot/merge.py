@@ -92,3 +92,47 @@ class MergeSnapshot6Test(BaseTest):
     ]
     runCmd = "aptly snapshot merge -latest snap4 snap1 snap2 snap3"
     expectedCode = 0
+
+    def check(self):
+        def remove_created_at(s):
+            return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly snapshot show -with-packages snap4", "snapshot_show", match_prepare=remove_created_at)
+
+
+class MergeSnapshot7Test(BaseTest):
+    """
+    merge snapshots: in reverse order
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-non-free",
+        "aptly snapshot create snap3 from mirror wheezy-backports",
+    ]
+    runCmd = "aptly snapshot merge snap4 snap3 snap2 snap1"
+    expectedCode = 0
+
+    def check(self):
+        def remove_created_at(s):
+            return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly snapshot show -with-packages snap4", "snapshot_show", match_prepare=remove_created_at)
+
+
+class MergeSnapshot8Test(BaseTest):
+    """
+    merge snapshots: compare -latest and regular
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-non-free",
+        "aptly snapshot create snap3 from mirror wheezy-backports",
+        "aptly snapshot merge snap4 snap3 snap2 snap1",
+        "aptly snapshot merge -latest snap5 snap3 snap2 snap1",
+    ]
+    runCmd = "aptly snapshot diff snap4 snap5"
+    expectedCode = 0
