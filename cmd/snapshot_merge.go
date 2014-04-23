@@ -67,9 +67,9 @@ func makeCmdSnapshotMerge() *commander.Command {
 		Short:     "merges snapshots",
 		Long: `
 Merge command merges several <source> snapshots into one <destination> snapshot.
-Merge happens from left to right. Packages with the same name-architecture
-pair are replaced during merge (package from latest snapshot on the list
-wins). If run with only one source snapshot, merge copies <source> into
+Merge happens from left to right. By default, packages with the same
+name-architecture pair are replaced during merge (package from latest snapshot
+on the list wins).  If run with only one source snapshot, merge copies <source> into
 <destination>.
 
 Example:
@@ -78,7 +78,7 @@ Example:
 `,
 	}
 
-	cmd.Flag.Bool("latest", false, "Use only the latest version of each package")
+	cmd.Flag.Bool("latest", false, "use only the latest version of each package")
 
 	return cmd
 }
