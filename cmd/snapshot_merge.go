@@ -77,7 +77,7 @@ Example:
 `,
 	}
 
-	cmd.Flag.Bool("latest", false, "Use only the latest version of all packages")
+	cmd.Flag.Bool("latest", false, "Use only the latest version of each package")
 
 	return cmd
 }
