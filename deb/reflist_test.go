@@ -14,6 +14,14 @@ type PackageRefListSuite struct {
 
 var _ = Suite(&PackageRefListSuite{})
 
+func toStrSlice(reflist *PackageRefList) (result []string) {
+	result = make([]string, reflist.Len())
+	for i, r := range reflist.Refs {
+		result[i] = string(r)
+	}
+	return
+}
+
 func (s *PackageRefListSuite) SetUpTest(c *C) {
 	s.list = NewPackageList()
 
@@ -247,49 +255,58 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	listB.Add(packages[5])
 	listB.Add(packages[6])
 
-	listC := NewPackageList()
-	listC.Add(packages[3])
-	listC.Add(packages[3])
-	listC.Add(packages[4])
-	listC.Add(packages[4])
-	listC.Add(packages[7])
-	listC.Add(packages[7])
-
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
-	reflistC := NewPackageRefListFromPackageList(listC)
 
-	toStrSlice := func(reflist *PackageRefList) (result []string) {
-		result = make([]string, reflist.Len())
-		for i, r := range reflist.Refs {
-			result[i] = string(r)
-		}
-		return
-	}
-
-	mergeAB := reflistA.Merge(reflistB, true, false)
-	mergeBA := reflistB.Merge(reflistA, true, false)
+	mergeAB := reflistA.Merge(reflistB, true)
+	mergeBA := reflistB.Merge(reflistA, true)
 
 	c.Check(toStrSlice(mergeAB), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 lib 1.0", "Psparc xyz 1.0"})
 	c.Check(toStrSlice(mergeBA), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
 
-	mergeABall := reflistA.Merge(reflistB, false, false)
-	mergeBAall := reflistB.Merge(reflistA, false, false)
+	mergeABall := reflistA.Merge(reflistB, false)
+	mergeBAall := reflistB.Merge(reflistA, false)
 
 	c.Check(mergeABall, DeepEquals, mergeBAall)
 	c.Check(toStrSlice(mergeBAall), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+}
 
-	mergeABClatest := reflistA.Merge(reflistB, false, true)
-	mergeABClatest = mergeABClatest.Merge(reflistC, false, true)
+func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
+	packages := []*Package{
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},
+		&Package{Name: "lib", Version: "1.1", Architecture: "i386"},
+		&Package{Name: "lib", Version: "1.2", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.2", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.3", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.4", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.5", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.6", Architecture: "i386"},
+	}
 
-	mergeCBAlatest := reflistC.Merge(reflistB, false, true)
-	mergeCBAlatest = mergeCBAlatest.Merge(reflistA, false, true)
+	rl := NewPackageList()
+	rl.Add(packages[0])
+	rl.Add(packages[1])
+	rl.Add(packages[2])
+	rl.Add(packages[3])
+	rl.Add(packages[7])
+	rl.Add(packages[0])
+	rl.Add(packages[2])
+	rl.Add(packages[4])
+	rl.Add(packages[5])
+	rl.Add(packages[6])
+	rl.Add(packages[3])
+	rl.Add(packages[3])
+	rl.Add(packages[4])
+	rl.Add(packages[4])
+	rl.Add(packages[7])
+	rl.Add(packages[7])
 
-	c.Check(toStrSlice(mergeABClatest), DeepEquals,
-		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
-	c.Check(toStrSlice(mergeCBAlatest), DeepEquals,
-		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+	prl := NewPackageRefListFromPackageList(rl)
+	merged := FilterLatestRefs(prl)
+
+	c.Check(toStrSlice(merged), DeepEquals,
+		[]string{"Pi386 dpkg 1.6", "Pi386 lib 1.2"})
 }
