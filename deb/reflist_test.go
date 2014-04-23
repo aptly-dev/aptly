@@ -277,11 +277,11 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	packages := []*Package{
 		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},
-		&Package{Name: "lib", Version: "1.1", Architecture: "i386"},
+		&Package{Name: "lib", Version: "1.2~bp1", Architecture: "i386"},
 		&Package{Name: "lib", Version: "1.2", Architecture: "i386"},
 		&Package{Name: "dpkg", Version: "1.2", Architecture: "i386"},
 		&Package{Name: "dpkg", Version: "1.3", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.4", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.3~bp2", Architecture: "i386"},
 		&Package{Name: "dpkg", Version: "1.5", Architecture: "i386"},
 		&Package{Name: "dpkg", Version: "1.6", Architecture: "i386"},
 	}

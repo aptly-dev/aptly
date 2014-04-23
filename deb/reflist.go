@@ -223,6 +223,8 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 // replaces matching packages (by architecture/name) with reference from r.
 // Otherwise, all packages are saved.
 func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result *PackageRefList) {
+	var overriddenArch, overridenName []byte
+
 	// pointer to left and right reflists
 	il, ir := 0, 0
 	// length of reflists
@@ -254,6 +256,8 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 			result.Refs = append(result.Refs, l.Refs[il])
 			il++
 			ir++
+			overridenName = nil
+			overriddenArch = nil
 		} else {
 			if overrideMatching {
 				partsL := bytes.Split(rl, []byte(" "))
@@ -262,11 +266,19 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 				partsR := bytes.Split(rr, []byte(" "))
 				archR, nameR := partsR[0][1:], partsR[1]
 
-				if bytes.Compare(archL, archR) == 0 && bytes.Compare(nameL, nameR) == 0 {
+				if bytes.Equal(archL, overriddenArch) && bytes.Equal(nameL, overridenName) {
+					// this package has already been overriden on the right
+					il++
+					continue
+				}
+
+				if bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) {
 					// override with package from the right
 					result.Refs = append(result.Refs, r.Refs[ir])
 					il++
 					ir++
+					overriddenArch = archL
+					overridenName = nameL
 					continue
 				}
 			}
@@ -278,6 +290,8 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 			} else {
 				result.Refs = append(result.Refs, r.Refs[ir])
 				ir++
+				overridenName = nil
+				overriddenArch = nil
 			}
 		}
 	}
@@ -304,11 +318,14 @@ func FilterLatestRefs(r *PackageRefList) {
 			// Two packages are identical, check version and only one wins
 			vres := CompareVersions(string(ver), string(lastVer))
 
-			// Remove the older or duplicate refs from the result
+			// Remove the older refs from the result
 			if vres > 0 {
+				// ver[i] > ver[i-1], remove element i-1
 				r.Refs = append(r.Refs[:i-1], r.Refs[i:]...)
 			} else {
+				// ver[i] < ver[i-1], remove element i
 				r.Refs = append(r.Refs[:i], r.Refs[i+1:]...)
+				arch, name, ver = lastArch, lastName, lastVer
 			}
 
 			// Compensate for the reduced set
