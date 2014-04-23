@@ -286,10 +286,10 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 }
 
 // FilterLatestRefs takes in a reflist with potentially multiples of the same
-// packages and returns a reflist containing only the latest of each package.
-// This implements a "latest wins" approach which can be used while merging two
-// or more snapshots together.
-func FilterLatestRefs(r *PackageRefList) *PackageRefList {
+// packages and reduces it to only the latest of each package. The operations
+// are done in-place. This implements a "latest wins" approach which can be used
+// while merging two or more snapshots together.
+func FilterLatestRefs(r *PackageRefList) {
 	// A running tab of latest seen package refs.
 	latestRefs := make(map[string]int)
 
@@ -322,5 +322,5 @@ func FilterLatestRefs(r *PackageRefList) *PackageRefList {
 		i -= 1
 	}
 
-	return r
+	return
 }

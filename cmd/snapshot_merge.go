@@ -38,7 +38,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	}
 
 	if latest {
-		result = deb.FilterLatestRefs(result)
+		deb.FilterLatestRefs(result)
 	}
 
 	sourceDescription := make([]string, len(sources))
