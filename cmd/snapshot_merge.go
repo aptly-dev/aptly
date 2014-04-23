@@ -29,15 +29,16 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	}
 
 	latest := context.flags.Lookup("latest").Value.Get().(bool)
+	overrideMatching := !latest
 
 	result := sources[0].RefList()
 
 	for i := 1; i < len(sources); i++ {
-		if latest {
-			result = result.Merge(sources[i].RefList(), false, true)
-		} else {
-			result = result.Merge(sources[i].RefList(), true, false)
-		}
+		result = result.Merge(sources[i].RefList(), overrideMatching)
+	}
+
+	if latest {
+		result = deb.FilterLatestRefs(result)
 	}
 
 	sourceDescription := make([]string, len(sources))

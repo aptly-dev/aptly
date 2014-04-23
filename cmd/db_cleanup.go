@@ -27,7 +27,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			return err
 		}
 		if repo.RefList() != nil {
-			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, false)
+			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false)
 		}
 		return nil
 	})
@@ -41,7 +41,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			return err
 		}
 		if repo.RefList() != nil {
-			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, false)
+			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false)
 		}
 		return nil
 	})
@@ -54,7 +54,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false, false)
+		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false)
 		return nil
 	})
 	if err != nil {
