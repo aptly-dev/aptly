@@ -221,10 +221,10 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 
 // Merge merges reflist r into current reflist. If overrideMatching, merge
 // replaces matching packages (by architecture/name) with reference from r. If
-// newestWins, compare versions between common packages and take the latest from
+// latestWins, compare versions between common packages and take the latest from
 // the set. Otherwise, all packages are saved.
 func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
-	newestWins bool) (result *PackageRefList) {
+	latestWins bool) (result *PackageRefList) {
 
 	// pointer to left and right reflists
 	il, ir := 0, 0
@@ -285,39 +285,49 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 		}
 	}
 
-	if newestWins {
-		// A running tab of package references we want to keep. Only the latest
-		// package reference is kept.
-		latestRefs := make(map[string]int)
-
-		i := 0
-		for _ = range result.Refs {
-			partsL := bytes.Split(result.Refs[i], []byte(" "))
-			archL, nameL, verL := partsL[0][1:], partsL[1], partsL[2]
-			pkgId := string(nameL) + "." + string(archL)
-
-			// If the package hasn't been seen before, add it and advance.
-			if _, ok := latestRefs[pkgId]; !ok {
-				latestRefs[pkgId] = i
-				i++
-				continue
-			}
-
-			// If we've already seen this package, check versions
-			partsR := bytes.Split(result.Refs[latestRefs[pkgId]], []byte(" "))
-			verR := partsR[2]
-			vres := CompareVersions(string(verL), string(verR))
-
-			// Remove the older or duplicate refs from the result
-			if vres <= 0 {
-				result.Refs = append(result.Refs[0:i], result.Refs[i+1:]...)
-				latestRefs[pkgId] = i
-			} else {
-				oi := latestRefs[pkgId]
-				result.Refs = append(result.Refs[0:oi], result.Refs[oi+1:]...)
-			}
-		}
+	// Filter results down to the latest packages only if requested
+	if latestWins {
+		result = FilterLatestPackages(result)
 	}
 
 	return
+}
+
+// FilterLatestPackages takes in a reflist with potentially multiples of the
+// same packages and returns a reflist containing only the latest of each
+// package. This implements a "latest wins" approach which can be used while
+// merging two or more snapshots together.
+func FilterLatestPackages(r *PackageRefList) *PackageRefList {
+	// A running tab of latest seen package refs.
+	latestRefs := make(map[string]int)
+
+	i := 0
+	for _ = range r.Refs {
+		partsL := bytes.Split(r.Refs[i], []byte(" "))
+		archL, nameL, verL := partsL[0][1:], partsL[1], partsL[2]
+		pkgId := string(nameL) + "." + string(archL)
+
+		// If the package hasn't been seen before, add it and advance.
+		if _, ok := latestRefs[pkgId]; !ok {
+			latestRefs[pkgId] = i
+			i++
+			continue
+		}
+
+		// If we've already seen this package, check versions
+		partsR := bytes.Split(r.Refs[latestRefs[pkgId]], []byte(" "))
+		verR := partsR[2]
+		vres := CompareVersions(string(verL), string(verR))
+
+		// Remove the older or duplicate refs from the result
+		if vres <= 0 {
+			r.Refs = append(r.Refs[0:i], r.Refs[i+1:]...)
+			latestRefs[pkgId] = i
+		} else {
+			oi := latestRefs[pkgId]
+			r.Refs = append(r.Refs[0:oi], r.Refs[oi+1:]...)
+		}
+	}
+
+	return r
 }
