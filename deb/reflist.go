@@ -290,39 +290,32 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool,
 		// package reference is kept.
 		latestRefs := make(map[string]int)
 
-		for i, ref := range result.Refs {
-			partsL := bytes.Split(ref, []byte(" "))
+		i := 0
+		for _ = range result.Refs {
+			partsL := bytes.Split(result.Refs[i], []byte(" "))
 			archL, nameL, verL := partsL[0][1:], partsL[1], partsL[2]
 			pkgId := string(nameL) + "." + string(archL)
 
-			// If the package hasn't been seen before, just add it.
+			// If the package hasn't been seen before, add it and advance.
 			if _, ok := latestRefs[pkgId]; !ok {
 				latestRefs[pkgId] = i
+				i++
 				continue
 			}
 
-			// If we've already seen this package, check if this version is
-			// newer. If it is, replace the older ref.
+			// If we've already seen this package, check versions
 			partsR := bytes.Split(result.Refs[latestRefs[pkgId]], []byte(" "))
 			verR := partsR[2]
-
 			vres := CompareVersions(string(verL), string(verR))
-			if vres > 0 {
-				latestRefs[pkgId] = i
-			}
-		}
 
-		offset := 0
-	OUTER:
-		for i, _ := range result.Refs {
-			for _, ki := range latestRefs {
-				if ki == i {
-					continue OUTER
-				}
+			// Remove the older or duplicate refs from the result
+			if vres <= 0 {
+				result.Refs = append(result.Refs[0:i], result.Refs[i+1:]...)
+				latestRefs[pkgId] = i
+			} else {
+				oi := latestRefs[pkgId]
+				result.Refs = append(result.Refs[0:oi], result.Refs[oi+1:]...)
 			}
-			idx := i - offset
-			result.Refs = append(result.Refs[0:idx], result.Refs[idx+1:]...)
-			offset++
 		}
 	}
 
