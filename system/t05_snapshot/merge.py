@@ -78,3 +78,17 @@ class MergeSnapshot5Test(BaseTest):
     ]
     runCmd = "aptly snapshot merge snap1 snap1"
     expectedCode = 1
+
+
+class MergeSnapshot6Test(BaseTest):
+    """
+    merge snapshots: use latest versions only
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-non-free",
+        "aptly snapshot create snap3 from mirror wheezy-backports",
+    ]
+    runCmd = "aptly snapshot merge -latest snap4 snap1 snap2 snap3"
+    expectedCode = 0
