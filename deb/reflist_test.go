@@ -14,6 +14,14 @@ type PackageRefListSuite struct {
 
 var _ = Suite(&PackageRefListSuite{})
 
+func toStrSlice(reflist *PackageRefList) (result []string) {
+	result = make([]string, reflist.Len())
+	for i, r := range reflist.Refs {
+		result[i] = string(r)
+	}
+	return
+}
+
 func (s *PackageRefListSuite) SetUpTest(c *C) {
 	s.list = NewPackageList()
 
@@ -250,14 +258,6 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
 
-	toStrSlice := func(reflist *PackageRefList) (result []string) {
-		result = make([]string, reflist.Len())
-		for i, r := range reflist.Refs {
-			result[i] = string(r)
-		}
-		return
-	}
-
 	mergeAB := reflistA.Merge(reflistB, true)
 	mergeBA := reflistB.Merge(reflistA, true)
 
@@ -272,4 +272,41 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	c.Check(mergeABall, DeepEquals, mergeBAall)
 	c.Check(toStrSlice(mergeBAall), DeepEquals,
 		[]string{"Pall data 1.1~bp1", "Pamd64 app 1.1~bp2", "Pi386 app 1.1~bp1", "Pi386 app 1.1~bp2", "Pi386 dpkg 1.0", "Pi386 dpkg 1.7", "Pi386 lib 1.0", "Psparc xyz 1.0"})
+}
+
+func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
+	packages := []*Package{
+		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},
+		&Package{Name: "lib", Version: "1.1", Architecture: "i386"},
+		&Package{Name: "lib", Version: "1.2", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.2", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.3", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.4", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.5", Architecture: "i386"},
+		&Package{Name: "dpkg", Version: "1.6", Architecture: "i386"},
+	}
+
+	rl := NewPackageList()
+	rl.Add(packages[0])
+	rl.Add(packages[1])
+	rl.Add(packages[2])
+	rl.Add(packages[3])
+	rl.Add(packages[7])
+	rl.Add(packages[0])
+	rl.Add(packages[2])
+	rl.Add(packages[4])
+	rl.Add(packages[5])
+	rl.Add(packages[6])
+	rl.Add(packages[3])
+	rl.Add(packages[3])
+	rl.Add(packages[4])
+	rl.Add(packages[4])
+	rl.Add(packages[7])
+	rl.Add(packages[7])
+
+	result := NewPackageRefListFromPackageList(rl)
+	FilterLatestRefs(result)
+
+	c.Check(toStrSlice(result), DeepEquals,
+		[]string{"Pi386 dpkg 1.6", "Pi386 lib 1.2"})
 }

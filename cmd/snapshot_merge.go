@@ -28,10 +28,17 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		}
 	}
 
+	latest := context.flags.Lookup("latest").Value.Get().(bool)
+	overrideMatching := !latest
+
 	result := sources[0].RefList()
 
 	for i := 1; i < len(sources); i++ {
-		result = result.Merge(sources[i].RefList(), true)
+		result = result.Merge(sources[i].RefList(), overrideMatching)
+	}
+
+	if latest {
+		deb.FilterLatestRefs(result)
 	}
 
 	sourceDescription := make([]string, len(sources))
@@ -70,6 +77,8 @@ Example:
     $ aptly snapshot merge wheezy-w-backports wheezy-main wheezy-backports
 `,
 	}
+
+	cmd.Flag.Bool("latest", false, "Use only the latest version of each package")
 
 	return cmd
 }

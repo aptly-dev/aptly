@@ -640,7 +640,7 @@ display diff only for matching packages (don\(cqt display missing packages)
 \fBaptly\fR \fBsnapshot\fR \fBmerge\fR \fIdestination\fR \fIsource\fR [\fIsource\fR\|\.\|\.\|\.]
 .
 .P
-Merge command merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. Packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
+Merge command merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. By default, packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
 .
 .P
 Example:
@@ -654,6 +654,13 @@ $ aptly snapshot merge wheezy\-w\-backports wheezy\-main wheezy\-backports
 .fi
 .
 .IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBlatest\fR=false
+use only the latest version of each package in the merged snapshot
 .
 .SH "DELETE SNAPSHOT"
 \fBaptly\fR \fBsnapshot\fR \fBdrop\fR \fIname\fR
