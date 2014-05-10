@@ -346,7 +346,6 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 
 	for _, info := range packagesURLs {
 		url, kind := info[0], info[1]
-		fmt.Printf("repo.ReleaseFiles = %v\n", repo.ReleaseFiles)
 		packagesReader, packagesFile, err := http.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
 		if err != nil {
 			return err
