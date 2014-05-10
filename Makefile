@@ -72,4 +72,16 @@ package:
 	   -f -m "Andrey Smirnov <me@smira.ru>" --description="Debian repository management tool" -C root/ .
 	mv aptly_$(VERSION)_*.deb ~
 
+src-package:
+	rm -rf aptly-$(VERSION)
+	mkdir -p aptly-$(VERSION)/src/github.com/smira/aptly/
+	cd aptly-$(VERSION)/src/github.com/smira/ && git clone https://github.com/smira/aptly && cd aptly && git checkout v$(VERSION)
+	cd aptly-$(VERSION)/src/github.com/smira/aptly && gom -production install
+	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . -name .git -print | xargs rm -rf
+	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . -name .bzr -print | xargs rm -rf
+	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . -name .hg -print | xargs rm -rf
+	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/_vendor/{pkg,bin}
+	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
+	rm -rf aptly-$(VERSION)
+
 .PHONY: coverage.out
