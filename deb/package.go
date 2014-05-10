@@ -411,6 +411,8 @@ func (p *Package) PoolDirectory() (string, error) {
 	source := p.Source
 	if source == "" {
 		source = p.Name
+	} else if pos := strings.Index(source, "("); pos != -1 {
+		source = strings.TrimSpace(source[:pos])
 	}
 
 	if len(source) < 2 {

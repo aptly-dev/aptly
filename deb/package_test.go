@@ -231,6 +231,12 @@ func (s *PackageSuite) TestPoolDirectory(c *C) {
 	c.Check(dir, Equals, "liba/libarena")
 
 	p = NewPackageFromControlFile(packageStanza.Copy())
+	p.Source = "gcc-defaults (1.77)"
+	dir, err = p.PoolDirectory()
+	c.Check(err, IsNil)
+	c.Check(dir, Equals, "g/gcc-defaults")
+
+	p = NewPackageFromControlFile(packageStanza.Copy())
 	p.Source = "l"
 	_, err = p.PoolDirectory()
 	c.Check(err, ErrorMatches, ".* too short")
