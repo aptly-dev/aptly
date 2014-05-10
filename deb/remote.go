@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -66,9 +67,11 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		return nil, err
 	}
 
-	if result.Distribution == "." || result.Distribution == "./" {
+	if strings.HasSuffix(result.Distribution, "/") || strings.HasPrefix(result.Distribution, ".") {
 		// flat repo
-		result.Distribution = ""
+		if !strings.HasPrefix(result.Distribution, ".") {
+			result.Distribution = "./" + result.Distribution
+		}
 		result.Architectures = nil
 		if len(result.Components) > 0 {
 			return nil, fmt.Errorf("components aren't supported for flat repos")
@@ -106,7 +109,9 @@ func (repo *RemoteRepo) String() string {
 
 // IsFlat determines if repository is flat
 func (repo *RemoteRepo) IsFlat() bool {
-	return repo.Distribution == ""
+	// aptly < 0.5.1 had Distribution = "" for flat repos
+	// aptly >= 0.5.1 had Distribution = "./[path]/" for flat repos
+	return repo.Distribution == "" || (strings.HasPrefix(repo.Distribution, ".") && strings.HasSuffix(repo.Distribution, "/"))
 }
 
 // NumPackages return number of packages retrived from remote repo
@@ -129,7 +134,7 @@ func (repo *RemoteRepo) ReleaseURL(name string) *url.URL {
 	if !repo.IsFlat() {
 		path = &url.URL{Path: fmt.Sprintf("dists/%s/%s", repo.Distribution, name)}
 	} else {
-		path = &url.URL{Path: name}
+		path = &url.URL{Path: filepath.Join(repo.Distribution, name)}
 	}
 
 	return repo.archiveRootURL.ResolveReference(path)
@@ -137,13 +142,13 @@ func (repo *RemoteRepo) ReleaseURL(name string) *url.URL {
 
 // FlatBinaryURL returns URL to Packages files for flat repo
 func (repo *RemoteRepo) FlatBinaryURL() *url.URL {
-	path := &url.URL{Path: "Packages"}
+	path := &url.URL{Path: filepath.Join(repo.Distribution, "Packages")}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
 // FlatSourcesURL returns URL to Sources files for flat repo
 func (repo *RemoteRepo) FlatSourcesURL() *url.URL {
-	path := &url.URL{Path: "Sources"}
+	path := &url.URL{Path: filepath.Join(repo.Distribution, "Sources")}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
@@ -341,6 +346,7 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 
 	for _, info := range packagesURLs {
 		url, kind := info[0], info[1]
+		fmt.Printf("repo.ReleaseFiles = %v\n", repo.ReleaseFiles)
 		packagesReader, packagesFile, err := http.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
 		if err != nil {
 			return err

@@ -101,9 +101,14 @@ func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
-	c.Check(s.flat.Distribution, Equals, "")
+	c.Check(s.flat.IsFlat(), Equals, true)
+	c.Check(s.flat.Distribution, Equals, "./")
 	c.Check(s.flat.Architectures, IsNil)
 	c.Check(s.flat.Components, IsNil)
+
+	flat2, _ := NewRemoteRepo("flat2", "http://pkg.jenkins-ci.org/debian-stable", "binary/", []string{}, []string{}, false)
+	c.Check(flat2.IsFlat(), Equals, true)
+	c.Check(flat2.Distribution, Equals, "./binary/")
 
 	_, err := NewRemoteRepo("fl", "http://some.repo/", "./", []string{"main"}, []string{}, false)
 	c.Check(err, ErrorMatches, "components aren't supported for flat repos")

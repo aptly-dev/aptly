@@ -1,6 +1,6 @@
 Name: mirror14
 Archive Root URL: http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/
-Distribution: 
+Distribution: ./
 Components: 
 Architectures: 
 Download Sources: no

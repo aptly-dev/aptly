@@ -1,0 +1,10 @@
+Downloading http://pkg.jenkins-ci.org/debian-stable/binary/InRelease...
+Downloading http://pkg.jenkins-ci.org/debian-stable/binary/Release...
+Downloading http://pkg.jenkins-ci.org/debian-stable/binary/Release.gpg...
+gpgv:  DSA key ID D50582E6
+gpgv: Good signature from "Kohsuke Kawaguchi <kk@kohsuke.org>"
+gpgv:                 aka "Kohsuke Kawaguchi <kohsuke.kawaguchi@sun.com>"
+gpgv:                 aka "[invalid image]"
+
+Mirror [mirror21]: http://pkg.jenkins-ci.org/debian-stable/ ./binary/ successfully added.
+You can run 'aptly mirror update mirror21' to download repository contents.
