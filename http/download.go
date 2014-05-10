@@ -51,7 +51,12 @@ func NewDownloader(threads int, progress aptly.Progress) aptly.Downloader {
 		unpause:  make(chan bool),
 		threads:  threads,
 		progress: progress,
-		client:   &http.Client{Transport: &http.Transport{DisableCompression: true}},
+		client: &http.Client{
+			Transport: &http.Transport{
+				DisableCompression: true,
+				Proxy:              http.ProxyFromEnvironment,
+			},
+		},
 	}
 
 	for i := 0; i < downloader.threads; i++ {

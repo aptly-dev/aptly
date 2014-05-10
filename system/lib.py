@@ -77,6 +77,7 @@ class BaseTest(object):
         "ppaCodename": "",
     }
     configOverride = {}
+    environmentOverride = {}
 
     fixtureDBDir = os.path.join(os.environ["HOME"], "aptly-fixture-db")
     fixturePoolDir = os.path.join(os.environ["HOME"], "aptly-fixture-pool")
@@ -160,6 +161,7 @@ class BaseTest(object):
                 command = shlex.split(command)
             environ = os.environ.copy()
             environ["LC_ALL"] = "C"
+            environ.update(self.environmentOverride)
             proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, env=environ)
             output, _ = proc.communicate()
             #print "CMD %s: %.2f" % (" ".join(command), time.time()-start)

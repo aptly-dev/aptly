@@ -224,3 +224,14 @@ class CreateMirror19Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror19", "mirror_show", match_prepare=removeDates)
+
+
+class CreateMirror20Test(BaseTest):
+    """
+    create mirror: using failing HTTP_PROXY
+    """
+    fixtureGpg = True
+
+    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://security.debian.org/ wheezy/updates main"
+    environmentOverride = {"HTTP_PROXY": "127.0.0.1:3137"}
+    expectedCode = 1
