@@ -86,7 +86,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	// Perform pull
 	for _, arch := range architecturesList {
-		dependencies := make([]deb.Dependency, len(initialDependencies), 128)
+		dependencies := make([]deb.Dependency, len(initialDependencies), 2*len(initialDependencies))
 		for i := range dependencies {
 			dependencies[i] = initialDependencies[i]
 			dependencies[i].Architecture = arch
