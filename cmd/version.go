@@ -7,6 +7,11 @@ import (
 )
 
 func aptlyVersion(cmd *commander.Command, args []string) error {
+	if len(args) != 0 {
+		cmd.Usage()
+		return commander.ErrCommandError
+	}
+
 	fmt.Printf("aptly version: %s\n", aptly.Version)
 	return nil
 }

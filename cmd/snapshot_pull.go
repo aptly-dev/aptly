@@ -13,7 +13,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 4 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	noDeps := context.flags.Lookup("no-deps").Value.Get().(bool)

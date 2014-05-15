@@ -10,7 +10,7 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 1 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(args[0])

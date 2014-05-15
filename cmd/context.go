@@ -9,6 +9,7 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"os"
 	"path/filepath"
@@ -48,7 +49,11 @@ type FatalError struct {
 
 // Fatal panics and aborts execution with exit code 1
 func Fatal(err error) {
-	panic(&FatalError{ReturnCode: 1, Message: err.Error()})
+	returnCode := 1
+	if err == commander.ErrFlagError || err == commander.ErrCommandError {
+		returnCode = 2
+	}
+	panic(&FatalError{ReturnCode: returnCode, Message: err.Error()})
 }
 
 // Config loads and returns current configuration

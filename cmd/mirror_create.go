@@ -12,7 +12,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	var err error
 	if !(len(args) == 2 && strings.HasPrefix(args[1], "ppa:") || len(args) >= 3) {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	downloadSources := context.Config().DownloadSourcePackages || context.flags.Lookup("with-sources").Value.Get().(bool)

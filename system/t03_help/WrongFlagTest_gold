@@ -1,3 +1,4 @@
+flag provided but not defined: -fxz
 Usage: aptly mirror create <name> <archive url> <distribution> [<component1> ...]
 
 aptly mirror create - create new mirror
@@ -13,4 +14,4 @@ Options:
   -ignore-signatures=false: disable verification of Release file signatures
   -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
   -with-sources=false: download source packages in addition to binary packages
-ERROR: unable to parse command
+ERROR: unable to parse flags

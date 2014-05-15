@@ -11,7 +11,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 2 || len(args) > 3 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	distribution := args[0]

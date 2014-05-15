@@ -9,7 +9,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	distribution := args[0]

@@ -11,7 +11,7 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 0 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)

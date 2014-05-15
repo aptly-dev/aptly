@@ -15,6 +15,11 @@ import (
 func aptlyServe(cmd *commander.Command, args []string) error {
 	var err error
 
+	if len(args) != 0 {
+		cmd.Usage()
+		return commander.ErrCommandError
+	}
+
 	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
 		fmt.Printf("No published repositories, unable to serve.\n")
 		return nil

@@ -12,7 +12,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 3 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	command := cmd.Name()

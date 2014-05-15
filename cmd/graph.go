@@ -20,6 +20,11 @@ func graphvizEscape(s string) string {
 func aptlyGraph(cmd *commander.Command, args []string) error {
 	var err error
 
+	if len(args) != 0 {
+		cmd.Usage()
+		return commander.ErrCommandError
+	}
+
 	graph := gographviz.NewGraph()
 	graph.SetDir(true)
 	graph.SetName("aptly")

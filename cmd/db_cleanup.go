@@ -14,7 +14,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 	if len(args) != 0 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	// collect information about references packages...

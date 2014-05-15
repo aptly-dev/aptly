@@ -11,7 +11,7 @@ func aptlyDbRecover(cmd *commander.Command, args []string) error {
 
 	if len(args) != 0 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	context.Progress().Printf("Recovering database...\n")

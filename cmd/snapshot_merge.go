@@ -11,7 +11,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 2 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	sources := make([]*deb.Snapshot, len(args)-1)

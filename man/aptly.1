@@ -979,7 +979,19 @@ $ aptly graph
 If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
 .
 .SH "RETURN VALUES"
-\fBaptly\fR exists with 0 on success and with 1 on failure\.
+\fBaptly\fR exists with:
+.
+.TP
+0
+success
+.
+.TP
+1
+general failure
+.
+.TP
+2
+command parse failure
 .
 .SH "AUTHORS"
 Andrey Smirnov (me@smira\.ru)

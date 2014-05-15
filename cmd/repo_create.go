@@ -11,7 +11,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 1 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	repo := deb.NewLocalRepo(args[0], context.flags.Lookup("comment").Value.String())

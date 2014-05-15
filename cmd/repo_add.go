@@ -16,7 +16,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) < 2 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	name := args[0]

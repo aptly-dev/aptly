@@ -61,7 +61,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		snapshot = deb.NewSnapshotFromPackageList(snapshotName, nil, packageList, "Created as empty")
 	} else {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	err = context.CollectionFactory().SnapshotCollection().Add(snapshot)

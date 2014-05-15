@@ -10,7 +10,7 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 2 {
 		cmd.Usage()
-		return err
+		return commander.ErrCommandError
 	}
 
 	onlyMatching := context.flags.Lookup("only-matching").Value.Get().(bool)
