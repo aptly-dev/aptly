@@ -54,14 +54,14 @@ func (s *PackageCollectionSuite) TestUpdate(c *C) {
 	p2.UpdateFiles(nil)
 	res, err = s.collection.ByKey(p2.Key(""))
 	err = s.collection.Update(p2)
-	c.Assert(err, ErrorMatches, ".*conflict with existing packge")
+	c.Assert(err, ErrorMatches, ".*conflict with existing package")
 	p2 = NewPackageFromControlFile(packageStanza.Copy())
 	files := p2.Files()
 	files[0].Checksums.MD5 = "abcdef"
 	p2.UpdateFiles(files)
 	res, err = s.collection.ByKey(p2.Key(""))
 	err = s.collection.Update(p2)
-	c.Assert(err, ErrorMatches, ".*conflict with existing packge")
+	c.Assert(err, ErrorMatches, ".*conflict with existing package")
 }
 
 func (s *PackageCollectionSuite) TestByKey(c *C) {
