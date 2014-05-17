@@ -160,7 +160,7 @@ func (collection *PackageCollection) Update(p *Package) error {
 	if err == nil {
 		// if .Files is different, consider to be conflict
 		if p.FilesHash != existing.FilesHash {
-			return fmt.Errorf("unable to save: %s, conflict with existing packge", p)
+			return fmt.Errorf("unable to save: %s, conflict with existing package", p)
 		}
 		// ok, .Files are the same, but maybe some meta-data is different, proceed to saving
 	} else {
