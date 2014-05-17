@@ -1,5 +1,5 @@
 Loading packages...
 [!] Unable to save package pyspi_0.6.1-1.3_source: unable to save: pyspi_0.6.1-1.3_source, conflict with existing package
 [!] Some files were skipped due to errors:
-  /Users/smira/Documents/go/src/github.com/smira/aptly/system/t09_repo/AddRepo8Test/pyspi_0.6.1-1.3.conflict.dsc
+  /pyspi_0.6.1-1.3.conflict.dsc
 ERROR: Some files failed to be added
