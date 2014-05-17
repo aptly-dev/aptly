@@ -41,11 +41,13 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	}
 
 	packageFiles := []string{}
+	failedFiles := []string{}
 
 	for _, location := range args[1:] {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err2)
+			failedFiles = append(failedFiles, location)
 			continue
 		}
 		if info.IsDir() {
@@ -68,6 +70,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 				packageFiles = append(packageFiles, location)
 			} else {
 				context.Progress().ColoredPrintf("@y[!]@| @!Unknwon file extenstion: %s@|", location)
+				failedFiles = append(failedFiles, location)
 				continue
 			}
 		}
@@ -100,6 +103,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		}
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to read file %s: %s@|", file, err)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 
@@ -118,6 +122,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		err = context.PackagePool().Import(file, checksums.MD5)
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", file, err)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 
@@ -132,6 +137,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			err = context.PackagePool().Import(sourceFile, f.Checksums.MD5)
 			if err != nil {
 				context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
+				failedFiles = append(failedFiles, file)
 				break
 			}
 
@@ -145,12 +151,14 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		err = context.CollectionFactory().PackageCollection().Update(p)
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to save package %s: %s@|", p, err)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 
 		err = list.Add(p)
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to add package to repo %s: %s@|", p, err)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 
@@ -174,6 +182,15 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 				return fmt.Errorf("unable to remove file: %s", err)
 			}
 		}
+	}
+
+	if len(failedFiles) > 0 {
+		context.Progress().ColoredPrintf("@y[!]@| @!Some files were skipped due to errors:@|")
+		for _, file := range failedFiles {
+			context.Progress().ColoredPrintf("  %s", file)
+		}
+
+		return fmt.Errorf("Some files failed to be added")
 	}
 
 	return err

@@ -1,2 +1,5 @@
 Loading packages...
 [!] Unable to process no-such-file: stat no-such-file: no such file or directory
+[!] Some files were skipped due to errors:
+  no-such-file
+ERROR: Some files failed to be added

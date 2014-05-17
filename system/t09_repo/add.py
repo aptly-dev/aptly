@@ -125,6 +125,7 @@ class AddRepo5Test(BaseTest):
     ]
     runCmd = "aptly repo add repo5 "
     outputMatchPrepare = lambda self, s: s.replace(self.tempSrcDir, "")
+    expectedCode = 1
 
     def prepare(self):
         super(AddRepo5Test, self).prepare()
@@ -154,6 +155,7 @@ class AddRepo6Test(BaseTest):
         "aptly repo create -comment=Repo6 -distribution=squeeze repo6",
     ]
     runCmd = "aptly repo add repo6 no-such-file"
+    expectedCode = 1
 
 
 class AddRepo7Test(BaseTest):
@@ -173,6 +175,8 @@ class AddRepo8Test(BaseTest):
         "aptly repo add repo8 ${files}/pyspi_0.6.1-1.3.dsc",
     ]
     runCmd = "aptly repo add repo8 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
+    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+    expectedCode = 1
 
     def check(self):
         self.check_output()
@@ -187,8 +191,9 @@ class AddRepo9Test(BaseTest):
         "aptly repo create -comment=Repo9 -distribution=squeeze repo9",
     ]
     runCmd = "aptly repo add repo9 ${files}/pyspi_0.6.1-1.3.dsc"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     gold_processor = BaseTest.expand_environ
+    expectedCode = 1
 
     def prepare(self):
         super(AddRepo9Test, self).prepare()
