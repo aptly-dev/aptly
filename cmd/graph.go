@@ -134,8 +134,6 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("Generating graph...\n")
 
-	fmt.Printf("graph = \n %s\n", graph.String())
-
 	buf := bytes.NewBufferString(graph.String())
 
 	tempfile, err := ioutil.TempFile("", "aptly-graph")
