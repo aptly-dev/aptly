@@ -13,10 +13,6 @@ import (
 	"strings"
 )
 
-func graphvizEscape(s string) string {
-	return fmt.Sprintf("\"%s\"", strings.Replace(s, "\"", "\\\"", 0))
-}
-
 func aptlyGraph(cmd *commander.Command, args []string) error {
 	var err error
 
@@ -25,7 +21,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	graph := gographviz.NewGraph()
+	graph := gographviz.NewEscape()
 	graph.SetDir(true)
 	graph.SetName("aptly")
 
@@ -39,13 +35,13 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			return err
 		}
 
-		graph.AddNode("aptly", graphvizEscape(repo.UUID), map[string]string{
+		graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkgoldenrod1",
-			"label": graphvizEscape(fmt.Sprintf("{Mirror %s|url: %s|dist: %s|comp: %s|arch: %s|pkgs: %d}",
+			"label": fmt.Sprintf("{Mirror %s|url: %s|dist: %s|comp: %s|arch: %s|pkgs: %d}",
 				repo.Name, repo.ArchiveRoot, repo.Distribution, strings.Join(repo.Components, ", "),
-				strings.Join(repo.Architectures, ", "), repo.NumPackages())),
+				strings.Join(repo.Architectures, ", "), repo.NumPackages()),
 		})
 		existingNodes[repo.UUID] = true
 		return nil
@@ -63,12 +59,12 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			return err
 		}
 
-		graph.AddNode("aptly", graphvizEscape(repo.UUID), map[string]string{
+		graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "mediumseagreen",
-			"label": graphvizEscape(fmt.Sprintf("{Repo %s|comment: %s|pkgs: %d}",
-				repo.Name, repo.Comment, repo.NumPackages())),
+			"label": fmt.Sprintf("{Repo %s|comment: %s|pkgs: %d}",
+				repo.Name, repo.Comment, repo.NumPackages()),
 		})
 		existingNodes[repo.UUID] = true
 		return nil
@@ -96,18 +92,18 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			description = "Snapshot from repo"
 		}
 
-		graph.AddNode("aptly", graphvizEscape(snapshot.UUID), map[string]string{
+		graph.AddNode("aptly", snapshot.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "cadetblue1",
-			"label":     graphvizEscape(fmt.Sprintf("{Snapshot %s|%s|pkgs: %d}", snapshot.Name, description, snapshot.NumPackages())),
+			"label":     fmt.Sprintf("{Snapshot %s|%s|pkgs: %d}", snapshot.Name, description, snapshot.NumPackages()),
 		})
 
 		if snapshot.SourceKind == "repo" || snapshot.SourceKind == "local" || snapshot.SourceKind == "snapshot" {
 			for _, uuid := range snapshot.SourceIDs {
 				_, exists := existingNodes[uuid]
 				if exists {
-					graph.AddEdge(graphvizEscape(uuid), "", graphvizEscape(snapshot.UUID), "", true, nil)
+					graph.AddEdge(uuid, snapshot.UUID, true, nil)
 				}
 			}
 		}
@@ -121,22 +117,24 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	fmt.Printf("Loading published repos...\n")
 
 	context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
-		graph.AddNode("aptly", graphvizEscape(repo.UUID), map[string]string{
+		graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkolivegreen1",
-			"label":     graphvizEscape(fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution, repo.Component, strings.Join(repo.Architectures, ", "))),
+			"label":     fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution, repo.Component, strings.Join(repo.Architectures, ", ")),
 		})
 
 		_, exists := existingNodes[repo.SourceUUID]
 		if exists {
-			graph.AddEdge(graphvizEscape(repo.SourceUUID), "", graphvizEscape(repo.UUID), "", true, nil)
+			graph.AddEdge(repo.SourceUUID, repo.UUID, true, nil)
 		}
 
 		return nil
 	})
 
 	fmt.Printf("Generating graph...\n")
+
+	fmt.Printf("graph = \n %s\n", graph.String())
 
 	buf := bytes.NewBufferString(graph.String())
 
