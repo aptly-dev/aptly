@@ -438,6 +438,32 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
 	}
 
+	for _, arch := range p.Architectures {
+		st := make(Stanza)
+		st["Archive"] = p.Distribution
+		st["Architecture"] = arch
+
+		file, err := publishedStorage.CreateFile(filepath.Join(basePath, p.Component,
+			fmt.Sprintf("binary-%s", arch), "Release"))
+		if err != nil {
+			return fmt.Errorf("unable to create Release file: %s", err)
+		}
+
+		bufWriter := bufio.NewWriter(file)
+
+		err = st.WriteTo(bufWriter)
+		if err != nil {
+			return fmt.Errorf("unable to create Release file: %s", err)
+		}
+
+		err = bufWriter.Flush()
+		if err != nil {
+			return fmt.Errorf("unable to create Release file: %s", err)
+		}
+
+		file.Close()
+	}
+
 	releaseFile, err := publishedStorage.CreateFile(filepath.Join(basePath, "Release"+suffix))
 	if err != nil {
 		return fmt.Errorf("unable to create Release file: %s", err)
