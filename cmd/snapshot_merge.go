@@ -29,10 +29,15 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	}
 
 	latest := context.flags.Lookup("latest").Value.Get().(bool)
-	overrideMatching := !latest
+    noRemove := context.flags.Lookup("no-remove").Value.Get().(bool)
+
+    if noRemove && latest {
+        return fmt.Errorf("-no-remove and -latest can't be specified together")
+    }
+
+	overrideMatching := !latest && !noRemove
 
 	result := sources[0].RefList()
-
 	for i := 1; i < len(sources); i++ {
 		result = result.Merge(sources[i].RefList(), overrideMatching)
 	}
@@ -79,6 +84,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("latest", false, "use only the latest version of each package")
+    cmd.Flag.Bool("no-remove", false, "don't remove duplicate arch/name packages")
 
 	return cmd
 }
