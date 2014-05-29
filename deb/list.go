@@ -86,11 +86,11 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 
 // Add appends package to package list, additionally checking for uniqueness
 func (l *PackageList) Add(p *Package) error {
-	key := string(p.Key(""))
+	key := string(p.ShortKey(""))
 	existing, ok := l.packages[key]
 	if ok {
 		if !existing.Equals(p) {
-			return fmt.Errorf("conflict in package %s: %#v != %#v", p, existing, p)
+			return fmt.Errorf("conflict in package %s", p)
 		}
 		return nil
 	}
@@ -137,7 +137,7 @@ func (l *PackageList) Append(pl *PackageList) error {
 		existing, ok := l.packages[k]
 		if ok {
 			if !existing.Equals(p) {
-				return fmt.Errorf("conflict in package %s: %#v != %#v", p, existing, p)
+				return fmt.Errorf("conflict in package %s", p)
 			}
 		} else {
 			l.packages[k] = p
@@ -149,7 +149,7 @@ func (l *PackageList) Append(pl *PackageList) error {
 
 // Remove removes package from the list, and updates index when required
 func (l *PackageList) Remove(p *Package) {
-	delete(l.packages, string(p.Key("")))
+	delete(l.packages, string(p.ShortKey("")))
 	if l.indexed {
 		for _, provides := range p.Provides {
 			for i, pkg := range l.providesIndex[provides] {
