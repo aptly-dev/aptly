@@ -175,6 +175,11 @@ func (p *Package) Key(prefix string) []byte {
 		return []byte(fmt.Sprintf("%sP%s %s %s %08x", prefix, p.Architecture, p.Name, p.Version, p.FilesHash))
 	}
 
+	return p.ShortKey(prefix)
+}
+
+// ShortKey returns key for the package that should be unique in one list
+func (p *Package) ShortKey(prefix string) []byte {
 	return []byte(fmt.Sprintf("%sP%s %s %s", prefix, p.Architecture, p.Name, p.Version))
 }
 

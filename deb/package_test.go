@@ -95,6 +95,13 @@ func (s *PackageSuite) TestKey(c *C) {
     c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
 }
 
+func (s *PackageSuite) TestShortKey(c *C) {
+    p := NewPackageFromControlFile(s.stanza)
+
+    c.Check(p.ShortKey(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
+    c.Check(p.ShortKey("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
+}
+
 func (s *PackageSuite) TestStanza(c *C) {
 	p := NewPackageFromControlFile(s.stanza.Copy())
 	stanza := p.Stanza()
