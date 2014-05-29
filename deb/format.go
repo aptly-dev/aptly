@@ -11,7 +11,7 @@ import (
 type Stanza map[string]string
 
 // Canonical order of fields in stanza
-var canocialOrder = []string{"Origin", "Label", "Suite", "Package", "Version", "Installed-Size", "Priority", "Section", "Maintainer",
+var canocialOrder = []string{"Package", "Origin", "Label", "Suite", "Version", "Installed-Size", "Priority", "Section", "Maintainer",
 	"Architecture", "Codename", "Date", "Architectures", "Components", "Description", "MD5sum", "MD5Sum", "SHA1", "SHA256"}
 
 // Copy returns copy of Stanza
