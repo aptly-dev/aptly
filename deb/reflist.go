@@ -194,25 +194,28 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 				}
 			}
 
-			// is pl & pr the same package, but different version?
-			if pl.Name == pr.Name && pl.Architecture == pr.Architecture {
-				result = append(result, PackageDiff{Left: pl, Right: pr})
-				il++
-				ir++
-				pl, pr = nil, nil
-			} else {
-				// otherwise pl or pr is missing on one of the sides
-				if rel < 0 {
+			// otherwise pl or pr is missing on one of the sides
+			if rel < 0 {
+				// compaction: +(,A) -(B,) --> !(A,B)
+				if len(result) > 0 && result[len(result)-1].Left == nil && result[len(result)-1].Right.Name == pl.Name &&
+					result[len(result)-1].Right.Architecture == pl.Architecture {
+					result[len(result)-1] = PackageDiff{Left: pl, Right: result[len(result)-1].Right}
+				} else {
 					result = append(result, PackageDiff{Left: pl, Right: nil})
-					il++
-					pl = nil
+				}
+				il++
+				pl = nil
+			} else {
+				// compaction: -(A,) +(,B) --> !(A,B)
+				if len(result) > 0 && result[len(result)-1].Right == nil && result[len(result)-1].Left.Name == pr.Name &&
+					result[len(result)-1].Left.Architecture == pr.Architecture {
+					result[len(result)-1] = PackageDiff{Left: result[len(result)-1].Left, Right: pr}
 				} else {
 					result = append(result, PackageDiff{Left: nil, Right: pr})
-					ir++
-					pr = nil
 				}
+				ir++
+				pr = nil
 			}
-
 		}
 	}
 
