@@ -26,6 +26,8 @@ type Package struct {
 	IsSource bool
 	// Hash of files section
 	FilesHash uint64
+	// Is this >= 0.6 package?
+	V06Plus bool
 	// Offload fields
 	deps  *PackageDependencies
 	extra *Stanza
@@ -41,6 +43,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Architecture: input["Architecture"],
 		Source:       input["Source"],
+		V06Plus: 	  true,
 	}
 
 	delete(input, "Package")
@@ -89,6 +92,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 		Version:            input["Version"],
 		Architecture:       "source",
 		SourceArchitecture: input["Architecture"],
+		V06Plus: 	 	    true,
 	}
 
 	delete(input, "Package")
@@ -167,7 +171,11 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 
 // Key returns unique key identifying package
 func (p *Package) Key(prefix string) []byte {
-	return []byte(prefix + "P" + p.Architecture + " " + p.Name + " " + p.Version)
+	if p.V06Plus {
+		return []byte(fmt.Sprintf("%sP%s %s %s %08x", prefix, p.Architecture, p.Name, p.Version, p.FilesHash))
+	}
+
+	return []byte(fmt.Sprintf("%sP%s %s %s", prefix, p.Architecture, p.Name, p.Version))
 }
 
 // String creates readable representation

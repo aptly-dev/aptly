@@ -83,7 +83,7 @@ func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
 		p.UpdateFiles(PackageFiles(oldp.Files))
 
 		// Save in new format
-		err = collection.internalUpdate(p)
+		err = collection.Update(p)
 		if err != nil {
 			return nil, err
 		}
@@ -156,25 +156,6 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 
 // Update adds or updates information about package in DB checking for conficts first
 func (collection *PackageCollection) Update(p *Package) error {
-	existing, err := collection.ByKey(p.Key(""))
-	if err == nil {
-		// if .Files is different, consider to be conflict
-		if p.FilesHash != existing.FilesHash {
-			return fmt.Errorf("unable to save: %s, conflict with existing package", p)
-		}
-		// ok, .Files are the same, but maybe some meta-data is different, proceed to saving
-	} else {
-		if err != database.ErrNotFound {
-			return err
-		}
-		// ok, package doesn't exist yet
-	}
-
-	return collection.internalUpdate(p)
-}
-
-// internalUpdate updates information in DB about package and offloaded fields
-func (collection *PackageCollection) internalUpdate(p *Package) error {
 	encoder := codec.NewEncoder(&collection.encodeBuffer, &codec.MsgpackHandle{})
 
 	collection.encodeBuffer.Reset()

@@ -29,7 +29,7 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 	stanza["Package"] = "mars-invaders"
 	s.p3 = NewPackageFromControlFile(stanza)
 	stanza = packageStanza.Copy()
-	stanza["Size"] = "42"
+	stanza["Source"] = "unknown-planet"
 	s.p4 = NewPackageFromControlFile(stanza)
 	stanza = packageStanza.Copy()
 	stanza["Package"] = "lonely-strangers"

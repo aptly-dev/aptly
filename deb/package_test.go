@@ -87,8 +87,12 @@ func (s *PackageSuite) TestWithProvides(c *C) {
 func (s *PackageSuite) TestKey(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
-	c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
-	c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
+	c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2 c8901eedd79ac51b"))
+	c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2 c8901eedd79ac51b"))
+
+    p.V06Plus = false
+    c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
+    c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
 }
 
 func (s *PackageSuite) TestStanza(c *C) {
