@@ -443,8 +443,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		st["Archive"] = p.Distribution
 		st["Architecture"] = arch
 
-		file, err := publishedStorage.CreateFile(filepath.Join(basePath, p.Component,
-			fmt.Sprintf("binary-%s", arch), "Release"))
+		if arch != "source" {
+			arch = fmt.Sprintf("binary-%s", arch)
+		}
+
+		file, err := publishedStorage.CreateFile(filepath.Join(basePath, p.Component, arch, "Release"))
 		if err != nil {
 			return fmt.Errorf("unable to create Release file: %s", err)
 		}
