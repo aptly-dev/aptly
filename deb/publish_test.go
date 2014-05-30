@@ -245,6 +245,16 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(st, IsNil)
 
+	drf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"))
+	c.Assert(err, IsNil)
+
+	cfr = NewControlFileReader(drf)
+	st, err = cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(st["Archive"], Equals, "squeeze")
+	c.Check(st["Architecture"], Equals, "i386")
+
 	_, err = os.Stat(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
 	c.Assert(err, IsNil)
 }
@@ -261,6 +271,7 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/main/binary-i386/Release"), PathExists)
 }
 
 func (s *PublishedRepoSuite) TestString(c *C) {
