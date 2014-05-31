@@ -44,6 +44,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 		source = snapshot
 		message = fmt.Sprintf("Snapshot %s", snapshot.Name)
+
+		if snapshot.NumPackages() == 0 {
+			context.Progress().Printf("Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)\n")
+		}
 	} else if cmd.Name() == "repo" {
 		var localRepo *deb.LocalRepo
 		localRepo, err = context.CollectionFactory().LocalRepoCollection().ByName(name)
@@ -58,6 +62,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 		source = localRepo
 		message = fmt.Sprintf("Local repo %s", localRepo.Name)
+
+		if localRepo.NumPackages() == 0 {
+			context.Progress().Printf("Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)\n")
+		}
 	} else {
 		panic("unknown command")
 	}

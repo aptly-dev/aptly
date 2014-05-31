@@ -298,7 +298,7 @@ class PublishRepo12Test(BaseTest):
 
 class PublishRepo13Test(BaseTest):
     """
-    publish repo: empty repo is not publishable
+    publish repo: empty repo is not publishable w/o architectures list
     """
     fixtureDB = True
     fixtureCmds = [
@@ -356,3 +356,29 @@ class PublishRepo15Test(BaseTest):
 
         # verify contents except of sums
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+
+
+class PublishRepo16Test(BaseTest):
+    """
+    publish repo: empty repo is publishable with architectures list
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly repo create local-repo",
+    ]
+    runCmd = "aptly publish repo  -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -architectures=source,i386 --distribution=maverick local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo16Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/source/Sources')
+        self.check_exists('public/dists/maverick/main/source/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/Sources.bz2')

@@ -282,10 +282,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	if list.Len() == 0 {
-		return fmt.Errorf("source is empty")
-	}
-
 	if !p.rePublishing {
 		if len(p.Architectures) == 0 {
 			p.Architectures = list.Architectures(true)

@@ -1,2 +1,3 @@
+Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)
 Loading packages...
-ERROR: unable to publish: source is empty
+ERROR: unable to publish: unable to figure out list of architectures, please supply explicit list
