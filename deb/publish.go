@@ -303,23 +303,27 @@ func (p *PublishedRepo) Components() []string {
 
 // UpdateLocalRepo updates content from local repo in component
 func (p *PublishedRepo) UpdateLocalRepo(component string) {
-	item := p.sourceItems[component]
 	if p.SourceKind != "local" {
 		panic("not local repo publish")
 	}
 
+	item := p.sourceItems[component]
 	item.packageRefs = item.localRepo.RefList()
+	p.sourceItems[component] = item
+
 	p.rePublishing = true
 }
 
 // UpdateSnapshot switches snapshot for component
 func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
-	item := p.sourceItems[component]
 	if p.SourceKind != "snapshot" {
 		panic("not snapshot publish")
 	}
 
+	item := p.sourceItems[component]
 	item.snapshot = snapshot
+	p.sourceItems[component] = item
+
 	p.Sources[component] = snapshot.UUID
 	p.rePublishing = true
 }
@@ -846,7 +850,7 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 	referencedFiles := map[string][]string{}
 
 	if progress != nil {
-		progress.Printf("Cleaning up prefix %#v components %#v...\n", prefix, components)
+		progress.Printf("Cleaning up prefix %#v components %s...\n", prefix, strings.Join(components, ", "))
 	}
 
 	for _, r := range collection.list {

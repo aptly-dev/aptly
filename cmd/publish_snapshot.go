@@ -73,7 +73,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	component := context.flags.Lookup("component").Value.String()
 	distribution := context.flags.Lookup("distribution").Value.String()
 
-	published, err := deb.NewPublishedRepo(prefix, distribution, component, context.ArchitecturesList(), source, context.CollectionFactory())
+	published, err := deb.NewPublishedRepo(prefix, distribution, context.ArchitecturesList(), []string{component}, []interface{}{source}, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -101,7 +101,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	prefix, component, distribution = published.Prefix, published.Component, published.Distribution
+	prefix, component, distribution = published.Prefix, strings.Join(published.Components(), " "), published.Distribution
 	if prefix == "." {
 		prefix = ""
 	} else if !strings.HasSuffix(prefix, "/") {

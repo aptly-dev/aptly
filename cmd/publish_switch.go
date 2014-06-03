@@ -55,7 +55,13 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	published.UpdateSnapshot(snapshot)
+	components := published.Components()
+	if len(components) > 1 {
+		panic("TODO: NOT IMPLEMENTED YET")
+	}
+	component := components[0]
+
+	published.UpdateSnapshot(component, snapshot)
 
 	signer, err := getSigner(context.flags)
 	if err != nil {
@@ -72,7 +78,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, published.Component,
+	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
 		context.PublishedStorage(), context.CollectionFactory(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)

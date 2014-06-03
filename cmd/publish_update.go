@@ -37,7 +37,13 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	published.UpdateLocalRepo()
+	components := published.Components()
+	if len(components) > 1 {
+		panic("TODO: NOT IMPLEMENTED YET")
+	}
+	component := components[0]
+
+	published.UpdateLocalRepo(component)
 
 	signer, err := getSigner(context.flags)
 	if err != nil {
@@ -54,7 +60,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, published.Component,
+	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
 		context.PublishedStorage(), context.CollectionFactory(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)

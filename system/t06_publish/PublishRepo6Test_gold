@@ -1,1 +1,1 @@
-ERROR: prefix/distribution already used by another published repo: ./maverick (main) [i386, source] publishes [local-repo]
+ERROR: prefix/distribution already used by another published repo: ./maverick [i386, source] publishes {main: [local-repo]}
