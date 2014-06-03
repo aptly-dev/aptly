@@ -1,10 +1,12 @@
 package deb
 
 import (
+	"bytes"
 	"errors"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
+	"github.com/ugorji/go/codec"
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
@@ -84,9 +86,9 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.packageCollection.Update(s.p2)
 	s.packageCollection.Update(s.p3)
 
-	s.repo, _ = NewPublishedRepo("ppa", "squeeze", "main", nil, s.snapshot, s.factory)
+	s.repo, _ = NewPublishedRepo("ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 
-	s.repo2, _ = NewPublishedRepo("ppa", "maverick", "main", nil, s.localRepo, s.factory)
+	s.repo2, _ = NewPublishedRepo("ppa", "maverick", nil, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 
 	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
@@ -100,17 +102,19 @@ func (s *PublishedRepoSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
-	c.Check(s.repo.snapshot, Equals, s.snapshot)
+	c.Check(s.repo.sourceItems["main"].snapshot, Equals, s.snapshot)
 	c.Check(s.repo.SourceKind, Equals, "snapshot")
-	c.Check(s.repo.SourceUUID, Equals, s.snapshot.UUID)
+	c.Check(s.repo.Sources["main"], Equals, s.snapshot.UUID)
+	c.Check(s.repo.Components(), DeepEquals, []string{"main"})
 
-	c.Check(s.repo2.localRepo, Equals, s.localRepo)
+	c.Check(s.repo2.sourceItems["main"].localRepo, Equals, s.localRepo)
 	c.Check(s.repo2.SourceKind, Equals, "local")
-	c.Check(s.repo2.SourceUUID, Equals, s.localRepo.UUID)
-	c.Check(s.repo2.packageRefs.Len(), Equals, 3)
+	c.Check(s.repo2.Sources["main"], Equals, s.localRepo.UUID)
+	c.Check(s.repo2.sourceItems["main"].packageRefs.Len(), Equals, 3)
+	c.Check(s.repo2.Components(), DeepEquals, []string{"main"})
 
-	c.Check(s.repo.RefList().Len(), Equals, 3)
-	c.Check(s.repo2.RefList().Len(), Equals, 3)
+	c.Check(s.repo.RefList("main").Len(), Equals, 3)
+	c.Check(s.repo2.RefList("main").Len(), Equals, 3)
 }
 
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
@@ -169,7 +173,7 @@ func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 			errorExpected: "invalid prefix .*",
 		},
 	} {
-		repo, err := NewPublishedRepo(t.prefix, "squeeze", "main", nil, s.snapshot, s.factory)
+		repo, err := NewPublishedRepo(t.prefix, "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 		if t.errorExpected != "" {
 			c.Check(err, ErrorMatches, t.errorExpected)
 		} else {
@@ -179,37 +183,37 @@ func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
-	repo, err := NewPublishedRepo("ppa", "", "", nil, s.snapshot, s.factory)
+	repo, err := NewPublishedRepo("ppa", "", nil, []string{""}, []interface{}{s.snapshot}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "squeeze")
-	c.Check(repo.Component, Equals, "main")
+	c.Check(repo.Components(), DeepEquals, []string{"main"})
 
-	repo, err = NewPublishedRepo("ppa", "wheezy", "", nil, s.snapshot, s.factory)
+	repo, err = NewPublishedRepo("ppa", "wheezy", nil, []string{""}, []interface{}{s.snapshot}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "wheezy")
-	c.Check(repo.Component, Equals, "main")
+	c.Check(repo.Components(), DeepEquals, []string{"main"})
 
-	repo, err = NewPublishedRepo("ppa", "", "non-free", nil, s.snapshot, s.factory)
+	repo, err = NewPublishedRepo("ppa", "", nil, []string{"non-free"}, []interface{}{s.snapshot}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "squeeze")
-	c.Check(repo.Component, Equals, "non-free")
+	c.Check(repo.Components(), DeepEquals, []string{"non-free"})
 
-	repo, err = NewPublishedRepo("ppa", "squeeze", "", nil, s.localRepo, s.factory)
+	repo, err = NewPublishedRepo("ppa", "squeeze", nil, []string{""}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "squeeze")
-	c.Check(repo.Component, Equals, "main")
+	c.Check(repo.Components(), DeepEquals, []string{"main"})
 
-	repo, err = NewPublishedRepo("ppa", "", "main", nil, s.localRepo, s.factory)
+	repo, err = NewPublishedRepo("ppa", "", nil, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, ErrorMatches, "unable to guess distribution name, please specify explicitly")
 
 	s.localRepo.DefaultDistribution = "precise"
 	s.localRepo.DefaultComponent = "contrib"
 	s.factory.LocalRepoCollection().Update(s.localRepo)
 
-	repo, err = NewPublishedRepo("ppa", "", "", nil, s.localRepo, s.factory)
+	repo, err = NewPublishedRepo("ppa", "", nil, []string{""}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "precise")
-	c.Check(repo.Component, Equals, "contrib")
+	c.Check(repo.Components(), DeepEquals, []string{"contrib"})
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
@@ -265,21 +269,21 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 
 func (s *PublishedRepoSuite) TestString(c *C) {
 	c.Check(s.repo.String(), Equals,
-		"ppa/squeeze (main) [] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+		"ppa/squeeze [] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 	c.Check(s.repo2.String(), Equals,
-		"ppa/maverick (main) [] publishes [local1]: comment1")
-	repo, _ := NewPublishedRepo("", "squeeze", "main", []string{"s390"}, s.snapshot, s.factory)
+		"ppa/maverick [] publishes {main: [local1]: comment1}")
+	repo, _ := NewPublishedRepo("", "squeeze", []string{"s390"}, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 	c.Check(repo.String(), Equals,
-		"./squeeze (main) [s390] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
-	repo, _ = NewPublishedRepo("", "squeeze", "main", []string{"i386", "amd64"}, s.snapshot, s.factory)
+		"./squeeze [s390] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
+	repo, _ = NewPublishedRepo("", "squeeze", []string{"i386", "amd64"}, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 	c.Check(repo.String(), Equals,
-		"./squeeze (main) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+		"./squeeze [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 	repo.Origin = "myorigin"
 	c.Check(repo.String(), Equals,
-		"./squeeze (main, origin: myorigin) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+		"./squeeze (origin: myorigin) [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 	repo.Label = "mylabel"
 	c.Check(repo.String(), Equals,
-		"./squeeze (main, origin: myorigin, label: mylabel) [i386, amd64] publishes [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze")
+		"./squeeze (origin: myorigin, label: mylabel) [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 }
 
 func (s *PublishedRepoSuite) TestKey(c *C) {
@@ -287,7 +291,8 @@ func (s *PublishedRepoSuite) TestKey(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestRefKey(c *C) {
-	c.Check(s.repo.RefKey(), DeepEquals, []byte("E"+s.repo.UUID))
+	c.Check(s.repo.RefKey(""), DeepEquals, []byte("E"+s.repo.UUID))
+	c.Check(s.repo.RefKey("main"), DeepEquals, []byte("E"+s.repo.UUID+"main"))
 }
 
 func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
@@ -295,7 +300,7 @@ func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
 	repo := &PublishedRepo{}
 	err := repo.Decode(encoded)
 
-	s.repo.snapshot = nil
+	s.repo.sourceItems = nil
 	c.Assert(err, IsNil)
 	c.Assert(repo, DeepEquals, s.repo)
 
@@ -303,8 +308,7 @@ func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
 	repo2 := &PublishedRepo{}
 	err = repo2.Decode(encoded2)
 
-	s.repo2.localRepo = nil
-	s.repo2.packageRefs = nil
+	s.repo2.sourceItems = nil
 	c.Assert(err, IsNil)
 	c.Assert(repo2, DeepEquals, s.repo2)
 }
@@ -337,10 +341,10 @@ func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
 	s.localRepo = NewLocalRepo("local1", "comment1")
 	s.factory.LocalRepoCollection().Add(s.localRepo)
 
-	s.repo1, _ = NewPublishedRepo("ppa", "anaconda", "main", []string{}, s.snap1, s.factory)
-	s.repo2, _ = NewPublishedRepo("", "anaconda", "main", []string{}, s.snap2, s.factory)
-	s.repo3, _ = NewPublishedRepo("ppa", "anaconda", "main", []string{}, s.snap2, s.factory)
-	s.repo4, _ = NewPublishedRepo("ppa", "precise", "main", []string{}, s.localRepo, s.factory)
+	s.repo1, _ = NewPublishedRepo("ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
+	s.repo2, _ = NewPublishedRepo("", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap2}, s.factory)
+	s.repo3, _ = NewPublishedRepo("ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap2}, s.factory)
+	s.repo4, _ = NewPublishedRepo("ppa", "precise", []string{}, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 
 	s.collection = s.factory.PublishedRepoCollection()
 }
@@ -398,18 +402,61 @@ func (s *PublishedRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	collection := NewPublishedRepoCollection(s.db)
 	r, err := collection.ByPrefixDistribution("ppa", "anaconda")
 	c.Assert(err, IsNil)
-	c.Assert(r.snapshot, IsNil)
+	c.Assert(r.sourceItems["main"].snapshot, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
-	c.Assert(r.snapshot.UUID, Equals, s.repo1.snapshot.UUID)
-	c.Assert(r.RefList().Len(), Equals, 0)
+	c.Assert(r.Sources["main"], Equals, s.repo1.sourceItems["main"].snapshot.UUID)
+	c.Assert(r.RefList("main").Len(), Equals, 0)
 
 	r, err = collection.ByPrefixDistribution("ppa", "precise")
 	c.Assert(err, IsNil)
-	c.Assert(r.localRepo, IsNil)
+	c.Assert(r.sourceItems["main"].localRepo, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
-	c.Assert(r.localRepo.UUID, Equals, s.repo4.localRepo.UUID)
-	c.Assert(r.packageRefs.Len(), Equals, 0)
-	c.Assert(r.RefList().Len(), Equals, 0)
+	c.Assert(r.sourceItems["main"].localRepo.UUID, Equals, s.repo4.sourceItems["main"].localRepo.UUID)
+	c.Assert(r.sourceItems["main"].packageRefs.Len(), Equals, 0)
+	c.Assert(r.RefList("main").Len(), Equals, 0)
+}
+
+func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
+	type oldPublishedRepo struct {
+		UUID          string
+		Prefix        string
+		Distribution  string
+		Origin        string
+		Label         string
+		Architectures []string
+		SourceKind    string
+		Component     string
+		SourceUUID    string `codec:"SnapshotUUID"`
+	}
+
+	old := oldPublishedRepo{
+		UUID:          s.repo1.UUID,
+		Prefix:        "ppa",
+		Distribution:  "anaconda",
+		Architectures: []string{"i386"},
+		SourceKind:    "local",
+		Component:     "contrib",
+		SourceUUID:    s.localRepo.UUID,
+	}
+
+	var buf bytes.Buffer
+
+	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
+	encoder.Encode(&old)
+
+	c.Assert(s.db.Put(s.repo1.Key(), buf.Bytes()), IsNil)
+	c.Assert(s.db.Put(s.repo1.RefKey(""), s.localRepo.RefList().Encode()), IsNil)
+
+	collection := NewPublishedRepoCollection(s.db)
+	repo, err := collection.ByPrefixDistribution("ppa", "anaconda")
+	c.Check(err, IsNil)
+	c.Check(repo.Component, Equals, "")
+	c.Check(repo.SourceUUID, Equals, "")
+	c.Check(repo.Sources, DeepEquals, map[string]string{"contrib": s.localRepo.UUID})
+
+	c.Check(collection.LoadComplete(repo, s.factory), IsNil)
+	c.Check(repo.sourceItems["contrib"].localRepo.UUID, Equals, s.localRepo.UUID)
+	c.Check(repo.RefList("contrib").Len(), Equals, 0)
 }
 
 func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
@@ -472,10 +519,10 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 
 	s.snapshotCollection.Add(s.snap1)
 
-	s.repo1, _ = NewPublishedRepo("ppa", "anaconda", "main", []string{}, s.snap1, s.factory)
-	s.repo2, _ = NewPublishedRepo("", "anaconda", "main", []string{}, s.snap1, s.factory)
-	s.repo3, _ = NewPublishedRepo("ppa", "meduza", "main", []string{}, s.snap1, s.factory)
-	s.repo4, _ = NewPublishedRepo("ppa", "osminog", "contrib", []string{}, s.snap1, s.factory)
+	s.repo1, _ = NewPublishedRepo("ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
+	s.repo2, _ = NewPublishedRepo("", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
+	s.repo3, _ = NewPublishedRepo("ppa", "meduza", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
+	s.repo4, _ = NewPublishedRepo("ppa", "osminog", []string{}, []string{"contrib"}, []interface{}{s.snap1}, s.factory)
 
 	s.collection = s.factory.PublishedRepoCollection()
 	s.collection.Add(s.repo1)
@@ -499,7 +546,7 @@ func (s *PublishedRepoRemoveSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, false, false, nil)
+	s.repo1.RemoveFiles(s.publishedStorage, false, []string{}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -511,7 +558,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, false, true, nil)
+	s.repo1.RemoveFiles(s.publishedStorage, false, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -523,7 +570,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
-	s.repo1.RemoveFiles(s.publishedStorage, true, true, nil)
+	s.repo1.RemoveFiles(s.publishedStorage, true, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
@@ -535,7 +582,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
-	s.repo2.RemoveFiles(s.publishedStorage, true, true, nil)
+	s.repo2.RemoveFiles(s.publishedStorage, true, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
