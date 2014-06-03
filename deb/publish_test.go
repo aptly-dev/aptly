@@ -47,15 +47,15 @@ func (n *NullSigner) ClearSign(source string, destination string) error {
 
 type PublishedRepoSuite struct {
 	PackageListMixinSuite
-	repo, repo2       *PublishedRepo
-	root              string
-	publishedStorage  aptly.PublishedStorage
-	packagePool       aptly.PackagePool
-	localRepo         *LocalRepo
-	snapshot          *Snapshot
-	db                database.Storage
-	factory           *CollectionFactory
-	packageCollection *PackageCollection
+	repo, repo2, repo3  *PublishedRepo
+	root                string
+	publishedStorage    aptly.PublishedStorage
+	packagePool         aptly.PackagePool
+	localRepo           *LocalRepo
+	snapshot, snapshot2 *Snapshot
+	db                  database.Storage
+	factory             *CollectionFactory
+	packageCollection   *PackageCollection
 }
 
 var _ = Suite(&PublishedRepoSuite{})
@@ -81,6 +81,9 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.snapshot, _ = NewSnapshotFromRepository("snap", repo)
 	s.factory.SnapshotCollection().Add(s.snapshot)
 
+	s.snapshot2, _ = NewSnapshotFromRepository("snap", repo)
+	s.factory.SnapshotCollection().Add(s.snapshot2)
+
 	s.packageCollection = s.factory.PackageCollection()
 	s.packageCollection.Update(s.p1)
 	s.packageCollection.Update(s.p2)
@@ -89,6 +92,8 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewPublishedRepo("ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 
 	s.repo2, _ = NewPublishedRepo("ppa", "maverick", nil, []string{"main"}, []interface{}{s.localRepo}, s.factory)
+
+	s.repo3, _ = NewPublishedRepo("linux", "natty", nil, []string{"main", "contrib"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
 
 	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
@@ -115,6 +120,26 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 
 	c.Check(s.repo.RefList("main").Len(), Equals, 3)
 	c.Check(s.repo2.RefList("main").Len(), Equals, 3)
+
+	c.Check(s.repo3.Sources, DeepEquals, map[string]string{"main": s.snapshot.UUID, "contrib": s.snapshot2.UUID})
+	c.Check(s.repo3.SourceKind, Equals, "snapshot")
+	c.Check(s.repo3.sourceItems["main"].snapshot, Equals, s.snapshot)
+	c.Check(s.repo3.sourceItems["contrib"].snapshot, Equals, s.snapshot2)
+	c.Check(s.repo3.Components(), DeepEquals, []string{"contrib", "main"})
+
+	c.Check(s.repo3.RefList("main").Len(), Equals, 3)
+	c.Check(s.repo3.RefList("contrib").Len(), Equals, 3)
+
+	c.Check(func() { NewPublishedRepo(".", "a", nil, nil, nil, s.factory) }, PanicMatches, "publish with empty sources")
+	c.Check(func() {
+		NewPublishedRepo(".", "a", nil, []string{"main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
+	}, PanicMatches, "sources and components should be equal in size")
+	c.Check(func() {
+		NewPublishedRepo(".", "a", nil, []string{"main", "contrib"}, []interface{}{s.localRepo, s.snapshot2}, s.factory)
+	}, PanicMatches, "interface conversion:.*")
+
+	_, err := NewPublishedRepo(".", "a", nil, []string{"main", "main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
+	c.Check(err, ErrorMatches, "duplicate component name: main")
 }
 
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
@@ -214,6 +239,14 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "precise")
 	c.Check(repo.Components(), DeepEquals, []string{"contrib"})
+
+	repo, err = NewPublishedRepo("ppa", "", nil, []string{"", "contrib"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
+	c.Check(err, IsNil)
+	c.Check(repo.Distribution, Equals, "squeeze")
+	c.Check(repo.Components(), DeepEquals, []string{"contrib", "main"})
+
+	repo, err = NewPublishedRepo("ppa", "", nil, []string{"", ""}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
+	c.Check(err, ErrorMatches, "duplicate component name: main")
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
@@ -284,6 +317,8 @@ func (s *PublishedRepoSuite) TestString(c *C) {
 	repo.Label = "mylabel"
 	c.Check(repo.String(), Equals,
 		"./squeeze (origin: myorigin, label: mylabel) [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
+	c.Check(s.repo3.String(), Equals,
+		"linux/natty [] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}, {contrib: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 }
 
 func (s *PublishedRepoSuite) TestKey(c *C) {
@@ -342,7 +377,7 @@ func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
 	s.factory.LocalRepoCollection().Add(s.localRepo)
 
 	s.repo1, _ = NewPublishedRepo("ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
-	s.repo2, _ = NewPublishedRepo("", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap2}, s.factory)
+	s.repo2, _ = NewPublishedRepo("", "anaconda", []string{}, []string{"main", "contrib"}, []interface{}{s.snap2, s.snap1}, s.factory)
 	s.repo3, _ = NewPublishedRepo("ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap2}, s.factory)
 	s.repo4, _ = NewPublishedRepo("ppa", "precise", []string{}, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 
@@ -484,7 +519,7 @@ func (s *PublishedRepoCollectionSuite) TestBySnapshot(c *C) {
 	c.Check(s.collection.Add(s.repo1), IsNil)
 	c.Check(s.collection.Add(s.repo2), IsNil)
 
-	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1})
+	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1, s.repo2})
 	c.Check(s.collection.BySnapshot(s.snap2), DeepEquals, []*PublishedRepo{s.repo2})
 }
 
@@ -565,6 +600,18 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
+}
+
+func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithTwoPools(c *C) {
+	s.repo1.RemoveFiles(s.publishedStorage, false, []string{"main", "contrib"}, nil)
+
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/osminog"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main"), Not(PathExists))
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/contrib"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "dists/anaconda"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), PathExists)
 }
