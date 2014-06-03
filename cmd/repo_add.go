@@ -190,7 +190,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("  %s", file)
 		}
 
-		return fmt.Errorf("Some files failed to be added")
+		return fmt.Errorf("some files failed to be added")
 	}
 
 	return err
