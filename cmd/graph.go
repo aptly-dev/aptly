@@ -125,9 +125,11 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 				strings.Join(repo.Components(), " "), strings.Join(repo.Architectures, ", ")),
 		})
 
-		_, exists := existingNodes[repo.SourceUUID]
-		if exists {
-			graph.AddEdge(repo.SourceUUID, repo.UUID, true, nil)
+		for _, uuid := range repo.Sources {
+			_, exists := existingNodes[uuid]
+			if exists {
+				graph.AddEdge(uuid, repo.UUID, true, nil)
+			}
 		}
 
 		return nil
