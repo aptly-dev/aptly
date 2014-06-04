@@ -121,7 +121,8 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkolivegreen1",
-			"label":     fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution, repo.Component, strings.Join(repo.Architectures, ", ")),
+			"label": fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution,
+				strings.Join(repo.Components(), " "), strings.Join(repo.Architectures, ", ")),
 		})
 
 		_, exists := existingNodes[repo.SourceUUID]
