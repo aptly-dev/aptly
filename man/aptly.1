@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "May 2014" "" ""
+.TH "APTLY" "1" "June 2014" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -744,6 +744,19 @@ display list in machine\-readable format
 Command publishes current state of local repository ready to be consumed by apt tools\. Published repostiories appear under rootDir/public directory\. Valid GPG key is required for publishing\.
 .
 .P
+Multiple component repository could be published by specifying several components split by commas via \-component flag and multiple local repositories as the arguments:
+.
+.IP "" 4
+.
+.nf
+
+aptly publish repo \-component=main,contrib repo\-main repo\-contrib
+.
+.fi
+.
+.IP "" 0
+.
+.P
 It is not recommended to publish local repositories directly unless the repository is for testing purposes and changes happen frequently\. For production usage please take snapshot of repository and publish it using publish snapshot command\.
 .
 .P
@@ -764,7 +777,7 @@ Options:
 .
 .TP
 \-\fBcomponent\fR=
-component name to publish
+component name to publish (for multi\-component publishing, separate components with commas)
 .
 .TP
 \-\fBdistribution\fR=
@@ -801,6 +814,19 @@ don\(cqt sign Release files with GPG
 Command publishes snapshot as Debian repository ready to be consumed by apt tools\. Published repostiories appear under rootDir/public directory\. Valid GPG key is required for publishing\.
 .
 .P
+Multiple component repository could be published by specifying several components split by commas via \-component flag and multiple snapshots as the arguments:
+.
+.IP "" 4
+.
+.nf
+
+aptly publish snapshot \-component=main,contrib snap\-main snap\-contrib
+.
+.fi
+.
+.IP "" 0
+.
+.P
 Example:
 .
 .IP "" 4
@@ -818,7 +844,7 @@ Options:
 .
 .TP
 \-\fBcomponent\fR=
-component name to publish
+component name to publish (for multi\-component publishing, separate components with commas)
 .
 .TP
 \-\fBdistribution\fR=
@@ -855,6 +881,19 @@ don\(cqt sign Release files with GPG
 Command switches in\-place published repository with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
 .
 .P
+For multiple component repositories, flag \-component should be given with list of components to update\. Corresponding snapshots should be given in the same order, e\.g\.:
+.
+.IP "" 4
+.
+.nf
+
+aptly publish update \-component=main,contrib wheezy wh\-main wh\-contrib
+.
+.fi
+.
+.IP "" 0
+.
+.P
 Example:
 .
 .IP "" 4
@@ -869,6 +908,10 @@ $ aptly publish update wheezy ppa wheezy\-7\.5
 .
 .P
 Options:
+.
+.TP
+\-\fBcomponent\fR=
+component names to update (for multi\-component publishing, separate components with commas)
 .
 .TP
 \-\fBgpg\-key\fR=
@@ -891,6 +934,9 @@ don\(cqt sign Release files with GPG
 .
 .P
 Command re\-publishes (updates) published local repository\. \fIdistribution\fR and \fIprefix\fR should be occupied with local repository published using command aptly publish repo\. Update happens in\-place with minimum possible downtime for published repository\.
+.
+.P
+For multiple component published repositories, all local repositories are updated\.
 .
 .P
 Example:

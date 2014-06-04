@@ -38,12 +38,9 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	components := published.Components()
-	if len(components) > 1 {
-		panic("TODO: NOT IMPLEMENTED YET")
+	for _, component := range components {
+		published.UpdateLocalRepo(component)
 	}
-	component := components[0]
-
-	published.UpdateLocalRepo(component)
 
 	signer, err := getSigner(context.flags)
 	if err != nil {
@@ -81,6 +78,9 @@ Command re-publishes (updates) published local repository. <distribution>
 and <prefix> should be occupied with local repository published
 using command aptly publish repo. Update happens in-place with
 minimum possible downtime for published repository.
+
+For multiple component published repositories, all local repositories
+are updated.
 
 Example:
 

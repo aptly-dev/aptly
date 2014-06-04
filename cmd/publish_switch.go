@@ -5,11 +5,15 @@ import (
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"strings"
 )
 
 func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	var err error
-	if len(args) < 2 || len(args) > 3 {
+
+	components := strings.Split(context.flags.Lookup("component").Value.String(), ",")
+
+	if len(args) < len(components)+1 || len(args) > len(components)+2 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
@@ -18,25 +22,15 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	prefix := "."
 
 	var (
-		name     string
+		names    []string
 		snapshot *deb.Snapshot
 	)
 
-	if len(args) == 3 {
+	if len(args) == len(components)+2 {
 		prefix = args[1]
-		name = args[2]
+		names = args[2:]
 	} else {
-		name = args[1]
-	}
-
-	snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(name)
-	if err != nil {
-		return fmt.Errorf("unable to switch: %s", err)
-	}
-
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
-	if err != nil {
-		return fmt.Errorf("unable to switch: %s", err)
+		names = args[1:]
 	}
 
 	var published *deb.PublishedRepo
@@ -55,13 +49,28 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	components := published.Components()
-	if len(components) > 1 {
-		panic("TODO: NOT IMPLEMENTED YET")
+	publishedComponents := published.Components()
+	if len(components) == 1 && len(publishedComponents) == 1 && components[0] == "" {
+		components = publishedComponents
 	}
-	component := components[0]
 
-	published.UpdateSnapshot(component, snapshot)
+	if len(names) != len(components) {
+		return fmt.Errorf("mismatch in number of components (%d) and snapshots (%d)", len(components), len(names))
+	}
+
+	for i, component := range components {
+		snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(names[i])
+		if err != nil {
+			return fmt.Errorf("unable to switch: %s", err)
+		}
+
+		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+		if err != nil {
+			return fmt.Errorf("unable to switch: %s", err)
+		}
+
+		published.UpdateSnapshot(component, snapshot)
+	}
 
 	signer, err := getSigner(context.flags)
 	if err != nil {
@@ -96,7 +105,14 @@ func makeCmdPublishSwitch() *commander.Command {
 		Short:     "update published repository by switching to new snapshot",
 		Long: `
 Command switches in-place published repository with new snapshot contents. All
-publishing parameters are preserved (architecture list, distribution, component).
+publishing parameters are preserved (architecture list, distribution,
+component).
+
+For multiple component repositories, flag -component should be given with
+list of components to update. Corresponding snapshots should be given in the
+same order, e.g.:
+
+	aptly publish update -component=main,contrib wheezy wh-main wh-contrib
 
 Example:
 
@@ -108,6 +124,7 @@ Example:
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
+	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 
 	return cmd
 }

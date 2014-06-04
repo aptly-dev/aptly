@@ -11,69 +11,106 @@ import (
 
 func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	var err error
-	if len(args) < 1 || len(args) > 2 {
+
+	components := strings.Split(context.flags.Lookup("component").Value.String(), ",")
+
+	if len(args) < len(components) || len(args) > len(components)+1 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
-	name := args[0]
-
 	var prefix string
-	if len(args) == 2 {
-		prefix = args[1]
+	if len(args) == len(components)+1 {
+		prefix = args[len(components)]
+		args = args[0 : len(args)-1]
 	} else {
 		prefix = ""
 	}
 
 	var (
-		source  interface{}
+		sources = []interface{}{}
 		message string
 	)
 
 	if cmd.Name() == "snapshot" {
-		var snapshot *deb.Snapshot
-		snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(name)
-		if err != nil {
-			return fmt.Errorf("unable to publish: %s", err)
+		var (
+			snapshot     *deb.Snapshot
+			emptyWarning = false
+			parts        = []string{}
+		)
+
+		for _, name := range args {
+			snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(name)
+			if err != nil {
+				return fmt.Errorf("unable to publish: %s", err)
+			}
+
+			err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+			if err != nil {
+				return fmt.Errorf("unable to publish: %s", err)
+			}
+
+			sources = append(sources, snapshot)
+			parts = append(parts, snapshot.Name)
+
+			if snapshot.NumPackages() == 0 {
+				emptyWarning = true
+			}
 		}
 
-		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return fmt.Errorf("unable to publish: %s", err)
+		if len(parts) == 1 {
+			message = fmt.Sprintf("Snapshot %s", parts[0])
+		} else {
+			message = fmt.Sprintf("Snapshots %s", strings.Join(parts, ", "))
+
 		}
 
-		source = snapshot
-		message = fmt.Sprintf("Snapshot %s", snapshot.Name)
-
-		if snapshot.NumPackages() == 0 {
+		if emptyWarning {
 			context.Progress().Printf("Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)\n")
 		}
 	} else if cmd.Name() == "repo" {
-		var localRepo *deb.LocalRepo
-		localRepo, err = context.CollectionFactory().LocalRepoCollection().ByName(name)
-		if err != nil {
-			return fmt.Errorf("unable to publish: %s", err)
+		var (
+			localRepo    *deb.LocalRepo
+			emptyWarning = false
+			parts        = []string{}
+		)
+
+		for _, name := range args {
+			localRepo, err = context.CollectionFactory().LocalRepoCollection().ByName(name)
+			if err != nil {
+				return fmt.Errorf("unable to publish: %s", err)
+			}
+
+			err = context.CollectionFactory().LocalRepoCollection().LoadComplete(localRepo)
+			if err != nil {
+				return fmt.Errorf("unable to publish: %s", err)
+			}
+
+			sources = append(sources, localRepo)
+			parts = append(parts, localRepo.Name)
+
+			if localRepo.NumPackages() == 0 {
+				emptyWarning = true
+			}
 		}
 
-		err = context.CollectionFactory().LocalRepoCollection().LoadComplete(localRepo)
-		if err != nil {
-			return fmt.Errorf("unable to publish: %s", err)
+		if len(parts) == 1 {
+			message = fmt.Sprintf("Local repo %s", parts[0])
+		} else {
+			message = fmt.Sprintf("Local repos %s", strings.Join(parts, ", "))
+
 		}
 
-		source = localRepo
-		message = fmt.Sprintf("Local repo %s", localRepo.Name)
-
-		if localRepo.NumPackages() == 0 {
+		if emptyWarning {
 			context.Progress().Printf("Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)\n")
 		}
 	} else {
 		panic("unknown command")
 	}
 
-	component := context.flags.Lookup("component").Value.String()
 	distribution := context.flags.Lookup("distribution").Value.String()
 
-	published, err := deb.NewPublishedRepo(prefix, distribution, context.ArchitecturesList(), []string{component}, []interface{}{source}, context.CollectionFactory())
+	published, err := deb.NewPublishedRepo(prefix, distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -101,7 +138,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	prefix, component, distribution = published.Prefix, strings.Join(published.Components(), " "), published.Distribution
+	var repoComponents string
+	prefix, repoComponents, distribution = published.Prefix, strings.Join(published.Components(), " "), published.Distribution
 	if prefix == "." {
 		prefix = ""
 	} else if !strings.HasSuffix(prefix, "/") {
@@ -111,9 +149,9 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	context.Progress().Printf("\n%s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
 		message, context.PublishedStorage().PublicPath())
 	context.Progress().Printf("Now you can add following line to apt sources:\n")
-	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, component)
+	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
 	if utils.StrSliceHasItem(published.Architectures, "source") {
-		context.Progress().Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, component)
+		context.Progress().Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
 	}
 	context.Progress().Printf("Don't forget to add your GPG key to apt with apt-key.\n")
 	context.Progress().Printf("\nYou can also use `aptly serve` to publish your repositories over HTTP quickly.\n")
@@ -131,6 +169,12 @@ Command publishes snapshot as Debian repository ready to be consumed
 by apt tools. Published repostiories appear under rootDir/public directory.
 Valid GPG key is required for publishing.
 
+Multiple component repository could be published by specifying several
+components split by commas via -component flag and multiple snapshots
+as the arguments:
+
+    aptly publish snapshot -component=main,contrib snap-main snap-contrib
+
 Example:
 
     $ aptly publish snapshot wheezy-main
@@ -138,7 +182,7 @@ Example:
 		Flag: *flag.NewFlagSet("aptly-publish-snapshot", flag.ExitOnError),
 	}
 	cmd.Flag.String("distribution", "", "distribution name to publish")
-	cmd.Flag.String("component", "", "component name to publish")
+	cmd.Flag.String("component", "", "component name to publish (for multi-component publishing, separate components with commas)")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
