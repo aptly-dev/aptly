@@ -5,5 +5,8 @@ deb http://127.0.0.1:8765/ maverick main
 # debian/maverick [amd64, i386, source] publishes {main: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}
 deb http://127.0.0.1:8765/debian/ maverick main
 deb-src http://127.0.0.1:8765/debian/ maverick main
+# multi/maverick [amd64, i386, source] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}, {contrib: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}
+deb http://127.0.0.1:8765/multi/ maverick contrib main
+deb-src http://127.0.0.1:8765/multi/ maverick contrib main
 
 Starting web server at: 127.0.0.1:8765 (press Ctrl+C to quit)...

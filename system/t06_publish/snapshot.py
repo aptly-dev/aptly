@@ -601,3 +601,178 @@ class PublishSnapshot25Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+
+
+class PublishSnapshot26Test(BaseTest):
+    """
+    publish snapshot: multiple component
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap26.1 from mirror gnuplot-maverick",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap26.2 from repo local-repo",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=main,contrib snap26.1 snap26.2"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot26Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/source/Sources')
+        self.check_exists('public/dists/maverick/main/source/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
+
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/contrib/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/contrib/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/contrib/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/contrib/source/Sources')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
+
+        self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+
+        # verify signatures
+        self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg", "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+        # verify sums
+        release = self.read_file('public/dists/maverick/Release').split("\n")
+        release = [l for l in release if l.startswith(" ")]
+        pathsSeen = set()
+        for l in release:
+            fileHash, fileSize, path = l.split()
+            pathsSeen.add(path)
+
+            fileSize = int(fileSize)
+
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
+            if fileSize != st.st_size:
+                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+
+            if len(fileHash) == 32:
+                h = hashlib.md5()
+            elif len(fileHash) == 40:
+                h = hashlib.sha1()
+            else:
+                h = hashlib.sha256()
+
+            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+
+            if h.hexdigest() != fileHash:
+                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+
+        if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
+                             'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
+                             'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
+                             'contrib/binary-amd64/Packages', 'contrib/binary-i386/Packages', 'contrib/binary-i386/Packages.gz',
+                             'contrib/binary-amd64/Packages.gz', 'contrib/binary-amd64/Packages.bz2', 'contrib/binary-i386/Packages.bz2',
+                             'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',]):
+            raise Exception("path seen wrong: %r" % (pathsSeen, ))
+
+
+class PublishSnapshot27Test(BaseTest):
+    """
+    publish snapshot: multiple component, guessing component names
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap27.1 from mirror gnuplot-maverick",
+        "aptly repo create -component=contrib local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap27.2 from repo local-repo",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=, snap27.1 snap27.2"
+    gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot28Test(BaseTest):
+    """
+    publish snapshot: duplicate component name (guessed)
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap28.1 from mirror gnuplot-maverick",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap28.2 from repo local-repo",
+    ]
+    runCmd = "aptly publish snapshot -component=, snap28.1 snap28.2"
+    expectedCode = 1
+
+
+class PublishSnapshot29Test(BaseTest):
+    """
+    publish snapshot: duplicate component name (manual)
+    """
+    fixtureCmds = [
+        "aptly snapshot create snap29.1 empty",
+        "aptly snapshot create snap29.2 empty",
+    ]
+    runCmd = "aptly publish snapshot -component=b,b snap29.1 snap29.2"
+    expectedCode = 1
+
+
+class PublishSnapshot30Test(BaseTest):
+    """
+    publish snapshot: distribution conflict
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap30.1 from mirror gnuplot-maverick",
+        "aptly repo create -distribution=squeeze local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap30.2 from repo local-repo",
+    ]
+    runCmd = "aptly publish snapshot -component=main,contrib snap30.1 snap30.2"
+    expectedCode = 1
+
+
+class PublishSnapshot31Test(BaseTest):
+    """
+    publish snapshot: no such snapshot
+    """
+    fixtureCmds = [
+        "aptly snapshot create snap31.1 empty",
+    ]
+    runCmd = "aptly publish snapshot -component=main,contrib snap31.1 snap31.2"
+    expectedCode = 1
+
+
+class PublishSnapshot32Test(BaseTest):
+    """
+    publish snapshot: mismatch in count
+    """
+    fixtureCmds = [
+        "aptly snapshot create snap32.1 empty",
+    ]
+    runCmd = "aptly publish snapshot -component=main,contrib snap32.1"
+    expectedCode = 2
+    outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])

@@ -1,0 +1,2 @@
+Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)
+ERROR: unable to publish: duplicate component name: b

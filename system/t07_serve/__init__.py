@@ -23,6 +23,7 @@ class Serve1Test(BaseTest):
         "aptly snapshot create snap2 from mirror gnuplot-maverick-src",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap2 debian",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=main,contrib snap1 snap2 multi",
     ]
     runCmd = "aptly serve -listen=127.0.0.1:8765"
 
