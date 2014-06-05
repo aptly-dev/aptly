@@ -400,6 +400,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		}
 
 		sort.Strings(p.Architectures)
+		p.Architectures = utils.StrSliceDeduplicate(p.Architectures)
 	}
 
 	var suffix string
