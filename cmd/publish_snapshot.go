@@ -59,9 +59,9 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		}
 
 		if len(parts) == 1 {
-			message = fmt.Sprintf("Snapshot %s", parts[0])
+			message = fmt.Sprintf("Snapshot %s has", parts[0])
 		} else {
-			message = fmt.Sprintf("Snapshots %s", strings.Join(parts, ", "))
+			message = fmt.Sprintf("Snapshots %s have", strings.Join(parts, ", "))
 
 		}
 
@@ -95,9 +95,9 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		}
 
 		if len(parts) == 1 {
-			message = fmt.Sprintf("Local repo %s", parts[0])
+			message = fmt.Sprintf("Local repo %s has", parts[0])
 		} else {
-			message = fmt.Sprintf("Local repos %s", strings.Join(parts, ", "))
+			message = fmt.Sprintf("Local repos %s have", strings.Join(parts, ", "))
 
 		}
 
@@ -146,7 +146,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		prefix += "/"
 	}
 
-	context.Progress().Printf("\n%s has been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
+	context.Progress().Printf("\n%s been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
 		message, context.PublishedStorage().PublicPath())
 	context.Progress().Printf("Now you can add following line to apt sources:\n")
 	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
