@@ -256,5 +256,3 @@ class PublishUpdate7Test(BaseTest):
         self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/contrib/source/Sources', 'sources2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/contrib/binary-i386/Packages', 'binary2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
-
-
