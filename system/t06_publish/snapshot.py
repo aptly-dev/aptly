@@ -608,7 +608,7 @@ class PublishSnapshot26Test(BaseTest):
     publish snapshot: multiple component
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap26.1 from mirror gnuplot-maverick",
         "aptly repo create local-repo",
@@ -702,7 +702,7 @@ class PublishSnapshot27Test(BaseTest):
     publish snapshot: multiple component, guessing component names
     """
     fixtureDB = True
-    fixturePool = True
+    fixturePoolCopy = True
     fixtureCmds = [
         "aptly snapshot create snap27.1 from mirror gnuplot-maverick",
         "aptly repo create -component=contrib local-repo",
