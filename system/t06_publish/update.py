@@ -244,6 +244,9 @@ class PublishUpdate7Test(BaseTest):
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/contrib/source/Sources')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
+        self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
 
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
