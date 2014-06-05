@@ -210,3 +210,51 @@ class PublishUpdate6Test(BaseTest):
     ]
     runCmd = "aptly publish update maverick"
     expectedCode = 1
+
+
+class PublishUpdate7Test(BaseTest):
+    """
+    publish update: multiple components, add some packages
+    """
+    fixtureCmds = [
+        "aptly repo create repo1",
+        "aptly repo create repo2",
+        "aptly repo add repo1 ${files}/pyspi_0.6.1-1.3.dsc",
+        "aptly repo add repo2 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=main,contrib repo1 repo2",
+        "aptly repo add repo1 ${files}/pyspi-0.6.1-1.3.stripped.dsc",
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate7Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/source/Sources')
+        self.check_exists('public/dists/maverick/main/source/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
+
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/main/source/Sources', 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/contrib/source/Sources', 'sources2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/contrib/binary-i386/Packages', 'binary2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+
+
