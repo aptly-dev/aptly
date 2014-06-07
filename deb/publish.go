@@ -366,18 +366,16 @@ func (p *PublishedRepo) Decode(input []byte) error {
 func (p *PublishedRepo) GetOrigin() string {
 	if p.Origin == "" {
 		return p.Prefix + " " + p.Distribution
-	} else {
-		return p.Origin
 	}
+	return p.Origin
 }
 
 // GetLabel returns default or manual Label:
 func (p *PublishedRepo) GetLabel() string {
 	if p.Label == "" {
 		return p.Prefix + " " + p.Distribution
-	} else {
-		return p.Label
 	}
+	return p.Label
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
@@ -553,7 +551,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 				relativePath = filepath.Join(component, fmt.Sprintf("binary-%s", arch), "Release")
 			}
 
-			file, err := publishedStorage.CreateFile(filepath.Join(basePath, relativePath+suffix))
+			var file *os.File
+			file, err = publishedStorage.CreateFile(filepath.Join(basePath, relativePath+suffix))
 			if err != nil {
 				return fmt.Errorf("unable to create Release file: %s", err)
 			}
