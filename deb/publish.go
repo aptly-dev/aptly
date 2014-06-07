@@ -233,9 +233,10 @@ func NewPublishedRepo(prefix string, distribution string, architectures []string
 func (p *PublishedRepo) String() string {
 	var sources = []string{}
 
-	for component, item := range p.sourceItems {
+	for _, component := range p.Components() {
 		var source string
 
+		item := p.sourceItems[component]
 		if item.snapshot != nil {
 			source = item.snapshot.String()
 		} else if item.localRepo != nil {
