@@ -39,6 +39,9 @@ class PublishSnapshot1Test(BaseTest):
         # verify contents except of sums
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Release', 'release_i386')
+        self.check_file_contents('public/dists/maverick/main/binary-amd64/Release', 'release_amd64')
+
         # verify signatures
         self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
