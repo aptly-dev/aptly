@@ -95,6 +95,8 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.repo3, _ = NewPublishedRepo("linux", "natty", nil, []string{"main", "contrib"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
 
+	s.repo3, _ = NewPublishedRepo("ppa", "maverick", "main", []string{"source"}, s.localRepo, s.factory)
+
 	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	f, err := os.Create(poolPath)
@@ -282,6 +284,16 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(st, IsNil)
 
+	drf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"))
+	c.Assert(err, IsNil)
+
+	cfr = NewControlFileReader(drf)
+	st, err = cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(st["Archive"], Equals, "squeeze")
+	c.Check(st["Architecture"], Equals, "i386")
+
 	_, err = os.Stat(filepath.Join(s.publishedStorage.PublicPath(), "ppa/pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
 	c.Assert(err, IsNil)
 }
@@ -291,6 +303,7 @@ func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"), PathExists)
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
@@ -298,6 +311,15 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/main/binary-i386/Release"), PathExists)
+}
+
+func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
+	err := s.repo3.Publish(s.packagePool, s.publishedStorage, s.factory, nil, nil)
+	c.Assert(err, IsNil)
+
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
+	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/main/source/Release"), PathExists)
 }
 
 func (s *PublishedRepoSuite) TestString(c *C) {
