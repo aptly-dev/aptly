@@ -362,6 +362,24 @@ func (p *PublishedRepo) Decode(input []byte) error {
 	return nil
 }
 
+// GetOrigin returns default or manual Origin:
+func (p *PublishedRepo) GetOrigin() string {
+	if p.Origin == "" {
+		return p.Prefix + " " + p.Distribution
+	} else {
+		return p.Origin
+	}
+}
+
+// GetLabel returns default or manual Label:
+func (p *PublishedRepo) GetLabel() string {
+	if p.Label == "" {
+		return p.Prefix + " " + p.Distribution
+	} else {
+		return p.Label
+	}
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage,
 	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
@@ -417,13 +435,14 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 	}
 
 	for component, list := range lists {
+		var relativePath string
+
 		// For all architectures, generate packages/sources files
 		for _, arch := range p.Architectures {
 			if progress != nil {
 				progress.InitBar(int64(list.Len()), false)
 			}
 
-			var relativePath string
 			if arch == "source" {
 				relativePath = filepath.Join(component, "source", "Sources")
 			} else {
@@ -518,19 +537,57 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 				progress.ShutdownBar()
 			}
 		}
+
+		// For all architectures, generate Release files
+		for _, arch := range p.Architectures {
+			release := make(Stanza)
+			release["Archive"] = p.Distribution
+			release["Architecture"] = arch
+			release["Component"] = component
+			release["Origin"] = p.GetOrigin()
+			release["Label"] = p.GetLabel()
+
+			if arch == "source" {
+				relativePath = filepath.Join(component, "source", "Release")
+			} else {
+				relativePath = filepath.Join(component, fmt.Sprintf("binary-%s", arch), "Release")
+			}
+
+			file, err := publishedStorage.CreateFile(filepath.Join(basePath, relativePath+suffix))
+			if err != nil {
+				return fmt.Errorf("unable to create Release file: %s", err)
+			}
+
+			if suffix != "" {
+				renameMap[filepath.Join(basePath, relativePath+suffix)] = filepath.Join(basePath, relativePath)
+			}
+
+			bufWriter := bufio.NewWriter(file)
+
+			err = release.WriteTo(bufWriter)
+			if err != nil {
+				return fmt.Errorf("unable to create Release file: %s", err)
+			}
+
+			err = bufWriter.Flush()
+			if err != nil {
+				return fmt.Errorf("unable to create Release file: %s", err)
+			}
+
+			file.Close()
+
+			var checksumInfo utils.ChecksumInfo
+			checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+suffix))
+			if err != nil {
+				return fmt.Errorf("unable to collect checksums: %s", err)
+			}
+			generatedFiles[relativePath] = checksumInfo
+		}
 	}
 
 	release := make(Stanza)
-	if p.Origin == "" {
-		release["Origin"] = p.Prefix + " " + p.Distribution
-	} else {
-		release["Origin"] = p.Origin
-	}
-	if p.Label == "" {
-		release["Label"] = p.Prefix + " " + p.Distribution
-	} else {
-		release["Label"] = p.Label
-	}
+	release["Origin"] = p.GetOrigin()
+	release["Label"] = p.GetLabel()
 	release["Codename"] = p.Distribution
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{"source"}), " ")
@@ -545,35 +602,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		release["MD5Sum"] += fmt.Sprintf(" %s %8d %s\n", info.MD5, info.Size, path)
 		release["SHA1"] += fmt.Sprintf(" %s %8d %s\n", info.SHA1, info.Size, path)
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
-	}
-
-	for _, arch := range p.Architectures {
-		st := make(Stanza)
-		st["Archive"] = p.Distribution
-		st["Architecture"] = arch
-
-		if arch != "source" {
-			arch = fmt.Sprintf("binary-%s", arch)
-		}
-
-		file, err := publishedStorage.CreateFile(filepath.Join(basePath, p.Component, arch, "Release"))
-		if err != nil {
-			return fmt.Errorf("unable to create Release file: %s", err)
-		}
-
-		bufWriter := bufio.NewWriter(file)
-
-		err = st.WriteTo(bufWriter)
-		if err != nil {
-			return fmt.Errorf("unable to create Release file: %s", err)
-		}
-
-		err = bufWriter.Flush()
-		if err != nil {
-			return fmt.Errorf("unable to create Release file: %s", err)
-		}
-
-		file.Close()
 	}
 
 	releaseFile, err := publishedStorage.CreateFile(filepath.Join(basePath, "Release"+suffix))

@@ -47,15 +47,15 @@ func (n *NullSigner) ClearSign(source string, destination string) error {
 
 type PublishedRepoSuite struct {
 	PackageListMixinSuite
-	repo, repo2, repo3  *PublishedRepo
-	root                string
-	publishedStorage    aptly.PublishedStorage
-	packagePool         aptly.PackagePool
-	localRepo           *LocalRepo
-	snapshot, snapshot2 *Snapshot
-	db                  database.Storage
-	factory             *CollectionFactory
-	packageCollection   *PackageCollection
+	repo, repo2, repo3, repo4 *PublishedRepo
+	root                      string
+	publishedStorage          aptly.PublishedStorage
+	packagePool               aptly.PackagePool
+	localRepo                 *LocalRepo
+	snapshot, snapshot2       *Snapshot
+	db                        database.Storage
+	factory                   *CollectionFactory
+	packageCollection         *PackageCollection
 }
 
 var _ = Suite(&PublishedRepoSuite{})
@@ -95,7 +95,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.repo3, _ = NewPublishedRepo("linux", "natty", nil, []string{"main", "contrib"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
 
-	s.repo3, _ = NewPublishedRepo("ppa", "maverick", "main", []string{"source"}, s.localRepo, s.factory)
+	s.repo4, _ = NewPublishedRepo("ppa", "maverick", []string{"source"}, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 
 	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums.MD5)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
@@ -315,7 +315,7 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
-	err := s.repo3.Publish(s.packagePool, s.publishedStorage, s.factory, nil, nil)
+	err := s.repo4.Publish(s.packagePool, s.publishedStorage, s.factory, nil, nil)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
