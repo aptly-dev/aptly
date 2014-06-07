@@ -73,7 +73,8 @@ class PublishSnapshot1Test(BaseTest):
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
 
         if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
-                             'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2']):
+                             'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
+                             'main/binary-amd64/Release', 'main/binary-i386/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -693,7 +694,9 @@ class PublishSnapshot26Test(BaseTest):
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
                              'contrib/binary-amd64/Packages', 'contrib/binary-i386/Packages', 'contrib/binary-i386/Packages.gz',
                              'contrib/binary-amd64/Packages.gz', 'contrib/binary-amd64/Packages.bz2', 'contrib/binary-i386/Packages.bz2',
-                             'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',]):
+                             'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',
+                             'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/source/Release',
+                             'contrib/binary-amd64/Release', 'contrib/binary-i386/Release', 'contrib/source/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 

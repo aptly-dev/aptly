@@ -79,7 +79,8 @@ class PublishSwitch1Test(BaseTest):
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
 
         if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
-                             'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2']):
+                             'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
+                             'main/binary-amd64/Release', 'main/binary-i386/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -327,7 +328,10 @@ class PublishSwitch8Test(BaseTest):
                              'b/binary-i386/Packages.gz', 'c/binary-amd64/Packages.gz', 'a/binary-amd64/Packages.bz2', 'c/source/Sources.bz2',
                              'c/source/Sources.gz', 'a/source/Sources.bz2', 'b/binary-i386/Packages.bz2', 'a/binary-i386/Packages.gz',
                              'a/binary-amd64/Packages.gz', 'c/binary-i386/Packages.bz2', 'b/binary-amd64/Packages.gz', 'b/source/Sources',
-                             'c/binary-i386/Packages.gz', 'b/source/Sources.gz', 'b/binary-i386/Packages']):
+                             'c/binary-i386/Packages.gz', 'b/source/Sources.gz', 'b/binary-i386/Packages',
+                             'a/binary-amd64/Release', 'b/binary-amd64/Release', 'c/binary-amd64/Release',
+                             'a/binary-i386/Release', 'b/binary-i386/Release', 'c/binary-i386/Release',
+                             'a/source/Release', 'b/source/Release', 'c/source/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 

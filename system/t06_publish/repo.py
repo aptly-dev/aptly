@@ -78,7 +78,8 @@ class PublishRepo1Test(BaseTest):
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
-                             'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2']):
+                             'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
+                             'main/binary-i386/Release', 'main/source/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -468,7 +469,9 @@ class PublishRepo17Test(BaseTest):
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
                              'contrib/binary-i386/Packages', 'contrib/binary-i386/Packages.gz',
                              'contrib/binary-i386/Packages.bz2',
-                             'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2']):
+                             'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',
+                             'main/source/Release', 'contrib/source/Release',
+                             'main/binary-i386/Release', 'contrib/binary-i386/Release']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
