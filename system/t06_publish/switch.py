@@ -226,3 +226,120 @@ class PublishSwitch7Test(BaseTest):
     ]
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap3"
     expectedCode = 1
+
+
+class PublishSwitch8Test(BaseTest):
+    """
+    publish switch: multi-component switching
+    """
+    fixtureDB = True
+    fixturePoolCopy = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create local1 from repo local-repo",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=a,b,c snap1 snap2 local1",
+        "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
+        "aptly repo remove local-repo pyspi",
+        "aptly snapshot create local2 from repo local-repo",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=b,c maverick snap3 local2"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch8Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        for component in ("a", "b", "c"):
+            self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages')
+            self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.gz')
+            self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.bz2')
+            self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages')
+            self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.gz')
+            self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.bz2')
+            self.check_exists('public/dists/maverick/' + component + '/source/Sources')
+            self.check_exists('public/dists/maverick/' + component + '/source/Sources.gz')
+            self.check_exists('public/dists/maverick/' + component + '/source/Sources.bz2')
+
+        self.check_exists('public/pool/a/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
+        self.check_exists('public/pool/a/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
+        self.check_exists('public/pool/a/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_i386.deb')
+        self.check_exists('public/pool/a/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_amd64.deb')
+
+        self.check_exists('public/pool/b/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
+        self.check_exists('public/pool/b/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
+        self.check_not_exists('public/pool/b/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_i386.deb')
+        self.check_not_exists('public/pool/b/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_amd64.deb')
+
+        self.check_exists('public/pool/c/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_not_exists('public/pool/c/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_not_exists('public/pool/c/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_not_exists('public/pool/c/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_not_exists('public/pool/c/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/maverick/a/binary-i386/Packages', 'binaryA', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/b/binary-i386/Packages', 'binaryB', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/c/binary-i386/Packages', 'binaryC', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+
+        # verify signatures
+        self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg", "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+        # verify sums
+        release = self.read_file('public/dists/maverick/Release').split("\n")
+        release = [l for l in release if l.startswith(" ")]
+        pathsSeen = set()
+        for l in release:
+            fileHash, fileSize, path = l.split()
+            pathsSeen.add(path)
+
+            fileSize = int(fileSize)
+
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
+            if fileSize != st.st_size:
+                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+
+            if len(fileHash) == 32:
+                h = hashlib.md5()
+            elif len(fileHash) == 40:
+                h = hashlib.sha1()
+            else:
+                h = hashlib.sha256()
+
+            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+
+            if h.hexdigest() != fileHash:
+                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+
+        if pathsSeen != set(['a/binary-amd64/Packages', 'c/source/Sources', 'c/binary-amd64/Packages.bz2', 'b/binary-amd64/Packages',
+                             'a/source/Sources', 'a/binary-i386/Packages.bz2', 'b/source/Sources.bz2', 'b/binary-amd64/Packages.bz2',
+                             'c/binary-i386/Packages', 'a/binary-i386/Packages', 'c/binary-amd64/Packages', 'a/source/Sources.gz',
+                             'b/binary-i386/Packages.gz', 'c/binary-amd64/Packages.gz', 'a/binary-amd64/Packages.bz2', 'c/source/Sources.bz2',
+                             'c/source/Sources.gz', 'a/source/Sources.bz2', 'b/binary-i386/Packages.bz2', 'a/binary-i386/Packages.gz',
+                             'a/binary-amd64/Packages.gz', 'c/binary-i386/Packages.bz2', 'b/binary-amd64/Packages.gz', 'b/source/Sources',
+                             'c/binary-i386/Packages.gz', 'b/source/Sources.gz', 'b/binary-i386/Packages']):
+            raise Exception("path seen wrong: %r" % (pathsSeen, ))
+
+
+class PublishSwitch9Test(BaseTest):
+    """
+    publish switch: components/snapshots mismatch
+    """
+    fixtureCmds = [
+        "aptly snapshot create snap1 empty",
+        "aptly snapshot create snap2 empty",
+        "aptly publish snapshot -architectures=i386 -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=a,b snap1 snap2",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,b maverick snap2"
+    expectedCode = 2
+    outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])

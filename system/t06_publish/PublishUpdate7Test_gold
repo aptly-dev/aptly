@@ -4,4 +4,4 @@ Signing file '${HOME}/.aptly/public/dists/maverick/Release.tmp' with gpg, please
 Clearsigning file '${HOME}/.aptly/public/dists/maverick/Release.tmp' with gpg, please enter your passphrase when prompted:
 Cleaning up prefix "." components contrib, main...
 
-Publish for local repo ./maverick [i386, source] publishes {main: [repo1]}, {contrib: [repo2]} has been successfully updated.
+Publish for local repo ./maverick [i386, source] publishes {contrib: [repo2]}, {main: [repo1]} has been successfully updated.
