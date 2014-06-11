@@ -59,6 +59,10 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	list, err := s.storage.Filelist("ppa/pool/main/")
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"a/ab/a.deb", "a/ab/b.deb"})
+
+	list, err = s.storage.Filelist("ppa/pool/doenstexist/")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
