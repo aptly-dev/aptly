@@ -1,10 +1,12 @@
 package files
 
 import (
+	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 // PublishedStorage abstract file system with public dirs (published repos)
@@ -71,8 +73,23 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		return err
 	}
 
-	_, err = os.Stat(filepath.Join(poolPath, baseName))
-	if err == nil { // already exists, skip
+	var dstStat, srcStat os.FileInfo
+
+	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
+	if err == nil {
+		// already exists, check source file
+		srcStat, err = os.Stat(sourcePath)
+		if err != nil {
+			// source file doesn't exist? problem!
+			return err
+		}
+
+		srcSys := srcStat.Sys().(*syscall.Stat_t)
+		dstSys := dstStat.Sys().(*syscall.Stat_t)
+
+		if srcSys.Ino != dstSys.Ino {
+			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
+		}
 		return nil
 	}
 
