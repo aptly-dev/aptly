@@ -111,6 +111,11 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		return nil
 	})
 
+	if err != nil && os.IsNotExist(err) {
+		// file path doesn't exist, consider it empty
+		return []string{}, nil
+	}
+
 	return result, err
 }
 
