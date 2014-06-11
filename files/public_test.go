@@ -168,4 +168,15 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		info := st.Sys().(*syscall.Stat_t)
 		c.Check(int(info.Nlink), Equals, 2)
 	}
+
+	// test linking files to duplicate final name
+	sourcePath := "pool/02/bc/mars-invaders_1.03.deb"
+	err := os.MkdirAll(filepath.Dir(sourcePath), 0755)
+	c.Assert(err, IsNil)
+
+	err = ioutil.WriteFile(sourcePath, []byte("Contents"), 0644)
+	c.Assert(err, IsNil)
+
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath)
+	c.Check(err, ErrorMatches, ".*file already exists and is different")
 }
