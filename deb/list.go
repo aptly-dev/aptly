@@ -300,9 +300,16 @@ func (l *PackageList) Swap(i, j int) {
 	l.packagesIndex[i], l.packagesIndex[j] = l.packagesIndex[j], l.packagesIndex[i]
 }
 
-// Compare compares two names in lexographical order
+// Compare compares two packages by name in lexographical order and version
 func (l *PackageList) Less(i, j int) bool {
-	return l.packagesIndex[i].Name < l.packagesIndex[j].Name
+	iPkg := l.packagesIndex[i]
+	jPkg := l.packagesIndex[j]
+
+	if iPkg.Name == jPkg.Name {
+		return CompareVersions(iPkg.Version, jPkg.Version) == -1
+	}
+
+	return iPkg.Name < jPkg.Name
 }
 
 // PrepareIndex prepares list for indexing
