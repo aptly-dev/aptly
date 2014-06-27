@@ -218,6 +218,9 @@ func (s *PackageListSuite) TestSearch(c *C) {
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}), Equals, s.packages[3])
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}), Equals, s.packages[3])
 	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}), IsNil)
+
+	// search w/o version should return package with latest version
+	c.Check(s.il.Search(Dependency{Architecture: "source", Pkg: "dpkg"}), Equals, s.packages[13])
 }
 
 func (s *PackageListSuite) TestFilter(c *C) {
