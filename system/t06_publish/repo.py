@@ -563,3 +563,4 @@ class PublishRepo24Test(BaseTest):
     ]
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze local-repo2"
     expectedCode = 1
+    gold_processor = BaseTest.expand_environ
