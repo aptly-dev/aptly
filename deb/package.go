@@ -198,7 +198,7 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 }
 
 // MatchesDependency checks whether package matches specified dependency
-func (p *Package) MatchesDependency(dep Dependency) bool {
+func (p *Package) MatchesDependency(dep Dependency, allMatches bool) bool {
 	if dep.Pkg != p.Name {
 		return false
 	}
@@ -212,9 +212,15 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 	}
 
 	r := CompareVersions(p.Version, dep.Version)
+
 	switch dep.Relation {
 	case VersionEqual:
-		return r == 0
+		if allMatches {
+			rn := CompareVersions(p.Version, dep.NextVersion())
+			return r+rn == 0 || r == 0
+		} else {
+			return r == 0
+		}
 	case VersionLess:
 		return r < 0
 	case VersionGreater:
