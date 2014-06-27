@@ -101,7 +101,7 @@ func (l *PackageList) Add(p *Package) error {
 			l.providesIndex[provides] = append(l.providesIndex[provides], p)
 		}
 
-		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= p.Name })
+		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.lessPackages(p, l.packagesIndex[j]) })
 
 		// insert p into l.packagesIndex in position i
 		l.packagesIndex = append(l.packagesIndex, nil)
@@ -300,16 +300,17 @@ func (l *PackageList) Swap(i, j int) {
 	l.packagesIndex[i], l.packagesIndex[j] = l.packagesIndex[j], l.packagesIndex[i]
 }
 
-// Compare compares two packages by name (lexographical) and version (latest to oldest)
-func (l *PackageList) Less(i, j int) bool {
-	iPkg := l.packagesIndex[i]
-	jPkg := l.packagesIndex[j]
-
+func (l *PackageList) lessPackages(iPkg, jPkg *Package) bool {
 	if iPkg.Name == jPkg.Name {
 		return CompareVersions(iPkg.Version, jPkg.Version) == 1
 	}
 
 	return iPkg.Name < jPkg.Name
+}
+
+// Less compares two packages by name (lexographical) and version (latest to oldest)
+func (l *PackageList) Less(i, j int) bool {
+	return l.lessPackages(l.packagesIndex[i], l.packagesIndex[j])
 }
 
 // PrepareIndex prepares list for indexing
