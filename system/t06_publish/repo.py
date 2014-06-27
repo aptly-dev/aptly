@@ -548,3 +548,18 @@ class PublishRepo23Test(BaseTest):
     runCmd = "aptly publish repo -component=main,contrib repo1"
     expectedCode = 2
     outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+
+
+class PublishRepo24Test(BaseTest):
+    """
+    publish repo: conflicting files in the repo
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo1",
+        "aptly repo add local-repo1 ${files}",
+        "aptly repo create local-repo2",
+        "aptly repo add local-repo2 ${testfiles}",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo1",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze local-repo2"
+    expectedCode = 1
