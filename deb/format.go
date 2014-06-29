@@ -12,7 +12,8 @@ type Stanza map[string]string
 
 // Canonical order of fields in stanza
 var canocialOrder = []string{"Package", "Origin", "Label", "Suite", "Version", "Installed-Size", "Priority", "Section", "Maintainer",
-	"Architecture", "Codename", "Date", "Architectures", "Components", "Description", "MD5sum", "MD5Sum", "SHA1", "SHA256"}
+	"Architecture", "Codename", "Date", "Architectures", "Components", "Description", "MD5sum", "MD5Sum", "SHA1", "SHA256",
+	"Archive", "Component"}
 
 // Copy returns copy of Stanza
 func (s Stanza) Copy() (result Stanza) {
