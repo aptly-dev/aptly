@@ -1,0 +1,12 @@
+Dependencies would be pulled into snapshot:
+    [empty]: Created as empty
+from snapshot:
+    [sensu]: Snapshot from mirror [sensu]: http://repos.sensuapp.org/apt/ sensu
+and result would be saved as new snapshot destination.
+Loading packages (154)...
+Building indexes...
+[+] sensu_0.12.6-5_amd64 added
+[+] sensu_0.12.6-5_i386 added
+
+Snapshot destination successfully created.
+You can run 'aptly publish snapshot destination' to publish snapshot as Debian repository.

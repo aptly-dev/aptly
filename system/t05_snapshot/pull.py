@@ -195,3 +195,15 @@ class PullSnapshot11Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly snapshot show -with-packages snap3", "snapshot_show", match_prepare=remove_created_at)
+
+
+class PullSnapshot12Test(BaseTest):
+    """
+    pull snapshot: latest version is pulled by default
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create empty empty",
+        "aptly snapshot create sensu from mirror sensu",
+    ]
+    runCmd = "aptly snapshot pull -architectures=amd64,i386 empty sensu destination sensu"
