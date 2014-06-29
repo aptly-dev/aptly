@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (11):
+Missing dependencies (13):
   fenix [amd64]
   fenix-plugins-system [amd64]
   ia32-libs-gtk-i386 [amd64]
@@ -8,6 +8,8 @@ Missing dependencies (11):
   kbdcontrol [amd64]
   kbdcontrol [i386]
   mozart (>= 1.4.0) [amd64]
+  samba4 (>= 4.0.0~) [amd64]
+  samba4 (>= 4.0.0~) [i386]
   scsh-0.6 (>= 0.6.6) [amd64]
   scsh-0.6 [amd64]
   vidcontrol [amd64]

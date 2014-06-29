@@ -1,5 +1,5 @@
 Name: snap1
-Created At: 2014-02-27 13:00:51 MSK
+Created At: 2014-06-28 03:01:02 MSK
 Description: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
 Number of packages: 661
 Packages:
@@ -303,7 +303,7 @@ Packages:
   frobtads_1:0.13-2_amd64
   fsl-4.1_4.1.9-7_amd64
   gmap_2012-06-12-1_amd64
-  intel-microcode_1.20130906.1_amd64
+  intel-microcode_1.20140122.1_amd64
   iozone3_397-2_amd64
   kic_2.4a-1.1_amd64
   libapache2-mod-fastcgi_2.4.7~0910052141-1_amd64
@@ -316,8 +316,8 @@ Packages:
   libcore++-dev_1.7-12_amd64
   libcore++1c2_1.7-12_amd64
   libcublas4_4.2.9-2_amd64
-  libcuda1_304.88-1+deb7u1_amd64
-  libcuda1-ia32_304.88-1+deb7u1_amd64
+  libcuda1_304.117-1_amd64
+  libcuda1-ia32_304.117-1_amd64
   libcudart4_4.2.9-2_amd64
   libcufft4_4.2.9-2_amd64
   libcuinj4_4.2.9-2_amd64
@@ -332,17 +332,17 @@ Packages:
   libfglrx-amdxvba1_1:12-6+point-3_amd64
   libfglrx-ia32_1:12-6+point-3_amd64
   libgl1-fglrx-glx_1:12-6+point-3_amd64
-  libgl1-nvidia-alternatives_304.88-1+deb7u1_amd64
-  libgl1-nvidia-alternatives-ia32_304.88-1+deb7u1_amd64
-  libgl1-nvidia-glx_304.88-1+deb7u1_amd64
-  libgl1-nvidia-glx-ia32_304.88-1+deb7u1_amd64
+  libgl1-nvidia-alternatives_304.117-1_amd64
+  libgl1-nvidia-alternatives-ia32_304.117-1_amd64
+  libgl1-nvidia-glx_304.117-1_amd64
+  libgl1-nvidia-glx-ia32_304.117-1_amd64
   libgl1-nvidia-legacy-173xx-glx_173.14.35-4_amd64
   libgl1-nvidia-legacy-173xx-glx-ia32_173.14.35-4_amd64
   libgl1-nvidia-legacy-71xx-glx_71.86.15-3_amd64
   libgl1-nvidia-legacy-71xx-glx-ia32_71.86.15-3_amd64
   libgl1-nvidia-legacy-96xx-glx_96.43.23-3_amd64
   libgl1-nvidia-legacy-96xx-glx-ia32_96.43.23-3_amd64
-  libglx-nvidia-alternatives_304.88-1+deb7u1_amd64
+  libglx-nvidia-alternatives_304.117-1_amd64
   libjai-core-java_1.1.4-3_amd64
   libjai-imageio-core-java_1.2-3_amd64
   libmath-random-perl_0.71-3+b1_amd64
@@ -354,10 +354,10 @@ Packages:
   libnauty-dev_2.4r2-1_amd64
   libnauty1d_2.4r2-1_amd64
   libnpp4_4.2.9-2_amd64
-  libnvcuvid1_304.88-1+deb7u1_amd64
-  libnvidia-compiler_304.88-1+deb7u1_amd64
-  libnvidia-compiler-ia32_304.88-1+deb7u1_amd64
-  libnvidia-ml1_304.88-1+deb7u1_amd64
+  libnvcuvid1_304.117-1_amd64
+  libnvidia-compiler_304.117-1_amd64
+  libnvidia-compiler-ia32_304.117-1_amd64
+  libnvidia-ml1_304.117-1_amd64
   libparmetis-dev_3.1.1-4_amd64
   libparmetis3.1_3.1.1-4_amd64
   libtet1.4_1.4.3-1_amd64
@@ -370,7 +370,7 @@ Packages:
   libvmtk-dev_1.0.1-1_amd64
   libvmtk1.0_1.0.1-1_amd64
   libxvbaw-dev_1:12-6+point-3_amd64
-  libxvmcnvidia1_304.88-1+deb7u1_amd64
+  libxvmcnvidia1_304.117-1_amd64
   madfuload_1.2-4_amd64
   mame_0.146-5_amd64
   mame-tools_0.146-4_amd64
@@ -392,7 +392,7 @@ Packages:
   ngspice_24-1_amd64
   notion_3+2012042300-1_amd64
   nttcp_1.47-13_amd64
-  nvidia-alternative_304.88-1+deb7u1_amd64
+  nvidia-alternative_304.117-1_amd64
   nvidia-alternative-legacy-173xx_173.14.35-4_amd64
   nvidia-alternative-legacy-71xx_71.86.15-3_amd64
   nvidia-alternative-legacy-96xx_96.43.23-3_amd64
@@ -401,9 +401,9 @@ Packages:
   nvidia-cuda-dev_4.2.9-2_amd64
   nvidia-cuda-gdb_4.2.9-2_amd64
   nvidia-cuda-toolkit_4.2.9-2_amd64
-  nvidia-detect_304.88-1+deb7u1_amd64
-  nvidia-glx_304.88-1+deb7u1_amd64
-  nvidia-glx-ia32_304.88-1+deb7u1_amd64
+  nvidia-detect_304.117-1_amd64
+  nvidia-glx_304.117-1_amd64
+  nvidia-glx-ia32_304.117-1_amd64
   nvidia-glx-legacy_71.86.15-3_amd64
   nvidia-glx-legacy-173xx_173.14.35-4_amd64
   nvidia-glx-legacy-173xx-ia32_173.14.35-4_amd64
@@ -415,10 +415,10 @@ Packages:
   nvidia-glx-legacy-96xx-ia32_96.43.23-3_amd64
   nvidia-glx-legacy-dev_71.86.15-3_amd64
   nvidia-glx-legacy-ia32_71.86.15-3_amd64
-  nvidia-kernel-2.6-amd64_304.88+1_amd64
-  nvidia-kernel-3.2.0-4-amd64_304.88+1+1+3.2.41-2_amd64
-  nvidia-kernel-amd64_304.88+1_amd64
-  nvidia-kernel-dkms_304.88-1+deb7u1_amd64
+  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_amd64
+  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_amd64
+  nvidia-kernel-amd64_304.117+3.2.0+1_amd64
+  nvidia-kernel-dkms_304.117-1_amd64
   nvidia-kernel-legacy-173xx-dkms_173.14.35-4_amd64
   nvidia-kernel-legacy-173xx-source_173.14.35-4_amd64
   nvidia-kernel-legacy-71xx-dkms_71.86.15-3_amd64
@@ -426,16 +426,16 @@ Packages:
   nvidia-kernel-legacy-96xx-dkms_96.43.23-3_amd64
   nvidia-kernel-legacy-96xx-source_96.43.23-3_amd64
   nvidia-kernel-legacy-source_71.86.15-3_amd64
-  nvidia-kernel-source_304.88-1+deb7u1_amd64
-  nvidia-libopencl1_304.88-1+deb7u1_amd64
-  nvidia-libopencl1-ia32_304.88-1+deb7u1_amd64
-  nvidia-opencl-common_304.88-1+deb7u1_amd64
+  nvidia-kernel-source_304.117-1_amd64
+  nvidia-libopencl1_304.117-1_amd64
+  nvidia-libopencl1-ia32_304.117-1_amd64
+  nvidia-opencl-common_304.117-1_amd64
   nvidia-opencl-dev_4.2.9-2_amd64
-  nvidia-opencl-icd_304.88-1+deb7u1_amd64
-  nvidia-opencl-icd-ia32_304.88-1+deb7u1_amd64
-  nvidia-smi_304.88-1+deb7u1_amd64
-  nvidia-vdpau-driver_304.88-1+deb7u1_amd64
-  nvidia-vdpau-driver-ia32_304.88-1+deb7u1_amd64
+  nvidia-opencl-icd_304.117-1_amd64
+  nvidia-opencl-icd-ia32_304.117-1_amd64
+  nvidia-smi_304.117-1_amd64
+  nvidia-vdpau-driver_304.117-1_amd64
+  nvidia-vdpau-driver-ia32_304.117-1_amd64
   nvidia-visual-profiler_4.2.9-2_amd64
   p7zip-rar_9.20.1~ds.1-3_amd64
   paml_4.5-1_amd64
@@ -472,7 +472,7 @@ Packages:
   wap-wml-tools_0.0.4-6_amd64
   x3270_3.3.10ga4-2+b1_amd64
   xfractint_20.4.10-2_amd64
-  xserver-xorg-video-nvidia_304.88-1+deb7u1_amd64
+  xserver-xorg-video-nvidia_304.117-1_amd64
   xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_amd64
   xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_amd64
   xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_amd64
@@ -506,7 +506,7 @@ Packages:
   fglrx-modules-dkms_1:12-6+point-3_i386
   fglrx-source_1:12-6+point-3_i386
   fsl-4.1_4.1.9-7_i386
-  intel-microcode_1.20130906.1_i386
+  intel-microcode_1.20140122.1_i386
   iozone3_397-2_i386
   irpas_0.10-4.1_i386
   lgrind_3.67-3_i386
@@ -518,7 +518,7 @@ Packages:
   libcore++-dev_1.7-12_i386
   libcore++1c2_1.7-12_i386
   libcublas4_4.2.9-2_i386
-  libcuda1_304.88-1+deb7u1_i386
+  libcuda1_304.117-1_i386
   libcudart4_4.2.9-2_i386
   libcufft4_4.2.9-2_i386
   libcuinj4_4.2.9-2_i386
@@ -532,12 +532,12 @@ Packages:
   libfglrx_1:12-6+point-3_i386
   libfglrx-amdxvba1_1:12-6+point-3_i386
   libgl1-fglrx-glx_1:12-6+point-3_i386
-  libgl1-nvidia-alternatives_304.88-1+deb7u1_i386
-  libgl1-nvidia-glx_304.88-1+deb7u1_i386
+  libgl1-nvidia-alternatives_304.117-1_i386
+  libgl1-nvidia-glx_304.117-1_i386
   libgl1-nvidia-legacy-173xx-glx_173.14.35-4_i386
   libgl1-nvidia-legacy-71xx-glx_71.86.15-3_i386
   libgl1-nvidia-legacy-96xx-glx_96.43.23-3_i386
-  libglx-nvidia-alternatives_304.88-1+deb7u1_i386
+  libglx-nvidia-alternatives_304.117-1_i386
   libgpcl-dev_2.32-1_i386
   libgpcl0_2.32-1_i386
   libmath-random-perl_0.71-3+b1_i386
@@ -547,9 +547,9 @@ Packages:
   libnauty-dev_2.4r2-1_i386
   libnauty1d_2.4r2-1_i386
   libnpp4_4.2.9-2_i386
-  libnvcuvid1_304.88-1+deb7u1_i386
-  libnvidia-compiler_304.88-1+deb7u1_i386
-  libnvidia-ml1_304.88-1+deb7u1_i386
+  libnvcuvid1_304.117-1_i386
+  libnvidia-compiler_304.117-1_i386
+  libnvidia-ml1_304.117-1_i386
   libparmetis-dev_3.1.1-4_i386
   libparmetis3.1_3.1.1-4_i386
   libtet1.4_1.4.3-1_i386
@@ -562,7 +562,7 @@ Packages:
   libvmtk-dev_1.0.1-1_i386
   libvmtk1.0_1.0.1-1_i386
   libxvbaw-dev_1:12-6+point-3_i386
-  libxvmcnvidia1_304.88-1+deb7u1_i386
+  libxvmcnvidia1_304.117-1_i386
   madfuload_1.2-4_i386
   mame_0.146-5_i386
   mame-tools_0.146-4_i386
@@ -583,7 +583,7 @@ Packages:
   nauty_2.4r2-1_i386
   netperf_2.4.4-6.1_i386
   notion_3+2012042300-1_i386
-  nvidia-alternative_304.88-1+deb7u1_i386
+  nvidia-alternative_304.117-1_i386
   nvidia-alternative-legacy-173xx_173.14.35-4_i386
   nvidia-alternative-legacy-71xx_71.86.15-3_i386
   nvidia-alternative-legacy-96xx_96.43.23-3_i386
@@ -592,8 +592,8 @@ Packages:
   nvidia-cuda-dev_4.2.9-2_i386
   nvidia-cuda-gdb_4.2.9-2_i386
   nvidia-cuda-toolkit_4.2.9-2_i386
-  nvidia-detect_304.88-1+deb7u1_i386
-  nvidia-glx_304.88-1+deb7u1_i386
+  nvidia-detect_304.117-1_i386
+  nvidia-glx_304.117-1_i386
   nvidia-glx-legacy_71.86.15-3_i386
   nvidia-glx-legacy-173xx_173.14.35-4_i386
   nvidia-glx-legacy-71xx_71.86.15-3_i386
@@ -601,16 +601,16 @@ Packages:
   nvidia-glx-legacy-71xx-unsupported_71.86.15-3_i386
   nvidia-glx-legacy-96xx_96.43.23-3_i386
   nvidia-glx-legacy-dev_71.86.15-3_i386
-  nvidia-kernel-2.6-486_304.88+1_i386
-  nvidia-kernel-2.6-686-pae_304.88+1_i386
-  nvidia-kernel-2.6-amd64_304.88+1_i386
-  nvidia-kernel-3.2.0-4-486_304.88+1+1+3.2.41-2_i386
-  nvidia-kernel-3.2.0-4-686-pae_304.88+1+1+3.2.41-2_i386
-  nvidia-kernel-3.2.0-4-amd64_304.88+1+1+3.2.41-2_i386
-  nvidia-kernel-486_304.88+1_i386
-  nvidia-kernel-686-pae_304.88+1_i386
-  nvidia-kernel-amd64_304.88+1_i386
-  nvidia-kernel-dkms_304.88-1+deb7u1_i386
+  nvidia-kernel-2.6-486_304.117+3.2.0+1_i386
+  nvidia-kernel-2.6-686-pae_304.117+3.2.0+1_i386
+  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_i386
+  nvidia-kernel-3.2.0-4-486_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-3.2.0-4-686-pae_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-486_304.117+3.2.0+1_i386
+  nvidia-kernel-686-pae_304.117+3.2.0+1_i386
+  nvidia-kernel-amd64_304.117+3.2.0+1_i386
+  nvidia-kernel-dkms_304.117-1_i386
   nvidia-kernel-legacy-173xx-dkms_173.14.35-4_i386
   nvidia-kernel-legacy-173xx-source_173.14.35-4_i386
   nvidia-kernel-legacy-71xx-dkms_71.86.15-3_i386
@@ -618,13 +618,13 @@ Packages:
   nvidia-kernel-legacy-96xx-dkms_96.43.23-3_i386
   nvidia-kernel-legacy-96xx-source_96.43.23-3_i386
   nvidia-kernel-legacy-source_71.86.15-3_i386
-  nvidia-kernel-source_304.88-1+deb7u1_i386
-  nvidia-libopencl1_304.88-1+deb7u1_i386
-  nvidia-opencl-common_304.88-1+deb7u1_i386
+  nvidia-kernel-source_304.117-1_i386
+  nvidia-libopencl1_304.117-1_i386
+  nvidia-opencl-common_304.117-1_i386
   nvidia-opencl-dev_4.2.9-2_i386
-  nvidia-opencl-icd_304.88-1+deb7u1_i386
-  nvidia-smi_304.88-1+deb7u1_i386
-  nvidia-vdpau-driver_304.88-1+deb7u1_i386
+  nvidia-opencl-icd_304.117-1_i386
+  nvidia-smi_304.117-1_i386
+  nvidia-vdpau-driver_304.117-1_i386
   nvidia-visual-profiler_4.2.9-2_i386
   p7zip-rar_9.20.1~ds.1-3_i386
   parmetis-test_3.1.1-4_i386
@@ -659,7 +659,7 @@ Packages:
   x3270_3.3.10ga4-2+b1_i386
   xfractint_20.4.10-2_i386
   xmame-svga_0.146-5_i386
-  xserver-xorg-video-nvidia_304.88-1+deb7u1_i386
+  xserver-xorg-video-nvidia_304.117-1_i386
   xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_i386
   xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_i386
   xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_i386

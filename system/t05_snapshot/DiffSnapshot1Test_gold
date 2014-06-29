@@ -1,6 +1,10 @@
   Arch   | Package                                  | Version in A                             | Version in B
-+ all    | init-system-helpers                      | -                                        | 1.11~bpo70.1
-! amd64  | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1
-! amd64  | rsyslog                                  | 5.8.11-3                                 | 7.4.4-1~bpo70+1
-! i386   | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1
-! i386   | rsyslog                                  | 5.8.11-3                                 | 7.4.4-1~bpo70+1
++ all    | init-system-helpers                      | -                                        | 1.18~bpo70+1                            
+! amd64  | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1                         
++ amd64  | libjson-c2                               | -                                        | 0.11-3~bpo7+1                           
++ amd64  | liblogging-stdlog0                       | -                                        | 1.0.4-1~bpo70+1                         
+! amd64  | rsyslog                                  | 5.8.11-3                                 | 7.6.3-2~bpo70+1                         
+! i386   | libestr0                                 | 0.1.1-2                                  | 0.1.9-1~bpo70+1                         
++ i386   | libjson-c2                               | -                                        | 0.11-3~bpo7+1                           
++ i386   | liblogging-stdlog0                       | -                                        | 1.0.4-1~bpo70+1                         
+! i386   | rsyslog                                  | 5.8.11-3                                 | 7.6.3-2~bpo70+1                         

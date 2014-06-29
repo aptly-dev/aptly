@@ -3,12 +3,12 @@ Dependencies would be pulled into snapshot:
 from snapshot:
     [snap2]: Snapshot from mirror [wheezy-backports]: http://mirror.yandex.ru/debian/ wheezy-backports
 and result would be saved as new snapshot snap3.
-Loading packages (59249)...
+Loading packages (60863)...
 Building indexes...
 [-] rsyslog_5.8.11-3_amd64 removed
-[+] rsyslog_7.4.4-1~bpo70+1_amd64 added
+[+] rsyslog_7.6.3-2~bpo70+1_amd64 added
 [-] rsyslog_5.8.11-3_i386 removed
-[+] rsyslog_7.4.4-1~bpo70+1_i386 added
+[+] rsyslog_7.6.3-2~bpo70+1_i386 added
 
 Snapshot snap3 successfully created.
 You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.

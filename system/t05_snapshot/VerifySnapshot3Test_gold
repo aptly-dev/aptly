@@ -1,5 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (2):
+Missing dependencies (3):
   kbdcontrol [i386]
+  samba4 (>= 4.0.0~) [i386]
   vidcontrol [i386]

@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (673):
+Missing dependencies (677):
   abrowser [amd64]
   abrowser [i386]
   apache [amd64]
@@ -512,6 +512,8 @@ Missing dependencies (673):
   ruby-htree [i386]
   samba-common (<< 2:3.4.0~pre2-1~0) [amd64]
   samba-common (<< 2:3.4.0~pre2-1~0) [i386]
+  samba4 (>= 4.0.0~) [amd64]
+  samba4 (>= 4.0.0~) [i386]
   scsh-0.6 (>= 0.6.6) [amd64]
   scsh-0.6 [amd64]
   skim [amd64]
@@ -634,16 +636,18 @@ Missing dependencies (673):
   xulrunner-1.9.1 [i386]
   xulrunner-1.9.2 [amd64]
   xulrunner-1.9.2 [i386]
+  xulrunner-10.0 [amd64]
+  xulrunner-10.0 [i386]
   xulrunner-11.0 [amd64]
   xulrunner-11.0 [i386]
   xulrunner-12.0 [amd64]
   xulrunner-12.0 [i386]
   xulrunner-13.0 [amd64]
   xulrunner-13.0 [i386]
+  xulrunner-17.0 [amd64]
+  xulrunner-17.0 [i386]
   xulrunner-2.0 [amd64]
   xulrunner-2.0 [i386]
-  xulrunner-24.0 [amd64]
-  xulrunner-24.0 [i386]
   xulrunner-5.0 [amd64]
   xulrunner-5.0 [i386]
   xulrunner-6.0 [amd64]

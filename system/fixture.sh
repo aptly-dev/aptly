@@ -27,3 +27,6 @@ aptly mirror update gnuplot-maverick
 
 aptly mirror create -with-sources gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
 aptly mirror update gnuplot-maverick-src
+
+aptly mirror create sensu http://repos.sensuapp.org/apt sensu
+aptly mirror update sensu

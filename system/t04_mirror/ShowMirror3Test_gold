@@ -11,13 +11,13 @@ Information from release file:
 Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 Codename: wheezy
 Components: main contrib non-free
-Date: Sat, 08 Feb 2014 10:36:03 UTC
-Description:  Debian 7.4 Released 08 February 2014
+Date: Sat, 26 Apr 2014 09:27:11 UTC
+Description:  Debian 7.5 Released 26 April 2014
 
 Label: Debian
 Origin: Debian
 Suite: stable
-Version: 7.4
+Version: 7.5
 Packages:
   bgoffice-dict-downloader_0.09_all
   biomaj-watcher_1.2.1-1_all
