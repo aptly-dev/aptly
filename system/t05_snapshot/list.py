@@ -65,6 +65,7 @@ class ListSnapshot5Test(BaseTest):
     ]
     runCmd = "aptly -raw -sort=time snapshot list"
 
+
 class ListSnapshot6Test(BaseTest):
     """
     list snapshots: regular list sorted by time
@@ -80,3 +81,12 @@ class ListSnapshot6Test(BaseTest):
         "aptly snapshot create snap5 from repo local-repo",
     ]
     runCmd = "aptly -sort=time snapshot list"
+
+
+class ListSnapshot7Test(BaseTest):
+    """
+    list snapshots: wrong parameter sort
+    """
+    runCmd = "aptly -sort=planet snapshot list"
+    expectedCode = 1
+
