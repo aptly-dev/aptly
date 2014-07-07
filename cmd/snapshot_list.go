@@ -18,17 +18,15 @@ type snapshotListToSort struct {
 	sortMethod int
 }
 
-func ParseSortMethod(sortMethod_string string) int {
-
+func ParseSortMethod(sortMethod_string string) (int, error) {
 	switch sortMethod_string {
 	case "time", "Time":
-		return SortTime
+		return SortTime, nil
 	case "name", "Name":
-		return SortName
+		return SortName, nil
 	}
 
-	fmt.Errorf("Sorting method \"%s\" unknown. Defaulting to '-sort=name'", sortMethod_string)
-	return SortName
+	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod_string)
 }
 
 func (s snapshotListToSort) Swap(i, j int) {
@@ -38,12 +36,11 @@ func (s snapshotListToSort) Swap(i, j int) {
 func (s snapshotListToSort) Less(i, j int) bool {
 	switch s.sortMethod {
 	case SortName:
-		sL := []string{s.list[i].Name, s.list[j].Name}
-		return sort.StringsAreSorted(sL)
+		return s.list[i].Name < s.list[j].Name
 	case SortTime:
 		return s.list[i].CreatedAt.Before(s.list[j].CreatedAt)
 	}
-	return true
+	panic("unknown sort method")
 }
 
 func (s snapshotListToSort) Len() int {
@@ -62,7 +59,10 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 
 	snapshotsToSort := &snapshotListToSort{}
 	snapshotsToSort.list = make([]*deb.Snapshot, context.CollectionFactory().SnapshotCollection().Len())
-	snapshotsToSort.sortMethod = ParseSortMethod(sortMethod_string)
+	snapshotsToSort.sortMethod, err = ParseSortMethod(sortMethod_string)
+	if err != nil {
+		return err
+	}
 
 	i := 0
 	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
