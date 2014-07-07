@@ -1,0 +1,8 @@
+List of snapshots:
+ * [snap2]: Snapshot from mirror [wheezy-contrib]: http://mirror.yandex.ru/debian/ wheezy
+ * [snap1]: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
+ * [snap3]: Merged from sources: 'snap1', 'snap2'
+ * [snap4]: Pulled into 'snap1' with 'snap2' as source, pull request was: 'mame unrar'
+ * [snap5]: Snapshot from local repo [local-repo]
+
+To get more information about snapshot, run `aptly snapshot show <name>`.

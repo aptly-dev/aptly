@@ -84,6 +84,8 @@ class BaseTest(object):
 
     outputMatchPrepare = None
 
+    captureResults = False
+
     def test(self):
         self.prepare()
         self.run()
@@ -181,12 +183,21 @@ class BaseTest(object):
     def expand_environ(self, gold):
         return string.Template(gold).substitute(os.environ)
 
+    def get_gold_filename(self, gold_name="gold"):
+        return os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__ + "_" + gold_name)
+
     def get_gold(self, gold_name="gold"):
-        gold = os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__ + "_" + gold_name)
-        return self.gold_processor(open(gold, "r").read())
+        return self.gold_processor(open(self.get_gold_filename(gold_name), "r").read())
 
     def check_output(self):
-        self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
+        try:
+            self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
+        except:
+            if self.captureResults:
+                with open(self.get_gold_filename(), "w") as f:
+                    f.write(self.output)
+            else:
+                raise
 
     def check_cmd_output(self, command, gold_name, match_prepare=None, expected_code=0):
         self.verify_match(self.get_gold(gold_name), self.run_cmd(command, expected_code=expected_code), match_prepare)

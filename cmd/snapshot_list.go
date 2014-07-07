@@ -7,6 +7,46 @@ import (
 	"sort"
 )
 
+// Snapshot sorting methods
+const (
+	SortName = iota
+	SortTime
+)
+
+type snapshotListToSort struct {
+	list       []*deb.Snapshot
+	sortMethod int
+}
+
+func ParseSortMethod(sortMethod_string string) (int, error) {
+	switch sortMethod_string {
+	case "time", "Time":
+		return SortTime, nil
+	case "name", "Name":
+		return SortName, nil
+	}
+
+	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod_string)
+}
+
+func (s snapshotListToSort) Swap(i, j int) {
+	s.list[i], s.list[j] = s.list[j], s.list[i]
+}
+
+func (s snapshotListToSort) Less(i, j int) bool {
+	switch s.sortMethod {
+	case SortName:
+		return s.list[i].Name < s.list[j].Name
+	case SortTime:
+		return s.list[i].CreatedAt.Before(s.list[j].CreatedAt)
+	}
+	panic("unknown sort method")
+}
+
+func (s snapshotListToSort) Len() int {
+	return len(s.list)
+}
+
 func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	var err error
 	if len(args) != 0 {
@@ -15,32 +55,35 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	}
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+	sortMethod_string := cmd.Flag.Lookup("sort").Value.Get().(string)
 
-	snapshots := make([]string, context.CollectionFactory().SnapshotCollection().Len())
+	snapshotsToSort := &snapshotListToSort{}
+	snapshotsToSort.list = make([]*deb.Snapshot, context.CollectionFactory().SnapshotCollection().Len())
+	snapshotsToSort.sortMethod, err = ParseSortMethod(sortMethod_string)
+	if err != nil {
+		return err
+	}
 
 	i := 0
 	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
-		if raw {
-			snapshots[i] = snapshot.Name
-		} else {
-			snapshots[i] = snapshot.String()
-		}
+		snapshotsToSort.list[i] = snapshot
 		i++
+
 		return nil
 	})
 
-	sort.Strings(snapshots)
+	sort.Sort(snapshotsToSort)
 
 	if raw {
-		for _, snapshot := range snapshots {
-			fmt.Printf("%s\n", snapshot)
+		for _, snapshot := range snapshotsToSort.list {
+			fmt.Printf("%s\n", snapshot.Name)
 		}
 	} else {
-		if len(snapshots) > 0 {
+		if len(snapshotsToSort.list) > 0 {
 			fmt.Printf("List of snapshots:\n")
 
-			for _, snapshot := range snapshots {
-				fmt.Printf(" * %s\n", snapshot)
+			for _, snapshot := range snapshotsToSort.list {
+				fmt.Printf(" * %s\n", snapshot.String())
 			}
 
 			fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
@@ -67,6 +110,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
+	cmd.Flag.String("sort", "name", "display list in 'name' or creation 'time' order")
 
 	return cmd
 }
