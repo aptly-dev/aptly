@@ -4,6 +4,7 @@ import glob
 import importlib
 import os
 import inspect
+import fnmatch
 import sys
 
 from lib import BaseTest
@@ -15,11 +16,11 @@ except ImportError:
         return s
 
 
-def run(include_long_tests=False, tests=None):
+def run(include_long_tests=False, tests=None, filters=None):
     """
     Run system test.
     """
-    if tests is None:
+    if not tests:
         tests = glob.glob("t*_*")
     fails = []
     numTests = numFailed = numSkipped = 0
@@ -33,6 +34,17 @@ def run(include_long_tests=False, tests=None):
 
             if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest):
                 continue
+
+            if filters:
+                matches = False
+
+                for filt in filters:
+                    if fnmatch.fnmatch(o.__name__, filt):
+                        matches = True
+                        break
+
+                if not matches:
+                    continue
 
             t = o()
             if t.longTest and not include_long_tests or not t.fixture_available():
@@ -70,10 +82,18 @@ if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     include_long_tests = False
     tests = None
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--long":
-            include_long_tests = True
-            tests = sys.argv[2:]
+    args = sys.argv[1:]
+    if len(args) > 0 and args[0] == "--long":
+        include_long_tests = True
+        args = args[1:]
+
+    tests = []
+    filters = []
+
+    for arg in args:
+        if arg.startswith('t'):
+            tests.append(arg)
         else:
-            tests = sys.argv[1:]
-    run(include_long_tests, tests)
+            filters.append(arg)
+
+    run(include_long_tests, tests, filters)
