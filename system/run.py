@@ -16,7 +16,7 @@ except ImportError:
         return s
 
 
-def run(include_long_tests=False, tests=None, filters=None):
+def run(include_long_tests=False, capture_results=False, tests=None, filters=None):
     """
     Run system test.
     """
@@ -56,6 +56,7 @@ def run(include_long_tests=False, tests=None, filters=None):
             sys.stdout.write("%s:%s... " % (test, o.__name__))
 
             try:
+                t.captureResults = capture_results
                 t.test()
             except BaseException, e:
                 numFailed += 1
@@ -81,10 +82,16 @@ def run(include_long_tests=False, tests=None, filters=None):
 if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     include_long_tests = False
+    capture_results = False
     tests = None
     args = sys.argv[1:]
-    if len(args) > 0 and args[0] == "--long":
-        include_long_tests = True
+
+    while len(args) > 0 and args[0].startswith("--"):
+        if args[0] == "--long":
+            include_long_tests = True
+        elif args[0] == "--capture":
+            capture_results = True
+
         args = args[1:]
 
     tests = []
@@ -96,4 +103,4 @@ if __name__ == "__main__":
         else:
             filters.append(arg)
 
-    run(include_long_tests, tests, filters)
+    run(include_long_tests, capture_results, tests, filters)
