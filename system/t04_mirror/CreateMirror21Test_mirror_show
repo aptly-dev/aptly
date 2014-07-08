@@ -1,8 +1,8 @@
 Name: mirror21
 Archive Root URL: http://pkg.jenkins-ci.org/debian-stable/
 Distribution: ./binary/
-Components:
-Architectures:
+Components: 
+Architectures: 
 Download Sources: no
 Last update: never
 

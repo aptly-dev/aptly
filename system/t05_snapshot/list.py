@@ -89,4 +89,3 @@ class ListSnapshot7Test(BaseTest):
     """
     runCmd = "aptly -sort=planet snapshot list"
     expectedCode = 1
-
