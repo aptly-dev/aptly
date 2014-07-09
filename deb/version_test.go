@@ -217,3 +217,45 @@ func (s *VersionSuite) TestDependencyString(c *C) {
 	d.Architecture = "i386"
 	c.Check(d.String(), Equals, "dpkg [i386]")
 }
+
+func (s *VersionSuite) TestDependencyNextVersion(c *C){
+	d, _ := ParseDependency("dpkg(=1.7)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "1.8")
+
+	d, _ = ParseDependency("dpkg(=1.9)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "1.10")
+
+	d, _ = ParseDependency("dpkg(=9)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "10")
+
+	d, _ = ParseDependency("dpkg(=9.909)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.910")
+
+	d, _ = ParseDependency("dpkg(=9.0.9)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.0.10")
+
+	d, _ = ParseDependency("dpkg(=9.0.100)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.0.101")
+
+	d, _ = ParseDependency("dpkg(=9.0.0-209)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.0.0-210")
+
+	d, _ = ParseDependency("dpkg(=9.0.0-209rel)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.0.0-209rel")
+
+	d, _ = ParseDependency("dpkg(=9.0.0-rel219)")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "9.0.0-rel220")
+
+	d, _ = ParseDependency("dpkg")
+	d.Architecture = "i386"
+	c.Check(d.NextVersion(), Equals, "")
+}
