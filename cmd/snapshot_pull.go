@@ -18,6 +18,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	noDeps := context.flags.Lookup("no-deps").Value.Get().(bool)
 	noRemove := context.flags.Lookup("no-remove").Value.Get().(bool)
+	allMatches := context.flags.Lookup("all-matches").Value.Get().(bool)
 
 	// Load <name> snapshot
 	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
@@ -97,51 +98,57 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			dep := dependencies[i]
 
 			// Search for package that can satisfy dependencies
-			pkg := sourcePackageList.Search(dep)
-			if pkg == nil {
+			searchResults := sourcePackageList.Search(dep, allMatches)
+			if searchResults == nil {
 				context.Progress().ColoredPrintf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
 				continue
 			}
 
 			if !noRemove {
 				// Remove all packages with the same name and architecture
-				for p := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}); p != nil; {
-					packageList.Remove(p)
-					context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
-					p = packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name})
+				for _, pkg := range searchResults {
+					pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+					for _, p := range pS {
+						packageList.Remove(p)
+						context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
+					}
 				}
 			}
 
 			// Add new discovered package
-			packageList.Add(pkg)
-			context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
+			for _, pkg := range searchResults {
+				packageList.Add(pkg)
+				context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
+			}
 
 			if noDeps {
 				continue
 			}
 
-			// Find missing dependencies for single added package
-			pL := deb.NewPackageList()
-			pL.Add(pkg)
+			// Find missing dependencies, for each added package
+			for _, pkg := range searchResults {
+				pL := deb.NewPackageList()
+				pL.Add(pkg)
 
-			var missing []deb.Dependency
-			missing, err = pL.VerifyDependencies(context.DependencyOptions(), []string{arch}, packageList, nil)
-			if err != nil {
-				context.Progress().ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
-			}
-
-			// Append missing dependencies to the list of dependencies to satisfy
-			for _, misDep := range missing {
-				found := false
-				for _, d := range dependencies {
-					if d == misDep {
-						found = true
-						break
-					}
+				var missing []deb.Dependency
+				missing, err = pL.VerifyDependencies(context.DependencyOptions(), []string{arch}, packageList, nil)
+				if err != nil {
+					context.Progress().ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
 				}
 
-				if !found {
-					dependencies = append(dependencies, misDep)
+				// Append missing dependencies to the list of dependencies to satisfy
+				for _, misDep := range missing {
+					found := false
+					for _, d := range dependencies {
+						if d == misDep {
+							found = true
+							break
+						}
+					}
+
+					if !found {
+						dependencies = append(dependencies, misDep)
+					}
 				}
 			}
 		}
@@ -186,6 +193,7 @@ Example:
 	cmd.Flag.Bool("dry-run", false, "don't create destination snapshot, just show what would be pulled")
 	cmd.Flag.Bool("no-deps", false, "don't process dependencies, just pull listed packages")
 	cmd.Flag.Bool("no-remove", false, "don't remove other package versions when pulling package")
+	cmd.Flag.Bool("all-matches", false, "pull all the packages that satisfy the dependency version requirements")
 
 	return cmd
 }

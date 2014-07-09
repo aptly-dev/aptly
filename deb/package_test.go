@@ -90,16 +90,16 @@ func (s *PackageSuite) TestKey(c *C) {
 	c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2 c8901eedd79ac51b"))
 	c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2 c8901eedd79ac51b"))
 
-    p.V06Plus = false
-    c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
-    c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
+	p.V06Plus = false
+	c.Check(p.Key(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
+	c.Check(p.Key("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
 }
 
 func (s *PackageSuite) TestShortKey(c *C) {
-    p := NewPackageFromControlFile(s.stanza)
+	p := NewPackageFromControlFile(s.stanza)
 
-    c.Check(p.ShortKey(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
-    c.Check(p.ShortKey("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
+	c.Check(p.ShortKey(""), DeepEquals, []byte("Pi386 alien-arena-common 7.40-2"))
+	c.Check(p.ShortKey("xD"), DeepEquals, []byte("xDPi386 alien-arena-common 7.40-2"))
 }
 
 func (s *PackageSuite) TestStanza(c *C) {
@@ -173,6 +173,9 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 
 	// exact match
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionEqual, Version: "7.40-2"}), Equals, true)
+
+	// exact match, same version, no revision specified
+	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionEqual, Version: "7.40"}), Equals, false)
 
 	// different name
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena", Architecture: "i386", Relation: VersionEqual, Version: "7.40-2"}), Equals, false)

@@ -43,7 +43,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 		Version:      input["Version"],
 		Architecture: input["Architecture"],
 		Source:       input["Source"],
-		V06Plus: 	  true,
+		V06Plus:      true,
 	}
 
 	delete(input, "Package")
@@ -92,7 +92,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 		Version:            input["Version"],
 		Architecture:       "source",
 		SourceArchitecture: input["Architecture"],
-		V06Plus: 	 	    true,
+		V06Plus:            true,
 	}
 
 	delete(input, "Package")
@@ -212,6 +212,7 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 	}
 
 	r := CompareVersions(p.Version, dep.Version)
+
 	switch dep.Relation {
 	case VersionEqual:
 		return r == 0
