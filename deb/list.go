@@ -360,7 +360,7 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) []*Package {
 
 	for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
 		p := l.packagesIndex[i]
-		if p.MatchesDependency(dep, allMatches) {
+		if p.MatchesDependency(dep) {
 			searchResults = append(searchResults, p)
 
 			if !allMatches {
@@ -422,7 +422,7 @@ func (l *PackageList) Filter(queries []string, withDependencies bool, source *Pa
 
 		for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
 			p := l.packagesIndex[i]
-			if p.MatchesDependency(dep, false) {
+			if p.MatchesDependency(dep) {
 				result.Add(p)
 			}
 			i++
