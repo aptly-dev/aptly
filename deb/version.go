@@ -188,29 +188,6 @@ type Dependency struct {
 	Architecture string
 }
 
-// NextVersion returns the next version of a dependency (eg. if d.Version = 1.9, it returns 1.10)
-func (d *Dependency) NextVersion() string {
-	l := len(d.Version)
-
-	if l == 0 {
-		return ""
-	}
-
-	i := l
-	for  i > 0  {
-		_, err := strconv.ParseUint(d.Version[i-1:l],10,0)
-		if err != nil { break }
-		i--
-	}
-
-	v, err := strconv.ParseUint(d.Version[i:l],10,0)
-	if err != nil {
-		return d.Version
-	}
-
-	return d.Version[0:i] + strconv.Itoa(int(v)+1)
-}
-
 // Hash calculates some predefined unique ID of Dependency
 func (d *Dependency) Hash() string {
 	return fmt.Sprintf("%s:%s:%d:%s", d.Architecture, d.Pkg, d.Relation, d.Version)
