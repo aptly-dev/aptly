@@ -125,9 +125,9 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 				continue
 			}
 
-			// Find missing dependencies for single added package
-			pL := deb.NewPackageList()
+			// Find missing dependencies, for each added package
 			for _, pkg := range searchResults {
+				pL := deb.NewPackageList()
 				pL.Add(pkg)
 
 				var missing []deb.Dependency
