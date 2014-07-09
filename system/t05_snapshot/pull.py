@@ -207,3 +207,27 @@ class PullSnapshot12Test(BaseTest):
         "aptly snapshot create sensu from mirror sensu",
     ]
     runCmd = "aptly snapshot pull -architectures=amd64,i386 empty sensu destination sensu"
+
+
+class PullSnapshot13Test(BaseTest):
+    """
+    pull snapshot: pull all versions
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create empty empty",
+        "aptly snapshot create sensu from mirror sensu",
+    ]
+    runCmd = "aptly snapshot pull -architectures=amd64,i386 -all-matches empty sensu destination sensu"
+
+
+class PullSnapshot14Test(BaseTest):
+    """
+    pull snapshot: pull with query
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create empty empty",
+        "aptly snapshot create sensu from mirror sensu",
+    ]
+    runCmd = "aptly snapshot pull -architectures=amd64,i386 -all-matches empty sensu destination 'sensu (>0.12)' 'sensu (<0.9.6)'"
