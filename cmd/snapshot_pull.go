@@ -107,12 +107,10 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			if !noRemove {
 				// Remove all packages with the same name and architecture
 				for _, pkg := range searchResults {
-					for pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, allMatches); pS != nil; {
-						for _, p := range pS {
-							packageList.Remove(p)
-							context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
-						}
-						pS = packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, allMatches)
+					pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+					for _, p := range pS {
+						packageList.Remove(p)
+						context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 					}
 				}
 			}
@@ -196,7 +194,6 @@ Example:
 	cmd.Flag.Bool("no-deps", false, "don't process dependencies, just pull listed packages")
 	cmd.Flag.Bool("no-remove", false, "don't remove other package versions when pulling package")
 	cmd.Flag.Bool("all-matches", false, "pull all the packages that satisfy the dependency version requirements")
-
 
 	return cmd
 }
