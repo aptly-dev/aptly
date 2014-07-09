@@ -334,12 +334,10 @@ func (l *PackageList) PrepareIndex() {
 }
 
 // Search searches package index for specified package
-func (l *PackageList) Search(dep Dependency, allMatches bool) []*Package {
+func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
 	if !l.indexed {
 		panic("list not indexed, can't search")
 	}
-
-	searchResults := []*Package{}
 
 	if dep.Relation == VersionDontCare {
 		for _, p := range l.providesIndex[dep.Pkg] {
@@ -352,7 +350,7 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) []*Package {
 			}
 		}
 		if len(searchResults) != 0 {
-			return searchResults
+			return
 		}
 	}
 
@@ -371,11 +369,7 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) []*Package {
 		i++
 	}
 
-	if len(searchResults) != 0 {
-		return searchResults
-	}
-
-	return nil
+	return
 }
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
