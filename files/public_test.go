@@ -170,7 +170,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	}
 
 	// test linking files to duplicate final name
-	sourcePath := "pool/02/bc/mars-invaders_1.03.deb"
+	sourcePath := filepath.Join(s.root, "pool/02/bc/mars-invaders_1.03.deb")
 	err := os.MkdirAll(filepath.Dir(sourcePath), 0755)
 	c.Assert(err, IsNil)
 
