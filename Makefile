@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-PACKAGES=database deb files http utils
-ALL_PACKAGES=aptly cmd console database deb files http utils
+PACKAGES=database deb files http query utils
+ALL_PACKAGES=aptly cmd console database deb files http query utils
 BINPATH=$(abspath ./_vendor/bin)
 GOM_ENVIRONMENT=-test
 PYTHON?=python
