@@ -333,7 +333,11 @@ func (l *PackageList) PrepareIndex() {
 	l.indexed = true
 }
 
-// Search searches package index for specified package
+// Query searches package index using parsed query
+//func (l *PackageList) Query(, allMatches bool) (searchResults []*Package) {
+//}
+
+// Search searches package index for specified package(s)
 func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
 	if !l.indexed {
 		panic("list not indexed, can't search")

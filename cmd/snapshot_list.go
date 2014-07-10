@@ -26,7 +26,7 @@ func parseSortMethod(sortMethod string) (int, error) {
 		return SortName, nil
 	}
 
-	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod_string)
+	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod)
 }
 
 func (s snapshotListToSort) Swap(i, j int) {
@@ -59,7 +59,7 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 
 	snapshotsToSort := &snapshotListToSort{}
 	snapshotsToSort.list = make([]*deb.Snapshot, context.CollectionFactory().SnapshotCollection().Len())
-	snapshotsToSort.sortMethod, err = ParseSortMethod(sortMethodString)
+	snapshotsToSort.sortMethod, err = parseSortMethod(sortMethodString)
 	if err != nil {
 		return err
 	}
