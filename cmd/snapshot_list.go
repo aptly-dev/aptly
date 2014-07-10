@@ -18,8 +18,8 @@ type snapshotListToSort struct {
 	sortMethod int
 }
 
-func ParseSortMethod(sortMethod_string string) (int, error) {
-	switch sortMethod_string {
+func parseSortMethod(sortMethod string) (int, error) {
+	switch sortMethod {
 	case "time", "Time":
 		return SortTime, nil
 	case "name", "Name":
@@ -55,11 +55,11 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	}
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
-	sortMethod_string := cmd.Flag.Lookup("sort").Value.Get().(string)
+	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)
 
 	snapshotsToSort := &snapshotListToSort{}
 	snapshotsToSort.list = make([]*deb.Snapshot, context.CollectionFactory().SnapshotCollection().Len())
-	snapshotsToSort.sortMethod, err = ParseSortMethod(sortMethod_string)
+	snapshotsToSort.sortMethod, err = ParseSortMethod(sortMethodString)
 	if err != nil {
 		return err
 	}

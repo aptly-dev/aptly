@@ -18,8 +18,7 @@ func (c *containsChecker) Check(params []interface{}, names []string) (result bo
 		ok        bool
 	)
 
-	pkgMap := make (map[*Package]bool)
-
+	pkgMap := make(map[*Package]bool)
 
 	pkgSlice1, ok = params[0].([]*Package)
 	if !ok {
@@ -42,7 +41,7 @@ func (c *containsChecker) Check(params []interface{}, names []string) (result bo
 	return true, ""
 }
 
-var Contains Checker = &containsChecker{&CheckerInfo{Name: "Contains", Params: []string{"Container", "Expected to contain"}}}
+var Contains = &containsChecker{&CheckerInfo{Name: "Contains", Params: []string{"Container", "Expected to contain"}}}
 
 type PackageListSuite struct {
 	// Simple list with "real" packages from stanzas
