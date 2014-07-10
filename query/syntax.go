@@ -14,7 +14,7 @@ type parser struct {
 	err   error  // error stored while parsing
 }
 
-func parse(input *lexer) (PackageQuery, error) {
+func parse(input *lexer) (deb.PackageQuery, error) {
 	p := &parser{
 		name:  input.name,
 		input: input,
@@ -27,7 +27,7 @@ func parse(input *lexer) (PackageQuery, error) {
 }
 
 // Entry into parser
-func (p *parser) parse() PackageQuery {
+func (p *parser) parse() deb.PackageQuery {
 	defer func() {
 		if r := recover(); r != nil {
 			p.err = fmt.Errorf("parsing failed: %s", r)
@@ -42,36 +42,36 @@ func (p *parser) parse() PackageQuery {
 }
 
 // Query := A | A '|' Query
-func (p *parser) Query() PackageQuery {
+func (p *parser) Query() deb.PackageQuery {
 	q := p.A()
 	if p.input.Current().typ == itemOr {
 		p.input.Consume()
-		return &OrQuery{L: q, R: p.Query()}
+		return &deb.OrQuery{L: q, R: p.Query()}
 	}
 	return q
 }
 
 // A := B | B ',' A
-func (p *parser) A() PackageQuery {
+func (p *parser) A() deb.PackageQuery {
 	q := p.B()
 	if p.input.Current().typ == itemAnd {
 		p.input.Consume()
-		return &AndQuery{L: q, R: p.A()}
+		return &deb.AndQuery{L: q, R: p.A()}
 	}
 	return q
 }
 
 // B := C | '!' B
-func (p *parser) B() PackageQuery {
+func (p *parser) B() deb.PackageQuery {
 	if p.input.Current().typ == itemNot {
 		p.input.Consume()
-		return &NotQuery{Q: p.B()}
+		return &deb.NotQuery{Q: p.B()}
 	}
 	return p.C()
 }
 
 // C := '(' Query ')' | D
-func (p *parser) C() PackageQuery {
+func (p *parser) C() deb.PackageQuery {
 	if p.input.Current().typ == itemLeftParen {
 		p.input.Consume()
 		q := p.Query()
@@ -108,7 +108,7 @@ func operatorToRelation(operator itemType) int {
 
 // D := <field> <condition>
 // field := <package-name> | <field> | $special_field
-func (p *parser) D() PackageQuery {
+func (p *parser) D() deb.PackageQuery {
 	if p.input.Current().typ != itemString {
 		panic(fmt.Sprintf("unexpected token %s: expecting field or package name", p.input.Current()))
 	}
@@ -121,11 +121,11 @@ func (p *parser) D() PackageQuery {
 	r, _ := utf8.DecodeRuneInString(field)
 	if strings.HasPrefix(field, "$") || unicode.IsUpper(r) {
 		// special field or regular field
-		return &FieldQuery{Field: field, Relation: operatorToRelation(operator), Value: value}
+		return &deb.FieldQuery{Field: field, Relation: operatorToRelation(operator), Value: value}
 	}
 
 	// regular dependency-like query
-	return &DependencyQuery{Dep: deb.Dependency{Pkg: field, Relation: operatorToRelation(operator), Version: value}}
+	return &deb.DependencyQuery{Dep: deb.Dependency{Pkg: field, Relation: operatorToRelation(operator), Version: value}}
 }
 
 // condition := '(' <operator> value ')' |

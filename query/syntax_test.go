@@ -15,30 +15,30 @@ func (s *SyntaxSuite) TestParsing(c *C) {
 	q, err := parse(l)
 
 	c.Assert(err, IsNil)
-	c.Check(q.(*AndQuery).L, DeepEquals, &DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionLess, Version: "1.3"}})
-	c.Check(q.(*AndQuery).R, DeepEquals, &FieldQuery{Field: "$Source"})
+	c.Check(q.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionLess, Version: "1.3"}})
+	c.Check(q.(*deb.AndQuery).R, DeepEquals, &deb.FieldQuery{Field: "$Source"})
 
 	l, _ = lex("query", "package (1.3), Name (lala) | !$Source")
 	q, err = parse(l)
 
 	c.Assert(err, IsNil)
-	c.Check(q.(*OrQuery).L.(*AndQuery).L, DeepEquals, &DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionEqual, Version: "1.3"}})
-	c.Check(q.(*OrQuery).L.(*AndQuery).R, DeepEquals, &FieldQuery{Field: "Name", Relation: deb.VersionEqual, Value: "lala"})
-	c.Check(q.(*OrQuery).R.(*NotQuery).Q, DeepEquals, &FieldQuery{Field: "$Source"})
+	c.Check(q.(*deb.OrQuery).L.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionEqual, Version: "1.3"}})
+	c.Check(q.(*deb.OrQuery).L.(*deb.AndQuery).R, DeepEquals, &deb.FieldQuery{Field: "Name", Relation: deb.VersionEqual, Value: "lala"})
+	c.Check(q.(*deb.OrQuery).R.(*deb.NotQuery).Q, DeepEquals, &deb.FieldQuery{Field: "$Source"})
 
 	l, _ = lex("query", "package, ((!(Name | $Source (~ a.*))))")
 	q, err = parse(l)
 
 	c.Assert(err, IsNil)
-	c.Check(q.(*AndQuery).L, DeepEquals, &DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionDontCare}})
-	c.Check(q.(*AndQuery).R.(*NotQuery).Q.(*OrQuery).L, DeepEquals, &FieldQuery{Field: "Name", Relation: deb.VersionDontCare})
-	c.Check(q.(*AndQuery).R.(*NotQuery).Q.(*OrQuery).R, DeepEquals, &FieldQuery{Field: "$Source", Relation: deb.VersionRegexp, Value: "a.*"})
+	c.Check(q.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionDontCare}})
+	c.Check(q.(*deb.AndQuery).R.(*deb.NotQuery).Q.(*deb.OrQuery).L, DeepEquals, &deb.FieldQuery{Field: "Name", Relation: deb.VersionDontCare})
+	c.Check(q.(*deb.AndQuery).R.(*deb.NotQuery).Q.(*deb.OrQuery).R, DeepEquals, &deb.FieldQuery{Field: "$Source", Relation: deb.VersionRegexp, Value: "a.*"})
 
 	l, _ = lex("query", "package (> 5.3.7)")
 	q, err = parse(l)
 
 	c.Assert(err, IsNil)
-	c.Check(q, DeepEquals, &DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionGreaterOrEqual, Version: "5.3.7"}})
+	c.Check(q, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionGreaterOrEqual, Version: "5.3.7"}})
 }
 
 func (s *SyntaxSuite) TestParsingErrors(c *C) {
