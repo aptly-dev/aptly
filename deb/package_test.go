@@ -207,6 +207,17 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 	// <=
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionLessOrEqual, Version: "7.40-2"}), Equals, true)
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionLessOrEqual, Version: "7.40-1"}), Equals, false)
+
+	// %
+	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-*"}), Equals, true)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-[2]"}), Equals, true)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-[2"}), Equals, false)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-[34]"}), Equals, false)
+
+	// %
+	c.Check(func() {
+		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*"})
+	}, Panics, "regexp matching not implemented yet")
 }
 
 func (s *PackageSuite) TestGetDependencies(c *C) {

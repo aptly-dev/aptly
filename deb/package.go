@@ -224,6 +224,11 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 		return r <= 0
 	case VersionGreaterOrEqual:
 		return r >= 0
+	case VersionPatternMatch:
+		matched, err := filepath.Match(dep.Version, p.Version)
+		return err == nil && matched
+	case VersionRegexp:
+		panic("regexp matching not implemented yet")
 	}
 
 	panic("unknown relation")

@@ -178,6 +178,8 @@ const (
 	VersionEqual
 	VersionGreaterOrEqual
 	VersionGreater
+	VersionPatternMatch
+	VersionRegexp
 )
 
 // Dependency is a parsed version of Debian dependency to package
@@ -207,6 +209,10 @@ func (d *Dependency) String() string {
 		rel = ">="
 	case VersionLessOrEqual:
 		rel = "<="
+	case VersionPatternMatch:
+		rel = "%"
+	case VersionRegexp:
+		rel = "~"
 	case VersionDontCare:
 		return fmt.Sprintf("%s [%s]", d.Pkg, d.Architecture)
 	}
