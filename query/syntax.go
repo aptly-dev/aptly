@@ -106,7 +106,21 @@ func operatorToRelation(operator itemType) int {
 	panic("unable to map token to relation")
 }
 
-// D := <field> <condition>
+// isPackageRef returns ok true if field has format pkg_version_arch
+func parsePackageRef(query string) (pkg, version, arch string, ok bool) {
+	i := strings.Index(query, "_")
+	if i != -1 {
+		pkg, query = query[:i], query[i+1:]
+		j := strings.LastIndex(query, "_")
+		if j != -1 {
+			version, arch = query[:j], query[j+1:]
+			ok = true
+		}
+	}
+	return
+}
+
+// D := <field> <condition> <arch_condition> | <package>_<version>_<arch>
 // field := <package-name> | <field> | $special_field
 func (p *parser) D() deb.PackageQuery {
 	if p.input.Current().typ != itemString {
@@ -122,10 +136,19 @@ func (p *parser) D() deb.PackageQuery {
 	if strings.HasPrefix(field, "$") || unicode.IsUpper(r) {
 		// special field or regular field
 		return &deb.FieldQuery{Field: field, Relation: operatorToRelation(operator), Value: value}
+	} else if operator == 0 && value == "" {
+		if pkg, version, arch, ok := parsePackageRef(field); ok {
+			// query for specific package
+			return &deb.PkgQuery{Pkg: pkg, Version: version, Arch: arch}
+		}
 	}
 
 	// regular dependency-like query
-	return &deb.DependencyQuery{Dep: deb.Dependency{Pkg: field, Relation: operatorToRelation(operator), Version: value}}
+	return &deb.DependencyQuery{Dep: deb.Dependency{
+		Pkg:          field,
+		Relation:     operatorToRelation(operator),
+		Version:      value,
+		Architecture: p.ArchCondition()}}
 }
 
 // condition := '(' <operator> value ')' |
@@ -157,6 +180,27 @@ func (p *parser) Condition() (operator itemType, value string) {
 
 	if p.input.Current().typ != itemRightParen {
 		panic(fmt.Sprintf("unexpected token %s: expecting ')'", p.input.Current()))
+	}
+	p.input.Consume()
+
+	return
+}
+
+// arch_condition := '{' arch '}' |
+func (p *parser) ArchCondition() (arch string) {
+	if p.input.Current().typ != itemLeftCurly {
+		return
+	}
+	p.input.Consume()
+
+	if p.input.Current().typ != itemString {
+		panic(fmt.Sprintf("unexpected token %s: expecting architecture", p.input.Current()))
+	}
+	arch = p.input.Current().val
+	p.input.Consume()
+
+	if p.input.Current().typ != itemRightCurly {
+		panic(fmt.Sprintf("unexpected token %s: expecting '}'", p.input.Current()))
 	}
 	p.input.Consume()
 

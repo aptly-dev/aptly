@@ -11,11 +11,11 @@ type SyntaxSuite struct {
 var _ = Suite(&SyntaxSuite{})
 
 func (s *SyntaxSuite) TestParsing(c *C) {
-	l, _ := lex("query", "package (<< 1.3), $Source")
+	l, _ := lex("query", "package (<< 1.3~dev), $Source")
 	q, err := parse(l)
 
 	c.Assert(err, IsNil)
-	c.Check(q.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionLess, Version: "1.3"}})
+	c.Check(q.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionLess, Version: "1.3~dev"}})
 	c.Check(q.(*deb.AndQuery).R, DeepEquals, &deb.FieldQuery{Field: "$Source"})
 
 	l, _ = lex("query", "package (1.3), Name (lala) | !$Source")
@@ -39,6 +39,19 @@ func (s *SyntaxSuite) TestParsing(c *C) {
 
 	c.Assert(err, IsNil)
 	c.Check(q, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionGreaterOrEqual, Version: "5.3.7"}})
+
+	l, _ = lex("query", "alien-data_1.3.4~dev_i386")
+	q, err = parse(l)
+
+	c.Assert(err, IsNil)
+	c.Check(q, DeepEquals, &deb.PkgQuery{Pkg: "alien-data", Version: "1.3.4~dev", Arch: "i386"})
+
+	l, _ = lex("query", "package (> 5.3.7) {amd64}")
+	q, err = parse(l)
+
+	c.Assert(err, IsNil)
+	c.Check(q, DeepEquals, &deb.DependencyQuery{
+		Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionGreaterOrEqual, Version: "5.3.7", Architecture: "amd64"}})
 }
 
 func (s *SyntaxSuite) TestParsingErrors(c *C) {
@@ -48,7 +61,7 @@ func (s *SyntaxSuite) TestParsingErrors(c *C) {
 
 	l, _ = lex("query", "package>5.3.7)")
 	_, err = parse(l)
-	c.Check(err, ErrorMatches, "parsing failed: unexpected token >: expecting end of query")
+	c.Check(err, ErrorMatches, "parsing failed: unexpected token \\): expecting end of query")
 
 	l, _ = lex("query", "package | !|")
 	_, err = parse(l)

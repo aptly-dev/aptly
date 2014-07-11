@@ -11,7 +11,7 @@ type LexerSuite struct {
 var _ = Suite(&LexerSuite{})
 
 func (s *LexerSuite) TestLexing(c *C) {
-	_, ch := lex("query", "package (<< 1.3), $Source | !app")
+	_, ch := lex("query", "package (<< 1.3), $Source | !app, data {i386}")
 
 	c.Check(<-ch, Equals, item{typ: itemString, val: "package"})
 	c.Check(<-ch, Equals, item{typ: itemLeftParen, val: "("})
@@ -23,6 +23,11 @@ func (s *LexerSuite) TestLexing(c *C) {
 	c.Check(<-ch, Equals, item{typ: itemOr, val: "|"})
 	c.Check(<-ch, Equals, item{typ: itemNot, val: "!"})
 	c.Check(<-ch, Equals, item{typ: itemString, val: "app"})
+	c.Check(<-ch, Equals, item{typ: itemAnd, val: ","})
+	c.Check(<-ch, Equals, item{typ: itemString, val: "data"})
+	c.Check(<-ch, Equals, item{typ: itemLeftCurly, val: "{"})
+	c.Check(<-ch, Equals, item{typ: itemString, val: "i386"})
+	c.Check(<-ch, Equals, item{typ: itemRightCurly, val: "}"})
 	c.Check(<-ch, Equals, item{typ: itemEOF, val: ""})
 }
 

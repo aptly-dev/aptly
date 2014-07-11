@@ -28,6 +28,8 @@ const (
 	itemEq         // =
 	itemPatMatch   // %
 	itemRegexp     // ~
+	itemLeftCurly  // {
+	itemRightCurly // }
 	itemString
 )
 
@@ -152,6 +154,10 @@ func lexMain(l *lexer) stateFn {
 		l.emit(itemLeftParen)
 	case r == ')':
 		l.emit(itemRightParen)
+	case r == '{':
+		l.emit(itemLeftCurly)
+	case r == '}':
+		l.emit(itemRightCurly)
 	case r == '|':
 		l.emit(itemOr)
 	case r == ',':
@@ -195,7 +201,7 @@ func lexMain(l *lexer) stateFn {
 func lexString(l *lexer) stateFn {
 	for {
 		r := l.next()
-		if unicode.IsSpace(r) || strings.IndexRune("()|,!<>=%~", r) > 0 {
+		if unicode.IsSpace(r) || strings.IndexRune("()|,!{}", r) > 0 {
 			l.backup()
 			l.emit(itemString)
 			return lexMain(l)
