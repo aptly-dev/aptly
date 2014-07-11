@@ -218,6 +218,12 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 	c.Check(func() {
 		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*"})
 	}, Panics, "regexp matching not implemented yet")
+
+	// Provides
+	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Relation: VersionDontCare}), Equals, false)
+	p.Provides = []string{"fun", "game"}
+	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Relation: VersionDontCare}), Equals, true)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Architecture: "amd64", Relation: VersionDontCare}), Equals, false)
 }
 
 func (s *PackageSuite) TestGetDependencies(c *C) {

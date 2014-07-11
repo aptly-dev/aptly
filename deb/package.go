@@ -199,16 +199,19 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 
 // MatchesDependency checks whether package matches specified dependency
 func (p *Package) MatchesDependency(dep Dependency) bool {
-	if dep.Pkg != p.Name {
-		return false
-	}
-
 	if dep.Architecture != "" && !p.MatchesArchitecture(dep.Architecture) {
 		return false
 	}
 
 	if dep.Relation == VersionDontCare {
-		return true
+		if utils.StrSliceHasItem(p.Provides, dep.Pkg) {
+			return true
+		}
+		return dep.Pkg == p.Name
+	}
+
+	if dep.Pkg != p.Name {
+		return false
 	}
 
 	r := CompareVersions(p.Version, dep.Version)
