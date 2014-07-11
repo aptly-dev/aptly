@@ -4,8 +4,8 @@ package deb
 type PackageQuery interface {
 	// Matches calculates match of condition against package
 	Matches(pkg *Package) bool
-	// Searchable returns if search strategy is possible for this query
-	Searchable() bool
+	// Fast returns if search strategy is possible for this query
+	Fast() bool
 	// Query performs search on package list
 	Query(list *PackageList) *PackageList
 }
@@ -49,14 +49,14 @@ func (q *OrQuery) Matches(pkg *Package) bool {
 	return q.L.Matches(pkg) || q.R.Matches(pkg)
 }
 
-// Searchable is true only if both parts are searchable
-func (q *OrQuery) Searchable() bool {
-	return q.L.Searchable() && q.R.Searchable()
+// Fast is true only if both parts are fast
+func (q *OrQuery) Fast() bool {
+	return q.L.Fast() && q.R.Fast()
 }
 
 // Query strategy depends on nodes
 func (q *OrQuery) Query(list *PackageList) (result *PackageList) {
-	if q.Searchable() {
+	if q.Fast() {
 		result = q.L.Query(list)
 		result.Append(q.R.Query(list))
 	} else {
@@ -70,17 +70,17 @@ func (q *AndQuery) Matches(pkg *Package) bool {
 	return q.L.Matches(pkg) && q.R.Matches(pkg)
 }
 
-// Searchable is true if any of the parts are searchable
-func (q *AndQuery) Searchable() bool {
-	return q.L.Searchable() || q.R.Searchable()
+// Fast is true if any of the parts are fast
+func (q *AndQuery) Fast() bool {
+	return q.L.Fast() || q.R.Fast()
 }
 
 // Query strategy depends on nodes
 func (q *AndQuery) Query(list *PackageList) (result *PackageList) {
-	if !q.Searchable() {
+	if !q.Fast() {
 		result = list.Scan(q)
 	} else {
-		if q.L.Searchable() {
+		if q.L.Fast() {
 			result = q.L.Query(list)
 			result = result.Scan(q.R)
 		} else {
@@ -96,12 +96,12 @@ func (q *NotQuery) Matches(pkg *Package) bool {
 	return !q.Q.Matches(pkg)
 }
 
-// Searchable is false
-func (q *NotQuery) Searchable() bool {
+// Fast is false
+func (q *NotQuery) Fast() bool {
 	return false
 }
 
-// NotQuery strategy is scan always
+// Query strategy is scan always
 func (q *NotQuery) Query(list *PackageList) (result *PackageList) {
 	result = list.Scan(q)
 	return
@@ -117,8 +117,8 @@ func (q *FieldQuery) Query(list *PackageList) (result *PackageList) {
 	panic("not implemented yet")
 }
 
-// Searchable depends on the query
-func (q *FieldQuery) Searchable() bool {
+// Fast depends on the query
+func (q *FieldQuery) Fast() bool {
 	return false
 }
 
@@ -127,8 +127,8 @@ func (q *DependencyQuery) Matches(pkg *Package) bool {
 	return pkg.MatchesDependency(q.Dep)
 }
 
-// Searchable is always true for dependency query
-func (q *DependencyQuery) Searchable() bool {
+// Fast is always true for dependency query
+func (q *DependencyQuery) Fast() bool {
 	return true
 }
 
@@ -147,8 +147,8 @@ func (q *PkgQuery) Matches(pkg *Package) bool {
 	return pkg.Name == q.Pkg && pkg.Version == q.Version && pkg.Architecture == q.Arch
 }
 
-// Searchable is always true for package query
-func (q *PkgQuery) Searchable() bool {
+// Fast is always true for package query
+func (q *PkgQuery) Fast() bool {
 	return true
 }
 
