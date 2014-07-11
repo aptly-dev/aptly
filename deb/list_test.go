@@ -301,10 +301,7 @@ func (s *PackageListSuite) TestSearch(c *C) {
 }
 
 func (s *PackageListSuite) TestFilter(c *C) {
-	c.Check(func() { s.list.Filter([]string{"abcd_0.3_i386"}, false, nil, 0, nil) }, Panics, "list not indexed, can't filter")
-
-	_, err := s.il.Filter([]string{"app >3)"}, false, nil, 0, nil)
-	c.Check(err, ErrorMatches, "unable to parse dependency.*")
+	c.Check(func() { s.list.Filter([]PackageQuery{&PkgQuery{"abcd", "0.3", "i386"}}, false, nil, 0, nil) }, Panics, "list not indexed, can't filter")
 
 	plString := func(l *PackageList) string {
 		list := make([]string, 0, l.Len())
@@ -317,25 +314,45 @@ func (s *PackageListSuite) TestFilter(c *C) {
 		return strings.Join(list, " ")
 	}
 
-	result, err := s.il.Filter([]string{"app_1.1~bp1_i386"}, false, nil, 0, nil)
+	result, err := s.il.Filter([]PackageQuery{&PkgQuery{"app", "1.1~bp1", "i386"}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.1~bp1_i386")
 
-	result, err = s.il.Filter([]string{"app_1.1~bp1_i386", "dpkg_1.7_source", "dpkg_1.8_amd64"}, false, nil, 0, nil)
+	result, err = s.il.Filter([]PackageQuery{&PkgQuery{"app", "1.1~bp1", "i386"}, &PkgQuery{"dpkg", "1.7", "source"},
+		&PkgQuery{"dpkg", "1.8", "amd64"}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.1~bp1_i386 dpkg_1.7_source")
 
-	result, err = s.il.Filter([]string{"app", "dpkg (>>1.6.1-3)", "app (>=1.0)", "xyz", "aa (>>3.0)"}, false, nil, 0, nil)
+	result, err = s.il.Filter([]PackageQuery{
+		&DependencyQuery{Dep: Dependency{Pkg: "app"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "dpkg", Relation: VersionGreater, Version: "1.6.1-3"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "xyz"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "aa", Relation: VersionGreater, Version: "3.0"}}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 dpkg_1.7_i386 dpkg_1.7_source")
 
-	result, err = s.il.Filter([]string{"app {i386}"}, true, NewPackageList(), 0, []string{"i386"})
+	result, err = s.il.Filter([]PackageQuery{&DependencyQuery{Dep: Dependency{Pkg: "app", Architecture: "i386"}}}, true, NewPackageList(), 0, []string{"i386"})
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.1~bp1_i386 data_1.1~bp1_all dpkg_1.7_i386 lib_1.0_i386 mailer_3.5.8_i386")
 
-	result, err = s.il.Filter([]string{"app (>=0.9)", "lib", "data"}, true, NewPackageList(), 0, []string{"i386", "amd64"})
+	result, err = s.il.Filter([]PackageQuery{
+		&DependencyQuery{Dep: Dependency{Pkg: "app", Relation: VersionGreaterOrEqual, Version: "0.9"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "lib"}},
+		&DependencyQuery{Dep: Dependency{Pkg: "data"}}}, true, NewPackageList(), 0, []string{"i386", "amd64"})
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 data_1.1~bp1_all dpkg_1.6.1-3_amd64 dpkg_1.7_i386 lib_1.0_i386 mailer_3.5.8_i386")
+
+	result, err = s.il.Filter([]PackageQuery{&OrQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
+		&DependencyQuery{Dep: Dependency{Pkg: "dpkg", Relation: VersionGreater, Version: "1.6.1-3"}}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.1~bp1_i386 dpkg_1.7_i386 dpkg_1.7_source")
+
+	result, err = s.il.Filter([]PackageQuery{&AndQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
+		&DependencyQuery{Dep: Dependency{Pkg: "dpkg", Relation: VersionGreater, Version: "1.6.1-3"}}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "")
+
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {

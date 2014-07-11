@@ -5,7 +5,6 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"sort"
-	"strings"
 )
 
 // Dependency options
@@ -333,11 +332,19 @@ func (l *PackageList) PrepareIndex() {
 	l.indexed = true
 }
 
-// Query searches package index using parsed query
-//func (l *PackageList) Query(, allMatches bool) (searchResults []*Package) {
-//}
+// Scan searches package index using full scan
+func (l *PackageList) Scan(q PackageQuery) (result *PackageList) {
+	result = NewPackageList()
+	for _, pkg := range l.packagesIndex {
+		if q.Matches(pkg) {
+			result.Add(pkg)
+		}
+	}
 
-// Search searches package index for specified package(s)
+	return
+}
+
+// Search searches package index for specified package(s) using optimized queries
 func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
 	if !l.indexed {
 		panic("list not indexed, can't search")
@@ -377,7 +384,7 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 }
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
-func (l *PackageList) Filter(queries []string, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
 	if !l.indexed {
 		panic("list not indexed, can't filter")
 	}
@@ -385,46 +392,7 @@ func (l *PackageList) Filter(queries []string, withDependencies bool, source *Pa
 	result := NewPackageList()
 
 	for _, query := range queries {
-		isDepQuery := strings.IndexAny(query, " (){}=<>") != -1
-
-		if !isDepQuery {
-			// try to interpret query as package string representation
-
-			// convert Package.String() to Package.Key()
-			i := strings.Index(query, "_")
-			if i != -1 {
-				pkg, query := query[:i], query[i+1:]
-				j := strings.LastIndex(query, "_")
-				if j != -1 {
-					version, arch := query[:j], query[j+1:]
-					p := l.packages["P"+arch+" "+pkg+" "+version]
-					if p != nil {
-						result.Add(p)
-						continue
-					}
-				}
-			}
-		}
-
-		// try as dependency
-		dep, err := ParseDependency(query)
-		if err != nil {
-			if isDepQuery {
-				return nil, err
-			}
-			// parsing failed, but probably that wasn't a dep query
-			continue
-		}
-
-		i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= dep.Pkg })
-
-		for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
-			p := l.packagesIndex[i]
-			if p.MatchesDependency(dep) {
-				result.Add(p)
-			}
-			i++
-		}
+		result.Append(query.Query(l))
 	}
 
 	if withDependencies {
