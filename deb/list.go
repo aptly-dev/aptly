@@ -335,7 +335,7 @@ func (l *PackageList) PrepareIndex() {
 // Scan searches package index using full scan
 func (l *PackageList) Scan(q PackageQuery) (result *PackageList) {
 	result = NewPackageList()
-	for _, pkg := range l.packagesIndex {
+	for _, pkg := range l.packages {
 		if q.Matches(pkg) {
 			result.Add(pkg)
 		}
