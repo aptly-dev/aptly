@@ -353,6 +353,25 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "")
 
+	result, err = s.il.Filter([]PackageQuery{&OrQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
+		&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_i386")
+
+	result, err = s.il.Filter([]PackageQuery{&AndQuery{&FieldQuery{"Version", VersionGreaterOrEqual, "1.0"},
+		&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.0_s390")
+
+	result, err = s.il.Filter([]PackageQuery{&AndQuery{
+		&FieldQuery{"$Architecture", VersionPatternMatch, "i*6"}, &PkgQuery{"app", "1.1~bp1", "i386"}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.1~bp1_i386")
+
+	result, err = s.il.Filter([]PackageQuery{&NotQuery{
+		&FieldQuery{"$Architecture", VersionPatternMatch, "i*6"}}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm data_1.1~bp1_all dpkg_1.6.1-3_amd64 dpkg_1.6.1-3_arm dpkg_1.6.1-3_source dpkg_1.7_source libx_1.5_arm")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {
