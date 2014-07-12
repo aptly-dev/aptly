@@ -119,6 +119,58 @@ func (s *PackageSuite) TestString(c *C) {
 	c.Assert(p.String(), Equals, "alien-arena-common_7.40-2_i386")
 }
 
+func (s *PackageSuite) TestGetField(c *C) {
+	p := NewPackageFromControlFile(s.stanza.Copy())
+
+	stanza2 := s.stanza.Copy()
+	delete(stanza2, "Source")
+	stanza2["Provides"] = "app, game"
+	p2 := NewPackageFromControlFile(stanza2)
+
+	stanza3 := s.stanza.Copy()
+	stanza3["Source"] = "alien-arena (3.5)"
+	p3 := NewPackageFromControlFile(stanza3)
+
+	p4, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
+
+	c.Check(p.GetField("$Source"), Equals, "alien-arena")
+	c.Check(p2.GetField("$Source"), Equals, "alien-arena-common")
+	c.Check(p3.GetField("$Source"), Equals, "alien-arena")
+	c.Check(p4.GetField("$Source"), Equals, "")
+
+	c.Check(p.GetField("$SourceVersion"), Equals, "7.40-2")
+	c.Check(p2.GetField("$SourceVersion"), Equals, "7.40-2")
+	c.Check(p3.GetField("$SourceVersion"), Equals, "3.5")
+	c.Check(p4.GetField("$SourceVersion"), Equals, "")
+
+	c.Check(p.GetField("$Architecture"), Equals, "i386")
+	c.Check(p4.GetField("$Architecture"), Equals, "source")
+
+	c.Check(p.GetField("$PackageType"), Equals, "deb")
+	c.Check(p4.GetField("$PackageType"), Equals, "source")
+
+	c.Check(p.GetField("Name"), Equals, "alien-arena-common")
+	c.Check(p4.GetField("Name"), Equals, "access-modifier-checker")
+
+	c.Check(p.GetField("Architecture"), Equals, "i386")
+	c.Check(p4.GetField("Architecture"), Equals, "all")
+
+	c.Check(p.GetField("Version"), Equals, "7.40-2")
+
+	c.Check(p.GetField("Source"), Equals, "alien-arena")
+	c.Check(p2.GetField("Source"), Equals, "")
+	c.Check(p3.GetField("Source"), Equals, "alien-arena (3.5)")
+	c.Check(p4.GetField("Source"), Equals, "")
+
+	c.Check(p.GetField("Depends"), Equals, "libc6 (>= 2.7), alien-arena-data (>= 7.40)")
+
+	c.Check(p.GetField("Provides"), Equals, "")
+	c.Check(p2.GetField("Provides"), Equals, "app, game")
+
+	c.Check(p.GetField("Section"), Equals, "contrib/games")
+	c.Check(p.GetField("Priority"), Equals, "extra")
+}
+
 func (s *PackageSuite) TestEquals(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 

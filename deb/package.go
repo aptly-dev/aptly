@@ -188,6 +188,70 @@ func (p *Package) String() string {
 	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
 }
 
+// GetField returns fields from package
+func (p *Package) GetField(name string) string {
+	switch name {
+	// $Version is handled in FieldQuery
+	case "$Source":
+		if p.IsSource {
+			return ""
+		}
+		source := p.Source
+		if source == "" {
+			return p.Name
+		} else if pos := strings.Index(source, "("); pos != -1 {
+			return strings.TrimSpace(source[:pos])
+		}
+		return source
+	case "$SourceVersion":
+		if p.IsSource {
+			return ""
+		}
+		source := p.Source
+		if pos := strings.Index(source, "("); pos != -1 {
+			if pos2 := strings.LastIndex(source, ")"); pos2 != -1 && pos2 > pos {
+				return strings.TrimSpace(source[pos+1 : pos2])
+			}
+		}
+		return p.Version
+	case "$Architecture":
+		return p.Architecture
+	case "$PackageType":
+		if p.IsSource {
+			return "source"
+		}
+		return "deb"
+	case "Name":
+		return p.Name
+	case "Version":
+		return p.Version
+	case "Architecture":
+		if p.IsSource {
+			return p.SourceArchitecture
+		}
+		return p.Architecture
+	case "Source":
+		return p.Source
+	case "Depends":
+		return strings.Join(p.Deps().Depends, ", ")
+	case "Pre-Depends":
+		return strings.Join(p.Deps().PreDepends, ", ")
+	case "Suggests":
+		return strings.Join(p.Deps().Suggests, ", ")
+	case "Recommends":
+		return strings.Join(p.Deps().Recommends, ", ")
+	case "Provides":
+		return strings.Join(p.Provides, ", ")
+	case "Build-Depends":
+		return strings.Join(p.Deps().BuildDepends, ", ")
+	case "Build-Depends-Indep":
+		return strings.Join(p.Deps().BuildDependsInDep, ", ")
+	default:
+		return p.Extra()[name]
+	}
+	return ""
+}
+
 // MatchesArchitecture checks whether packages matches specified architecture
 func (p *Package) MatchesArchitecture(arch string) bool {
 	if p.Architecture == "all" && arch != "source" {
