@@ -60,7 +60,7 @@ func (s *DownloaderSuite) TearDownTest(c *C) {
 func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 	goroutines := runtime.NumGoroutine()
 
-	d := NewDownloader(10, s.progress)
+	d := NewDownloader(10, 100, s.progress)
 	d.Shutdown()
 
 	// wait for goroutines to shutdown
@@ -72,7 +72,7 @@ func (s *DownloaderSuite) TestStartupShutdown(c *C) {
 }
 
 func (s *DownloaderSuite) TestPauseResume(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 
 	d.Pause()
@@ -80,7 +80,7 @@ func (s *DownloaderSuite) TestPauseResume(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadOK(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -90,7 +90,7 @@ func (s *DownloaderSuite) TestDownloadOK(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -131,7 +131,7 @@ func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownload404(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -141,7 +141,7 @@ func (s *DownloaderSuite) TestDownload404(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -151,7 +151,7 @@ func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadFileError(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 	ch := make(chan error)
 
@@ -161,7 +161,7 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadTemp(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 
 	f, err := DownloadTemp(d, s.url+"/test")
@@ -178,7 +178,7 @@ func (s *DownloaderSuite) TestDownloadTemp(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadTempWithChecksum(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 
 	f, err := DownloadTempWithChecksum(d, s.url+"/test", utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
@@ -191,7 +191,7 @@ func (s *DownloaderSuite) TestDownloadTempWithChecksum(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadTempError(c *C) {
-	d := NewDownloader(2, s.progress)
+	d := NewDownloader(2, 0, s.progress)
 	defer d.Shutdown()
 
 	f, err := DownloadTemp(d, s.url+"/doesntexist")

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"code.google.com/p/mxk/go1/flowcontrol"
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
@@ -21,14 +22,15 @@ var (
 
 // downloaderImpl is implementation of Downloader interface
 type downloaderImpl struct {
-	queue    chan *downloadTask
-	stop     chan bool
-	stopped  chan bool
-	pause    chan bool
-	unpause  chan bool
-	progress aptly.Progress
-	threads  int
-	client   *http.Client
+	queue     chan *downloadTask
+	stop      chan bool
+	stopped   chan bool
+	pause     chan bool
+	unpause   chan bool
+	progress  aptly.Progress
+	aggWriter io.Writer
+	threads   int
+	client    *http.Client
 }
 
 // downloadTask represents single item in queue
@@ -41,8 +43,8 @@ type downloadTask struct {
 }
 
 // NewDownloader creates new instance of Downloader which specified number
-// of threads
-func NewDownloader(threads int, progress aptly.Progress) aptly.Downloader {
+// of threads and download limit in bytes/sec
+func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.Downloader {
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
 		stop:     make(chan bool),
@@ -57,6 +59,13 @@ func NewDownloader(threads int, progress aptly.Progress) aptly.Downloader {
 				Proxy:              http.ProxyFromEnvironment,
 			},
 		},
+	}
+
+	fmt.Printf("downLimit = %v\n", downLimit)
+	if downLimit > 0 {
+		downloader.aggWriter = flowcontrol.NewWriter(progress, downLimit)
+	} else {
+		downloader.aggWriter = progress
 	}
 
 	for i := 0; i < downloader.threads; i++ {
@@ -140,7 +149,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	defer outfile.Close()
 
 	checksummer := utils.NewChecksumWriter()
-	writers := []io.Writer{outfile, downloader.progress}
+	writers := []io.Writer{outfile, downloader.aggWriter}
 
 	if task.expected.Size != -1 {
 		writers = append(writers, checksummer)
