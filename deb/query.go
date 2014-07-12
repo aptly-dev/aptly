@@ -1,5 +1,9 @@
 package deb
 
+import (
+	"path/filepath"
+)
+
 // PackageQuery is interface of predicate on Package
 type PackageQuery interface {
 	// Matches calculates match of condition against package
@@ -109,12 +113,39 @@ func (q *NotQuery) Query(list *PackageList) (result *PackageList) {
 
 // Matches on generic field
 func (q *FieldQuery) Matches(pkg *Package) bool {
-	panic("not implemented yet")
+	if q.Field == "$Version" {
+		return pkg.MatchesDependency(Dependency{Pkg: pkg.Name, Relation: q.Relation, Version: q.Value})
+	}
+
+	field := pkg.GetField(q.Field)
+
+	switch q.Relation {
+	case VersionDontCare:
+		return field != ""
+	case VersionEqual:
+		return field == q.Value
+	case VersionGreater:
+		return field > q.Value
+	case VersionGreaterOrEqual:
+		return field >= q.Value
+	case VersionLess:
+		return field < q.Value
+	case VersionLessOrEqual:
+		return field <= q.Value
+	case VersionPatternMatch:
+		matched, err := filepath.Match(q.Value, field)
+		return err == nil && matched
+	case VersionRegexp:
+		panic("regexp matching not implemented yet")
+
+	}
+	panic("unknown relation")
 }
 
 // Query runs iteration through list
 func (q *FieldQuery) Query(list *PackageList) (result *PackageList) {
-	panic("not implemented yet")
+	result = list.Scan(q)
+	return
 }
 
 // Fast depends on the query
