@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"sort"
@@ -105,7 +106,15 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	toProcess, err := srcList.Filter(args[2:], withDeps, dstList, context.DependencyOptions(), architecturesList)
+	queries := make([]deb.PackageQuery, len(args)-2)
+	for i := 0; i < len(args)-2; i++ {
+		queries[i], err = query.Parse(args[i+2])
+		if err != nil {
+			return fmt.Errorf("unable to %s: %s", command, err)
+		}
+	}
+
+	toProcess, err := srcList.Filter(queries, withDeps, dstList, context.DependencyOptions(), architecturesList)
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}

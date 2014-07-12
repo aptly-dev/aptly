@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -33,8 +34,16 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
+	queries := make([]deb.PackageQuery, len(args)-1)
+	for i := 0; i < len(args)-1; i++ {
+		queries[i], err = query.Parse(args[i+1])
+		if err != nil {
+			return fmt.Errorf("unable to remove: %s", err)
+		}
+	}
+
 	list.PrepareIndex()
-	toRemove, err := list.Filter(args[1:], false, nil, 0, nil)
+	toRemove, err := list.Filter(queries, false, nil, 0, nil)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}

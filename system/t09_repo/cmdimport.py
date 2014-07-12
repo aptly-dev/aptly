@@ -10,7 +10,7 @@ class ImportRepo1Test(BaseTest):
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo add repo1 ${files}"
     ]
-    runCmd = "aptly repo import wheezy-main repo1 nginx unpaper_0.4.2-1_amd64"
+    runCmd = "aptly repo import wheezy-main repo1 'nginx (>= 1.2)' unpaper_0.4.2-1_amd64"
 
     def check(self):
         self.check_output()
