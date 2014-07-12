@@ -200,7 +200,15 @@ class BaseTest(object):
                 raise
 
     def check_cmd_output(self, command, gold_name, match_prepare=None, expected_code=0):
-        self.verify_match(self.get_gold(gold_name), self.run_cmd(command, expected_code=expected_code), match_prepare)
+        try:
+            output = self.run_cmd(command, expected_code=expected_code)
+            self.verify_match(self.get_gold(gold_name), output, match_prepare)
+        except:
+            if self.captureResults:
+                with open(self.get_gold_filename(gold_name), "w") as f:
+                    f.write(output)
+            else:
+                raise
 
     def read_file(self, path):
         with open(os.path.join(os.environ["HOME"], ".aptly", path), "r") as f:
