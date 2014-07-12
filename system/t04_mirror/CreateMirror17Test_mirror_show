@@ -10,10 +10,10 @@ Information from release file:
 Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 Codename: wheezy
 Components: main contrib non-free
-Date: Sat, 26 Apr 2014 09:27:11 UTC
-Description:  Debian 7.5 Released 26 April 2014
+Date: Sat, 12 Jul 2014 10:59:25 UTC
+Description:  Debian 7.6 Released 12 July 2014
 
 Label: Debian
 Origin: Debian
 Suite: stable
-Version: 7.5
+Version: 7.6
