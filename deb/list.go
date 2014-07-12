@@ -352,16 +352,13 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 
 	if dep.Relation == VersionDontCare {
 		for _, p := range l.providesIndex[dep.Pkg] {
-			if p.MatchesArchitecture(dep.Architecture) {
+			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
 				searchResults = append(searchResults, p)
 
 				if !allMatches {
 					break
 				}
 			}
-		}
-		if len(searchResults) != 0 {
-			return
 		}
 	}
 
