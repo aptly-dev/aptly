@@ -219,11 +219,26 @@ class BaseTest(object):
 
     def check_file_contents(self, path, gold_name, match_prepare=None):
         contents = self.read_file(path)
+        try:
 
-        self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
+            self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
+        except:
+            if self.captureResults:
+                with open(self.get_gold_filename(gold_name), "w") as f:
+                    f.write(contents)
+            else:
+                raise
 
     def check_file(self):
-        self.verify_match(self.get_gold(), open(self.checkedFile, "r").read())
+        contents = open(self.checkedFile, "r").read()
+        try:
+            self.verify_match(self.get_gold(), contents)
+        except:
+            if self.captureResults:
+                with open(self.get_gold_filename(), "w") as f:
+                    f.write(contents)
+            else:
+                raise
 
     def check_exists(self, path):
         if not os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):

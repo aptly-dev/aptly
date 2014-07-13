@@ -10,6 +10,7 @@ import (
 type ConfigStructure struct {
 	RootDir                string   `json:"rootDir"`
 	DownloadConcurrency    int      `json:"downloadConcurrency"`
+	DownloadLimit          int64    `json:"downloadSpeedLimit"`
 	Architectures          []string `json:"architectures"`
 	DepFollowSuggests      bool     `json:"dependencyFollowSuggests"`
 	DepFollowRecommends    bool     `json:"dependencyFollowRecommends"`
@@ -26,6 +27,7 @@ type ConfigStructure struct {
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
 	DownloadConcurrency:    4,
+	DownloadLimit:          0,
 	Architectures:          []string{},
 	DepFollowSuggests:      false,
 	DepFollowRecommends:    false,
