@@ -61,7 +61,6 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 		},
 	}
 
-	fmt.Printf("downLimit = %v\n", downLimit)
 	if downLimit > 0 {
 		downloader.aggWriter = flowcontrol.NewWriter(progress, downLimit)
 	} else {
