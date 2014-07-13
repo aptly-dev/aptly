@@ -143,7 +143,16 @@ func (context *AptlyContext) Progress() aptly.Progress {
 // Downloader returns instance of current downloader
 func (context *AptlyContext) Downloader() aptly.Downloader {
 	if context.downloader == nil {
-		context.downloader = http.NewDownloader(context.Config().DownloadConcurrency, context.Progress())
+		var downloadLimit int64
+		limitFlag := context.flags.Lookup("download-limit")
+		if limitFlag != nil {
+			downloadLimit = limitFlag.Value.Get().(int64)
+		}
+		if downloadLimit == 0 {
+			downloadLimit = context.Config().DownloadLimit
+		}
+		context.downloader = http.NewDownloader(context.Config().DownloadConcurrency,
+			downloadLimit*1024, context.Progress())
 	}
 
 	return context.downloader

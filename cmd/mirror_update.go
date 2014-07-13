@@ -70,6 +70,7 @@ Example:
 
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
+	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd
