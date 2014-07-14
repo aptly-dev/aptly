@@ -13,7 +13,8 @@ type itemType int
 const eof = -1
 
 const (
-	itemError itemType = iota // error occurred;
+	itemNull  itemType = iota
+	itemError          // error occurred;
 	// value is text of error
 	itemEOF
 	itemLeftParen  // (
@@ -45,6 +46,12 @@ func (i item) String() string {
 	}
 	if i.typ == itemEOF {
 		return "<EOL>"
+	}
+	if i.typ == itemError {
+		return fmt.Sprintf("error: %s", i.val)
+	}
+	if i.typ == itemNull {
+		return "<NULL>"
 	}
 	return i.val
 }
@@ -199,19 +206,42 @@ func lexMain(l *lexer) stateFn {
 }
 
 func lexString(l *lexer) stateFn {
-	for {
-		r := l.next()
-		if unicode.IsSpace(r) || strings.IndexRune("()|,!{}", r) > 0 {
-			l.backup()
-			l.emit(itemString)
-			return lexMain(l)
+	r := l.next()
+	// quoted string
+	if r == '"' || r == '\'' {
+		quote := r
+		result := ""
+		l.ignore()
+		for {
+			r = l.next()
+			if r == quote {
+				l.ignore()
+				l.items <- item{itemString, result}
+				return lexMain
+			}
+			if r == '\\' {
+				r = l.next()
+			}
+			if r == eof {
+				return l.errorf("unexpected eof in quoted string")
+			}
+			result = result + string(r)
 		}
+	} else {
+		// unquoted string
+		for {
+			if unicode.IsSpace(r) || strings.IndexRune("()|,!{}", r) > 0 {
+				l.backup()
+				l.emit(itemString)
+				return lexMain
+			}
 
-		if r == eof {
-			l.emit(itemString)
-			l.emit(itemEOF)
-			return nil
+			if r == eof {
+				l.emit(itemString)
+				l.emit(itemEOF)
+				return nil
+			}
+			r = l.next()
 		}
 	}
-
 }

@@ -74,4 +74,8 @@ func (s *SyntaxSuite) TestParsingErrors(c *C) {
 	l, _ = lex("query", "!package )")
 	_, err = parse(l)
 	c.Check(err, ErrorMatches, "parsing failed: unexpected token \\): expecting end of query")
+
+	l, _ = lex("query", "'package )")
+	_, err = parse(l)
+	c.Check(err, ErrorMatches, "parsing failed: unexpected token error: unexpected eof in quoted string: expecting field or package name")
 }

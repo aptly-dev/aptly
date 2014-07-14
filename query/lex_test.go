@@ -11,7 +11,7 @@ type LexerSuite struct {
 var _ = Suite(&LexerSuite{})
 
 func (s *LexerSuite) TestLexing(c *C) {
-	_, ch := lex("query", "package (<< 1.3), $Source | !app, data {i386}")
+	_, ch := lex("query", "package (<< 1.3), $Source | !\"app\", 'd\"\\a\\'ta' {i386}")
 
 	c.Check(<-ch, Equals, item{typ: itemString, val: "package"})
 	c.Check(<-ch, Equals, item{typ: itemLeftParen, val: "("})
@@ -24,7 +24,7 @@ func (s *LexerSuite) TestLexing(c *C) {
 	c.Check(<-ch, Equals, item{typ: itemNot, val: "!"})
 	c.Check(<-ch, Equals, item{typ: itemString, val: "app"})
 	c.Check(<-ch, Equals, item{typ: itemAnd, val: ","})
-	c.Check(<-ch, Equals, item{typ: itemString, val: "data"})
+	c.Check(<-ch, Equals, item{typ: itemString, val: "d\"a'ta"})
 	c.Check(<-ch, Equals, item{typ: itemLeftCurly, val: "{"})
 	c.Check(<-ch, Equals, item{typ: itemString, val: "i386"})
 	c.Check(<-ch, Equals, item{typ: itemRightCurly, val: "}"})
@@ -48,4 +48,10 @@ func (s *LexerSuite) TestString(c *C) {
 	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "\"package\"")
 	l.Consume()
 	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "(")
+}
+
+func (s *LexerSuite) TestError(c *C) {
+	l, _ := lex("query", "'package")
+
+	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "error: unexpected eof in quoted string")
 }
