@@ -356,12 +356,12 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	result, err = s.il.Filter([]PackageQuery{&OrQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
 		&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
-	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_i386")
+	c.Check(plString(result), Equals, "app_1.0_s390 app_1.1~bp1_i386 data_1.1~bp1_all")
 
 	result, err = s.il.Filter([]PackageQuery{&AndQuery{&FieldQuery{"Version", VersionGreaterOrEqual, "1.0"},
 		&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
-	c.Check(plString(result), Equals, "app_1.0_s390")
+	c.Check(plString(result), Equals, "app_1.0_s390 data_1.1~bp1_all")
 
 	result, err = s.il.Filter([]PackageQuery{&AndQuery{
 		&FieldQuery{"$Architecture", VersionPatternMatch, "i*6"}, &PkgQuery{"app", "1.1~bp1", "i386"}}}, false, nil, 0, nil)
