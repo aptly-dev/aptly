@@ -122,6 +122,22 @@ func (l *PackageList) ForEach(handler func(*Package) error) error {
 	return err
 }
 
+// ForEachIndexed calls handler for each package in list in indexed order
+func (l *PackageList) ForEachIndexed(handler func(*Package) error) error {
+	if !l.indexed {
+		panic("list not indexed, can't iterate")
+	}
+
+	var err error
+	for _, p := range l.packagesIndex {
+		err = handler(p)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 // Len returns number of packages in the list
 func (l *PackageList) Len() int {
 	return len(l.packages)
@@ -301,7 +317,11 @@ func (l *PackageList) Swap(i, j int) {
 
 func (l *PackageList) lessPackages(iPkg, jPkg *Package) bool {
 	if iPkg.Name == jPkg.Name {
-		return CompareVersions(iPkg.Version, jPkg.Version) == 1
+		cmp := CompareVersions(iPkg.Version, jPkg.Version)
+		if cmp == 0 {
+			return iPkg.Architecture < jPkg.Architecture
+		}
+		return cmp == 1
 	}
 
 	return iPkg.Name < jPkg.Name
