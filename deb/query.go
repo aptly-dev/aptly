@@ -116,6 +116,9 @@ func (q *FieldQuery) Matches(pkg *Package) bool {
 	if q.Field == "$Version" {
 		return pkg.MatchesDependency(Dependency{Pkg: pkg.Name, Relation: q.Relation, Version: q.Value})
 	}
+	if q.Field == "$Architecture" && q.Relation == VersionEqual {
+		return pkg.MatchesArchitecture(q.Value)
+	}
 
 	field := pkg.GetField(q.Field)
 
