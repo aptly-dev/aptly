@@ -78,7 +78,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	// Build architecture query: (arch == "i386" | arch == "amd64" | ...)
-	var archQuery deb.PackageQuery = &deb.FieldQuery{Field: "$Architecture"}
+	var archQuery deb.PackageQuery = &deb.FieldQuery{"$Architecture", deb.VersionEqual, ""}
 	for _, arch := range architecturesList {
 		archQuery = &deb.OrQuery{L: &deb.FieldQuery{"$Architecture", deb.VersionEqual, arch}, R: archQuery}
 	}
