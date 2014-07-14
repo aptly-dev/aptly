@@ -5,10 +5,6 @@ from snapshot:
 and result would be saved as new snapshot snap3.
 Loading packages (56782)...
 Building indexes...
-[!] Dependency lunar-landing [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
-[!] Dependency mars-landing (>= 1.0) [amd64] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
-[!] Dependency lunar-landing [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
-[!] Dependency mars-landing (>= 1.0) [i386] can't be satisfied with source [snap2]: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
 
 Snapshot snap3 successfully created.
 You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"sort"
@@ -76,83 +77,57 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
 	}
 
-	// Initial dependencies out of arguments
-	initialDependencies := make([]deb.Dependency, len(args)-3)
-	for i, arg := range args[3:] {
-		initialDependencies[i], err = deb.ParseDependency(arg)
-		if err != nil {
-			return fmt.Errorf("unable to parse argument: %s", err)
-		}
-	}
-
-	// Perform pull
+	// Build architecture query: (arch == "i386" | arch == "amd64" | ...)
+	var archQuery deb.PackageQuery = &deb.FieldQuery{Field: "$Architecture"}
 	for _, arch := range architecturesList {
-		dependencies := make([]deb.Dependency, len(initialDependencies), 2*len(initialDependencies))
-		for i := range dependencies {
-			dependencies[i] = initialDependencies[i]
-			dependencies[i].Architecture = arch
-		}
-
-		// Go over list of initial dependencies + list of dependencies found
-		for i := 0; i < len(dependencies); i++ {
-			dep := dependencies[i]
-
-			// Search for package that can satisfy dependencies
-			searchResults := sourcePackageList.Search(dep, allMatches)
-			if searchResults == nil {
-				context.Progress().ColoredPrintf("@y[!]@| @!Dependency %s can't be satisfied with source %s@|", &dep, source)
-				continue
-			}
-
-			if !noRemove {
-				// Remove all packages with the same name and architecture
-				for _, pkg := range searchResults {
-					pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
-					for _, p := range pS {
-						packageList.Remove(p)
-						context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
-					}
-				}
-			}
-
-			// Add new discovered package
-			for _, pkg := range searchResults {
-				packageList.Add(pkg)
-				context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
-			}
-
-			if noDeps {
-				continue
-			}
-
-			// Find missing dependencies, for each added package
-			for _, pkg := range searchResults {
-				pL := deb.NewPackageList()
-				pL.Add(pkg)
-
-				var missing []deb.Dependency
-				missing, err = pL.VerifyDependencies(context.DependencyOptions(), []string{arch}, packageList, nil)
-				if err != nil {
-					context.Progress().ColoredPrintf("@y[!]@| @!Error while verifying dependencies for pkg %s: %s@|", pkg, err)
-				}
-
-				// Append missing dependencies to the list of dependencies to satisfy
-				for _, misDep := range missing {
-					found := false
-					for _, d := range dependencies {
-						if d == misDep {
-							found = true
-							break
-						}
-					}
-
-					if !found {
-						dependencies = append(dependencies, misDep)
-					}
-				}
-			}
-		}
+		archQuery = &deb.OrQuery{L: &deb.FieldQuery{"$Architecture", deb.VersionEqual, arch}, R: archQuery}
 	}
+
+	// Initial queries out of arguments
+	queries := make([]deb.PackageQuery, len(args)-3)
+	for i, arg := range args[3:] {
+		queries[i], err = query.Parse(arg)
+		if err != nil {
+			return fmt.Errorf("unable to parse query: %s", err)
+		}
+		// Add architecture filter
+		queries[i] = &deb.AndQuery{queries[i], archQuery}
+	}
+
+	// Filter with dependencies as requested
+	result, err := sourcePackageList.Filter(initialQueries, !noDeps, packageList, context.DependencyOptions(), architecturesList)
+	if err != nil {
+		return fmt.Errorf("unable to pull: %s", err)
+	}
+	result.PrepareIndex()
+
+	alreadySeen := map[string]bool{}
+
+	result.ForEachIndexed(func(pkg *deb.Package) error {
+		key := pkg.Architecture + "_" + pkg.Name
+		_, seen := alreadySeen[key]
+
+		// If we haven't seen such name-architecture pair and were instructed to remove, remove it
+		if !noRemove && !seen {
+			// Remove all packages with the same name and architecture
+			pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+			for _, p := range pS {
+				packageList.Remove(p)
+				context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
+			}
+		}
+
+		// If !allMatches, add only first matching name-arch package
+		if !seen || allMatches {
+			packageList.Add(pkg)
+			context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
+		}
+
+		alreadySeen[key] = true
+
+		return nil
+	})
+	alreadySeen = nil
 
 	if context.flags.Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nNot creating snapshot, as dry run was requested.\n")
