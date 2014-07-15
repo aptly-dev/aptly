@@ -416,7 +416,9 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 		added := result.Len()
 
 		dependencySource := NewPackageList()
-		dependencySource.Append(source)
+		if source != nil {
+			dependencySource.Append(source)
+		}
 		dependencySource.Append(result)
 		dependencySource.PrepareIndex()
 
