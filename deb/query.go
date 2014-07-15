@@ -2,6 +2,7 @@ package deb
 
 import (
 	"path/filepath"
+	"regexp"
 )
 
 // PackageQuery is interface of predicate on Package
@@ -34,6 +35,7 @@ type FieldQuery struct {
 	Field    string
 	Relation int
 	Value    string
+	Regexp   *regexp.Regexp
 }
 
 // PkgQuery is search request against specific package
@@ -114,7 +116,7 @@ func (q *NotQuery) Query(list *PackageList) (result *PackageList) {
 // Matches on generic field
 func (q *FieldQuery) Matches(pkg *Package) bool {
 	if q.Field == "$Version" {
-		return pkg.MatchesDependency(Dependency{Pkg: pkg.Name, Relation: q.Relation, Version: q.Value})
+		return pkg.MatchesDependency(Dependency{Pkg: pkg.Name, Relation: q.Relation, Version: q.Value, Regexp: q.Regexp})
 	}
 	if q.Field == "$Architecture" && q.Relation == VersionEqual {
 		return pkg.MatchesArchitecture(q.Value)
@@ -139,7 +141,7 @@ func (q *FieldQuery) Matches(pkg *Package) bool {
 		matched, err := filepath.Match(q.Value, field)
 		return err == nil && matched
 	case VersionRegexp:
-		panic("regexp matching not implemented yet")
+		return q.Regexp.FindStringIndex(field) != nil
 
 	}
 	panic("unknown relation")

@@ -295,7 +295,7 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 		matched, err := filepath.Match(dep.Version, p.Version)
 		return err == nil && matched
 	case VersionRegexp:
-		panic("regexp matching not implemented yet")
+		return dep.Regexp.FindStringIndex(p.Version) != nil
 	}
 
 	panic("unknown relation")

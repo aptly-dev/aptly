@@ -7,6 +7,7 @@ import (
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
 type PackageSuite struct {
@@ -266,10 +267,16 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-[2"}), Equals, false)
 	c.Check(p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionPatternMatch, Version: "7.40-[34]"}), Equals, false)
 
-	// %
-	c.Check(func() {
-		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*"})
-	}, Panics, "regexp matching not implemented yet")
+	// ~
+	c.Check(
+		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
+			Regexp: regexp.MustCompile("7\\.40-.*")}), Equals, true)
+	c.Check(
+		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
+			Regexp: regexp.MustCompile("40")}), Equals, true)
+	c.Check(
+		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
+			Regexp: regexp.MustCompile("39-.*")}), Equals, false)
 
 	// Provides
 	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Relation: VersionDontCare}), Equals, false)

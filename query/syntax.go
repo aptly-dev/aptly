@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"github.com/smira/aptly/deb"
+	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -135,7 +136,15 @@ func (p *parser) D() deb.PackageQuery {
 	r, _ := utf8.DecodeRuneInString(field)
 	if strings.HasPrefix(field, "$") || unicode.IsUpper(r) {
 		// special field or regular field
-		return &deb.FieldQuery{Field: field, Relation: operatorToRelation(operator), Value: value}
+		q := &deb.FieldQuery{Field: field, Relation: operatorToRelation(operator), Value: value}
+		if q.Relation == deb.VersionRegexp {
+			var err error
+			q.Regexp, err = regexp.Compile(q.Value)
+			if err != nil {
+				panic(fmt.Sprintf("regexp compile failed: %s", err))
+			}
+		}
+		return q
 	} else if operator == 0 && value == "" {
 		if pkg, version, arch, ok := parsePackageRef(field); ok {
 			// query for specific package
@@ -144,11 +153,19 @@ func (p *parser) D() deb.PackageQuery {
 	}
 
 	// regular dependency-like query
-	return &deb.DependencyQuery{Dep: deb.Dependency{
+	q := &deb.DependencyQuery{Dep: deb.Dependency{
 		Pkg:          field,
 		Relation:     operatorToRelation(operator),
 		Version:      value,
 		Architecture: p.ArchCondition()}}
+	if q.Dep.Relation == deb.VersionRegexp {
+		var err error
+		q.Dep.Regexp, err = regexp.Compile(q.Dep.Version)
+		if err != nil {
+			panic(fmt.Sprintf("regexp compile failed: %s", err))
+		}
+	}
+	return q
 }
 
 // condition := '(' <operator> value ')' |

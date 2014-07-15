@@ -2,6 +2,7 @@ package deb
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -188,6 +189,7 @@ type Dependency struct {
 	Relation     int
 	Version      string
 	Architecture string
+	Regexp       *regexp.Regexp
 }
 
 // Hash calculates some predefined unique ID of Dependency

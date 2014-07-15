@@ -3,6 +3,7 @@ package query
 import (
 	"github.com/smira/aptly/deb"
 	. "launchpad.net/gocheck"
+	"regexp"
 )
 
 type SyntaxSuite struct {
@@ -32,13 +33,21 @@ func (s *SyntaxSuite) TestParsing(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(q.(*deb.AndQuery).L, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionDontCare}})
 	c.Check(q.(*deb.AndQuery).R.(*deb.NotQuery).Q.(*deb.OrQuery).L, DeepEquals, &deb.FieldQuery{Field: "Name", Relation: deb.VersionDontCare})
-	c.Check(q.(*deb.AndQuery).R.(*deb.NotQuery).Q.(*deb.OrQuery).R, DeepEquals, &deb.FieldQuery{Field: "$Source", Relation: deb.VersionRegexp, Value: "a.*"})
+	c.Check(q.(*deb.AndQuery).R.(*deb.NotQuery).Q.(*deb.OrQuery).R, DeepEquals, &deb.FieldQuery{Field: "$Source", Relation: deb.VersionRegexp, Value: "a.*",
+		Regexp: regexp.MustCompile("a.*")})
 
 	l, _ = lex("query", "package (> 5.3.7)")
 	q, err = parse(l)
 
 	c.Assert(err, IsNil)
 	c.Check(q, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionGreaterOrEqual, Version: "5.3.7"}})
+
+	l, _ = lex("query", "package (~ 5\\.3.*~dev)")
+	q, err = parse(l)
+
+	c.Assert(err, IsNil)
+	c.Check(q, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionRegexp, Version: "5\\.3.*~dev",
+		Regexp: regexp.MustCompile("5\\.3.*~dev")}})
 
 	l, _ = lex("query", "alien-data_1.3.4~dev_i386")
 	q, err = parse(l)
@@ -78,4 +87,12 @@ func (s *SyntaxSuite) TestParsingErrors(c *C) {
 	l, _ = lex("query", "'package )")
 	_, err = parse(l)
 	c.Check(err, ErrorMatches, "parsing failed: unexpected token error: unexpected eof in quoted string: expecting field or package name")
+
+	l, _ = lex("query", "package (~ 1.2[34)")
+	_, err = parse(l)
+	c.Check(err, ErrorMatches, "parsing failed: regexp compile failed: error parsing regexp: missing closing \\]: `\\[34`")
+
+	l, _ = lex("query", "$Name (~ 1.2[34)")
+	_, err = parse(l)
+	c.Check(err, ErrorMatches, "parsing failed: regexp compile failed: error parsing regexp: missing closing \\]: `\\[34`")
 }
