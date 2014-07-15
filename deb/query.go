@@ -1,8 +1,10 @@
 package deb
 
 import (
+	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 // PackageQuery is interface of predicate on Package
@@ -13,6 +15,8 @@ type PackageQuery interface {
 	Fast() bool
 	// Query performs search on package list
 	Query(list *PackageList) *PackageList
+	// String interface
+	String() string
 }
 
 // OrQuery is L | R
@@ -35,7 +39,7 @@ type FieldQuery struct {
 	Field    string
 	Relation int
 	Value    string
-	Regexp   *regexp.Regexp
+	Regexp   *regexp.Regexp `codec:"-"`
 }
 
 // PkgQuery is search request against specific package
@@ -71,6 +75,11 @@ func (q *OrQuery) Query(list *PackageList) (result *PackageList) {
 	return
 }
 
+// String interface
+func (q *OrQuery) String() string {
+	return fmt.Sprintf("(%s) | (%s)", q.L, q.R)
+}
+
 // Matches if both of L, R matches
 func (q *AndQuery) Matches(pkg *Package) bool {
 	return q.L.Matches(pkg) && q.R.Matches(pkg)
@@ -97,6 +106,11 @@ func (q *AndQuery) Query(list *PackageList) (result *PackageList) {
 	return
 }
 
+// String interface
+func (q *AndQuery) String() string {
+	return fmt.Sprintf("(%s), (%s)", q.L, q.R)
+}
+
 // Matches if not matches
 func (q *NotQuery) Matches(pkg *Package) bool {
 	return !q.Q.Matches(pkg)
@@ -111,6 +125,11 @@ func (q *NotQuery) Fast() bool {
 func (q *NotQuery) Query(list *PackageList) (result *PackageList) {
 	result = list.Scan(q)
 	return
+}
+
+// String interface
+func (q *NotQuery) String() string {
+	return fmt.Sprintf("!(%s)", q.Q)
 }
 
 // Matches on generic field
@@ -141,6 +160,9 @@ func (q *FieldQuery) Matches(pkg *Package) bool {
 		matched, err := filepath.Match(q.Value, field)
 		return err == nil && matched
 	case VersionRegexp:
+		if q.Regexp == nil {
+			q.Regexp = regexp.MustCompile(q.Value)
+		}
 		return q.Regexp.FindStringIndex(field) != nil
 
 	}
@@ -156,6 +178,35 @@ func (q *FieldQuery) Query(list *PackageList) (result *PackageList) {
 // Fast depends on the query
 func (q *FieldQuery) Fast() bool {
 	return false
+}
+
+// String interface
+func (q *FieldQuery) String() string {
+	escape := func(val string) string {
+		if strings.IndexAny(val, "()|,!{} \t\n") != -1 {
+			return "'" + strings.Replace(strings.Replace(val, "\\", "\\\\", -1), "'", "\\'", -1) + "'"
+		}
+		return val
+	}
+
+	var op string
+	switch q.Relation {
+	case VersionEqual:
+		op = "="
+	case VersionGreater:
+		op = ">>"
+	case VersionLess:
+		op = "<<"
+	case VersionRegexp:
+		op = "~"
+	case VersionPatternMatch:
+		op = "%"
+	case VersionGreaterOrEqual:
+		op = ">="
+	case VersionLessOrEqual:
+		op = "<="
+	}
+	return fmt.Sprintf("%s (%s %s)", escape(q.Field), op, escape(q.Value))
 }
 
 // Matches on dependency condition
@@ -178,6 +229,11 @@ func (q *DependencyQuery) Query(list *PackageList) (result *PackageList) {
 	return
 }
 
+// String interface
+func (q *DependencyQuery) String() string {
+	return q.Dep.String()
+}
+
 // Matches on specific properties
 func (q *PkgQuery) Matches(pkg *Package) bool {
 	return pkg.Name == q.Pkg && pkg.Version == q.Version && pkg.Architecture == q.Arch
@@ -198,4 +254,9 @@ func (q *PkgQuery) Query(list *PackageList) (result *PackageList) {
 	}
 
 	return
+}
+
+// String interface
+func (q *PkgQuery) String() string {
+	return fmt.Sprintf("%s_%s_%s", q.Pkg, q.Version, q.Arch)
 }
