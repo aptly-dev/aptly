@@ -43,6 +43,10 @@ type RemoteRepo struct {
 	LastDownloadDate time.Time
 	// Checksums for release files
 	ReleaseFiles map[string]utils.ChecksumInfo
+	// Filter for packages
+	Filter string
+	// FilterWithDeps to include dependencies from filter query
+	FilterWithDeps bool
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -320,7 +324,8 @@ ok:
 }
 
 // Download downloads all repo files
-func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory, packagePool aptly.PackagePool, ignoreMismatch bool) error {
+func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory,
+	packagePool aptly.PackagePool, ignoreMismatch bool, dependencyOptions int, filterQuery PackageQuery) error {
 	list := NewPackageList()
 
 	progress.Printf("Downloading & parsing package files...\n")
@@ -393,6 +398,25 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 		progress.ShutdownBar()
 	}
 
+	var err error
+
+	if repo.Filter != "" {
+		progress.Printf("Applying filter...\n")
+
+		list.PrepareIndex()
+
+		emptyList := NewPackageList()
+		emptyList.PrepareIndex()
+
+		origPackages := list.Len()
+		list, err = list.Filter([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures)
+		if err != nil {
+			return err
+		}
+
+		progress.Printf("Packages filtered: %d -> %d.\n", origPackages, list.Len())
+	}
+
 	progress.Printf("Building download queue...\n")
 
 	// Build download queue
@@ -400,7 +424,7 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 	count := 0
 	downloadSize := int64(0)
 
-	err := list.ForEach(func(p *Package) error {
+	err = list.ForEach(func(p *Package) error {
 		list, err2 := p.DownloadList(packagePool)
 		if err2 != nil {
 			return err2
