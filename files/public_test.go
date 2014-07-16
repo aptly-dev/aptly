@@ -32,13 +32,12 @@ func (s *PublishedStorageSuite) TestMkDir(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *PublishedStorageSuite) TestCreateFile(c *C) {
+func (s *PublishedStorageSuite) TesPutFile(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
 
-	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file.Close()
 
 	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
 	c.Assert(err, IsNil)
@@ -48,13 +47,11 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	err := s.storage.MkDir("ppa/pool/main/a/ab/")
 	c.Assert(err, IsNil)
 
-	file, err := s.storage.CreateFile("ppa/pool/main/a/ab/a.deb")
+	err = s.storage.PutFile("ppa/pool/main/a/ab/a.deb", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file.Close()
 
-	file2, err := s.storage.CreateFile("ppa/pool/main/a/ab/b.deb")
+	err = s.storage.PutFile("ppa/pool/main/a/ab/b.deb", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file2.Close()
 
 	list, err := s.storage.Filelist("ppa/pool/main/")
 	c.Check(err, IsNil)
@@ -69,9 +66,8 @@ func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
 
-	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file.Close()
 
 	err = s.storage.RenameFile("ppa/dists/squeeze/Release", "ppa/dists/squeeze/InRelease")
 	c.Check(err, IsNil)
@@ -84,9 +80,8 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
 
-	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file.Close()
 
 	err = s.storage.RemoveDirs("ppa/dists/", nil)
 
@@ -99,9 +94,8 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
 
-	file, err := s.storage.CreateFile("ppa/dists/squeeze/Release")
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
 	c.Assert(err, IsNil)
-	defer file.Close()
 
 	err = s.storage.Remove("ppa/dists/squeeze/Release")
 

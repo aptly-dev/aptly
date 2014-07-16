@@ -5,7 +5,6 @@ package aptly
 import (
 	"github.com/smira/aptly/utils"
 	"io"
-	"os"
 )
 
 // PackagePool is asbtraction of package pool storage.
@@ -26,12 +25,12 @@ type PackagePool interface {
 
 // PublishedStorage is abstraction of filesystem storing all published repositories
 type PublishedStorage interface {
-	// PublicPath returns root of public part
+	// XXX: REMOVE: PublicPath returns root of public part
 	PublicPath() string
 	// MkDir creates directory recursively under public path
 	MkDir(path string) error
-	// CreateFile creates file for writing under public path
-	CreateFile(path string) (*os.File, error)
+	// PutFile puts file into published storage at specified path
+	PutFile(path string, sourceFilename string) error
 	// RemoveDirs removes directory structure under public path
 	RemoveDirs(path string, progress Progress) error
 	// Remove removes single file under public path
@@ -40,8 +39,6 @@ type PublishedStorage interface {
 	LinkFromPool(publishedDirectory string, sourcePool PackagePool, sourcePath string) error
 	// Filelist returns list of files under prefix
 	Filelist(prefix string) ([]string, error)
-	// ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
-	ChecksumsForFile(path string) (utils.ChecksumInfo, error)
 	// RenameFile renames (moves) file
 	RenameFile(oldName, newName string) error
 }

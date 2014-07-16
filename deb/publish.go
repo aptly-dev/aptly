@@ -9,6 +9,7 @@ import (
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -432,6 +433,13 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		progress.Printf("Generating metadata files and linking package files...\n")
 	}
 
+	var tempDir string
+	tempDir, err = ioutil.TempDir(os.TempDir(), "aptly")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
 	for component, list := range lists {
 		var relativePath string
 
@@ -452,13 +460,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 			}
 
 			var packagesFile *os.File
-			packagesFile, err = publishedStorage.CreateFile(filepath.Join(basePath, relativePath+suffix))
-			if err != nil {
-				return fmt.Errorf("unable to creates Packages file: %s", err)
-			}
 
-			if suffix != "" {
-				renameMap[filepath.Join(basePath, relativePath+suffix)] = filepath.Join(basePath, relativePath)
+			packagesFileName := filepath.Join(tempDir, fmt.Sprintf("pkgs_%s_%s", component, arch))
+			packagesFile, err = os.Create(packagesFileName)
+			if err != nil {
+				return fmt.Errorf("unable to create temporary Packages file: %s", err)
 			}
 
 			bufWriter := bufio.NewWriter(packagesFile)
@@ -505,31 +511,26 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 				return fmt.Errorf("unable to compress Packages files: %s", err)
 			}
 
-			if suffix != "" {
-				renameMap[filepath.Join(basePath, relativePath+suffix+".gz")] = filepath.Join(basePath, relativePath+".gz")
-				renameMap[filepath.Join(basePath, relativePath+suffix+".bz2")] = filepath.Join(basePath, relativePath+".bz2")
-			}
-
 			packagesFile.Close()
 
-			var checksumInfo utils.ChecksumInfo
-			checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+suffix))
-			if err != nil {
-				return fmt.Errorf("unable to collect checksums: %s", err)
-			}
-			generatedFiles[relativePath] = checksumInfo
+			for _, ext := range []string{"", ".gz", ".bz2"} {
+				var checksumInfo utils.ChecksumInfo
 
-			checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+suffix+".gz"))
-			if err != nil {
-				return fmt.Errorf("unable to collect checksums: %s", err)
-			}
-			generatedFiles[relativePath+".gz"] = checksumInfo
+				checksumInfo, err = utils.ChecksumsForFile(packagesFileName + ext)
+				if err != nil {
+					return fmt.Errorf("unable to collect checksums: %s", err)
+				}
+				generatedFiles[relativePath+ext] = checksumInfo
 
-			checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+suffix+".bz2"))
-			if err != nil {
-				return fmt.Errorf("unable to collect checksums: %s", err)
+				err = publishedStorage.PutFile(filepath.Join(basePath, relativePath+suffix+ext), packagesFileName+ext)
+				if err != nil {
+					return fmt.Errorf("unable to publish file: %s", err)
+				}
+
+				if suffix != "" {
+					renameMap[filepath.Join(basePath, relativePath+suffix+ext)] = filepath.Join(basePath, relativePath+ext)
+				}
 			}
-			generatedFiles[relativePath+".bz2"] = checksumInfo
 
 			if progress != nil {
 				progress.ShutdownBar()
@@ -552,13 +553,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 			}
 
 			var file *os.File
-			file, err = publishedStorage.CreateFile(filepath.Join(basePath, relativePath+suffix))
-			if err != nil {
-				return fmt.Errorf("unable to create Release file: %s", err)
-			}
 
-			if suffix != "" {
-				renameMap[filepath.Join(basePath, relativePath+suffix)] = filepath.Join(basePath, relativePath)
+			fileName := filepath.Join(tempDir, fmt.Sprintf("release_%s_%s", component, arch))
+			file, err = os.Create(fileName)
+			if err != nil {
+				return fmt.Errorf("unable to create temporary Release file: %s", err)
 			}
 
 			bufWriter := bufio.NewWriter(file)
@@ -576,11 +575,22 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 			file.Close()
 
 			var checksumInfo utils.ChecksumInfo
-			checksumInfo, err = publishedStorage.ChecksumsForFile(filepath.Join(basePath, relativePath+suffix))
+			checksumInfo, err = utils.ChecksumsForFile(fileName)
 			if err != nil {
 				return fmt.Errorf("unable to collect checksums: %s", err)
 			}
 			generatedFiles[relativePath] = checksumInfo
+
+			err = publishedStorage.PutFile(filepath.Join(basePath, relativePath+suffix), fileName)
+			if err != nil {
+				file.Close()
+				return fmt.Errorf("unable to publish file: %s", err)
+			}
+
+			if suffix != "" {
+				renameMap[filepath.Join(basePath, relativePath+suffix)] = filepath.Join(basePath, relativePath)
+			}
+
 		}
 	}
 
@@ -603,13 +613,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
 	}
 
-	releaseFile, err := publishedStorage.CreateFile(filepath.Join(basePath, "Release"+suffix))
+	var releaseFile *os.File
+	releaseFilename := filepath.Join(tempDir, "Release")
+	releaseFile, err = os.Create(releaseFilename)
 	if err != nil {
-		return fmt.Errorf("unable to create Release file: %s", err)
-	}
-
-	if suffix != "" {
-		renameMap[filepath.Join(basePath, "Release"+suffix)] = filepath.Join(basePath, "Release")
+		return fmt.Errorf("unable to create temporary Release file: %s", err)
 	}
 
 	bufWriter := bufio.NewWriter(releaseFile)
@@ -624,8 +632,16 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 		return fmt.Errorf("unable to create Release file: %s", err)
 	}
 
-	releaseFilename := releaseFile.Name()
 	releaseFile.Close()
+
+	if suffix != "" {
+		renameMap[filepath.Join(basePath, "Release"+suffix)] = filepath.Join(basePath, "Release")
+	}
+
+	err = publishedStorage.PutFile(filepath.Join(basePath, "Release"+suffix), releaseFilename)
+	if err != nil {
+		return fmt.Errorf("unable to publish file: %s", err)
+	}
 
 	// Signing files might output to console, so flush progress writer first
 	if progress != nil {
@@ -648,6 +664,16 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 			renameMap[filepath.Join(basePath, "InRelease"+suffix)] = filepath.Join(basePath, "InRelease")
 		}
 
+		err = publishedStorage.PutFile(filepath.Join(basePath, "Release"+suffix+".gpg"), releaseFilename+".gpg")
+		if err != nil {
+			return fmt.Errorf("unable to publish file: %s", err)
+		}
+
+		err = publishedStorage.PutFile(filepath.Join(basePath, "InRelease"+suffix),
+			filepath.Join(filepath.Dir(releaseFilename), "InRelease"+suffix))
+		if err != nil {
+			return fmt.Errorf("unable to publish file: %s", err)
+		}
 	}
 
 	for oldName, newName := range renameMap {

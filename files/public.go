@@ -3,7 +3,7 @@ package files
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"io"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -34,9 +34,26 @@ func (storage *PublishedStorage) MkDir(path string) error {
 	return os.MkdirAll(filepath.Join(storage.rootPath, path), 0755)
 }
 
-// CreateFile creates file for writing under public path
-func (storage *PublishedStorage) CreateFile(path string) (*os.File, error) {
-	return os.Create(filepath.Join(storage.rootPath, path))
+// PutFile puts file into published storage at specified path
+func (storage *PublishedStorage) PutFile(path string, sourceFilename string) error {
+	var (
+		source, f *os.File
+		err       error
+	)
+	source, err = os.Open(sourceFilename)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	f, err = os.Create(filepath.Join(storage.rootPath, path))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, source)
+	return err
 }
 
 // Remove removes single file under public path
@@ -117,11 +134,6 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	}
 
 	return result, err
-}
-
-// ChecksumsForFile proxies requests to utils.ChecksumsForFile, joining public path
-func (storage *PublishedStorage) ChecksumsForFile(path string) (utils.ChecksumInfo, error) {
-	return utils.ChecksumsForFile(filepath.Join(storage.rootPath, path))
 }
 
 // RenameFile renames (moves) file

@@ -1,8 +1,8 @@
 Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)
 Loading packages...
 Generating metadata files and linking package files...
-Signing file '${HOME}/.aptly/public/dists/maverick/Release' with gpg, please enter your passphrase when prompted:
-Clearsigning file '${HOME}/.aptly/public/dists/maverick/Release' with gpg, please enter your passphrase when prompted:
+Signing file 'Release' with gpg, please enter your passphrase when prompted:
+Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
 
 Local repo local-repo has been successfully published.
 Please setup your webserver to serve directory '${HOME}/.aptly/public' with autoindexing.

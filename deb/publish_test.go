@@ -7,6 +7,7 @@ import (
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
 	"github.com/ugorji/go/codec"
+	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
@@ -38,11 +39,11 @@ func (n *NullSigner) SetKeyRing(keyring, secretKeyring string) {
 }
 
 func (n *NullSigner) DetachedSign(source string, destination string) error {
-	return nil
+	return ioutil.WriteFile(destination, []byte{}, 0644)
 }
 
 func (n *NullSigner) ClearSign(source string, destination string) error {
-	return nil
+	return ioutil.WriteFile(destination, []byte{}, 0644)
 }
 
 type PublishedRepoSuite struct {
