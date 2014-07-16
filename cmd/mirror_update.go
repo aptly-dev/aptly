@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -37,7 +39,17 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = repo.Download(context.Progress(), context.Downloader(), context.CollectionFactory(), context.PackagePool(), ignoreMismatch)
+	var filterQuery deb.PackageQuery
+
+	if repo.Filter != "" {
+		filterQuery, err = query.Parse(repo.Filter)
+		if err != nil {
+			return fmt.Errorf("unable to update: %s", err)
+		}
+	}
+
+	err = repo.Download(context.Progress(), context.Downloader(), context.CollectionFactory(), context.PackagePool(), ignoreMismatch,
+		context.DependencyOptions(), filterQuery)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
