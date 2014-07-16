@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -83,7 +84,7 @@ func (g *GpgSigner) Init() error {
 
 // DetachedSign signs file with detached signature in ASCII format
 func (g *GpgSigner) DetachedSign(source string, destination string) error {
-	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", source)
+	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
 
 	args := []string{"-o", destination, "--armor", "--yes"}
 	args = append(args, g.gpgArgs()...)
@@ -97,7 +98,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 
 // ClearSign clear-signs the file
 func (g *GpgSigner) ClearSign(source string, destination string) error {
-	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", source)
+	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
 	args := []string{"-o", destination, "--yes"}
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--clearsign", source)
