@@ -251,3 +251,25 @@ class CreateMirror21Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror21", "mirror_show", match_prepare=removeSHA512)
+
+
+class CreateMirror22Test(BaseTest):
+    """
+    create mirror: mirror with filter
+    """
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror22 http://security.debian.org/ wheezy/updates main"
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror22", "mirror_show", match_prepare=removeDates)
+
+
+class CreateMirror23Test(BaseTest):
+    """
+    create mirror: mirror with wrong filter
+    """
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://security.debian.org/ wheezy/updates main"
+    expectedCode = 1

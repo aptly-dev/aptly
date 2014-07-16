@@ -1,0 +1,4 @@
+Downloading http://security.debian.org/dists/wheezy/updates/Release...
+
+Mirror [mirror22]: http://security.debian.org/ wheezy/updates successfully added.
+You can run 'aptly mirror update mirror22' to download repository contents.
