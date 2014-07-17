@@ -9,8 +9,8 @@ import (
 )
 
 type PublishedStorageSuite struct {
-	srv                       *s3test.Server
-	storage, prefixed_storage *PublishedStorage
+	srv                      *s3test.Server
+	storage, prefixedStorage *PublishedStorage
 }
 
 var _ = Suite(&PublishedStorageSuite{})
@@ -25,7 +25,7 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "")
 	c.Assert(err, IsNil)
 
-	s.prefixed_storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala")
+	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala")
 	c.Assert(err, IsNil)
 
 	err = s.storage.s3.Bucket("test").PutBucket("private")
@@ -54,7 +54,7 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	c.Check(err, IsNil)
 	c.Check(data, DeepEquals, []byte("welcome to s3!"))
 
-	err = s.prefixed_storage.PutFile("a/b.txt", filepath.Join(dir, "a"))
+	err = s.prefixedStorage.PutFile("a/b.txt", filepath.Join(dir, "a"))
 	c.Check(err, IsNil)
 
 	data, err = s.storage.bucket.Get("lala/a/b.txt")
@@ -81,7 +81,7 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{})
 
-	list, err = s.prefixed_storage.Filelist("")
+	list, err = s.prefixedStorage.Filelist("")
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"a", "b", "c"})
 }

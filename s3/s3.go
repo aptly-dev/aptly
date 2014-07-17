@@ -1,2 +1,2 @@
-// Package files handles publishing to S3
+// Package s3 handles publishing to Amazon S3
 package s3

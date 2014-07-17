@@ -23,6 +23,7 @@ var (
 	_ aptly.PublishedStorage = (*PublishedStorage)(nil)
 )
 
+// NewPublishedStorageRaw creates published storage from raw aws credentials
 func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix string) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
@@ -163,14 +164,14 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		last_key := ""
+		lastKey := ""
 		for _, key := range contents.Contents {
 			if prefix == "" {
 				result = append(result, key.Key)
 			} else {
 				result = append(result, key.Key[len(prefix):])
 			}
-			last_key = key.Key
+			lastKey = key.Key
 		}
 		if contents.IsTruncated {
 			marker = contents.NextMarker
@@ -179,7 +180,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 				// NextMarker and it is truncated, you can use the value of the
 				// last Key in the response as the marker in the subsequent
 				// request to get the next set of object keys.
-				marker = last_key
+				marker = lastKey
 			}
 		} else {
 			break
