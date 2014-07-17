@@ -153,7 +153,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		err = ioutil.WriteFile(t.sourcePath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
 
-		err = s.storage.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), pool, t.sourcePath)
+		err = s.storage.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), pool, t.sourcePath, "")
 		c.Assert(err, IsNil)
 
 		st, err := os.Stat(filepath.Join(s.storage.rootPath, t.prefix, t.expectedFilename))
@@ -171,6 +171,6 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	err = ioutil.WriteFile(sourcePath, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "")
 	c.Check(err, ErrorMatches, ".*file already exists and is different")
 }

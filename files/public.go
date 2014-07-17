@@ -78,7 +78,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool, sourcePath string) error {
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool, sourcePath, sourceMD5 string) error {
 	// verify that package pool is local pool is filesystem pool
 	_ = sourcePool.(*PackagePool)
 
