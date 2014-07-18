@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
@@ -83,7 +84,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	publicPath := context.PublishedStorage().PublicPath()
+	publicPath := context.PublishedStorage().(aptly.LocalPublishedStorage).PublicPath()
 	ShutdownContext()
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)

@@ -51,11 +51,6 @@ func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefi
 	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix)
 }
 
-// PublicPath returns root of public part
-func (storage *PublishedStorage) PublicPath() string {
-	panic("never would be implemented")
-}
-
 // MkDir creates directory recursively under public path
 func (storage *PublishedStorage) MkDir(path string) error {
 	// no op for S3

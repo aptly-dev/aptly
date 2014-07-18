@@ -50,7 +50,7 @@ type PublishedRepoSuite struct {
 	PackageListMixinSuite
 	repo, repo2, repo3, repo4 *PublishedRepo
 	root                      string
-	publishedStorage          aptly.PublishedStorage
+	publishedStorage          *files.PublishedStorage
 	packagePool               aptly.PackagePool
 	localRepo                 *LocalRepo
 	snapshot, snapshot2       *Snapshot
@@ -560,7 +560,7 @@ type PublishedRepoRemoveSuite struct {
 	snapshotCollection         *SnapshotCollection
 	collection                 *PublishedRepoCollection
 	root                       string
-	publishedStorage           aptly.PublishedStorage
+	publishedStorage           *files.PublishedStorage
 	snap1                      *Snapshot
 	repo1, repo2, repo3, repo4 *PublishedRepo
 }

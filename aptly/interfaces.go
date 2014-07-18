@@ -25,8 +25,6 @@ type PackagePool interface {
 
 // PublishedStorage is abstraction of filesystem storing all published repositories
 type PublishedStorage interface {
-	// XXX: REMOVE: PublicPath returns root of public part
-	PublicPath() string
 	// MkDir creates directory recursively under public path
 	MkDir(path string) error
 	// PutFile puts file into published storage at specified path
@@ -41,6 +39,12 @@ type PublishedStorage interface {
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file
 	RenameFile(oldName, newName string) error
+}
+
+// LocalPublishedStorage is published storage on local filesystem
+type LocalPublishedStorage interface {
+	// PublicPath returns root of public part
+	PublicPath() string
 }
 
 // Progress is a progress displaying entity, it allows progress bars & simple prints

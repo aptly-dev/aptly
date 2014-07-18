@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
@@ -146,8 +147,13 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		prefix += "/"
 	}
 
-	context.Progress().Printf("\n%s been successfully published.\nPlease setup your webserver to serve directory '%s' with autoindexing.\n",
-		message, context.PublishedStorage().PublicPath())
+	context.Progress().Printf("\n%s been successfully published.\n", message)
+
+	if localStorage, ok := context.PublishedStorage().(aptly.LocalPublishedStorage); ok {
+		context.Progress().Printf("Please setup your webserver to serve directory '%s' with autoindexing.\n",
+			localStorage.PublicPath())
+	}
+
 	context.Progress().Printf("Now you can add following line to apt sources:\n")
 	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
 	if utils.StrSliceHasItem(published.Architectures, "source") {

@@ -14,9 +14,10 @@ type PublishedStorage struct {
 	rootPath string
 }
 
-// Check interface
+// Check interfaces
 var (
-	_ aptly.PublishedStorage = (*PublishedStorage)(nil)
+	_ aptly.PublishedStorage      = (*PublishedStorage)(nil)
+	_ aptly.LocalPublishedStorage = (*PublishedStorage)(nil)
 )
 
 // NewPublishedStorage creates new instance of PublishedStorage which specified root
