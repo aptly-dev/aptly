@@ -29,6 +29,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 
 	s.config.RootDir = "/tmp/aptly"
 	s.config.DownloadConcurrency = 5
+	s.config.S3PublishRoots = map[string]S3PublishRoot{"test": S3PublishRoot{
+		Region: "us-east-1",
+		Bucket: "repo"}}
 
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
@@ -54,7 +57,17 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"gpgDisableVerify\": false,\n"+
 		"  \"downloadSourcePackages\": false,\n"+
 		"  \"ppaDistributorID\": \"\",\n"+
-		"  \"ppaCodename\": \"\"\n"+
+		"  \"ppaCodename\": \"\",\n"+
+		"  \"S3PublishRoots\": {\n"+
+		"    \"test\": {\n"+
+		"      \"region\": \"us-east-1\",\n"+
+		"      \"bucket\": \"repo\",\n"+
+		"      \"awsAccessKeyID\": \"\",\n"+
+		"      \"awsSecretAccessKey\": \"\",\n"+
+		"      \"prefix\": \"\",\n"+
+		"      \"acl\": \"\"\n"+
+		"    }\n"+
+		"  }\n"+
 		"}")
 }
 

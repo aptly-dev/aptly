@@ -8,19 +8,29 @@ import (
 
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct {
-	RootDir                string   `json:"rootDir"`
-	DownloadConcurrency    int      `json:"downloadConcurrency"`
-	DownloadLimit          int64    `json:"downloadSpeedLimit"`
-	Architectures          []string `json:"architectures"`
-	DepFollowSuggests      bool     `json:"dependencyFollowSuggests"`
-	DepFollowRecommends    bool     `json:"dependencyFollowRecommends"`
-	DepFollowAllVariants   bool     `json:"dependencyFollowAllVariants"`
-	DepFollowSource        bool     `json:"dependencyFollowSource"`
-	GpgDisableSign         bool     `json:"gpgDisableSign"`
-	GpgDisableVerify       bool     `json:"gpgDisableVerify"`
-	DownloadSourcePackages bool     `json:"downloadSourcePackages"`
-	PpaDistributorID       string   `json:"ppaDistributorID"`
-	PpaCodename            string   `json:"ppaCodename"`
+	RootDir                string                   `json:"rootDir"`
+	DownloadConcurrency    int                      `json:"downloadConcurrency"`
+	DownloadLimit          int64                    `json:"downloadSpeedLimit"`
+	Architectures          []string                 `json:"architectures"`
+	DepFollowSuggests      bool                     `json:"dependencyFollowSuggests"`
+	DepFollowRecommends    bool                     `json:"dependencyFollowRecommends"`
+	DepFollowAllVariants   bool                     `json:"dependencyFollowAllVariants"`
+	DepFollowSource        bool                     `json:"dependencyFollowSource"`
+	GpgDisableSign         bool                     `json:"gpgDisableSign"`
+	GpgDisableVerify       bool                     `json:"gpgDisableVerify"`
+	DownloadSourcePackages bool                     `json:"downloadSourcePackages"`
+	PpaDistributorID       string                   `json:"ppaDistributorID"`
+	PpaCodename            string                   `json:"ppaCodename"`
+	S3PublishRoots         map[string]S3PublishRoot `json:"S3PublishRoots"`
+}
+
+type S3PublishRoot struct {
+	Region          string `json:"region"`
+	Bucket          string `json:"bucket"`
+	AccessKeyID     string `json:"awsAccessKeyID"`
+	SecretAccessKey string `json:"awsSecretAccessKey"`
+	Prefix          string `json:"prefix"`
+	ACL             string `json:"acl"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -38,6 +48,7 @@ var Config = ConfigStructure{
 	DownloadSourcePackages: false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
+	S3PublishRoots:         map[string]S3PublishRoot{},
 }
 
 // LoadConfig loads configuration from json file
