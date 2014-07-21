@@ -84,7 +84,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	publicPath := context.PublishedStorage().(aptly.LocalPublishedStorage).PublicPath()
+	publicPath := context.GetPublishedStorage("").(aptly.LocalPublishedStorage).PublicPath()
 	ShutdownContext()
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)

@@ -13,13 +13,15 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 	}
 
 	distribution := args[0]
-	prefix := "."
+	param := "."
 
 	if len(args) == 2 {
-		prefix = args[1]
+		param = args[1]
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().Remove(context.PublishedStorage(), prefix, distribution,
+	storage, prefix := parsePrefix(param)
+
+	err = context.CollectionFactory().PublishedRepoCollection().Remove(context, storage, prefix, distribution,
 		context.CollectionFactory(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)

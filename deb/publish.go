@@ -865,14 +865,17 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 	return
 }
 
-// ByPrefixDistribution looks up repository by storage, prefix & distribution
+// ByStoragePrefixDistribution looks up repository by storage, prefix & distribution
 func (collection *PublishedRepoCollection) ByStoragePrefixDistribution(storage, prefix, distribution string) (*PublishedRepo, error) {
 	for _, r := range collection.list {
 		if r.Prefix == prefix && r.Distribution == distribution && r.Storage == storage {
 			return r, nil
 		}
 	}
-	return nil, fmt.Errorf("published repo with storage/prefix/distribution %s/%s/%s not found", storage, prefix, distribution)
+	if storage != "" {
+		storage += ":"
+	}
+	return nil, fmt.Errorf("published repo with storage:prefix/distribution %s%s/%s not found", storage, prefix, distribution)
 }
 
 // ByUUID looks up repository by uuid

@@ -8,6 +8,7 @@ import (
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/s3"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -28,7 +29,7 @@ type AptlyContext struct {
 	downloader        aptly.Downloader
 	database          database.Storage
 	packagePool       aptly.PackagePool
-	publishedStorage  aptly.PublishedStorage
+	publishedStorages map[string]aptly.PublishedStorage
 	collectionFactory *deb.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
@@ -39,6 +40,9 @@ type AptlyContext struct {
 }
 
 var context *AptlyContext
+
+// Check interface
+var _ aptly.PublishedStorageProvider = &AptlyContext{}
 
 // FatalError is type for panicking to abort execution with non-zero
 // exit code and print meaningful explanation
@@ -200,12 +204,30 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 }
 
 // PublishedStorage returns instance of PublishedStorage
-func (context *AptlyContext) PublishedStorage() aptly.PublishedStorage {
-	if context.publishedStorage == nil {
-		context.publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
+func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
+	publishedStorage, ok := context.publishedStorages[name]
+	if !ok {
+		if name == "" {
+			publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
+		} else if strings.HasPrefix(name, "s3:") {
+			params, ok := context.Config().S3PublishRoots[name[4:]]
+			if !ok {
+				Fatal(fmt.Errorf("published S3 storage %v not configured", name[4:]))
+			}
+
+			var err error
+			publishedStorage, err = s3.NewPublishedStorage(params.AccessKeyID, params.SecretAccessKey,
+				params.Region, params.Bucket, params.ACL, params.Prefix)
+			if err != nil {
+				Fatal(err)
+			}
+		} else {
+			Fatal(fmt.Errorf("unknown published storage format: %v", name))
+		}
+		context.publishedStorages[name] = publishedStorage
 	}
 
-	return context.publishedStorage
+	return publishedStorage
 }
 
 // ShutdownContext shuts context down
@@ -241,7 +263,11 @@ func ShutdownContext() {
 func InitContext(flags *flag.FlagSet) error {
 	var err error
 
-	context = &AptlyContext{flags: flags, dependencyOptions: -1}
+	context = &AptlyContext{
+		flags:             flags,
+		dependencyOptions: -1,
+		publishedStorages: map[string]aptly.PublishedStorage{},
+	}
 
 	if aptly.EnableDebug {
 		cpuprofile := flags.Lookup("cpuprofile").Value.String()

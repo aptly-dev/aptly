@@ -19,7 +19,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	}
 
 	distribution := args[0]
-	prefix := "."
+	param := "."
 
 	var (
 		names    []string
@@ -27,15 +27,17 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	)
 
 	if len(args) == len(components)+2 {
-		prefix = args[1]
+		param = args[1]
 		names = args[2:]
 	} else {
 		names = args[1:]
 	}
 
+	storage, prefix := parsePrefix(param)
+
 	var published *deb.PublishedRepo
 
-	published, err = context.CollectionFactory().PublishedRepoCollection().ByPrefixDistribution(prefix, distribution)
+	published, err = context.CollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -77,7 +79,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	err = published.Publish(context.PackagePool(), context.PublishedStorage(), context.CollectionFactory(), signer, context.Progress())
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -88,7 +90,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	}
 
 	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-		context.PublishedStorage(), context.CollectionFactory(), context.Progress())
+		context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}

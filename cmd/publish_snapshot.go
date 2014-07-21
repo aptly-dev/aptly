@@ -20,13 +20,14 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	var prefix string
+	var param string
 	if len(args) == len(components)+1 {
-		prefix = args[len(components)]
+		param = args[len(components)]
 		args = args[0 : len(args)-1]
 	} else {
-		prefix = ""
+		param = ""
 	}
+	storage, prefix := parsePrefix(param)
 
 	var (
 		sources = []interface{}{}
@@ -111,7 +112,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	distribution := context.flags.Lookup("distribution").Value.String()
 
-	published, err := deb.NewPublishedRepo(prefix, distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
+	published, err := deb.NewPublishedRepo(storage, prefix, distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -129,7 +130,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	err = published.Publish(context.PackagePool(), context.PublishedStorage(), context.CollectionFactory(), signer, context.Progress())
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -149,7 +150,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("\n%s been successfully published.\n", message)
 
-	if localStorage, ok := context.PublishedStorage().(aptly.LocalPublishedStorage); ok {
+	if localStorage, ok := context.GetPublishedStorage(storage).(aptly.LocalPublishedStorage); ok {
 		context.Progress().Printf("Please setup your webserver to serve directory '%s' with autoindexing.\n",
 			localStorage.PublicPath())
 	}
