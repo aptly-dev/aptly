@@ -159,14 +159,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 			return fmt.Errorf("error getting information about %s from %s: %s", poolPath, storage, err)
 		}
 	} else {
-		fmt.Printf("dstKey.Etag = %#v, sourceMD5 = %#v\n", dstKey.ETag, sourceMD5)
 		if strings.Replace(dstKey.ETag, "\"", "", -1) == sourceMD5 {
-			fmt.Printf("skipping upload\n")
 			return nil
 		}
 	}
 
-	fmt.Printf("uploading\n")
 	return storage.PutFile(relPath, sourcePath)
 }
 
