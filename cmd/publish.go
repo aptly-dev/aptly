@@ -28,8 +28,11 @@ func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
 func parsePrefix(param string) (storage, prefix string) {
 	i := strings.LastIndex(param, ":")
 	if i != -1 {
-		storage = param[:i+1]
+		storage = param[:i]
 		prefix = param[i+1:]
+		if prefix == "" {
+			prefix = "."
+		}
 	} else {
 		prefix = param
 	}

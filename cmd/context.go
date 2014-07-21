@@ -210,9 +210,9 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		if name == "" {
 			publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
 		} else if strings.HasPrefix(name, "s3:") {
-			params, ok := context.Config().S3PublishRoots[name[4:]]
+			params, ok := context.Config().S3PublishRoots[name[3:]]
 			if !ok {
-				Fatal(fmt.Errorf("published S3 storage %v not configured", name[4:]))
+				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
 			}
 
 			var err error
