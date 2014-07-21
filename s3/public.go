@@ -8,6 +8,7 @@ import (
 	"github.com/smira/aptly/files"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
@@ -51,6 +52,11 @@ func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefi
 	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix)
 }
 
+// String
+func (storage *PublishedStorage) String() string {
+	return fmt.Sprintf("S3: %s:%s/%s", storage.s3.Region.Name, storage.bucket.Name, storage.prefix)
+}
+
 // MkDir creates directory recursively under public path
 func (storage *PublishedStorage) MkDir(path string) error {
 	// no op for S3
@@ -75,12 +81,20 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 		return err
 	}
 
-	return storage.bucket.PutReader(filepath.Join(storage.prefix, path), source, fi.Size(), "binary/octet-stream", storage.acl)
+	err = storage.bucket.PutReader(filepath.Join(storage.prefix, path), source, fi.Size(), "binary/octet-stream", storage.acl)
+	if err != nil {
+		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+	}
+	return nil
 }
 
 // Remove removes single file under public path
 func (storage *PublishedStorage) Remove(path string) error {
-	return storage.bucket.Del(filepath.Join(storage.prefix, path))
+	err := storage.bucket.Del(filepath.Join(storage.prefix, path))
+	if err != nil {
+		return fmt.Errorf("error deleting %s from %s: %s", path, storage, err)
+	}
+	return nil
 }
 
 // RemoveDirs removes directory structure under public path
@@ -88,6 +102,10 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 	const page = 1000
 
 	filelist, err := storage.Filelist(path)
+	if err != nil {
+		return err
+	}
+
 	numParts := (len(filelist) + page - 1) / page
 
 	for i := 0; i < numParts; i++ {
@@ -104,6 +122,9 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 		}
 
 		err = storage.bucket.MultiDel(paths)
+		if err != nil {
+			return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
+		}
 		if err != nil {
 			return err
 		}
@@ -135,14 +156,17 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	dstKey, err = storage.bucket.GetKey(poolPath)
 	if err != nil {
 		if s3err, ok := err.(*s3.Error); !ok || s3err.StatusCode != 404 {
-			return err
+			return fmt.Errorf("error getting information about %s from %s: %s", poolPath, storage, err)
 		}
 	} else {
-		if dstKey.ETag == sourceMD5 {
+		fmt.Printf("dstKey.Etag = %#v, sourceMD5 = %#v\n", dstKey.ETag, sourceMD5)
+		if strings.Replace(dstKey.ETag, "\"", "", -1) == sourceMD5 {
+			fmt.Printf("skipping upload\n")
 			return nil
 		}
 	}
 
+	fmt.Printf("uploading\n")
 	return storage.PutFile(relPath, sourcePath)
 }
 
@@ -157,7 +181,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	for {
 		contents, err := storage.bucket.List(prefix, "", marker, 1000)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
 		}
 		lastKey := ""
 		for _, key := range contents.Contents {
