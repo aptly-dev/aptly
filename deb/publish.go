@@ -31,7 +31,8 @@ type repoSourceItem struct {
 type PublishedRepo struct {
 	// Internal unique ID
 	UUID string
-	// Prefix & distribution should be unique across all published repositories
+	// Storage & Prefix & distribution should be unique across all published repositories
+	Storage      string
 	Prefix       string
 	Distribution string
 	Origin       string
@@ -116,13 +117,15 @@ func walkUpTree(source interface{}, collectionFactory *CollectionFactory) (rootD
 
 // NewPublishedRepo creates new published repository
 //
+// storage is PublishedStorage name
 // prefix specifies publishing prefix
 // distribution and architectures are user-defined properties
 // components & sources are lists of component to source mapping (*Snapshot or *LocalRepo)
-func NewPublishedRepo(prefix string, distribution string, architectures []string,
+func NewPublishedRepo(storage, prefix, distribution string, architectures []string,
 	components []string, sources []interface{}, collectionFactory *CollectionFactory) (*PublishedRepo, error) {
 	result := &PublishedRepo{
 		UUID:          uuid.New(),
+		Storage:       storage,
 		Architectures: architectures,
 		Sources:       make(map[string]string),
 		sourceItems:   make(map[string]repoSourceItem),
@@ -266,13 +269,22 @@ func (p *PublishedRepo) String() string {
 		extra = " (" + extra + ")"
 	}
 
-	return fmt.Sprintf("%s/%s%s [%s] publishes %s", p.Prefix, p.Distribution, extra, strings.Join(p.Architectures, ", "),
+	return fmt.Sprintf("%s/%s%s [%s] publishes %s", p.StoragePrefix(), p.Distribution, extra, strings.Join(p.Architectures, ", "),
 		strings.Join(sources, ", "))
+}
+
+// StoragePrefix returns combined storage & prefix for the repo
+func (p *PublishedRepo) StoragePrefix() string {
+	result := p.Prefix
+	if p.Storage != "" {
+		result = p.Storage + ":" + p.Prefix
+	}
+	return result
 }
 
 // Key returns unique key identifying PublishedRepo
 func (p *PublishedRepo) Key() []byte {
-	return []byte("U" + p.Prefix + ">>" + p.Distribution)
+	return []byte("U" + p.StoragePrefix() + ">>" + p.Distribution)
 }
 
 // RefKey is a unique id for package reference list
@@ -380,8 +392,10 @@ func (p *PublishedRepo) GetLabel() string {
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
-func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage aptly.PublishedStorage,
+func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
+	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
@@ -689,8 +703,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorage 
 // RemoveFiles removes files that were created by Publish
 //
 // It can remove prefix fully, and part of pool (for specific component)
-func (p *PublishedRepo) RemoveFiles(publishedStorage aptly.PublishedStorage, removePrefix bool,
+func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStorageProvider, removePrefix bool,
 	removePoolComponents []string, progress aptly.Progress) error {
+	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+
 	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
 		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"), progress)
@@ -748,7 +764,7 @@ func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
 // Add appends new repo to collection and saves it
 func (collection *PublishedRepoCollection) Add(repo *PublishedRepo) error {
 	if collection.CheckDuplicate(repo) != nil {
-		return fmt.Errorf("published repo with prefix/distribution %s/%s already exists", repo.Prefix, repo.Distribution)
+		return fmt.Errorf("published repo with storage/prefix/distribution %s/%s/%s already exists", repo.Storage, repo.Prefix, repo.Distribution)
 	}
 
 	err := collection.Update(repo)
@@ -763,7 +779,7 @@ func (collection *PublishedRepoCollection) Add(repo *PublishedRepo) error {
 // CheckDuplicate verifies that there's no published repo with the same name
 func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *PublishedRepo {
 	for _, r := range collection.list {
-		if r.Prefix == repo.Prefix && r.Distribution == repo.Distribution {
+		if r.Prefix == repo.Prefix && r.Distribution == repo.Distribution && r.Storage == repo.Storage {
 			return r
 		}
 	}
@@ -849,14 +865,14 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 	return
 }
 
-// ByPrefixDistribution looks up repository by prefix & distribution
-func (collection *PublishedRepoCollection) ByPrefixDistribution(prefix, distribution string) (*PublishedRepo, error) {
+// ByPrefixDistribution looks up repository by storage, prefix & distribution
+func (collection *PublishedRepoCollection) ByStoragePrefixDistribution(storage, prefix, distribution string) (*PublishedRepo, error) {
 	for _, r := range collection.list {
-		if r.Prefix == prefix && r.Distribution == distribution {
+		if r.Prefix == prefix && r.Distribution == distribution && r.Storage == storage {
 			return r, nil
 		}
 	}
-	return nil, fmt.Errorf("published repo with prefix/distribution %s/%s not found", prefix, distribution)
+	return nil, fmt.Errorf("published repo with storage/prefix/distribution %s/%s/%s not found", storage, prefix, distribution)
 }
 
 // ByUUID looks up repository by uuid
@@ -1008,9 +1024,9 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 }
 
 // Remove removes published repository, cleaning up directories, files
-func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.PublishedStorage, prefix, distribution string,
-	collectionFactory *CollectionFactory, progress aptly.Progress) error {
-	repo, err := collection.ByPrefixDistribution(prefix, distribution)
+func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly.PublishedStorageProvider,
+	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return err
 	}
@@ -1025,7 +1041,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 			repoPosition = i
 			continue
 		}
-		if r.Prefix == repo.Prefix {
+		if r.Storage == repo.Storage && r.Prefix == repo.Prefix {
 			removePrefix = false
 
 			rComponents := r.Components()
@@ -1038,7 +1054,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 		}
 	}
 
-	err = repo.RemoveFiles(publishedStorage, removePrefix, removePoolComponents, progress)
+	err = repo.RemoveFiles(publishedStorageProvider, removePrefix, removePoolComponents, progress)
 	if err != nil {
 		return err
 	}
@@ -1047,7 +1063,8 @@ func (collection *PublishedRepoCollection) Remove(publishedStorage aptly.Publish
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
 	if len(cleanComponents) > 0 {
-		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents, publishedStorage, collectionFactory, progress)
+		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents,
+			publishedStorageProvider.GetPublishedStorage(storage), collectionFactory, progress)
 		if err != nil {
 			return err
 		}

@@ -47,6 +47,12 @@ type LocalPublishedStorage interface {
 	PublicPath() string
 }
 
+// PublishedStorageProvider is a thing that returns PublishedStorage by name
+type PublishedStorageProvider interface {
+	// GetPublishedStorage returns PublishedStorage by name
+	GetPublishedStorage(name string) PublishedStorage
+}
+
 // Progress is a progress displaying entity, it allows progress bars & simple prints
 type Progress interface {
 	// Writer interface to support progress bar ticking
