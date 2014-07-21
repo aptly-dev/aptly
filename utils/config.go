@@ -24,6 +24,7 @@ type ConfigStructure struct {
 	S3PublishRoots         map[string]S3PublishRoot `json:"S3PublishRoots"`
 }
 
+// S3PublishRoot describes single S3 publishing entry point
 type S3PublishRoot struct {
 	Region          string `json:"region"`
 	Bucket          string `json:"bucket"`
