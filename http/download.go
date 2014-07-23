@@ -23,10 +23,10 @@ var (
 // downloaderImpl is implementation of Downloader interface
 type downloaderImpl struct {
 	queue     chan *downloadTask
-	stop      chan bool
-	stopped   chan bool
-	pause     chan bool
-	unpause   chan bool
+	stop      chan struct{}
+	stopped   chan struct{}
+	pause     chan struct{}
+	unpause   chan struct{}
 	progress  aptly.Progress
 	aggWriter io.Writer
 	threads   int
@@ -50,10 +50,10 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
-		stop:     make(chan bool),
-		stopped:  make(chan bool),
-		pause:    make(chan bool),
-		unpause:  make(chan bool),
+		stop:     make(chan struct{}),
+		stopped:  make(chan struct{}),
+		pause:    make(chan struct{}),
+		unpause:  make(chan struct{}),
 		threads:  threads,
 		progress: progress,
 		client: &http.Client{
@@ -78,7 +78,7 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 // but doesn't process rest of queue
 func (downloader *downloaderImpl) Shutdown() {
 	for i := 0; i < downloader.threads; i++ {
-		downloader.stop <- true
+		downloader.stop <- struct{}{}
 	}
 
 	for i := 0; i < downloader.threads; i++ {
@@ -89,14 +89,14 @@ func (downloader *downloaderImpl) Shutdown() {
 // Pause pauses task processing
 func (downloader *downloaderImpl) Pause() {
 	for i := 0; i < downloader.threads; i++ {
-		downloader.pause <- true
+		downloader.pause <- struct{}{}
 	}
 }
 
 // Resume resumes task processing
 func (downloader *downloaderImpl) Resume() {
 	for i := 0; i < downloader.threads; i++ {
-		downloader.unpause <- true
+		downloader.unpause <- struct{}{}
 	}
 }
 
@@ -202,7 +202,7 @@ func (downloader *downloaderImpl) process() {
 	for {
 		select {
 		case <-downloader.stop:
-			downloader.stopped <- true
+			downloader.stopped <- struct{}{}
 			return
 		case <-downloader.pause:
 			<-downloader.unpause
