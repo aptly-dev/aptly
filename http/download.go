@@ -45,6 +45,9 @@ type downloadTask struct {
 // NewDownloader creates new instance of Downloader which specified number
 // of threads and download limit in bytes/sec
 func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.Downloader {
+	transport := *http.DefaultTransport.(*http.Transport)
+	transport.DisableCompression = true
+
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
 		stop:     make(chan bool),
@@ -54,10 +57,7 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 		threads:  threads,
 		progress: progress,
 		client: &http.Client{
-			Transport: &http.Transport{
-				DisableCompression: true,
-				Proxy:              http.ProxyFromEnvironment,
-			},
+			Transport: &transport,
 		},
 	}
 
