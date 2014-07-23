@@ -39,7 +39,6 @@ func ChecksumsForFile(path string) (ChecksumInfo, error) {
 // ChecksumWriter is a writer that does checksum calculation on the fly passing data
 // to real writer
 type ChecksumWriter struct {
-	w      io.Writer
 	sum    ChecksumInfo
 	hashes []hash.Hash
 }
