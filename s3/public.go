@@ -208,5 +208,10 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 
 // RenameFile renames (moves) file
 func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
-	panic("not implemented yet")
+	err := storage.bucket.Copy(filepath.Join(storage.prefix, oldName), filepath.Join(storage.prefix, newName), storage.acl)
+	if err != nil {
+		return fmt.Errorf("error copying %s -> %s in %s: %s", oldName, newName, storage, err)
+	}
+
+	return storage.Remove(oldName)
 }

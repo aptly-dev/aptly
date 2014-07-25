@@ -10,7 +10,7 @@ gom 'github.com/syndtr/goleveldb/leveldb', :commit => '9888007'
 gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 gom 'code.google.com/p/mxk/go1/flowcontrol', :commit => '5ff2502e2556'
-gom 'github.com/mitchellh/goamz/s3', :commit => '3c2b519fc7544563e5a2031cc8bb04b567b1b9bc'
+gom 'github.com/mitchellh/goamz/s3', :commit => 'd52d1cf9e63e860748042a0e97e7f670fb725e24'
 
 group :test do
     gom 'launchpad.net/gocheck'
