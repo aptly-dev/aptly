@@ -12,12 +12,14 @@ import (
 type PackageCollection struct {
 	db           database.Storage
 	encodeBuffer bytes.Buffer
+	codecHandle  *codec.MsgpackHandle
 }
 
 // NewPackageCollection creates new PackageCollection and binds it to database
 func NewPackageCollection(db database.Storage) *PackageCollection {
 	return &PackageCollection{
-		db: db,
+		db:          db,
+		codecHandle: &codec.MsgpackHandle{},
 	}
 }
 
@@ -53,7 +55,7 @@ func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
 	if len(encoded) > 2 && (encoded[0] != 0xc1 || encoded[1] != 0x1) {
 		oldp := &oldPackage{}
 
-		decoder := codec.NewDecoderBytes(encoded, &codec.MsgpackHandle{})
+		decoder := codec.NewDecoderBytes(encoded, collection.codecHandle)
 		err = decoder.Decode(oldp)
 		if err != nil {
 			return nil, err
@@ -88,7 +90,7 @@ func (collection *PackageCollection) ByKey(key []byte) (*Package, error) {
 			return nil, err
 		}
 	} else {
-		decoder := codec.NewDecoderBytes(encoded[2:], &codec.MsgpackHandle{})
+		decoder := codec.NewDecoderBytes(encoded[2:], collection.codecHandle)
 		err = decoder.Decode(p)
 		if err != nil {
 			return nil, err
@@ -109,7 +111,7 @@ func (collection *PackageCollection) loadExtra(p *Package) *Stanza {
 
 	stanza := &Stanza{}
 
-	decoder := codec.NewDecoderBytes(encoded, &codec.MsgpackHandle{})
+	decoder := codec.NewDecoderBytes(encoded, collection.codecHandle)
 	err = decoder.Decode(stanza)
 	if err != nil {
 		panic("unable to decode extra")
@@ -127,7 +129,7 @@ func (collection *PackageCollection) loadDependencies(p *Package) *PackageDepend
 
 	deps := &PackageDependencies{}
 
-	decoder := codec.NewDecoderBytes(encoded, &codec.MsgpackHandle{})
+	decoder := codec.NewDecoderBytes(encoded, collection.codecHandle)
 	err = decoder.Decode(deps)
 	if err != nil {
 		panic("unable to decode deps")
@@ -145,7 +147,7 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 
 	files := &PackageFiles{}
 
-	decoder := codec.NewDecoderBytes(encoded, &codec.MsgpackHandle{})
+	decoder := codec.NewDecoderBytes(encoded, collection.codecHandle)
 	err = decoder.Decode(files)
 	if err != nil {
 		panic("unable to decode files")
@@ -156,7 +158,7 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 
 // Update adds or updates information about package in DB checking for conficts first
 func (collection *PackageCollection) Update(p *Package) error {
-	encoder := codec.NewEncoder(&collection.encodeBuffer, &codec.MsgpackHandle{})
+	encoder := codec.NewEncoder(&collection.encodeBuffer, collection.codecHandle)
 
 	collection.encodeBuffer.Reset()
 	collection.encodeBuffer.WriteByte(0xc1)
