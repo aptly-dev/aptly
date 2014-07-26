@@ -178,7 +178,10 @@ func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 	if err != nil {
 		return err
 	}
-	return collection.db.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+	if snapshot.packageRefs != nil {
+		return collection.db.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+	}
+	return nil
 }
 
 // LoadComplete loads additional information about snapshot
