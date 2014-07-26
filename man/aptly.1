@@ -303,6 +303,29 @@ Example:
 .P
 $ aptly mirror rename wheezy\-min wheezy\-main
 .
+.SH "EDIT PROPERTIES OF MIRORR"
+\fBaptly\fR \fBmirror\fR \fBedit\fR \fIname\fR
+.
+.P
+Command edit allows to change settings of mirror: filters\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror edit \-filter=nginx \-filter\-with\-deps some\-mirror
+.
+.P
+Options:
+.
+.TP
+\-\fBfilter\fR=
+filter packages in mirror
+.
+.TP
+\-\fBfilter\-with\-deps\fR=false
+when filtering, include dependencies of matching packages as well
+.
 .SH "ADD PACKAGES TO LOCAL REPOSITORY"
 \fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
 .
