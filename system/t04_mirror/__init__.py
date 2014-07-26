@@ -8,3 +8,4 @@ from .list import *
 from .update import *
 from .drop import *
 from .rename import *
+from .edit import *

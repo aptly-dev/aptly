@@ -1,0 +1,22 @@
+Name: wheezy-main
+Archive Root URL: http://mirror.yandex.ru/debian/
+Distribution: wheezy
+Components: main
+Architectures: i386, amd64
+Download Sources: no
+Filter: nginx
+Filter With Deps: yes
+Last update: 2014-06-28 01:23:25 MSK
+Number of packages: 56121
+
+Information from release file:
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
+Codename: wheezy
+Components: main contrib non-free
+Date: Sat, 26 Apr 2014 09:27:11 UTC
+Description:  Debian 7.5 Released 26 April 2014
+
+Label: Debian
+Origin: Debian
+Suite: stable
+Version: 7.5
