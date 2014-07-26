@@ -291,6 +291,18 @@ disable verification of Release file signatures
 \-\fBkeyring\fR=
 gpg keyring to use when verifying Release file (could be specified multiple times)
 .
+.SH "RENAMES MIRROR"
+\fBaptly\fR \fBmirror\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR
+.
+.P
+Command changes name of the mirror\.Mirror name should be unique\.
+.
+.P
+Example:
+.
+.P
+$ aptly mirror rename wheezy\-min wheezy\-main
+.
 .SH "ADD PACKAGES TO LOCAL REPOSITORY"
 \fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
 .
@@ -506,6 +518,18 @@ Options:
 \-\fBwith\-packages\fR=false
 show list of packages
 .
+.SH "RENAMES LOCAL REPOSITORY"
+\fBaptly\fR \fBrepo\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR
+.
+.P
+Command changes name of the local repo\. Local repo name should be unique\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo rename wheezy\-min wheezy\-main
+.
 .SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
 \fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
 .
@@ -711,6 +735,18 @@ Options:
 .TP
 \-\fBforce\fR=false
 remove snapshot even if it was used as source for other snapshots
+.
+.SH "RENAMES SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR
+.
+.P
+Command changes name of the snapshot\. Snapshot name should be unique\.
+.
+.P
+Example:
+.
+.P
+$ aptly snapshot rename wheezy\-min wheezy\-main
 .
 .SH "REMOVE PUBLISHED REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [\fIprefix\fR]
