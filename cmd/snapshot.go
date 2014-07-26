@@ -17,6 +17,7 @@ func makeCmdSnapshot() *commander.Command {
 			makeCmdSnapshotDiff(),
 			makeCmdSnapshotMerge(),
 			makeCmdSnapshotDrop(),
+			makeCmdSnapshotRename(),
 		},
 	}
 }

@@ -5,6 +5,7 @@ Commands:
     create      create new mirror
     drop        delete mirror
     list        list mirrors
+    rename      renames mirror
     show        show details about mirror
     update      update mirror
 
