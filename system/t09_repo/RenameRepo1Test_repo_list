@@ -1,0 +1,4 @@
+List of local repos:
+ * [repo2] (packages: 0)
+
+To get more information about local repository, run `aptly repo show <name>`.

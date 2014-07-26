@@ -1,0 +1,16 @@
+List of mirrors:
+ * [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]
+ * [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+ * [sensu]: http://repos.sensuapp.org/apt/ sensu
+ * [wheezy-backports-src]: http://mirror.yandex.ru/debian/ wheezy-backports [src]
+ * [wheezy-backports]: http://mirror.yandex.ru/debian/ wheezy-backports
+ * [wheezy-contrib-src]: http://mirror.yandex.ru/debian/ wheezy [src]
+ * [wheezy-contrib]: http://mirror.yandex.ru/debian/ wheezy
+ * [wheezy-main-cool]: http://mirror.yandex.ru/debian/ wheezy
+ * [wheezy-main-src]: http://mirror.yandex.ru/debian/ wheezy [src]
+ * [wheezy-non-free-src]: http://mirror.yandex.ru/debian/ wheezy [src]
+ * [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
+ * [wheezy-updates-src]: http://mirror.yandex.ru/debian/ wheezy-updates [src]
+ * [wheezy-updates]: http://mirror.yandex.ru/debian/ wheezy-updates
+
+To get more information about mirror, run `aptly mirror show <name>`.

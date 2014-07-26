@@ -12,3 +12,4 @@ from .list import *
 from .move import *
 from .remove import *
 from .show import *
+from .rename import *
