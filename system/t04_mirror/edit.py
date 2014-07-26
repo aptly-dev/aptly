@@ -1,3 +1,4 @@
+import re
 from lib import BaseTest
 
 
@@ -10,7 +11,7 @@ class EditMirror1Test(BaseTest):
 
     def check(self):
         self.check_output()
-        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show")
+        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
 
 
 class EditMirror2Test(BaseTest):
@@ -30,7 +31,7 @@ class EditMirror3Test(BaseTest):
 
     def check(self):
         self.check_output()
-        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show")
+        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
 
 
 class EditMirror4Test(BaseTest):
