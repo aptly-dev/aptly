@@ -53,7 +53,8 @@ class EditMirror5Test(BaseTest):
     runCmd = "aptly mirror edit -filter= mirror5"
 
     def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror5", "mirror_show")
-
-
+        self.check_cmd_output("aptly mirror show mirror5", "mirror_show", match_prepare=removeDates)
