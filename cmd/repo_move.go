@@ -171,10 +171,10 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 func makeCmdRepoMove() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoMoveCopyImport,
-		UsageLine: "move <src-name> <dst-name> <package-spec> ...",
+		UsageLine: "move <src-name> <dst-name> <package-query> ...",
 		Short:     "move packages between local repositories",
 		Long: `
-Command move moves packages matching <package-spec> from local repo
+Command move moves packages matching <package-query> from local repo
 <src-name> to local repo <dst-name>.
 
 Example:

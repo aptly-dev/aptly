@@ -71,10 +71,10 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 func makeCmdRepoRemove() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoRemove,
-		UsageLine: "remove <name> <package-spec> ...",
+		UsageLine: "remove <name> <package-query> ...",
 		Short:     "remove packages from local repository",
 		Long: `
-Commands removes packages matching <package-spec> from local repository
+Commands removes packages matching <package-query> from local repository
 <name>. If removed packages are not referenced by other repos or
 snapshots, they can be removed completely (including files) by running
 'aptly db cleanup'.

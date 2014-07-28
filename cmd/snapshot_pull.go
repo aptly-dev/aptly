@@ -149,14 +149,14 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 func makeCmdSnapshotPull() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotPull,
-		UsageLine: "pull <name> <source> <destination> <package-name> ...",
+		UsageLine: "pull <name> <source> <destination> <package-query> ...",
 		Short:     "pull packages from another snapshot",
 		Long: `
 Command pull pulls new packages along with its' dependencies to snapshot <name>
 from snapshot <source>. Pull can upgrade package version in <name> with
 versions from <source> following dependencies. New snapshot <destination>
 is created as a result of this process. Packages could be specified simply
-as 'package-name' or as dependency 'package-name (>= version)'.
+as 'package-name' or as package queries.
 
 Example:
 

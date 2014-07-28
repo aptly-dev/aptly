@@ -8,10 +8,10 @@ import (
 func makeCmdRepoCopy() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoMoveCopyImport,
-		UsageLine: "copy <src-name> <dst-name> <package-spec> ...",
+		UsageLine: "copy <src-name> <dst-name> <package-query> ...",
 		Short:     "copy packages between local repositories",
 		Long: `
-Command copy copies packages matching <package-spec> from local repo
+Command copy copies packages matching <package-query> from local repo
 <src-name> to local repo <dst-name>.
 
 Example:

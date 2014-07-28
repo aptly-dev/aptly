@@ -8,10 +8,10 @@ import (
 func makeCmdRepoImport() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoMoveCopyImport,
-		UsageLine: "import <src-mirror> <dst-repo> <package-spec> ...",
+		UsageLine: "import <src-mirror> <dst-repo> <package-query> ...",
 		Short:     "import packages from mirror to local repository",
 		Long: `
-Command import looks up packages matching <package-spec> in mirror <src-mirror>
+Command import looks up packages matching <package-query> in mirror <src-mirror>
 and copies them to local repo <dst-repo>.
 
 Example:
