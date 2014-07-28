@@ -28,6 +28,7 @@ Configuration file is stored in JSON format (default values shown below):
     {
       "rootDir": "$HOME/.aptly",
       "downloadConcurrency": 4,
+      "downloadSpeedLimit": 0,
       "architectures": [],
       "dependencyFollowSuggests": false,
       "dependencyFollowRecommends": false
@@ -37,7 +38,16 @@ Configuration file is stored in JSON format (default values shown below):
       "gpgDisableVerify": false,
       "downloadSourcePackages": false,
       "ppaDistributorID": "ubuntu",
-      "ppaCodename": ""
+      "ppaCodename": "",
+      "S3PublishEndpoints": {
+        "test": {
+          "region": "us-east-1",
+          "bucket": "repo",
+          "awsAccessKeyID": ""
+          "awsSecretAccessKey": "",
+          "prefix": "",
+          "acl": "public-read"
+        }
     }
 
 Options:
@@ -48,6 +58,9 @@ Options:
 
   * `downloadConcurrency`:
     is a number of parallel download threads to use when downloading packages
+
+  * `downloadSpeedLimit`:
+    limit in kbytes/sec on download speed while mirroring remote repositieis
 
   * `architectures`:
     is a list of architectures to process; if left empty defaults to all available architectures; could be
@@ -81,10 +94,43 @@ Options:
     specifies paramaters for short PPA url expansion, if left blank they default
     to output of `lsb_release` command
 
-## PACKAGE SPEC
+  * `S3PublisEndpoints`:
+    configuration of Amazon S3 publishing endpoints (see below)
 
-Some commands accept package specs to identify list of packages to process.
-Package spec is a list of following search conditions:
+## S3 PUBLISHING ENDPOINTS
+
+aptly could be configured to publish repository directly to Amazon S3. First, publishing
+endpoints should be described in aptly configuration file. Each endpoint has name
+and associated settings:
+
+   * `region`:
+     Amazon region for S3 bucket (e.g. `us-east-1`)
+   * `bucket`:
+     bucket name
+   * `prefix`:
+     (optional) do publishing under specified prefix in the bucket, defaults to
+     no prefix (bucket root)
+   * `acl`:
+     (optional) assign ACL to published files (one of the canned ACLs in Amazon
+     terminology). Useful values: `private` (default) or `public-read` (public
+     repository). Public repositories could be consumed by `apt` using
+     HTTP endpoint (Amazon bucket should be configured for "website hosting"),
+     for private repositories special apt S3 transport is required.
+   * `awsAccessKeyID`, `awsSecretAccessKey`:
+     (optional) Amazon credentials to access S3 bucket. If not supplied,
+     environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+     are used.
+
+In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
+publishing prefix on the command line, e.g.:
+
+  `aptly publish snapshot wheezy-main s3:test:`
+
+## PACKAGE QUERY
+
+Some commands accept package queries to identify list of packages to process.
+Package query syntax almost matches `reprepro` query language. Query consists of
+the following simple terms:
 
   * direct package reference:
     reference to exaclty one package. Format is identical to the way aptly lists packages in
@@ -92,12 +138,49 @@ Package spec is a list of following search conditions:
     e.g.: `libmysqlclient18_5.5.35-rel33.0-611.squeeze_amd64`
 
   * dependency condition:
-    syntax follows Debian dependency specification: package_name followed by optional version specification and architecture limit.
+    syntax follows Debian dependency specification: package_name followed by optional version specification
+    and architecture limit, e.g: `mysql-client (>= 3.6)`.
+
+  * query against package fields:
+    syntax is the same as for dependency conditions, but instead of package name field name is used, e.g:
+    `Priority (optional)`.
+
+Supported fields:
+
+  * all field names from Debian package control files are supported except for `Filename`, `MD5sum`,
+    `SHA1`, `SHA256`, `Size`, `Files`, `Checksums-SHA1`, `Checksums-SHA256`.
+  * `$Source` is a name of source package (for binary packages)
+  * `$SourceVersion` is a version of source package
+  * `$Architecture` is `Architecture` for binary packages and `source` for source packages,
+     when matching with equal (`=`) operator, package with `any` architecture matches all architectures
+     but `source`.
+  * `$Version` has the same value as `Version`, but comparison operators use Debian
+     version precedence rules
+  * `$PackageType` is `deb` for binary packages and `source` for source packages
+
+Operators:
+
+  * `=`:
+    strict match, default operator is no operator is given
+  * `>=`, `<=`, `=`, `>>` (strictly greater), `<<` (strictly less):
+    lexicographical comparison for all fields and special rules when comparing package versions
+  * `%`:
+    pattern matching, like shell patterns, supported special symbols are: `[^]?*`, e.g.:
+    `$Version (% 3.5-*)`
+  * `~`:
+    regular expression matching, e.g.:
+    `Name (~ .*-dev)`
+
+Simple terms could be combined into more complex queries using operators `,` (and), `|` (or) and
+`!` (not), parentheses `()` are used to change operator precedence. Match value could be
+enclosed in single (`'`) or double (`"`) quotes if required to resolve ambiguity, quotes
+inside quoted string should escaped with slash (`\`).
 
 Examples:
 
   * `mysql-client`:
-     matches package mysql-client of any version and architecture (including source)
+     matches package mysql-client of any version and architecture (including source), also
+     matches packages that `Provide:` `mysql-client`.
 
   * `mysql-client (>= 3.6)`:
      matches package mysql-client with version greater or equal to 3.6. Valid operators for
@@ -107,9 +190,19 @@ Examples:
      matches package `mysql-client` on architecture `i386`, architecture `all` matches all architectures but source.
 
   * `mysql-client (>= 3.6) {i386}`:
-      version and architecture conditions combined.
+    version and architecture conditions combined.
 
-When specified on command line, condition may have to be quoted according to shell rules, so that it stays single argument:
+  * `libmysqlclient18_5.5.35-rel33.0-611.squeeze_amd64`:
+    direct package reference.
+
+  * `$Source (nginx)`:
+    all binary packages with `nginx` as source package.
+
+  * `!Name (~ .*-dev), mail-transport, $Version (>= 3.5)`:
+    matches all packages that provide `mail-transport` with name that has no suffix `-dev` and
+    with version greater or equal to `3.5`.
+
+When specified on command line, query may have to be quoted according to shell rules, so that it stays single argument:
 
   `aptly repo import percona stable 'mysql-client (>= 3.6)'`
 

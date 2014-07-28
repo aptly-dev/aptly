@@ -37,6 +37,7 @@ Configuration file is stored in JSON format (default values shown below):
 {
   "rootDir": "$HOME/\.aptly",
   "downloadConcurrency": 4,
+  "downloadSpeedLimit": 0,
   "architectures": [],
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false
@@ -46,7 +47,16 @@ Configuration file is stored in JSON format (default values shown below):
   "gpgDisableVerify": false,
   "downloadSourcePackages": false,
   "ppaDistributorID": "ubuntu",
-  "ppaCodename": ""
+  "ppaCodename": "",
+  "S3PublishEndpoints": {
+    "test": {
+      "region": "us\-east\-1",
+      "bucket": "repo",
+      "awsAccessKeyID": ""
+      "awsSecretAccessKey": "",
+      "prefix": "",
+      "acl": "public\-read"
+    }
 }
 .
 .fi
@@ -63,6 +73,10 @@ is root of directory storage to store database (\fBrootDir\fR/db), downloaded pa
 .TP
 \fBdownloadConcurrency\fR
 is a number of parallel download threads to use when downloading packages
+.
+.TP
+\fBdownloadSpeedLimit\fR
+limit in kbytes/sec on download speed while mirroring remote repositieis
 .
 .TP
 \fBarchitectures\fR
@@ -100,8 +114,41 @@ if enabled, all mirrors created would have flag set to download source packages;
 \fBppaDistributorID\fR, \fBppaCodename\fR
 specifies paramaters for short PPA url expansion, if left blank they default to output of \fBlsb_release\fR command
 .
-.SH "PACKAGE SPEC"
-Some commands accept package specs to identify list of packages to process\. Package spec is a list of following search conditions:
+.TP
+\fBS3PublisEndpoints\fR
+configuration of Amazon S3 publishing endpoints (see below)
+.
+.SH "S3 PUBLISHING ENDPOINTS"
+aptly could be configured to publish repository directly to Amazon S3\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
+.
+.TP
+\fBregion\fR
+Amazon region for S3 bucket (e\.g\. \fBus\-east\-1\fR)
+.
+.TP
+\fBbucket\fR
+bucket name
+.
+.TP
+\fBprefix\fR
+(optional) do publishing under specified prefix in the bucket, defaults to no prefix (bucket root)
+.
+.TP
+\fBacl\fR
+(optional) assign ACL to published files (one of the canned ACLs in Amazon terminology)\. Useful values: \fBprivate\fR (default) or \fBpublic\-read\fR (public repository)\. Public repositories could be consumed by \fBapt\fR using HTTP endpoint (Amazon bucket should be configured for "website hosting"), for private repositories special apt S3 transport is required\.
+.
+.TP
+\fBawsAccessKeyID\fR, \fBawsSecretAccessKey\fR
+(optional) Amazon credentials to access S3 bucket\. If not supplied, environment variables \fBAWS_ACCESS_KEY_ID\fR and \fBAWS_SECRET_ACCESS_KEY\fR are used\.
+.
+.P
+In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
+.
+.P
+\fBaptly publish snapshot wheezy\-main s3:test:\fR
+.
+.SH "PACKAGE QUERY"
+Some commands accept package queries to identify list of packages to process\. Package query syntax almost matches \fBreprepro\fR query language\. Query consists of the following simple terms:
 .
 .TP
 direct package reference
@@ -109,14 +156,63 @@ reference to exaclty one package\. Format is identical to the way aptly lists pa
 .
 .TP
 dependency condition
-syntax follows Debian dependency specification: package_name followed by optional version specification and architecture limit\.
+syntax follows Debian dependency specification: package_name followed by optional version specification and architecture limit, e\.g: \fBmysql\-client (>= 3\.6)\fR\.
+.
+.TP
+query against package fields
+syntax is the same as for dependency conditions, but instead of package name field name is used, e\.g: \fBPriority (optional)\fR\.
+.
+.P
+Supported fields:
+.
+.IP "\[ci]" 4
+all field names from Debian package control files are supported except for \fBFilename\fR, \fBMD5sum\fR, \fBSHA1\fR, \fBSHA256\fR, \fBSize\fR, \fBFiles\fR, \fBChecksums\-SHA1\fR, \fBChecksums\-SHA256\fR\.
+.
+.IP "\[ci]" 4
+\fB$Source\fR is a name of source package (for binary packages)
+.
+.IP "\[ci]" 4
+\fB$SourceVersion\fR is a version of source package
+.
+.IP "\[ci]" 4
+\fB$Architecture\fR is \fBArchitecture\fR for binary packages and \fBsource\fR for source packages, when matching with equal (\fB=\fR) operator, package with \fBany\fR architecture matches all architectures but \fBsource\fR\.
+.
+.IP "\[ci]" 4
+\fB$Version\fR has the same value as \fBVersion\fR, but comparison operators use Debian version precedence rules
+.
+.IP "\[ci]" 4
+\fB$PackageType\fR is \fBdeb\fR for binary packages and \fBsource\fR for source packages
+.
+.IP "" 0
+.
+.P
+Operators:
+.
+.TP
+\fB=\fR
+strict match, default operator is no operator is given
+.
+.TP
+\fB>=\fR, \fB<=\fR, \fB=\fR, \fB>>\fR (strictly greater), \fB<<\fR (strictly less)
+lexicographical comparison for all fields and special rules when comparing package versions
+.
+.TP
+\fB%\fR
+pattern matching, like shell patterns, supported special symbols are: \fB[^]?*\fR, e\.g\.: \fB$Version (% 3\.5\-*)\fR
+.
+.TP
+\fB~\fR
+regular expression matching, e\.g\.: \fBName (~ \.*\-dev)\fR
+.
+.P
+Simple terms could be combined into more complex queries using operators \fB,\fR (and), \fB|\fR (or) and \fB!\fR (not), parentheses \fB()\fR are used to change operator precedence\. Match value could be enclosed in single (\fB\(cq\fR) or double (\fB"\fR) quotes if required to resolve ambiguity, quotes inside quoted string should escaped with slash (\fB\e\fR)\.
 .
 .P
 Examples:
 .
 .TP
 \fBmysql\-client\fR
-matches package mysql\-client of any version and architecture (including source)
+matches package mysql\-client of any version and architecture (including source), also matches packages that \fBProvide:\fR \fBmysql\-client\fR\.
 .
 .TP
 \fBmysql\-client (>= 3\.6)\fR
@@ -130,8 +226,20 @@ matches package \fBmysql\-client\fR on architecture \fBi386\fR, architecture \fB
 \fBmysql\-client (>= 3\.6) {i386}\fR
 version and architecture conditions combined\.
 .
+.TP
+\fBlibmysqlclient18_5\.5\.35\-rel33\.0\-611\.squeeze_amd64\fR
+direct package reference\.
+.
+.TP
+\fB$Source (nginx)\fR
+all binary packages with \fBnginx\fR as source package\.
+.
+.TP
+\fB!Name (~ \.*\-dev), mail\-transport, $Version (>= 3\.5)\fR
+matches all packages that provide \fBmail\-transport\fR with name that has no suffix \fB\-dev\fR and with version greater or equal to \fB3\.5\fR\.
+.
 .P
-When specified on command line, condition may have to be quoted according to shell rules, so that it stays single argument:
+When specified on command line, query may have to be quoted according to shell rules, so that it stays single argument:
 .
 .P
 \fBaptly repo import percona stable \(cqmysql\-client (>= 3\.6)\(cq\fR
@@ -346,10 +454,10 @@ Options:
 remove files that have been imported successfully into repository
 .
 .SH "COPY PACKAGES BETWEEN LOCAL REPOSITORIES"
-\fBaptly\fR \fBrepo\fR \fBcopy\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-spec\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBcopy\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Command copy copies packages matching \fIpackage\-spec\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
+Command copy copies packages matching \fIpackage\-query\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
 .
 .P
 Example:
@@ -442,10 +550,10 @@ default component when publishing
 default distribution when publishing
 .
 .SH "IMPORT PACKAGES FROM MIRROR TO LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBimport\fR \fIsrc\-mirror\fR \fIdst\-repo\fR \fIpackage\-spec\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBimport\fR \fIsrc\-mirror\fR \fIdst\-repo\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Command import looks up packages matching \fIpackage\-spec\fR in mirror \fIsrc\-mirror\fR and copies them to local repo \fIdst\-repo\fR\.
+Command import looks up packages matching \fIpackage\-query\fR in mirror \fIsrc\-mirror\fR and copies them to local repo \fIdst\-repo\fR\.
 .
 .P
 Example:
@@ -484,10 +592,10 @@ Options:
 display list in machine\-readable format
 .
 .SH "MOVE PACKAGES BETWEEN LOCAL REPOSITORIES"
-\fBaptly\fR \fBrepo\fR \fBmove\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-spec\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBmove\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Command move moves packages matching \fIpackage\-spec\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
+Command move moves packages matching \fIpackage\-query\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
 .
 .P
 Example:
@@ -507,10 +615,10 @@ don\(cqt move, just show what would be moved
 follow dependencies when processing package\-spec
 .
 .SH "REMOVE PACKAGES FROM LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBremove\fR \fIname\fR \fIpackage\-spec\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBremove\fR \fIname\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Commands removes packages matching \fIpackage\-spec\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \(cqaptly db cleanup\(cq\.
+Commands removes packages matching \fIpackage\-query\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \(cqaptly db cleanup\(cq\.
 .
 .P
 Example:
@@ -640,10 +748,10 @@ $ aptly snapshot verify wheezy\-main wheezy\-contrib wheezy\-non\-free
 .IP "" 0
 .
 .SH "PULL PACKAGES FROM ANOTHER SNAPSHOT"
-\fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-name\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
 .
 .P
-Command pull pulls new packages along with its\(cq dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as dependency \(cqpackage\-name (>= version)\(cq\.
+Command pull pulls new packages along with its\(cq dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
 .
 .P
 Example:
@@ -772,10 +880,10 @@ Example:
 $ aptly snapshot rename wheezy\-min wheezy\-main
 .
 .SH "REMOVE PUBLISHED REPOSITORY"
-\fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [\fIprefix\fR]
+\fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
-Command removes whatever has been published under specified \fIprefix\fR and \fIdistribution\fR name\.
+Command removes whatever has been published under specified \fIprefix\fR, publishing \fIendpoint\fR and \fIdistribution\fR name\.
 .
 .P
 Example:
@@ -817,7 +925,7 @@ Options:
 display list in machine\-readable format
 .
 .SH "PUBLISH LOCAL REPOSITORY"
-\fBaptly\fR \fBpublish\fR \fBrepo\fR \fIname\fR [\fIprefix\fR]
+\fBaptly\fR \fBpublish\fR \fBrepo\fR \fIname\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
 Command publishes current state of local repository ready to be consumed by apt tools\. Published repostiories appear under rootDir/public directory\. Valid GPG key is required for publishing\.
@@ -887,7 +995,7 @@ GPG secret keyring to use (instead of default)
 don\(cqt sign Release files with GPG
 .
 .SH "PUBLISH SNAPSHOT"
-\fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [\fIprefix\fR]
+\fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
 Command publishes snapshot as Debian repository ready to be consumed by apt tools\. Published repostiories appear under rootDir/public directory\. Valid GPG key is required for publishing\.
@@ -954,7 +1062,7 @@ GPG secret keyring to use (instead of default)
 don\(cqt sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
-\fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [\fIprefix\fR] \fInew\-snapshot\fR
+\fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
 .
 .P
 Command switches in\-place published repository with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
@@ -1009,7 +1117,7 @@ GPG secret keyring to use (instead of default)
 don\(cqt sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED LOCAL REPOSITORY"
-\fBaptly\fR \fBpublish\fR \fBupdate\fR \fIdistribution\fR [\fIprefix\fR]
+\fBaptly\fR \fBpublish\fR \fBupdate\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
 Command re\-publishes (updates) published local repository\. \fIdistribution\fR and \fIprefix\fR should be occupied with local repository published using command aptly publish repo\. Update happens in\-place with minimum possible downtime for published repository\.
