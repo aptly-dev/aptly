@@ -169,7 +169,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 func makeCmdPublishSnapshot() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshotOrRepo,
-		UsageLine: "snapshot <name> [<prefix>]",
+		UsageLine: "snapshot <name> [[<endpoint>:]<prefix>]",
 		Short:     "publish snapshot",
 		Long: `
 Command publishes snapshot as Debian repository ready to be consumed

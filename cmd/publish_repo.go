@@ -8,7 +8,7 @@ import (
 func makeCmdPublishRepo() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSnapshotOrRepo,
-		UsageLine: "repo <name> [<prefix>]",
+		UsageLine: "repo <name> [[<endpoint>:]<prefix>]",
 		Short:     "publish local repository",
 		Long: `
 Command publishes current state of local repository ready to be consumed

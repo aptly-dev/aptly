@@ -35,11 +35,11 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 func makeCmdPublishDrop() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishDrop,
-		UsageLine: "drop <distribution> [<prefix>]",
+		UsageLine: "drop <distribution> [[<endpoint>:]<prefix>]",
 		Short:     "remove published repository",
 		Long: `
-Command removes whatever has been published under specified <prefix> and
-<distribution> name.
+Command removes whatever has been published under specified <prefix>,
+publishing <endpoint> and <distribution> name.
 
 Example:
 

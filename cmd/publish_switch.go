@@ -103,7 +103,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 func makeCmdPublishSwitch() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSwitch,
-		UsageLine: "switch <distribution> [<prefix>] <new-snapshot>",
+		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-snapshot>",
 		Short:     "update published repository by switching to new snapshot",
 		Long: `
 Command switches in-place published repository with new snapshot contents. All

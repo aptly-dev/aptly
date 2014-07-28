@@ -72,7 +72,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 func makeCmdPublishUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishUpdate,
-		UsageLine: "update <distribution> [<prefix>]",
+		UsageLine: "update <distribution> [[<endpoint>:]<prefix>]",
 		Short:     "update published local repository",
 		Long: `
 Command re-publishes (updates) published local repository. <distribution>
