@@ -21,7 +21,7 @@ type ConfigStructure struct {
 	DownloadSourcePackages bool                     `json:"downloadSourcePackages"`
 	PpaDistributorID       string                   `json:"ppaDistributorID"`
 	PpaCodename            string                   `json:"ppaCodename"`
-	S3PublishRoots         map[string]S3PublishRoot `json:"S3PublishRoots"`
+	S3PublishRoots         map[string]S3PublishRoot `json:"S3PublishEndpoints"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point

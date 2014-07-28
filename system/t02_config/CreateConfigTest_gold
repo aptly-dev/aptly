@@ -1,5 +1,5 @@
 {
-  "rootDir": "${HOME}/.aptly",
+  "rootDir": "/Users/smira/.aptly",
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "architectures": [],
@@ -12,5 +12,5 @@
   "downloadSourcePackages": false,
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
-  "S3PublishRoots": {}
+  "S3PublishEndpoints": {}
 }

@@ -58,7 +58,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"downloadSourcePackages\": false,\n"+
 		"  \"ppaDistributorID\": \"\",\n"+
 		"  \"ppaCodename\": \"\",\n"+
-		"  \"S3PublishRoots\": {\n"+
+		"  \"S3PublishEndpoints\": {\n"+
 		"    \"test\": {\n"+
 		"      \"region\": \"us-east-1\",\n"+
 		"      \"bucket\": \"repo\",\n"+
