@@ -8,6 +8,10 @@ aptly
 .. image:: https://coveralls.io/repos/smira/aptly/badge.png?branch=HEAD
     :target: https://coveralls.io/r/smira/aptly?branch=HEAD
 
+.. image:: http://gobuild.io/badge/github.com/smira/aptly/download.png
+    :target: http://gobuild.io/github.com/smira/aptly
+
+
 Aptly is a swiss army knife for Debian repository management.
 
 Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support use
