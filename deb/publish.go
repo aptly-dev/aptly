@@ -393,7 +393,7 @@ func (p *PublishedRepo) GetLabel() string {
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress) error {
+	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress, forceOverwrite bool) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -488,7 +488,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 					progress.AddBar(1)
 				}
 				if pkg.MatchesArchitecture(arch) {
-					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, component)
+					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, component, forceOverwrite)
 					if err != nil {
 						return err
 					}
