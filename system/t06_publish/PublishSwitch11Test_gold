@@ -1,0 +1,9 @@
+WARNING: force overwrite mode enabled, aptly might corrupt other published repositories sharing the same package pool.
+
+Loading packages...
+Generating metadata files and linking package files...
+Signing file 'Release' with gpg, please enter your passphrase when prompted:
+Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
+Cleaning up prefix "." components main...
+
+Publish for snapshot ./maverick [i386, source] publishes {main: [snap2]: Snapshot from local repo [local-repo2]} has been successfully switched to new snapshot.

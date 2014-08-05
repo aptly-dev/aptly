@@ -273,3 +273,39 @@ class PublishUpdate8Test(BaseTest):
     ]
     runCmd = "aptly publish update -skip-signing squeeze"
     gold_processor = BaseTest.expand_environ
+
+
+class PublishUpdate9Test(BaseTest):
+    """
+    publish update: conflicting files in the repo
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
+        "aptly repo remove local-repo Name",
+        "aptly repo add local-repo ${testfiles}",
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+    expectedCode = 1
+    gold_processor = BaseTest.expand_environ
+
+
+class PublishUpdate10Test(BaseTest):
+    """
+    publish update: -force-overwrite
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
+        "aptly repo remove local-repo Name",
+        "aptly repo add local-repo ${testfiles}",
+    ]
+    runCmd = "aptly publish update -force-overwrite -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate10Test, self).check()
+
+        self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")

@@ -564,3 +564,23 @@ class PublishRepo24Test(BaseTest):
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze local-repo2"
     expectedCode = 1
     gold_processor = BaseTest.expand_environ
+
+
+class PublishRepo25Test(BaseTest):
+    """
+    publish repo: -force-overwrite
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo1",
+        "aptly repo add local-repo1 ${files}",
+        "aptly repo create local-repo2",
+        "aptly repo add local-repo2 ${testfiles}",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo1",
+    ]
+    runCmd = "aptly publish repo -force-overwrite -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze local-repo2"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo25Test, self).check()
+
+        self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")

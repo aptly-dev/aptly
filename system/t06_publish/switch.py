@@ -347,3 +347,44 @@ class PublishSwitch9Test(BaseTest):
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,b maverick snap2"
     expectedCode = 2
     outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+
+
+class PublishSwitch10Test(BaseTest):
+    """
+    publish switch: conflicting files in the snapshot
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo1",
+        "aptly repo add local-repo1 ${files}",
+        "aptly snapshot create snap1 from repo local-repo1",
+        "aptly repo create local-repo2",
+        "aptly repo add local-repo2 ${testfiles}",
+        "aptly snapshot create snap2 from repo local-repo2",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap2"
+    expectedCode = 1
+    gold_processor = BaseTest.expand_environ
+
+
+class PublishSwitch11Test(BaseTest):
+    """
+    publish switch: -force-overwrite
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo1",
+        "aptly repo add local-repo1 ${files}",
+        "aptly snapshot create snap1 from repo local-repo1",
+        "aptly repo create local-repo2",
+        "aptly repo add local-repo2 ${testfiles}",
+        "aptly snapshot create snap2 from repo local-repo2",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1",
+    ]
+    runCmd = "aptly publish switch -force-overwrite -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap2"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch11Test, self).check()
+
+        self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
+
