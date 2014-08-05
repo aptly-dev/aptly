@@ -106,20 +106,24 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		srcSys := srcStat.Sys().(*syscall.Stat_t)
 		dstSys := dstStat.Sys().(*syscall.Stat_t)
 
+		// source and destination inodes match, no need to link
 		if srcSys.Ino == dstSys.Ino {
 			return nil
 		}
 
+		// source and destination have different inodes, if !forced, this is fatal error
 		if !force {
 			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
-		} else {
-			err = os.Remove(filepath.Join(poolPath, baseName))
-			if err != nil {
-				return err
-			}
+		}
+
+		// forced, so remove destination
+		err = os.Remove(filepath.Join(poolPath, baseName))
+		if err != nil {
+			return err
 		}
 	}
 
+	// destination doesn't exist (or forced), create link
 	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
 }
 
