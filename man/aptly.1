@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "July 2014" "" ""
+.TH "APTLY" "1" "August 2014" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -971,6 +971,10 @@ component name to publish (for multi\-component publishing, separate components 
 distribution name to publish
 .
 .TP
+\-\fBforce\-overwrite\fR=false
+overwrite files in package pool in case of mismatch
+.
+.TP
 \-\fBgpg\-key\fR=
 GPG key ID to use when signing the release
 .
@@ -1038,6 +1042,10 @@ component name to publish (for multi\-component publishing, separate components 
 distribution name to publish
 .
 .TP
+\-\fBforce\-overwrite\fR=false
+overwrite files in package pool in case of mismatch
+.
+.TP
 \-\fBgpg\-key\fR=
 GPG key ID to use when signing the release
 .
@@ -1101,6 +1109,10 @@ Options:
 component names to update (for multi\-component publishing, separate components with commas)
 .
 .TP
+\-\fBforce\-overwrite\fR=false
+overwrite files in package pool in case of mismatch
+.
+.TP
 \-\fBgpg\-key\fR=
 GPG key ID to use when signing the release
 .
@@ -1140,6 +1152,10 @@ $ aptly publish update wheezy ppa
 .
 .P
 Options:
+.
+.TP
+\-\fBforce\-overwrite\fR=false
+overwrite files in package pool in case of mismatch
 .
 .TP
 \-\fBgpg\-key\fR=
