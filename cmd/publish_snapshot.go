@@ -130,7 +130,13 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress())
+	forceOverwrite := context.flags.Lookup("force-overwrite").Value.Get().(bool)
+	if forceOverwrite {
+		context.Progress().Printf("WARNING: force overwrite mode enabled, aptly might corrupt other published repositories sharing " +
+			"the same package pool.")
+	}
+
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -196,6 +202,7 @@ Example:
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
+	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 
 	return cmd
 }
