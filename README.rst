@@ -51,7 +51,7 @@ Ubuntu 10.0+. Package contains aptly binary, man page and bash completion.
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.1+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.2+ required)::
 
     go get -u github.com/mattn/gom
     mkdir -p $GOPATH/src/github.com/smira/aptly
