@@ -9,6 +9,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -125,7 +126,36 @@ func (s *Snapshot) Encode() []byte {
 // Decode decodes msgpack representation into Snapshot
 func (s *Snapshot) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
-	return decoder.Decode(s)
+	err := decoder.Decode(s)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "codec.decoder: readContainerLen: Unrecognized descriptor byte: hex: 80") {
+			// probably it is broken DB from go < 1.2, try decoding w/o time.Time
+			var snapshot11 struct {
+				UUID string
+				Name string
+				CreatedAt []byte
+
+				SourceKind string
+				SourceIDs  []string
+				Description string
+			}
+
+			decoder = codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+			err2 := decoder.Decode(&snapshot11)
+			if err2 != nil {
+				return err
+			}
+
+			s.UUID = snapshot11.UUID
+			s.Name = snapshot11.Name
+			s.SourceKind = snapshot11.SourceKind
+			s.SourceIDs = snapshot11.SourceIDs
+			s.Description = snapshot11.Description
+		} else {
+			return err
+		}
+	}
+	return nil
 }
 
 // SnapshotCollection does listing, updating/adding/deleting of Snapshots

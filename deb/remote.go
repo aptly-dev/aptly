@@ -502,7 +502,43 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
 	err := decoder.Decode(repo)
 	if err != nil {
-		return err
+		if strings.HasPrefix(err.Error(), "codec.decoder: readContainerLen: Unrecognized descriptor byte: hex: 80") {
+			// probably it is broken DB from go < 1.2, try decoding w/o time.Time
+			var repo11 struct {
+				UUID             string
+				Name             string
+				ArchiveRoot      string
+				Distribution     string
+				Components       []string
+				Architectures    []string
+				DownloadSources  bool
+				Meta             Stanza
+				LastDownloadDate []byte
+				ReleaseFiles     map[string]utils.ChecksumInfo
+				Filter           string
+				FilterWithDeps   bool
+			}
+
+			decoder = codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+			err2 := decoder.Decode(&repo11)
+			if err2 != nil {
+				return err
+			}
+
+			repo.UUID = repo11.UUID
+			repo.Name = repo11.Name
+			repo.ArchiveRoot = repo11.ArchiveRoot
+			repo.Distribution = repo11.Distribution
+			repo.Components = repo11.Components
+			repo.Architectures = repo11.Architectures
+			repo.DownloadSources = repo11.DownloadSources
+			repo.Meta = repo11.Meta
+			repo.ReleaseFiles = repo11.ReleaseFiles
+			repo.Filter = repo11.Filter
+			repo.FilterWithDeps = repo11.FilterWithDeps
+		} else {
+			return err
+		}
 	}
 	return repo.prepare()
 }
