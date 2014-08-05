@@ -79,7 +79,8 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool, sourcePath, sourceMD5 string) error {
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
+	sourcePath, sourceMD5 string, force bool) error {
 	// verify that package pool is local pool is filesystem pool
 	_ = sourcePool.(*PackagePool)
 
@@ -105,10 +106,18 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		srcSys := srcStat.Sys().(*syscall.Stat_t)
 		dstSys := dstStat.Sys().(*syscall.Stat_t)
 
-		if srcSys.Ino != dstSys.Ino {
-			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
+		if srcSys.Ino == dstSys.Ino {
+			return nil
 		}
-		return nil
+
+		if !force {
+			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
+		} else {
+			err = os.Remove(filepath.Join(poolPath, baseName))
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return os.Link(sourcePath, filepath.Join(poolPath, baseName))

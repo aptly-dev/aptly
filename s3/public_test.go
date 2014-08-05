@@ -3,8 +3,10 @@ package s3
 import (
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/s3/s3test"
+	"github.com/smira/aptly/files"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
+	"os"
 	"path/filepath"
 )
 
@@ -113,4 +115,59 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "test/a", "test/b", "testa"})
 
+}
+
+func (s *PublishedStorageSuite) TestRenameFile(c *C) {
+	c.Skip("copy not available in s3test")
+}
+
+func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
+	root := c.MkDir()
+	pool := files.NewPackagePool(root)
+
+	sourcePath := filepath.Join(root, "pool/c1/df/mars-invaders_1.03.deb")
+	err := os.MkdirAll(filepath.Dir(sourcePath), 0755)
+	c.Assert(err, IsNil)
+
+	err = ioutil.WriteFile(sourcePath, []byte("Contents"), 0644)
+	c.Assert(err, IsNil)
+
+	sourcePath2 := filepath.Join(root, "pool/e9/df/mars-invaders_1.03.deb")
+	err = os.MkdirAll(filepath.Dir(sourcePath2), 0755)
+	c.Assert(err, IsNil)
+
+	err = ioutil.WriteFile(sourcePath2, []byte("Spam"), 0644)
+	c.Assert(err, IsNil)
+
+	// first link from pool
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	c.Check(err, IsNil)
+
+	data, err := s.storage.bucket.Get("pool/main/m/mars-invaders/mars-invaders_1.03.deb")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("Contents"))
+
+	// duplicate link from pool
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	c.Check(err, IsNil)
+
+	data, err = s.storage.bucket.Get("pool/main/m/mars-invaders/mars-invaders_1.03.deb")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("Contents"))
+
+	// link from pool with conflict
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", false)
+	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
+
+	data, err = s.storage.bucket.Get("pool/main/m/mars-invaders/mars-invaders_1.03.deb")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("Contents"))
+
+	// link from pool with conflict and force
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", true)
+	c.Check(err, IsNil)
+
+	data, err = s.storage.bucket.Get("pool/main/m/mars-invaders/mars-invaders_1.03.deb")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("Spam"))
 }
