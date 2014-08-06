@@ -79,5 +79,6 @@ src-package:
 	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/_vendor/{pkg,bin}
 	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
 	rm -rf aptly-$(VERSION)
+	curl -T aptly-$(VERSION)-src.tar.bz2 -usmira:$(BINTRAY_KEY) https://api.bintray.com/content/smira/aptly/aptly/$(VERSION)/$(VERSION)/aptly-$(VERSION)-src.tar.bz2
 
 .PHONY: coverage.out
