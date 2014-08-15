@@ -8,7 +8,7 @@ gom 'github.com/mitchellh/goamz/s3', :commit => '55f224c07975fddef9d2116600c664e
 gom 'github.com/mkrautz/goar', :commit => '36eb5f3452b1283a211fa35bc00c646fd0db5c4b'
 gom 'github.com/smira/commander', :commit => 'f408b00e68d5d6e21b9f18bd310978dafc604e47'
 gom 'github.com/smira/flag', :commit => '0d0aac2addb39050f45e92c5a6252926096dc841'
-gom 'github.com/syndtr/goleveldb/leveldb', :commit => '9888007'
+gom 'github.com/syndtr/goleveldb/leveldb', :commit => 'a44c00531ccc005546f20c6e00ab7bb9a8f6b2e0'
 gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 
