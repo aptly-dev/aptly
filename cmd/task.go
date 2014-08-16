@@ -4,12 +4,12 @@ import (
 	"github.com/smira/commander"
 )
 
-func makeCmdScript() *commander.Command {
+func makeCmdTask() *commander.Command {
 	return &commander.Command{
-		UsageLine: "script",
-		Short:     "run aptly scripts",
+		UsageLine: "task",
+		Short:     "manage aptly tasks",
 		Subcommands: []*commander.Command{
-			makeCmdScriptRun(),
+			makeCmdTaskRun(),
 		},
 	}
 }

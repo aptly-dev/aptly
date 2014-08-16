@@ -11,7 +11,7 @@ import (
 	"github.com/wsxiaoys/terminal/color"
 )
 
-func aptlyScriptRun(cmd *commander.Command, args []string) error {
+func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 	var err error
 	var cmd_list [][]string
@@ -127,17 +127,17 @@ func formatCommands(args []string) [][]string {
 	return cmd_array
 }
 
-func makeCmdScriptRun() *commander.Command {
+func makeCmdTaskRun() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyScriptRun,
+		Run:       aptlyTaskRun,
 		UsageLine: "run <filename> | <command1>, <command2>, ...",
-		Short:     "run aptly scripts",
+		Short:     "run aptly tasks",
 		Long: `
-Command runs multiple aptly commands in one single aptly thread.
+Command helps origanise multiple aptly commands in one single aptly task, running as single thread.
 
 Example:
 
-  $ aptly script run
+  $ aptly task run
   > repo create local
   > repo add local pkg1
   > publish repo local
