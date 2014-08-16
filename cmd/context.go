@@ -42,6 +42,7 @@ type AptlyContext struct {
 
 var context *AptlyContext
 var savedContext *AptlyContext
+var tempContext *AptlyContext
 
 // Check interface
 var _ aptly.PublishedStorageProvider = &AptlyContext{}
@@ -67,8 +68,9 @@ func Fatal(err error) {
 
 func switchContext() {
 
-	savedContext = context
+	tempContext = context
 	context = savedContext
+	savedContext = tempContext
 
 }
 

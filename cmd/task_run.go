@@ -84,7 +84,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 	for i, command := range cmd_list {
 
-		if !context.panicked {
+		if context == nil || !context.panicked {
 			color.Printf("@g%d) [Running]: %s@!\n", (i + 1), strings.Join(command, " "))
 			color.Println("\n@yBegin command output: ----------------------------\n@!")
 			Run(command, false)
@@ -95,7 +95,6 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		}
 
 	}
-
 	if context.panicked {
 		err = fmt.Errorf("At least one command has reported an error\n")
 	}
