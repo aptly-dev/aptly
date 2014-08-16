@@ -59,7 +59,9 @@ func Fatal(err error) {
 	if err == commander.ErrFlagError || err == commander.ErrCommandError {
 		returnCode = 2
 	}
-	context.panicked = true
+	if context != nil {
+		context.panicked = true
+	}
 	panic(&FatalError{ReturnCode: returnCode, Message: err.Error()})
 }
 
