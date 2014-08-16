@@ -20,7 +20,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		var text string
 		cmd_args := []string{}
 
-		fmt.Println("One command per line and press enter when finished.")
+		fmt.Println("Please enter one command per line and leave one blank when finished.")
 
 		reader := bufio.NewReader(os.Stdin)
 		for {
