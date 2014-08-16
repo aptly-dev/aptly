@@ -40,6 +40,7 @@ type AptlyContext struct {
 }
 
 var context *AptlyContext
+var savedContext *AptlyContext
 
 // Check interface
 var _ aptly.PublishedStorageProvider = &AptlyContext{}
@@ -58,6 +59,13 @@ func Fatal(err error) {
 		returnCode = 2
 	}
 	panic(&FatalError{ReturnCode: returnCode, Message: err.Error()})
+}
+
+func switchContext() {
+
+	savedContext = context
+	context = savedContext
+
 }
 
 // Config loads and returns current configuration
