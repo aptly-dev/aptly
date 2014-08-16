@@ -16,42 +16,17 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 	var err error
 	var cmd_list [][]string
 
-	if len(args) == 0 {
+	if filename := cmd.Flag.Lookup("filename").Value.Get().(string); filename != "" {
 		var text string
 		cmd_args := []string{}
 
-		fmt.Println("Please enter one command per line and leave one blank when finished.")
-
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			fmt.Printf("> ")
-			text, _ = reader.ReadString('\n')
-			if text == "\n" {
-				break
-			} else {
-				text = strings.TrimSpace(text) + ","
-				parsed_args, _ := shellwords.Parse(text)
-				cmd_args = append(cmd_args, parsed_args...)
-			}
-		}
-
-		if len(cmd_args) == 0 {
-			return fmt.Errorf("Nothing entered. Exiting...\n")
-		}
-
-		cmd_list = formatCommands(cmd_args)
-
-	} else if len(args) == 1 {
-		var text string
-		cmd_args := []string{}
-
-		if finfo, err := os.Stat(args[0]); os.IsNotExist(err) || finfo.IsDir() {
-			return fmt.Errorf("No such file, %s\n", args[0])
+		if finfo, err := os.Stat(filename); os.IsNotExist(err) || finfo.IsDir() {
+			return fmt.Errorf("No such file, %s\n", filename)
 		}
 
 		fmt.Println("Reading file...\n")
 
-		file, err := os.Open(args[0])
+		file, err := os.Open(filename)
 
 		if err != nil {
 			return err
@@ -76,7 +51,32 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 		cmd_list = formatCommands(cmd_args)
 
-	} else if len(args) > 1 {
+	} else if len(args) == 0 {
+		var text string
+		cmd_args := []string{}
+
+		fmt.Println("Please enter one command per line and leave one blank when finished.")
+
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			fmt.Printf("> ")
+			text, _ = reader.ReadString('\n')
+			if text == "\n" {
+				break
+			} else {
+				text = strings.TrimSpace(text) + ","
+				parsed_args, _ := shellwords.Parse(text)
+				cmd_args = append(cmd_args, parsed_args...)
+			}
+		}
+
+		if len(cmd_args) == 0 {
+			return fmt.Errorf("Nothing entered. Exiting...\n")
+		}
+
+		cmd_list = formatCommands(cmd_args)
+
+	} else {
 		cmd_list = formatCommands(args)
 	}
 
@@ -130,7 +130,7 @@ func formatCommands(args []string) [][]string {
 func makeCmdTaskRun() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyTaskRun,
-		UsageLine: "run <filename> | <command1>, <command2>, ...",
+		UsageLine: "run -filename=<filename> | <command1>, <command2>, ...",
 		Short:     "run aptly tasks",
 		Long: `
 Command helps origanise multiple aptly commands in one single aptly task, running as single thread.
@@ -147,5 +147,6 @@ Example:
 `,
 	}
 
+	cmd.Flag.String("filename", "", "specifies the filename that contains the commands to run")
 	return cmd
 }
