@@ -7,7 +7,7 @@ import (
 func makeCmdScript() *commander.Command {
 	return &commander.Command{
 		UsageLine: "script",
-		Short:     "runs aptly scripts",
+		Short:     "run aptly scripts",
 		Subcommands: []*commander.Command{
 			makeCmdScriptRun(),
 		},
