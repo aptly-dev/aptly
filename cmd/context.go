@@ -24,6 +24,7 @@ import (
 type AptlyContext struct {
 	flags        *flag.FlagSet
 	configLoaded bool
+	panicked     bool
 
 	progress          aptly.Progress
 	downloader        aptly.Downloader
@@ -40,6 +41,8 @@ type AptlyContext struct {
 }
 
 var context *AptlyContext
+var savedContext *AptlyContext
+var tempContext *AptlyContext
 
 // Check interface
 var _ aptly.PublishedStorageProvider = &AptlyContext{}
@@ -57,7 +60,18 @@ func Fatal(err error) {
 	if err == commander.ErrFlagError || err == commander.ErrCommandError {
 		returnCode = 2
 	}
+	if context != nil {
+		context.panicked = true
+	}
 	panic(&FatalError{ReturnCode: returnCode, Message: err.Error()})
+}
+
+func switchContext() {
+
+	tempContext = context
+	context = savedContext
+	savedContext = tempContext
+
 }
 
 // Config loads and returns current configuration
@@ -265,6 +279,7 @@ func InitContext(flags *flag.FlagSet) error {
 
 	context = &AptlyContext{
 		flags:             flags,
+		panicked:          false,
 		dependencyOptions: -1,
 		publishedStorages: map[string]aptly.PublishedStorage{},
 	}
