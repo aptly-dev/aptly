@@ -107,7 +107,7 @@ func formatCommands(args []string) [][]string {
 	var cmdArray [][]string
 
 	for _, s := range args {
-		if sTrimmed := strings.TrimRight(s, ","); s_trimmed != s {
+		if sTrimmed := strings.TrimRight(s, ","); sTrimmed != s {
 			cmd = append(cmd, sTrimmed)
 			cmdArray = append(cmdArray, cmd)
 			cmd = []string{}
