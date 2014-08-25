@@ -8,7 +8,6 @@ import (
 
 	"github.com/mattn/go-shellwords"
 	"github.com/smira/commander"
-	"github.com/wsxiaoys/terminal/color"
 )
 
 func aptlyTaskRun(cmd *commander.Command, args []string) error {
@@ -80,26 +79,28 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		cmd_list = formatCommands(args)
 	}
 
-	switchContext()
+	commandErrored := false
 
 	for i, command := range cmd_list {
+		if !commandErrored {
+			context.Progress().ColoredPrintf("@g%d) [Running]: %s@!", (i + 1), strings.Join(command, " "))
+			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
+			context.Progress().Flush()
 
-		if context == nil || !context.panicked {
-			color.Printf("@g%d) [Running]: %s@!\n", (i + 1), strings.Join(command, " "))
-			color.Println("\n@yBegin command output: ----------------------------\n@!")
-			Run(command, false)
-			color.Println("\n@yEnd command output: ------------------------------\n@!")
-
+			returnCode := Run(RootCommand(), command, false)
+			if returnCode != 0 {
+				commandErrored = true
+			}
+			context.Progress().ColoredPrintf("\n@yEnd command output: ------------------------------@!")
+			CleanupContext()
 		} else {
-			color.Printf("@r%d) [Skipping]: %s@!\n", (i + 1), strings.Join(command, " "))
+			context.Progress().ColoredPrintf("@r%d) [Skipping]: %s@!", (i + 1), strings.Join(command, " "))
 		}
-
 	}
-	if context.panicked {
+
+	if commandErrored {
 		err = fmt.Errorf("At least one command has reported an error\n")
 	}
-
-	switchContext()
 
 	return err
 }

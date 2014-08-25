@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	cmd.Run(os.Args[1:], true)
+	os.Exit(cmd.Run(cmd.RootCommand(), os.Args[1:], true))
 }

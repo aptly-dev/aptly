@@ -1,34 +1,26 @@
-[0;32;49m1) [Running]: repo list[1;39;49m
-[0m
-[0;33;49mBegin command output: ----------------------------
-[1;39;49m [0m
+1) [Running]: repo list
+
+Begin command output: ----------------------------
 No local repositories found, create one with `aptly repo create ...`.
 
-[0;33;49mEnd command output: ------------------------------
-[1;39;49m [0m
-[0;32;49m2) [Running]: repo create local[1;39;49m
-[0m
-[0;33;49mBegin command output: ----------------------------
-[1;39;49m [0m
+End command output: ------------------------------
+2) [Running]: repo create local
+
+Begin command output: ----------------------------
 
 Local repo [local] successfully added.
 You can run 'aptly repo add local ...' to add packages to repository.
 
-[0;33;49mEnd command output: ------------------------------
-[1;39;49m [0m
-[0;32;49m3) [Running]: repo drop local[1;39;49m
-[0m
-[0;33;49mBegin command output: ----------------------------
-[1;39;49m [0m
+End command output: ------------------------------
 Local repo `local` has been removed.
+3) [Running]: repo drop local
 
-[0;33;49mEnd command output: ------------------------------
-[1;39;49m [0m
-[0;32;49m4) [Running]: version[1;39;49m
-[0m
-[0;33;49mBegin command output: ----------------------------
-[1;39;49m [0m
+Begin command output: ----------------------------
+
+End command output: ------------------------------
 aptly version: 0.8~dev
+4) [Running]: version
 
-[0;33;49mEnd command output: ------------------------------
-[1;39;49m [0m
+Begin command output: ----------------------------
+
+End command output: ------------------------------

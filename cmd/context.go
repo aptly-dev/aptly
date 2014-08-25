@@ -22,9 +22,8 @@ import (
 
 // AptlyContext is a common context shared by all commands
 type AptlyContext struct {
-	flags        *flag.FlagSet
-	configLoaded bool
-	panicked     bool
+	flags, globalFlags *flag.FlagSet
+	configLoaded       bool
 
 	progress          aptly.Progress
 	downloader        aptly.Downloader
@@ -41,8 +40,6 @@ type AptlyContext struct {
 }
 
 var context *AptlyContext
-var savedContext *AptlyContext
-var tempContext *AptlyContext
 
 // Check interface
 var _ aptly.PublishedStorageProvider = &AptlyContext{}
@@ -60,18 +57,7 @@ func Fatal(err error) {
 	if err == commander.ErrFlagError || err == commander.ErrCommandError {
 		returnCode = 2
 	}
-	if context != nil {
-		context.panicked = true
-	}
 	panic(&FatalError{ReturnCode: returnCode, Message: err.Error()})
-}
-
-func switchContext() {
-
-	tempContext = context
-	context = savedContext
-	savedContext = tempContext
-
 }
 
 // Config loads and returns current configuration
@@ -79,7 +65,7 @@ func (context *AptlyContext) Config() *utils.ConfigStructure {
 	if !context.configLoaded {
 		var err error
 
-		configLocation := context.flags.Lookup("config").Value.String()
+		configLocation := context.globalFlags.Lookup("config").Value.String()
 		if configLocation != "" {
 			err = utils.LoadConfig(configLocation, &utils.Config)
 
@@ -118,16 +104,16 @@ func (context *AptlyContext) Config() *utils.ConfigStructure {
 func (context *AptlyContext) DependencyOptions() int {
 	if context.dependencyOptions == -1 {
 		context.dependencyOptions = 0
-		if context.Config().DepFollowSuggests || context.flags.Lookup("dep-follow-suggests").Value.Get().(bool) {
+		if context.Config().DepFollowSuggests || context.globalFlags.Lookup("dep-follow-suggests").Value.Get().(bool) {
 			context.dependencyOptions |= deb.DepFollowSuggests
 		}
-		if context.Config().DepFollowRecommends || context.flags.Lookup("dep-follow-recommends").Value.Get().(bool) {
+		if context.Config().DepFollowRecommends || context.globalFlags.Lookup("dep-follow-recommends").Value.Get().(bool) {
 			context.dependencyOptions |= deb.DepFollowRecommends
 		}
-		if context.Config().DepFollowAllVariants || context.flags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
+		if context.Config().DepFollowAllVariants || context.globalFlags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
 			context.dependencyOptions |= deb.DepFollowAllVariants
 		}
-		if context.Config().DepFollowSource || context.flags.Lookup("dep-follow-source").Value.Get().(bool) {
+		if context.Config().DepFollowSource || context.globalFlags.Lookup("dep-follow-source").Value.Get().(bool) {
 			context.dependencyOptions |= deb.DepFollowSource
 		}
 	}
@@ -139,7 +125,7 @@ func (context *AptlyContext) DependencyOptions() int {
 func (context *AptlyContext) ArchitecturesList() []string {
 	if context.architecturesList == nil {
 		context.architecturesList = context.Config().Architectures
-		optionArchitectures := context.flags.Lookup("architectures").Value.String()
+		optionArchitectures := context.globalFlags.Lookup("architectures").Value.String()
 		if optionArchitectures != "" {
 			context.architecturesList = strings.Split(optionArchitectures, ",")
 		}
@@ -244,6 +230,10 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	return publishedStorage
 }
 
+func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
+	context.flags = flags
+}
+
 // ShutdownContext shuts context down
 func ShutdownContext() {
 	if aptly.EnableDebug {
@@ -264,12 +254,27 @@ func ShutdownContext() {
 	}
 	if context.database != nil {
 		context.database.Close()
+		context.database = nil
 	}
 	if context.downloader != nil {
 		context.downloader.Shutdown()
+		context.downloader = nil
 	}
 	if context.progress != nil {
 		context.progress.Shutdown()
+		context.progress = nil
+	}
+}
+
+// CleanupContext does partial shutdown of context
+func CleanupContext() {
+	if context.downloader != nil {
+		context.downloader.Shutdown()
+		context.downloader = nil
+	}
+	if context.progress != nil {
+		context.progress.Shutdown()
+		context.progress = nil
 	}
 }
 
@@ -277,9 +282,13 @@ func ShutdownContext() {
 func InitContext(flags *flag.FlagSet) error {
 	var err error
 
+	if context != nil {
+		panic("context already initialized")
+	}
+
 	context = &AptlyContext{
 		flags:             flags,
-		panicked:          false,
+		globalFlags:       flags,
 		dependencyOptions: -1,
 		publishedStorages: map[string]aptly.PublishedStorage{},
 	}
