@@ -12,14 +12,14 @@ import (
 
 func aptlyTaskRun(cmd *commander.Command, args []string) error {
 	var err error
-	var cmd_list [][]string
+	var cmdList [][]string
 
 	if filename := cmd.Flag.Lookup("filename").Value.Get().(string); filename != "" {
 		var text string
-		cmd_args := []string{}
+		cmdArgs := []string{}
 
 		if finfo, err := os.Stat(filename); os.IsNotExist(err) || finfo.IsDir() {
-			return fmt.Errorf("No such file, %s\n", filename)
+			return fmt.Errorf("no such file, %s\n", filename)
 		}
 
 		fmt.Println("Reading file...\n")
@@ -35,22 +35,22 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 		for scanner.Scan() {
 			text = strings.TrimSpace(scanner.Text()) + ","
-			parsed_args, _ := shellwords.Parse(text)
-			cmd_args = append(cmd_args, parsed_args...)
+			parsedArgs, _ := shellwords.Parse(text)
+			cmdArgs = append(cmdArgs, parsedArgs...)
 		}
 
 		if err = scanner.Err(); err != nil {
 			return err
 		}
 
-		if len(cmd_args) == 0 {
-			return fmt.Errorf("The file is empty. Exiting...\n")
+		if len(cmdArgs) == 0 {
+			return fmt.Errorf("the file is empty")
 		}
 
-		cmd_list = formatCommands(cmd_args)
+		cmdList = formatCommands(cmdArgs)
 	} else if len(args) == 0 {
 		var text string
-		cmd_args := []string{}
+		cmdArgs := []string{}
 
 		fmt.Println("Please enter one command per line and leave one blank when finished.")
 
@@ -62,23 +62,23 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 				break
 			} else {
 				text = strings.TrimSpace(text) + ","
-				parsed_args, _ := shellwords.Parse(text)
-				cmd_args = append(cmd_args, parsed_args...)
+				parsedArgs, _ := shellwords.Parse(text)
+				cmdArgs = append(cmdArgs, parsedArgs...)
 			}
 		}
 
-		if len(cmd_args) == 0 {
-			return fmt.Errorf("Nothing entered. Exiting...\n")
+		if len(cmdArgs) == 0 {
+			return fmt.Errorf("nothing entered")
 		}
 
-		cmd_list = formatCommands(cmd_args)
+		cmdList = formatCommands(cmdArgs)
 	} else {
-		cmd_list = formatCommands(args)
+		cmdList = formatCommands(args)
 	}
 
 	commandErrored := false
 
-	for i, command := range cmd_list {
+	for i, command := range cmdList {
 		if !commandErrored {
 			context.Progress().ColoredPrintf("@g%d) [Running]: %s@!", (i + 1), strings.Join(command, " "))
 			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
@@ -96,7 +96,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 	}
 
 	if commandErrored {
-		err = fmt.Errorf("At least one command has reported an error\n")
+		err = fmt.Errorf("at least one command has reported an error")
 	}
 
 	return err
@@ -104,12 +104,12 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 func formatCommands(args []string) [][]string {
 	var cmd []string
-	var cmd_array [][]string
+	var cmdArray [][]string
 
 	for _, s := range args {
-		if s_trimmed := strings.TrimRight(s, ","); s_trimmed != s {
-			cmd = append(cmd, s_trimmed)
-			cmd_array = append(cmd_array, cmd)
+		if sTrimmed := strings.TrimRight(s, ","); s_trimmed != s {
+			cmd = append(cmd, sTrimmed)
+			cmdArray = append(cmdArray, cmd)
 			cmd = []string{}
 		} else {
 			cmd = append(cmd, s)
@@ -117,10 +117,10 @@ func formatCommands(args []string) [][]string {
 	}
 
 	if len(cmd) > 0 {
-		cmd_array = append(cmd_array, cmd)
+		cmdArray = append(cmdArray, cmd)
 	}
 
-	return cmd_array
+	return cmdArray
 }
 
 func makeCmdTaskRun() *commander.Command {
