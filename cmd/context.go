@@ -203,7 +203,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	return context.packagePool
 }
 
-// PublishedStorage returns instance of PublishedStorage
+// GetPublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
@@ -230,6 +230,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	return publishedStorage
 }
 
+// UpdateFlags sets internal copy of flags in the context
 func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
 	context.flags = flags
 }

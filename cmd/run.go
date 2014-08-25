@@ -5,7 +5,8 @@ import (
 	"github.com/smira/commander"
 )
 
-func Run(cmd *commander.Command, cmd_args []string, initContext bool) (returnCode int) {
+// Run runs single command starting from root cmd with args, optionally initializing context
+func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode int) {
 	defer func() {
 		if r := recover(); r != nil {
 			fatal, ok := r.(*FatalError)
@@ -19,7 +20,7 @@ func Run(cmd *commander.Command, cmd_args []string, initContext bool) (returnCod
 
 	returnCode = 0
 
-	flags, args, err := cmd.ParseFlags(cmd_args)
+	flags, args, err := cmd.ParseFlags(cmdArgs)
 	if err != nil {
 		Fatal(err)
 	}
