@@ -1,0 +1,3 @@
+repo list
+repo create -distribution="Cool" abc
+repo show abc

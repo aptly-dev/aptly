@@ -1,7 +1,6 @@
-1) [Running]: repo list
+1) [Running]: repo list -raw
 
 Begin command output: ----------------------------
-No local repositories found, create one with `aptly repo create ...`.
 
 End command output: ------------------------------
 2) [Running]: repo create local
@@ -12,15 +11,12 @@ Local repo [local] successfully added.
 You can run 'aptly repo add local ...' to add packages to repository.
 
 End command output: ------------------------------
-3) [Running]: repo drop local
+3) [Running]: repo list
 
 Begin command output: ----------------------------
-Local repo `local` has been removed.
+List of local repos:
+ * [local] (packages: 0)
 
-End command output: ------------------------------
-4) [Running]: version
-
-Begin command output: ----------------------------
-aptly version: 0.8~dev
+To get more information about local repository, run `aptly repo show <name>`.
 
 End command output: ------------------------------

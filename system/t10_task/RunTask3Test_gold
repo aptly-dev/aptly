@@ -1,0 +1,10 @@
+1) [Running]: repo show a
+
+Begin command output: ----------------------------
+ERROR: unable to show: local repo with name a not found
+
+End command output: ------------------------------
+2) [Skipping]: repo create local
+3) [Skipping]: repo list
+ERROR: At least one command has reported an error
+
