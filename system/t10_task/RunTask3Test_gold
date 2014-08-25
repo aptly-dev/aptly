@@ -6,5 +6,4 @@ ERROR: unable to show: local repo with name a not found
 End command output: ------------------------------
 2) [Skipping]: repo create local
 3) [Skipping]: repo list
-ERROR: At least one command has reported an error
-
+ERROR: at least one command has reported an error
