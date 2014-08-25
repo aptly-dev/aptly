@@ -11,7 +11,6 @@ import (
 )
 
 func aptlyTaskRun(cmd *commander.Command, args []string) error {
-
 	var err error
 	var cmd_list [][]string
 
@@ -49,7 +48,6 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		}
 
 		cmd_list = formatCommands(cmd_args)
-
 	} else if len(args) == 0 {
 		var text string
 		cmd_args := []string{}
@@ -74,7 +72,6 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		}
 
 		cmd_list = formatCommands(cmd_args)
-
 	} else {
 		cmd_list = formatCommands(args)
 	}
@@ -106,7 +103,6 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 }
 
 func formatCommands(args []string) [][]string {
-
 	var cmd []string
 	var cmd_array [][]string
 
