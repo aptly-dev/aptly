@@ -195,6 +195,8 @@ class BaseTest(object):
             self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
         except:
             if self.captureResults:
+                if self.outputMatchPrepare is not None:
+                    self.output = self.outputMatchPrepare(self.output)
                 with open(self.get_gold_filename(), "w") as f:
                     f.write(self.output)
             else:
@@ -206,6 +208,8 @@ class BaseTest(object):
             self.verify_match(self.get_gold(gold_name), output, match_prepare)
         except:
             if self.captureResults:
+                if match_prepare is not None:
+                    output = match_prepare(output)
                 with open(self.get_gold_filename(gold_name), "w") as f:
                     f.write(output)
             else:
