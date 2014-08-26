@@ -281,6 +281,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 					if sources.Search(dep, false) == nil {
 						variantsMissing = append(variantsMissing, dep)
 						missingCount++
+						cache[hash] = false
 					} else {
 						cache[hash] = true
 					}
@@ -288,15 +289,9 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 
 				if options&DepFollowAllVariants == DepFollowAllVariants {
 					missing = append(missing, variantsMissing...)
-					for _, dep := range variantsMissing {
-						cache[dep.Hash()] = false
-					}
 				} else {
 					if missingCount == len(variants) {
 						missing = append(missing, variantsMissing...)
-						for _, dep := range variantsMissing {
-							cache[dep.Hash()] = false
-						}
 					}
 				}
 			}
@@ -334,6 +329,10 @@ func (l *PackageList) Less(i, j int) bool {
 
 // PrepareIndex prepares list for indexing
 func (l *PackageList) PrepareIndex() {
+	if l.indexed {
+		return
+	}
+
 	l.packagesIndex = make([]*Package, l.Len())
 	l.providesIndex = make(map[string][]*Package, 128)
 
