@@ -6,6 +6,7 @@ import (
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"sort"
 )
 
 func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error {
@@ -72,8 +73,25 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		return fmt.Errorf("unable to search: %s", err)
 	}
 
-	result, err := list.Filter([]deb.PackageQuery{q}, context.flags.Lookup("with-deps").Value.Get().(bool),
-		nil, context.DependencyOptions(), context.ArchitecturesList())
+	withDeps := context.flags.Lookup("with-deps").Value.Get().(bool)
+	architecturesList := []string{}
+
+	if withDeps {
+		if len(context.ArchitecturesList()) > 0 {
+			architecturesList = context.ArchitecturesList()
+		} else {
+			architecturesList = list.Architectures(false)
+		}
+
+		sort.Strings(architecturesList)
+
+		if len(architecturesList) == 0 {
+			return fmt.Errorf("unable to determine list of architectures, please specify explicitly")
+		}
+	}
+
+	result, err := list.Filter([]deb.PackageQuery{q}, withDeps,
+		nil, context.DependencyOptions(), architecturesList)
 	if err != nil {
 		return fmt.Errorf("unable to search: %s", err)
 	}
