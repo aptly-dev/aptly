@@ -13,3 +13,4 @@ from .move import *
 from .remove import *
 from .show import *
 from .rename import *
+from .search import *

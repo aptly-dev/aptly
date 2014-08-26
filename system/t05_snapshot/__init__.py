@@ -11,3 +11,4 @@ from .diff import *
 from .merge import *
 from .drop import *
 from .rename import *
+from .search import *
