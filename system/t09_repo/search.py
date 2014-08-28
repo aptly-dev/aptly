@@ -36,4 +36,4 @@ class SearchRepo4Test(BaseTest):
     fixtureDB = True
     fixtureCmds = ["aptly repo create wheezy-main", "aptly repo import wheezy-main wheezy-main Name"]
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
-    runCmd = "aptly repo search -with-deps wheezy-main 'Name (coreutils)'"
+    runCmd = "aptly repo search -with-deps wheezy-main 'Name (nginx)'"

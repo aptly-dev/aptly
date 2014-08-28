@@ -36,4 +36,4 @@ class SearchSnapshot4Test(BaseTest):
     fixtureDB = True
     fixtureCmds = ["aptly snapshot create wheezy-main from mirror wheezy-main"]
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
-    runCmd = "aptly snapshot search -with-deps wheezy-main 'Name (coreutils)'"
+    runCmd = "aptly snapshot search -with-deps wheezy-main 'Name (nginx)'"

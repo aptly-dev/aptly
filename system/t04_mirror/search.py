@@ -33,4 +33,4 @@ class SearchMirror4Test(BaseTest):
     """
     fixtureDB = True
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
-    runCmd = "aptly mirror search -with-deps wheezy-main 'Name (coreutils)'"
+    runCmd = "aptly mirror search -with-deps wheezy-main 'Name (nginx)'"

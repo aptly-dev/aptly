@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (1622):
+Missing dependencies (1617):
   915resolution [i386]
   9fonts [i386]
   abakus [i386]
@@ -71,7 +71,6 @@ Missing dependencies (1622):
   big-blast [i386]
   bigdft [i386]
   bigsdb [i386]
-  bind [i386]
   bioclipse [i386]
   bioimagesuite [i386]
   bioimagexd [i386]
@@ -188,7 +187,6 @@ Missing dependencies (1622):
   elexis [i386]
   elph [i386]
   emacs-wiki [i386]
-  emacs22 [i386]
   emacspeak-ss [i386]
   embassy [i386]
   embassy-phylip [i386]
@@ -515,7 +513,6 @@ Missing dependencies (1622):
   kbackgammon [i386]
   kbdcontrol [i386]
   kchart [i386]
-  kde [i386]
   kde-icons-crystal [i386]
   kde-icons-oxygen [i386]
   kde-l10n (>= 4:4.8.4) [i386]
@@ -1535,7 +1532,6 @@ Missing dependencies (1622):
   tripal [i386]
   trnascan-se [i386]
   tscope [i386]
-  ttf-thryomanes [i386]
   ttf-ubuntu-font-family (>= 0.80-0ubuntu1~medium) [i386]
   ttf2pt1 [i386]
   tuxpaint (= 1:0.9.21) [i386]
@@ -1607,7 +1603,6 @@ Missing dependencies (1622):
   xmind [i386]
   xnat [i386]
   xorsa [i386]
-  xpdf-reader [i386]
   xsidplay [i386]
   xtranslate [i386]
   xul-ext-gnome-keyring [i386]
