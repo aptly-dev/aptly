@@ -10,6 +10,7 @@ func makeCmdPackage() *commander.Command {
 		Short:     "operations on packages",
 		Subcommands: []*commander.Command{
 			makeCmdPackageSearch(),
+			makeCmdPackageShow(),
 		},
 	}
 }

@@ -1,0 +1,163 @@
+
+
+
+
+
+
+
+
+
+Architecture: amd64
+Architecture: amd64
+Architecture: amd64
+Architecture: amd64
+Architecture: i386
+Architecture: i386
+Architecture: i386
+Architecture: i386
+Breaks: nginx (<< 1.4.5-1)
+Breaks: nginx (<< 1.4.5-1)
+Conflicts: nginx-full, nginx-light, nginx-naxsi
+Conflicts: nginx-full, nginx-light, nginx-naxsi
+Conflicts: nginx-full, nginx-light, nginx-naxsi
+Conflicts: nginx-full, nginx-light, nginx-naxsi
+Conflicts: nginx-full-dbg, nginx-light-dbg, nginx-naxsi-dbg
+Conflicts: nginx-full-dbg, nginx-light-dbg, nginx-naxsi-dbg
+Conflicts: nginx-full-dbg, nginx-light-dbg, nginx-naxsi-dbg
+Conflicts: nginx-full-dbg, nginx-light-dbg, nginx-naxsi-dbg
+Depends: nginx-common (= 1.2.1-2.2+wheezy2), perl (>= 5.14.2-21+deb7u1), perlapi-5.14.2, libc6 (>= 2.11), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), liblua5.1-0, libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libperl5.14 (>= 5.14.2), libssl1.0.0 (>= 1.0.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)
+Depends: nginx-common (= 1.2.1-2.2+wheezy2), perl (>= 5.14.2-21+deb7u1), perlapi-5.14.2, libc6 (>= 2.11), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), liblua5.1-0, libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libperl5.14 (>= 5.14.2), libssl1.0.0 (>= 1.0.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)
+Depends: nginx-common (= 1.6.0-1~bpo70+1), perl (>= 5.14.2-21+deb7u1), perlapi-5.14.2, libc6 (>= 2.11), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), liblua5.1-0, libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libperl5.14 (>= 5.14.2), libssl1.0.0 (>= 1.0.1), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.2.0)
+Depends: nginx-common (= 1.6.0-1~bpo70+1), perl (>= 5.14.2-21+deb7u1), perlapi-5.14.2, libc6 (>= 2.11), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), liblua5.1-0, libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libperl5.14 (>= 5.14.2), libssl1.0.0 (>= 1.0.1), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.2.0)
+Depends: nginx-extras (= 1.2.1-2.2+wheezy2)
+Depends: nginx-extras (= 1.2.1-2.2+wheezy2)
+Depends: nginx-extras (= 1.6.0-1~bpo70+1)
+Depends: nginx-extras (= 1.6.0-1~bpo70+1)
+Description-md5: 5b3494bcc5c46937a8b11b44469c77b3
+Description-md5: 5b3494bcc5c46937a8b11b44469c77b3
+Description-md5: a1852af8d0ef61a51df8e6cb9581d6a6
+Description-md5: a1852af8d0ef61a51df8e6cb9581d6a6
+Description-md5: dfe40e4b526a7896997294d525c6e22f
+Description-md5: dfe40e4b526a7896997294d525c6e22f
+Description-md5: dfe40e4b526a7896997294d525c6e22f
+Description-md5: dfe40e4b526a7896997294d525c6e22f
+Description: nginx web/proxy server (extended version)
+Description: nginx web/proxy server (extended version)
+Description: nginx web/proxy server (extended version)
+Description: nginx web/proxy server (extended version)
+Description: nginx web/proxy server (extended version) - debugging symbols
+Description: nginx web/proxy server (extended version) - debugging symbols
+Description: nginx web/proxy server (extended version) - debugging symbols
+Description: nginx web/proxy server (extended version) - debugging symbols
+Filename: nginx-extras-dbg_1.2.1-2.2+wheezy2_amd64.deb
+Filename: nginx-extras-dbg_1.2.1-2.2+wheezy2_i386.deb
+Filename: nginx-extras-dbg_1.6.0-1~bpo70+1_amd64.deb
+Filename: nginx-extras-dbg_1.6.0-1~bpo70+1_i386.deb
+Filename: nginx-extras_1.2.1-2.2+wheezy2_amd64.deb
+Filename: nginx-extras_1.2.1-2.2+wheezy2_i386.deb
+Filename: nginx-extras_1.6.0-1~bpo70+1_amd64.deb
+Filename: nginx-extras_1.6.0-1~bpo70+1_i386.deb
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Homepage: http://nginx.net
+Installed-Size: 1231
+Installed-Size: 1315
+Installed-Size: 1482
+Installed-Size: 1526
+Installed-Size: 5256
+Installed-Size: 5407
+Installed-Size: 8841
+Installed-Size: 9867
+MD5sum: 02a19018aae7a2a399f507fc0cb64d62
+MD5sum: 4b3b6c67272522433d50420d25e2b645
+MD5sum: 4e7009234d9b2d284b8986e7ffbe2846
+MD5sum: 6fee6f3675b1c56aa569f1cd655147c9
+MD5sum: c4a6097ed1e9cd3cc48c379acc444a1a
+MD5sum: d2ebc412ca7dfcc2f9fa0993ad6ea21e
+MD5sum: f7449a09f637555070687aa1adcdbebc
+MD5sum: fabd2b985a687bbf3b6a3a29d7ef5619
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Maintainer: Kartik Mistry <kartik@debian.org>
+Package: nginx-extras
+Package: nginx-extras
+Package: nginx-extras
+Package: nginx-extras
+Package: nginx-extras-dbg
+Package: nginx-extras-dbg
+Package: nginx-extras-dbg
+Package: nginx-extras-dbg
+Priority: extra
+Priority: extra
+Priority: extra
+Priority: extra
+Priority: extra
+Priority: extra
+Priority: extra
+Priority: extra
+Provides: httpd, httpd-cgi, nginx
+Provides: httpd, httpd-cgi, nginx
+Provides: httpd, nginx
+Provides: httpd, nginx
+SHA1: 286a9e206c57dfd33ee318ed4f45c3619d3a68d4
+SHA1: 5ae182d975a5d249340b9cc24512ac92157ce170
+SHA1: 5dc4cd5bfa96083ad01a32ff83c11857304c3a8b
+SHA1: 69f94693a5693d0e02d8f473ab0fb8628c26fdde
+SHA1: 778e4cd89b4323f307ba0476488982fec1c30b34
+SHA1: 932ad607b2ce5e130071d403e62adf8c4e90e257
+SHA1: abd23b106ee886c5fab024433f1ef6db4699c282
+SHA1: fe254aca7d88d7b0f42ef5951ab4e4013e147958
+SHA256: 2b2901cd6fac19b06bd8750ce6dd337306e76fdf5ae27b5693702b41fb96ad1b
+SHA256: 390323fef7da9a6465eb25139cde8bbeb3588398f1e40c31973921dfea32d8bf
+SHA256: 8970a47653ed40d4b2096c2c42d7e3858fe8ac6b291c1bc6f3c52a535589d790
+SHA256: 9e38a151e26168a05b39e9f50ee12e621cf7fef44096dc0856b70f81205de24b
+SHA256: a1cc9d55d5e17b6b0ab000a7b50a76dd175e83fe89742827b62ca36cd05042f6
+SHA256: b7bbee42030cf59a17a9fa28d9bc3aa07dd7e328a5bd002ac7fa3698c5456f1b
+SHA256: bbb5c9abac66cc848b9b8ce8b6fabe1d9b3e826959afd6d8ec502b95d5f0c814
+SHA256: d970bbb7fb92bc13fa1447de0c04c9e31c45056a450ce173f75d4e5715d0850b
+Section: debug
+Section: debug
+Section: debug
+Section: debug
+Section: httpd
+Section: httpd
+Section: httpd
+Section: httpd
+Size: 4450540
+Size: 4549842
+Size: 5181882
+Size: 5302224
+Size: 601422
+Size: 606894
+Size: 699448
+Size: 705372
+Source: nginx
+Source: nginx
+Source: nginx
+Source: nginx
+Source: nginx
+Source: nginx
+Source: nginx
+Source: nginx
+Suggests: nginx-doc (= 1.6.0-1~bpo70+1)
+Suggests: nginx-doc (= 1.6.0-1~bpo70+1)
+Tag: role::debug-symbols
+Tag: role::debug-symbols
+Version: 1.2.1-2.2+wheezy2
+Version: 1.2.1-2.2+wheezy2
+Version: 1.2.1-2.2+wheezy2
+Version: 1.2.1-2.2+wheezy2
+Version: 1.6.0-1~bpo70+1
+Version: 1.6.0-1~bpo70+1
+Version: 1.6.0-1~bpo70+1
+Version: 1.6.0-1~bpo70+1
