@@ -58,3 +58,24 @@ class EditMirror5Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror5", "mirror_show", match_prepare=removeDates)
+
+
+class EditMirror6Test(BaseTest):
+    """
+    edit mirror: change architectures
+    """
+    fixtureDB = True
+    runCmd = "aptly mirror edit -architectures=amd64,s390 wheezy-main"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+
+
+class EditMirror7Test(BaseTest):
+    """
+    edit mirror: change architectures to missing archs
+    """
+    fixtureDB = True
+    runCmd = "aptly mirror edit -architectures=amd64,x56 wheezy-main"
+    expectedCode = 1
