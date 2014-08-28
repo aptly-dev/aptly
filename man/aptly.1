@@ -415,7 +415,7 @@ $ aptly mirror rename wheezy\-min wheezy\-main
 \fBaptly\fR \fBmirror\fR \fBedit\fR \fIname\fR
 .
 .P
-Command edit allows to change settings of mirror: filters\.
+Command edit allows to change settings of mirror: filters, list of architectures\.
 .
 .P
 Example:
@@ -433,6 +433,32 @@ filter packages in mirror
 .TP
 \-\fBfilter\-with\-deps\fR=false
 when filtering, include dependencies of matching packages as well
+.
+.SH "SEARCH MIRROR FOR PACKAGES MATCHING QUERY"
+\fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+.
+.P
+Command search displays list of packages in mirror that match package query
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly mirror search wheezy\-main \(cq$Architecture (i386), Name (% *\-dev)\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-deps\fR=false
+include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORY"
 \fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
@@ -661,6 +687,32 @@ Example:
 .P
 $ aptly repo rename wheezy\-min wheezy\-main
 .
+.SH "SEARCH REPO FOR PACKAGES MATCHING QUERY"
+\fBaptly\fR \fBrepo\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+.
+.P
+Command search displays list of packages in local repository that match package query
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly repo search my\-software \(cq$Architecture (i386), Name (% *\-dev)\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-deps\fR=false
+include dependencies into search results
+.
 .SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
 \fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
 .
@@ -878,6 +930,32 @@ Example:
 .
 .P
 $ aptly snapshot rename wheezy\-min wheezy\-main
+.
+.SH "SEARCH SNAPSHOT FOR PACKAGES MATCHING QUERY"
+\fBaptly\fR \fBsnapshot\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+.
+.P
+Command search displays list of packages in snapshot that match package query
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot search wheezy\-main \(cq$Architecture (i386), Name (% *\-dev)\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-deps\fR=false
+include dependencies into search results
 .
 .SH "REMOVE PUBLISHED REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
@@ -1172,6 +1250,55 @@ GPG secret keyring to use (instead of default)
 .TP
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
+.
+.SH "SEARCH FOR PACKAGES MATCHING QUERY"
+\fBaptly\fR \fBpackage\fR \fBsearch\fR \fIpackage\-query\fR
+.
+.P
+Command search displays list of packages in whole DB that match package query
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly package search \(cq$Architecture (i386), Name (% *\-dev)\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.SH "SHOW DETAILS ABOUT PACKAGES MATCING QUERY"
+\fBaptly\fR \fBpackage\fR \fBshow\fR \fIpackage\-query\fR
+.
+.P
+Command shows displays detailed meta\-information about packages matching query\. Information from Debian control file is displayed\. Optionally information about package files and inclusion into mirrors/snapshots/local repos is shown\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly package show nginx\-light_1\.2\.1\-2\.2+wheezy2_i386\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBwith\-files\fR=false
+display information about files from package pool
+.
+.TP
+\-\fBwith\-references\fR=false
+display information about mirrors, snapshots and local repos referencing this package
 .
 .SH "CLEANUP DB AND PACKAGE POOL"
 \fBaptly\fR \fBdb\fR \fBcleanup\fR
