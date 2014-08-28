@@ -62,6 +62,7 @@ package environment to new version.`,
 			makeCmdTask(),
 			makeCmdPublish(),
 			makeCmdVersion(),
+			makeCmdPackage(),
 		},
 	}
 

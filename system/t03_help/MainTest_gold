@@ -5,6 +5,7 @@ Commands:
     db          manage aptly's internal database and package pool
     graph       render graph of relationships
     mirror      manage mirrors of remote repositories
+    package     operations on packages
     publish     manage published repositories
     repo        manage local package repositories
     serve       HTTP serve published repositories
