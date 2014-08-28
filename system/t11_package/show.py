@@ -32,6 +32,7 @@ class ShowPackage4Test(BaseTest):
     """
     fixtureDB = True
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    gold_processor = BaseTest.expand_environ
     runCmd = "aptly package show -with-files nginx-full_1.2.1-2.2+wheezy2_amd64"
 
 

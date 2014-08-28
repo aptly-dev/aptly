@@ -20,5 +20,5 @@ Source: nginx
 Tag: network::server, protocol::http, role::program
 
 Files in the pool:
-  /Users/smira/.aptly/pool/58/6a/nginx-full_1.2.1-2.2+wheezy2_amd64.deb
+  ${HOME}/.aptly/pool/58/6a/nginx-full_1.2.1-2.2+wheezy2_amd64.deb
 
