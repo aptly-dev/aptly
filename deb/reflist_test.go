@@ -128,6 +128,19 @@ func (s *PackageRefListSuite) TestPackageRefListForeach(c *C) {
 	c.Check(err, Equals, e)
 }
 
+func (s *PackageRefListSuite) TestHas(c *C) {
+	s.list.Add(s.p1)
+	s.list.Add(s.p3)
+	s.list.Add(s.p5)
+	reflist := NewPackageRefListFromPackageList(s.list)
+
+	c.Check(reflist.Has(s.p1), Equals, true)
+	c.Check(reflist.Has(s.p3), Equals, true)
+	c.Check(reflist.Has(s.p5), Equals, true)
+	c.Check(reflist.Has(s.p2), Equals, true)
+	c.Check(reflist.Has(s.p6), Equals, false)
+}
+
 func (s *PackageRefListSuite) TestSubstract(c *C) {
 	r1 := []byte("r1")
 	r2 := []byte("r2")

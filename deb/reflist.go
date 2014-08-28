@@ -84,6 +84,14 @@ func (l *PackageRefList) ForEach(handler func([]byte) error) error {
 	return err
 }
 
+// Has checks whether package is part of reflist
+func (l *PackageRefList) Has(p *Package) bool {
+	key := p.Key("")
+
+	i := sort.Search(len(l.Refs), func(j int) bool { return bytes.Compare(l.Refs[j], key) >= 0 })
+	return i < len(l.Refs) && bytes.Compare(l.Refs[i], key) == 0
+}
+
 // Substract returns all packages in l that are not in r
 func (l *PackageRefList) Substract(r *PackageRefList) *PackageRefList {
 	result := &PackageRefList{Refs: make([][]byte, 0, 128)}
