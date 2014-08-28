@@ -37,6 +37,11 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 
 	if context.globalFlags.Lookup("architectures").Value.String() != "" {
 		repo.Architectures = context.ArchitecturesList()
+
+		err = repo.Fetch(context.Downloader(), nil)
+		if err != nil {
+			return fmt.Errorf("unable to edit: %s", err)
+		}
 	}
 
 	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
@@ -55,7 +60,7 @@ func makeCmdMirrorEdit() *commander.Command {
 		Short:     "edit properties of mirorr",
 		Long: `
 Command edit allows to change settings of mirror:
-filters.
+filters, list of architectures.
 
 Example:
 
