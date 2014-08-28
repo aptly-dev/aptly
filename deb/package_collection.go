@@ -15,6 +15,11 @@ type PackageCollection struct {
 	codecHandle  *codec.MsgpackHandle
 }
 
+// Verify interface
+var (
+	_ PackageCatalog = &PackageCollection{}
+)
+
 // NewPackageCollection creates new PackageCollection and binds it to database
 func NewPackageCollection(db database.Storage) *PackageCollection {
 	return &PackageCollection{
@@ -236,4 +241,50 @@ func (collection *PackageCollection) DeleteByKey(key []byte) error {
 		}
 	}
 	return nil
+}
+
+// Scan does full scan on all the packages
+func (collection *PackageCollection) Scan(q PackageQuery) (result *PackageList) {
+	result = NewPackageList()
+
+	for _, key := range collection.db.KeysByPrefix([]byte("P")) {
+		pkg, err := collection.ByKey(key)
+		if err != nil {
+			panic(fmt.Sprintf("unable to load package: %s", err))
+		}
+
+		if q.Matches(pkg) {
+			result.Add(pkg)
+		}
+	}
+
+	return
+}
+
+// Search is not implemented
+func (collection *PackageCollection) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
+	panic("Not implemented")
+}
+
+// SearchSupported returns false
+func (collection *PackageCollection) SearchSupported() bool {
+	return false
+}
+
+// SearchByKey finds package by exact key
+func (collection *PackageCollection) SearchByKey(arch, name, version string) (result *PackageList) {
+	result = NewPackageList()
+
+	for _, key := range collection.db.KeysByPrefix([]byte(fmt.Sprintf("P%s %s %s", arch, name, version))) {
+		pkg, err := collection.ByKey(key)
+		if err != nil {
+			panic(fmt.Sprintf("unable to load package: %s", err))
+		}
+
+		if pkg.Architecture == arch && pkg.Name == name && pkg.Version == version {
+			result.Add(pkg)
+		}
+	}
+
+	return
 }

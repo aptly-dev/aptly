@@ -41,6 +41,7 @@ type PackageList struct {
 // Verify interface
 var (
 	_ sort.Interface = &PackageList{}
+	_ PackageCatalog = &PackageList{}
 )
 
 // NewPackageList creates empty package list
@@ -351,6 +352,23 @@ func (l *PackageList) Scan(q PackageQuery) (result *PackageList) {
 		if q.Matches(pkg) {
 			result.Add(pkg)
 		}
+	}
+
+	return
+}
+
+// SearchSupported returns true for PackageList
+func (l *PackageList) SearchSupported() bool {
+	return true
+}
+
+// SearchByKey looks up package by exact key reference
+func (l *PackageList) SearchByKey(arch, name, version string) (result *PackageList) {
+	result = NewPackageList()
+
+	pkg := l.packages["P"+arch+" "+name+" "+version]
+	if pkg != nil {
+		result.Add(pkg)
 	}
 
 	return

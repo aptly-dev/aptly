@@ -7,14 +7,22 @@ import (
 	"strings"
 )
 
+// PackageCatalog is abstraction on top of PackageCollection and PackageList
+type PackageCatalog interface {
+	Scan(q PackageQuery) (result *PackageList)
+	Search(dep Dependency, allMatches bool) (searchResults []*Package)
+	SearchSupported() bool
+	SearchByKey(arch, name, version string) (result *PackageList)
+}
+
 // PackageQuery is interface of predicate on Package
 type PackageQuery interface {
 	// Matches calculates match of condition against package
 	Matches(pkg *Package) bool
 	// Fast returns if search strategy is possible for this query
-	Fast() bool
+	Fast(list PackageCatalog) bool
 	// Query performs search on package list
-	Query(list *PackageList) *PackageList
+	Query(list PackageCatalog) *PackageList
 	// String interface
 	String() string
 }
@@ -60,13 +68,13 @@ func (q *OrQuery) Matches(pkg *Package) bool {
 }
 
 // Fast is true only if both parts are fast
-func (q *OrQuery) Fast() bool {
-	return q.L.Fast() && q.R.Fast()
+func (q *OrQuery) Fast(list PackageCatalog) bool {
+	return q.L.Fast(list) && q.R.Fast(list)
 }
 
 // Query strategy depends on nodes
-func (q *OrQuery) Query(list *PackageList) (result *PackageList) {
-	if q.Fast() {
+func (q *OrQuery) Query(list PackageCatalog) (result *PackageList) {
+	if q.Fast(list) {
 		result = q.L.Query(list)
 		result.Append(q.R.Query(list))
 	} else {
@@ -86,16 +94,16 @@ func (q *AndQuery) Matches(pkg *Package) bool {
 }
 
 // Fast is true if any of the parts are fast
-func (q *AndQuery) Fast() bool {
-	return q.L.Fast() || q.R.Fast()
+func (q *AndQuery) Fast(list PackageCatalog) bool {
+	return q.L.Fast(list) || q.R.Fast(list)
 }
 
 // Query strategy depends on nodes
-func (q *AndQuery) Query(list *PackageList) (result *PackageList) {
-	if !q.Fast() {
+func (q *AndQuery) Query(list PackageCatalog) (result *PackageList) {
+	if !q.Fast(list) {
 		result = list.Scan(q)
 	} else {
-		if q.L.Fast() {
+		if q.L.Fast(list) {
 			result = q.L.Query(list)
 			result = result.Scan(q.R)
 		} else {
@@ -117,12 +125,12 @@ func (q *NotQuery) Matches(pkg *Package) bool {
 }
 
 // Fast is false
-func (q *NotQuery) Fast() bool {
+func (q *NotQuery) Fast(list PackageCatalog) bool {
 	return false
 }
 
 // Query strategy is scan always
-func (q *NotQuery) Query(list *PackageList) (result *PackageList) {
+func (q *NotQuery) Query(list PackageCatalog) (result *PackageList) {
 	result = list.Scan(q)
 	return
 }
@@ -170,13 +178,13 @@ func (q *FieldQuery) Matches(pkg *Package) bool {
 }
 
 // Query runs iteration through list
-func (q *FieldQuery) Query(list *PackageList) (result *PackageList) {
+func (q *FieldQuery) Query(list PackageCatalog) (result *PackageList) {
 	result = list.Scan(q)
 	return
 }
 
 // Fast depends on the query
-func (q *FieldQuery) Fast() bool {
+func (q *FieldQuery) Fast(list PackageCatalog) bool {
 	return false
 }
 
@@ -215,15 +223,19 @@ func (q *DependencyQuery) Matches(pkg *Package) bool {
 }
 
 // Fast is always true for dependency query
-func (q *DependencyQuery) Fast() bool {
-	return true
+func (q *DependencyQuery) Fast(list PackageCatalog) bool {
+	return list.SearchSupported()
 }
 
 // Query runs PackageList.Search
-func (q *DependencyQuery) Query(list *PackageList) (result *PackageList) {
-	result = NewPackageList()
-	for _, pkg := range list.Search(q.Dep, true) {
-		result.Add(pkg)
+func (q *DependencyQuery) Query(list PackageCatalog) (result *PackageList) {
+	if q.Fast(list) {
+		result = NewPackageList()
+		for _, pkg := range list.Search(q.Dep, true) {
+			result.Add(pkg)
+		}
+	} else {
+		result = list.Scan(q)
 	}
 
 	return
@@ -240,20 +252,13 @@ func (q *PkgQuery) Matches(pkg *Package) bool {
 }
 
 // Fast is always true for package query
-func (q *PkgQuery) Fast() bool {
+func (q *PkgQuery) Fast(list PackageCatalog) bool {
 	return true
 }
 
 // Query looks up specific package
-func (q *PkgQuery) Query(list *PackageList) (result *PackageList) {
-	result = NewPackageList()
-
-	pkg := list.packages["P"+q.Arch+" "+q.Pkg+" "+q.Version]
-	if pkg != nil {
-		result.Add(pkg)
-	}
-
-	return
+func (q *PkgQuery) Query(list PackageCatalog) (result *PackageList) {
+	return list.SearchByKey(q.Arch, q.Pkg, q.Version)
 }
 
 // String interface
