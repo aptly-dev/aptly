@@ -235,6 +235,7 @@ func depSliceDeduplicate(s []Dependency) []Dependency {
 //
 // Analysis would be peformed for each architecture, in specified sources
 func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList, progress aptly.Progress) ([]Dependency, error) {
+	l.PrepareIndex()
 	missing := make([]Dependency, 0, 128)
 
 	if progress != nil {
@@ -244,7 +245,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 	for _, arch := range architectures {
 		cache := make(map[string]bool, 2048)
 
-		for _, p := range l.packages {
+		for _, p := range l.packagesIndex {
 			if progress != nil {
 				progress.AddBar(1)
 			}
@@ -262,7 +263,6 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				variants = depSliceDeduplicate(variants)
 
 				variantsMissing := make([]Dependency, 0, len(variants))
-				missingCount := 0
 
 				for _, dep := range variants {
 					if dep.Architecture == "" {
@@ -270,30 +270,23 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 					}
 
 					hash := dep.Hash()
-					r, ok := cache[hash]
-					if ok {
-						if !r {
-							missingCount++
-						}
-						continue
+					satisfied, ok := cache[hash]
+					if !ok {
+						satisfied = sources.Search(dep, false) != nil
+						cache[hash] = satisfied
 					}
 
-					if sources.Search(dep, false) == nil {
+					if !satisfied && !ok {
 						variantsMissing = append(variantsMissing, dep)
-						missingCount++
-						cache[hash] = false
-					} else {
-						cache[hash] = true
+					}
+
+					if satisfied && options&DepFollowAllVariants == 0 {
+						variantsMissing = nil
+						break
 					}
 				}
 
-				if options&DepFollowAllVariants == DepFollowAllVariants {
-					missing = append(missing, variantsMissing...)
-				} else {
-					if missingCount == len(variants) {
-						missing = append(missing, variantsMissing...)
-					}
-				}
+				missing = append(missing, variantsMissing...)
 			}
 		}
 	}
@@ -413,6 +406,7 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 
 	if withDependencies {
 		added := result.Len()
+		result.PrepareIndex()
 
 		dependencySource := NewPackageList()
 		if source != nil {
@@ -433,12 +427,21 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 
 			// try to satisfy dependencies
 			for _, dep := range missing {
+				// dependency might have already been satisfied
+				// with packages already been added
+				if result.Search(dep, false) != nil {
+					continue
+				}
+
 				searchResults := l.Search(dep, false)
 				if searchResults != nil {
 					for _, p := range searchResults {
 						result.Add(p)
 						dependencySource.Add(p)
 						added++
+						if dependencyOptions&DepFollowAllVariants == 0 {
+							break
+						}
 					}
 				}
 			}
