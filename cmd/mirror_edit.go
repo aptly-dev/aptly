@@ -35,6 +35,10 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		}
 	}
 
+	if context.globalFlags.Lookup("architectures").Value.String() != "" {
+		repo.Architectures = context.ArchitecturesList()
+	}
+
 	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
