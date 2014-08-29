@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/go-ftp-protocol/protocol"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -47,6 +48,7 @@ type downloadTask struct {
 func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.Downloader {
 	transport := *http.DefaultTransport.(*http.Transport)
 	transport.DisableCompression = true
+	transport.RegisterProtocol("ftp", &protocol.FTPRoundTripper{})
 
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
@@ -125,7 +127,9 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		task.result <- err
 		return
 	}
-	defer resp.Body.Close()
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		task.result <- fmt.Errorf("HTTP code %d while fetching %s", resp.StatusCode, task.url)
