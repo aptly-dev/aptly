@@ -74,7 +74,7 @@ func makeCmdMirrorCreate() *commander.Command {
 		Short:     "create new mirror",
 		Long: `
 Creates mirror <name> of remote repository, aptly supports both regular and flat Debian repositories exported
-via HTTP. aptly would try download Release file from remote repository and verify its' signature. Command
+via HTTP and FTP. aptly would try download Release file from remote repository and verify its' signature. Command
 line format resembles apt utlitily sources.list(5).
 
 PPA urls could specified in short format:

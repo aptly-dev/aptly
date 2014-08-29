@@ -1,2 +1,2 @@
-// Package http provides all HTTP-related operations
+// Package http provides all HTTP (and FTP)-related operations
 package http
