@@ -140,3 +140,19 @@ class UpdateMirror10Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror11Test(BaseTest):
+    """
+    update mirrors: update over FTP
+    """
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
+    ]
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
