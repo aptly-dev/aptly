@@ -151,6 +151,7 @@ class UpdateMirror11Test(BaseTest):
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
     ]
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
 
     def output_processor(self, output):
