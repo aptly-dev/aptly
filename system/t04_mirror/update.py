@@ -156,4 +156,3 @@ class UpdateMirror11Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
-
