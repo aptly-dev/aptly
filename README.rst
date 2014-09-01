@@ -11,8 +11,10 @@ aptly
 .. image:: http://gobuild.io/badge/github.com/smira/aptly/download.png
     :target: http://gobuild.io/github.com/smira/aptly
 
-
 Aptly is a swiss army knife for Debian repository management.
+
+.. image:: http://www.aptly.info/img/aptly_logo.png
+    :target: http://www.aptly.info/
 
 Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support use
 mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
@@ -24,8 +26,8 @@ Aptly features: ("+" means planned features)
 * publish snapshot as Debian repository, ready to be consumed by apt
 * controlled update of one or more packages in snapshot from upstream mirror, tracking dependencies
 * merge two or more snapshots into one
-* filter repository by search query, pulling dependencies when required (+)
-* publish self-made packages as Debian repositories (+)
+* filter repository by search query, pulling dependencies when required
+* publish self-made packages as Debian repositories
 * mirror repositories "as-is" (without resigning with user's key) (+)
 * support for yum repositories (+)
 
