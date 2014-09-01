@@ -39,6 +39,9 @@ func (n *NullSigner) SetKey(keyRef string) {
 func (n *NullSigner) SetKeyRing(keyring, secretKeyring string) {
 }
 
+func (n *NullSigner) SetPassphrase(passphrase, passphraseFile string) {
+}
+
 func (n *NullSigner) DetachedSign(source string, destination string) error {
 	return ioutil.WriteFile(destination, []byte{}, 0644)
 }

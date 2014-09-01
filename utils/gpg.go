@@ -17,6 +17,7 @@ type Signer interface {
 	Init() error
 	SetKey(keyRef string)
 	SetKeyRing(keyring, secretKeyring string)
+	SetPassphrase(passphrase, passphraseFile string)
 	DetachedSign(source string, destination string) error
 	ClearSign(source string, destination string) error
 }
@@ -38,8 +39,9 @@ var (
 
 // GpgSigner is implementation of Signer interface using gpg
 type GpgSigner struct {
-	keyRef                 string
-	keyring, secretKeyring string
+	keyRef                     string
+	keyring, secretKeyring     string
+	passphrase, passphraseFile string
 }
 
 // SetKey sets key ID to use when signing files
@@ -50,6 +52,11 @@ func (g *GpgSigner) SetKey(keyRef string) {
 // SetKeyRing allows to set custom keyring and secretkeyring
 func (g *GpgSigner) SetKeyRing(keyring, secretKeyring string) {
 	g.keyring, g.secretKeyring = keyring, secretKeyring
+}
+
+// SetPassphrase sets passhprase params
+func (g *GpgSigner) SetPassphrase(passphrase, passphraseFile string) {
+	g.passphrase, g.passphraseFile = passphrase, passphraseFile
 }
 
 func (g *GpgSigner) gpgArgs() []string {
@@ -63,6 +70,14 @@ func (g *GpgSigner) gpgArgs() []string {
 
 	if g.keyRef != "" {
 		args = append(args, "-u", g.keyRef)
+	}
+
+	if g.passphrase != "" {
+		args = append(args, "--passphrase", g.passphrase)
+	}
+
+	if g.passphraseFile != "" {
+		args = append(args, "--passphrase-file", g.passphraseFile)
 	}
 
 	return args
