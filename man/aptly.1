@@ -961,6 +961,36 @@ Options:
 \-\fBwith\-deps\fR=false
 include dependencies into search results
 .
+.SH "FILTER PACKAGES IN SNAPSHOT PRODUCING ANOTHER SNAPSHOT"
+\fBaptly\fR \fBsnapshot\fR \fBfilter\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+.
+.P
+Command filter does filtering in snapshot \fIsource\fR, producing another snapshot \fIdestination\fR\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly snapshot filter wheezy\-main wheezy\-required \(cqPriorioty (required)\(cq
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\(cqt create destination snapshot, just show what would be pulled
+.
+.TP
+\-\fBwith\-deps\fR=false
+include dependent packages as well
+.
 .SH "REMOVE PUBLISHED REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBdrop\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
