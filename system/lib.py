@@ -203,8 +203,8 @@ class BaseTest(object):
                 raise
 
     def check_cmd_output(self, command, gold_name, match_prepare=None, expected_code=0):
+        output = self.run_cmd(command, expected_code=expected_code)
         try:
-            output = self.run_cmd(command, expected_code=expected_code)
             self.verify_match(self.get_gold(gold_name), output, match_prepare)
         except:
             if self.captureResults:

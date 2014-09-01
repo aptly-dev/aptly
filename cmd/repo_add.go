@@ -40,6 +40,8 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
+	forceReplace := context.flags.Lookup("force-replace").Value.Get().(bool)
+
 	packageFiles := []string{}
 	failedFiles := []string{}
 
@@ -78,6 +80,10 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	processedFiles := []string{}
 	sort.Strings(packageFiles)
+
+	if forceReplace {
+		list.PrepareIndex()
+	}
 
 	for _, file := range packageFiles {
 		var (
@@ -155,6 +161,14 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 			continue
 		}
 
+		if forceReplace {
+			conflictingPackages := list.Search(deb.Dependency{Pkg: p.Name, Version: p.Version, Architecture: p.Architecture}, true)
+			for _, cp := range conflictingPackages {
+				context.Progress().ColoredPrintf("@r[-]@| %s removed due to conflict with package being added", cp)
+				list.Remove(cp)
+			}
+		}
+
 		err = list.Add(p)
 		if err != nil {
 			context.Progress().ColoredPrintf("@y[!]@| @!Unable to add package to repo %s: %s@|", p, err)
@@ -216,6 +230,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("remove-files", false, "remove files that have been imported successfully into repository")
+	cmd.Flag.Bool("force-replace", false, "when adding package that conflicts with existing package, remove existing package")
 
 	return cmd
 }

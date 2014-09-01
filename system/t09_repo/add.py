@@ -216,3 +216,19 @@ class AddRepo10Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages repo10", "repo_show")
+
+
+class AddRepo11Test(BaseTest):
+    """
+    add package to local repo: conflict in packages + -force-replace
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo11 -distribution=squeeze repo11",
+        "aptly repo add repo11 ${files}/pyspi_0.6.1-1.3.dsc",
+    ]
+    runCmd = "aptly repo add -force-replace repo11 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
+    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show -with-packages repo11", "repo_show")
