@@ -25,7 +25,7 @@ aptly is a tool to create partial and full mirrors of remote repositories, manag
 aptly\(cqs goal is to establish repeatability and controlled changes in a package\-centric environment\. aptly allows one to fix a set of packages in a repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows one to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
 .
 .SH "CONFIGURATION"
-aptly looks for configuration file in \fB/etc/aptly\.conf\fR and \fB~/\.aptly\.conf\fR, if no config file found, new one is created\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly\fR, it will be created if missing\.
+aptly looks for configuration file first in \fB~/\.aptly\.conf\fR then in \fB/etc/aptly\.conf\fR and, if no config file found, new one is created in home directory\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly\fR, it will be created if missing\.
 .
 .P
 Configuration file is stored in JSON format (default values shown below):
