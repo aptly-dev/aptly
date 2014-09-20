@@ -59,7 +59,7 @@ func makeCmdMirrorEdit() *commander.Command {
 		UsageLine: "edit <name>",
 		Short:     "edit properties of mirorr",
 		Long: `
-Command edit allows to change settings of mirror:
+Command edit allows one to change settings of mirror:
 filters, list of architectures.
 
 Example:

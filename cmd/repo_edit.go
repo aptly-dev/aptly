@@ -50,7 +50,7 @@ func makeCmdRepoEdit() *commander.Command {
 		UsageLine: "edit <name>",
 		Short:     "edit properties of local repository",
 		Long: `
-Command edit allows to change metadata of local repository:
+Command edit allows one to change metadata of local repository:
 comment, default distribution and component.
 
 Example:
