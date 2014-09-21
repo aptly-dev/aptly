@@ -56,21 +56,6 @@ class FilterSnapshot3Test(BaseTest):
         self.check_cmd_output("aptly snapshot show -with-packages snap2", "snapshot_show", match_prepare=remove_created_at)
 
 
-class FilterSnapshot4Test(BaseTest):
-    """
-    filter snapshot: dry-run
-    """
-    fixtureDB = True
-    fixtureCmds = [
-        "aptly snapshot create snap1 from mirror wheezy-backports",
-    ]
-    runCmd = "aptly snapshot filter -dry-run snap1 snap2 'rsyslog (>= 7.4.4)'"
-
-    def check(self):
-        self.check_output()
-        self.check_cmd_output("aptly snapshot list", "snapshot_list")
-
-
 class FilterSnapshot5Test(BaseTest):
     """
     filter snapshot: no such snapshot

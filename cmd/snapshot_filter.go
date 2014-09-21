@@ -70,20 +70,17 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
 
-	if context.flags.Lookup("dry-run").Value.Get().(bool) {
-		context.Progress().Printf("\nNot creating snapshot, as dry run was requested.\n")
-	} else {
-		// Create <destination> snapshot
-		destination := deb.NewSnapshotFromPackageList(args[1], []*deb.Snapshot{source}, result,
-			fmt.Sprintf("Filtered '%s', query was: '%s'", source.Name, strings.Join(args[2:], " ")))
+	// Create <destination> snapshot
+	destination := deb.NewSnapshotFromPackageList(args[1], []*deb.Snapshot{source}, result,
+		fmt.Sprintf("Filtered '%s', query was: '%s'", source.Name, strings.Join(args[2:], " ")))
 
-		err = context.CollectionFactory().SnapshotCollection().Add(destination)
-		if err != nil {
-			return fmt.Errorf("unable to create snapshot: %s", err)
-		}
-
-		context.Progress().Printf("\nSnapshot %s successfully filtered.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
+	err = context.CollectionFactory().SnapshotCollection().Add(destination)
+	if err != nil {
+		return fmt.Errorf("unable to create snapshot: %s", err)
 	}
+
+	context.Progress().Printf("\nSnapshot %s successfully filtered.\nYou can run 'aptly publish snapshot %s' to publish snapshot as Debian repository.\n", destination.Name, destination.Name)
+
 	return err
 }
 
@@ -104,7 +101,6 @@ Example:
 		Flag: *flag.NewFlagSet("aptly-snapshot-filter", flag.ExitOnError),
 	}
 
-	cmd.Flag.Bool("dry-run", false, "don't create destination snapshot, just show what would be pulled")
 	cmd.Flag.Bool("with-deps", false, "include dependent packages as well")
 
 	return cmd
