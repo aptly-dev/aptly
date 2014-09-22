@@ -273,3 +273,16 @@ class CreateMirror23Test(BaseTest):
     """
     runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://security.debian.org/ wheezy/updates main"
     expectedCode = 1
+
+
+class CreateMirror24Test(BaseTest):
+    """
+    create mirror: mirror with wrong filter
+    """
+    runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://security.debian.org/ wheezy/updates main"
+    fixtureGpg = True
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    configOverride = {
+        "gpgDisableVerify": True
+    }

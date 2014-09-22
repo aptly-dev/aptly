@@ -16,7 +16,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	downloadSources := context.Config().DownloadSourcePackages || context.flags.Lookup("with-sources").Value.Get().(bool)
+	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.flags, "with-sources")
 
 	var (
 		mirrorName, archiveURL, distribution string

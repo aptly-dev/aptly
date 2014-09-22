@@ -104,16 +104,16 @@ func (context *AptlyContext) Config() *utils.ConfigStructure {
 func (context *AptlyContext) DependencyOptions() int {
 	if context.dependencyOptions == -1 {
 		context.dependencyOptions = 0
-		if context.Config().DepFollowSuggests || context.globalFlags.Lookup("dep-follow-suggests").Value.Get().(bool) {
+		if LookupOption(context.Config().DepFollowSuggests, context.globalFlags, "dep-follow-suggests") {
 			context.dependencyOptions |= deb.DepFollowSuggests
 		}
-		if context.Config().DepFollowRecommends || context.globalFlags.Lookup("dep-follow-recommends").Value.Get().(bool) {
+		if LookupOption(context.Config().DepFollowRecommends, context.globalFlags, "dep-follow-recommends") {
 			context.dependencyOptions |= deb.DepFollowRecommends
 		}
-		if context.Config().DepFollowAllVariants || context.globalFlags.Lookup("dep-follow-all-variants").Value.Get().(bool) {
+		if LookupOption(context.Config().DepFollowAllVariants, context.globalFlags, "dep-follow-all-variants") {
 			context.dependencyOptions |= deb.DepFollowAllVariants
 		}
-		if context.Config().DepFollowSource || context.globalFlags.Lookup("dep-follow-source").Value.Get().(bool) {
+		if LookupOption(context.Config().DepFollowSource, context.globalFlags, "dep-follow-source") {
 			context.dependencyOptions |= deb.DepFollowSource
 		}
 	}

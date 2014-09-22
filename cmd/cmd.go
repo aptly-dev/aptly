@@ -34,6 +34,18 @@ func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
 	return
 }
 
+// LookupOption checks boolean flag with default (usually config) and command-line
+// setting
+func LookupOption(defaultValue bool, flags *flag.FlagSet, name string) (result bool) {
+	result = defaultValue
+
+	if flags.IsSet(name) {
+		result = flags.Lookup(name).Value.Get().(bool)
+	}
+
+	return
+}
+
 // RootCommand creates root command in command tree
 func RootCommand() *commander.Command {
 	cmd := &commander.Command{
