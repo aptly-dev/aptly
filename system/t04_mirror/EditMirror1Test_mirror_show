@@ -3,10 +3,9 @@ Archive Root URL: http://mirror.yandex.ru/debian/
 Distribution: wheezy
 Components: main
 Architectures: i386, amd64
-Download Sources: no
+Download Sources: yes
 Filter: nginx
 Filter With Deps: yes
-Last update: 2014-06-28 01:23:25 MSK
 Number of packages: 56121
 
 Information from release file:

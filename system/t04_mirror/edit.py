@@ -4,10 +4,10 @@ from lib import BaseTest
 
 class EditMirror1Test(BaseTest):
     """
-    edit mirror: enable filter
+    edit mirror: enable filter & download sources
     """
     fixtureDB = True
-    runCmd = "aptly mirror edit -filter=nginx -filter-with-deps wheezy-main"
+    runCmd = "aptly mirror edit -filter=nginx -filter-with-deps -with-sources wheezy-main"
 
     def check(self):
         self.check_output()
