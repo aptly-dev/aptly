@@ -4,6 +4,7 @@ Distribution: wheezy
 Components: main, contrib, non-free
 Architectures: i386
 Download Sources: yes
+Download .udebs: no
 Last update: never
 
 Information from release file:

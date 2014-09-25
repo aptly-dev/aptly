@@ -4,6 +4,7 @@ Distribution: squeeze-backports
 Components: main, contrib, non-free
 Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
 Download Sources: no
+Download .udebs: no
 Last update: never
 
 Information from release file:
@@ -11,11 +12,9 @@ Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel po
 ButAutomaticUpgrades: yes
 Codename: squeeze-backports
 Components: main contrib non-free
-Date: Fri, 07 Feb 2014 02:56:49 UTC
 Description:  Backports for the Squeeze Distribution
 
 Label: Debian Backports
 NotAutomatic: yes
 Origin: Debian Backports
 Suite: squeeze-backports
-Valid-Until: Fri, 14 Feb 2014 02:56:49 UTC
