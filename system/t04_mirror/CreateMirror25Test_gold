@@ -1,0 +1,4 @@
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release...
+
+Mirror [mirror25]: http://mirror.yandex.ru/debian/ wheezy [udeb] successfully added.
+You can run 'aptly mirror update mirror25' to download repository contents.

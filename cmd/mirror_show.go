@@ -37,6 +37,11 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 		downloadSources = "yes"
 	}
 	fmt.Printf("Download Sources: %s\n", downloadSources)
+	downloadUdebs := "no"
+	if repo.DownloadUdebs {
+		downloadUdebs = "yes"
+	}
+	fmt.Printf("Download .udebs: %s\n", downloadUdebs)
 	if repo.Filter != "" {
 		fmt.Printf("Filter: %s\n", repo.Filter)
 		filterWithDeps := "no"

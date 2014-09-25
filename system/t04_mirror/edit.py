@@ -79,3 +79,25 @@ class EditMirror7Test(BaseTest):
     fixtureDB = True
     runCmd = "aptly mirror edit -architectures=amd64,x56 wheezy-main"
     expectedCode = 1
+
+
+class EditMirror8Test(BaseTest):
+    """
+    edit mirror: enable udebs
+    """
+    fixtureDB = True
+    runCmd = "aptly mirror edit -with-udebs wheezy-main"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+
+
+class EditMirror9Test(BaseTest):
+    """
+    edit mirror: flat mirror with udebs
+    """
+    fixtureCmds = ["aptly mirror create -keyring=aptlytest.gpg mirror9 http://pkg.jenkins-ci.org/debian-stable binary/"]
+    fixtureGpg = True
+    runCmd = "aptly mirror edit -with-udebs mirror9"
+    expectedCode = 1

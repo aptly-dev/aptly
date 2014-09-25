@@ -277,7 +277,7 @@ class CreateMirror23Test(BaseTest):
 
 class CreateMirror24Test(BaseTest):
     """
-    create mirror: mirror with wrong filter
+    create mirror: disable config value with option
     """
     runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://security.debian.org/ wheezy/updates main"
     fixtureGpg = True
@@ -286,3 +286,23 @@ class CreateMirror24Test(BaseTest):
     configOverride = {
         "gpgDisableVerify": True
     }
+
+
+class CreateMirror25Test(BaseTest):
+    """
+    create mirror: mirror with udebs enabled
+    """
+    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-udebs mirror25 http://mirror.yandex.ru/debian/ wheezy"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror25", "mirror_show")
+
+
+class CreateMirror26Test(BaseTest):
+    """
+    create mirror: flat mirror with udebs
+    """
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg -with-udebs mirror26 http://pkg.jenkins-ci.org/debian-stable binary/"
+    fixtureGpg = True
+    expectedCode = 1
