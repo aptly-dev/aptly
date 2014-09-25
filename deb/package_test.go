@@ -28,6 +28,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
 	c.Check(p.IsSource, Equals, false)
+	c.Check(p.IsUdeb, Equals, false)
 	c.Check(p.Name, Equals, "alien-arena-common")
 	c.Check(p.Version, Equals, "7.40-2")
 	c.Check(p.Architecture, Equals, "i386")
@@ -40,11 +41,27 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.deps.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
 }
 
+func (s *PackageSuite) TestNewUdebFromPara(c *C) {
+	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	p := NewUdebPackageFromControlFile(stanza)
+
+	c.Check(p.IsSource, Equals, false)
+	c.Check(p.IsUdeb, Equals, true)
+	c.Check(p.Name, Equals, "dmidecode-udeb")
+	c.Check(p.Version, Equals, "2.11-9")
+	c.Check(p.Architecture, Equals, "amd64")
+	c.Check(p.Provides, DeepEquals, []string(nil))
+	c.Check(p.Files(), HasLen, 1)
+	c.Check(p.Files()[0].Filename, Equals, "dmidecode-udeb_2.11-9_amd64.udeb")
+	c.Check(p.deps.Depends, DeepEquals, []string{"libc6-udeb (>= 2.13)"})
+}
+
 func (s *PackageSuite) TestNewSourceFromPara(c *C) {
 	p, err := NewSourcePackageFromControlFile(s.sourceStanza)
 
 	c.Check(err, IsNil)
 	c.Check(p.IsSource, Equals, true)
+	c.Check(p.IsUdeb, Equals, false)
 	c.Check(p.Name, Equals, "access-modifier-checker")
 	c.Check(p.Version, Equals, "1.0-4")
 	c.Check(p.Architecture, Equals, "source")
@@ -134,21 +151,28 @@ func (s *PackageSuite) TestGetField(c *C) {
 
 	p4, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
 
+	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	p5 := NewUdebPackageFromControlFile(stanza5)
+
 	c.Check(p.GetField("$Source"), Equals, "alien-arena")
 	c.Check(p2.GetField("$Source"), Equals, "alien-arena-common")
 	c.Check(p3.GetField("$Source"), Equals, "alien-arena")
 	c.Check(p4.GetField("$Source"), Equals, "")
+	c.Check(p5.GetField("$Source"), Equals, "dmidecode")
 
 	c.Check(p.GetField("$SourceVersion"), Equals, "7.40-2")
 	c.Check(p2.GetField("$SourceVersion"), Equals, "7.40-2")
 	c.Check(p3.GetField("$SourceVersion"), Equals, "3.5")
 	c.Check(p4.GetField("$SourceVersion"), Equals, "")
+	c.Check(p5.GetField("$SourceVersion"), Equals, "2.11-9")
 
 	c.Check(p.GetField("$Architecture"), Equals, "i386")
 	c.Check(p4.GetField("$Architecture"), Equals, "source")
+	c.Check(p5.GetField("$Architecture"), Equals, "amd64")
 
 	c.Check(p.GetField("$PackageType"), Equals, "deb")
 	c.Check(p4.GetField("$PackageType"), Equals, "source")
+	c.Check(p5.GetField("$PackageType"), Equals, "udeb")
 
 	c.Check(p.GetField("Name"), Equals, "alien-arena-common")
 	c.Check(p4.GetField("Name"), Equals, "access-modifier-checker")
@@ -455,3 +479,20 @@ Directory: pool/main/a/access-modifier-checker
 Priority: source
 Section: java
 `
+
+const udebPackageMeta = `Package: dmidecode-udeb
+Source: dmidecode
+Version: 2.11-9
+Installed-Size: 115
+Maintainer: Daniel Baumann <daniel.baumann@progress-technologies.net>
+Architecture: amd64
+Depends: libc6-udeb (>= 2.13)
+Description: SMBIOS/DMI table decoder (udeb)
+Description-md5: bdfb786c6a57097be8c8600b800e749f
+Section: debian-installer
+Priority: optional
+Filename: pool/main/d/dmidecode/dmidecode-udeb_2.11-9_amd64.udeb
+Size: 29188
+MD5sum: ae70341c4d96dcded89fa670bcfea31e
+SHA1: 9532ae4226a85805189a671ee0283f719d48a5ba
+SHA256: bbb3a2cb07f741c3995b6d4bb08d772d83582b93a0236d4ea7736bc0370fc320`

@@ -24,6 +24,8 @@ type Package struct {
 	Provides []string
 	// Is this source package
 	IsSource bool
+	// Is this udeb package
+	IsUdeb bool
 	// Hash of files section
 	FilesHash uint64
 	// Is this >= 0.6 package?
@@ -169,6 +171,14 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 	return result, nil
 }
 
+// NewUdebPackageFromControlFile creates .udeb Package from parsed Debian control file
+func NewUdebPackageFromControlFile(input Stanza) *Package {
+	p := NewPackageFromControlFile(input)
+	p.IsUdeb = true
+
+	return p
+}
+
 // Key returns unique key identifying package
 func (p *Package) Key(prefix string) []byte {
 	if p.V06Plus {
@@ -219,6 +229,9 @@ func (p *Package) GetField(name string) string {
 	case "$PackageType":
 		if p.IsSource {
 			return "source"
+		}
+		if p.IsUdeb {
+			return "udeb"
 		}
 		return "deb"
 	case "Name":
