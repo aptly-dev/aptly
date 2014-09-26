@@ -27,12 +27,16 @@ class PublishSnapshot1Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Release')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-amd64/Packages')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
