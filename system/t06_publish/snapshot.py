@@ -846,6 +846,7 @@ class PublishSnapshot35Test(BaseTest):
         "aptly snapshot create squeeze from mirror squeeze",
     ]
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec squeeze"
+    gold_processor = BaseTest.expand_environ
 
     def check(self):
         super(PublishSnapshot35Test, self).check()
