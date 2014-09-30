@@ -1,0 +1,20 @@
+Package: dmraid-udeb
+Version: 1.0.0.rc16-4.1
+Installed-Size: 36
+Priority: optional
+Section: debian-installer
+Maintainer: Giuseppe Iuculano <iuculano@debian.org>
+Architecture: i386
+Description: Device-Mapper Software RAID support tool (udeb)
+ dmraid discovers, activates, deactivates and displays properties
+ of software RAID sets (eg, ATARAID) and contained DOS partitions.
+ .
+ This is the minimal package (udeb) used by debian-installer
+MD5sum: 4d8bb4dafb0ef9059dac75846e162784
+SHA1: fd5c73e08d4c5381b1136c2ff170332d77526246
+SHA256: fe4ff3351186f03039f8cd6f78e8e4f473a75b613f950caac06fa21dda2d59e8
+Source: dmraid
+Size: 11022
+Depends: libc6-udeb (>= 2.11), libdmraid1.0.0.rc16-udeb (>= 1.0.0.rc16), dmsetup-udeb
+Filename: pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb
+

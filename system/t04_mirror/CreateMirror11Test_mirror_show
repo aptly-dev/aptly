@@ -4,6 +4,7 @@ Distribution: squeeze
 Components: main, contrib, non-free
 Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
 Download Sources: no
+Download .udebs: no
 Last update: never
 
 Information from release file:

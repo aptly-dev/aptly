@@ -37,6 +37,8 @@ type RemoteRepo struct {
 	Architectures []string
 	// Should we download sources?
 	DownloadSources bool
+	// Should we download .udebs?
+	DownloadUdebs bool
 	// Meta-information about repository
 	Meta Stanza
 	// Last update date
@@ -55,7 +57,7 @@ type RemoteRepo struct {
 
 // NewRemoteRepo creates new instance of Debian remote repository with specified params
 func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string,
-	architectures []string, downloadSources bool) (*RemoteRepo, error) {
+	architectures []string, downloadSources bool, downloadUdebs bool) (*RemoteRepo, error) {
 	result := &RemoteRepo{
 		UUID:            uuid.New(),
 		Name:            name,
@@ -64,6 +66,7 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		Components:      components,
 		Architectures:   architectures,
 		DownloadSources: downloadSources,
+		DownloadUdebs:   downloadUdebs,
 	}
 
 	err := result.prepare()
@@ -79,6 +82,9 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		result.Architectures = nil
 		if len(result.Components) > 0 {
 			return nil, fmt.Errorf("components aren't supported for flat repos")
+		}
+		if result.DownloadUdebs {
+			return nil, fmt.Errorf("debian-installer udebs aren't supported for flat repos")
 		}
 		result.Components = nil
 	}
@@ -102,7 +108,10 @@ func (repo *RemoteRepo) prepare() error {
 func (repo *RemoteRepo) String() string {
 	srcFlag := ""
 	if repo.DownloadSources {
-		srcFlag = " [src]"
+		srcFlag += " [src]"
+	}
+	if repo.DownloadUdebs {
+		srcFlag += " [udeb]"
 	}
 	distribution := repo.Distribution
 	if distribution == "" {
@@ -166,6 +175,13 @@ func (repo *RemoteRepo) BinaryURL(component string, architecture string) *url.UR
 // SourcesURL returns URL of Sources files for given component
 func (repo *RemoteRepo) SourcesURL(component string) *url.URL {
 	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s/source/Sources", repo.Distribution, component)}
+	return repo.archiveRootURL.ResolveReference(path)
+}
+
+// UdebURL returns URL of Packages files for given component and
+// architecture
+func (repo *RemoteRepo) UdebURL(component string, architecture string) *url.URL {
+	path := &url.URL{Path: fmt.Sprintf("dists/%s/%s/debian-installer/binary-%s/Packages", repo.Distribution, component, architecture)}
 	return repo.archiveRootURL.ResolveReference(path)
 }
 
@@ -342,6 +358,9 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 		for _, component := range repo.Components {
 			for _, architecture := range repo.Architectures {
 				packagesURLs = append(packagesURLs, []string{repo.BinaryURL(component, architecture).String(), "binary"})
+				if repo.DownloadUdebs {
+					packagesURLs = append(packagesURLs, []string{repo.UdebURL(component, architecture).String(), "udeb"})
+				}
 			}
 			if repo.DownloadSources {
 				packagesURLs = append(packagesURLs, []string{repo.SourcesURL(component).String(), "source"})
@@ -378,6 +397,8 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 
 			if kind == "binary" {
 				p = NewPackageFromControlFile(stanza)
+			} else if kind == "udeb" {
+				p = NewUdebPackageFromControlFile(stanza)
 			} else if kind == "source" {
 				p, err = NewSourcePackageFromControlFile(stanza)
 				if err != nil {

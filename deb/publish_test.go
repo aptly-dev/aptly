@@ -93,7 +93,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 		"files:other": s.publishedStorage2}}
 	s.packagePool = files.NewPackagePool(s.root)
 
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	repo.packageRefs = s.reflist
 	s.factory.RemoteRepoCollection().Add(repo)
 

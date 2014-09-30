@@ -4,6 +4,7 @@ Distribution: wheezy
 Components: main
 Architectures: i386, amd64
 Download Sources: yes
+Download .udebs: no
 Filter: nginx
 Filter With Deps: yes
 Number of packages: 56121

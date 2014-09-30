@@ -8,6 +8,10 @@ def strip_processor(output):
     return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
 
 
+def sorted_processor(output):
+    return "\n".join(sorted(output.split("\n")))
+
+
 class PublishSnapshot1Test(BaseTest):
     """
     publish snapshot: defaults
@@ -27,12 +31,16 @@ class PublishSnapshot1Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Release')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-amd64/Packages')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
@@ -41,6 +49,9 @@ class PublishSnapshot1Test(BaseTest):
 
         self.check_file_contents('public/dists/maverick/main/binary-i386/Release', 'release_i386')
         self.check_file_contents('public/dists/maverick/main/binary-amd64/Release', 'release_amd64')
+
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/maverick/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
 
         # verify signatures
         self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
@@ -822,3 +833,96 @@ class PublishSnapshot34Test(BaseTest):
         super(PublishSnapshot34Test, self).check()
 
         self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
+
+
+class PublishSnapshot35Test(BaseTest):
+    """
+    publish snapshot: mirror with udebs
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (dmraid)' -with-udebs squeeze http://mirror.yandex.ru/debian/ squeeze main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg squeeze",
+        "aptly snapshot create squeeze from mirror squeeze",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec squeeze"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot35Test, self).check()
+
+        self.check_exists('public/dists/squeeze/InRelease')
+        self.check_exists('public/dists/squeeze/Release')
+        self.check_exists('public/dists/squeeze/Release.gpg')
+
+        self.check_exists('public/dists/squeeze/main/binary-i386/Release')
+        self.check_exists('public/dists/squeeze/main/binary-i386/Packages')
+        self.check_exists('public/dists/squeeze/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/squeeze/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Release')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages.gz')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/squeeze/main/binary-amd64/Release')
+        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages')
+        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Release')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages.bz2')
+        self.check_not_exists('public/dists/squeeze/main/source/Sources')
+        self.check_not_exists('public/dists/squeeze/main/source/Sources.gz')
+        self.check_not_exists('public/dists/squeeze/main/source/Sources.bz2')
+
+        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb')
+        self.check_exists('public/pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_amd64.deb')
+        self.check_exists('public/pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_i386.deb')
+
+        self.check_file_contents('public/dists/squeeze/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-i386/Packages', 'packages_udeb_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-amd64/Packages', 'packages_udeb_amd64', match_prepare=sorted_processor)
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
+
+        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-i386/Release', 'release_udeb_i386', match_prepare=strip_processor)
+
+        # verify sums
+        release = self.read_file('public/dists/squeeze/Release').split("\n")
+        release = [l for l in release if l.startswith(" ")]
+        pathsSeen = set()
+        for l in release:
+            fileHash, fileSize, path = l.split()
+            pathsSeen.add(path)
+
+            fileSize = int(fileSize)
+
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/squeeze/', path))
+            if fileSize != st.st_size:
+                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+
+            if len(fileHash) == 32:
+                h = hashlib.md5()
+            elif len(fileHash) == 40:
+                h = hashlib.sha1()
+            else:
+                h = hashlib.sha256()
+
+            h.update(self.read_file(os.path.join('public/dists/squeeze', path)))
+
+            if h.hexdigest() != fileHash:
+                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+
+        pathsExepcted = set()
+        for arch in ("i386", "amd64"):
+            for udeb in ("", "debian-installer/"):
+                for ext in ("", ".gz", ".bz2"):
+                    pathsExepcted.add("main/%sbinary-%s/Packages%s" % (udeb, arch, ext))
+
+                pathsExepcted.add("main/%sbinary-%s/Release" % (udeb, arch))
+
+        if pathsSeen != pathsExepcted:
+            raise Exception("path seen wrong: %r != %r" % (pathsSeen, pathsExepcted))

@@ -1,0 +1,20 @@
+Name: mirror25
+Archive Root URL: http://mirror.yandex.ru/debian/
+Distribution: wheezy
+Components: main, contrib, non-free
+Architectures: i386
+Download Sources: no
+Download .udebs: yes
+Last update: never
+
+Information from release file:
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
+Codename: wheezy
+Components: main contrib non-free
+Date: Sat, 12 Jul 2014 10:59:25 UTC
+Description:  Debian 7.6 Released 12 July 2014
+
+Label: Debian
+Origin: Debian
+Suite: stable
+Version: 7.6

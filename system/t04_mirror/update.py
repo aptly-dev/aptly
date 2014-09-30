@@ -156,3 +156,19 @@ class UpdateMirror11Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror12Test(BaseTest):
+    """
+    update mirrors: update with udebs
+    """
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (dmraid)' -with-udebs squeeze http://mirror.yandex.ru/debian/ squeeze main non-free",
+    ]
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg squeeze"
+    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))

@@ -33,7 +33,7 @@ Aptly features: ("+" means planned features)
 
 Current limitations:
 
-* debian-installer and translations not supported yet
+* translations are not supported yet
 
 Download
 --------

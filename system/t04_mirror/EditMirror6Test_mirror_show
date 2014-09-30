@@ -4,6 +4,7 @@ Distribution: wheezy
 Components: main
 Architectures: amd64, s390
 Download Sources: no
+Download .udebs: no
 Number of packages: 56121
 
 Information from release file:

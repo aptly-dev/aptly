@@ -27,8 +27,14 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			repo.FilterWithDeps = flag.Value.Get().(bool)
 		case "with-sources":
 			repo.DownloadSources = flag.Value.Get().(bool)
+		case "with-udebs":
+			repo.DownloadUdebs = flag.Value.Get().(bool)
 		}
 	})
+
+	if repo.IsFlat() && repo.DownloadUdebs {
+		return fmt.Errorf("unable to edit: flat mirrors don't support udebs")
+	}
 
 	if repo.Filter != "" {
 		_, err = query.Parse(repo.Filter)
@@ -59,7 +65,7 @@ func makeCmdMirrorEdit() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorEdit,
 		UsageLine: "edit <name>",
-		Short:     "edit properties of mirorr",
+		Short:     "edit mirror settings",
 		Long: `
 Command edit allows one to change settings of mirror:
 filters, list of architectures.
@@ -74,6 +80,7 @@ Example:
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
+	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
 
 	return cmd
 }
