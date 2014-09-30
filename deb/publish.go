@@ -469,7 +469,15 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				progress.AddBar(1)
 			}
 
-			if pkg.Architecture == "all" || utils.StrSliceHasItem(p.Architectures, pkg.Architecture) {
+			matches := false
+			for _, arch := range p.Architectures {
+				if pkg.MatchesArchitecture(arch) {
+					matches = true
+					break
+				}
+			}
+
+			if matches {
 				hadUdebs = hadUdebs || pkg.IsUdeb
 				err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, component, forceOverwrite)
 				if err != nil {
