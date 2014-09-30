@@ -845,7 +845,7 @@ class PublishSnapshot35Test(BaseTest):
         "aptly mirror update -keyring=aptlytest.gpg squeeze",
         "aptly snapshot create squeeze from mirror squeeze",
     ]
-    runCmd = "aptly publish snapshot squeeze"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec squeeze"
 
     def check(self):
         super(PublishSnapshot35Test, self).check()
