@@ -311,6 +311,10 @@ gpg keyring to use when verifying Release file (could be specified multiple time
 \-\fBwith\-sources\fR=false
 download source packages in addition to binary packages
 .
+.TP
+\-\fBwith\-udebs\fR=false
+download \.udeb packages (Debian installer support)
+.
 .SH "LIST MIRRORS"
 \fBaptly\fR \fBmirror\fR \fBlist\fR
 .
@@ -438,6 +442,10 @@ when filtering, include dependencies of matching packages as well
 \-\fBwith\-sources\fR=false
 download source packages in addition to binary packages
 .
+.TP
+\-\fBwith\-udebs\fR=false
+download \.udeb packages (Debian installer support)
+.
 .SH "SEARCH MIRROR FOR PACKAGES MATCHING QUERY"
 \fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
 .
@@ -468,7 +476,7 @@ include dependencies into search results
 \fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
 .
 .P
-Command adds packages to local repository from \.deb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would then be created and added to the database\. Files would be imported to internal package pool\. For source packages, all required files are added automatically as well\. Extra files for source package should be in the same directory as *\.dsc file\.
+Command adds packages to local repository from \.deb, \.udeb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.[u]deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would then be created and added to the database\. Files would be imported to internal package pool\. For source packages, all required files are added automatically as well\. Extra files for source package should be in the same directory as *\.dsc file\.
 .
 .P
 Example:
