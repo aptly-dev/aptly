@@ -65,7 +65,7 @@ func makeCmdMirrorEdit() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorEdit,
 		UsageLine: "edit <name>",
-		Short:     "edit properties of mirorr",
+		Short:     "edit mirror settings",
 		Long: `
 Command edit allows one to change settings of mirror:
 filters, list of architectures.
