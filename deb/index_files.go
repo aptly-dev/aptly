@@ -167,7 +167,7 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 
 		file = &indexFile{
 			parent:       files,
-			discardable:  udeb,
+			discardable:  false,
 			compressable: true,
 			signable:     false,
 			relativePath: relativePath,

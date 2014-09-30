@@ -521,6 +521,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		udebs := []bool{false}
 		if hadUdebs {
 			udebs = append(udebs, true)
+
+			// For all architectures, pregenerate .udeb indexes
+			for _, arch := range p.Architectures {
+				indexes.PackageIndex(component, arch, true)
+			}
 		}
 
 		// For all architectures, generate Release files
