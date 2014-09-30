@@ -1,0 +1,7 @@
+Name: repo12
+Comment: Repo12
+Default Distribution: squeeze
+Default Component: main
+Number of packages: 1
+Packages:
+  dmraid-udeb_1.0.0.rc16-4.1_amd64

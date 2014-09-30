@@ -232,3 +232,38 @@ class AddRepo11Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages repo11", "repo_show")
+
+
+class AddRepo12Test(BaseTest):
+    """
+    add package to local repo: .udeb file
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo12 -distribution=squeeze repo12",
+    ]
+    runCmd = "aptly repo add repo12 ${udebs}/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show -with-packages repo12", "repo_show")
+
+        # check pool
+        self.check_exists('pool/72/16/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+
+
+class AddRepo13Test(BaseTest):
+    """
+    add package to local repo: .udeb and .deb files
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo13 -distribution=squeeze repo13",
+    ]
+    runCmd = "aptly repo add repo13 ${udebs} ${files}"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show -with-packages repo13", "repo_show")
+
+        # check pool
+        self.check_exists('pool/72/16/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+        self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')

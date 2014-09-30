@@ -155,6 +155,7 @@ class BaseTest(object):
             if not hasattr(command, "__iter__"):
                 params = {
                     'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"),
+                    'udebs': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "udebs"),
                     'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
                 }
                 if self.fixtureWebServer:
