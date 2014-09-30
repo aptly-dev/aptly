@@ -4,7 +4,7 @@ Commands:
 
     create      create new mirror
     drop        delete mirror
-    edit        edit properties of mirorr
+    edit        edit mirror settings
     list        list mirrors
     rename      renames mirror
     search      search mirror for packages matching query
