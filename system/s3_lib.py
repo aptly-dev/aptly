@@ -74,5 +74,5 @@ class S3Test(BaseTest):
         if path.startswith("public/"):
             path = path[7:]
 
-        key = self.bucket.get_key(path, validate=True)
+        key = self.bucket.get_key(path)
         return key.get_contents_as_string()
