@@ -19,6 +19,7 @@ type PublishedStorage struct {
 	prefix           string
 	storageClass     string
 	encryptionMethod string
+	plusWorkaround   bool
 }
 
 // Check interface
@@ -28,7 +29,7 @@ var (
 
 // NewPublishedStorageRaw creates published storage from raw aws credentials
 func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string) (*PublishedStorage, error) {
+	storageClass, encryptionMethod string, plusWorkaround bool) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
 	}
@@ -42,7 +43,8 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		acl:              s3.ACL(defaultACL),
 		prefix:           prefix,
 		storageClass:     storageClass,
-		encryptionMethod: encryptionMethod}
+		encryptionMethod: encryptionMethod,
+		plusWorkaround:   plusWorkaround}
 	result.bucket = result.s3.Bucket(bucket)
 
 	return result, nil
@@ -51,7 +53,7 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
 func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string) (*PublishedStorage, error) {
+	storageClass, encryptionMethod string, plusWorkaround bool) (*PublishedStorage, error) {
 	auth, err := aws.GetAuth(accessKey, secretKey)
 	if err != nil {
 		return nil, err
@@ -62,7 +64,7 @@ func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefi
 		return nil, fmt.Errorf("unknown region: %#v", region)
 	}
 
-	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod)
+	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod, plusWorkaround)
 }
 
 // String
@@ -107,6 +109,10 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	err = storage.bucket.PutReaderHeader(filepath.Join(storage.prefix, path), source, fi.Size(), headers, storage.acl)
 	if err != nil {
 		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+	}
+
+	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
+		return storage.PutFile(strings.Replace(path, "+", " ", -1), sourceFilename)
 	}
 	return nil
 }

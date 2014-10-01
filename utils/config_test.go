@@ -67,7 +67,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"prefix\": \"\",\n"+
 		"      \"acl\": \"\",\n"+
 		"      \"storageClass\": \"\",\n"+
-		"      \"encryptionMethod\": \"\"\n"+"    }\n"+
+		"      \"encryptionMethod\": \"\",\n"+
+		"      \"plusWorkaround\": false\n"+
+		"    }\n"+
 		"  }\n"+
 		"}")
 }

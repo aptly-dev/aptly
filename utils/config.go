@@ -34,6 +34,7 @@ type S3PublishRoot struct {
 	ACL              string `json:"acl"`
 	StorageClass     string `json:"storageClass"`
 	EncryptionMethod string `json:"encryptionMethod"`
+	PlusWorkaround   bool   `json:"plusWorkaround"`
 }
 
 // Config is configuration for aptly, shared by all modules

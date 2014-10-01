@@ -217,7 +217,8 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 
 			var err error
 			publishedStorage, err = s3.NewPublishedStorage(params.AccessKeyID, params.SecretAccessKey,
-				params.Region, params.Bucket, params.ACL, params.Prefix, params.StorageClass, params.EncryptionMethod)
+				params.Region, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
+				params.EncryptionMethod, params.PlusWorkaround)
 			if err != nil {
 				Fatal(err)
 			}

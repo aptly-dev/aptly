@@ -57,7 +57,8 @@ Configuration file is stored in JSON format (default values shown below):
       "prefix": "",
       "acl": "public\-read",
       "storageClass": "",
-      "encryptionMethod": ""
+      "encryptionMethod": "",
+      "plusWorkaround": false
     }
 }
 .
@@ -117,7 +118,7 @@ if enabled, all mirrors created would have flag set to download source packages;
 specifies paramaters for short PPA url expansion, if left blank they default to output of \fBlsb_release\fR command
 .
 .TP
-\fBS3PublisEndpoints\fR
+\fBS3PublishEndpoints\fR
 configuration of Amazon S3 publishing endpoints (see below)
 .
 .SH "S3 PUBLISHING ENDPOINTS"
@@ -150,6 +151,10 @@ bucket name
 .TP
 \fBencryptionMethod\fR
 (optional) server\-side encryption method, defaults to none\. Currently the only available encryption method is \fBAES256\fR
+.
+.TP
+\fBplusWorkaround\fR
+(optional) workaround misbehavior in apt and Amazon S3 for files with \fB+\fR in filename by creating two copies of package files with \fB+\fR in filename: one original and another one with spaces instead of plus signs With \fBplusWorkaround\fR enabled, package files with plus sign would be stored twice\. aptly might not cleanup files with spaces when published repository is dropped or updated (switched) to new version of repository (snapshot)\.
 .
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:

@@ -24,10 +24,10 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	c.Assert(s.srv, NotNil)
 
 	auth, _ := aws.GetAuth("aa", "bb")
-	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "", "", "")
+	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "", "", "", false)
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala", "", "")
+	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala", "", "", false)
 	c.Assert(err, IsNil)
 
 	err = s.storage.s3.Bucket("test").PutBucket("private")
@@ -39,7 +39,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "")
+	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "", false)
 	c.Check(stor, IsNil)
 	c.Check(err, ErrorMatches, "unknown region: .*")
 }
@@ -60,6 +60,25 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	c.Check(err, IsNil)
 
 	data, err = s.storage.bucket.Get("lala/a/b.txt")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("welcome to s3!"))
+}
+
+func (s *PublishedStorageSuite) TestPutFilePlusWorkaround(c *C) {
+	s.storage.plusWorkaround = true
+
+	dir := c.MkDir()
+	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("a/b+c.txt", filepath.Join(dir, "a"))
+	c.Check(err, IsNil)
+
+	data, err := s.storage.bucket.Get("a/b+c.txt")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("welcome to s3!"))
+
+	data, err = s.storage.bucket.Get("a/b c.txt")
 	c.Check(err, IsNil)
 	c.Check(data, DeepEquals, []byte("welcome to s3!"))
 }
