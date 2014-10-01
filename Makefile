@@ -23,6 +23,7 @@ all: test check system-test
 prepare:
 	go get -u github.com/mattn/gom
 	$(GOM) $(GOM_ENVIRONMENT) install
+	pip install boto
 
 coverage.out:
 	rm -f coverage.*.out
