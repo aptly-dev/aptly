@@ -130,30 +130,29 @@ class S3Publish4Test(S3Test):
     runCmd = "aptly publish list"
 
 
-# Breaks, as we need a fix: https://github.com/mitchellh/goamz/pull/116
-# class S3Publish5Test(S3Test):
-#     """
-#     publish to S3: publish drop - component cleanup
-#     """
-#     fixtureCmds = [
-#         "aptly repo create local1",
-#         "aptly repo create local2",
-#         "aptly repo add local1 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb",
-#         "aptly repo add local2 ${files}",
-#         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq1 local1 s3:test1:",
-#         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq2 local2 s3:test1:",
-#     ]
-#     runCmd = "aptly publish drop sq2 s3:test1:"
+class S3Publish5Test(S3Test):
+    """
+    publish to S3: publish drop - component cleanup
+    """
+    fixtureCmds = [
+        "aptly repo create local1",
+        "aptly repo create local2",
+        "aptly repo add local1 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb",
+        "aptly repo add local2 ${files}",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq1 local1 s3:test1:",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq2 local2 s3:test1:",
+    ]
+    runCmd = "aptly publish drop sq2 s3:test1:"
 
-#     def check(self):
-#         super(S3Publish5Test, self).check()
+    def check(self):
+        super(S3Publish5Test, self).check()
 
-#         self.check_exists('public/dists/sq1')
-#         self.check_not_exists('public/dists/sq2')
-#         self.check_exists('public/pool/main/')
+        self.check_exists('public/dists/sq1')
+        self.check_not_exists('public/dists/sq2')
+        self.check_exists('public/pool/main/')
 
-#         self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
-#         self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-#         self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-#         self.check_not_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-#         self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_not_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_not_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
