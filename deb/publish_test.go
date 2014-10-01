@@ -167,6 +167,9 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 
 	_, err := NewPublishedRepo("", ".", "a", nil, []string{"main", "main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
 	c.Check(err, ErrorMatches, "duplicate component name: main")
+
+	_, err = NewPublishedRepo("", ".", "wheezy/updates", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
+	c.Check(err, ErrorMatches, "invalid distribution wheezy/updates, '/' is not allowed")
 }
 
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
@@ -265,6 +268,13 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{""}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, IsNil)
 	c.Check(repo.Distribution, Equals, "precise")
+	c.Check(repo.Components(), DeepEquals, []string{"contrib"})
+
+	s.localRepo.DefaultDistribution = "precise/updates"
+
+	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{""}, []interface{}{s.localRepo}, s.factory)
+	c.Check(err, IsNil)
+	c.Check(repo.Distribution, Equals, "precise-updates")
 	c.Check(repo.Components(), DeepEquals, []string{"contrib"})
 
 	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{"", "contrib"}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
