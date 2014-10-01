@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "September 2014" "" ""
+.TH "APTLY" "1" "October 2014" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -55,7 +55,9 @@ Configuration file is stored in JSON format (default values shown below):
       "awsAccessKeyID": ""
       "awsSecretAccessKey": "",
       "prefix": "",
-      "acl": "public\-read"
+      "acl": "public\-read",
+      "storageClass": "",
+      "encryptionMethod": ""
     }
 }
 .
@@ -140,6 +142,14 @@ bucket name
 .TP
 \fBawsAccessKeyID\fR, \fBawsSecretAccessKey\fR
 (optional) Amazon credentials to access S3 bucket\. If not supplied, environment variables \fBAWS_ACCESS_KEY_ID\fR and \fBAWS_SECRET_ACCESS_KEY\fR are used\.
+.
+.TP
+\fBstorageClass\fR
+(optional) Amazon S3 storage class, defaults to \fBSTANDARD\fR\. Other values available: \fBREDUCED_REDUNDANCY\fR (lower price, lower redundancy)
+.
+.TP
+\fBencryptionMethod\fR
+(optional) server\-side encryption method, defaults to none\. Currently the only available encryption method is \fBAES256\fR
 .
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:

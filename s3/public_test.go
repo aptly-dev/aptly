@@ -24,10 +24,10 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	c.Assert(s.srv, NotNil)
 
 	auth, _ := aws.GetAuth("aa", "bb")
-	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "")
+	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "", "", "")
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala")
+	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala", "", "")
 	c.Assert(err, IsNil)
 
 	err = s.storage.s3.Bucket("test").PutBucket("private")
@@ -39,7 +39,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "")
+	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "")
 	c.Check(stor, IsNil)
 	c.Check(err, ErrorMatches, "unknown region: .*")
 }

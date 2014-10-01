@@ -47,7 +47,9 @@ Configuration file is stored in JSON format (default values shown below):
           "awsAccessKeyID": ""
           "awsSecretAccessKey": "",
           "prefix": "",
-          "acl": "public-read"
+          "acl": "public-read",
+          "storageClass": "",
+          "encryptionMethod": ""
         }
     }
 
@@ -121,6 +123,13 @@ and associated settings:
      (optional) Amazon credentials to access S3 bucket. If not supplied,
      environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
      are used.
+   * `storageClass`:
+     (optional) Amazon S3 storage class, defaults to `STANDARD`. Other values
+     available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
+   * `encryptionMethod`:
+     (optional) server-side encryption method, defaults to none. Currently
+     the only available encryption method is `AES256`
+
 
 In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
 publishing prefix on the command line, e.g.:

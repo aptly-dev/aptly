@@ -13,10 +13,12 @@ import (
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
 type PublishedStorage struct {
-	s3     *s3.S3
-	bucket *s3.Bucket
-	acl    s3.ACL
-	prefix string
+	s3               *s3.S3
+	bucket           *s3.Bucket
+	acl              s3.ACL
+	prefix           string
+	storageClass     string
+	encryptionMethod string
 }
 
 // Check interface
@@ -25,12 +27,22 @@ var (
 )
 
 // NewPublishedStorageRaw creates published storage from raw aws credentials
-func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix string) (*PublishedStorage, error) {
+func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix,
+	storageClass, encryptionMethod string) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
 	}
 
-	result := &PublishedStorage{s3: s3.New(auth, region), acl: s3.ACL(defaultACL), prefix: prefix}
+	if storageClass == "STANDARD" {
+		storageClass = ""
+	}
+
+	result := &PublishedStorage{
+		s3:               s3.New(auth, region),
+		acl:              s3.ACL(defaultACL),
+		prefix:           prefix,
+		storageClass:     storageClass,
+		encryptionMethod: encryptionMethod}
 	result.bucket = result.s3.Bucket(bucket)
 
 	return result, nil
@@ -38,7 +50,8 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefix string) (*PublishedStorage, error) {
+func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefix,
+	storageClass, encryptionMethod string) (*PublishedStorage, error) {
 	auth, err := aws.GetAuth(accessKey, secretKey)
 	if err != nil {
 		return nil, err
@@ -49,7 +62,7 @@ func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefi
 		return nil, fmt.Errorf("unknown region: %#v", region)
 	}
 
-	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix)
+	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod)
 }
 
 // String
@@ -81,7 +94,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 		return err
 	}
 
-	err = storage.bucket.PutReader(filepath.Join(storage.prefix, path), source, fi.Size(), "binary/octet-stream", storage.acl)
+	headers := map[string][]string{
+		"Content-Type": {"binary/octet-stream"},
+	}
+	if storage.storageClass != "" {
+		headers["x-amz-storage-class"] = []string{storage.storageClass}
+	}
+	if storage.encryptionMethod != "" {
+		headers["x-amz-server-side-encryption"] = []string{storage.encryptionMethod}
+	}
+
+	err = storage.bucket.PutReaderHeader(filepath.Join(storage.prefix, path), source, fi.Size(), headers, storage.acl)
 	if err != nil {
 		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
 	}
