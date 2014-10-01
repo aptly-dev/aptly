@@ -8,6 +8,7 @@ import fnmatch
 import sys
 
 from lib import BaseTest
+from s3_lib import S3Test
 
 try:
     from termcolor import colored
@@ -32,7 +33,8 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         for name in dir(testModule):
             o = getattr(testModule, name)
 
-            if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest):
+            if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
+                    o is not S3Test):
                 continue
 
             if filters:

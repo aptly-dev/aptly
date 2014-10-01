@@ -1,0 +1,4 @@
+Published repositories:
+  * s3:test1:./maverick [amd64, i386] publishes {main: [local-repo]}
+  * s3:test1:./xyz [amd64, i386] publishes {main: [local-repo]}
+  * s3:test1:prefix/maverick [amd64, i386] publishes {main: [local-repo]}
