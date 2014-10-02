@@ -124,7 +124,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 
 	resp, err := downloader.client.Get(task.url)
 	if err != nil {
-		task.result <- err
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
 	if resp.Body != nil {
@@ -138,7 +138,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 
 	err = os.MkdirAll(filepath.Dir(task.destination), 0755)
 	if err != nil {
-		task.result <- err
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
 
@@ -146,7 +146,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 
 	outfile, err := os.Create(temppath)
 	if err != nil {
-		task.result <- err
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
 	defer outfile.Close()
@@ -163,7 +163,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
 		os.Remove(temppath)
-		task.result <- err
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
 
@@ -194,7 +194,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	err = os.Rename(temppath, task.destination)
 	if err != nil {
 		os.Remove(temppath)
-		task.result <- err
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
 
