@@ -52,8 +52,8 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 
 	downloader := &downloaderImpl{
 		queue:    make(chan *downloadTask, 1000),
-		stop:     make(chan struct{}),
-		stopped:  make(chan struct{}),
+		stop:     make(chan struct{}, threads),
+		stopped:  make(chan struct{}, threads),
 		pause:    make(chan struct{}),
 		unpause:  make(chan struct{}),
 		threads:  threads,
@@ -85,6 +85,13 @@ func (downloader *downloaderImpl) Shutdown() {
 
 	for i := 0; i < downloader.threads; i++ {
 		<-downloader.stopped
+	}
+}
+
+// Abort stops downloader but doesn't wait for downloader to stop
+func (downloader *downloaderImpl) Abort() {
+	for i := 0; i < downloader.threads; i++ {
+		downloader.stop <- struct{}{}
 	}
 }
 

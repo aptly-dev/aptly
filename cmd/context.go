@@ -289,7 +289,7 @@ func ShutdownContext() {
 		context.database = nil
 	}
 	if context.downloader != nil {
-		context.downloader.Shutdown()
+		context.downloader.Abort()
 		context.downloader = nil
 	}
 	if context.progress != nil {

@@ -123,6 +123,10 @@ func (f *FakeDownloader) Download(url string, filename string, result chan<- err
 func (f *FakeDownloader) Shutdown() {
 }
 
+// Abort does nothing
+func (f *FakeDownloader) Abort() {
+}
+
 // Pause does nothing
 func (f *FakeDownloader) Pause() {
 }

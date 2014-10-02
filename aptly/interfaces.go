@@ -90,6 +90,8 @@ type Downloader interface {
 	// Shutdown stops downloader after current tasks are finished,
 	// but doesn't process rest of queue
 	Shutdown()
+	// Abort stops downloader without waiting for shutdown
+	Abort()
 	// GetProgress returns Progress object
 	GetProgress() Progress
 }
