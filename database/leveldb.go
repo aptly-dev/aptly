@@ -154,7 +154,7 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 // Close finishes DB work
 func (l *levelDB) Close() error {
 	if l.db == nil {
-		panic("database already closed")
+		return nil
 	}
 	err := l.db.Close()
 	l.db = nil
@@ -164,7 +164,7 @@ func (l *levelDB) Close() error {
 // Reopen tries to re-open the database
 func (l *levelDB) ReOpen() error {
 	if l.db != nil {
-		panic("database already open")
+		return nil
 	}
 
 	var err error
