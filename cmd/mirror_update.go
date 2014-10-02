@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
+	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"strings"
+	"time"
 )
 
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
@@ -39,20 +42,74 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	var filterQuery deb.PackageQuery
+	context.Progress().Printf("Downloading & parsing package files...\n")
+	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), context.CollectionFactory(), ignoreMismatch)
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
+	}
 
 	if repo.Filter != "" {
+		context.Progress().Printf("Applying filter...\n")
+		var filterQuery deb.PackageQuery
+
 		filterQuery, err = query.Parse(repo.Filter)
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
+
+		var oldLen, newLen int
+		oldLen, newLen, err = repo.ApplyFilter(context.DependencyOptions(), filterQuery)
+		if err != nil {
+			return fmt.Errorf("unable to update: %s", err)
+		}
+		context.Progress().Printf("Packages filtered: %d -> %d.\n", oldLen, newLen)
 	}
 
-	err = repo.Download(context.Progress(), context.Downloader(), context.CollectionFactory(), context.PackagePool(), ignoreMismatch,
-		context.DependencyOptions(), filterQuery)
+	var (
+		downloadSize int64
+		queue        []deb.PackageDownloadTask
+	)
+
+	context.Progress().Printf("Building download queue...\n")
+	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
+
+	count := len(queue)
+	context.Progress().Printf("Download queue: %d items (%s)\n", count, utils.HumanBytes(downloadSize))
+
+	// Download from the queue
+	context.Progress().InitBar(downloadSize, true)
+
+	// Download all package files
+	ch := make(chan error, count)
+
+	for _, task := range queue {
+		context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
+	}
+
+	// We don't need queued after this point
+	queue = nil
+
+	// Wait for all downloads to finish
+	errors := make([]string, 0)
+
+	for count > 0 {
+		err = <-ch
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+		count--
+	}
+
+	context.Progress().ShutdownBar()
+
+	if len(errors) > 0 {
+		return fmt.Errorf("unable to update: download errors:\n  %s\n", strings.Join(errors, "\n  "))
+	}
+
+	repo.LastDownloadDate = time.Now()
 
 	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
 	if err != nil {

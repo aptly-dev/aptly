@@ -53,6 +53,8 @@ type RemoteRepo struct {
 	packageRefs *PackageRefList
 	// Parsed archived root
 	archiveRootURL *url.URL
+	// Current list of packages (filled while updating mirror)
+	packageList *PackageList
 }
 
 // NewRemoteRepo creates new instance of Debian remote repository with specified params
@@ -339,12 +341,13 @@ ok:
 	return nil
 }
 
-// Download downloads all repo files
-func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory,
-	packagePool aptly.PackagePool, ignoreMismatch bool, dependencyOptions int, filterQuery PackageQuery) error {
-	list := NewPackageList()
-
-	progress.Printf("Downloading & parsing package files...\n")
+// DownloadPackageIndexes downloads & parses package index files
+func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory,
+	ignoreMismatch bool) error {
+	if repo.packageList != nil {
+		panic("packageList != nil")
+	}
+	repo.packageList = NewPackageList()
 
 	// Download and parse all Packages & Source files
 	packagesURLs := [][]string{}
@@ -405,7 +408,7 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 					return err
 				}
 			}
-			err = list.Add(p)
+			err = repo.packageList.Add(p)
 			if err != nil {
 				return err
 			}
@@ -419,33 +422,30 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 		progress.ShutdownBar()
 	}
 
-	var err error
+	return nil
+}
 
-	if repo.Filter != "" {
-		progress.Printf("Applying filter...\n")
+// ApplyFilter applies filtering to already built PackageList
+func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery) (oldLen, newLen int, err error) {
+	repo.packageList.PrepareIndex()
 
-		list.PrepareIndex()
+	emptyList := NewPackageList()
+	emptyList.PrepareIndex()
 
-		emptyList := NewPackageList()
-		emptyList.PrepareIndex()
-
-		origPackages := list.Len()
-		list, err = list.Filter([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures)
-		if err != nil {
-			return err
-		}
-
-		progress.Printf("Packages filtered: %d -> %d.\n", origPackages, list.Len())
+	oldLen = repo.packageList.Len()
+	repo.packageList, err = repo.packageList.Filter([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures)
+	if repo.packageList != nil {
+		newLen = repo.packageList.Len()
 	}
+	return
+}
 
-	progress.Printf("Building download queue...\n")
+// BuildDownloadQueue builds queue, discards current PackageList
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
+	seen := make(map[string]struct{}, repo.packageList.Len())
 
-	// Build download queue
-	queued := make(map[string]PackageDownloadTask, list.Len())
-	count := 0
-	downloadSize := int64(0)
-
-	err = list.ForEach(func(p *Package) error {
+	err = repo.packageList.ForEach(func(p *Package) error {
 		list, err2 := p.DownloadList(packagePool)
 		if err2 != nil {
 			return err2
@@ -454,58 +454,25 @@ func (repo *RemoteRepo) Download(progress aptly.Progress, d aptly.Downloader, co
 
 		for _, task := range list {
 			key := task.RepoURI + "-" + task.DestinationPath
-			_, found := queued[key]
+			_, found := seen[key]
 			if !found {
-				count++
+				queue = append(queue, task)
 				downloadSize += task.Checksums.Size
-				queued[key] = task
+				seen[key] = struct{}{}
 			}
 		}
 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("unable to build download queue: %s", err)
+		return
 	}
 
-	repo.packageRefs = NewPackageRefListFromPackageList(list)
+	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
 	// free up package list, we don't need it after this point
-	list = nil
+	repo.packageList = nil
 
-	progress.Printf("Download queue: %d items (%s)\n", count, utils.HumanBytes(downloadSize))
-
-	progress.InitBar(downloadSize, true)
-
-	// Download all package files
-	ch := make(chan error, len(queued))
-
-	for _, task := range queued {
-		d.DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
-	}
-
-	// We don't need queued after this point
-	queued = nil
-
-	// Wait for all downloads to finish
-	errors := make([]string, 0)
-
-	for count > 0 {
-		err = <-ch
-		if err != nil {
-			errors = append(errors, err.Error())
-		}
-		count--
-	}
-
-	progress.ShutdownBar()
-
-	if len(errors) > 0 {
-		return fmt.Errorf("download errors:\n  %s\n", strings.Join(errors, "\n  "))
-	}
-
-	repo.LastDownloadDate = time.Now()
-
-	return nil
+	return
 }
 
 // Encode does msgpack encoding of RemoteRepo

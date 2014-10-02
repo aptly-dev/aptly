@@ -30,6 +30,7 @@ type Storage interface {
 }
 
 type levelDB struct {
+	path  string
 	db    *leveldb.DB
 	batch *leveldb.Batch
 }
@@ -49,7 +50,7 @@ func OpenDB(path string) (Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &levelDB{db: db}, nil
+	return &levelDB{db: db, path: path}, nil
 }
 
 // RecoverDB recovers LevelDB database from corruption
@@ -147,7 +148,9 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 
 // Close finishes DB work
 func (l *levelDB) Close() error {
-	return l.db.Close()
+	err := l.db.Close()
+	l.db = nil
+	return err
 }
 
 // StartBatch starts batch processing of keys

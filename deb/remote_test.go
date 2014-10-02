@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"os"
+	"sort"
 )
 
 type NullVerifier struct {
@@ -254,19 +255,19 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", errors.New("HTTP 404"))
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
-	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
-	err = s.repo.Download(s.progress, s.downloader, s.collectionFactory, s.packagePool, false, 0, nil)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool)
 	c.Assert(s.repo.packageRefs, NotNil)
+	c.Check(size, Equals, int64(3))
+	c.Check(queue, HasLen, 1)
+	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
-
-	result, err := pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 }
@@ -284,32 +285,34 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", errors.New("HTTP 404"))
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", errors.New("HTTP 404"))
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
-	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
-	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
-	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
-	s.downloader.AnyExpectResponse("http://mirror.yandex.ru/debian/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
-	err = s.repo.Download(s.progress, s.downloader, s.collectionFactory, s.packagePool, false, 0, nil)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool)
+	c.Check(size, Equals, int64(15))
+	c.Check(queue, HasLen, 4)
+
+	q := make([]string, 4)
+	for i := range q {
+		q[i] = queue[i].RepoURI
+	}
+	sort.Strings(q)
+	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(q[1], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc")
+	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
+
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
-
 	c.Check(pkg.Name, Equals, "amanda-client")
 
 	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
-
-	result, err = pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
-
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
 }
 
@@ -319,22 +322,22 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
-	downloader.ExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
 
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(s.progress, downloader, s.collectionFactory, s.packagePool, false, 0, nil)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool)
+	c.Check(size, Equals, int64(3))
+	c.Check(queue, HasLen, 1)
+	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
-
-	result, err := pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 }
@@ -350,34 +353,41 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", errors.New("HTTP 404"))
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", errors.New("HTTP 404"))
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
-	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
-	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
-	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
-	downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
+	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
+	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
+	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
+	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.Download(s.progress, downloader, s.collectionFactory, s.packagePool, false, 0, nil)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool)
+	c.Check(size, Equals, int64(15))
+	c.Check(queue, HasLen, 4)
+
+	q := make([]string, 4)
+	for i := range q {
+		q[i] = queue[i].RepoURI
+	}
+	sort.Strings(q)
+	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(q[1], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc")
+	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
+	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
+
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
-	result, err := pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
-
 	c.Check(pkg.Name, Equals, "amanda-client")
 
 	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
-
-	result, err = pkg.VerifyFiles(s.packagePool)
-	c.Check(result, Equals, true)
-	c.Check(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
 }
