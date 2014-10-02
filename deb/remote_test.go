@@ -261,10 +261,12 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool)
-	c.Assert(s.repo.packageRefs, NotNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+
+	s.repo.FinalizeDownload()
+	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
@@ -304,6 +306,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
+	s.repo.FinalizeDownload()
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -334,6 +337,8 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+
+	s.flat.FinalizeDownload()
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -353,10 +358,6 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", errors.New("HTTP 404"))
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", errors.New("HTTP 404"))
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
-	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb", "xyz")
-	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.dsc", "abc")
-	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz", "abcd")
-	// downloader.AnyExpectResponse("http://repos.express42.com/virool/precise/pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz", "abcde")
 
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
@@ -379,6 +380,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
+	s.flat.FinalizeDownload()
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])

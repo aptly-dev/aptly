@@ -16,7 +16,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
+)
+
+// RemoteRepo statuses
+const (
+	MirrorIdle = iota
+	MirrorUpdating
 )
 
 // RemoteRepo represents remote (fetchable) Debian repository.
@@ -49,8 +56,14 @@ type RemoteRepo struct {
 	Filter string
 	// FilterWithDeps to include dependencies from filter query
 	FilterWithDeps bool
+	// Status marks state of repository (being updated, no action)
+	Status int
+	// WorkerPID is PID of the process modifying the mirror (if any)
+	WorkerPID int
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
+	// Temporary list of package refs
+	tempPackageRefs *PackageRefList
 	// Parsed archived root
 	archiveRootURL *url.URL
 	// Current list of packages (filled while updating mirror)
@@ -140,6 +153,37 @@ func (repo *RemoteRepo) NumPackages() int {
 // RefList returns package list for repo
 func (repo *RemoteRepo) RefList() *PackageRefList {
 	return repo.packageRefs
+}
+
+// MarkAsUpdating puts current PID and sets status to updating
+func (repo *RemoteRepo) MarkAsUpdating() {
+	repo.Status = MirrorUpdating
+	repo.WorkerPID = os.Getpid()
+}
+
+// MarkAsIdle clears updating flag
+func (repo *RemoteRepo) MarkAsIdle() {
+	repo.Status = MirrorIdle
+	repo.WorkerPID = 0
+}
+
+// CheckLock returns error if mirror is being updated by another process
+func (repo *RemoteRepo) CheckLock() error {
+	if repo.Status == MirrorIdle || repo.WorkerPID == 0 {
+		return nil
+	}
+
+	p, err := os.FindProcess(repo.WorkerPID)
+	if err != nil {
+		return nil
+	}
+
+	err = p.Signal(syscall.Signal(0))
+	if err == nil {
+		return fmt.Errorf("mirror is locked by update operation, PID %d", repo.WorkerPID)
+	}
+
+	return nil
 }
 
 // ReleaseURL returns URL to Release* files in repo root
@@ -468,11 +512,17 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool) (queue
 		return
 	}
 
-	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+	repo.tempPackageRefs = NewPackageRefListFromPackageList(repo.packageList)
 	// free up package list, we don't need it after this point
 	repo.packageList = nil
 
 	return
+}
+
+// FinalizeDownload swaps for final value of package refs
+func (repo *RemoteRepo) FinalizeDownload() {
+	repo.LastDownloadDate = time.Now()
+	repo.packageRefs = repo.tempPackageRefs
 }
 
 // Encode does msgpack encoding of RemoteRepo
