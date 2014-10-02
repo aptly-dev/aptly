@@ -155,3 +155,23 @@ func (s *LevelDBSuite) TestCompactDB(c *C) {
 
 	c.Check(s.db.CompactDB(), IsNil)
 }
+
+func (s *LevelDBSuite) TestReOpen(c *C) {
+	var (
+		key   = []byte("key")
+		value = []byte("value")
+	)
+
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	err = s.db.Close()
+	c.Assert(err, IsNil)
+
+	err = s.db.ReOpen()
+	c.Assert(err, IsNil)
+
+	result, err := s.db.Get(key)
+	c.Assert(err, IsNil)
+	c.Assert(result, DeepEquals, value)
+}

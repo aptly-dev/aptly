@@ -24,6 +24,7 @@ type Storage interface {
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
+	ReOpen() error
 	StartBatch()
 	FinishBatch() error
 	CompactDB() error
@@ -40,13 +41,17 @@ var (
 	_ Storage = &levelDB{}
 )
 
-// OpenDB opens (creates) LevelDB database
-func OpenDB(path string) (Storage, error) {
+func internalOpen(path string) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter: filter.NewBloomFilter(10),
 	}
 
-	db, err := leveldb.OpenFile(path, o)
+	return leveldb.OpenFile(path, o)
+}
+
+// OpenDB opens (creates) LevelDB database
+func OpenDB(path string) (Storage, error) {
+	db, err := internalOpen(path)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +153,22 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 
 // Close finishes DB work
 func (l *levelDB) Close() error {
+	if l.db == nil {
+		panic("database already closed")
+	}
 	err := l.db.Close()
 	l.db = nil
+	return err
+}
+
+// Reopen tries to re-open the database
+func (l *levelDB) ReOpen() error {
+	if l.db != nil {
+		panic("database already open")
+	}
+
+	var err error
+	l.db, err = internalOpen(l.path)
 	return err
 }
 
