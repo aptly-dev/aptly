@@ -149,7 +149,7 @@ class UpdateMirror11Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
+        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
     ]
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
