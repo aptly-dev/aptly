@@ -7,8 +7,9 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"os"
+	"os/signal"
 	"strings"
-	"time"
 )
 
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
@@ -28,6 +29,14 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
+	}
+
+	force := context.flags.Lookup("force").Value.Get().(bool)
+	if !force {
+		err = repo.CheckLock()
+		if err != nil {
+			return fmt.Errorf("unable to update: %s", err)
+		}
 	}
 
 	ignoreMismatch := context.flags.Lookup("ignore-checksums").Value.Get().(bool)
@@ -76,6 +85,30 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
+	defer func() {
+		// on any interreption, unlock the mirror
+		err := context.ReOpenDatabase()
+		if err == nil {
+			repo.MarkAsIdle()
+			context.CollectionFactory().RemoteRepoCollection().Update(repo)
+		}
+	}()
+
+	repo.MarkAsUpdating()
+	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
+	}
+
+	err = context.CloseDatabase()
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
+	}
+
+	// Catch ^C
+	sigch := make(chan os.Signal)
+	signal.Notify(sigch, os.Interrupt)
+
 	count := len(queue)
 	context.Progress().Printf("Download queue: %d items (%s)\n", count, utils.HumanBytes(downloadSize))
 
@@ -85,32 +118,44 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	// Download all package files
 	ch := make(chan error, count)
 
-	for _, task := range queue {
-		context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
-	}
+	go func() {
+		for _, task := range queue {
+			context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
+		}
 
-	// We don't need queued after this point
-	queue = nil
+		// We don't need queue after this point
+		queue = nil
+	}()
 
 	// Wait for all downloads to finish
 	errors := make([]string, 0)
 
 	for count > 0 {
-		err = <-ch
-		if err != nil {
-			errors = append(errors, err.Error())
+		select {
+		case <-sigch:
+			signal.Stop(sigch)
+			return fmt.Errorf("unable to update: interrupted")
+		case err = <-ch:
+			if err != nil {
+				errors = append(errors, err.Error())
+			}
+			count--
 		}
-		count--
 	}
 
 	context.Progress().ShutdownBar()
+	signal.Stop(sigch)
 
 	if len(errors) > 0 {
 		return fmt.Errorf("unable to update: download errors:\n  %s\n", strings.Join(errors, "\n  "))
 	}
 
-	repo.LastDownloadDate = time.Now()
+	err = context.ReOpenDatabase()
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
+	}
 
+	repo.FinalizeDownload()
 	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -137,6 +182,7 @@ Example:
 		Flag: *flag.NewFlagSet("aptly-mirror-update", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("force", false, "force update mirror even if it is locked by another process")
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")

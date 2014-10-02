@@ -23,6 +23,11 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
+		err = repo.CheckLock()
+		if err != nil {
+			return fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
 		err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)

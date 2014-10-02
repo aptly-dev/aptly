@@ -24,6 +24,11 @@ func aptlyMirrorRename(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
 
+	err = repo.CheckLock()
+	if err != nil {
+		return fmt.Errorf("unable to rename: %s", err)
+	}
+
 	_, err = context.CollectionFactory().RemoteRepoCollection().ByName(newName)
 	if err == nil {
 		return fmt.Errorf("unable to rename: mirror %s already exists", newName)

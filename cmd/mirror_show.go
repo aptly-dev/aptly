@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -28,6 +29,9 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	}
 
 	fmt.Printf("Name: %s\n", repo.Name)
+	if repo.Status == deb.MirrorUpdating {
+		fmt.Printf("Status: In Update (PID %d)\n", repo.WorkerPID)
+	}
 	fmt.Printf("Archive Root URL: %s\n", repo.ArchiveRoot)
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))

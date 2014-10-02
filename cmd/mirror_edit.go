@@ -19,6 +19,11 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
 
+	err = repo.CheckLock()
+	if err != nil {
+		return fmt.Errorf("unable to edit: %s", err)
+	}
+
 	context.flags.Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
