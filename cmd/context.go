@@ -181,6 +181,36 @@ func (context *AptlyContext) Database() (database.Storage, error) {
 	return context.database, nil
 }
 
+// CloseDatabase closes the db temporarily
+func (context *AptlyContext) CloseDatabase() error {
+	if context.database == nil {
+		return nil
+	}
+
+	return context.database.Close()
+}
+
+// ReOpenDatabase reopens the db after close
+func (context *AptlyContext) ReOpenDatabase() error {
+	if context.database == nil {
+		return nil
+	}
+
+	const MaxTries = 10
+	const Delay = 10 * time.Second
+
+	for try := 0; try < MaxTries; try++ {
+		err := context.database.ReOpen()
+		if err == nil || strings.Index(err.Error(), "resource temporarily unavailable") == -1 {
+			return err
+		}
+		context.Progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
+		<-time.After(Delay)
+	}
+
+	return fmt.Errorf("unable to reopen the DB, maximum number of retries reached")
+}
+
 // CollectionFactory builds factory producing all kinds of collections
 func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
 	if context.collectionFactory == nil {
