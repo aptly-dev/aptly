@@ -86,7 +86,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	defer func() {
-		// on any interreption, unlock the mirror
+		// on any interruption, unlock the mirror
 		err := context.ReOpenDatabase()
 		if err == nil {
 			repo.MarkAsIdle()
@@ -118,6 +118,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	// Download all package files
 	ch := make(chan error, count)
 
+	// In separate goroutine (to avoid blocking main), push queue to downloader
 	go func() {
 		for _, task := range queue {
 			context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
