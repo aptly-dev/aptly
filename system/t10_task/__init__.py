@@ -2,4 +2,5 @@
 Test aptly task run
 """
 
-from .run import *
+# disabled for now
+#from .run import *
