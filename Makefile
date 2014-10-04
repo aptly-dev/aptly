@@ -77,6 +77,8 @@ src-package:
 	cd aptly-$(VERSION)/src/github.com/smira/aptly && gom -production install
 	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . \( -name .git -o -name .bzr -o -name .hg \) -print | xargs rm -rf
 	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/_vendor/{pkg,bin}
+	mkdir -p aptly-$(VERSION)/bash_completion.d
+	(cd aptly-$(VERSION)/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/$(VERSION)/aptly)
 	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
 	rm -rf aptly-$(VERSION)
 	curl -T aptly-$(VERSION)-src.tar.bz2 -usmira:$(BINTRAY_KEY) https://api.bintray.com/content/smira/aptly/aptly/$(VERSION)/$(VERSION)/aptly-$(VERSION)-src.tar.bz2
