@@ -101,7 +101,7 @@ func (l *levelDB) Put(key []byte, value []byte) error {
 			return err
 		}
 	} else {
-		if bytes.Compare(old, value) == 0 {
+		if bytes.Equal(old, value) {
 			return nil
 		}
 	}
