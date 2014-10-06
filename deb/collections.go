@@ -2,10 +2,12 @@ package deb
 
 import (
 	"github.com/smira/aptly/database"
+	"sync"
 )
 
 // CollectionFactory is a single place to generate all desired collections
 type CollectionFactory struct {
+	*sync.Mutex
 	db             database.Storage
 	packages       *PackageCollection
 	remoteRepos    *RemoteRepoCollection
@@ -16,11 +18,14 @@ type CollectionFactory struct {
 
 // NewCollectionFactory creates new factory
 func NewCollectionFactory(db database.Storage) *CollectionFactory {
-	return &CollectionFactory{db: db}
+	return &CollectionFactory{Mutex: &sync.Mutex{}, db: db}
 }
 
 // PackageCollection returns (or creates) new PackageCollection
 func (factory *CollectionFactory) PackageCollection() *PackageCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
 	if factory.packages == nil {
 		factory.packages = NewPackageCollection(factory.db)
 	}
@@ -30,6 +35,9 @@ func (factory *CollectionFactory) PackageCollection() *PackageCollection {
 
 // RemoteRepoCollection returns (or creates) new RemoteRepoCollection
 func (factory *CollectionFactory) RemoteRepoCollection() *RemoteRepoCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
 	if factory.remoteRepos == nil {
 		factory.remoteRepos = NewRemoteRepoCollection(factory.db)
 	}
@@ -39,6 +47,9 @@ func (factory *CollectionFactory) RemoteRepoCollection() *RemoteRepoCollection {
 
 // SnapshotCollection returns (or creates) new SnapshotCollection
 func (factory *CollectionFactory) SnapshotCollection() *SnapshotCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
 	if factory.snapshots == nil {
 		factory.snapshots = NewSnapshotCollection(factory.db)
 	}
@@ -48,6 +59,9 @@ func (factory *CollectionFactory) SnapshotCollection() *SnapshotCollection {
 
 // LocalRepoCollection returns (or creates) new LocalRepoCollection
 func (factory *CollectionFactory) LocalRepoCollection() *LocalRepoCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
 	if factory.localRepos == nil {
 		factory.localRepos = NewLocalRepoCollection(factory.db)
 	}
@@ -57,6 +71,9 @@ func (factory *CollectionFactory) LocalRepoCollection() *LocalRepoCollection {
 
 // PublishedRepoCollection returns (or creates) new PublishedRepoCollection
 func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
 	if factory.publishedRepos == nil {
 		factory.publishedRepos = NewPublishedRepoCollection(factory.db)
 	}
