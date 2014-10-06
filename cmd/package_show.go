@@ -72,8 +72,8 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	withFiles := context.flags.Lookup("with-files").Value.Get().(bool)
-	withReferences := context.flags.Lookup("with-references").Value.Get().(bool)
+	withFiles := context.Flags().Lookup("with-files").Value.Get().(bool)
+	withReferences := context.Flags().Lookup("with-references").Value.Get().(bool)
 
 	w := bufio.NewWriter(os.Stdout)
 

@@ -27,7 +27,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		return nil
 	}
 
-	listen := context.flags.Lookup("listen").Value.String()
+	listen := context.Flags().Lookup("listen").Value.String()
 
 	listenHost, listenPort, err := net.SplitHostPort(listen)
 

@@ -13,7 +13,7 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	onlyMatching := context.flags.Lookup("only-matching").Value.Get().(bool)
+	onlyMatching := context.Flags().Lookup("only-matching").Value.Get().(bool)
 
 	// Load <name-a> snapshot
 	snapshotA, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])

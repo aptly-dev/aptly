@@ -24,7 +24,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
 
-	context.flags.Visit(func(flag *flag.Flag) {
+	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
 			repo.Filter = flag.Value.String()
@@ -48,7 +48,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	if context.globalFlags.Lookup("architectures").Value.String() != "" {
+	if context.GlobalFlags().Lookup("architectures").Value.String() != "" {
 		repo.Architectures = context.ArchitecturesList()
 
 		err = repo.Fetch(context.Downloader(), nil)

@@ -43,12 +43,12 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.UpdateLocalRepo(component)
 	}
 
-	signer, err := getSigner(context.flags)
+	signer, err := getSigner(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	forceOverwrite := context.flags.Lookup("force-overwrite").Value.Get().(bool)
+	forceOverwrite := context.Flags().Lookup("force-overwrite").Value.Get().(bool)
 	if forceOverwrite {
 		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing " +
 			"the same package pool.\n")

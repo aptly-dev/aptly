@@ -16,8 +16,8 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.flags, "with-sources")
-	downloadUdebs := context.flags.Lookup("with-udebs").Value.Get().(bool)
+	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.Flags(), "with-sources")
+	downloadUdebs := context.Flags().Lookup("with-udebs").Value.Get().(bool)
 
 	var (
 		mirrorName, archiveURL, distribution string
@@ -40,8 +40,8 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
-	repo.Filter = context.flags.Lookup("filter").Value.String()
-	repo.FilterWithDeps = context.flags.Lookup("filter-with-deps").Value.Get().(bool)
+	repo.Filter = context.Flags().Lookup("filter").Value.String()
+	repo.FilterWithDeps = context.Flags().Lookup("filter-with-deps").Value.Get().(bool)
 
 	if repo.Filter != "" {
 		_, err = query.Parse(repo.Filter)
@@ -50,7 +50,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	verifier, err := getVerifier(context.flags)
+	verifier, err := getVerifier(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}

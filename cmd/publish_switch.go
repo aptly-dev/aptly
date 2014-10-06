@@ -11,7 +11,7 @@ import (
 func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	var err error
 
-	components := strings.Split(context.flags.Lookup("component").Value.String(), ",")
+	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
 
 	if len(args) < len(components)+1 || len(args) > len(components)+2 {
 		cmd.Usage()
@@ -74,12 +74,12 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		published.UpdateSnapshot(component, snapshot)
 	}
 
-	signer, err := getSigner(context.flags)
+	signer, err := getSigner(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	forceOverwrite := context.flags.Lookup("force-overwrite").Value.Get().(bool)
+	forceOverwrite := context.Flags().Lookup("force-overwrite").Value.Get().(bool)
 	if forceOverwrite {
 		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing " +
 			"the same package pool.\n")

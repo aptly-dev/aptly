@@ -31,7 +31,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	force := context.flags.Lookup("force").Value.Get().(bool)
+	force := context.Flags().Lookup("force").Value.Get().(bool)
 	if !force {
 		err = repo.CheckLock()
 		if err != nil {
@@ -39,9 +39,9 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	ignoreMismatch := context.flags.Lookup("ignore-checksums").Value.Get().(bool)
+	ignoreMismatch := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
 
-	verifier, err := getVerifier(context.flags)
+	verifier, err := getVerifier(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}

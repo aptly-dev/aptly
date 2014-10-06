@@ -40,7 +40,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	forceReplace := context.flags.Lookup("force-replace").Value.Get().(bool)
+	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 
 	packageFiles := []string{}
 	failedFiles := []string{}
@@ -194,7 +194,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save: %s", err)
 	}
 
-	if context.flags.Lookup("remove-files").Value.Get().(bool) {
+	if context.Flags().Lookup("remove-files").Value.Get().(bool) {
 		processedFiles = utils.StrSliceDeduplicate(processedFiles)
 
 		for _, file := range processedFiles {

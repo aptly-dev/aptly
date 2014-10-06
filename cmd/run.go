@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	ctx "github.com/smira/aptly/context"
 	"github.com/smira/commander"
 )
 
@@ -9,7 +10,7 @@ import (
 func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode int) {
 	defer func() {
 		if r := recover(); r != nil {
-			fatal, ok := r.(*FatalError)
+			fatal, ok := r.(*ctx.FatalError)
 			if !ok {
 				panic(r)
 			}
@@ -22,13 +23,13 @@ func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode
 
 	flags, args, err := cmd.ParseFlags(cmdArgs)
 	if err != nil {
-		Fatal(err)
+		ctx.Fatal(err)
 	}
 
 	if initContext {
 		err = InitContext(flags)
 		if err != nil {
-			Fatal(err)
+			ctx.Fatal(err)
 		}
 		defer ShutdownContext()
 	}
@@ -37,7 +38,7 @@ func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode
 
 	err = cmd.Dispatch(args)
 	if err != nil {
-		Fatal(err)
+		ctx.Fatal(err)
 	}
 
 	return

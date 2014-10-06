@@ -73,7 +73,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		return fmt.Errorf("unable to search: %s", err)
 	}
 
-	withDeps := context.flags.Lookup("with-deps").Value.Get().(bool)
+	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
 	architecturesList := []string{}
 
 	if withDeps {

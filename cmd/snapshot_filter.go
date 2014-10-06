@@ -17,7 +17,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	withDeps := context.flags.Lookup("with-deps").Value.Get().(bool)
+	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
 
 	// Load <source> snapshot
 	source, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])

@@ -13,7 +13,7 @@ import (
 func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	var err error
 
-	components := strings.Split(context.flags.Lookup("component").Value.String(), ",")
+	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
 
 	if len(args) < len(components) || len(args) > len(components)+1 {
 		cmd.Usage()
@@ -110,7 +110,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		panic("unknown command")
 	}
 
-	distribution := context.flags.Lookup("distribution").Value.String()
+	distribution := context.Flags().Lookup("distribution").Value.String()
 
 	published, err := deb.NewPublishedRepo(storage, prefix, distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
 	if err != nil {
@@ -125,12 +125,12 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 	}
 
-	signer, err := getSigner(context.flags)
+	signer, err := getSigner(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG signer: %s", err)
 	}
 
-	forceOverwrite := context.flags.Lookup("force-overwrite").Value.Get().(bool)
+	forceOverwrite := context.Flags().Lookup("force-overwrite").Value.Get().(bool)
 	if forceOverwrite {
 		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing " +
 			"the same package pool.\n")

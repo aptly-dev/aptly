@@ -23,16 +23,16 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
 
-	if context.flags.Lookup("comment").Value.String() != "" {
-		repo.Comment = context.flags.Lookup("comment").Value.String()
+	if context.Flags().Lookup("comment").Value.String() != "" {
+		repo.Comment = context.Flags().Lookup("comment").Value.String()
 	}
 
-	if context.flags.Lookup("distribution").Value.String() != "" {
-		repo.DefaultDistribution = context.flags.Lookup("distribution").Value.String()
+	if context.Flags().Lookup("distribution").Value.String() != "" {
+		repo.DefaultDistribution = context.Flags().Lookup("distribution").Value.String()
 	}
 
-	if context.flags.Lookup("component").Value.String() != "" {
-		repo.DefaultComponent = context.flags.Lookup("component").Value.String()
+	if context.Flags().Lookup("component").Value.String() != "" {
+		repo.DefaultComponent = context.Flags().Lookup("component").Value.String()
 	}
 
 	err = context.CollectionFactory().LocalRepoCollection().Update(repo)

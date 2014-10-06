@@ -17,9 +17,9 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	noDeps := context.flags.Lookup("no-deps").Value.Get().(bool)
-	noRemove := context.flags.Lookup("no-remove").Value.Get().(bool)
-	allMatches := context.flags.Lookup("all-matches").Value.Get().(bool)
+	noDeps := context.Flags().Lookup("no-deps").Value.Get().(bool)
+	noRemove := context.Flags().Lookup("no-remove").Value.Get().(bool)
+	allMatches := context.Flags().Lookup("all-matches").Value.Get().(bool)
 
 	// Load <name> snapshot
 	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
@@ -129,7 +129,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	})
 	alreadySeen = nil
 
-	if context.flags.Lookup("dry-run").Value.Get().(bool) {
+	if context.Flags().Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nNot creating snapshot, as dry run was requested.\n")
 	} else {
 		// Create <destination> snapshot
