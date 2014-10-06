@@ -12,7 +12,7 @@ import (
 // LocalRepo is a collection of packages created locally
 type LocalRepo struct {
 	// Permanent internal ID
-	UUID string
+	UUID string `json:"-"`
 	// User-assigned name
 	Name string
 	// Comment
