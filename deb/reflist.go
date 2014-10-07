@@ -314,15 +314,15 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 // packages and reduces it to only the latest of each package. The operations
 // are done in-place. This implements a "latest wins" approach which can be used
 // while merging two or more snapshots together.
-func FilterLatestRefs(r *PackageRefList) {
+func (l *PackageRefList) FilterLatestRefs() {
 	var (
 		lastArch, lastName, lastVer []byte
 		arch, name, ver             []byte
 		parts                       [][]byte
 	)
 
-	for i := 0; i < len(r.Refs); i++ {
-		parts = bytes.Split(r.Refs[i][1:], []byte(" "))
+	for i := 0; i < len(l.Refs); i++ {
+		parts = bytes.Split(l.Refs[i][1:], []byte(" "))
 		arch, name, ver = parts[0], parts[1], parts[2]
 
 		if bytes.Equal(arch, lastArch) && bytes.Equal(name, lastName) {
@@ -332,10 +332,10 @@ func FilterLatestRefs(r *PackageRefList) {
 			// Remove the older refs from the result
 			if vres > 0 {
 				// ver[i] > ver[i-1], remove element i-1
-				r.Refs = append(r.Refs[:i-1], r.Refs[i:]...)
+				l.Refs = append(l.Refs[:i-1], l.Refs[i:]...)
 			} else {
 				// ver[i] < ver[i-1], remove element i
-				r.Refs = append(r.Refs[:i], r.Refs[i+1:]...)
+				l.Refs = append(l.Refs[:i], l.Refs[i+1:]...)
 				arch, name, ver = lastArch, lastName, lastVer
 			}
 

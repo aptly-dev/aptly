@@ -310,7 +310,7 @@ func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	rl.Add(packages[7])
 
 	result := NewPackageRefListFromPackageList(rl)
-	FilterLatestRefs(result)
+	result.FilterLatestRefs()
 
 	c.Check(toStrSlice(result), DeepEquals,
 		[]string{"Pi386 dpkg 1.6", "Pi386 lib 1.2"})
