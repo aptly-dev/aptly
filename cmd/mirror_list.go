@@ -28,6 +28,8 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 		return nil
 	})
 
+	context.CloseDatabase()
+
 	sort.Strings(repos)
 
 	if raw {

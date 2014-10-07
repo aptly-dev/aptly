@@ -36,6 +36,8 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load list of repos: %s", err)
 	}
 
+	context.CloseDatabase()
+
 	sort.Strings(published)
 
 	if raw {

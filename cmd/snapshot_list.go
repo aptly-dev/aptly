@@ -72,6 +72,8 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		return nil
 	})
 
+	context.CloseDatabase()
+
 	sort.Sort(snapshotsToSort)
 
 	if raw {
