@@ -10,6 +10,7 @@ import (
 	"github.com/ugorji/go/codec"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -131,12 +132,12 @@ func (s *Snapshot) Decode(input []byte) error {
 		if strings.HasPrefix(err.Error(), "codec.decoder: readContainerLen: Unrecognized descriptor byte: hex: 80") {
 			// probably it is broken DB from go < 1.2, try decoding w/o time.Time
 			var snapshot11 struct {
-				UUID string
-				Name string
+				UUID      string
+				Name      string
 				CreatedAt []byte
 
-				SourceKind string
-				SourceIDs  []string
+				SourceKind  string
+				SourceIDs   []string
 				Description string
 			}
 
@@ -160,6 +161,7 @@ func (s *Snapshot) Decode(input []byte) error {
 
 // SnapshotCollection does listing, updating/adding/deleting of Snapshots
 type SnapshotCollection struct {
+	*sync.RWMutex
 	db   database.Storage
 	list []*Snapshot
 }
@@ -167,7 +169,8 @@ type SnapshotCollection struct {
 // NewSnapshotCollection loads Snapshots from DB and makes up collection
 func NewSnapshotCollection(db database.Storage) *SnapshotCollection {
 	result := &SnapshotCollection{
-		db: db,
+		RWMutex: &sync.RWMutex{},
+		db:      db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("S"))

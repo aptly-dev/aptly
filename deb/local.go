@@ -7,6 +7,7 @@ import (
 	"github.com/smira/aptly/database"
 	"github.com/ugorji/go/codec"
 	"log"
+	"sync"
 )
 
 // LocalRepo is a collection of packages created locally
@@ -88,6 +89,7 @@ func (repo *LocalRepo) RefKey() []byte {
 
 // LocalRepoCollection does listing, updating/adding/deleting of LocalRepos
 type LocalRepoCollection struct {
+	*sync.RWMutex
 	db   database.Storage
 	list []*LocalRepo
 }
@@ -95,7 +97,8 @@ type LocalRepoCollection struct {
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	result := &LocalRepoCollection{
-		db: db,
+		RWMutex: &sync.RWMutex{},
+		db:      db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("L"))
