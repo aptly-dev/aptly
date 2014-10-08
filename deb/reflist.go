@@ -92,6 +92,17 @@ func (l *PackageRefList) Has(p *Package) bool {
 	return i < len(l.Refs) && bytes.Compare(l.Refs[i], key) == 0
 }
 
+// Strings builds list of strings with package keys
+func (l *PackageRefList) Strings() []string {
+	result := make([]string, l.Len())
+
+	for i := 0; i < l.Len(); i++ {
+		result[i] = string(l.Refs[i])
+	}
+
+	return result
+}
+
 // Substract returns all packages in l that are not in r
 func (l *PackageRefList) Substract(r *PackageRefList) *PackageRefList {
 	result := &PackageRefList{Refs: make([][]byte, 0, 128)}
