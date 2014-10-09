@@ -73,7 +73,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 				strings.HasSuffix(info.Name(), ".dsc") {
 				packageFiles = append(packageFiles, location)
 			} else {
-				context.Progress().ColoredPrintf("@y[!]@| @!Unknwon file extenstion: %s@|", location)
+				context.Progress().ColoredPrintf("@y[!]@| @!Unknown file extenstion: %s@|", location)
 				failedFiles = append(failedFiles, location)
 				continue
 			}
