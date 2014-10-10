@@ -43,11 +43,12 @@ type GpgSigner struct {
 	keyRef                     string
 	keyring, secretKeyring     string
 	passphrase, passphraseFile string
-	batch	    		   bool
+	batch                      bool
 }
 
+// SetBatch control --no-tty flag to gpg
 func (g *GpgSigner) SetBatch(batch bool) {
-     	g.batch = batch
+	g.batch = batch
 }
 
 // SetKey sets key ID to use when signing files
@@ -86,7 +87,7 @@ func (g *GpgSigner) gpgArgs() []string {
 		args = append(args, "--passphrase-file", g.passphraseFile)
 	}
 	if g.batch {
-	   	args = append(args, "--no-tty")
+		args = append(args, "--no-tty")
 	}
 
 	return args
