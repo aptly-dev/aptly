@@ -41,6 +41,9 @@ class APITest(BaseTest):
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.post("http://%s%s" % (self.base_url, uri), *args, **kwargs)
 
+    def delete(self, uri, *args, **kwargs):
+        return requests.delete("http://%s%s" % (self.base_url, uri), *args, **kwargs)
+
     @classmethod
     def shutdown_class(cls):
         if cls.aptly_server is not None:
