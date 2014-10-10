@@ -136,6 +136,7 @@ Example:
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("batch", false, "run gpg with a detached tty")
 
 	return cmd
 }

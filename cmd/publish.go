@@ -16,6 +16,7 @@ func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
 	signer.SetKey(flags.Lookup("gpg-key").Value.String())
 	signer.SetKeyRing(flags.Lookup("keyring").Value.String(), flags.Lookup("secret-keyring").Value.String())
 	signer.SetPassphrase(flags.Lookup("passphrase").Value.String(), flags.Lookup("passphrase-file").Value.String())
+	signer.SetBatch(flags.Lookup("batch").Value.Get().(bool))
 
 	err := signer.Init()
 	if err != nil {

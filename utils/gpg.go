@@ -18,6 +18,7 @@ type Signer interface {
 	SetKey(keyRef string)
 	SetKeyRing(keyring, secretKeyring string)
 	SetPassphrase(passphrase, passphraseFile string)
+	SetBatch(batch bool)
 	DetachedSign(source string, destination string) error
 	ClearSign(source string, destination string) error
 }
@@ -42,6 +43,11 @@ type GpgSigner struct {
 	keyRef                     string
 	keyring, secretKeyring     string
 	passphrase, passphraseFile string
+	batch	    		   bool
+}
+
+func (g *GpgSigner) SetBatch(batch bool) {
+     	g.batch = batch
 }
 
 // SetKey sets key ID to use when signing files
@@ -78,6 +84,9 @@ func (g *GpgSigner) gpgArgs() []string {
 
 	if g.passphraseFile != "" {
 		args = append(args, "--passphrase-file", g.passphraseFile)
+	}
+	if g.batch {
+	   	args = append(args, "--no-tty")
 	}
 
 	return args
