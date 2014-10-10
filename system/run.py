@@ -6,9 +6,11 @@ import os
 import inspect
 import fnmatch
 import sys
+import traceback
 
 from lib import BaseTest
 from s3_lib import S3Test
+from api_lib import APITest
 
 try:
     from termcolor import colored
@@ -25,6 +27,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         tests = glob.glob("t*_*")
     fails = []
     numTests = numFailed = numSkipped = 0
+    lastBase = None
 
     for test in tests:
 
@@ -34,8 +37,14 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
             o = getattr(testModule, name)
 
             if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
-                    o is not S3Test):
+                    o is not S3Test and o is not APITest):
                 continue
+
+            newBase = o.__bases__[0]
+            if lastBase is not None and lastBase is not newBase:
+                lastBase.shutdown_class()
+
+            lastBase = newBase
 
             if filters:
                 matches = False
@@ -60,23 +69,28 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
             try:
                 t.captureResults = capture_results
                 t.test()
-            except BaseException, e:
+            except BaseException:
                 numFailed += 1
-                fails.append((test, t, e, testModule))
+                typ, val, tb = sys.exc_info()
+                fails.append((test, t, typ, val, tb, testModule))
                 sys.stdout.write(colored("FAIL\n", color="red"))
             else:
                 sys.stdout.write(colored("OK\n", color="green"))
 
             t.shutdown()
 
+    if lastBase is not None:
+        lastBase.shutdown_class()
+
     print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (numTests, numTests - numFailed, numFailed, numSkipped)
 
     if len(fails) > 0:
         print "\nFAILURES (%d):" % (len(fails), )
 
-        for (test, t, e, testModule) in fails:
+        for (test, t, typ, val, tb, testModule) in fails:
             print "%s:%s %s" % (test, t.__class__.__name__, testModule.__doc__.strip() + ": " + t.__doc__.strip())
-            print "ERROR: %s" % (e, )
+            #print "ERROR: %s" % (val, )
+            traceback.print_exception(typ, val, tb)
             print "=" * 60
 
         sys.exit(1)
