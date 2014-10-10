@@ -110,13 +110,7 @@ func apiReposShow(c *gin.Context) {
 
 // DELETE /api/repos/:name
 func apiReposDrop(c *gin.Context) {
-	var b struct {
-		Force bool
-	}
-
-	if !c.Bind(&b) {
-		return
-	}
+	force := c.Request.URL.Query().Get("force") == "1"
 
 	collection := context.CollectionFactory().LocalRepoCollection()
 	collection.Lock()
@@ -142,10 +136,12 @@ func apiReposDrop(c *gin.Context) {
 		return
 	}
 
-	snapshots := snapshotCollection.ByLocalRepoSource(repo)
-	if len(snapshots) > 0 {
-		c.Fail(409, fmt.Errorf("unable to drop, local repo has snapshots, use Force to override"))
-		return
+	if !force {
+		snapshots := snapshotCollection.ByLocalRepoSource(repo)
+		if len(snapshots) > 0 {
+			c.Fail(409, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override"))
+			return
+		}
 	}
 
 	err = collection.Drop(repo)
