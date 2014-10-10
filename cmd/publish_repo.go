@@ -39,6 +39,7 @@ Example:
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.String("passphrase", "", "GPG passhprase for the key (warning: could be insecure)")
 	cmd.Flag.String("passphrase-file", "", "GPG passhprase-file for the key (warning: could be insecure)")
+	cmd.Flag.Bool("batch", false, "run GPG with detached tty")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")

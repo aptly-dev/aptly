@@ -36,6 +36,9 @@ func (n *NullSigner) Init() error {
 func (n *NullSigner) SetKey(keyRef string) {
 }
 
+func (n *NullSigner) SetBatch(batch bool) {
+}
+
 func (n *NullSigner) SetKeyRing(keyring, secretKeyring string) {
 }
 

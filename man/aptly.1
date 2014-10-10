@@ -1102,6 +1102,10 @@ $ aptly publish repo testing
 Options:
 .
 .TP
+\-\fBbatch\fR=false
+run GPG with detached tty
+.
+.TP
 \-\fBcomponent\fR=
 component name to publish (for multi\-component publishing, separate components with commas)
 .
@@ -1179,6 +1183,10 @@ $ aptly publish snapshot wheezy\-main
 .
 .P
 Options:
+.
+.TP
+\-\fBbatch\fR=false
+run GPG with detached tty
 .
 .TP
 \-\fBcomponent\fR=
@@ -1260,6 +1268,10 @@ $ aptly publish update wheezy ppa wheezy\-7\.5
 Options:
 .
 .TP
+\-\fBbatch\fR=false
+run GPG with detached tty
+.
+.TP
 \-\fBcomponent\fR=
 component names to update (for multi\-component publishing, separate components with commas)
 .
@@ -1315,6 +1327,10 @@ $ aptly publish update wheezy ppa
 .
 .P
 Options:
+.
+.TP
+\-\fBbatch\fR=false
+run GPG with detached tty
 .
 .TP
 \-\fBforce\-overwrite\fR=false
