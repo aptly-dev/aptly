@@ -3,6 +3,7 @@ aptly - Debian repository management tool
 Commands:
 
     api         start API server/issue requests
+    config      manage aptly configuration
     db          manage aptly's internal database and package pool
     graph       render graph of relationships
     mirror      manage mirrors of remote repositories
