@@ -27,5 +27,13 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.POST("/repos/:name/packages", apiReposPackagesAdd)
 	}
 
+	{
+		root.GET("/files", apiFilesListDirs)
+		root.POST("/files/:dir", apiFilesUpload)
+		root.GET("/files/:dir", apiFilesListFiles)
+		root.DELETE("/files/:dir", apiFilesDeleteDir)
+		root.DELETE("/files/:dir/:name", apiFilesDeleteFile)
+	}
+
 	return router
 }
