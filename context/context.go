@@ -272,6 +272,11 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	return publishedStorage
 }
 
+// UploadPath builds path to upload storage
+func (context *AptlyContext) UploadPath() string {
+	return filepath.Join(context.Config().RootDir, "upload")
+}
+
 // UpdateFlags sets internal copy of flags in the context
 func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
 	context.flags = flags
