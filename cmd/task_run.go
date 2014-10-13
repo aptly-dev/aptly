@@ -80,6 +80,10 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 	for i, command := range cmdList {
 		if !commandErrored {
+			err := context.ReOpenDatabase()
+			if err != nil {
+				return fmt.Errorf("failed to reopen DB: %s", err)
+			}
 			context.Progress().ColoredPrintf("@g%d) [Running]: %s@!", (i + 1), strings.Join(command, " "))
 			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
 			context.Progress().Flush()

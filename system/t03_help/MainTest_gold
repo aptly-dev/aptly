@@ -11,6 +11,7 @@ Commands:
     repo        manage local package repositories
     serve       HTTP serve published repositories
     snapshot    manage snapshots of repositories
+    task        manage aptly tasks
     version     display version
 
 Use "aptly help <command>" for more information about a command.
