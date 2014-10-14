@@ -10,15 +10,13 @@ import (
 func aptlyConfigShow(cmd *commander.Command, args []string) error {
 
 	config := context.Config()
-	pretty_json, err := json.MarshalIndent(config, "", "    ")
+	prettyJSON, err := json.MarshalIndent(config, "", "    ")
 
 	if err != nil {
-		return fmt.Errorf("unable to parse the config file: %s", err)
+		return fmt.Errorf("unable to dump the config file: %s", err)
 	}
 
-	config_to_string := string(pretty_json)
-
-	fmt.Println(config_to_string)
+	fmt.Println(string(prettyJSON))
 
 	return nil
 }
