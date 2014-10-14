@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/smira/commander"
 )
 

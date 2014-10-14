@@ -3,13 +3,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"os"
+	"time"
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
