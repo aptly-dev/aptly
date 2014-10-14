@@ -3,12 +3,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"time"
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
@@ -65,6 +66,7 @@ fine-grained changes in repository contents to transition your
 package environment to new version.`,
 		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
+			makeCmdConfig(),
 			makeCmdDb(),
 			makeCmdGraph(),
 			makeCmdMirror(),
