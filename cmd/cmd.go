@@ -65,6 +65,7 @@ fine-grained changes in repository contents to transition your
 package environment to new version.`,
 		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
+			makeCmdConfig(),
 			makeCmdDb(),
 			makeCmdGraph(),
 			makeCmdMirror(),

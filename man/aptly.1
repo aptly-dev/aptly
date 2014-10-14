@@ -1464,6 +1464,49 @@ Example:
 .P
 $ aptly graph
 .
+.SH "SHOW CURRENT APTLY\(cqS CONFIG"
+\fBaptly\fR \fBconfig\fR \fBshow\fR
+.
+.P
+Command show displays the current aptly configuration\.
+.
+.P
+Example:
+.
+.P
+$ aptly config show
+.
+.SH "RUN APTLY TASKS"
+\fBaptly\fR \fBtask\fR \fBrun\fR \-filename=\fIfilename\fR \fB|\fR \fIcommand1\fR, \fIcommand2\fR, \fB\|\.\|\.\|\.\fR
+.
+.P
+Command helps organise multiple aptly commands in one single aptly task, running as single thread\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+  $ aptly task run
+  > repo create local
+  > repo add local pkg1
+  > publish repo local
+  > serve
+  >
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBfilename\fR=
+specifies the filename that contains the commands to run
+.
 .SH "ENVIRONMENT"
 If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
 .
