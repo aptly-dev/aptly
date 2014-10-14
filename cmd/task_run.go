@@ -133,16 +133,16 @@ func makeCmdTaskRun() *commander.Command {
 		UsageLine: "run -filename=<filename> | <command1>, <command2>, ...",
 		Short:     "run aptly tasks",
 		Long: `
-Command helps origanise multiple aptly commands in one single aptly task, running as single thread.
+Command helps organise multiple aptly commands in one single aptly task, running as single thread.
 
 Example:
 
-  $ aptly task run
-  > repo create local
-  > repo add local pkg1
-  > publish repo local
-  > serve
-  >
+	  $ aptly task run
+	  > repo create local
+	  > repo add local pkg1
+	  > publish repo local
+	  > serve
+	  >
 
 `,
 	}
