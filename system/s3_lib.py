@@ -24,12 +24,12 @@ class S3Test(BaseTest):
     def prepare(self):
         self.bucket_name = "aptly-sys-test-" + str(uuid.uuid4())
         self.bucket = s3_conn.create_bucket(self.bucket_name)
-        self.configOverride["S3PublishEndpoints"] = {
+        self.configOverride = {"S3PublishEndpoints": {
             "test1": {
                 "region": "us-east-1",
                 "bucket": self.bucket_name,
             }
-        }
+        }}
 
         super(S3Test, self).prepare()
 
