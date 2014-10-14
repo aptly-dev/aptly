@@ -55,3 +55,11 @@ class ConfigInMissingFileTest(BaseTest):
     runCmd = ["aptly", "mirror", "list", "-config=nosuchfile.conf"]
     expectedCode = 1
     prepare = BaseTest.prepare_remove_all
+
+
+class ConfigShowTest(BaseTest):
+    """
+    config showing
+    """
+    runCmd = ["aptly", "config", "show"]
+    gold_processor = BaseTest.expand_environ
