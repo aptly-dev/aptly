@@ -3,6 +3,9 @@ import time
 import json
 import random
 import string
+import os
+import inspect
+import shutil
 
 try:
     import requests
@@ -27,6 +30,9 @@ class APITest(BaseTest):
             APITest.aptly_server = self._start_process("aptly api serve -listen=%s" % (self.base_url),)
             time.sleep(1)
 
+        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", "upload")):
+            shutil.rmtree(os.path.join(os.environ["HOME"], ".aptly", "upload"))
+
     def run(self):
         pass
 
@@ -43,6 +49,23 @@ class APITest(BaseTest):
 
     def delete(self, uri, *args, **kwargs):
         return requests.delete("http://%s%s" % (self.base_url, uri), *args, **kwargs)
+
+    def upload(self, uri, *filenames, **kwargs):
+        upload_name = kwargs.pop("upload_name", None)
+        directory = kwargs.pop("directory", "files")
+        assert kwargs == {}
+
+        files = {}
+
+        for filename in filenames:
+            fp = open(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), directory, filename), "rb")
+            if upload_name is not None:
+                upload_filename = upload_name
+            else:
+                upload_filename = filename
+            files[upload_filename] = (upload_filename, fp)
+
+        return self.post(uri, files=files)
 
     @classmethod
     def shutdown_class(cls):

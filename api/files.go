@@ -9,14 +9,22 @@ import (
 	"strings"
 )
 
-func verifyDir(c *gin.Context) bool {
-	dir := c.Params.ByName("dir")
-	dir = filepath.Clean(dir)
-	for _, part := range strings.Split(dir, string(filepath.Separator)) {
+func verifyPath(path string) bool {
+	path = filepath.Clean(path)
+	for _, part := range strings.Split(path, string(filepath.Separator)) {
 		if part == ".." || part == "." {
-			c.Fail(400, fmt.Errorf("wrong dir"))
 			return false
 		}
+	}
+
+	return true
+
+}
+
+func verifyDir(c *gin.Context) bool {
+	if !verifyPath(c.Params.ByName("dir")) {
+		c.Fail(400, fmt.Errorf("wrong dir"))
+		return false
 	}
 
 	return true
@@ -106,15 +114,72 @@ func apiFilesUpload(c *gin.Context) {
 
 // GET /files/:dir
 func apiFilesListFiles(c *gin.Context) {
+	if !verifyDir(c) {
+		return
+	}
 
+	list := []string{}
+	root := filepath.Join(context.UploadPath(), c.Params.ByName("dir"))
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if path == root {
+			return nil
+		}
+
+		list = append(list, filepath.Base(path))
+
+		return nil
+	})
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			c.Fail(404, err)
+		} else {
+			c.Fail(500, err)
+		}
+		return
+	}
+
+	c.JSON(200, list)
 }
 
 // DELETE /files/:dir
 func apiFilesDeleteDir(c *gin.Context) {
+	if !verifyDir(c) {
+		return
+	}
 
+	err := os.RemoveAll(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	c.JSON(200, gin.H{})
 }
 
 // DELETE /files/:dir/:name
 func apiFilesDeleteFile(c *gin.Context) {
+	if !verifyDir(c) {
+		return
+	}
 
+	if !verifyPath(c.Params.ByName("name")) {
+		c.Fail(400, fmt.Errorf("wrong file"))
+		return
+	}
+
+	err := os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("name")))
+	if err != nil {
+		if err, ok := err.(*os.PathError); !ok || !os.IsNotExist(err.Err) {
+			c.Fail(500, err)
+			return
+		}
+	}
+
+	c.JSON(200, gin.H{})
 }
