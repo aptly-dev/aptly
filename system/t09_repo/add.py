@@ -267,3 +267,19 @@ class AddRepo13Test(BaseTest):
         # check pool
         self.check_exists('pool/72/16/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
         self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')
+
+class AddRepo14Test(BaseTest):
+    """
+    add same package to local repo twice and make sure the file doesn't get truncated.
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo1 -distribution=squeeze repo1",
+    ]
+    runCmd = "aptly repo add repo1 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb;
+              aptly repo add repo1 pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb"
+
+    def check(self):
+        # check pool
+        self.check_file_not_empty('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+

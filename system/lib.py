@@ -258,6 +258,10 @@ class BaseTest(object):
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
             raise Exception("path %s exists" % (path, ))
 
+    def check_file_not_empty(self, path):
+        if os.stat(path)[6] == 0:
+            raise Exception("file %s is empty" % (path, )) 
+
     def check_equal(self, a, b):
         if a != b:
             self.verify_match(a, b, match_prepare=pprint.pformat)
