@@ -156,6 +156,7 @@ class BaseTest(object):
                 'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"),
                 'udebs': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "udebs"),
                 'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
+                'aptlyroot': os.path.join(os.environ["HOME"], ".aptly"),
             }
             if self.fixtureWebServer:
                 params['url'] = self.webServerUrl
@@ -257,6 +258,10 @@ class BaseTest(object):
     def check_not_exists(self, path):
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
             raise Exception("path %s exists" % (path, ))
+
+    def check_file_not_empty(self, path):
+        if os.stat(os.path.join(os.environ["HOME"], ".aptly", path))[6] == 0:
+            raise Exception("file %s is empty" % (path, ))
 
     def check_equal(self, a, b):
         if a != b:

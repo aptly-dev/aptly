@@ -128,12 +128,15 @@ func (pool *PackagePool) Import(path string, hashMD5 string) error {
 			// unable to stat target location?
 			return err
 		}
-		// file doesn't exist, that's ok
 	} else {
+		// target already exists
 		if targetInfo.Size() != sourceInfo.Size() {
 			// trying to overwrite file?
 			return fmt.Errorf("unable to import into pool: file %s already exists", poolPath)
 		}
+
+		// assume that target is already there
+		return nil
 	}
 
 	// create subdirs as necessary
