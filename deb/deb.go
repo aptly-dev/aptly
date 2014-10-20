@@ -47,7 +47,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 					return nil, fmt.Errorf("unable to read .tar archive: %s", err)
 				}
 
-				if tarHeader.Name == "./control" {
+				if tarHeader.Name == "./control" || tarHeader.Name == "control" {
 					reader := NewControlFileReader(untar)
 					stanza, err := reader.ReadStanza()
 					if err != nil {
