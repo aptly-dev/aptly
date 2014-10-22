@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -42,46 +42,14 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 
-	packageFiles := []string{}
-	failedFiles := []string{}
+	var packageFiles, failedFiles []string
 
-	for _, location := range args[1:] {
-		info, err2 := os.Stat(location)
-		if err2 != nil {
-			context.Progress().ColoredPrintf("@y[!]@| @!Unable to process %s: %s@|", location, err2)
-			failedFiles = append(failedFiles, location)
-			continue
-		}
-		if info.IsDir() {
-			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
-				if err3 != nil {
-					return err3
-				}
-				if info.IsDir() {
-					return nil
-				}
-
-				if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-					strings.HasSuffix(info.Name(), ".dsc") {
-					packageFiles = append(packageFiles, path)
-				}
-
-				return nil
-			})
-		} else {
-			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-				strings.HasSuffix(info.Name(), ".dsc") {
-				packageFiles = append(packageFiles, location)
-			} else {
-				context.Progress().ColoredPrintf("@y[!]@| @!Unknown file extenstion: %s@|", location)
-				failedFiles = append(failedFiles, location)
-				continue
-			}
-		}
+	packageFiles, failedFiles, err = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{context.Progress()})
+	if err != nil {
+		return fmt.Errorf("unable to collect package files: %s", err)
 	}
 
 	processedFiles := []string{}
-	sort.Strings(packageFiles)
 
 	if forceReplace {
 		list.PrepareIndex()
