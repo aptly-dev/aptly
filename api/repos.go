@@ -178,3 +178,18 @@ func apiReposPackagesShow(c *gin.Context) {
 func apiReposPackagesAdd(c *gin.Context) {
 
 }
+
+// DELETE /repos/:name/packages
+func apiReposPackagesDelete(c *gin.Context) {
+
+}
+
+// POST /repos/:name/file/:dir/:file
+func apiReposPackageFromFile(c *gin.Context) {
+
+}
+
+// POST "/repos/:name/file/:dir
+func apiReposPackageFromDir(c *gin.Context) {
+
+}
