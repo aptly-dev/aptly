@@ -175,7 +175,7 @@ func apiFilesDeleteFile(c *gin.Context) {
 
 	err := os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("name")))
 	if err != nil {
-		if err, ok := err.(*os.PathError); !ok || !os.IsNotExist(err.Err) {
+		if err1, ok := err.(*os.PathError); !ok || !os.IsNotExist(err1.Err) {
 			c.Fail(500, err)
 			return
 		}
