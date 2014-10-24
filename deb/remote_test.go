@@ -192,7 +192,7 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 
 func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
 	downloader := http.NewFakeDownloader()
-	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", errors.New("404"))
+	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
 
@@ -252,8 +252,8 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
 	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
@@ -281,11 +281,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", errors.New("HTTP 404"))
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", errors.New("HTTP 404"))
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", errors.New("HTTP 404"))
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.HTTPError{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
 	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
@@ -322,8 +322,8 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
 
 	err := s.flat.Fetch(downloader, nil)
@@ -352,11 +352,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", errors.New("HTTP 404"))
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", errors.New("HTTP 404"))
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", errors.New("HTTP 404"))
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
 
 	err := s.flat.Fetch(downloader, nil)

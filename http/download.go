@@ -16,6 +16,17 @@ import (
 	"strings"
 )
 
+// HTTPError is download error connected to HTTP code
+type HTTPError struct {
+	Code int
+	URL  string
+}
+
+// Error
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("HTTP code %d while fetching %s", e.Code, e.URL)
+}
+
 // Check interface
 var (
 	_ aptly.Downloader = (*downloaderImpl)(nil)
@@ -139,7 +150,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		task.result <- fmt.Errorf("HTTP code %d while fetching %s", resp.StatusCode, task.url)
+		task.result <- &HTTPError{Code: resp.StatusCode, URL: task.url}
 		return
 	}
 
@@ -307,13 +318,16 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		if err != nil {
-			continue
+			if err1, ok := err.(*HTTPError); ok && err1.Code == 404 {
+				continue
+			}
+			return nil, nil, err
 		}
 
 		var uncompressed io.Reader
 		uncompressed, err = method.transformation(file)
 		if err != nil {
-			continue
+			return nil, nil, err
 		}
 
 		return uncompressed, file, err
