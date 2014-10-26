@@ -318,7 +318,7 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		if err != nil {
-			if err1, ok := err.(*HTTPError); ok && err1.Code == 404 || err1.Code == 403 {
+			if err1, ok := err.(*HTTPError); ok && (err1.Code == 404 || err1.Code == 403) {
 				continue
 			}
 			return nil, nil, err
