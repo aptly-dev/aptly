@@ -140,7 +140,15 @@ func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination s
 func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	downloader.progress.Printf("Downloading %s...\n", task.url)
 
-	resp, err := downloader.client.Get(task.url)
+	req, err := http.NewRequest("GET", task.url, nil)
+	if err != nil {
+		task.result <- fmt.Errorf("%s: %s", task.url, err)
+		return
+	}
+
+	req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
+
+	resp, err := downloader.client.Do(req)
 	if err != nil {
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
