@@ -5,9 +5,10 @@ import (
 	"github.com/mitchellh/goamz/s3/s3test"
 	"github.com/smira/aptly/files"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+
+  . "gopkg.in/check.v1"
 )
 
 type PublishedStorageSuite struct {

@@ -2,10 +2,11 @@ package files
 
 import (
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
 	"runtime"
+
+  . "gopkg.in/check.v1"
 )
 
 type PackagePoolSuite struct {

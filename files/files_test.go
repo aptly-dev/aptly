@@ -1,8 +1,9 @@
 package files
 
 import (
-	. "launchpad.net/gocheck"
 	"testing"
+
+	. "gopkg.in/check.v1"
 )
 
 // Launch gocheck tests

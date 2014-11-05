@@ -2,10 +2,11 @@ package files
 
 import (
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
 	"syscall"
+
+  . "gopkg.in/check.v1"
 )
 
 type PublishedStorageSuite struct {

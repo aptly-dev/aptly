@@ -2,8 +2,9 @@ package utils
 
 import (
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
+
+  . "gopkg.in/check.v1"
 )
 
 type ChecksumSuite struct {

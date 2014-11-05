@@ -3,7 +3,8 @@ package deb
 import (
 	"errors"
 	"github.com/smira/aptly/database"
-	. "launchpad.net/gocheck"
+
+  . "gopkg.in/check.v1"
 )
 
 type SnapshotSuite struct {

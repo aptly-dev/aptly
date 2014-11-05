@@ -2,7 +2,8 @@ package deb
 
 import (
 	"github.com/smira/aptly/utils"
-	. "launchpad.net/gocheck"
+
+  . "gopkg.in/check.v1"
 )
 
 type PpaSuite struct {

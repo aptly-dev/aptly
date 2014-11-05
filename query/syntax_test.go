@@ -2,8 +2,9 @@ package query
 
 import (
 	"github.com/smira/aptly/deb"
-	. "launchpad.net/gocheck"
 	"regexp"
+
+  . "gopkg.in/check.v1"
 )
 
 type SyntaxSuite struct {

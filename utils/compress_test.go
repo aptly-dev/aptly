@@ -4,8 +4,9 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
+
+  . "gopkg.in/check.v1"
 )
 
 type CompressSuite struct {

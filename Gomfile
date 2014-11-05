@@ -19,7 +19,7 @@ gom 'github.com/vaughan0/go-ini', :commit => 'a98ad7ee00ec53921f08832bc06ecf7fd6
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 
 group :test do
-    gom 'launchpad.net/gocheck'
+    gom 'gopkg.in/check.v1'
 end
 
 group :development do

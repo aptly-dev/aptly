@@ -2,9 +2,10 @@ package deb
 
 import (
 	"github.com/smira/aptly/utils"
-	. "launchpad.net/gocheck"
 	"path/filepath"
 	"runtime"
+
+  . "gopkg.in/check.v1"
 )
 
 type DebSuite struct {
