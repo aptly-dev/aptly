@@ -8,8 +8,6 @@ import (
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 func aptlyRepoAdd(cmd *commander.Command, args []string) error {
@@ -49,110 +47,13 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to collect package files: %s", err)
 	}
 
-	processedFiles := []string{}
+	var processedFiles, failedFiles2 []string
 
-	if forceReplace {
-		list.PrepareIndex()
-	}
-
-	for _, file := range packageFiles {
-		var (
-			stanza deb.Stanza
-			p      *deb.Package
-		)
-
-		candidateProcessedFiles := []string{}
-		isSourcePackage := strings.HasSuffix(file, ".dsc")
-		isUdebPackage := strings.HasSuffix(file, ".udeb")
-
-		if isSourcePackage {
-			stanza, err = deb.GetControlFileFromDsc(file, verifier)
-
-			if err == nil {
-				stanza["Package"] = stanza["Source"]
-				delete(stanza, "Source")
-
-				p, err = deb.NewSourcePackageFromControlFile(stanza)
-			}
-		} else {
-			stanza, err = deb.GetControlFileFromDeb(file)
-			if isUdebPackage {
-				p = deb.NewUdebPackageFromControlFile(stanza)
-			} else {
-				p = deb.NewPackageFromControlFile(stanza)
-			}
-		}
-		if err != nil {
-			context.Progress().ColoredPrintf("@y[!]@| @!Unable to read file %s: %s@|", file, err)
-			failedFiles = append(failedFiles, file)
-			continue
-		}
-
-		var checksums utils.ChecksumInfo
-		checksums, err = utils.ChecksumsForFile(file)
-		if err != nil {
-			return err
-		}
-
-		if isSourcePackage {
-			p.UpdateFiles(append(p.Files(), deb.PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
-		} else {
-			p.UpdateFiles([]deb.PackageFile{deb.PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
-		}
-
-		err = context.PackagePool().Import(file, checksums.MD5)
-		if err != nil {
-			context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", file, err)
-			failedFiles = append(failedFiles, file)
-			continue
-		}
-
-		candidateProcessedFiles = append(candidateProcessedFiles, file)
-
-		// go over all files, except for the last one (.dsc/.deb itself)
-		for _, f := range p.Files() {
-			if filepath.Base(f.Filename) == filepath.Base(file) {
-				continue
-			}
-			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = context.PackagePool().Import(sourceFile, f.Checksums.MD5)
-			if err != nil {
-				context.Progress().ColoredPrintf("@y[!]@| @!Unable to import file %s into pool: %s@|", sourceFile, err)
-				failedFiles = append(failedFiles, file)
-				break
-			}
-
-			candidateProcessedFiles = append(candidateProcessedFiles, sourceFile)
-		}
-		if err != nil {
-			// some files haven't been imported
-			continue
-		}
-
-		err = context.CollectionFactory().PackageCollection().Update(p)
-		if err != nil {
-			context.Progress().ColoredPrintf("@y[!]@| @!Unable to save package %s: %s@|", p, err)
-			failedFiles = append(failedFiles, file)
-			continue
-		}
-
-		if forceReplace {
-			conflictingPackages := list.Search(deb.Dependency{Pkg: p.Name, Version: p.Version, Architecture: p.Architecture}, true)
-			for _, cp := range conflictingPackages {
-				context.Progress().ColoredPrintf("@r[-]@| %s removed due to conflict with package being added", cp)
-				list.Remove(cp)
-			}
-		}
-
-		err = list.Add(p)
-		if err != nil {
-			context.Progress().ColoredPrintf("@y[!]@| @!Unable to add package to repo %s: %s@|", p, err)
-			failedFiles = append(failedFiles, file)
-			continue
-		}
-
-		context.Progress().ColoredPrintf("@g[+]@| %s added@|", p)
-		processedFiles = append(processedFiles, candidateProcessedFiles...)
+	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
+		context.CollectionFactory().PackageCollection(), &aptly.ConsoleResultReporter{context.Progress()})
+	failedFiles = append(failedFiles, failedFiles2...)
+	if err != nil {
+		return fmt.Errorf("unable to import package files: %s", err)
 	}
 
 	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
