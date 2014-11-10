@@ -41,9 +41,9 @@ func (c *ConsoleResultReporter) Added(msg string, a ...interface{}) {
 
 // RecordingResultReporter is implementation of ResultReporter that collects all messages
 type RecordingResultReporter struct {
-	Warnings []string
-	Adds     []string
-	Removes  []string
+	Warnings []string `json:"warnings"`
+	Adds     []string `json:"added"`
+	Removes  []string `json:"removed"`
 }
 
 // Check interface

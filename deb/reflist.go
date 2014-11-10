@@ -94,6 +94,10 @@ func (l *PackageRefList) Has(p *Package) bool {
 
 // Strings builds list of strings with package keys
 func (l *PackageRefList) Strings() []string {
+	if l == nil {
+		return []string{}
+	}
+
 	result := make([]string, l.Len())
 
 	for i := 0; i < l.Len(); i++ {

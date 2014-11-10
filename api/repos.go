@@ -3,7 +3,11 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
+	"os"
+	"path/filepath"
 )
 
 // GET /api/repos
@@ -176,20 +180,115 @@ func apiReposPackagesShow(c *gin.Context) {
 
 // POST /repos/:name/packages
 func apiReposPackagesAdd(c *gin.Context) {
-
+	c.JSON(400, gin.H{})
 }
 
 // DELETE /repos/:name/packages
 func apiReposPackagesDelete(c *gin.Context) {
-
+	c.JSON(400, gin.H{})
 }
 
 // POST /repos/:name/file/:dir/:file
 func apiReposPackageFromFile(c *gin.Context) {
-
+	// redirect all work to dir method
+	apiReposPackageFromDir(c)
 }
 
-// POST "/repos/:name/file/:dir
+// POST /repos/:name/file/:dir
 func apiReposPackageFromDir(c *gin.Context) {
+	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
+	noRemove := c.Request.URL.Query().Get("noRemove") == "1"
 
+	if !verifyDir(c) {
+		return
+	}
+
+	fileParam := c.Params.ByName("file")
+	if fileParam != "" && !verifyPath(fileParam) {
+		c.Fail(400, fmt.Errorf("wrong file"))
+		return
+	}
+
+	collection := context.CollectionFactory().LocalRepoCollection()
+	collection.Lock()
+	defer collection.Unlock()
+
+	repo, err := collection.ByName(c.Params.ByName("name"))
+	if err != nil {
+		c.Fail(404, err)
+		return
+	}
+
+	verifier := &utils.GpgVerifier{}
+
+	var (
+		sources                      []string
+		packageFiles, failedFiles    []string
+		processedFiles, failedFiles2 []string
+		reporter                     = &aptly.RecordingResultReporter{
+			Warnings: []string{},
+			Adds:     []string{},
+			Removes:  []string{},
+		}
+		list *deb.PackageList
+	)
+
+	if fileParam == "" {
+		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"))}
+	} else {
+		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
+	}
+
+	packageFiles, failedFiles, err = deb.CollectPackageFiles(sources, reporter)
+
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to collect package files: %s", err))
+		return
+	}
+
+	list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to load packages: %s", err))
+		return
+	}
+
+	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
+		context.CollectionFactory().PackageCollection(), reporter)
+	failedFiles = append(failedFiles, failedFiles2...)
+
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to import package files: %s", err))
+		return
+	}
+
+	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+
+	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to save: %s", err))
+		return
+	}
+
+	if !noRemove {
+		processedFiles = utils.StrSliceDeduplicate(processedFiles)
+
+		for _, file := range processedFiles {
+			err := os.Remove(file)
+			if err != nil {
+				reporter.Warning("unable to remove file %s: %s", file, err)
+			}
+		}
+
+		// atempt to remove dir, if it fails, that's fine: probably it's not empty
+		os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
+	}
+
+	if failedFiles == nil {
+		failedFiles = []string{}
+	}
+
+	c.JSON(200, gin.H{
+		"report":      reporter,
+		"failedFiles": failedFiles,
+	})
 }
