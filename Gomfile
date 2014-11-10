@@ -26,5 +26,5 @@ group :development do
    gom 'github.com/golang/lint/golint'
    gom 'github.com/mattn/goveralls'
    gom 'github.com/axw/gocov/gocov'
-   gom 'code.google.com/p/go.tools/cmd/cover'
+   gom 'golang.org/x/tools/cmd/cover'
 end
