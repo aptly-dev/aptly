@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -308,6 +309,9 @@ ok:
 
 	if !repo.IsFlat() {
 		architectures := strings.Split(stanza["Architectures"], " ")
+		sort.Strings(architectures)
+		// "source" architecture is never present, despite Release file claims
+		architectures = utils.StrSlicesSubstract(architectures, []string{"source"})
 		if len(repo.Architectures) == 0 {
 			repo.Architectures = architectures
 		} else {
