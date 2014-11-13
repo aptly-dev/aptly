@@ -205,6 +205,19 @@ func (l *PackageList) Architectures(includeSource bool) (result []string) {
 	return
 }
 
+// Strings builds list of strings with package keys
+func (l *PackageList) Strings() []string {
+	result := make([]string, l.Len())
+	i := 0
+
+	for _, p := range l.packages {
+		result[i] = string(p.Key(""))
+		i += 1
+	}
+
+	return result
+}
+
 // depSliceDeduplicate removes dups in slice of Dependencies
 func depSliceDeduplicate(s []Dependency) []Dependency {
 	l := len(s)
