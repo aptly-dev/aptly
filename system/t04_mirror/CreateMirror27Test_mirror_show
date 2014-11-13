@@ -1,0 +1,19 @@
+Name: mirror27
+Archive Root URL: http://linux.dell.com/repo/community/ubuntu/
+Distribution: wheezy
+Components: openmanage/740
+Architectures: amd64, i386
+Download Sources: no
+Download .udebs: no
+Last update: never
+
+Information from release file:
+Architectures: amd64 i386 source
+Codename: wheezy
+Components: openmanage openmanage/801 openmanage/740 openmanage/730
+Date: Wed, 22 Oct 2014 18:50:39 UTC
+Description:  Unofficial Dell OMSA build for Ubuntu
+
+Label: Dell OMSA Archive
+Origin: Dell Inc
+Suite: wheezy

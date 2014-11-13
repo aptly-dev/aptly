@@ -323,8 +323,13 @@ ok:
 		}
 
 		components := strings.Split(stanza["Components"], " ")
-		for i := range components {
-			components[i] = path.Base(components[i])
+		if strings.Contains(repo.Distribution, "/") {
+			distributionLast := path.Base(repo.Distribution) + "/"
+			for i := range components {
+				if strings.HasPrefix(components[i], distributionLast) {
+					components[i] = components[i][len(distributionLast):]
+				}
+			}
 		}
 		if len(repo.Components) == 0 {
 			repo.Components = components
@@ -384,6 +389,8 @@ ok:
 	if err != nil {
 		return err
 	}
+
+	delete(stanza, "SHA512")
 
 	repo.Meta = stanza
 

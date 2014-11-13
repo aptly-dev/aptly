@@ -139,3 +139,23 @@ class ReposAPITestAddFile(APITest):
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
 
         self.check_not_exists("upload/" + d)
+
+
+class ReposAPITestShowQuery(APITest):
+    """
+    GET /api/repos/:name/packages?q=query
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi"}).json(),
+                         ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
