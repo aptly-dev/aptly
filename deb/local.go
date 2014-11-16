@@ -107,7 +107,7 @@ func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	for _, blob := range blobs {
 		r := &LocalRepo{}
 		if err := r.Decode(blob); err != nil {
-			log.Printf("Error decoding mirror: %s\n", err)
+			log.Printf("Error decoding repo: %s\n", err)
 		} else {
 			result.list = append(result.list, r)
 		}
