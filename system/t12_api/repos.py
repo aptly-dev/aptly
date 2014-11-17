@@ -139,3 +139,119 @@ class ReposAPITestAddFile(APITest):
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
 
         self.check_not_exists("upload/" + d)
+
+
+class ReposAPITestShowQuery(APITest):
+    """
+    GET /api/repos/:name/packages?q=query
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi"}).json()),
+                         ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages", params={"q": "Version (> 0.6.1-1.4)"}).json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+        resp = self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi)"})
+        self.check_equal(resp.status_code, 400)
+        self.check_equal(resp.json()[0]["error"], u'parsing failed: unexpected token ): expecting end of query')
+
+
+class ReposAPITestAddMultiple(APITest):
+    """
+    POST /api/repos/:name/file/:dir/:file multiple
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d + "/pyspi_0.6.1-1.3.dsc",
+                                   params={"noRemove": 1}).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d + "/pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+
+class ReposAPITestPackagesAddDelete(APITest):
+    """
+    POST/DELETE /api/repos/:name/packages
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                          'Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e',
+                          'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                          'Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e',
+                          'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89',
+                                               'Psource no-such-package 0.6.1-1.4 f8f1daa806004e89']}).status_code, 404)
+
+        self.check_equal(self.delete("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                          'Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                          'Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e',
+                          'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+        repo_name2 = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name2, "Comment": "fun repo"}).status_code, 201)
+
+        self.check_equal(self.post("/api/repos/" + repo_name2 + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89',
+                                               'Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378']}).status_code, 200)
+
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name2 + "/packages").json()),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                          'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])

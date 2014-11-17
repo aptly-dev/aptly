@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 // GET /api/repos
@@ -175,17 +178,128 @@ func apiReposPackagesShow(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, repo.RefList().Strings())
+	queryS := c.Request.URL.Query().Get("q")
+	if queryS != "" {
+		q, err := query.Parse(queryS)
+		if err != nil {
+			c.Fail(400, err)
+			return
+		}
+
+		list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
+		if err != nil {
+			c.Fail(500, err)
+			return
+		}
+
+		list.PrepareIndex()
+
+		withDeps := c.Request.URL.Query().Get("withDeps") == "1"
+		architecturesList := []string{}
+
+		if withDeps {
+			if len(context.ArchitecturesList()) > 0 {
+				architecturesList = context.ArchitecturesList()
+			} else {
+				architecturesList = list.Architectures(false)
+			}
+
+			sort.Strings(architecturesList)
+
+			if len(architecturesList) == 0 {
+				c.Fail(400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
+				return
+			}
+		}
+
+		result, err := list.Filter([]deb.PackageQuery{q}, withDeps,
+			nil, context.DependencyOptions(), architecturesList)
+		if err != nil {
+			c.Fail(500, err)
+			return
+		}
+
+		c.JSON(200, result.Strings())
+	} else {
+		c.JSON(200, repo.RefList().Strings())
+	}
+}
+
+// Handler for both add and delete
+func apiReposPackagesAddDelete(c *gin.Context, cb func(list *deb.PackageList, p *deb.Package) error) {
+	var b struct {
+		PackageRefs []string
+	}
+
+	if !c.Bind(&b) {
+		return
+	}
+
+	collection := context.CollectionFactory().LocalRepoCollection()
+	collection.Lock()
+	defer collection.Unlock()
+
+	repo, err := collection.ByName(c.Params.ByName("name"))
+	if err != nil {
+		c.Fail(404, err)
+		return
+	}
+
+	err = collection.LoadComplete(repo)
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	// verify package refs and build package list
+	for _, ref := range b.PackageRefs {
+		p, err := context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
+		if err != nil {
+			if err == database.ErrNotFound {
+				c.Fail(404, fmt.Errorf("package %s: %s", ref, err))
+			} else {
+				c.Fail(500, err)
+			}
+			return
+		}
+		err = cb(list, p)
+		if err != nil {
+			c.Fail(400, err)
+			return
+		}
+	}
+
+	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+
+	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to save: %s", err))
+		return
+	}
+
+	c.JSON(200, repo)
+
 }
 
 // POST /repos/:name/packages
 func apiReposPackagesAdd(c *gin.Context) {
-	c.JSON(400, gin.H{})
+	apiReposPackagesAddDelete(c, func(list *deb.PackageList, p *deb.Package) error {
+		return list.Add(p)
+	})
 }
 
 // DELETE /repos/:name/packages
 func apiReposPackagesDelete(c *gin.Context) {
-	c.JSON(400, gin.H{})
+	apiReposPackagesAddDelete(c, func(list *deb.PackageList, p *deb.Package) error {
+		list.Remove(p)
+		return nil
+	})
 }
 
 // POST /repos/:name/file/:dir/:file
@@ -216,6 +330,12 @@ func apiReposPackageFromDir(c *gin.Context) {
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
 		c.Fail(404, err)
+		return
+	}
+
+	err = collection.LoadComplete(repo)
+	if err != nil {
+		c.Fail(500, err)
 		return
 	}
 

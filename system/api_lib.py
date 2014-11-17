@@ -48,6 +48,11 @@ class APITest(BaseTest):
         return requests.post("http://%s%s" % (self.base_url, uri), *args, **kwargs)
 
     def delete(self, uri, *args, **kwargs):
+        if "json" in kwargs:
+            kwargs["data"] = json.dumps(kwargs.pop("json"))
+            if not "headers" in kwargs:
+                kwargs["headers"] = {}
+            kwargs["headers"]["Content-Type"] = "application/json"
         return requests.delete("http://%s%s" % (self.base_url, uri), *args, **kwargs)
 
     def upload(self, uri, *filenames, **kwargs):
