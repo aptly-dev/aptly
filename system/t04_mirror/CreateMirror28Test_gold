@@ -1,0 +1,4 @@
+Downloading http://downloads-distro.mongodb.org/repo/ubuntu-upstart/dists/dist/Release...
+
+Mirror [mirror28]: http://downloads-distro.mongodb.org/repo/ubuntu-upstart/ dist successfully added.
+You can run 'aptly mirror update mirror28' to download repository contents.

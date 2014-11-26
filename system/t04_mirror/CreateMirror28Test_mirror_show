@@ -1,0 +1,20 @@
+Name: mirror28
+Archive Root URL: http://downloads-distro.mongodb.org/repo/ubuntu-upstart/
+Distribution: dist
+Components: 10gen
+Architectures: amd64, i386
+Download Sources: no
+Download .udebs: no
+Last update: never
+
+Information from release file:
+Architectures: i386 amd64
+Codename: dist
+Components: mongodb
+Date: Tue, 04 Nov 2014 00:04:56 UTC
+Description:  mongodb packages
+
+Label: mongodb
+Origin: mongodb
+Suite: mongodb
+Version: dist

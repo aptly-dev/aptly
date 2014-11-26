@@ -58,6 +58,8 @@ type RemoteRepo struct {
 	Filter string
 	// FilterWithDeps to include dependencies from filter query
 	FilterWithDeps bool
+	// SkipComponentCheck skips component list verification
+	SkipComponentCheck bool
 	// Status marks state of repository (being updated, no action)
 	Status int
 	// WorkerPID is PID of the process modifying the mirror (if any)
@@ -333,9 +335,9 @@ ok:
 		}
 		if len(repo.Components) == 0 {
 			repo.Components = components
-		} else {
+		} else if !repo.SkipComponentCheck {
 			err = utils.StringsIsSubset(repo.Components, components,
-				fmt.Sprintf("component %%s not available in repo %s", repo))
+				fmt.Sprintf("component %%s not available in repo %s, use -force-components to override", repo))
 			if err != nil {
 				return err
 			}
