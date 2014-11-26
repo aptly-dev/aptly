@@ -102,8 +102,8 @@ class CleanupDB9Test(BaseTest):
         "aptly repo create -distribution=abc local-repo",
         "aptly repo create -distribution=def local-repo2",
         "aptly repo add local-repo ${files}",
-        "aptly publish repo local-repo",
-        "aptly publish repo -architectures=i386 local-repo2",
+        "aptly publish repo -skip-signing local-repo",
+        "aptly publish repo -skip-signing -architectures=i386 local-repo2",
         "aptly repo remove local-repo Name",
     ]
     runCmd = "aptly db cleanup"
