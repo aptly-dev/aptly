@@ -92,3 +92,22 @@ class CleanupDB8Test(BaseTest):
         "aptly repo drop local-repo",
     ]
     runCmd = "aptly db cleanup"
+
+
+class CleanupDB9Test(BaseTest):
+    """
+    cleanup db: publish local repo, remove packages from repo, db cleanup
+    """
+    fixtureCmds = [
+        "aptly repo create -distribution=abc local-repo",
+        "aptly repo create -distribution=def local-repo2",
+        "aptly repo add local-repo ${files}",
+        "aptly publish repo local-repo",
+        "aptly publish repo -architectures=i386 local-repo2",
+        "aptly repo remove local-repo Name",
+    ]
+    runCmd = "aptly db cleanup"
+
+    def check(self):
+            self.check_output()
+            self.check_cmd_output("aptly publish drop def", "publish_drop")

@@ -20,7 +20,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	// collect information about references packages...
 	existingPackageRefs := deb.NewPackageRefList()
 
-	context.Progress().Printf("Loading mirrors, local repos and snapshots...\n")
+	context.Progress().Printf("Loading mirrors, local repos, snapshots and published repos...\n")
 	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
@@ -55,6 +55,24 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			return err
 		}
 		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(published *deb.PublishedRepo) error {
+		if published.SourceKind != "local" {
+			return nil
+		}
+		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(published, context.CollectionFactory())
+		if err != nil {
+			return err
+		}
+
+		for _, component := range published.Components() {
+			existingPackageRefs = existingPackageRefs.Merge(published.RefList(component), false)
+		}
 		return nil
 	})
 	if err != nil {
