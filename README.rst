@@ -8,6 +8,9 @@ aptly
 .. image:: https://coveralls.io/repos/smira/aptly/badge.png?branch=HEAD
     :target: https://coveralls.io/r/smira/aptly?branch=HEAD
 
+.. image:: https://badges.gitter.im/Join Chat.svg
+    :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 .. image:: http://gobuild.io/badge/github.com/smira/aptly/download.png
     :target: http://gobuild.io/github.com/smira/aptly
 
