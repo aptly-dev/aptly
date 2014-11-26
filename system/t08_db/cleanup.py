@@ -110,4 +110,4 @@ class CleanupDB9Test(BaseTest):
 
     def check(self):
             self.check_output()
-            self.check_cmd_output("aptly publish drop def", "publish_drop")
+            self.check_cmd_output("aptly publish drop def", "publish_drop", match_prepare=self.expand_environ)
