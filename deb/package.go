@@ -55,12 +55,18 @@ func NewPackageFromControlFile(input Stanza) *Package {
 
 	filesize, _ := strconv.ParseInt(input["Size"], 10, 64)
 
+	md5, ok := input["MD5sum"]
+	if !ok {
+		// there are some broken repos out there with MD5 in wrong field
+		md5 = input["MD5Sum"]
+	}
+
 	result.UpdateFiles(PackageFiles{PackageFile{
 		Filename:     filepath.Base(input["Filename"]),
 		downloadPath: filepath.Dir(input["Filename"]),
 		Checksums: utils.ChecksumInfo{
 			Size:   filesize,
-			MD5:    strings.TrimSpace(input["MD5sum"]),
+			MD5:    strings.TrimSpace(md5),
 			SHA1:   strings.TrimSpace(input["SHA1"]),
 			SHA256: strings.TrimSpace(input["SHA256"]),
 		},
@@ -68,6 +74,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 
 	delete(input, "Filename")
 	delete(input, "MD5sum")
+	delete(input, "MD5Sum")
 	delete(input, "SHA1")
 	delete(input, "SHA256")
 	delete(input, "Size")
