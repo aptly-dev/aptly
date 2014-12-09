@@ -39,7 +39,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 				strings.HasSuffix(info.Name(), ".dsc") {
 				packageFiles = append(packageFiles, location)
 			} else {
-				reporter.Warning("Unknown file extenstion: %s", location)
+				reporter.Warning("Unknown file extension: %s", location)
 				failedFiles = append(failedFiles, location)
 				continue
 			}
