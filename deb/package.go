@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+type Hash uint64
+
 // Package is single instance of Debian package
 type Package struct {
 	// Basic package properties
@@ -27,7 +29,7 @@ type Package struct {
 	// Is this udeb package
 	IsUdeb bool
 	// Hash of files section
-	FilesHash uint64
+	FilesHash Hash
 	// Is this >= 0.6 package?
 	V06Plus bool
 	// Offload fields
@@ -36,6 +38,10 @@ type Package struct {
 	files *PackageFiles
 	// Mother collection
 	collection *PackageCollection
+}
+
+func (h *Hash) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%08x\"", *h)), nil
 }
 
 // NewPackageFromControlFile creates Package from parsed Debian control file
@@ -398,7 +404,7 @@ func (p *Package) Files() PackageFiles {
 // UpdateFiles saves new state of files
 func (p *Package) UpdateFiles(files PackageFiles) {
 	p.files = &files
-	p.FilesHash = files.Hash()
+	p.FilesHash = Hash(files.Hash())
 }
 
 // Stanza creates original stanza from package
