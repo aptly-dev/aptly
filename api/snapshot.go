@@ -69,7 +69,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 	snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
 	if err != nil {
-		c.Fail(500, err)
+		c.Fail(400, err)
 		return
 	}
 
@@ -162,7 +162,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 	snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
 	if err != nil {
-		c.Fail(500, err)
+		c.Fail(400, err)
 		return
 	}
 
@@ -202,11 +202,13 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(c.Params.ByName("name"))
 	if err != nil {
 		c.Fail(404, err)
+		return
 	}
 
 	_, err = context.CollectionFactory().SnapshotCollection().ByName(b.Name)
 	if err == nil {
 		c.Fail(409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
+		return
 	}
 
 	if b.Name != "" {
@@ -220,6 +222,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
 	if err != nil {
 		c.Fail(403, err)
+		return
 	}
 
 	c.JSON(200, snapshot)
@@ -269,7 +272,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 		for _, repo := range published {
 			err = publishedCollection.LoadComplete(repo, context.CollectionFactory())
 			if err != nil {
-				c.Fail(409, err)
+				c.Fail(500, err)
 				return
 			}
 		}
@@ -288,7 +291,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 
 	err = context.CollectionFactory().SnapshotCollection().Drop(snapshot)
 	if err != nil {
-		c.Fail(409, err)
+		c.Fail(500, err)
 		return
 	}
 
@@ -318,17 +321,20 @@ func apiSnapshotsDiff(c *gin.Context) {
 	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotA)
 	if err != nil {
 		c.Fail(500, err)
+		return
 	}
 
 	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotB)
 	if err != nil {
 		c.Fail(500, err)
+		return
 	}
 
 	// Calculate diff
 	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.CollectionFactory().PackageCollection())
 	if err != nil {
 		c.Fail(500, err)
+		return
 	}
 
 	result := []deb.PackageDiff{}
@@ -358,7 +364,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 
 	err = collection.LoadComplete(snapshot)
 	if err != nil {
-		c.Fail(400, err)
+		c.Fail(500, err)
 		return
 	}
 
@@ -367,7 +373,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 
 	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
-		c.Fail(400, err)
+		c.Fail(404, err)
 		return
 	}
 
@@ -375,7 +381,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 	if queryS != "" {
 		q, err := query.Parse(c.Request.URL.Query().Get("q"))
 		if err != nil {
-			c.Fail(401, err)
+			c.Fail(400, err)
 			return
 		}
 
@@ -402,7 +408,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 		packages, err := list.Filter([]deb.PackageQuery{q}, withDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
-			c.Fail(400, fmt.Errorf("unable to search: %s", err))
+			c.Fail(500, fmt.Errorf("unable to search: %s", err))
 		}
 
 		packages.ForEach(func(p *deb.Package) error {
