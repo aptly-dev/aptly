@@ -267,6 +267,17 @@ class BaseTest(object):
         if a != b:
             self.verify_match(a, b, match_prepare=pprint.pformat)
 
+    def check_subset(self, a, b):
+        diff = ''
+        for k, v in a.items():
+            if k not in b:
+                diff += "unexpected key '%s'\n" % (k,)
+            elif b[k] != v:
+                diff += "wrong value '%s' for key '%s', expected '%s'\n" % (v, k, b[k])
+        if diff:
+            raise Exception("content doesn't match:\n" + diff)
+                            
+
     def verify_match(self, a, b, match_prepare=None):
         if match_prepare is not None:
             a = match_prepare(a)
