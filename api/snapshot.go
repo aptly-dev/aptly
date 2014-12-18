@@ -34,6 +34,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 	var b struct {
 		Name                string `binding:"required"`
+		Description         string
 	}
 
 	if !c.Bind(&b) {
@@ -72,6 +73,10 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		return
 	}
 
+	if b.Description != "" {
+		snapshot.Description = b.Description
+	}
+
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
 		c.Fail(500, err)
@@ -90,10 +95,15 @@ func apiSnapshotsCreateEmpty(c *gin.Context) {
 
 	var b struct {
 		Name                string `binding:"required"`
+		Description         string
 	}
 
 	if !c.Bind(&b) {
 		return
+	}
+
+	if b.Description == "" {
+		b.Description = "Created as empty"
 	}
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
@@ -102,7 +112,7 @@ func apiSnapshotsCreateEmpty(c *gin.Context) {
 
 	packageList := deb.NewPackageList()
 
-	snapshot = deb.NewSnapshotFromPackageList(b.Name, nil, packageList, "Created as empty")
+	snapshot = deb.NewSnapshotFromPackageList(b.Name, nil, packageList, b.Description)
 
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
@@ -123,6 +133,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 	var b struct {
 		Name                string `binding:"required"`
+		Description         string
 	}
 
 	if !c.Bind(&b) {
@@ -155,6 +166,10 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
+	if b.Description != "" {
+		snapshot.Description = b.Description
+	}
+
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
 		c.Fail(500, err)
@@ -165,14 +180,15 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 }
 
 // PUT /api/snapshots/:name
-func apiSnapshotsRename(c *gin.Context) {
+func apiSnapshotsUpdate(c *gin.Context) {
 	var (
 		err      error
 		snapshot *deb.Snapshot
 	)
 
 	var b struct {
-		Name    string `binding:"required"`
+		Name        string
+		Description string
 	}
 
 	if !c.Bind(&b) {
@@ -193,7 +209,14 @@ func apiSnapshotsRename(c *gin.Context) {
 		c.Fail(409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
 	}
 
-	snapshot.Name = b.Name
+	if b.Name != "" {
+		snapshot.Name = b.Name
+	}
+
+	if b.Description != "" {
+		snapshot.Description = b.Description
+	}
+
 	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
 	if err != nil {
 		c.Fail(403, err)
