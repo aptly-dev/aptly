@@ -87,7 +87,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 }
 
 // POST /api/snapshots/:name
-func apiSnapshotsCreateEmpty(c *gin.Context) {
+func apiSnapshotsCreate(c *gin.Context) {
 	var (
 		err       error
 		snapshot *deb.Snapshot
@@ -96,6 +96,8 @@ func apiSnapshotsCreateEmpty(c *gin.Context) {
 	var b struct {
 		Name                string `binding:"required"`
 		Description         string
+		SourceIDs           []string
+		PackageRefs         []string
 	}
 
 	if !c.Bind(&b) {
@@ -103,16 +105,38 @@ func apiSnapshotsCreateEmpty(c *gin.Context) {
 	}
 
 	if b.Description == "" {
-		b.Description = "Created as empty"
+		if len(b.SourceIDs) + len(b.PackageRefs) == 0 {
+			b.Description = "Created as empty"
+		}
 	}
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
 	snapshotCollection.Lock()
 	defer snapshotCollection.Unlock()
 
-	packageList := deb.NewPackageList()
+    sources := make([]*deb.Snapshot, len(b.SourceIDs))
 
-	snapshot = deb.NewSnapshotFromPackageList(b.Name, nil, packageList, b.Description)
+    for i := 0; i < len(b.SourceIDs); i++ {
+        sources[i], err = snapshotCollection.ByUUID(b.SourceIDs[i])
+        if err != nil {
+			c.Fail(404, err)
+			return
+        }
+
+        err = snapshotCollection.LoadComplete(sources[i])
+        if err != nil {
+			c.Fail(500, err)
+			return
+        }
+    }
+
+    packageRefs := make([][]byte, len(b.PackageRefs))
+	for i, ref := range b.PackageRefs {
+		packageRefs[i] = []byte(ref)
+	}
+
+	packageRefList := &deb.PackageRefList{packageRefs}
+	snapshot = deb.NewSnapshotFromRefList(b.Name, sources, packageRefList, b.Description)
 
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {

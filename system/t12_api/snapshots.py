@@ -20,6 +20,35 @@ class SnapshotsAPITestCreateShow(APITest):
         self.check_equal(self.get("/api/snapshots/" + self.random_name()).status_code, 404)
 
 
+class SnapshotsAPITestCreateFromRefs(APITest):
+    """
+    GET /api/snapshots/:name, POST /api/snapshots, GET /api/snapshots/:name/packages
+    """
+    def check(self):
+        snapshot_name = self.random_name()
+        snapshot_desc = {u'Description': u'fun snapshot',
+                         u'Name': snapshot_name,
+                         u'SourceIDs': ['123']}
+
+        resp = self.post("/api/snapshots", json=snapshot_desc)
+        self.check_equal(resp.status_code, 404)
+
+        resp = self.post("/api/snapshots", json={"Name": self.random_name()})
+        self.check_equal(resp.status_code, 201)
+        snapshot_desc['SourceIDs'] = [resp.json()["UUID"]]
+
+        snapshot = snapshot_desc.copy()
+        snapshot['PackageRefs'] = ["Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378"]
+        resp = self.post("/api/snapshots", json=snapshot)
+        self.check_equal(resp.status_code, 201)
+        self.check_subset(snapshot_desc, resp.json())
+
+        self.check_subset(snapshot_desc, self.get("/api/snapshots/" + snapshot_name).json())
+        self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
+
+        self.check_equal(self.get("/api/snapshots/" + self.random_name()).status_code, 404)
+
+
 class SnapshotsAPITestCreateFromRepo(APITest):
     """
     POST /api/repos, POST /api/repos/:name/snapshots, GET /api/snapshots/:name
