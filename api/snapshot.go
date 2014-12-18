@@ -234,13 +234,19 @@ func apiSnapshotsShow(c *gin.Context) {
 	collection.RLock()
 	defer collection.RUnlock()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
 		c.Fail(404, err)
 		return
 	}
 
-	c.JSON(200, repo)
+	err = collection.LoadComplete(snapshot)
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	c.JSON(200, snapshot)
 }
 
 // DELETE /api/snapshots/:name
@@ -405,22 +411,21 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 
 		list.PrepareIndex()
 
-		packages, err := list.Filter([]deb.PackageQuery{q}, withDeps,
+		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.Fail(500, fmt.Errorf("unable to search: %s", err))
 		}
+	}
 
-		packages.ForEach(func(p *deb.Package) error {
-			result = append(result, p)
-			return nil
-		})
-	} else {
+	if c.Request.URL.Query().Get("format") == "details" {
 		list.ForEach(func(p *deb.Package) error {
 			result = append(result, p)
 			return nil
 		})
-	}
 
-	c.JSON(200, result)
+		c.JSON(200, result)
+	} else {
+		c.JSON(200, list.Strings())
+	}
 }

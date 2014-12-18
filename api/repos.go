@@ -178,6 +178,15 @@ func apiReposPackagesShow(c *gin.Context) {
 		return
 	}
 
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	list.PrepareIndex()
+
+	result := []*deb.Package{}
 	queryS := c.Request.URL.Query().Get("q")
 	if queryS != "" {
 		q, err := query.Parse(queryS)
@@ -185,14 +194,6 @@ func apiReposPackagesShow(c *gin.Context) {
 			c.Fail(400, err)
 			return
 		}
-
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
-		if err != nil {
-			c.Fail(500, err)
-			return
-		}
-
-		list.PrepareIndex()
 
 		withDeps := c.Request.URL.Query().Get("withDeps") == "1"
 		architecturesList := []string{}
@@ -212,16 +213,23 @@ func apiReposPackagesShow(c *gin.Context) {
 			}
 		}
 
-		result, err := list.Filter([]deb.PackageQuery{q}, withDeps,
+		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.Fail(500, err)
 			return
 		}
+	}
 
-		c.JSON(200, result.Strings())
+	if c.Request.URL.Query().Get("format") == "details" {
+		list.ForEach(func(p *deb.Package) error {
+			result = append(result, p)
+			return nil
+		})
+
+		c.JSON(200, result)
 	} else {
-		c.JSON(200, repo.RefList().Strings())
+		c.JSON(200, list.Strings())
 	}
 }
 
