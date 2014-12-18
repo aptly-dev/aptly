@@ -24,7 +24,7 @@ func apiSnapshotsList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /api/mirros/:name/snapshots/:snapname
+// POST /api/mirrors/:name/snapshots/
 func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	var (
 		err       error
@@ -81,7 +81,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	c.JSON(201, snapshot)
 }
 
-// POST /api/repos/:name/snapshots/:snapname
+// POST /api/snapshots/:name
 func apiSnapshotsCreateEmpty(c *gin.Context) {
 	var (
 		err       error
@@ -272,7 +272,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// GET /api/snapshots/:name
+// POST /api/snapshots/:name/diff/:name2
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 
