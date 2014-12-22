@@ -57,6 +57,21 @@ type PublishedRepo struct {
 	rePublishing bool
 }
 
+// ParsePrefix splits [storage:]prefix into components
+func ParsePrefix(param string) (storage, prefix string) {
+	i := strings.LastIndex(param, ":")
+	if i != -1 {
+		storage = param[:i]
+		prefix = param[i+1:]
+		if prefix == "" {
+			prefix = "."
+		}
+	} else {
+		prefix = param
+	}
+	return
+}
+
 // walkUpTree goes from source in the tree of source snapshots/mirrors/local repos
 // gathering information about declared components and distributions
 func walkUpTree(source interface{}, collectionFactory *CollectionFactory) (rootDistributions []string, rootComponents []string) {

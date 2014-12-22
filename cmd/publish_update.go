@@ -20,7 +20,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 	if len(args) == 2 {
 		param = args[1]
 	}
-	storage, prefix := parsePrefix(param)
+	storage, prefix := deb.ParsePrefix(param)
 
 	var published *deb.PublishedRepo
 

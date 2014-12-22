@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 )
 
@@ -19,7 +20,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 		param = args[1]
 	}
 
-	storage, prefix := parsePrefix(param)
+	storage, prefix := deb.ParsePrefix(param)
 
 	err = context.CollectionFactory().PublishedRepoCollection().Remove(context, storage, prefix, distribution,
 		context.CollectionFactory(), context.Progress())

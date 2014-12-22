@@ -4,7 +4,6 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"strings"
 )
 
 func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
@@ -25,20 +24,6 @@ func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
 
 	return signer, nil
 
-}
-
-func parsePrefix(param string) (storage, prefix string) {
-	i := strings.LastIndex(param, ":")
-	if i != -1 {
-		storage = param[:i]
-		prefix = param[i+1:]
-		if prefix == "" {
-			prefix = "."
-		}
-	} else {
-		prefix = param
-	}
-	return
 }
 
 func makeCmdPublish() *commander.Command {

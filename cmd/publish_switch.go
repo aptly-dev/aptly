@@ -33,7 +33,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		names = args[1:]
 	}
 
-	storage, prefix := parsePrefix(param)
+	storage, prefix := deb.ParsePrefix(param)
 
 	var published *deb.PublishedRepo
 

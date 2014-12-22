@@ -27,7 +27,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	} else {
 		param = ""
 	}
-	storage, prefix := parsePrefix(param)
+	storage, prefix := deb.ParsePrefix(param)
 
 	var (
 		sources = []interface{}{}
