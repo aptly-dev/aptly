@@ -3,6 +3,7 @@ package deb
 import (
 	"bytes"
 	"code.google.com/p/go-uuid/uuid"
+	"encoding/json"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
@@ -253,6 +254,40 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	result.Distribution = distribution
 
 	return result, nil
+}
+
+// MarshalJSON requires object to be "loeaded completely"
+func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
+	type sourceInfo struct {
+		Component, Name string
+	}
+
+	sources := []sourceInfo{}
+	for component, item := range p.sourceItems {
+		name := ""
+		if item.snapshot != nil {
+			name = item.snapshot.Name
+		} else if item.localRepo != nil {
+			name = item.localRepo.Name
+		} else {
+			panic("no snapshot/local repo")
+		}
+		sources = append(sources, sourceInfo{
+			Component: component,
+			Name:      name,
+		})
+	}
+
+	return json.Marshal(map[string]interface{}{
+		"Architectures": p.Architectures,
+		"Distribution":  p.Distribution,
+		"Label":         p.Label,
+		"Origin":        p.Origin,
+		"Prefix":        p.Prefix,
+		"SourceKind":    p.SourceKind,
+		"Sources":       sources,
+		"Storage":       p.Storage,
+	})
 }
 
 // String returns human-readable represenation of PublishedRepo
