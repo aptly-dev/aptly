@@ -116,7 +116,7 @@ func makeCmdPackageShow() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPackageShow,
 		UsageLine: "show <package-query>",
-		Short:     "show details about packages matcing query",
+		Short:     "show details about packages matching query",
 		Long: `
 Command shows displays detailed meta-information about packages
 matching query. Information from Debian control file is displayed.
