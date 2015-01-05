@@ -8,12 +8,13 @@ import (
 	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"net"
 	"net/http"
 	"os"
 	"runtime"
 	"time"
+
+  . "gopkg.in/check.v1"
 )
 
 type DownloaderSuite struct {

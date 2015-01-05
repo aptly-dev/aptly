@@ -10,9 +10,10 @@ import (
 	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
 	"sort"
+
+  . "gopkg.in/check.v1"
 )
 
 type NullVerifier struct {

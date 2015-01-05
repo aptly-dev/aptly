@@ -3,8 +3,9 @@ package deb
 import (
 	"bufio"
 	"bytes"
-	. "launchpad.net/gocheck"
 	"strings"
+
+	. "gopkg.in/check.v1"
 )
 
 type ControlFileSuite struct {

@@ -9,9 +9,10 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/ugorji/go/codec"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+
+  . "gopkg.in/check.v1"
 )
 
 type pathExistsChecker struct {

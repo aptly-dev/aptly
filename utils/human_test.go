@@ -1,7 +1,7 @@
 package utils
 
 import (
-	. "launchpad.net/gocheck"
+  . "gopkg.in/check.v1"
 )
 
 type HumanSuite struct{}

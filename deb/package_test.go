@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
 	"regexp"
+
+  . "gopkg.in/check.v1"
 )
 
 type PackageSuite struct {

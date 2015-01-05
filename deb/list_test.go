@@ -2,10 +2,11 @@ package deb
 
 import (
 	"errors"
-	. "launchpad.net/gocheck"
 	"regexp"
 	"sort"
 	"strings"
+
+  . "gopkg.in/check.v1"
 )
 
 type containsChecker struct {

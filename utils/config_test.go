@@ -1,9 +1,10 @@
 package utils
 
 import (
-	. "launchpad.net/gocheck"
 	"os"
 	"path/filepath"
+
+  . "gopkg.in/check.v1"
 )
 
 type ConfigSuite struct {
