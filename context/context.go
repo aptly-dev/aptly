@@ -113,20 +113,18 @@ func (context *AptlyContext) LookupOption(defaultValue bool, name string) (resul
 
 // DependencyOptions calculates options related to dependecy handling
 func (context *AptlyContext) DependencyOptions() int {
-	if context.dependencyOptions == -1 {
-		context.dependencyOptions = 0
-		if context.LookupOption(context.Config().DepFollowSuggests, "dep-follow-suggests") {
-			context.dependencyOptions |= deb.DepFollowSuggests
-		}
-		if context.LookupOption(context.Config().DepFollowRecommends, "dep-follow-recommends") {
-			context.dependencyOptions |= deb.DepFollowRecommends
-		}
-		if context.LookupOption(context.Config().DepFollowAllVariants, "dep-follow-all-variants") {
-			context.dependencyOptions |= deb.DepFollowAllVariants
-		}
-		if context.LookupOption(context.Config().DepFollowSource, "dep-follow-source") {
-			context.dependencyOptions |= deb.DepFollowSource
-		}
+	context.dependencyOptions = 0
+	if context.LookupOption(context.Config().DepFollowSuggests, "dep-follow-suggests") {
+		context.dependencyOptions |= deb.DepFollowSuggests
+	}
+	if context.LookupOption(context.Config().DepFollowRecommends, "dep-follow-recommends") {
+		context.dependencyOptions |= deb.DepFollowRecommends
+	}
+	if context.LookupOption(context.Config().DepFollowAllVariants, "dep-follow-all-variants") {
+		context.dependencyOptions |= deb.DepFollowAllVariants
+	}
+	if context.LookupOption(context.Config().DepFollowSource, "dep-follow-source") {
+		context.dependencyOptions |= deb.DepFollowSource
 	}
 
 	return context.dependencyOptions
@@ -134,12 +132,10 @@ func (context *AptlyContext) DependencyOptions() int {
 
 // ArchitecturesList returns list of architectures fixed via command line or config
 func (context *AptlyContext) ArchitecturesList() []string {
-	if context.architecturesList == nil {
-		context.architecturesList = context.Config().Architectures
-		optionArchitectures := context.globalFlags.Lookup("architectures").Value.String()
-		if optionArchitectures != "" {
-			context.architecturesList = strings.Split(optionArchitectures, ",")
-		}
+	context.architecturesList = context.Config().Architectures
+	optionArchitectures := context.globalFlags.Lookup("architectures").Value.String()
+	if optionArchitectures != "" {
+		context.architecturesList = strings.Split(optionArchitectures, ",")
 	}
 
 	return context.architecturesList

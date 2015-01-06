@@ -2,11 +2,22 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/smira/flag"
 	ctx "github.com/smira/aptly/context"
 	"net/http"
 )
 
 var context *ctx.AptlyContext
+
+func QueryContext() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        context.GlobalFlags().VisitAll(func(flag *flag.Flag) {
+            if flag.Name != "config" {
+				context.GlobalFlags().Set(flag.Name, c.Request.URL.Query().Get(flag.Name))
+			}
+        })
+    }
+}
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
@@ -14,6 +25,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router := gin.Default()
 	router.Use(gin.ErrorLogger())
+	router.Use(QueryContext())
 
 	root := router.Group("/api")
 	{
