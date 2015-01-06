@@ -13,7 +13,12 @@ func apiSnapshotsList(c *gin.Context) {
 	SortMethodString := c.Request.URL.Query().Get("sort")
 
 	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Sort(SortMethodString)
+	collection.RLock()
+	defer collection.RUnlock()
+
+	if SortMethodString != "" {
+		collection.Sort(SortMethodString)
+	}
 
 	result := []*deb.Snapshot{}
 	collection.ForEach(func(snapshot *deb.Snapshot) error {
