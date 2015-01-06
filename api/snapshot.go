@@ -86,7 +86,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	c.JSON(201, snapshot)
 }
 
-// POST /api/snapshots/:name
+// POST /api/snapshots
 func apiSnapshotsCreate(c *gin.Context) {
 	var (
 		err       error
