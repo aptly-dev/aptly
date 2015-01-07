@@ -10,6 +10,7 @@ import (
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/s3"
+	"github.com/smira/aptly/swift"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -260,6 +261,18 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			publishedStorage, err = s3.NewPublishedStorage(params.AccessKeyID, params.SecretAccessKey,
 				params.Region, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
 				params.EncryptionMethod, params.PlusWorkaround)
+			if err != nil {
+				Fatal(err)
+			}
+		} else if strings.HasPrefix(name, "swift:") {
+			params, ok := context.Config().SwiftPublishRoots[name[6:]]
+			if !ok {
+				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
+			}
+
+			var err error
+			publishedStorage, err = swift.NewPublishedStorage(params.UserName, params.Password,
+				params.AuthUrl, params.Tenant, params.TenantId, params.Container, params.Prefix)
 			if err != nil {
 				Fatal(err)
 			}

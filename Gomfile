@@ -10,6 +10,7 @@ gom 'github.com/julienschmidt/httprouter', :commit => '46807412fe50aaceb73bb5706
 gom 'github.com/mattn/go-shellwords', :commit => 'c7ca6f94add751566a61cf2199e1de78d4c3eee4'
 gom 'github.com/mitchellh/goamz/s3', :commit => 'e7664b32019f31fd1bdf33f9e85f28722f700405'
 gom 'github.com/mkrautz/goar', :commit => '36eb5f3452b1283a211fa35bc00c646fd0db5c4b'
+gom 'github.com/ncw/swift', :commit => '71da36c561d45ba5420b99262689f91f2d9b8db4'
 gom 'github.com/smira/commander', :commit => 'f408b00e68d5d6e21b9f18bd310978dafc604e47'
 gom 'github.com/smira/flag', :commit => '357ed3e599ffcbd4aeaa828e1d10da2df3ea5107'
 gom 'github.com/smira/go-ftp-protocol/protocol', :commit => '066b75c2b70dca7ae10b1b88b47534a3c31ccfaa'
