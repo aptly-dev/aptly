@@ -404,6 +404,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			context.Downloader().DownloadWithChecksum(remote.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, b.IgnoreChecksums)
 		}
 
+        remote.FinalizeDownload()
 		queue = nil
 	}()
 
