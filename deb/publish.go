@@ -1,6 +1,7 @@
 package deb
 
 import (
+	"bufio"
 	"bytes"
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
@@ -545,7 +546,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
-					bufWriter, err := indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
+					var bufWriter *bufio.Writer
+
+					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
 					if err != nil {
 						return err
 					}
@@ -596,7 +599,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				release["Origin"] = p.GetOrigin()
 				release["Label"] = p.GetLabel()
 
-				bufWriter, err := indexes.ReleaseIndex(component, arch, udeb).BufWriter()
+				var bufWriter *bufio.Writer
+				bufWriter, err = indexes.ReleaseIndex(component, arch, udeb).BufWriter()
 
 				err = release.WriteTo(bufWriter)
 				if err != nil {

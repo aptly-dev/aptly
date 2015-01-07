@@ -259,7 +259,9 @@ func apiReposPackagesAddDelete(c *gin.Context, cb func(list *deb.PackageList, p 
 
 	// verify package refs and build package list
 	for _, ref := range b.PackageRefs {
-		p, err := context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
+		var p *deb.Package
+
+		p, err = context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
 		if err != nil {
 			if err == database.ErrNotFound {
 				c.Fail(404, fmt.Errorf("package %s: %s", ref, err))
