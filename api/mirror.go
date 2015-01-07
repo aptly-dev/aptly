@@ -206,7 +206,7 @@ func apiMirrorsPackages(c *gin.Context) {
 	}
 
 	if repo.LastDownloadDate.IsZero() {
-		c.Fail(409, fmt.Errorf("Unable to show package list, mirror hasn't been downloaded yet."))
+		c.Fail(403, fmt.Errorf("Unable to show package list, mirror hasn't been downloaded yet."))
 		return
 	} else {
 		reflist := repo.RefList()
