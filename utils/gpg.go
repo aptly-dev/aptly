@@ -79,6 +79,10 @@ func (g *GpgSigner) gpgArgs() []string {
 		args = append(args, "-u", g.keyRef)
 	}
 
+	if g.passphrase != "" || g.passphraseFile != "" {
+		args = append(args, "--no-use-agent")
+	}
+
 	if g.passphrase != "" {
 		args = append(args, "--passphrase", g.passphrase)
 	}
@@ -86,6 +90,7 @@ func (g *GpgSigner) gpgArgs() []string {
 	if g.passphraseFile != "" {
 		args = append(args, "--passphrase-file", g.passphraseFile)
 	}
+
 	if g.batch {
 		args = append(args, "--no-tty")
 	}
