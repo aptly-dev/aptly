@@ -17,6 +17,10 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	root := router.Group("/api")
 	{
+		root.GET("/", apiVersion)
+	}
+
+	{
 		root.GET("/repos", apiReposList)
 		root.POST("/repos", apiReposCreate)
 		root.GET("/repos/:name", apiReposShow)
