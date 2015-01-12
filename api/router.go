@@ -47,5 +47,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
 	}
 
+	{
+		root.GET("/graph", apiGraph)
+	}
+
 	return router
 }
