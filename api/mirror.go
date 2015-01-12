@@ -53,16 +53,16 @@ func apiMirrorsCreate(c *gin.Context) {
 		Distribution        string
 		Components          []string
 		Architectures       []string
-		WithSources         bool
-		WithUDebs           bool
+		DownloadSources     bool
+		DownloadUdebs       bool
 		Filter              string
 		FilterWithDeps      bool
-		ForceComponents     bool
+		SkipComponentCheck  bool
 		IgnoreSignatures    bool
 		Keyrings            []string
 	}
 
-	b.WithSources = context.Config().DownloadSourcePackages
+	b.DownloadSources = context.Config().DownloadSourcePackages
 	b.IgnoreSignatures = context.Config().GpgDisableVerify
 	b.Architectures = context.ArchitecturesList()
 
@@ -91,7 +91,7 @@ func apiMirrorsCreate(c *gin.Context) {
 	}
 
 	repo, err := deb.NewRemoteRepo(b.Name, b.ArchiveURL, b.Distribution, b.Components, b.Architectures,
-		b.WithSources, b.WithUDebs)
+		b.DownloadSources, b.DownloadUdebs)
 
 	if err != nil {
 		c.Fail(400, fmt.Errorf("unable to create mirror: %s", err))
@@ -100,9 +100,9 @@ func apiMirrorsCreate(c *gin.Context) {
 
 	repo.Filter = b.Filter
 	repo.FilterWithDeps = b.FilterWithDeps
-	repo.SkipComponentCheck = b.ForceComponents
-	repo.DownloadSources = b.WithSources
-	repo.DownloadUdebs = b.WithUDebs
+	repo.SkipComponentCheck = b.SkipComponentCheck
+	repo.DownloadSources = b.DownloadSources
+	repo.DownloadUdebs = b.DownloadUdebs
 
 	verifier, err := getVerifier(b.IgnoreSignatures, b.Keyrings)
 	if err != nil {
@@ -278,11 +278,11 @@ func apiMirrorsUpdate(c *gin.Context) {
 		Filter              string
 		FilterWithDeps      bool
 		ForceComponents     bool
-		WithSources         bool
-		WithUDebs           bool
+		DownloadSources     bool
+		DownloadUdebs       bool
 		Architectures     []string
 		Components        []string
-		IgnoreChecksums     bool
+		SkipComponentCheck  bool
 		IgnoreSignatures    bool
 		Keyrings          []string
 		ForceUpdate         bool
@@ -300,9 +300,9 @@ func apiMirrorsUpdate(c *gin.Context) {
 	}
 
 	b.Name = remote.Name
-	b.WithUDebs = remote.DownloadUdebs
-	b.WithSources = remote.DownloadSources
-	b.IgnoreChecksums = remote.SkipComponentCheck
+	b.DownloadUdebs = remote.DownloadUdebs
+	b.DownloadSources = remote.DownloadSources
+	b.SkipComponentCheck = remote.SkipComponentCheck
 	b.FilterWithDeps = remote.FilterWithDeps
 	b.Filter = remote.Filter
 	b.Architectures = remote.Architectures
@@ -320,17 +320,17 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 	}
 
-	if b.WithUDebs != remote.DownloadUdebs {
-		if remote.IsFlat() && b.WithUDebs {
+	if b.DownloadUdebs != remote.DownloadUdebs {
+		if remote.IsFlat() && b.DownloadUdebs {
 			c.Fail(400, fmt.Errorf("unable to update: flat mirrors don't support udebs"))
 			return
 		}
 	}
 
 	remote.Name = b.Name
-	remote.DownloadUdebs = b.WithUDebs
-	remote.DownloadSources = b.WithSources
-	remote.SkipComponentCheck = b.ForceComponents
+	remote.DownloadUdebs = b.DownloadUdebs
+	remote.DownloadSources = b.DownloadSources
+	remote.SkipComponentCheck = b.SkipComponentCheck
 	remote.FilterWithDeps = b.FilterWithDeps
 	remote.Filter = b.Filter
 	remote.Architectures = b.Architectures
@@ -357,7 +357,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 	}
 
-	err = remote.DownloadPackageIndexes(context.Progress(), downloader, context.CollectionFactory(), b.IgnoreChecksums)
+	err = remote.DownloadPackageIndexes(context.Progress(), downloader, context.CollectionFactory(), b.SkipComponentCheck)
 	if err != nil {
 		c.Fail(400, fmt.Errorf("unable to update: %s", err))
 		return
@@ -401,7 +401,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}()
 
 		for _, task := range queue {
-			context.Downloader().DownloadWithChecksum(remote.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, b.IgnoreChecksums)
+			context.Downloader().DownloadWithChecksum(remote.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, b.SkipComponentCheck)
 		}
 
         remote.FinalizeDownload()
