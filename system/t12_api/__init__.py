@@ -6,3 +6,4 @@ from .repos import *
 from .files import *
 from .publish import *
 from .version import *
+from .graph import *
