@@ -16,8 +16,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	router.Use(gin.ErrorLogger())
 
 	root := router.Group("/api")
+
 	{
-		root.GET("/", apiVersion)
+		root.GET("/version", apiVersion)
 	}
 
 	{

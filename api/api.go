@@ -12,9 +12,7 @@ import (
 //  3. SnapshotCollection
 //  4. PublishedRepoCollection
 
-// GET /api
+// GET /api/version
 func apiVersion(c *gin.Context) {
-	api := make(map[string]string)
-	api["Version"] = aptly.Version
-	c.JSON(200, api)
+	c.JSON(200, gin.H{"Version": aptly.Version})
 }
