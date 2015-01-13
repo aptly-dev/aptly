@@ -45,7 +45,7 @@ class PublishAPITestRepo(APITest):
             'Storage': ''})
 
 
-class PublishSnapshotAPITestRepo(APITest):
+class PublishSnapshotAPITest(APITest):
     """
     POST /publish/:prefix/snapshot
 
