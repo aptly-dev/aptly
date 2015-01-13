@@ -3,21 +3,21 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/smira/aptly/deb"
 	"io"
 	"os"
 	"os/exec"
-	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/graph"
 )
 
 // GET /api/graph
 func apiGraph(c *gin.Context) {
 	var (
-		err      error
+		err    error
 		output []byte
 	)
 
-	graph, err := graph.BuildGraph(context)
+	graph, err := deb.BuildGraph(context.CollectionFactory())
 	if err != nil {
 		c.JSON(500, err)
 		return

@@ -3,8 +3,8 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
-	"github.com/smira/aptly/graph"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,7 +20,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	}
 
 	fmt.Printf("Generating graph...\n")
-	graph, err := graph.BuildGraph(context)
+	graph, err := deb.BuildGraph(context.CollectionFactory())
 	if err != nil {
 		return err
 	}

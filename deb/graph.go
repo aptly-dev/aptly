@@ -1,14 +1,12 @@
-package graph
+package deb
 
 import (
 	"code.google.com/p/gographviz"
 	"fmt"
 	"strings"
-	"github.com/smira/aptly/context"
-	"github.com/smira/aptly/deb"
 )
 
-func BuildGraph(context *context.AptlyContext) (gographviz.Interface, error) {
+func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, error) {
 	var err error
 
 	graph := gographviz.NewEscape()
@@ -17,8 +15,8 @@ func BuildGraph(context *context.AptlyContext) (gographviz.Interface, error) {
 
 	existingNodes := map[string]bool{}
 
-	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
-		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *RemoteRepo) error {
+		err := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
@@ -39,8 +37,8 @@ func BuildGraph(context *context.AptlyContext) (gographviz.Interface, error) {
 		return nil, err
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().ForEach(func(repo *LocalRepo) error {
+		err := collectionFactory.LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
@@ -60,13 +58,13 @@ func BuildGraph(context *context.AptlyContext) (gographviz.Interface, error) {
 		return nil, err
 	}
 
-	context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
+	collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
 		existingNodes[snapshot.UUID] = true
 		return nil
 	})
 
-	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
-		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
+		err := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return err
 		}
@@ -98,7 +96,7 @@ func BuildGraph(context *context.AptlyContext) (gographviz.Interface, error) {
 		return nil, err
 	}
 
-	context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
+	collectionFactory.PublishedRepoCollection().ForEach(func(repo *PublishedRepo) error {
 		graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
