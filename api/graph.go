@@ -17,7 +17,18 @@ func apiGraph(c *gin.Context) {
 		output []byte
 	)
 
-	graph, err := deb.BuildGraph(context.CollectionFactory())
+	factory := context.CollectionFactory()
+
+	factory.RemoteRepoCollection().RLock()
+	defer factory.RemoteRepoCollection().RUnlock()
+	factory.LocalRepoCollection().RLock()
+	defer factory.LocalRepoCollection().RUnlock()
+	factory.SnapshotCollection().RLock()
+	defer factory.LocalRepoCollection().RUnlock()
+	factory.PublishedRepoCollection().RLock()
+	defer factory.PublishedRepoCollection().RUnlock()
+
+	graph, err := deb.BuildGraph(factory)
 	if err != nil {
 		c.JSON(500, err)
 		return
