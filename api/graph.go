@@ -6,16 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/deb"
 	"io"
+	"mime"
 	"os"
 	"os/exec"
 )
 
-// GET /api/graph
+// GET /api/graph.:ext
 func apiGraph(c *gin.Context) {
 	var (
 		err    error
 		output []byte
 	)
+
+	ext := c.Params.ByName("ext")
 
 	factory := context.CollectionFactory()
 
@@ -24,7 +27,7 @@ func apiGraph(c *gin.Context) {
 	factory.LocalRepoCollection().RLock()
 	defer factory.LocalRepoCollection().RUnlock()
 	factory.SnapshotCollection().RLock()
-	defer factory.LocalRepoCollection().RUnlock()
+	defer factory.SnapshotCollection().RUnlock()
 	factory.PublishedRepoCollection().RLock()
 	defer factory.PublishedRepoCollection().RUnlock()
 
@@ -36,7 +39,7 @@ func apiGraph(c *gin.Context) {
 
 	buf := bytes.NewBufferString(graph.String())
 
-	command := exec.Command("dot", "-Tpng")
+	command := exec.Command("dot", "-T"+ext)
 	command.Stderr = os.Stderr
 
 	stdin, err := command.StdinPipe()
@@ -63,5 +66,10 @@ func apiGraph(c *gin.Context) {
 		return
 	}
 
-	c.Data(200, "image/png", output)
+	mimeType := mime.TypeByExtension("." + ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	c.Data(200, mimeType, output)
 }
