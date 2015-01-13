@@ -10,7 +10,7 @@ env:
     - secure: "V7OjWrfQ8UbktgT036jYQPb/7GJT3Ol9LObDr8FYlzsQ+F1uj2wLac6ePuxcOS4FwWOJinWGM1h+JiFkbxbyFqfRNJ0jj0O2p93QyDojxFVOn1mXqqvV66KFqAWR2Vzkny/gDvj8LTvdB1cgAIm2FNOkQc6E1BFnyWS2sN9ea5E="
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-virtualenv
+  - sudo apt-get install -y python-virtualenv graphviz
   - virtualenv env
   - . env/bin/activate
   - pip install boto requests
