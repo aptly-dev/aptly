@@ -11,9 +11,73 @@ import (
 type Stanza map[string]string
 
 // Canonical order of fields in stanza
-var canocialOrder = []string{"Package", "Origin", "Label", "Suite", "Version", "Installed-Size", "Priority", "Section", "Maintainer",
-	"Architecture", "Codename", "Date", "Architectures", "Components", "Description", "MD5sum", "MD5Sum", "SHA1", "SHA256",
-	"Archive", "Component"}
+// Taken from: http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/vivid/apt/vivid/view/head:/apt-pkg/tagfile.cc#L504
+var (
+	canonicalOrderRelease = []string{
+		"Origin",
+		"Label",
+		"Suite",
+		"Version",
+		"Codename",
+		"Date",
+		"Architectures",
+		"Components",
+		"Description",
+		"MD5Sum",
+		"SHA1",
+		"SHA256",
+	}
+
+	canonicalOrderBinary = []string{
+		"Package",
+		"Essential",
+		"Status",
+		"Priority",
+		"Section",
+		"Installed-Size",
+		"Maintainer",
+		"Original-Maintainer",
+		"Architecture",
+		"Source",
+		"Version",
+		"Replaces",
+		"Provides",
+		"Depends",
+		"Pre-Depends",
+		"Recommends",
+		"Suggests",
+		"Conflicts",
+		"Breaks",
+		"Conffiles",
+		"Filename",
+		"Size",
+		"MD5Sum",
+		"MD5sum",
+		"SHA1",
+		"SHA256",
+		"Description",
+	}
+
+	canonicalOrderSource = []string{
+		"Package",
+		"Source",
+		"Binary",
+		"Version",
+		"Priority",
+		"Section",
+		"Maintainer",
+		"Original-Maintainer",
+		"Build-Depends",
+		"Build-Depends-Indep",
+		"Build-Conflicts",
+		"Build-Conflicts-Indep",
+		"Architecture",
+		"Standards-Version",
+		"Format",
+		"Directory",
+		"Files",
+	}
+)
 
 // Copy returns copy of Stanza
 func (s Stanza) Copy() (result Stanza) {
@@ -41,8 +105,16 @@ func writeField(w *bufio.Writer, field, value string) (err error) {
 }
 
 // WriteTo saves stanza back to stream, modifying itself on the fly
-func (s Stanza) WriteTo(w *bufio.Writer) error {
-	for _, field := range canocialOrder {
+func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
+	canonicalOrder := canonicalOrderBinary
+	if isSource {
+		canonicalOrder = canonicalOrderSource
+	}
+	if isRelease {
+		canonicalOrder = canonicalOrderRelease
+	}
+
+	for _, field := range canonicalOrder {
 		value, ok := s[field]
 		if ok {
 			delete(s, field)

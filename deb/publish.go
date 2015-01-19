@@ -553,7 +553,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						return err
 					}
 
-					err = pkg.Stanza().WriteTo(bufWriter)
+					err = pkg.Stanza().WriteTo(bufWriter, pkg.IsSource, false)
 					if err != nil {
 						return err
 					}
@@ -602,7 +602,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				var bufWriter *bufio.Writer
 				bufWriter, err = indexes.ReleaseIndex(component, arch, udeb).BufWriter()
 
-				err = release.WriteTo(bufWriter)
+				err = release.WriteTo(bufWriter, false, true)
 				if err != nil {
 					return fmt.Errorf("unable to create Release file: %s", err)
 				}
@@ -644,7 +644,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
-	err = release.WriteTo(bufWriter)
+	err = release.WriteTo(bufWriter, false, true)
 	if err != nil {
 		return fmt.Errorf("unable to create Release file: %s", err)
 	}
