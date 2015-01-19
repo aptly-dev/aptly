@@ -523,7 +523,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			progress.InitBar(int64(list.Len()), false)
 		}
 
-		err = list.ForEach(func(pkg *Package) error {
+		list.PrepareIndex()
+
+		err = list.ForEachIndexed(func(pkg *Package) error {
 			if progress != nil {
 				progress.AddBar(1)
 			}
