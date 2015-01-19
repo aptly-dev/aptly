@@ -16,6 +16,7 @@ var (
 	canonicalOrderRelease = []string{
 		"Origin",
 		"Label",
+		"Archive",
 		"Suite",
 		"Version",
 		"Codename",
