@@ -17,10 +17,9 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)
 
 	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Sort(sortMethodString)
 
 	if raw {
-		collection.ForEach(func(snapshot *deb.Snapshot) error {
+		collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
 			fmt.Printf("%s\n", snapshot.Name)
 			return nil
 		})
@@ -28,10 +27,14 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 		if collection.Len() > 0 {
 			fmt.Printf("List of snapshots:\n")
 
-			collection.ForEach(func(snapshot *deb.Snapshot) error {
+			err = collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
 				fmt.Printf(" * %s\n", snapshot.String())
 				return nil
 			})
+
+			if err != nil {
+				return err
+			}
 
 			fmt.Printf("\nTo get more information about snapshot, run `aptly snapshot show <name>`.\n")
 		} else {

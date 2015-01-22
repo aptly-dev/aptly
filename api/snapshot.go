@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
-	"sort"
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
+	"sort"
 )
 
 // GET /api/snapshots
@@ -16,12 +16,12 @@ func apiSnapshotsList(c *gin.Context) {
 	collection.RLock()
 	defer collection.RUnlock()
 
-	if SortMethodString != "" {
-		collection.Sort(SortMethodString)
+	if SortMethodString == "" {
+		SortMethodString = "name"
 	}
 
 	result := []*deb.Snapshot{}
-	collection.ForEach(func(snapshot *deb.Snapshot) error {
+	collection.ForEachSorted(SortMethodString, func(snapshot *deb.Snapshot) error {
 		result = append(result, snapshot)
 		return nil
 	})
@@ -32,14 +32,14 @@ func apiSnapshotsList(c *gin.Context) {
 // POST /api/mirrors/:name/snapshots/
 func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	var (
-		err       error
+		err      error
 		repo     *deb.RemoteRepo
 		snapshot *deb.Snapshot
 	)
 
 	var b struct {
-		Name                string `binding:"required"`
-		Description         string
+		Name        string `binding:"required"`
+		Description string
 	}
 
 	if !c.Bind(&b) {
@@ -94,15 +94,15 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 // POST /api/snapshots
 func apiSnapshotsCreate(c *gin.Context) {
 	var (
-		err       error
+		err      error
 		snapshot *deb.Snapshot
 	)
 
 	var b struct {
-		Name                string `binding:"required"`
-		Description         string
-		SourceIDs           []string
-		PackageRefs         []string
+		Name        string `binding:"required"`
+		Description string
+		SourceIDs   []string
+		PackageRefs []string
 	}
 
 	if !c.Bind(&b) {
@@ -110,7 +110,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 	}
 
 	if b.Description == "" {
-		if len(b.SourceIDs) + len(b.PackageRefs) == 0 {
+		if len(b.SourceIDs)+len(b.PackageRefs) == 0 {
 			b.Description = "Created as empty"
 		}
 	}
@@ -119,23 +119,23 @@ func apiSnapshotsCreate(c *gin.Context) {
 	snapshotCollection.Lock()
 	defer snapshotCollection.Unlock()
 
-    sources := make([]*deb.Snapshot, len(b.SourceIDs))
+	sources := make([]*deb.Snapshot, len(b.SourceIDs))
 
-    for i := 0; i < len(b.SourceIDs); i++ {
-        sources[i], err = snapshotCollection.ByUUID(b.SourceIDs[i])
-        if err != nil {
+	for i := 0; i < len(b.SourceIDs); i++ {
+		sources[i], err = snapshotCollection.ByUUID(b.SourceIDs[i])
+		if err != nil {
 			c.Fail(404, err)
 			return
-        }
+		}
 
-        err = snapshotCollection.LoadComplete(sources[i])
-        if err != nil {
+		err = snapshotCollection.LoadComplete(sources[i])
+		if err != nil {
 			c.Fail(500, err)
 			return
-        }
-    }
+		}
+	}
 
-    packageRefs := make([][]byte, len(b.PackageRefs))
+	packageRefs := make([][]byte, len(b.PackageRefs))
 	for i, ref := range b.PackageRefs {
 		packageRefs[i] = []byte(ref)
 	}
@@ -155,14 +155,14 @@ func apiSnapshotsCreate(c *gin.Context) {
 // POST /api/repos/:name/snapshots/:snapname
 func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	var (
-		err       error
+		err      error
 		repo     *deb.LocalRepo
 		snapshot *deb.Snapshot
 	)
 
 	var b struct {
-		Name                string `binding:"required"`
-		Description         string
+		Name        string `binding:"required"`
+		Description string
 	}
 
 	if !c.Bind(&b) {

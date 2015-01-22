@@ -87,5 +87,8 @@ class ListSnapshot7Test(BaseTest):
     """
     list snapshots: wrong parameter sort
     """
+    fixtureCmds = [
+        "aptly snapshot create empty empty"
+    ]
     runCmd = "aptly -sort=planet snapshot list"
     expectedCode = 1

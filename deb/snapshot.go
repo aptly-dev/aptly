@@ -297,6 +297,22 @@ func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) err
 	return err
 }
 
+func (collection *SnapshotCollection) ForEachSorted(sortMethod string, handler func(*Snapshot) error) error {
+	sorter, err := newSnapshotSorter(sortMethod, collection)
+	if err != nil {
+		return err
+	}
+
+	for _, i := range sorter.list {
+		err = handler(collection.list[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Len returns number of snapshots in collection
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) Len() int {
@@ -335,51 +351,48 @@ const (
 	SortTime
 )
 
-type snapshotListToSort struct {
-	list       []*Snapshot
+type snapshotSorter struct {
+	list       []int
+	collection *SnapshotCollection
 	sortMethod int
 }
 
-func parseSortMethod(sortMethod string) (int, error) {
+func newSnapshotSorter(sortMethod string, collection *SnapshotCollection) (*snapshotSorter, error) {
+	s := &snapshotSorter{collection: collection}
+
 	switch sortMethod {
 	case "time", "Time":
-		return SortTime, nil
+		s.sortMethod = SortTime
 	case "name", "Name":
-		return SortName, nil
+		s.sortMethod = SortName
+	default:
+		return nil, fmt.Errorf("sorting method \"%s\" unknown", sortMethod)
 	}
 
-	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod)
+	s.list = make([]int, len(collection.list))
+	for i := range s.list {
+		s.list[i] = i
+	}
+
+	sort.Sort(s)
+
+	return s, nil
 }
 
-func (s snapshotListToSort) Swap(i, j int) {
+func (s *snapshotSorter) Swap(i, j int) {
 	s.list[i], s.list[j] = s.list[j], s.list[i]
 }
 
-func (s snapshotListToSort) Less(i, j int) bool {
+func (s *snapshotSorter) Less(i, j int) bool {
 	switch s.sortMethod {
 	case SortName:
-		return s.list[i].Name < s.list[j].Name
+		return s.collection.list[s.list[i]].Name < s.collection.list[s.list[j]].Name
 	case SortTime:
-		return s.list[i].CreatedAt.Before(s.list[j].CreatedAt)
+		return s.collection.list[s.list[i]].CreatedAt.Before(s.collection.list[s.list[j]].CreatedAt)
 	}
 	panic("unknown sort method")
 }
 
-func (s snapshotListToSort) Len() int {
+func (s *snapshotSorter) Len() int {
 	return len(s.list)
-}
-
-func (collection *SnapshotCollection) Sort(sortMethodString string) error {
-	var err error
-	snapshotsToSort := &snapshotListToSort{}
-	snapshotsToSort.list = collection.list
-	snapshotsToSort.sortMethod, err = parseSortMethod(sortMethodString)
-	if err != nil {
-		return err
-	}
-
-	sort.Sort(snapshotsToSort)
-	collection.list = snapshotsToSort.list
-
-    return err
 }
