@@ -9,6 +9,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -326,4 +327,59 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 	}
 
 	return collection.db.Delete(snapshot.RefKey())
+}
+
+// Snapshot sorting methods
+const (
+	SortName = iota
+	SortTime
+)
+
+type snapshotListToSort struct {
+	list       []*Snapshot
+	sortMethod int
+}
+
+func parseSortMethod(sortMethod string) (int, error) {
+	switch sortMethod {
+	case "time", "Time":
+		return SortTime, nil
+	case "name", "Name":
+		return SortName, nil
+	}
+
+	return -1, fmt.Errorf("sorting method \"%s\" unknown", sortMethod)
+}
+
+func (s snapshotListToSort) Swap(i, j int) {
+	s.list[i], s.list[j] = s.list[j], s.list[i]
+}
+
+func (s snapshotListToSort) Less(i, j int) bool {
+	switch s.sortMethod {
+	case SortName:
+		return s.list[i].Name < s.list[j].Name
+	case SortTime:
+		return s.list[i].CreatedAt.Before(s.list[j].CreatedAt)
+	}
+	panic("unknown sort method")
+}
+
+func (s snapshotListToSort) Len() int {
+	return len(s.list)
+}
+
+func (collection *SnapshotCollection) Sort(sortMethodString string) error {
+	var err error
+	snapshotsToSort := &snapshotListToSort{}
+	snapshotsToSort.list = collection.list
+	snapshotsToSort.sortMethod, err = parseSortMethod(sortMethodString)
+	if err != nil {
+		return err
+	}
+
+	sort.Sort(snapshotsToSort)
+	collection.list = snapshotsToSort.list
+
+    return err
 }
