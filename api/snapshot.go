@@ -333,7 +333,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// POST /api/snapshots/:name/diff/:name2
+// GET /api/snapshots/:name/diff/:withSnapshot
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 

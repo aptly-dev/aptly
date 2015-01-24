@@ -65,7 +65,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.GET("/snapshots/:name", apiSnapshotsShow)
 		root.GET("/snapshots/:name/packages", apiSnapshotsSearchPackages)
 		root.DELETE("/snapshots/:name", apiSnapshotsDrop)
-		root.POST("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
+		root.GET("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
 	}
 
 	{

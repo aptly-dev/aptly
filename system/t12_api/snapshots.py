@@ -62,7 +62,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal(resp.status_code, 400)
 
         d = self.random_name()
-        self.check_equal(self.upload("/api/files/" + d, 
+        self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
@@ -128,7 +128,7 @@ class SnapshotsAPITestSearch(APITest):
 
         d = self.random_name()
         snapshot_name = self.random_name()
-        self.check_equal(self.upload("/api/files/" + d, 
+        self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
@@ -161,7 +161,7 @@ class SnapshotsAPITestDiff(APITest):
             self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
 
         d = self.random_name()
-        self.check_equal(self.upload("/api/files/" + d, 
+        self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
@@ -172,7 +172,7 @@ class SnapshotsAPITestDiff(APITest):
         resp = self.post("/api/snapshots", json={'Name': snapshots[1]})
         self.check_equal(resp.status_code, 201)
 
-        resp = self.post("/api/snapshots/" + snapshots[0] + "/diff/" + snapshots[1])
+        resp = self.get("/api/snapshots/" + snapshots[0] + "/diff/" + snapshots[1])
 
         self.check_equal(resp.status_code, 200)
         self.check_subset({"Right": None}, resp.json()[0])
