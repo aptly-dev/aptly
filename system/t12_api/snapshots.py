@@ -70,11 +70,18 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
 
-        self.check_subset({u'Architecture': 'i386', u'Name': 'libboost-program-options-dev', u'Version': '1.49.0.1', 'FilesHash': '918d2f433384e378'},
+        self.check_subset({u'Architecture': 'i386',
+                           u'Name': 'libboost-program-options-dev',
+                           u'Version': '1.49.0.1',
+                           'FilesHash': '918d2f433384e378'},
                           self.get("/api/snapshots/" + snapshot_name + "/packages?format=details").json()[0])
 
-        self.check_subset({u'Architecture': 'i386', u'Name': 'libboost-program-options-dev', u'Version': '1.49.0.1', 'FilesHash': '918d2f433384e378'},
-                          self.get("/api/snapshots/" + snapshot_name + "/packages?format=details", params={"q": "Version (> 0.6.1-1.4)"}).json()[0])
+        self.check_subset({u'Architecture': 'i386',
+                           u'Name': 'libboost-program-options-dev',
+                           u'Version': '1.49.0.1',
+                           'FilesHash': '918d2f433384e378'},
+                          self.get("/api/snapshots/" + snapshot_name + "/packages?format=details",
+                                   params={"q": "Version (> 0.6.1-1.4)"}).json()[0])
 
 
 class SnapshotsAPITestCreateUpdate(APITest):
@@ -154,8 +161,8 @@ class SnapshotsAPITestDiff(APITest):
     POST /api/snapshot/:name/diff/:name2
     """
     def check(self):
-        repos = [ self.random_name() for x in xrange(2) ]
-        snapshots = [ self.random_name() for x in xrange(2) ]
+        repos = [self.random_name() for x in xrange(2)]
+        snapshots = [self.random_name() for x in xrange(2)]
 
         for repo_name in repos:
             self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
