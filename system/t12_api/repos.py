@@ -163,6 +163,9 @@ class ReposAPITestShowQuery(APITest):
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages", params={"q": "Version (> 0.6.1-1.4)"}).json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
 
+        self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi", "format": "details"}).json()),
+                         ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
         resp = self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi)"})
         self.check_equal(resp.status_code, 400)
         self.check_equal(resp.json()[0]["error"], u'parsing failed: unexpected token ): expecting end of query')
