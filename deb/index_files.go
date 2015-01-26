@@ -150,7 +150,10 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 }
 
 func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexFile {
-	key := fmt.Sprintf("pi-%s-%s-%s", component, arch, udeb)
+	if arch == "source" {
+		udeb = false
+	}
+	key := fmt.Sprintf("pi-%s-%s-%v", component, arch, udeb)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string
@@ -180,7 +183,10 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 }
 
 func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexFile {
-	key := fmt.Sprintf("ri-%s-%s-%s", component, arch, udeb)
+	if arch == "source" {
+		udeb = false
+	}
+	key := fmt.Sprintf("ri-%s-%s-%v", component, arch, udeb)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string
