@@ -127,11 +127,15 @@ func (storage *PublishedStorage) Remove(path string) error {
 func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
 	path = filepath.Join(storage.prefix, path)
 	opts := swift.ObjectsOpts{
-		Prefix: storage.prefix,
+		Prefix: path,
 	}
 	if objects, err := storage.conn.ObjectNamesAll(storage.container, &opts); err != nil {
 		return fmt.Errorf("error removing dir %s from %s: %s", path, storage, err)
 	} else {
+		for index, name := range objects {
+			objects[index] = name[len(storage.prefix):]
+		}
+
 		var multi_delete bool = true
 		if storage.support_bulk_delete {
 			_, err := storage.conn.BulkDelete(storage.container, objects)
@@ -197,6 +201,10 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	contents, err := storage.conn.ObjectNamesAll(storage.container, &opts)
 	if err != nil {
 		return nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
+	}
+
+	for index, name := range contents {
+		contents[index] = name[len(prefix):]
 	}
 
 	return contents, nil
