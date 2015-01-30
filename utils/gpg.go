@@ -157,7 +157,7 @@ func (g *GpgVerifier) InitKeyring() error {
 		if err == nil && len(output) == 0 {
 			fmt.Printf("\nLooks like your keyring with trusted keys is empty. You might consider importing some keys.\n")
 			fmt.Printf("If you're running Debian or Ubuntu, it's a good idea to import current archive keys by running:\n\n")
-			fmt.Printf("  gpg --keyring /usr/share/keyrings/debian-archive-keyring.gpg --export | gpg --no-default-keyring --keyring trustedkeys.gpg --import\n")
+			fmt.Printf("  gpg --no-default-keyring --keyring /usr/share/keyrings/debian-archive-keyring.gpg --export | gpg --no-default-keyring --keyring trustedkeys.gpg --import\n")
 			fmt.Printf("\n(for Ubuntu, use /usr/share/keyrings/ubuntu-archive-keyring.gpg)\n\n")
 		}
 	}
