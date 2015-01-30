@@ -218,7 +218,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string) error {
 				strings.Join(keyIDs, " "))
 
 			fmt.Printf("Sometimes keys are stored in repository root in file named Release.key, to import such key:\n\n")
-			fmt.Printf("wget -O - http://some.repo/repository/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import\n\n")
+			fmt.Printf("wget -O - https://some.repo/repository/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import\n\n")
 		}
 		return fmt.Errorf("verification of %s failed: %s", context, err)
 	}
