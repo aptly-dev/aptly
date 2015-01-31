@@ -38,6 +38,11 @@ type PackageList struct {
 	providesIndex map[string][]*Package
 }
 
+// PackageConflictError means that package can't be added to the list due to error
+type PackageConflictError struct {
+	error
+}
+
 // Verify interface
 var (
 	_ sort.Interface = &PackageList{}
@@ -90,7 +95,7 @@ func (l *PackageList) Add(p *Package) error {
 	existing, ok := l.packages[key]
 	if ok {
 		if !existing.Equals(p) {
-			return fmt.Errorf("conflict in package %s", p)
+			return &PackageConflictError{fmt.Errorf("conflict in package %s", p)}
 		}
 		return nil
 	}
