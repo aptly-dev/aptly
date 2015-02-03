@@ -146,7 +146,11 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		return
 	}
 
-	req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
+	proxyURL, _ := downloader.client.Transport.(*http.Transport).Proxy(req)
+	if proxyURL == nil && (req.URL.Scheme == "http" || req.URL.Scheme == "https") {
+		req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
+		req.URL.RawQuery = ""
+	}
 
 	resp, err := downloader.client.Do(req)
 	if err != nil {
