@@ -74,14 +74,14 @@ class SnapshotsAPITestCreateFromRepo(APITest):
                            u'Package': 'libboost-program-options-dev',
                            u'Version': '1.49.0.1',
                            'FilesHash': '918d2f433384e378'},
-                          self.get("/api/snapshots/" + snapshot_name + "/packages?format=details").json()[0])
+                          self.get("/api/snapshots/" + snapshot_name + "/packages", params={"format": "details"}).json()[0])
 
         self.check_subset({u'Architecture': 'i386',
                            u'Package': 'libboost-program-options-dev',
                            u'Version': '1.49.0.1',
                            'FilesHash': '918d2f433384e378'},
-                          self.get("/api/snapshots/" + snapshot_name + "/packages?format=details",
-                                   params={"q": "Version (> 0.6.1-1.4)"}).json()[0])
+                          self.get("/api/snapshots/" + snapshot_name + "/packages",
+                                   params={"format": "details", "q": "Version (> 0.6.1-1.4)"}).json()[0])
 
 
 class SnapshotsAPITestCreateUpdate(APITest):
@@ -143,7 +143,8 @@ class SnapshotsAPITestSearch(APITest):
         resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(resp.status_code, 201)
 
-        resp = self.get("/api/snapshots/" + snapshot_name + "/packages?q=libboost-program-options-dev&format=details")
+        resp = self.get("/api/snapshots/" + snapshot_name + "/packages",
+                        params={"q": "libboost-program-options-dev", "format": "details"})
         self.check_equal(resp.status_code, 200)
 
         self.check_equal(len(resp.json()), 1)
