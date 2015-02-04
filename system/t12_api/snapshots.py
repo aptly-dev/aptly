@@ -158,7 +158,7 @@ class SnapshotsAPITestSearch(APITest):
 
 class SnapshotsAPITestDiff(APITest):
     """
-    POST /api/snapshot/:name/diff/:name2
+    GET /api/snapshot/:name/diff/:name2
     """
     def check(self):
         repos = [self.random_name() for x in xrange(2)]
@@ -180,7 +180,19 @@ class SnapshotsAPITestDiff(APITest):
         self.check_equal(resp.status_code, 201)
 
         resp = self.get("/api/snapshots/" + snapshots[0] + "/diff/" + snapshots[1])
-
         self.check_equal(resp.status_code, 200)
-        self.check_subset({"Right": None}, resp.json()[0])
-        self.check_subset({"Name": "libboost-program-options-dev"}, resp.json()[0]["Left"])
+        self.check_equal(resp.json(), [{'Left': 'Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                                        'Right': None}])
+
+        resp = self.get("/api/snapshots/" + snapshots[1] + "/diff/" + snapshots[0])
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [{'Right': 'Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
+                                        'Left': None}])
+
+        resp = self.get("/api/snapshots/" + snapshots[0] + "/diff/" + snapshots[0])
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [])
+
+        resp = self.get("/api/snapshots/" + snapshots[1] + "/diff/" + snapshots[1])
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [])
