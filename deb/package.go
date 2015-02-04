@@ -213,7 +213,12 @@ func (p *Package) String() string {
 
 // MarshalJSON implements json.Marshaller interface
 func (p *Package) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.Stanza())
+	stanza := p.Stanza()
+	stanza["FilesHash"] = fmt.Sprintf("%08x", p.FilesHash)
+	stanza["Key"] = string(p.Key(""))
+	stanza["ShortKey"] = string(p.ShortKey(""))
+
+	return json.Marshal(stanza)
 }
 
 // GetField returns fields from package
