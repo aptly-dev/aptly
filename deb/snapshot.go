@@ -18,15 +18,15 @@ import (
 // Snapshot is immutable state of repository: list of packages
 type Snapshot struct {
 	// Persisten internal ID
-	UUID string
+	UUID string `json:"-"`
 	// Human-readable name
 	Name string
 	// Date of creation
 	CreatedAt time.Time
 
 	// Source: kind + ID
-	SourceKind string
-	SourceIDs  []string
+	SourceKind string   `json:"-"`
+	SourceIDs  []string `json:"-"`
 	// Description of how snapshot was created
 	Description string
 
