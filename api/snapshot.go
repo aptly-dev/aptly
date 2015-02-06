@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
 )
 
@@ -45,8 +46,8 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	}
 
 	collection := context.CollectionFactory().RemoteRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collection.RLock()
+	defer collection.RUnlock()
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
 	snapshotCollection.Lock()
@@ -82,7 +83,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
-		c.Fail(500, err)
+		c.Fail(400, err)
 		return
 	}
 
@@ -97,10 +98,10 @@ func apiSnapshotsCreate(c *gin.Context) {
 	)
 
 	var b struct {
-		Name        string `binding:"required"`
-		Description string
-		SourceIDs   []string
-		PackageRefs []string
+		Name            string `binding:"required"`
+		Description     string
+		SourceSnapshots []string
+		PackageRefs     []string
 	}
 
 	if !c.Bind(&b) {
@@ -108,7 +109,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 	}
 
 	if b.Description == "" {
-		if len(b.SourceIDs)+len(b.PackageRefs) == 0 {
+		if len(b.SourceSnapshots)+len(b.PackageRefs) == 0 {
 			b.Description = "Created as empty"
 		}
 	}
@@ -117,10 +118,10 @@ func apiSnapshotsCreate(c *gin.Context) {
 	snapshotCollection.Lock()
 	defer snapshotCollection.Unlock()
 
-	sources := make([]*deb.Snapshot, len(b.SourceIDs))
+	sources := make([]*deb.Snapshot, len(b.SourceSnapshots))
 
-	for i := 0; i < len(b.SourceIDs); i++ {
-		sources[i], err = snapshotCollection.ByUUID(b.SourceIDs[i])
+	for i := range b.SourceSnapshots {
+		sources[i], err = snapshotCollection.ByName(b.SourceSnapshots[i])
 		if err != nil {
 			c.Fail(404, err)
 			return
@@ -133,17 +134,33 @@ func apiSnapshotsCreate(c *gin.Context) {
 		}
 	}
 
-	packageRefs := make([][]byte, len(b.PackageRefs))
-	for i, ref := range b.PackageRefs {
-		packageRefs[i] = []byte(ref)
+	list := deb.NewPackageList()
+
+	// verify package refs and build package list
+	for _, ref := range b.PackageRefs {
+		var p *deb.Package
+
+		p, err = context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
+		if err != nil {
+			if err == database.ErrNotFound {
+				c.Fail(404, fmt.Errorf("package %s: %s", ref, err))
+			} else {
+				c.Fail(500, err)
+			}
+			return
+		}
+		err = list.Add(p)
+		if err != nil {
+			c.Fail(400, err)
+			return
+		}
 	}
 
-	packageRefList := &deb.PackageRefList{packageRefs}
-	snapshot = deb.NewSnapshotFromRefList(b.Name, sources, packageRefList, b.Description)
+	snapshot = deb.NewSnapshotFromRefList(b.Name, sources, deb.NewPackageRefListFromPackageList(list), b.Description)
 
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
-		c.Fail(500, err)
+		c.Fail(400, err)
 		return
 	}
 
