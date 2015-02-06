@@ -6,11 +6,9 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
-	"sort"
 )
 
 // GET /api/repos
@@ -178,51 +176,7 @@ func apiReposPackagesShow(c *gin.Context) {
 		return
 	}
 
-	queryS := c.Request.URL.Query().Get("q")
-	if queryS != "" {
-		q, err := query.Parse(queryS)
-		if err != nil {
-			c.Fail(400, err)
-			return
-		}
-
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
-		if err != nil {
-			c.Fail(500, err)
-			return
-		}
-
-		list.PrepareIndex()
-
-		withDeps := c.Request.URL.Query().Get("withDeps") == "1"
-		architecturesList := []string{}
-
-		if withDeps {
-			if len(context.ArchitecturesList()) > 0 {
-				architecturesList = context.ArchitecturesList()
-			} else {
-				architecturesList = list.Architectures(false)
-			}
-
-			sort.Strings(architecturesList)
-
-			if len(architecturesList) == 0 {
-				c.Fail(400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
-				return
-			}
-		}
-
-		result, err := list.Filter([]deb.PackageQuery{q}, withDeps,
-			nil, context.DependencyOptions(), architecturesList)
-		if err != nil {
-			c.Fail(500, err)
-			return
-		}
-
-		c.JSON(200, result.Strings())
-	} else {
-		c.JSON(200, repo.RefList().Strings())
-	}
+	showPackages(c, repo.RefList())
 }
 
 // Handler for both add and delete

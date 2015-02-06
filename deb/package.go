@@ -1,6 +1,7 @@
 package deb
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
@@ -37,6 +38,11 @@ type Package struct {
 	// Mother collection
 	collection *PackageCollection
 }
+
+// Check interface
+var (
+	_ json.Marshaler = &Package{}
+)
 
 // NewPackageFromControlFile creates Package from parsed Debian control file
 func NewPackageFromControlFile(input Stanza) *Package {
@@ -203,6 +209,16 @@ func (p *Package) ShortKey(prefix string) []byte {
 // String creates readable representation
 func (p *Package) String() string {
 	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
+}
+
+// MarshalJSON implements json.Marshaller interface
+func (p *Package) MarshalJSON() ([]byte, error) {
+	stanza := p.Stanza()
+	stanza["FilesHash"] = fmt.Sprintf("%08x", p.FilesHash)
+	stanza["Key"] = string(p.Key(""))
+	stanza["ShortKey"] = string(p.ShortKey(""))
+
+	return json.Marshal(stanza)
 }
 
 // GetField returns fields from package

@@ -2,6 +2,8 @@ package deb
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/AlekSi/pointer"
 	"github.com/ugorji/go/codec"
 	"sort"
 )
@@ -152,6 +154,27 @@ func (l *PackageRefList) Substract(r *PackageRefList) *PackageRefList {
 // If right is nil, package is present only in left
 type PackageDiff struct {
 	Left, Right *Package
+}
+
+// Check interface
+var (
+	_ json.Marshaler = PackageDiff{}
+)
+
+// MarshalJSON implements json.Marshaler interface
+func (d PackageDiff) MarshalJSON() ([]byte, error) {
+	serialized := struct {
+		Left, Right *string
+	}{}
+
+	if d.Left != nil {
+		serialized.Left = pointer.ToString(string(d.Left.Key("")))
+	}
+	if d.Right != nil {
+		serialized.Right = pointer.ToString(string(d.Right.Key("")))
+	}
+
+	return json.Marshal(serialized)
 }
 
 // PackageDiffs is a list of PackageDiff records

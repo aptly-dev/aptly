@@ -9,6 +9,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
 	"log"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -296,6 +297,22 @@ func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) err
 	return err
 }
 
+func (collection *SnapshotCollection) ForEachSorted(sortMethod string, handler func(*Snapshot) error) error {
+	sorter, err := newSnapshotSorter(sortMethod, collection)
+	if err != nil {
+		return err
+	}
+
+	for _, i := range sorter.list {
+		err = handler(collection.list[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Len returns number of snapshots in collection
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) Len() int {
@@ -326,4 +343,56 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 	}
 
 	return collection.db.Delete(snapshot.RefKey())
+}
+
+// Snapshot sorting methods
+const (
+	SortName = iota
+	SortTime
+)
+
+type snapshotSorter struct {
+	list       []int
+	collection *SnapshotCollection
+	sortMethod int
+}
+
+func newSnapshotSorter(sortMethod string, collection *SnapshotCollection) (*snapshotSorter, error) {
+	s := &snapshotSorter{collection: collection}
+
+	switch sortMethod {
+	case "time", "Time":
+		s.sortMethod = SortTime
+	case "name", "Name":
+		s.sortMethod = SortName
+	default:
+		return nil, fmt.Errorf("sorting method \"%s\" unknown", sortMethod)
+	}
+
+	s.list = make([]int, len(collection.list))
+	for i := range s.list {
+		s.list[i] = i
+	}
+
+	sort.Sort(s)
+
+	return s, nil
+}
+
+func (s *snapshotSorter) Swap(i, j int) {
+	s.list[i], s.list[j] = s.list[j], s.list[i]
+}
+
+func (s *snapshotSorter) Less(i, j int) bool {
+	switch s.sortMethod {
+	case SortName:
+		return s.collection.list[s.list[i]].Name < s.collection.list[s.list[j]].Name
+	case SortTime:
+		return s.collection.list[s.list[i]].CreatedAt.Before(s.collection.list[s.list[j]].CreatedAt)
+	}
+	panic("unknown sort method")
+}
+
+func (s *snapshotSorter) Len() int {
+	return len(s.list)
 }
