@@ -388,3 +388,15 @@ class PublishSwitch11Test(BaseTest):
 
         self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
 
+
+class PublishSwitch12Test(BaseTest):
+    """
+    publish switch: wrong component names
+    """
+    fixtureCmds = [
+        "aptly snapshot create snap1 empty",
+        "aptly snapshot create snap2 empty",
+        "aptly publish snapshot -architectures=i386 -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=a,b snap1 snap2",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick snap2 snap1"
+    expectedCode = 1
