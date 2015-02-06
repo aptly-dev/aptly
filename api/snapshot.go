@@ -185,8 +185,8 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	}
 
 	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collection.RLock()
+	defer collection.RUnlock()
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
 	snapshotCollection.Lock()
@@ -216,7 +216,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 	err = snapshotCollection.Add(snapshot)
 	if err != nil {
-		c.Fail(500, err)
+		c.Fail(400, err)
 		return
 	}
 
@@ -243,13 +243,13 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	collection.Lock()
 	defer collection.Unlock()
 
-	snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(c.Params.ByName("name"))
+	snapshot, err = collection.ByName(c.Params.ByName("name"))
 	if err != nil {
 		c.Fail(404, err)
 		return
 	}
 
-	_, err = context.CollectionFactory().SnapshotCollection().ByName(b.Name)
+	_, err = collection.ByName(b.Name)
 	if err == nil {
 		c.Fail(409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
 		return
@@ -265,7 +265,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
 	if err != nil {
-		c.Fail(403, err)
+		c.Fail(500, err)
 		return
 	}
 
@@ -298,13 +298,9 @@ func apiSnapshotsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
 
-	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
-
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.RLock()
-	defer snapshotCollection.RUnlock()
+	snapshotCollection.Lock()
+	defer snapshotCollection.Unlock()
 
 	publishedCollection := context.CollectionFactory().PublishedRepoCollection()
 	publishedCollection.RLock()
@@ -319,14 +315,6 @@ func apiSnapshotsDrop(c *gin.Context) {
 	published := publishedCollection.BySnapshot(snapshot)
 
 	if len(published) > 0 {
-		for _, repo := range published {
-			err = publishedCollection.LoadComplete(repo, context.CollectionFactory())
-			if err != nil {
-				c.Fail(500, err)
-				return
-			}
-		}
-
 		c.Fail(409, fmt.Errorf("unable to drop: snapshot is published"))
 		return
 	}
@@ -339,7 +327,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 		}
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().Drop(snapshot)
+	err = snapshotCollection.Drop(snapshot)
 	if err != nil {
 		c.Fail(500, err)
 		return
@@ -368,13 +356,13 @@ func apiSnapshotsDiff(c *gin.Context) {
 		return
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotA)
+	err = collection.LoadComplete(snapshotA)
 	if err != nil {
 		c.Fail(500, err)
 		return
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotB)
+	err = collection.LoadComplete(snapshotB)
 	if err != nil {
 		c.Fail(500, err)
 		return
