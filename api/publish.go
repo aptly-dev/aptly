@@ -188,17 +188,22 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
+	// published.LoadComplete would touch local repo collection
+	localRepoCollection := context.CollectionFactory().LocalRepoCollection()
+	localRepoCollection.RLock()
+	defer localRepoCollection.RUnlock()
+
 	collection := context.CollectionFactory().PublishedRepoCollection()
 	collection.Lock()
 	defer collection.Unlock()
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		c.Fail(404, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 	if published.SourceKind != "local" {
-		c.Fail(500, fmt.Errorf("unable to update: not a local repository"))
+		c.Fail(400, fmt.Errorf("unable to update: not a local repository"))
 		return
 	}
 
