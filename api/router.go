@@ -69,6 +69,10 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	{
+		root.GET("/packages/:key", apiPackagesShow)
+	}
+
+	{
 		root.GET("/graph.:ext", apiGraph)
 	}
 
