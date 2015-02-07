@@ -14,7 +14,7 @@ try:
 
         account_username = "%s:%s" % (auth_tenant, auth_username)
         swift_conn = swiftclient.Connection(auth_url, account_username,
-                auth_password, auth_version=2)
+                                            auth_password, auth_version=2)
     else:
         swift_conn = None
 except ImportError:
@@ -53,7 +53,7 @@ class SwiftTest(BaseTest):
     def check_path(self, path):
         if not hasattr(self, "container_contents"):
             self.container_contents = [obj.get('name') for obj in
-                    swift_conn.get_container(self.container_name)[1]]
+                                       swift_conn.get_container(self.container_name)[1]]
 
         if path in self.container_contents:
             return True
