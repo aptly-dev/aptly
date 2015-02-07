@@ -15,6 +15,7 @@ class SearchPackage2Test(BaseTest):
     search package: missing package
     """
     runCmd = "aptly package search 'Name (package-xx)'"
+    expectedCode = 1
 
 
 class SearchPackage3Test(BaseTest):
