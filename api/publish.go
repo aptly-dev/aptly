@@ -169,7 +169,72 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 // PUT /publish/:prefix/:distribution
 func apiPublishUpdateSwitch(c *gin.Context) {
-	c.JSON(400, gin.H{})
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := c.Params.ByName("distribution")
+
+	var b struct {
+		ForceOverwrite bool
+		Signing        SigningOptions
+	}
+
+	if !c.Bind(&b) {
+		return
+	}
+
+	signer, err := getSigner(&b.Signing)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		return
+	}
+
+	// published.LoadComplete would touch local repo collection
+	localRepoCollection := context.CollectionFactory().LocalRepoCollection()
+	localRepoCollection.RLock()
+	defer localRepoCollection.RUnlock()
+
+	collection := context.CollectionFactory().PublishedRepoCollection()
+	collection.Lock()
+	defer collection.Unlock()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		c.Fail(404, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+	if published.SourceKind != "local" {
+		c.Fail(400, fmt.Errorf("unable to update: not a local repository"))
+		return
+	}
+
+	err = collection.LoadComplete(published, context.CollectionFactory())
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+
+	components := published.Components()
+	for _, component := range components {
+		published.UpdateLocalRepo(component)
+	}
+
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), b.ForceOverwrite)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+	}
+
+	err = collection.Update(published)
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+	}
+
+	err = collection.CleanupPrefixComponentFiles(published.Prefix, components,
+		context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+	}
+
+	c.JSON(200, published)
 }
 
 // DELETE /publish/:prefix/:distribution
