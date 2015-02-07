@@ -61,6 +61,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Label          string
 		Origin         string
 		ForceOverwrite bool
+		Architectures  []string
 		Signing        SigningOptions
 	}
 
@@ -137,7 +138,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	collection.Lock()
 	defer collection.Unlock()
 
-	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
+	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, context.CollectionFactory())
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
 		return
