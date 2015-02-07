@@ -1,0 +1,13 @@
+Loading packages...
+Generating metadata files and linking package files...
+Finalizing metadata files...
+Signing file 'Release' with gpg, please enter your passphrase when prompted:
+Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
+
+Local repo local-repo has been successfully published.
+Now you can add following line to apt sources:
+  deb http://your-server/ maverick main
+  deb-src http://your-server/ maverick main
+Don't forget to add your GPG key to apt with apt-key.
+
+You can also use `aptly serve` to publish your repositories over HTTP quickly.

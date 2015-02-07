@@ -1,0 +1,4 @@
+Published repositories:
+  * swift:test1:./maverick [amd64, i386] publishes {main: [local-repo]}
+  * swift:test1:./xyz [amd64, i386] publishes {main: [local-repo]}
+  * swift:test1:prefix/maverick [amd64, i386] publishes {main: [local-repo]}

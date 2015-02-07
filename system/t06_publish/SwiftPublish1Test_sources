@@ -1,0 +1,42 @@
+Package: pyspi
+Version: 0.6.1-1.3
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Architecture: any
+Binary: python-at-spi
+Standards-Version: 3.7.3
+Format: 1.0
+Files: 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz
+ b72cb94699298a117b7c82641c68b6fd 1782 pyspi_0.6.1-1.3.dsc
+ def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz
+Checksums-Sha1: 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz
+ 56c8a9b1f4ab636052be8966690998cbe865cd6c 1782 pyspi_0.6.1-1.3.dsc
+ 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Homepage: http://people.redhat.com/zcerza/dogtail
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Directory: pool/main/p/pyspi
+Checksums-Sha256: 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz
+ d494aaf526f1ec6b02f14c2f81e060a5722d6532ddc760ec16972e45c2625989 1782 pyspi_0.6.1-1.3.dsc
+ 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz
+
+Package: pyspi
+Version: 0.6.1-1.4
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Architecture: any
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Standards-Version: 3.7.3
+Homepage: http://people.redhat.com/zcerza/dogtail
+Directory: pool/main/p/pyspi
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Checksums-Sha256: 289d3aefa970876e9c43686ce2b02f478d7f3ed35a713928464a98d54ae4fca3 893 pyspi-0.6.1-1.3.stripped.dsc
+ 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz
+ 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz
+Format: 1.0
+Checksums-Sha1: 5005fbd1f30637edc1d380b30f45db9b79100d07 893 pyspi-0.6.1-1.3.stripped.dsc
+ 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz
+ 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz
+Binary: python-at-spi
+Files: 2f5bd47cf38852b6fc927a50f98c1448 893 pyspi-0.6.1-1.3.stripped.dsc
+ 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz
+ def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz
+
