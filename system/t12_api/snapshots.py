@@ -1,4 +1,5 @@
 from api_lib import APITest
+from publish import DefaultSigningOptions
 
 
 class SnapshotsAPITestCreateShowEmpty(APITest):
@@ -31,7 +32,8 @@ class SnapshotsAPITestCreateShowEmpty(APITest):
 
 class SnapshotsAPITestCreateFromRefs(APITest):
     """
-    GET /api/snapshots/:name, POST /api/snapshots, GET /api/snapshots/:name/packages
+    GET /api/snapshots/:name, POST /api/snapshots, GET /api/snapshots/:name/packages,
+    GET /api/snapshots
     """
     def check(self):
         snapshot_name = self.random_name()
@@ -78,6 +80,12 @@ class SnapshotsAPITestCreateFromRefs(APITest):
             "PackageRefs": ["Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378", "Pamd64 no-such-package 1.2 91"]})
         self.check_equal(resp.status_code, 404)
 
+        # list snapshots
+        resp = self.get("/api/snapshots", params={"sort": "time"})
+        self.check_equal(resp.status_code, 200)
+        self.check_equal([s["Name"] for s in resp.json() if s["Name"] in [empty_snapshot_name, snapshot_name]],
+                         [empty_snapshot_name, snapshot_name])
+
 
 class SnapshotsAPITestCreateFromRepo(APITest):
     """
@@ -113,6 +121,10 @@ class SnapshotsAPITestCreateFromRepo(APITest):
                           self.get("/api/snapshots/" + snapshot_name + "/packages",
                                    params={"format": "details", "q": "Version (> 0.6.1-1.4)"}).json()[0])
 
+        # duplicate snapshot name
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_equal(resp.status_code, 400)
+
 
 class SnapshotsAPITestCreateUpdate(APITest):
     """
@@ -136,6 +148,15 @@ class SnapshotsAPITestCreateUpdate(APITest):
         self.check_subset({"Name": new_snapshot_name,
                            "Description": "New description"}, resp.json())
 
+        # duplicate name
+        resp = self.put("/api/snapshots/" + new_snapshot_name, json={'Name': new_snapshot_name,
+                                                                     'Description': 'New description'})
+        self.check_equal(resp.status_code, 409)
+
+        # missing snapshot
+        resp = self.put("/api/snapshots/" + snapshot_name, json={})
+        self.check_equal(resp.status_code, 404)
+
 
 class SnapshotsAPITestCreateDelete(APITest):
     """
@@ -146,12 +167,36 @@ class SnapshotsAPITestCreateDelete(APITest):
         snapshot_desc = {u'Description': u'fun snapshot',
                          u'Name': snapshot_name}
 
+        # deleting unreferenced snapshot
         resp = self.post("/api/snapshots", json=snapshot_desc)
         self.check_equal(resp.status_code, 201)
 
         self.check_equal(self.delete("/api/snapshots/" + snapshot_name).status_code, 200)
 
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 404)
+
+        # deleting referenced snapshot
+        snap1, snap2 = self.random_name(), self.random_name()
+        self.check_equal(self.post("/api/snapshots", json={"Name": snap1}).status_code, 201)
+        self.check_equal(self.post("/api/snapshots", json={"Name": snap2, "SourceSnapshots": [snap1]}).status_code, 201)
+
+        self.check_equal(self.delete("/api/snapshots/" + snap1).status_code, 409)
+        self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 200)
+        self.check_equal(self.delete("/api/snapshots/" + snap1, params={"force": "1"}).status_code, 200)
+        self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 404)
+
+        # deleting published snapshot
+        resp = self.post("/api/publish/./snapshots",
+                         json={
+                             "Distribution": "trusty",
+                             "Architectures": ["i386"],
+                             "Sources": [{"Name": snap2}],
+                             "Signing": DefaultSigningOptions,
+                         })
+        self.check_equal(resp.status_code, 200)
+
+        self.check_equal(self.delete("/api/snapshots/" + snap2).status_code, 409)
+        self.check_equal(self.delete("/api/snapshots/" + snap2, params={"force": "1"}).status_code, 409)
 
 
 class SnapshotsAPITestSearch(APITest):
