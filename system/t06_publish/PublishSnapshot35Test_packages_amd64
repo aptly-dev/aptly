@@ -1,10 +1,16 @@
 Package: dmraid
-Version: 1.0.0.rc16-4.1
-Installed-Size: 112
 Priority: optional
 Section: admin
+Installed-Size: 112
 Maintainer: Giuseppe Iuculano <iuculano@debian.org>
 Architecture: amd64
+Version: 1.0.0.rc16-4.1
+Depends: libc6 (>= 2.3), libdmraid1.0.0.rc16 (>= 1.0.0.rc16), libselinux1 (>= 1.32), libsepol1 (>= 1.14), udev, dmsetup
+Filename: pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_amd64.deb
+Size: 38620
+MD5sum: 35da9bcdd12c7fb08eb7192f0a17ddf2
+SHA1: 6a89d3f9e3b80a172811bb7d74eac43f119a8b7c
+SHA256: 125405c4b0a7364bf209c161f393d4d0152ba9d02a55a95d90a7637f7b373b8f
 Description: Device-Mapper Software RAID support tool
  dmraid discovers, activates, deactivates and displays properties
  of software RAID sets (eg, ATARAID) and contained DOS partitions.
@@ -23,23 +29,23 @@ Description: Device-Mapper Software RAID support tool
  .
  Please read the documentation in /usr/share/doc/dmraid BEFORE attempting
  any use of this software. Improper use can cause data loss!
-MD5sum: 35da9bcdd12c7fb08eb7192f0a17ddf2
-SHA1: 6a89d3f9e3b80a172811bb7d74eac43f119a8b7c
-SHA256: 125405c4b0a7364bf209c161f393d4d0152ba9d02a55a95d90a7637f7b373b8f
-Tag: admin::filesystem, admin::kernel, hardware::storage, implemented-in::c, interface::commandline, role::program, scope::utility, use::scanning
-Size: 38620
-Depends: libc6 (>= 2.3), libdmraid1.0.0.rc16 (>= 1.0.0.rc16), libselinux1 (>= 1.32), libsepol1 (>= 1.14), udev, dmsetup
 Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
-Source: 
-Filename: pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_amd64.deb
+Tag: admin::filesystem, admin::kernel, hardware::storage, implemented-in::c, interface::commandline, role::program, scope::utility, use::scanning
 
 Package: libdmraid-dev
-Version: 1.0.0.rc16-4.1
-Installed-Size: 496
 Priority: optional
 Section: libdevel
+Installed-Size: 496
 Maintainer: Giuseppe Iuculano <iuculano@debian.org>
 Architecture: amd64
+Source: dmraid
+Version: 1.0.0.rc16-4.1
+Depends: libdmraid1.0.0.rc16 (= 1.0.0.rc16-4.1)
+Filename: pool/main/d/dmraid/libdmraid-dev_1.0.0.rc16-4.1_amd64.deb
+Size: 152618
+MD5sum: bb209b5796592d786c28844b949216dc
+SHA1: cd8baba807fa92a88a265a044d821df8b677b5cb
+SHA256: 081a48ad5372a941c35d41733da89a52cbe2d8f49032c2a4ef03148e4049615f
 Description: Device-Mapper Software RAID support tool - header files
  dmraid discovers, activates, deactivates and displays properties
  of software RAID sets (eg, ATARAID) and contained DOS partitions.
@@ -49,23 +55,24 @@ Description: Device-Mapper Software RAID support tool - header files
  .
  This package contains the header files needed to link programs against
  dmraid.
-MD5sum: bb209b5796592d786c28844b949216dc
-SHA1: cd8baba807fa92a88a265a044d821df8b677b5cb
-SHA256: 081a48ad5372a941c35d41733da89a52cbe2d8f49032c2a4ef03148e4049615f
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 Tag: admin::hardware, devel::lang:c, devel::library, hardware::storage, implemented-in::c, qa::low-popcon, role::devel-lib, use::driver
-Size: 152618
-Depends: libdmraid1.0.0.rc16 (= 1.0.0.rc16-4.1)
-Filename: pool/main/d/dmraid/libdmraid-dev_1.0.0.rc16-4.1_amd64.deb
-Source: dmraid
+Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 
 Package: libdmraid1.0.0.rc16
-Version: 1.0.0.rc16-4.1
-Installed-Size: 244
 Priority: optional
 Section: libs
+Installed-Size: 244
 Maintainer: Giuseppe Iuculano <iuculano@debian.org>
 Architecture: amd64
+Source: dmraid
+Version: 1.0.0.rc16-4.1
+Replaces: libdmraid1.0.0.rc15 (<< 1.0.0.rc16-1)
+Depends: libc6 (>= 2.7), libdevmapper1.02.1 (>= 2:1.02.20)
+Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16_1.0.0.rc16-4.1_amd64.deb
+Size: 108978
+MD5sum: a66d03bb1ddad78f879660ddedf86295
+SHA1: 6292936617c466e67a3148c66d0c27c068d055d3
+SHA256: 29f06bd3ae42e3380b356b69598be07724d178af35f2f1a64648c7f8ff85bef9
 Description: Device-Mapper Software RAID support tool - shared library
  dmraid discovers, activates, deactivates and displays properties
  of software RAID sets (eg, ATARAID) and contained DOS partitions.
@@ -75,14 +82,6 @@ Description: Device-Mapper Software RAID support tool - shared library
  .
  This package contains the dmraid shared library, which implements
  the back half of dmraid, including on-disk metadata formats.
-MD5sum: a66d03bb1ddad78f879660ddedf86295
-SHA1: 6292936617c466e67a3148c66d0c27c068d055d3
-SHA256: 29f06bd3ae42e3380b356b69598be07724d178af35f2f1a64648c7f8ff85bef9
-Depends: libc6 (>= 2.7), libdevmapper1.02.1 (>= 2:1.02.20)
 Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
-Size: 108978
 Tag: admin::hardware, admin::kernel, devel::lang:c, devel::library, hardware::storage, implemented-in::c, role::{devel-lib,kernel,shared-lib}, use::driver
-Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16_1.0.0.rc16-4.1_amd64.deb
-Replaces: libdmraid1.0.0.rc15 (<< 1.0.0.rc16-1)
-Source: dmraid
 

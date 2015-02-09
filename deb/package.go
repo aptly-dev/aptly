@@ -427,7 +427,9 @@ func (p *Package) Stanza() (result Stanza) {
 		result["Architecture"] = p.SourceArchitecture
 	} else {
 		result["Architecture"] = p.Architecture
-		result["Source"] = p.Source
+		if p.Source != "" {
+			result["Source"] = p.Source
+		}
 	}
 
 	if p.IsSource {
