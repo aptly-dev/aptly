@@ -2,7 +2,7 @@ package swift
 
 import (
 	"github.com/smira/aptly/files"
-	"github.com/lebauce/swift"
+	"github.com/ncw/swift/swifttest"
 
 	"io/ioutil"
 	"os"
@@ -20,7 +20,7 @@ const (
 )
 
 type PublishedStorageSuite struct {
-	srv                      *swift.SwiftServer
+	srv                      *swifttest.SwiftServer
 	storage, prefixedStorage *PublishedStorage
 }
 
@@ -28,7 +28,7 @@ var _ = Suite(&PublishedStorageSuite{})
 
 func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	var err error
-	s.srv, err = swift.NewSwiftServer(TEST_ADDRESS)
+	s.srv, err = swifttest.NewSwiftServer(TEST_ADDRESS)
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
 
