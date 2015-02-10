@@ -2,7 +2,7 @@ package swift
 
 import (
 	"fmt"
-	"github.com/lebauce/swift"
+	"github.com/ncw/swift"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
 	"time"
