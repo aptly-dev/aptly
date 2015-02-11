@@ -31,13 +31,19 @@ var (
 // keys, tenant and tenantId
 func NewPublishedStorage(username string, password string, authUrl string, tenant string, tenantId string, container string, prefix string) (*PublishedStorage, error) {
 	if username == "" {
-		username = os.Getenv("OS_USERNAME")
+		if username = os.Getenv("OS_USERNAME"); username == "" {
+			username = os.Getenv("ST_USER")
+		}
 	}
 	if password == "" {
-		password = os.Getenv("OS_PASSWORD")
+		if password = os.Getenv("OS_PASSWORD"); password == "" {
+			password = os.Getenv("ST_KEY")
+		}
 	}
 	if authUrl == "" {
-		authUrl = os.Getenv("OS_AUTH_URL")
+		if authUrl = os.Getenv("OS_AUTH_URL"); authUrl == "" {
+			authUrl = os.Getenv("ST_AUTH")
+		}
 	}
 	if tenant == "" {
 		tenant = os.Getenv("OS_TENANT_NAME")

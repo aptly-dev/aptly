@@ -15,6 +15,13 @@ try:
         account_username = "%s:%s" % (auth_tenant, auth_username)
         swift_conn = swiftclient.Connection(auth_url, account_username,
                                             auth_password, auth_version=2)
+    elif 'ST_USER' in os.environ and 'ST_KEY' in os.environ:
+        auth_username = os.environ.get('ST_USER')
+        auth_password = os.environ.get('ST_KEY')
+        auth_url = os.environ.get('ST_AUTH')
+        # Using auth version 1 (/auth/v1.0)
+        swift_conn = swiftclient.Connection(auth_url, auth_username,
+                                            auth_password, auth_version=1)
     else:
         swift_conn = None
 except ImportError:
