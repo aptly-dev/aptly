@@ -1,5 +1,6 @@
 Origin: . maverick
 Label: . maverick
+Suite: maverick
 Codename: maverick
 Architectures: amd64 i386
 Components: contrib main

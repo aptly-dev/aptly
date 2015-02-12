@@ -1,5 +1,6 @@
 Origin: . maverick
 Label: . maverick
+Suite: maverick
 Codename: maverick
 Date: Wed, 1 Oct 2014 09:16:49 UTC
 Architectures: amd64 i386

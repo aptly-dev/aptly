@@ -624,6 +624,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release := make(Stanza)
 	release["Origin"] = p.GetOrigin()
 	release["Label"] = p.GetLabel()
+	release["Suite"] = p.Distribution
 	release["Codename"] = p.Distribution
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{"source"}), " ")

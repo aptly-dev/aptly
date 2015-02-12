@@ -1,5 +1,6 @@
 Origin: . maverick
 Label: . maverick
+Suite: maverick
 Codename: maverick
 Architectures: i386
 Components: main

@@ -1,5 +1,6 @@
 Origin: aptly24
 Label: . squeeze
+Suite: squeeze
 Codename: squeeze
 Architectures: amd64 i386
 Components: main
