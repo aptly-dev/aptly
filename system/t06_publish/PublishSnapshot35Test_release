@@ -1,5 +1,6 @@
 Origin: . squeeze
 Label: . squeeze
+Suite: squeeze
 Codename: squeeze
 Date: Tue, 30 Sep 2014 15:35:22 UTC
 Architectures: amd64 i386
