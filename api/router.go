@@ -12,6 +12,8 @@ var context *ctx.AptlyContext
 func Router(c *ctx.AptlyContext) http.Handler {
 	context = c
 
+	go cacheFlusher()
+
 	router := gin.Default()
 	router.Use(gin.ErrorLogger())
 

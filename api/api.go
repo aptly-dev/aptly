@@ -8,6 +8,7 @@ import (
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"sort"
+	"time"
 )
 
 // Lock order acquisition (canonical):
@@ -19,6 +20,38 @@ import (
 // GET /api/version
 func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
+}
+
+// Periodically flushes CollectionFactory to free up memory used by collections,
+// flushing caches.
+//
+// Should be run in goroutine!
+func cacheFlusher() {
+	ticker := time.Tick(15 * time.Minute)
+
+	for {
+		<-ticker
+
+		// lock everything to eliminate in-progress calls
+		r := context.CollectionFactory().RemoteRepoCollection()
+		r.Lock()
+		defer r.Unlock()
+
+		l := context.CollectionFactory().LocalRepoCollection()
+		l.Lock()
+		defer l.Unlock()
+
+		s := context.CollectionFactory().SnapshotCollection()
+		s.Lock()
+		defer s.Unlock()
+
+		p := context.CollectionFactory().PublishedRepoCollection()
+		p.Lock()
+		defer p.Unlock()
+
+		// all collections locked, flush them
+		context.CollectionFactory().Flush()
+	}
 }
 
 // Common piece of code to show list of packages,
