@@ -80,3 +80,15 @@ func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollec
 
 	return factory.publishedRepos
 }
+
+// Flush removes all references to collections, so that memory could be reclaimed
+func (factory *CollectionFactory) Flush() {
+	factory.Lock()
+	defer factory.Unlock()
+
+	factory.localRepos = nil
+	factory.snapshots = nil
+	factory.remoteRepos = nil
+	factory.publishedRepos = nil
+	factory.packages = nil
+}
