@@ -18,11 +18,14 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"sync"
 	"time"
 )
 
 // AptlyContext is a common context shared by all commands
 type AptlyContext struct {
+	sync.Mutex
+
 	flags, globalFlags *flag.FlagSet
 	configLoaded       bool
 
@@ -61,6 +64,13 @@ func Fatal(err error) {
 
 // Config loads and returns current configuration
 func (context *AptlyContext) Config() *utils.ConfigStructure {
+	context.Lock()
+	defer context.Unlock()
+
+	return context.config()
+}
+
+func (context *AptlyContext) config() *utils.ConfigStructure {
 	if !context.configLoaded {
 		var err error
 
@@ -102,6 +112,13 @@ func (context *AptlyContext) Config() *utils.ConfigStructure {
 // LookupOption checks boolean flag with default (usually config) and command-line
 // setting
 func (context *AptlyContext) LookupOption(defaultValue bool, name string) (result bool) {
+	context.Lock()
+	defer context.Unlock()
+
+	return context.lookupOption(defaultValue, name)
+}
+
+func (context *AptlyContext) lookupOption(defaultValue bool, name string) (result bool) {
 	result = defaultValue
 
 	if context.globalFlags.IsSet(name) {
@@ -113,18 +130,21 @@ func (context *AptlyContext) LookupOption(defaultValue bool, name string) (resul
 
 // DependencyOptions calculates options related to dependecy handling
 func (context *AptlyContext) DependencyOptions() int {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.dependencyOptions == -1 {
 		context.dependencyOptions = 0
-		if context.LookupOption(context.Config().DepFollowSuggests, "dep-follow-suggests") {
+		if context.lookupOption(context.config().DepFollowSuggests, "dep-follow-suggests") {
 			context.dependencyOptions |= deb.DepFollowSuggests
 		}
-		if context.LookupOption(context.Config().DepFollowRecommends, "dep-follow-recommends") {
+		if context.lookupOption(context.config().DepFollowRecommends, "dep-follow-recommends") {
 			context.dependencyOptions |= deb.DepFollowRecommends
 		}
-		if context.LookupOption(context.Config().DepFollowAllVariants, "dep-follow-all-variants") {
+		if context.lookupOption(context.config().DepFollowAllVariants, "dep-follow-all-variants") {
 			context.dependencyOptions |= deb.DepFollowAllVariants
 		}
-		if context.LookupOption(context.Config().DepFollowSource, "dep-follow-source") {
+		if context.lookupOption(context.config().DepFollowSource, "dep-follow-source") {
 			context.dependencyOptions |= deb.DepFollowSource
 		}
 	}
@@ -134,8 +154,11 @@ func (context *AptlyContext) DependencyOptions() int {
 
 // ArchitecturesList returns list of architectures fixed via command line or config
 func (context *AptlyContext) ArchitecturesList() []string {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.architecturesList == nil {
-		context.architecturesList = context.Config().Architectures
+		context.architecturesList = context.config().Architectures
 		optionArchitectures := context.globalFlags.Lookup("architectures").Value.String()
 		if optionArchitectures != "" {
 			context.architecturesList = strings.Split(optionArchitectures, ",")
@@ -147,6 +170,13 @@ func (context *AptlyContext) ArchitecturesList() []string {
 
 // Progress creates or returns Progress object
 func (context *AptlyContext) Progress() aptly.Progress {
+	context.Lock()
+	defer context.Unlock()
+
+	return context._progress()
+}
+
+func (context *AptlyContext) _progress() aptly.Progress {
 	if context.progress == nil {
 		context.progress = console.NewProgress()
 		context.progress.Start()
@@ -157,6 +187,9 @@ func (context *AptlyContext) Progress() aptly.Progress {
 
 // Downloader returns instance of current downloader
 func (context *AptlyContext) Downloader() aptly.Downloader {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.downloader == nil {
 		var downloadLimit int64
 		limitFlag := context.flags.Lookup("download-limit")
@@ -164,10 +197,10 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 			downloadLimit = limitFlag.Value.Get().(int64)
 		}
 		if downloadLimit == 0 {
-			downloadLimit = context.Config().DownloadLimit
+			downloadLimit = context.config().DownloadLimit
 		}
-		context.downloader = http.NewDownloader(context.Config().DownloadConcurrency,
-			downloadLimit*1024, context.Progress())
+		context.downloader = http.NewDownloader(context.config().DownloadConcurrency,
+			downloadLimit*1024, context._progress())
 	}
 
 	return context.downloader
@@ -175,15 +208,30 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 
 // DBPath builds path to database
 func (context *AptlyContext) DBPath() string {
-	return filepath.Join(context.Config().RootDir, "db")
+	context.Lock()
+	defer context.Unlock()
+
+	return context.dbPath()
+}
+
+// DBPath builds path to database
+func (context *AptlyContext) dbPath() string {
+	return filepath.Join(context.config().RootDir, "db")
 }
 
 // Database opens and returns current instance of database
 func (context *AptlyContext) Database() (database.Storage, error) {
+	context.Lock()
+	defer context.Unlock()
+
+	return context._database()
+}
+
+func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		context.database, err = database.OpenDB(context.DBPath())
+		context.database, err = database.OpenDB(context.dbPath())
 		if err != nil {
 			return nil, fmt.Errorf("can't open database: %s", err)
 		}
@@ -194,6 +242,9 @@ func (context *AptlyContext) Database() (database.Storage, error) {
 
 // CloseDatabase closes the db temporarily
 func (context *AptlyContext) CloseDatabase() error {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.database == nil {
 		return nil
 	}
@@ -203,6 +254,9 @@ func (context *AptlyContext) CloseDatabase() error {
 
 // ReOpenDatabase reopens the db after close
 func (context *AptlyContext) ReOpenDatabase() error {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.database == nil {
 		return nil
 	}
@@ -215,7 +269,7 @@ func (context *AptlyContext) ReOpenDatabase() error {
 		if err == nil || strings.Index(err.Error(), "resource temporarily unavailable") == -1 {
 			return err
 		}
-		context.Progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
+		context._progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
 		<-time.After(Delay)
 	}
 
@@ -224,8 +278,11 @@ func (context *AptlyContext) ReOpenDatabase() error {
 
 // CollectionFactory builds factory producing all kinds of collections
 func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.collectionFactory == nil {
-		db, err := context.Database()
+		db, err := context._database()
 		if err != nil {
 			Fatal(err)
 		}
@@ -237,8 +294,11 @@ func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
 
 // PackagePool returns instance of PackagePool
 func (context *AptlyContext) PackagePool() aptly.PackagePool {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.Config().RootDir)
+		context.packagePool = files.NewPackagePool(context.config().RootDir)
 	}
 
 	return context.packagePool
@@ -246,12 +306,15 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 
 // GetPublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
+	context.Lock()
+	defer context.Unlock()
+
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
 		if name == "" {
-			publishedStorage = files.NewPublishedStorage(context.Config().RootDir)
+			publishedStorage = files.NewPublishedStorage(context.config().RootDir)
 		} else if strings.HasPrefix(name, "s3:") {
-			params, ok := context.Config().S3PublishRoots[name[3:]]
+			params, ok := context.config().S3PublishRoots[name[3:]]
 			if !ok {
 				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
 			}
@@ -279,21 +342,33 @@ func (context *AptlyContext) UploadPath() string {
 
 // UpdateFlags sets internal copy of flags in the context
 func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
+	context.Lock()
+	defer context.Unlock()
+
 	context.flags = flags
 }
 
 // Flags returns current command flags
 func (context *AptlyContext) Flags() *flag.FlagSet {
+	context.Lock()
+	defer context.Unlock()
+
 	return context.flags
 }
 
 // GlobalFlags returns flags passed to all commands
 func (context *AptlyContext) GlobalFlags() *flag.FlagSet {
+	context.Lock()
+	defer context.Unlock()
+
 	return context.globalFlags
 }
 
 // Shutdown shuts context down
 func (context *AptlyContext) Shutdown() {
+	context.Lock()
+	defer context.Unlock()
+
 	if aptly.EnableDebug {
 		if context.fileMemProfile != nil {
 			pprof.WriteHeapProfile(context.fileMemProfile)
@@ -326,6 +401,9 @@ func (context *AptlyContext) Shutdown() {
 
 // Cleanup does partial shutdown of context
 func (context *AptlyContext) Cleanup() {
+	context.Lock()
+	defer context.Unlock()
+
 	if context.downloader != nil {
 		context.downloader.Shutdown()
 		context.downloader = nil
