@@ -26,7 +26,7 @@ func apiVersion(c *gin.Context) {
 func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
 	result := []*deb.Package{}
 
-	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), nil)
 	if err != nil {
 		c.Fail(404, err)
 		return

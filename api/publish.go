@@ -153,7 +153,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), b.ForceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
 		return
@@ -218,7 +218,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.UpdateLocalRepo(component)
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), b.ForceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
 	}
@@ -229,7 +229,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	}
 
 	err = collection.CleanupPrefixComponentFiles(published.Prefix, components,
-		context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
+		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
 	}
