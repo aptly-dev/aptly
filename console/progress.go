@@ -14,6 +14,8 @@ const (
 	codeHideProgress
 	codeStop
 	codeFlush
+	codeBarEnabled
+	codeBarDisabled
 )
 
 type printTask struct {
@@ -81,6 +83,8 @@ func (p *Progress) InitBar(count int64, isBytes bool) {
 			p.bar.SetUnits(pb.U_BYTES)
 			p.bar.ShowSpeed = true
 		}
+
+		p.queue <- printTask{code: codeBarEnabled}
 		p.bar.Start()
 	}
 }
@@ -91,6 +95,7 @@ func (p *Progress) ShutdownBar() {
 		return
 	}
 	p.bar.Finish()
+	p.queue <- printTask{code: codeBarDisabled}
 	p.bar = nil
 	p.queue <- printTask{code: codeHideProgress}
 }
@@ -151,9 +156,15 @@ func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
 }
 
 func (p *Progress) worker() {
+	hasBar := false
+
 	for {
 		task := <-p.queue
 		switch task.code {
+		case codeBarEnabled:
+			hasBar = true
+		case codeBarDisabled:
+			hasBar = false
 		case codePrint:
 			if p.barShown {
 				fmt.Print("\r\033[2K")
@@ -161,7 +172,7 @@ func (p *Progress) worker() {
 			}
 			fmt.Print(task.message)
 		case codeProgress:
-			if p.bar != nil {
+			if hasBar {
 				fmt.Print("\r" + task.message)
 				p.barShown = true
 			}
