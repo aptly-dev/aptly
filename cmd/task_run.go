@@ -18,13 +18,15 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		var text string
 		cmdArgs := []string{}
 
-		if finfo, err := os.Stat(filename); os.IsNotExist(err) || finfo.IsDir() {
+		var finfo os.FileInfo
+		if finfo, err = os.Stat(filename); os.IsNotExist(err) || finfo.IsDir() {
 			return fmt.Errorf("no such file, %s\n", filename)
 		}
 
 		fmt.Println("Reading file...\n")
 
-		file, err := os.Open(filename)
+		var file *os.File
+		file, err = os.Open(filename)
 
 		if err != nil {
 			return err
