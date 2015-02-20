@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "December 2014" "" ""
+.TH "APTLY" "1" "February 2015" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -60,6 +60,18 @@ Configuration file is stored in JSON format (default values shown below):
       "encryptionMethod": "",
       "plusWorkaround": false
     }
+  },
+  "SwiftPublishEndpoints": {
+    "test": {
+      "container": "repo",
+      "osname": "",
+      "password": "",
+      "prefix": "",
+      "authurl": "",
+      "tenant": "",
+      "tenantid": ""
+    }
+  }
 }
 .
 .fi
@@ -161,6 +173,35 @@ In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before p
 .
 .P
 \fBaptly publish snapshot wheezy\-main s3:test:\fR
+.
+.SH "OPENSTACK SWIFT PUBLISHING ENDPOINTS"
+aptly could be configured to publish repository directly to OpenStack Swift\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
+.
+.TP
+\fBcontainer\fR
+container name
+.
+.TP
+\fBprefix\fR
+(optional) do publishing under specified prefix in the container, defaults to no prefix (container root)
+.
+.TP
+\fBosname\fR, \fBpassword\fR
+(optional) OpenStack credentials to access Keystone\. If not supplied, environment variables \fBOS_USERNAME\fR and \fBOS_PASSWORD\fR are used\.
+.
+.TP
+\fBtenant\fR, \fBtenantid\fR
+(optional) OpenStack tenant name and id (in order to use v2 authentication)\.
+.
+.TP
+\fBauthurl\fR
+(optional) the full url of Keystone server (including port, and version)\. example \fBhttp://identity\.example\.com:5000/v2\.0\fR
+.
+.P
+In order to publish to Swift, specify endpoint as \fBswift:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
+.
+.P
+\fBaptly publish snapshot jessie\-main swift:test:\fR
 .
 .SH "PACKAGE QUERY"
 Some commands accept package queries to identify list of packages to process\. Package query syntax almost matches \fBreprepro\fR query language\. Query consists of the following simple terms:
