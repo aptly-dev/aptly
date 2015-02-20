@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-PACKAGES=context database deb files http query s3 utils
-ALL_PACKAGES=api aptly context cmd console database deb files http query s3 utils
+PACKAGES=context database deb files http query swift s3 utils
+ALL_PACKAGES=api aptly context cmd console database deb files http query swift s3 utils
 BINPATH=$(abspath ./_vendor/bin)
 GOM_ENVIRONMENT=-test
 PYTHON?=python

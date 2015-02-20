@@ -297,6 +297,7 @@ func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) err
 	return err
 }
 
+// ForEachSorted runs method for each snapshot following some sort order
 func (collection *SnapshotCollection) ForEachSorted(sortMethod string, handler func(*Snapshot) error) error {
 	sorter, err := newSnapshotSorter(sortMethod, collection)
 	if err != nil {

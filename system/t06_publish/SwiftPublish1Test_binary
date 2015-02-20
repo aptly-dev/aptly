@@ -1,0 +1,25 @@
+Package: libboost-program-options-dev
+Version: 1.49.0.1
+Installed-Size: 26
+Priority: optional
+Section: libdevel
+Maintainer: Debian Boost Team <pkg-boost-devel@lists.alioth.debian.org>
+Architecture: i386
+Description: program options library for C++ (default version)
+ This package forms part of the Boost C++ Libraries collection.
+ .
+ Library to let program developers obtain program options, that is
+ (name, value) pairs from the user, via conventional methods such as
+ command line and config file.
+ .
+ This package is a dependency package, which depends on Debian's default
+ Boost version (currently 1.49).
+MD5sum: 0035d7822b2f8f0ec4013f270fd650c2
+SHA1: 36895eb64cfe89c33c0a2f7ac2f0c6e0e889e04b
+SHA256: c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12
+Filename: pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb
+Size: 2738
+Homepage: http://www.boost.org/libs/program_options/
+Source: boost-defaults
+Depends: libboost-program-options1.49-dev
+

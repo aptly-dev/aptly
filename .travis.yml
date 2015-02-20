@@ -8,12 +8,13 @@ env:
   global:
     - secure: "YSwtFrMqh4oUvdSQTXBXMHHLWeQgyNEL23ChIZwU0nuDGIcQZ65kipu0PzefedtUbK4ieC065YCUi4UDDh6gPotB/Wu1pnYg3dyQ7rFvhaVYAAUEpajAdXZhlx+7+J8a4FZMeC/kqiahxoRgLbthF9019ouIqhGB9zHKI6/yZwc="
     - secure: "V7OjWrfQ8UbktgT036jYQPb/7GJT3Ol9LObDr8FYlzsQ+F1uj2wLac6ePuxcOS4FwWOJinWGM1h+JiFkbxbyFqfRNJ0jj0O2p93QyDojxFVOn1mXqqvV66KFqAWR2Vzkny/gDvj8LTvdB1cgAIm2FNOkQc6E1BFnyWS2sN9ea5E="
+    - secure: "Nah4qrYI/uVhOlrL5xwgvMtK4TZPqw3hh+ApQTq5V6/EsSYLBGBoWEgR8LaKas8aaemeOEJJx6rwNBCpsF+UT7Hmf4eIsrV7dGSRRFZtd1VA8wI40iOWbsAHFWdeCYdXzqyrRWjXqm0ZCcKrnQeh/4N9i5vCLrAMjtCaUQuJKWY="
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y python-virtualenv graphviz
   - virtualenv env
   - . env/bin/activate
-  - pip install boto requests
+  - pip install boto requests python-swiftclient
 install:
   - make prepare
 

@@ -52,6 +52,18 @@ Configuration file is stored in JSON format (default values shown below):
           "encryptionMethod": "",
           "plusWorkaround": false
         }
+      },
+      "SwiftPublishEndpoints": {
+        "test": {
+          "container": "repo",
+          "osname": "",
+          "password": "",
+          "prefix": "",
+          "authurl": "",
+          "tenant": "",
+          "tenantid": ""
+        }
+      }
     }
 
 Options:
@@ -143,6 +155,31 @@ In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
 publishing prefix on the command line, e.g.:
 
   `aptly publish snapshot wheezy-main s3:test:`
+
+## OPENSTACK SWIFT PUBLISHING ENDPOINTS
+
+aptly could be configured to publish repository directly to OpenStack Swift. First,
+publishing endpoints should be described in aptly configuration file. Each endpoint
+has name and associated settings:
+
+   * `container`:
+     container name
+   * `prefix`:
+     (optional) do publishing under specified prefix in the container, defaults to
+     no prefix (container root)
+   * `osname`, `password`:
+     (optional) OpenStack credentials to access Keystone. If not supplied,
+     environment variables `OS_USERNAME` and `OS_PASSWORD` are used.
+   * `tenant`, `tenantid`:
+     (optional) OpenStack tenant name and id (in order to use v2 authentication).
+   * `authurl`:
+     (optional) the full url of Keystone server (including port, and version).
+     example `http://identity.example.com:5000/v2.0`
+
+In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
+publishing prefix on the command line, e.g.:
+
+  `aptly publish snapshot jessie-main swift:test:`
 
 ## PACKAGE QUERY
 

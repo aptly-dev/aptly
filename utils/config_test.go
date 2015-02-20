@@ -34,6 +34,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		Region: "us-east-1",
 		Bucket: "repo"}}
 
+	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": SwiftPublishRoot{
+		Container: "repo"}}
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -70,6 +73,17 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"storageClass\": \"\",\n"+
 		"      \"encryptionMethod\": \"\",\n"+
 		"      \"plusWorkaround\": false\n"+
+		"    }\n"+
+		"  },\n"+
+                "  \"SwiftPublishEndpoints\": {\n" +
+		"    \"test\": {\n"+
+		"      \"osname\": \"\",\n"+
+		"      \"password\": \"\",\n"+
+		"      \"authurl\": \"\",\n"+
+		"      \"tenant\": \"\",\n"+
+		"      \"tenantid\": \"\",\n"+
+		"      \"prefix\": \"\",\n"+
+		"      \"container\": \"repo\"\n"+
 		"    }\n"+
 		"  }\n"+
 		"}")
