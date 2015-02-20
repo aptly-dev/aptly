@@ -1,22 +1,18 @@
 package swift
 
 import (
-	"github.com/smira/aptly/files"
 	"github.com/ncw/swift/swifttest"
+	"github.com/smira/aptly/files"
 
+	. "gopkg.in/check.v1"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-    . "gopkg.in/check.v1"
 )
 
 const (
-	TEST_ADDRESS = "localhost:5324"
-	AUTH_URL     = "http://" + TEST_ADDRESS + "/v1.0"
-	PROXY_URL    = "http://" + TEST_ADDRESS + "/proxy"
-	USERNAME     = "test"
-	APIKEY       = "apikey"
-	AUTH_TOKEN   = "token"
+	TestAddress = "localhost:5324"
+	AuthURL     = "http://" + TestAddress + "/v1.0"
 )
 
 type PublishedStorageSuite struct {
@@ -28,14 +24,14 @@ var _ = Suite(&PublishedStorageSuite{})
 
 func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	var err error
-	s.srv, err = swifttest.NewSwiftServer(TEST_ADDRESS)
+	s.srv, err = swifttest.NewSwiftServer(TestAddress)
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
 
-	s.storage, err = NewPublishedStorage("swifttest", "swifttest", AUTH_URL, "", "", "test", "")
+	s.storage, err = NewPublishedStorage("swifttest", "swifttest", AuthURL, "", "", "test", "")
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorage("swifttest", "swifttest", AUTH_URL, "", "", "test", "lala")
+	s.prefixedStorage, err = NewPublishedStorage("swifttest", "swifttest", AuthURL, "", "", "test", "lala")
 	c.Assert(err, IsNil)
 
 	s.storage.conn.ContainerCreate("test", nil)
@@ -46,7 +42,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("swifttest", "swifttest", AUTH_URL, "", "", "", "")
+	stor, err := NewPublishedStorage("swifttest", "swifttest", AuthURL, "", "", "", "")
 	c.Check(stor, NotNil)
 	c.Check(err, IsNil)
 }

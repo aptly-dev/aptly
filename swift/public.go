@@ -14,13 +14,13 @@ import (
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)
 type PublishedStorage struct {
-	conn                swift.Connection
-	container           string
-	prefix              string
-	support_bulk_delete bool
+	conn              swift.Connection
+	container         string
+	prefix            string
+	supportBulkDelete bool
 }
 
-type SwiftInfo map[string]interface{}
+type swiftInfo map[string]interface{}
 
 // Check interface
 var (
@@ -29,7 +29,7 @@ var (
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified Swift access
 // keys, tenant and tenantId
-func NewPublishedStorage(username string, password string, authUrl string, tenant string, tenantId string, container string, prefix string) (*PublishedStorage, error) {
+func NewPublishedStorage(username string, password string, authURL string, tenant string, tenantID string, container string, prefix string) (*PublishedStorage, error) {
 	if username == "" {
 		if username = os.Getenv("OS_USERNAME"); username == "" {
 			username = os.Getenv("ST_USER")
@@ -40,49 +40,49 @@ func NewPublishedStorage(username string, password string, authUrl string, tenan
 			password = os.Getenv("ST_KEY")
 		}
 	}
-	if authUrl == "" {
-		if authUrl = os.Getenv("OS_AUTH_URL"); authUrl == "" {
-			authUrl = os.Getenv("ST_AUTH")
+	if authURL == "" {
+		if authURL = os.Getenv("OS_AUTH_URL"); authURL == "" {
+			authURL = os.Getenv("ST_AUTH")
 		}
 	}
 	if tenant == "" {
 		tenant = os.Getenv("OS_TENANT_NAME")
 	}
-	if tenantId == "" {
-		tenantId = os.Getenv("OS_TENANT_ID")
+	if tenantID == "" {
+		tenantID = os.Getenv("OS_TENANT_ID")
 	}
 
 	ct := swift.Connection{
 		UserName:       username,
 		ApiKey:         password,
-		AuthUrl:        authUrl,
+		AuthUrl:        authURL,
 		UserAgent:      "aptly/" + aptly.Version,
 		Tenant:         tenant,
-		TenantId:       tenantId,
+		TenantId:       tenantID,
 		ConnectTimeout: 60 * time.Second,
 		Timeout:        60 * time.Second,
 	}
 	err := ct.Authenticate()
 	if err != nil {
-		return nil, fmt.Errorf("Swift authentication failed: %s", err)
+		return nil, fmt.Errorf("swift authentication failed: %s", err)
 	}
 
-	var bulk_delete bool
+	var bulkDelete bool
 	resp, err := http.Get(filepath.Join(ct.StorageUrl, "..", "..") + "/info")
 	if err == nil {
 		defer resp.Body.Close()
 		decoder := json.NewDecoder(resp.Body)
-		var infos SwiftInfo
+		var infos swiftInfo
 		if decoder.Decode(&infos) == nil {
-			_, bulk_delete = infos["bulk_delete"]
+			_, bulkDelete = infos["bulk_delete"]
 		}
 	}
 
 	result := &PublishedStorage{
-		conn:                ct,
-		container:           container,
-		prefix:              prefix,
-		support_bulk_delete: bulk_delete,
+		conn:              ct,
+		container:         container,
+		prefix:            prefix,
+		supportBulkDelete: bulkDelete,
 	}
 
 	return result, nil
@@ -135,23 +135,25 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 	opts := swift.ObjectsOpts{
 		Prefix: path,
 	}
-	if objects, err := storage.conn.ObjectNamesAll(storage.container, &opts); err != nil {
-		return fmt.Errorf("error removing dir %s from %s: %s", path, storage, err)
-	} else {
-		for index, name := range objects {
-			objects[index] = name[len(storage.prefix):]
-		}
 
-		var multi_delete bool = true
-		if storage.support_bulk_delete {
-			_, err := storage.conn.BulkDelete(storage.container, objects)
-			multi_delete = err != nil
-		}
-		if multi_delete {
-			for _, name := range objects {
-				if err := storage.conn.ObjectDelete(storage.container, name); err != nil {
-					return err
-				}
+	objects, err := storage.conn.ObjectNamesAll(storage.container, &opts)
+	if err != nil {
+		return fmt.Errorf("error removing dir %s from %s: %s", path, storage, err)
+	}
+
+	for index, name := range objects {
+		objects[index] = name[len(storage.prefix):]
+	}
+
+	multiDelete := true
+	if storage.supportBulkDelete {
+		_, err := storage.conn.BulkDelete(storage.container, objects)
+		multiDelete = err != nil
+	}
+	if multiDelete {
+		for _, name := range objects {
+			if err := storage.conn.ObjectDelete(storage.container, name); err != nil {
+				return err
 			}
 		}
 	}
