@@ -44,7 +44,37 @@ func parseEscapedPath(path string) string {
 
 // GET /publish
 func apiPublishList(c *gin.Context) {
-	c.JSON(400, gin.H{})
+	localCollection := context.CollectionFactory().LocalRepoCollection()
+	localCollection.RLock()
+	defer localCollection.RUnlock()
+
+	snapshotCollection := context.CollectionFactory().SnapshotCollection()
+	snapshotCollection.RLock()
+	defer snapshotCollection.RUnlock()
+
+	collection := context.CollectionFactory().PublishedRepoCollection()
+	collection.RLock()
+	defer collection.RUnlock()
+
+	result := make([]*deb.PublishedRepo, 0, collection.Len())
+
+	err := collection.ForEach(func(repo *deb.PublishedRepo) error {
+		err := collection.LoadComplete(repo, context.CollectionFactory())
+		if err != nil {
+			return err
+		}
+
+		result = append(result, repo)
+
+		return nil
+	})
+
+	if err != nil {
+		c.Fail(500, err)
+		return
+	}
+
+	c.JSON(200, result)
 }
 
 // POST /publish/:prefix/repos | /publish/:prefix/snapshots
