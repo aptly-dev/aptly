@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// BuildGraph generates graph contents from aptly object database
 func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, error) {
 	var err error
 

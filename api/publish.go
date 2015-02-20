@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// SigningOptions is a shared between publish API GPG options structure
 type SigningOptions struct {
 	Skip           bool
 	Batch          bool
