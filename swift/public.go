@@ -1,22 +1,22 @@
 package swift
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ncw/swift"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
-	"time"
+	"net/http"
 	"os"
 	"path/filepath"
-	"net/http"
-	"encoding/json"
+	"time"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)
 type PublishedStorage struct {
-	conn		    swift.Connection
-	container	    string
-	prefix	            string
+	conn                swift.Connection
+	container           string
+	prefix              string
 	support_bulk_delete bool
 }
 
@@ -54,13 +54,13 @@ func NewPublishedStorage(username string, password string, authUrl string, tenan
 
 	ct := swift.Connection{
 		UserName:       username,
-		ApiKey:	 password,
-		AuthUrl:	authUrl,
+		ApiKey:         password,
+		AuthUrl:        authUrl,
 		UserAgent:      "aptly/" + aptly.Version,
-		Tenant:	 tenant,
+		Tenant:         tenant,
 		TenantId:       tenantId,
 		ConnectTimeout: 60 * time.Second,
-		Timeout:	60 * time.Second,
+		Timeout:        60 * time.Second,
 	}
 	err := ct.Authenticate()
 	if err != nil {
@@ -79,9 +79,9 @@ func NewPublishedStorage(username string, password string, authUrl string, tenan
 	}
 
 	result := &PublishedStorage{
-		conn:		ct,
-		container:	   container,
-		prefix:	      prefix,
+		conn:                ct,
+		container:           container,
+		prefix:              prefix,
 		support_bulk_delete: bulk_delete,
 	}
 
