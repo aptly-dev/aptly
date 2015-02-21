@@ -1281,7 +1281,7 @@ don\(cqt sign Release files with GPG
 \fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
 .
 .P
-Command switches in\-place published repository with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
+Command switches in\-place published snapshots with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
 .
 .P
 For multiple component repositories, flag \-component should be given with list of components to update\. Corresponding snapshots should be given in the same order, e\.g\.:
@@ -1290,7 +1290,7 @@ For multiple component repositories, flag \-component should be given with list 
 .
 .nf
 
-aptly publish update \-component=main,contrib wheezy wh\-main wh\-contrib
+aptly publish switch \-component=main,contrib wheezy wh\-main wh\-contrib
 .
 .fi
 .
@@ -1303,11 +1303,14 @@ Example:
 .
 .nf
 
-$ aptly publish update wheezy ppa wheezy\-7\.5
+$ aptly publish switch wheezy ppa wheezy\-7\.5
 .
 .fi
 .
 .IP "" 0
+.
+.P
+This command would switch published repository (with one component) named ppa/wheezy (prefix ppa, dsitribution wheezy to new snapshot wheezy\-7\.5)\.
 .
 .P
 Options:

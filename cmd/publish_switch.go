@@ -117,7 +117,7 @@ func makeCmdPublishSwitch() *commander.Command {
 		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-snapshot>",
 		Short:     "update published repository by switching to new snapshot",
 		Long: `
-Command switches in-place published repository with new snapshot contents. All
+Command switches in-place published snapshots with new snapshot contents. All
 publishing parameters are preserved (architecture list, distribution,
 component).
 
@@ -125,11 +125,14 @@ For multiple component repositories, flag -component should be given with
 list of components to update. Corresponding snapshots should be given in the
 same order, e.g.:
 
-	aptly publish update -component=main,contrib wheezy wh-main wh-contrib
+	aptly publish switch -component=main,contrib wheezy wh-main wh-contrib
 
 Example:
 
-    $ aptly publish update wheezy ppa wheezy-7.5
+    $ aptly publish switch wheezy ppa wheezy-7.5
+
+This command would switch published repository (with one component) named ppa/wheezy
+(prefix ppa, dsitribution wheezy to new snapshot wheezy-7.5).
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-switch", flag.ExitOnError),
 	}
