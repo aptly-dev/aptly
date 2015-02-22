@@ -100,7 +100,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		if isSourcePackage {
 			p.UpdateFiles(append(p.Files(), PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
 		} else {
-			p.UpdateFiles([]PackageFile{PackageFile{Filename: filepath.Base(file), Checksums: checksums}})
+			p.UpdateFiles([]PackageFile{{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
 		err = pool.Import(file, checksums.MD5)

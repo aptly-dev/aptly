@@ -13,7 +13,7 @@ import (
 	"os"
 	"sort"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type NullVerifier struct {

@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"time"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type DownloaderSuite struct {
@@ -211,9 +211,9 @@ func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	var buf []byte
 
 	expectedChecksums := map[string]utils.ChecksumInfo{
-		"file.bz2": utils.ChecksumInfo{Size: int64(len(bzipData))},
-		"file.gz":  utils.ChecksumInfo{Size: int64(len(gzipData))},
-		"file":     utils.ChecksumInfo{Size: int64(len(rawData))},
+		"file.bz2": {Size: int64(len(bzipData))},
+		"file.gz":  {Size: int64(len(gzipData))},
+		"file":     {Size: int64(len(rawData))},
 	}
 
 	// bzip2 only available
@@ -278,6 +278,6 @@ func (s *DownloaderSuite) TestDownloadTryCompressionErrors(c *C) {
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file", rawData)
-	_, _, err = DownloadTryCompression(d, "http://example.com/file", map[string]utils.ChecksumInfo{"file": utils.ChecksumInfo{Size: 7}}, false)
+	_, _, err = DownloadTryCompression(d, "http://example.com/file", map[string]utils.ChecksumInfo{"file": {Size: 7}}, false)
 	c.Assert(err, ErrorMatches, "checksums don't match.*")
 }

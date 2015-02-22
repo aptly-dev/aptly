@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type ChecksumSuite struct {

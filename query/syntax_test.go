@@ -4,7 +4,7 @@ import (
 	"github.com/smira/aptly/deb"
 	"regexp"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type SyntaxSuite struct {

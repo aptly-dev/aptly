@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/smira/aptly/database"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type PackageRefListSuite struct {
@@ -169,13 +169,13 @@ func (s *PackageRefListSuite) TestDiff(c *C) {
 	coll := NewPackageCollection(db)
 
 	packages := []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
-		&Package{Name: "xyz", Version: "3.0", Architecture: "sparc"},     //6
+		{Name: "lib", Version: "1.0", Architecture: "i386"},      //0
+		{Name: "dpkg", Version: "1.7", Architecture: "i386"},     //1
+		{Name: "data", Version: "1.1~bp1", Architecture: "all"},  //2
+		{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //3
+		{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //4
+		{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //5
+		{Name: "xyz", Version: "3.0", Architecture: "sparc"},     //6
 	}
 
 	for _, p := range packages {
@@ -241,16 +241,16 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	coll := NewPackageCollection(db)
 
 	packages := []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},                      //0
-		&Package{Name: "dpkg", Version: "1.7", Architecture: "i386"},                     //1
-		&Package{Name: "data", Version: "1.1~bp1", Architecture: "all"},                  //2
-		&Package{Name: "app", Version: "1.1~bp1", Architecture: "i386"},                  //3
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386"},                  //4
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "amd64"},                 //5
-		&Package{Name: "dpkg", Version: "1.0", Architecture: "i386"},                     //6
-		&Package{Name: "xyz", Version: "1.0", Architecture: "sparc"},                     //7
-		&Package{Name: "dpkg", Version: "1.0", Architecture: "i386", FilesHash: 0x34445}, //8
-		&Package{Name: "app", Version: "1.1~bp2", Architecture: "i386", FilesHash: 0x44}, //9
+		{Name: "lib", Version: "1.0", Architecture: "i386"},                      //0
+		{Name: "dpkg", Version: "1.7", Architecture: "i386"},                     //1
+		{Name: "data", Version: "1.1~bp1", Architecture: "all"},                  //2
+		{Name: "app", Version: "1.1~bp1", Architecture: "i386"},                  //3
+		{Name: "app", Version: "1.1~bp2", Architecture: "i386"},                  //4
+		{Name: "app", Version: "1.1~bp2", Architecture: "amd64"},                 //5
+		{Name: "dpkg", Version: "1.0", Architecture: "i386"},                     //6
+		{Name: "xyz", Version: "1.0", Architecture: "sparc"},                     //7
+		{Name: "dpkg", Version: "1.0", Architecture: "i386", FilesHash: 0x34445}, //8
+		{Name: "app", Version: "1.1~bp2", Architecture: "i386", FilesHash: 0x44}, //9
 	}
 
 	for _, p := range packages {
@@ -320,14 +320,14 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 
 func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	packages := []*Package{
-		&Package{Name: "lib", Version: "1.0", Architecture: "i386"},
-		&Package{Name: "lib", Version: "1.2~bp1", Architecture: "i386"},
-		&Package{Name: "lib", Version: "1.2", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.2", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.3", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.3~bp2", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.5", Architecture: "i386"},
-		&Package{Name: "dpkg", Version: "1.6", Architecture: "i386"},
+		{Name: "lib", Version: "1.0", Architecture: "i386"},
+		{Name: "lib", Version: "1.2~bp1", Architecture: "i386"},
+		{Name: "lib", Version: "1.2", Architecture: "i386"},
+		{Name: "dpkg", Version: "1.2", Architecture: "i386"},
+		{Name: "dpkg", Version: "1.3", Architecture: "i386"},
+		{Name: "dpkg", Version: "1.3~bp2", Architecture: "i386"},
+		{Name: "dpkg", Version: "1.5", Architecture: "i386"},
+		{Name: "dpkg", Version: "1.6", Architecture: "i386"},
 	}
 
 	rl := NewPackageList()

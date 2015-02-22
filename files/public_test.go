@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type PublishedStorageSuite struct {

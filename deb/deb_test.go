@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type DebSuite struct {

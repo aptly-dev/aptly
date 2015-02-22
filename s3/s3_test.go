@@ -3,7 +3,7 @@ package s3
 import (
 	"testing"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 // Launch gocheck tests

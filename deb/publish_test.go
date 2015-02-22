@@ -12,7 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type pathExistsChecker struct {

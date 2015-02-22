@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/smira/aptly/database"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type LocalRepoSuite struct {

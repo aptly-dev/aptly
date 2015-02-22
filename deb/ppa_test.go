@@ -3,7 +3,7 @@ package deb
 import (
 	"github.com/smira/aptly/utils"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type PpaSuite struct {

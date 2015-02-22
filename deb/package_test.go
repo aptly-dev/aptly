@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-  . "gopkg.in/check.v1"
+	. "gopkg.in/check.v1"
 )
 
 type PackageSuite struct {
@@ -399,7 +399,7 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 	list, err := p.DownloadList(packagePool)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{
-		PackageDownloadTask{
+		{
 			RepoURI:         "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb",
 			DestinationPath: poolPath,
 			Checksums: utils.ChecksumInfo{Size: 5,
