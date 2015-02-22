@@ -11,6 +11,9 @@ aptly
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+.. image:: http://goreportcard.com/badge/gojp/goreportcard
+    :target: http://goreportcard.com/report/gojp/goreportcard
+
 Aptly is a swiss army knife for Debian repository management.
 
 .. image:: http://www.aptly.info/img/aptly_logo.png
@@ -28,6 +31,7 @@ Aptly features: ("+" means planned features)
 * merge two or more snapshots into one
 * filter repository by search query, pulling dependencies when required
 * publish self-made packages as Debian repositories
+* REST API for remote access
 * mirror repositories "as-is" (without resigning with user's key) (+)
 * support for yum repositories (+)
 
