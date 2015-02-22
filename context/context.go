@@ -328,7 +328,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "swift:") {
-			params, ok := context.Config().SwiftPublishRoots[name[6:]]
+			params, ok := context.config().SwiftPublishRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
 			}
