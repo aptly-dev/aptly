@@ -36,7 +36,7 @@ coverage: coverage.out
 	rm -f coverage.out
 
 check:
-	$(GOM) exec go tool vet -all=true -shadow=true $(ALL_PACKAGES:%=./%)
+	$(GOM) exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
 	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
 
 install:

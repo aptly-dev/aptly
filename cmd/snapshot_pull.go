@@ -91,7 +91,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to parse query: %s", err)
 		}
 		// Add architecture filter
-		queries[i] = &deb.AndQuery{queries[i], archQuery}
+		queries[i] = &deb.AndQuery{L: queries[i], R: archQuery}
 	}
 
 	// Filter with dependencies as requested

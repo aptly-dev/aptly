@@ -23,7 +23,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("no such file, %s\n", filename)
 		}
 
-		fmt.Println("Reading file...\n")
+		fmt.Print("Reading file...\n\n")
 
 		var file *os.File
 		file, err = os.Open(filename)

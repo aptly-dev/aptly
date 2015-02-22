@@ -285,7 +285,6 @@ func (p *Package) GetField(name string) string {
 	default:
 		return p.Extra()[name]
 	}
-	return ""
 }
 
 // MatchesArchitecture checks whether packages matches specified architecture

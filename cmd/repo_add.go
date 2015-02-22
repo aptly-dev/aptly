@@ -42,7 +42,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	var packageFiles, failedFiles []string
 
-	packageFiles, failedFiles, err = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{context.Progress()})
+	packageFiles, failedFiles, err = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
 	if err != nil {
 		return fmt.Errorf("unable to collect package files: %s", err)
 	}
@@ -50,7 +50,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	var processedFiles, failedFiles2 []string
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		context.CollectionFactory().PackageCollection(), &aptly.ConsoleResultReporter{context.Progress()})
+		context.CollectionFactory().PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()})
 	failedFiles = append(failedFiles, failedFiles2...)
 	if err != nil {
 		return fmt.Errorf("unable to import package files: %s", err)
