@@ -41,9 +41,9 @@ func (c *ConsoleResultReporter) Added(msg string, a ...interface{}) {
 
 // RecordingResultReporter is implementation of ResultReporter that collects all messages
 type RecordingResultReporter struct {
-	Warnings []string `json:"warnings"`
-	Adds     []string `json:"added"`
-	Removes  []string `json:"removed"`
+	Warnings     []string
+	AddedLines   []string `json:"Added"`
+	RemovedLines []string `json:"Removed"`
 }
 
 // Check interface
@@ -58,10 +58,10 @@ func (r *RecordingResultReporter) Warning(msg string, a ...interface{}) {
 
 // Removed is signal that something has been removed
 func (r *RecordingResultReporter) Removed(msg string, a ...interface{}) {
-	r.Removes = append(r.Removes, fmt.Sprintf(msg, a...))
+	r.RemovedLines = append(r.RemovedLines, fmt.Sprintf(msg, a...))
 }
 
 // Added is signal that something has been added
 func (r *RecordingResultReporter) Added(msg string, a ...interface{}) {
-	r.Adds = append(r.Adds, fmt.Sprintf(msg, a...))
+	r.AddedLines = append(r.AddedLines, fmt.Sprintf(msg, a...))
 }

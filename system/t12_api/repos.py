@@ -63,11 +63,11 @@ class ReposAPITestAdd(APITest):
         resp = self.post("/api/repos/" + repo_name + "/file/" + d)
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), {
-            u'failedFiles': [],
-            u'report': {
-                u'added': [u'pyspi_0.6.1-1.3_source added'],
-                u'removed': [],
-                u'warnings': []}})
+            u'FailedFiles': [],
+            u'Report': {
+                u'Added': [u'pyspi_0.6.1-1.3_source added'],
+                u'Removed': [],
+                u'Warnings': []}})
 
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(), ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
@@ -129,11 +129,11 @@ class ReposAPITestAddFile(APITest):
         resp = self.post("/api/repos/" + repo_name + "/file/" + d + "/libboost-program-options-dev_1.49.0.1_i386.deb")
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), {
-            u'failedFiles': [],
-            u'report': {
-                u'added': [u'libboost-program-options-dev_1.49.0.1_i386 added'],
-                u'removed': [],
-                u'warnings': []}})
+            u'FailedFiles': [],
+            u'Report': {
+                u'Added': [u'libboost-program-options-dev_1.49.0.1_i386 added'],
+                u'Removed': [],
+                u'Warnings': []}})
 
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])

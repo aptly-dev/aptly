@@ -302,9 +302,9 @@ func apiReposPackageFromDir(c *gin.Context) {
 		packageFiles, failedFiles    []string
 		processedFiles, failedFiles2 []string
 		reporter                     = &aptly.RecordingResultReporter{
-			Warnings: []string{},
-			Adds:     []string{},
-			Removes:  []string{},
+			Warnings:     []string{},
+			AddedLines:   []string{},
+			RemovedLines: []string{},
 		}
 		list *deb.PackageList
 	)
@@ -364,7 +364,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"report":      reporter,
-		"failedFiles": failedFiles,
+		"Report":      reporter,
+		"FailedFiles": failedFiles,
 	})
 }
