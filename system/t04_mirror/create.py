@@ -326,5 +326,8 @@ class CreateMirror28Test(BaseTest):
     runCmd = "aptly mirror create -ignore-signatures -force-components mirror28 http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen"
 
     def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror28", "mirror_show")
+        self.check_cmd_output("aptly mirror show mirror28", "mirror_show", match_prepare=removeDates)
