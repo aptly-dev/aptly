@@ -186,9 +186,6 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		if distribution == "" || component == "" {
 			rootDistributions, rootComponents := walkUpTree(source, collectionFactory)
 			if distribution == "" {
-				for i := range rootDistributions {
-					rootDistributions[i] = strings.Replace(rootDistributions[i], "/", "-", -1)
-				}
 				discoveredDistributions = append(discoveredDistributions, rootDistributions...)
 			}
 			if component == "" {
@@ -246,10 +243,6 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		} else {
 			return nil, fmt.Errorf("unable to guess distribution name, please specify explicitly")
 		}
-	}
-
-	if strings.Index(distribution, "/") != -1 {
-		return nil, fmt.Errorf("invalid distribution %s, '/' is not allowed", distribution)
 	}
 
 	result.Distribution = distribution
