@@ -40,6 +40,7 @@ type PublishedRepo struct {
 	Origin       string
 	ComponentPrefix string
 	Label        string
+	Suite        string
 	// Architectures is a list of all architectures published
 	Architectures []string
 	// SourceKind is "local"/"repo"
@@ -277,6 +278,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Architectures": p.Architectures,
 		"Distribution":  p.Distribution,
 		"Label":         p.Label,
+		"Suite":         p.Suite,
 		"Origin":        p.Origin,
 		"Prefix":        p.Prefix,
 		"ComponentPrefix": p.ComponentPrefix,
@@ -316,6 +318,13 @@ func (p *PublishedRepo) String() string {
 			extra += ", "
 		}
 		extra += fmt.Sprintf("label: %s", p.Label)
+	}
+	
+	if p.Suite != "" {
+		if extra != "" {
+			extra += ", "
+		}
+		extra += fmt.Sprintf("suite: %s", p.Suite)
 	}
 	
 	if p.ComponentPrefix != "" {
@@ -449,6 +458,14 @@ func (p *PublishedRepo) GetLabel() string {
 		return p.Prefix + " " + p.Distribution
 	}
 	return p.Label
+}
+
+// GetSuite returns default or manual Suite:
+func (p *PublishedRepo) GetSuite() string {
+	if p.Suite == "" {
+		return p.Distribution
+	}
+	return p.Suite
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
@@ -626,7 +643,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release := make(Stanza)
 	release["Origin"] = p.GetOrigin()
 	release["Label"] = p.GetLabel()
-	release["Suite"] = p.Distribution
+	release["Suite"] = p.GetSuite()
 	release["Codename"] = p.Distribution
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{"source"}), " ")
