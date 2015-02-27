@@ -38,6 +38,7 @@ type PublishedRepo struct {
 	Prefix       string
 	Distribution string
 	Origin       string
+	ComponentPrefix string
 	Label        string
 	// Architectures is a list of all architectures published
 	Architectures []string
@@ -278,6 +279,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Label":         p.Label,
 		"Origin":        p.Origin,
 		"Prefix":        p.Prefix,
+		"ComponentPrefix": p.ComponentPrefix,
 		"SourceKind":    p.SourceKind,
 		"Sources":       sources,
 		"Storage":       p.Storage,
@@ -314,6 +316,13 @@ func (p *PublishedRepo) String() string {
 			extra += ", "
 		}
 		extra += fmt.Sprintf("label: %s", p.Label)
+	}
+	
+	if p.ComponentPrefix != "" {
+		if extra != "" {
+			extra += ", "
+		}
+		extra += fmt.Sprintf("component-prefix: %s", p.ComponentPrefix)
 	}
 
 	if extra != "" {
@@ -590,7 +599,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				release := make(Stanza)
 				release["Archive"] = p.Distribution
 				release["Architecture"] = arch
-				release["Component"] = component
+				release["Component"] = p.ComponentPrefix + component
 				release["Origin"] = p.GetOrigin()
 				release["Label"] = p.GetLabel()
 
@@ -626,7 +635,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release["SHA1"] = "\n"
 	release["SHA256"] = "\n"
 
-	release["Components"] = strings.Join(p.Components(), " ")
+	release["Components"] = p.ComponentPrefix + strings.Join(p.Components(), " " + p.ComponentPrefix)
 
 	for path, info := range indexes.generatedFiles {
 		release["MD5Sum"] += fmt.Sprintf(" %s %8d %s\n", info.MD5, info.Size, path)
