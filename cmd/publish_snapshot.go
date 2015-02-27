@@ -120,6 +120,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	published.Label = cmd.Flag.Lookup("label").Value.String()
 	published.Suite = cmd.Flag.Lookup("suite").Value.String()
 	published.Codename = cmd.Flag.Lookup("codename").Value.String()
+	published.Description = cmd.Flag.Lookup("description").Value.String()
 	published.ComponentPrefix = cmd.Flag.Lookup("component-prefix").Value.String()
 
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
@@ -211,6 +212,7 @@ Example:
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.String("suite", "", "suite to publish")
 	cmd.Flag.String("codename", "", "codename to publish")
+	cmd.Flag.String("description", "", "description to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 
 	return cmd
