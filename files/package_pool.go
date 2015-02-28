@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // PackagePool is deduplicated storage of package files on filesystem
 type PackagePool struct {
+	sync.Mutex
 	rootPath string
 }
 
@@ -50,6 +52,9 @@ func (pool *PackagePool) Path(filename string, hashMD5 string) (string, error) {
 
 // FilepathList returns file paths of all the files in the pool
 func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
+	pool.Lock()
+	defer pool.Unlock()
+
 	dirs, err := ioutil.ReadDir(pool.rootPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -93,6 +98,9 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 
 // Remove deletes file in package pool returns its size
 func (pool *PackagePool) Remove(path string) (size int64, err error) {
+	pool.Lock()
+	defer pool.Unlock()
+
 	path = filepath.Join(pool.rootPath, path)
 
 	info, err := os.Stat(path)
@@ -106,6 +114,9 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 
 // Import copies file into package pool
 func (pool *PackagePool) Import(path string, hashMD5 string) error {
+	pool.Lock()
+	defer pool.Unlock()
+
 	source, err := os.Open(path)
 	if err != nil {
 		return err
