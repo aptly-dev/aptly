@@ -167,7 +167,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 	c.JSON(201, snapshot)
 }
 
-// POST /api/repos/:name/snapshots/:snapname
+// POST /api/repos/:name/snapshots
 func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	var (
 		err      error
