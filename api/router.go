@@ -37,11 +37,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
 		root.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
 
-		root.POST("/repos/:name/snapshots/:snapname", apiSnapshotsCreateFromRepository)
+		root.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
 	}
 
 	{
-		root.POST("/mirrors/:name/snapshots/:snapname", apiSnapshotsCreateFromMirror)
+		root.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
 	}
 
 	{

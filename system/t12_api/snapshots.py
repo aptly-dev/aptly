@@ -96,7 +96,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         snapshot_name = self.random_name()
         self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
 
-        resp = self.post("/api/repos/" + repo_name + '/snapshots/' + snapshot_name)
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(resp.status_code, 400)
 
         d = self.random_name()
@@ -105,7 +105,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
-        resp = self.post("/api/repos/" + repo_name + '/snapshots/' + snapshot_name)
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
 
         self.check_subset({u'Architecture': 'i386',
@@ -122,7 +122,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
                                    params={"format": "details", "q": "Version (> 0.6.1-1.4)"}).json()[0])
 
         # duplicate snapshot name
-        resp = self.post("/api/repos/" + repo_name + '/snapshots/' + snapshot_name)
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(resp.status_code, 400)
 
 
@@ -215,7 +215,7 @@ class SnapshotsAPITestSearch(APITest):
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
-        resp = self.post("/api/repos/" + repo_name + '/snapshots/' + snapshot_name)
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
         self.check_equal(resp.status_code, 201)
 
         resp = self.get("/api/snapshots/" + snapshot_name + "/packages",
@@ -249,7 +249,7 @@ class SnapshotsAPITestDiff(APITest):
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
-        resp = self.post("/api/repos/" + repo_name + '/snapshots/' + snapshots[0])
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshots[0]})
         self.check_equal(resp.status_code, 201)
 
         resp = self.post("/api/snapshots", json={'Name': snapshots[1]})
