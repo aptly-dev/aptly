@@ -36,15 +36,6 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		snapshot *deb.Snapshot
 	)
 
-	var b struct {
-		Name        string `binding:"required"`
-		Description string
-	}
-
-	if !c.Bind(&b) {
-		return
-	}
-
 	collection := context.CollectionFactory().RemoteRepoCollection()
 	collection.RLock()
 	defer collection.RUnlock()
@@ -71,14 +62,10 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		return
 	}
 
-	snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
+	snapshot, err = deb.NewSnapshotFromRepository(c.Params.ByName("snapname"), repo)
 	if err != nil {
 		c.Fail(400, err)
 		return
-	}
-
-	if b.Description != "" {
-		snapshot.Description = b.Description
 	}
 
 	err = snapshotCollection.Add(snapshot)
@@ -175,15 +162,6 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		snapshot *deb.Snapshot
 	)
 
-	var b struct {
-		Name        string `binding:"required"`
-		Description string
-	}
-
-	if !c.Bind(&b) {
-		return
-	}
-
 	collection := context.CollectionFactory().LocalRepoCollection()
 	collection.RLock()
 	defer collection.RUnlock()
@@ -204,14 +182,10 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
-	snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
+	snapshot, err = deb.NewSnapshotFromLocalRepo(c.Params.ByName("snapname"), repo)
 	if err != nil {
 		c.Fail(400, err)
 		return
-	}
-
-	if b.Description != "" {
-		snapshot.Description = b.Description
 	}
 
 	err = snapshotCollection.Add(snapshot)
