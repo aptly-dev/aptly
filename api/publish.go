@@ -201,7 +201,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
 	}
 
-	c.JSON(200, published)
+	c.JSON(201, published)
 }
 
 // PUT /publish/:prefix/:distribution
