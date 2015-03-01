@@ -1,4 +1,5 @@
 from api_lib import APITest
+from publish import DefaultSigningOptions
 
 
 class ReposAPITestCreateShow(APITest):
@@ -45,6 +46,40 @@ class ReposAPITestCreateIndexDelete(APITest):
         self.check_equal(self.get("/api/repos/" + repo_name).status_code, 404)
 
         self.check_equal(self.delete("/api/repos/" + self.random_name()).status_code, 404)
+
+        # create once again
+        distribution = self.random_name()
+        self.check_equal(self.post("/api/repos",
+                         json={
+                             "Name": repo_name,
+                             "Comment": "fun repo",
+                             "DefaultDistribution": distribution
+                         }).status_code, 201)
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
+
+        resp = self.post("/api/repos/" + repo_name + "/file/" + d)
+        self.check_equal(resp.status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/snapshots", json={"Name": repo_name}).status_code, 201)
+
+        self.check_equal(self.post("/api/publish",
+                         json={
+                             "SourceKind": "local",
+                             "Sources": [{"Name": repo_name}],
+                             "Signing": DefaultSigningOptions,
+                         }).status_code, 201)
+
+        # repo is not deletable while it is published
+        self.check_equal(self.delete("/api/repos/" + repo_name).status_code, 409)
+        self.check_equal(self.delete("/api/repos/" + repo_name, params={"force": "1"}).status_code, 409)
+
+        # drop published
+        self.check_equal(self.delete("/api/publish//" + distribution).status_code, 200)
+        self.check_equal(self.delete("/api/repos/" + repo_name).status_code, 409)
+        self.check_equal(self.delete("/api/repos/" + repo_name, params={"force": "1"}).status_code, 200)
+        self.check_equal(self.get("/api/repos/" + repo_name).status_code, 404)
 
 
 class ReposAPITestAdd(APITest):
