@@ -54,8 +54,8 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		root.GET("/publish", apiPublishList)
-		root.POST("/publish/:prefix/repos", apiPublishRepoOrSnapshot)
-		root.POST("/publish/:prefix/snapshots", apiPublishRepoOrSnapshot)
+		root.POST("/publish", apiPublishRepoOrSnapshot)
+		root.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
 		root.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
 		root.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
 	}
