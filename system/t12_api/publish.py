@@ -27,6 +27,7 @@ class PublishAPITestRepo(APITest):
 
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
+        # publishing under prefix, default distribution
         prefix = self.random_name()
         resp = self.post("/api/publish/" + prefix,
                          json={
@@ -34,7 +35,7 @@ class PublishAPITestRepo(APITest):
                              "Sources": [{"Name": repo_name}],
                              "Signing": DefaultSigningOptions,
                          })
-        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), {
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
@@ -45,13 +46,64 @@ class PublishAPITestRepo(APITest):
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''})
 
+        # publishing under root, custom distribution, architectures
+        distribution = self.random_name()
+        resp = self.post("/api/publish",
+                         json={
+                             "SourceKind": "local",
+                             "Sources": [{"Name": repo_name}],
+                             "Signing": DefaultSigningOptions,
+                             "Distribution": distribution,
+                             "Architectures": ["i386", "amd64"],
+                         })
+        self.check_equal(resp.status_code, 201)
+        self.check_equal(resp.json(), {
+            'Architectures': ['amd64', 'i386'],
+            'Distribution': distribution,
+            'Label': '',
+            'Origin': '',
+            'Prefix': ".",
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': ''})
+
 
 class PublishSnapshotAPITest(APITest):
     """
-    POST /publish/:prefix/snapshot
-
-    XXX: test me when snapshot API becomes available
+    POST /publish/:prefix (snapshots)
     """
 
     def check(self):
-        pass
+        repo_name = self.random_name()
+        snapshot_name = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
+
+        resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_equal(resp.status_code, 400)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name}).status_code, 201)
+
+        prefix = self.random_name()
+        resp = self.post("/api/publish/" + prefix,
+                         json={
+                             "SourceKind": "snapshot",
+                             "Sources": [{"Name": snapshot_name}],
+                             "Signing": DefaultSigningOptions,
+                             "Distribution": "squeeze",
+                         })
+        self.check_equal(resp.status_code, 201)
+        self.check_equal(resp.json(), {
+            'Architectures': ['i386'],
+            'Distribution': 'squeeze',
+            'Label': '',
+            'Origin': '',
+            'Prefix': prefix,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot_name}],
+            'Storage': ''})
