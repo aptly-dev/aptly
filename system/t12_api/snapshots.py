@@ -194,7 +194,7 @@ class SnapshotsAPITestCreateDelete(APITest):
                              "Sources": [{"Name": snap2}],
                              "Signing": DefaultSigningOptions,
                          })
-        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.status_code, 201)
 
         self.check_equal(self.delete("/api/snapshots/" + snap2).status_code, 409)
         self.check_equal(self.delete("/api/snapshots/" + snap2, params={"force": "1"}).status_code, 409)
