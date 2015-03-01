@@ -11,7 +11,7 @@ DefaultSigningOptions = {
 
 class PublishAPITestRepo(APITest):
     """
-    POST /publish/:prefix/repos
+    POST /publish/:prefix (local repos)
     """
     fixtureGpg = True
 
@@ -28,8 +28,9 @@ class PublishAPITestRepo(APITest):
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
         prefix = self.random_name()
-        resp = self.post("/api/publish/" + prefix + "/repos",
+        resp = self.post("/api/publish/" + prefix,
                          json={
+                             "SourceKind": "local",
                              "Sources": [{"Name": repo_name}],
                              "Signing": DefaultSigningOptions,
                          })

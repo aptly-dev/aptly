@@ -186,8 +186,9 @@ class SnapshotsAPITestCreateDelete(APITest):
         self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 404)
 
         # deleting published snapshot
-        resp = self.post("/api/publish/./snapshots",
+        resp = self.post("/api/publish",
                          json={
+                             "SourceKind": "snapshot",
                              "Distribution": "trusty",
                              "Architectures": ["i386"],
                              "Sources": [{"Name": snap2}],
