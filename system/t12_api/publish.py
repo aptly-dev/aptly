@@ -11,7 +11,7 @@ DefaultSigningOptions = {
 
 class PublishAPITestRepo(APITest):
     """
-    POST /publish/:prefix (local repos)
+    POST /publish/:prefix (local repos), GET /publish
     """
     fixtureGpg = True
 
@@ -35,8 +35,7 @@ class PublishAPITestRepo(APITest):
                              "Sources": [{"Name": repo_name}],
                              "Signing": DefaultSigningOptions,
                          })
-        self.check_equal(resp.status_code, 201)
-        self.check_equal(resp.json(), {
+        repo_expected = {
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -44,7 +43,19 @@ class PublishAPITestRepo(APITest):
             'Prefix': prefix,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''})
+            'Storage': ''}
+
+        self.check_equal(resp.status_code, 201)
+        self.check_equal(resp.json(), repo_expected)
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_exists("public/" + prefix + "/dists/wheezy/Release")
+        self.check_exists("public/" + prefix + "/dists/wheezy/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/dists/wheezy/main/source/Sources")
+        self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
         # publishing under root, custom distribution, architectures
         distribution = self.random_name()
@@ -56,8 +67,7 @@ class PublishAPITestRepo(APITest):
                              "Distribution": distribution,
                              "Architectures": ["i386", "amd64"],
                          })
-        self.check_equal(resp.status_code, 201)
-        self.check_equal(resp.json(), {
+        repo2_expected = {
             'Architectures': ['amd64', 'i386'],
             'Distribution': distribution,
             'Label': '',
@@ -65,12 +75,24 @@ class PublishAPITestRepo(APITest):
             'Prefix': ".",
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''})
+            'Storage': ''}
+        self.check_equal(resp.status_code, 201)
+        self.check_equal(resp.json(), repo2_expected)
+
+        self.check_exists("public/dists/" + distribution + "/Release")
+        self.check_exists("public/dists/" + distribution + "/main/binary-i386/Packages")
+        self.check_exists("public/dists/" + distribution + "/main/binary-amd64/Packages")
+        self.check_exists("public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+        self.check_in(repo2_expected, all_repos.json())
 
 
 class PublishSnapshotAPITest(APITest):
     """
-    POST /publish/:prefix (snapshots)
+    POST /publish/:prefix (snapshots), GET /publish
     """
 
     def check(self):
@@ -107,3 +129,7 @@ class PublishSnapshotAPITest(APITest):
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
             'Storage': ''})
+
+        self.check_exists("public/" + prefix + "/dists/squeeze/Release")
+        self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")

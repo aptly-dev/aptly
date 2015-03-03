@@ -267,6 +267,10 @@ class BaseTest(object):
         if a != b:
             self.verify_match(a, b, match_prepare=pprint.pformat)
 
+    def check_in(self, item, l):
+        if not item in l:
+            raise Exception("item %r not in %r", item, l)
+
     def check_subset(self, a, b):
         diff = ''
         for k, v in a.items():
