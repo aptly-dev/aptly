@@ -106,6 +106,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
 
         resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_equal(resp.status_code, 201)
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
 
         self.check_subset({u'Architecture': 'i386',

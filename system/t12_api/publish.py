@@ -133,3 +133,146 @@ class PublishSnapshotAPITest(APITest):
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+
+class PublishUpdateAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution (local repos), DELETE /publish/:prefix/:distribution
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        prefix = self.random_name()
+        resp = self.post("/api/publish/" + prefix,
+                         json={
+                             "Architectures": ["i386", "source"],
+                             "SourceKind": "local",
+                             "Sources": [{"Name": repo_name}],
+                             "Signing": DefaultSigningOptions,
+                         })
+
+        self.check_equal(resp.status_code, 201)
+
+        self.check_not_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(self.delete("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
+
+        resp = self.put("/api/publish/" + prefix + "/wheezy",
+                        json={
+                            "Signing": DefaultSigningOptions,
+                        })
+        repo_expected = {
+            'Architectures': ['i386', 'source'],
+            'Distribution': 'wheezy',
+            'Label': '',
+            'Origin': '',
+            'Prefix': prefix,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': ''}
+
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), repo_expected)
+
+        self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_not_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy").status_code, 200)
+        self.check_not_exists("public/" + prefix + "dists/")
+
+
+class PublishSwitchAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution (snapshots), DELETE /publish/:prefix/:distribution
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "pyspi_0.6.1-1.3.dsc",
+                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        snapshot1_name = self.random_name()
+        self.check_equal(self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot1_name}).status_code, 201)
+
+        prefix = self.random_name()
+        resp = self.post("/api/publish/" + prefix,
+                         json={
+                             "Architectures": ["i386", "source"],
+                             "SourceKind": "snapshot",
+                             "Sources": [{"Name": snapshot1_name}],
+                             "Signing": DefaultSigningOptions,
+                         })
+
+        self.check_equal(resp.status_code, 201)
+        repo_expected = {
+            'Architectures': ['i386', 'source'],
+            'Distribution': 'wheezy',
+            'Label': '',
+            'Origin': '',
+            'Prefix': prefix,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
+            'Storage': ''}
+        self.check_equal(resp.json(), repo_expected)
+
+        self.check_not_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+        self.check_equal(self.post("/api/repos/" + repo_name + "/file/" + d).status_code, 200)
+
+        self.check_equal(self.delete("/api/repos/" + repo_name + "/packages/",
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
+
+        snapshot2_name = self.random_name()
+        self.check_equal(self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot2_name}).status_code, 201)
+
+        resp = self.put("/api/publish/" + prefix + "/wheezy",
+                        json={
+                            "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
+                            "Signing": DefaultSigningOptions,
+                        })
+        repo_expected = {
+            'Architectures': ['i386', 'source'],
+            'Distribution': 'wheezy',
+            'Label': '',
+            'Origin': '',
+            'Prefix': prefix,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
+            'Storage': ''}
+
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), repo_expected)
+
+        self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_not_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy").status_code, 200)
+        self.check_not_exists("public/" + prefix + "dists/")
