@@ -260,7 +260,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			c.Fail(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
-		updatedComponents := published.Components()
+		updatedComponents = published.Components()
 		for _, component := range updatedComponents {
 			published.UpdateLocalRepo(component)
 		}
