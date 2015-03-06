@@ -111,3 +111,16 @@ class CleanupDB9Test(BaseTest):
     def check(self):
             self.check_output()
             self.check_cmd_output("aptly publish drop def", "publish_drop", match_prepare=self.expand_environ)
+
+
+class CleanupDB10Test(BaseTest):
+    """
+    cleanup db: conflict in packages, should not cleanup anything
+    """
+    fixtureCmds = [
+        "aptly repo create a",
+        "aptly repo create b",
+        "aptly repo add a ${files}",
+        "aptly repo add b ${testfiles}"
+    ]
+    runCmd = "aptly db cleanup"
