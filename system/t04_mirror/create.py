@@ -249,8 +249,11 @@ class CreateMirror21Test(BaseTest):
         def removeSHA512(s):
             return re.sub(r"SHA512: .+\n", "", s)
 
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror21", "mirror_show", match_prepare=removeSHA512)
+        self.check_cmd_output("aptly mirror show mirror21", "mirror_show", match_prepare=lambda s: removeSHA512(removeDates(s)))
 
 
 class CreateMirror22Test(BaseTest):

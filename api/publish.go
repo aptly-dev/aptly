@@ -40,7 +40,11 @@ func getSigner(options *SigningOptions) (utils.Signer, error) {
 
 // Replace '_' with '/' and double '__' with single '_'
 func parseEscapedPath(path string) string {
-	return strings.Replace(strings.Replace(path, "__", "_", -1), "_", "/", -1)
+	result := strings.Replace(strings.Replace(path, "_", "/", -1), "//", "_", -1)
+	if result == "" {
+		result = "."
+	}
+	return result
 }
 
 // GET /publish
@@ -78,13 +82,14 @@ func apiPublishList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /publish/:prefix/repos | /publish/:prefix/snapshots
+// POST /publish/:prefix
 func apiPublishRepoOrSnapshot(c *gin.Context) {
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 
 	var b struct {
-		Sources []struct {
+		SourceKind string `binding:"required"`
+		Sources    []struct {
 			Component string
 			Name      string `binding:"required"`
 		} `binding:"required"`
@@ -114,7 +119,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	var components []string
 	var sources []interface{}
 
-	if strings.HasSuffix(c.Request.URL.Path, "/snapshots") {
+	if b.SourceKind == "snapshot" {
 		var snapshot *deb.Snapshot
 
 		snapshotCollection := context.CollectionFactory().SnapshotCollection()
@@ -138,7 +143,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			sources = append(sources, snapshot)
 		}
-	} else if strings.HasSuffix(c.Request.URL.Path, "/repos") {
+	} else if b.SourceKind == "local" {
 		var localRepo *deb.LocalRepo
 
 		localCollection := context.CollectionFactory().LocalRepoCollection()
@@ -162,7 +167,8 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			sources = append(sources, localRepo)
 		}
 	} else {
-		panic("unknown command")
+		c.Fail(400, fmt.Errorf("unknown SourceKind"))
+		return
 	}
 
 	collection := context.CollectionFactory().PublishedRepoCollection()
@@ -195,7 +201,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
 	}
 
-	c.JSON(200, published)
+	c.JSON(201, published)
 }
 
 // PUT /publish/:prefix/:distribution
@@ -207,6 +213,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	var b struct {
 		ForceOverwrite bool
 		Signing        SigningOptions
+		Snapshots      []struct {
+			Component string `binding:"required"`
+			Name      string `binding:"required"`
+		}
 	}
 
 	if !c.Bind(&b) {
@@ -224,6 +234,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	localRepoCollection.RLock()
 	defer localRepoCollection.RUnlock()
 
+	snapshotCollection := context.CollectionFactory().SnapshotCollection()
+	snapshotCollection.RLock()
+	defer snapshotCollection.RUnlock()
+
 	collection := context.CollectionFactory().PublishedRepoCollection()
 	collection.Lock()
 	defer collection.Unlock()
@@ -233,20 +247,48 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		c.Fail(404, fmt.Errorf("unable to update: %s", err))
 		return
 	}
-	if published.SourceKind != "local" {
-		c.Fail(400, fmt.Errorf("unable to update: not a local repository"))
-		return
-	}
-
 	err = collection.LoadComplete(published, context.CollectionFactory())
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
-	components := published.Components()
-	for _, component := range components {
-		published.UpdateLocalRepo(component)
+	var updatedComponents []string
+
+	if published.SourceKind == "local" {
+		if len(b.Snapshots) > 0 {
+			c.Fail(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
+			return
+		}
+		updatedComponents = published.Components()
+		for _, component := range updatedComponents {
+			published.UpdateLocalRepo(component)
+		}
+	} else if published.SourceKind == "snapshot" {
+		publishedComponents := published.Components()
+		for _, snapshotInfo := range b.Snapshots {
+			if !utils.StrSliceHasItem(publishedComponents, snapshotInfo.Component) {
+				c.Fail(404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
+				return
+			}
+
+			snapshot, err := snapshotCollection.ByName(snapshotInfo.Name)
+			if err != nil {
+				c.Fail(404, err)
+				return
+			}
+
+			err = snapshotCollection.LoadComplete(snapshot)
+			if err != nil {
+				c.Fail(500, err)
+				return
+			}
+
+			published.UpdateSnapshot(snapshotInfo.Component, snapshot)
+			updatedComponents = append(updatedComponents, snapshotInfo.Component)
+		}
+	} else {
+		c.Fail(500, fmt.Errorf("unknown published repository type"))
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
@@ -259,7 +301,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
 	}
 
-	err = collection.CleanupPrefixComponentFiles(published.Prefix, components,
+	err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
@@ -270,5 +312,25 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 // DELETE /publish/:prefix/:distribution
 func apiPublishDrop(c *gin.Context) {
-	c.JSON(400, gin.H{})
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := c.Params.ByName("distribution")
+
+	// published.LoadComplete would touch local repo collection
+	localRepoCollection := context.CollectionFactory().LocalRepoCollection()
+	localRepoCollection.RLock()
+	defer localRepoCollection.RUnlock()
+
+	collection := context.CollectionFactory().PublishedRepoCollection()
+	collection.Lock()
+	defer collection.Unlock()
+
+	err := collection.Remove(context, storage, prefix, distribution,
+		context.CollectionFactory(), context.Progress())
+	if err != nil {
+		c.Fail(500, fmt.Errorf("unable to drop: %s", err))
+		return
+	}
+
+	c.JSON(200, gin.H{})
 }
