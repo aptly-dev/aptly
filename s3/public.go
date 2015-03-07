@@ -52,16 +52,37 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefix,
+func NewPublishedStorage(accessKey, secretKey, region, s3endpoint, bucket, defaultACL, prefix,
 	storageClass, encryptionMethod string, plusWorkaround bool) (*PublishedStorage, error) {
 	auth, err := aws.GetAuth(accessKey, secretKey)
 	if err != nil {
 		return nil, err
 	}
+	var awsRegion aws.Region
+	if s3endpoint != "" {
+		awsRegion = aws.Region{ // goamz/aws/aws.go
+			Name:                 region, // the canonical name of this region
+			EC2Endpoint:          "",
+			S3Endpoint:           s3endpoint,
+			S3BucketEndpoint:     "",
+			S3LocationConstraint: true, // true if this region requires a LocationConstraint declaration
+			S3LowercaseBucket:    true, // true if the region requires bucket names to be lower case.
+			SDBEndpoint:          "",
+			SNSEndpoint:          "",
+			SQSEndpoint:          "",
+			IAMEndpoint:          "",
+			ELBEndpoint:          "",
+			AutoScalingEndpoint:  "",
+			RdsEndpoint:          "",
+			Route53Endpoint:      "",
+		}
+	} else {
+		var ok bool
+		awsRegion, ok = aws.Regions[region]
+		if !ok {
+			return nil, fmt.Errorf("unknown Amazon region: %#v", region)
+		}
 
-	awsRegion, ok := aws.Regions[region]
-	if !ok {
-		return nil, fmt.Errorf("unknown region: %#v", region)
 	}
 
 	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod, plusWorkaround)

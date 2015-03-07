@@ -65,6 +65,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"S3PublishEndpoints\": {\n"+
 		"    \"test\": {\n"+
 		"      \"region\": \"us-east-1\",\n"+
+		"      \"s3endpoint\": \"\",\n"+
 		"      \"bucket\": \"repo\",\n"+
 		"      \"awsAccessKeyID\": \"\",\n"+
 		"      \"awsSecretAccessKey\": \"\",\n"+
