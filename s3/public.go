@@ -149,7 +149,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 
 // RemoveDirs removes directory structure under public path
 func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
-	const page = 1000
+	const page = 1
 
 	filelist, err := storage.Filelist(path)
 	if err != nil {
@@ -171,7 +171,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 			paths[i] = filepath.Join(storage.prefix, path, part[i])
 		}
 
-		err = storage.bucket.MultiDel(paths)
+		err = storage.bucket.Del(paths[0])
 		if err != nil {
 			return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
 		}
