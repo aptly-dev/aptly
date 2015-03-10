@@ -133,19 +133,30 @@ func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
 		p.queue <- printTask{code: codePrint, message: color.Sprintf(msg, a...) + "\n"}
 	} else {
 		// stip color marks
-		var prev rune
+		var inColorMark, inCurly bool
 		msg = strings.Map(func(r rune) rune {
-			if prev == '@' {
-				prev = 0
-				if r == '@' {
-					return r
+			if inColorMark {
+				if inCurly {
+					if r == '}' {
+						inCurly = false
+						inColorMark = false
+						return -1
+					}
+				} else {
+					if r == '{' {
+						inCurly = true
+					} else if r == '@' {
+						return '@'
+					} else {
+						inColorMark = false
+					}
 				}
 				return -1
 			}
-			prev = r
-			if r == '@' {
-				return -1
 
+			if r == '@' {
+				inColorMark = true
+				return -1
 			}
 
 			return r
