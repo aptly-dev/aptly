@@ -123,6 +123,18 @@ func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	c.Assert(strings.HasPrefix(str, "Package: "), Equals, true)
 }
 
+func (s *ControlFileSuite) TestCanonicalCase(c *C) {
+	c.Check(canonicalCase("Package"), Equals, "Package")
+	c.Check(canonicalCase("package"), Equals, "Package")
+	c.Check(canonicalCase("pAckaGe"), Equals, "Package")
+	c.Check(canonicalCase("MD5Sum"), Equals, "MD5Sum")
+	c.Check(canonicalCase("SHA1"), Equals, "SHA1")
+	c.Check(canonicalCase("SHA256"), Equals, "SHA256")
+	c.Check(canonicalCase("Package-List"), Equals, "Package-List")
+	c.Check(canonicalCase("package-list"), Equals, "Package-List")
+	c.Check(canonicalCase("packaGe-lIst"), Equals, "Package-List")
+}
+
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
 	for i := 0; i < c.N; i++ {
 		reader := bytes.NewBufferString(controlFile)
