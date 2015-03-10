@@ -1,0 +1,42 @@
+Loading mirrors, local repos, snapshots and published repos...
+Loading mirrors:
+- wheezy-backports
+- wheezy-updates-src
+- wheezy-main
+- wheezy-contrib
+- sensu
+- wheezy-main-src
+- wheezy-backports-src
+- wheezy-contrib-src
+- wheezy-non-free
+- wheezy-non-free-src
+- wheezy-updates
+Loading local repos:
+Loading snapshots:
+Loading published repositories:
+Loading list of all packages...
+Deleting unreferenced packages (7)...
+List of package keys to delete:
+ - Pall gnuplot 4.6.1-1~maverick2 36650cfe603d11a1
+ - Pall gnuplot-doc 4.6.1-1~maverick2 10c388f966074d29
+ - Pamd64 gnuplot-nox 4.6.1-1~maverick2 336b8733c4444003
+ - Pamd64 gnuplot-x11 4.6.1-1~maverick2 7300d8122b81b641
+ - Pi386 gnuplot-nox 4.6.1-1~maverick2 17785995cf0f815
+ - Pi386 gnuplot-x11 4.6.1-1~maverick2 d42e1d0d2f23740
+ - Psource gnuplot 4.6.1-1~maverick2 b8cd36358f5db41f
+Skipped deletion, as -dry-run has been requested.
+Building list of files referenced by packages...
+Building list of files in package pool...
+Deleting unreferenced files (9)...
+List of files to be deleted:
+ - 02/1d/gnuplot_4.6.1-1~maverick2.dsc
+ - 10/32/gnuplot_4.6.1-1~maverick2.debian.tar.gz
+ - 17/ab/gnuplot-x11_4.6.1-1~maverick2_amd64.deb
+ - 25/a5/gnuplot-doc_4.6.1-1~maverick2_all.deb
+ - 49/12/gnuplot_4.6.1-1~maverick2_all.deb
+ - 4c/9a/gnuplot_4.6.1.orig.tar.gz
+ - a7/ef/gnuplot-nox_4.6.1-1~maverick2_i386.deb
+ - db/55/gnuplot-nox_4.6.1-1~maverick2_amd64.deb
+ - fc/ad/gnuplot-x11_4.6.1-1~maverick2_i386.deb
+Skipped file deletion, as -dry-run has been requested.
+Skipped DB compaction, as -dry-run has been requested.

@@ -124,3 +124,29 @@ class CleanupDB10Test(BaseTest):
         "aptly repo add b ${testfiles}"
     ]
     runCmd = "aptly db cleanup"
+
+
+class CleanupDB11Test(BaseTest):
+    """
+    cleanup db: deleting packages and files, -verbose
+    """
+    fixtureDB = True
+    fixturePoolCopy = True
+    fixtureCmds = [
+        "aptly mirror drop gnuplot-maverick-src",
+        "aptly mirror drop gnuplot-maverick",
+    ]
+    runCmd = "aptly db cleanup -verbose"
+
+
+class CleanupDB12Test(BaseTest):
+    """
+    cleanup db: deleting packages and files, -verbose & -dry-run
+    """
+    fixtureDB = True
+    fixturePoolCopy = True
+    fixtureCmds = [
+        "aptly mirror drop gnuplot-maverick-src",
+        "aptly mirror drop gnuplot-maverick",
+    ]
+    runCmd = "aptly db cleanup -verbose -dry-run"

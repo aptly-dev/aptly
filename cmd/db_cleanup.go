@@ -122,7 +122,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if verbose {
 			context.Progress().ColoredPrintf("@{r}List of package keys to delete:@|")
 			err = toDelete.ForEach(func(ref []byte) error {
-				context.Progress().ColoredPrintf(" - @{r}%s@|\n", string(ref))
+				context.Progress().ColoredPrintf(" - @{r}%s@|", string(ref))
 				return nil
 			})
 			if err != nil {
