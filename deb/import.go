@@ -91,6 +91,24 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
+		if p.Name == "" {
+			reporter.Warning("Empty package name on %s", file)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p.Version == "" {
+			reporter.Warning("Empty version on %s", file)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p.Architecture == "" {
+			reporter.Warning("Empty architecture on %s", file)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
 		var checksums utils.ChecksumInfo
 		checksums, err = utils.ChecksumsForFile(file)
 		if err != nil {
