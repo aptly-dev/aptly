@@ -160,11 +160,17 @@ func init() {
 
 func canonicalCase(field string) string {
 	upper := strings.ToUpper(field)
-	if upper == "SHA1" || upper == "SHA256" {
+	switch upper {
+	case "SHA1", "SHA256", "SHA512":
 		return upper
-	}
-	if upper == "MD5SUM" {
+	case "MD5SUM":
 		return "MD5Sum"
+
+	case "NOTAUTOMATIC":
+		return "NotAutomatic"
+
+	case "BUTAUTOMATICUPGRADES":
+		return "ButAutomaticUpgrades"
 	}
 
 	startOfWord := true
