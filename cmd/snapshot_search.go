@@ -96,6 +96,10 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		return fmt.Errorf("unable to search: %s", err)
 	}
 
+	if result.Len() == 0 {
+		return fmt.Errorf("no results")
+	}
+
 	result.ForEach(func(p *deb.Package) error {
 		context.Progress().Printf("%s\n", p)
 		return nil
