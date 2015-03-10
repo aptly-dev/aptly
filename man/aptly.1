@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "February 2015" "" ""
+.TH "APTLY" "1" "March 2015" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -132,6 +132,10 @@ specifies paramaters for short PPA url expansion, if left blank they default to 
 .TP
 \fBS3PublishEndpoints\fR
 configuration of Amazon S3 publishing endpoints (see below)
+.
+.TP
+\fBSwiftPublishEndpoints\fR
+configuration of OpenStack Swift publishing endpoints (see below)
 .
 .SH "S3 PUBLISHING ENDPOINTS"
 aptly could be configured to publish repository directly to Amazon S3\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
@@ -1468,6 +1472,17 @@ Example:
 .
 .P
 $ aptly db cleanup
+.
+.P
+Options:
+.
+.TP
+\-\fBdry\-run\fR=false
+don\(cqt delete anything
+.
+.TP
+\-\fBverbose\fR=false
+be verbose when loading objects/removing them
 .
 .SH "RECOVER DB AFTER CRASH"
 \fBaptly\fR \fBdb\fR \fBrecover\fR
