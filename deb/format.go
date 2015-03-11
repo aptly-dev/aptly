@@ -165,10 +165,8 @@ func canonicalCase(field string) string {
 		return upper
 	case "MD5SUM":
 		return "MD5Sum"
-
 	case "NOTAUTOMATIC":
 		return "NotAutomatic"
-
 	case "BUTAUTOMATICUPGRADES":
 		return "ButAutomaticUpgrades"
 	}
