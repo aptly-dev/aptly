@@ -23,7 +23,7 @@ func aptlyPublishDrop(cmd *commander.Command, args []string) error {
 	storage, prefix := deb.ParsePrefix(param)
 
 	err = context.CollectionFactory().PublishedRepoCollection().Remove(context, storage, prefix, distribution,
-		context.CollectionFactory(), context.Progress())
+		context.CollectionFactory(), context.Progress(), context.Flags().Lookup("force-drop").Value.Get().(bool))
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
@@ -47,6 +47,8 @@ Example:
     $ aptly publish drop wheezy
 `,
 	}
+
+	cmd.Flag.Bool("force-drop", false, "remove published repository even if some files could not be cleaned up")
 
 	return cmd
 }

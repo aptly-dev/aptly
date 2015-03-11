@@ -312,6 +312,8 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 // DELETE /publish/:prefix/:distribution
 func apiPublishDrop(c *gin.Context) {
+	force := c.Request.URL.Query().Get("force") == "1"
+
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := c.Params.ByName("distribution")
@@ -326,7 +328,7 @@ func apiPublishDrop(c *gin.Context) {
 	defer collection.Unlock()
 
 	err := collection.Remove(context, storage, prefix, distribution,
-		context.CollectionFactory(), context.Progress())
+		context.CollectionFactory(), context.Progress(), force)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to drop: %s", err))
 		return

@@ -1000,7 +1000,8 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 
 // Remove removes published repository, cleaning up directories, files
 func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly.PublishedStorageProvider,
-	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
+	force bool) error {
 	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return err
@@ -1041,7 +1042,9 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents,
 			publishedStorageProvider.GetPublishedStorage(storage), collectionFactory, progress)
 		if err != nil {
-			return err
+			if !force {
+				return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)
+			}
 		}
 	}
 
