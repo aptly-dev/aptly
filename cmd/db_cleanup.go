@@ -6,6 +6,7 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"sort"
+	"strings"
 )
 
 // aptly db cleanup
@@ -23,6 +24,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	// collect information about references packages...
 	existingPackageRefs := deb.NewPackageRefList()
 
+	// used only in verbose mode to report package use source
+	packageRefSources := map[string][]string{}
+
 	context.Progress().ColoredPrintf("@{w!}Loading mirrors, local repos, snapshots and published repos...@|")
 	if verbose {
 		context.Progress().ColoredPrintf("@{y}Loading mirrors:@|")
@@ -31,13 +35,23 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if verbose {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
+
 		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
 		if repo.RefList() != nil {
 			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
+
+			if verbose {
+				description := fmt.Sprintf("mirror %s", repo.Name)
+				repo.RefList().ForEach(func(key []byte) error {
+					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+					return nil
+				})
+			}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -51,13 +65,24 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if verbose {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
+
 		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return err
 		}
+
 		if repo.RefList() != nil {
 			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
+
+			if verbose {
+				description := fmt.Sprintf("local repo %s", repo.Name)
+				repo.RefList().ForEach(func(key []byte) error {
+					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+					return nil
+				})
+			}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -71,11 +96,21 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if verbose {
 			context.Progress().ColoredPrintf("- @{g}%s@|", snapshot.Name)
 		}
+
 		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return err
 		}
+
 		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false, true)
+
+		if verbose {
+			description := fmt.Sprintf("snapshot %s", snapshot.Name)
+			snapshot.RefList().ForEach(func(key []byte) error {
+				packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+				return nil
+			})
+		}
 		return nil
 	})
 	if err != nil {
@@ -99,6 +134,14 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 		for _, component := range published.Components() {
 			existingPackageRefs = existingPackageRefs.Merge(published.RefList(component), false, true)
+			if verbose {
+				description := fmt.Sprintf("published repository %s:%s/%s component %s",
+					published.Storage, published.Prefix, published.Distribution, component)
+				published.RefList(component).ForEach(func(key []byte) error {
+					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+					return nil
+				})
+			}
 		}
 		return nil
 	})
@@ -156,11 +199,16 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	err = existingPackageRefs.ForEach(func(key []byte) error {
 		pkg, err2 := context.CollectionFactory().PackageCollection().ByKey(key)
 		if err2 != nil {
+			tail := ""
+			if verbose {
+				tail = fmt.Sprintf(" (sources: %s)", strings.Join(packageRefSources[string(key)], ", "))
+			}
 			if dryRun {
-				context.Progress().ColoredPrintf("@{r!}Unresolvable package reference, skipping (-dry-run): %s: %s", string(key), err2)
+				context.Progress().ColoredPrintf("@{r!}Unresolvable package reference, skipping (-dry-run): %s: %s%s",
+					string(key), err2, tail)
 				return nil
 			}
-			return fmt.Errorf("unable to load package %s: %s", string(key), err2)
+			return fmt.Errorf("unable to load package %s: %s%s", string(key), err2, tail)
 		}
 		paths, err2 := pkg.FilepathList(context.PackagePool())
 		if err2 != nil {
