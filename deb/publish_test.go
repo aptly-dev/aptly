@@ -740,7 +740,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
-	err := s.collection.Remove(s.provider, "", "ppa", "anaconda", s.factory, nil)
+	err := s.collection.Remove(s.provider, "", "ppa", "anaconda", s.factory, nil, false)
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
@@ -760,10 +760,10 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/dists/osminog"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/pool/contrib"), PathExists)
 
-	err = s.collection.Remove(s.provider, "", "ppa", "anaconda", s.factory, nil)
+	err = s.collection.Remove(s.provider, "", "ppa", "anaconda", s.factory, nil, false)
 	c.Check(err, ErrorMatches, ".*not found")
 
-	err = s.collection.Remove(s.provider, "", "ppa", "meduza", s.factory, nil)
+	err = s.collection.Remove(s.provider, "", "ppa", "meduza", s.factory, nil, false)
 	c.Check(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
@@ -778,7 +778,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo3(c *C) {
-	err := s.collection.Remove(s.provider, "", ".", "anaconda", s.factory, nil)
+	err := s.collection.Remove(s.provider, "", ".", "anaconda", s.factory, nil, false)
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByStoragePrefixDistribution("", ".", "anaconda")
@@ -800,7 +800,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo3(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo5(c *C) {
-	err := s.collection.Remove(s.provider, "files:other", "ppa", "osminog", s.factory, nil)
+	err := s.collection.Remove(s.provider, "files:other", "ppa", "osminog", s.factory, nil, false)
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByStoragePrefixDistribution("files:other", "ppa", "osminog")
