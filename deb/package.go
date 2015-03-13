@@ -124,7 +124,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 			}
 			parts := strings.Fields(line)
 
-			if len(parts) != 3 {
+			if len(parts) < 3 {
 				return fmt.Errorf("unparseable hash sum line: %#v", line)
 			}
 
@@ -133,7 +133,7 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 				return fmt.Errorf("unable to parse size: %s", err)
 			}
 
-			filename := filepath.Base(parts[2])
+			filename := filepath.Base(parts[len(parts)-1])
 
 			found := false
 			pos := 0
