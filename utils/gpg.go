@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -28,6 +29,7 @@ type Verifier interface {
 	InitKeyring() error
 	AddKeyring(keyring string)
 	VerifyDetachedSignature(signature, cleartext io.Reader) error
+	IsClearSigned(clearsigned io.Reader) (bool, error)
 	VerifyClearsigned(clearsigned io.Reader) error
 	ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error)
 }
@@ -255,6 +257,22 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 
 	args = append(args, sigf.Name(), clearf.Name())
 	return g.runGpgv(args, "detached signature")
+}
+
+// IsClearSigned returns true if file contains signature
+func (g *GpgVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
+	scanner := bufio.NewScanner(clearsigned)
+	for scanner.Scan() {
+		if strings.Index(scanner.Text(), "BEGIN PGP SIGN") != -1 {
+			return true, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
 
 // VerifyClearsigned verifies clearsigned file using gpgv

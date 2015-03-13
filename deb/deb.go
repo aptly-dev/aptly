@@ -2,14 +2,12 @@ package deb
 
 import (
 	"archive/tar"
-	"bufio"
 	"compress/gzip"
 	"fmt"
 	"github.com/mkrautz/goar"
 	"github.com/smira/aptly/utils"
 	"io"
 	"os"
-	"strings"
 )
 
 // GetControlFileFromDeb reads control file from deb package
@@ -69,16 +67,16 @@ func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, err
 	}
 	defer file.Close()
 
-	line, err := bufio.NewReader(file).ReadString('\n')
+	isClearSigned, err := verifier.IsClearSigned(file)
+	file.Seek(0, 0)
+
 	if err != nil {
 		return nil, err
 	}
 
-	file.Seek(0, 0)
-
 	var text *os.File
 
-	if strings.Index(line, "BEGIN PGP SIGN") != -1 {
+	if isClearSigned {
 		text, err = verifier.ExtractClearsigned(file)
 		if err != nil {
 			return nil, err
