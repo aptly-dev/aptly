@@ -683,8 +683,13 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 		if err != nil {
 			return err
 		}
+		
+		err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"), progress)
+		if err == nil {
+			publishedStorage.Remove(p.Prefix)
+		}
 
-		return publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "pool"), progress)
+		return err
 	}
 
 	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
