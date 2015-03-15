@@ -1,0 +1,39 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: Sat, 12 May 2014 12:57:02 +0200
+Source: hardlink
+Binary: hardlink
+Architecture: source amd64
+Version: 0.2.1
+Distribution: unstable
+Urgency: low
+Maintainer: Julian Andres Klode <jak@debian.org>
+Changed-By: Aptly Tester (don't use it) <test@aptly.info>
+Description: 
+ hardlink   - Hardlinks multiple copies of the same file
+Changes: 
+ hardlink (0.2.1) unstable; urgency=low
+ .
+   * Update just to try it out :)
+Checksums-Sha1: 
+ ff306b8f923653b78e00c45ebbc6c1c734859cdf 949 hardlink_0.2.1.dsc
+ 6e95b8cba450343ab4dc01902e521f29fbd87ac2 12516 hardlink_0.2.1.tar.gz
+ 1ac0e962854dff46f14fa7943746660d3cad1679 12468 hardlink_0.2.1_amd64.deb
+Checksums-Sha256: 
+ c0d7458aa2ca3886cd6885f395a289efbc9a396e6765cbbca45f51fde859ea70 949 hardlink_0.2.1.dsc
+ 4df0adce005526a1f0e1b38171ddb1f017faae9205f5b1c6dfb0fb4207767271 12516 hardlink_0.2.1.tar.gz
+ 668399580590bf1ffcd9eb161b6e574751e15f71820c6e08245dac7c5111a0ee 12468 hardlink_0.2.1_amd64.deb
+Files: 
+ 4efce26825af5842f43961096dd890b3 949 utils optional hardlink_0.2.1.dsc
+ 8e2caa4d82f228bac08dc9a38bc6edb3 12516 utils optional hardlink_0.2.1.tar.gz
+ 2081e20b36c47f82811c25841cc0e41b 12468 utils optional hardlink_0.2.1_amd64.deb
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlUFwywACgkQIdu4nBbbPm1DLACgwW4V8qLQC/QHC/7+t3Iq47Ez
+eesAn3ZYLQvLYRw3wPTKVAPI+AW6Fjxi
+=hRBo
+-----END PGP SIGNATURE-----
