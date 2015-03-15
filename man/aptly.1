@@ -1522,6 +1522,25 @@ Options:
 \-\fBlisten\fR=:8080
 host:port for HTTP listening
 .
+.SH "START API HTTP SERVICE"
+\fBaptly\fR \fBapi\fR \fBserve\fR
+.
+.P
+Stat HTTP server with aptly REST API\.
+.
+.P
+Example:
+.
+.P
+$ aptly api serve \-listen=:8080
+.
+.P
+Options:
+.
+.TP
+\-\fBlisten\fR=:8080
+host:port for HTTP listening
+.
 .SH "RENDER GRAPH OF RELATIONSHIPS"
 \fBaptly\fR \fBgraph\fR
 .
@@ -1576,6 +1595,18 @@ Options:
 .TP
 \-\fBfilename\fR=
 specifies the filename that contains the commands to run
+.
+.SH "SHOW CURRENT APTLY\(cqS CONFIG"
+\fBaptly\fR \fBconfig\fR \fBshow\fR
+.
+.P
+Command show displays the current aptly configuration\.
+.
+.P
+Example:
+.
+.P
+$ aptly config show
 .
 .SH "ENVIRONMENT"
 If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
