@@ -10,7 +10,7 @@ import (
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files
-func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, failedFiles []string, err error) {
+func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, failedFiles []string) {
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
