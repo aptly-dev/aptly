@@ -1,10 +1,10 @@
 package http
 
 import (
-	"code.google.com/p/mxk/go1/flowcontrol"
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
+	"github.com/mxk/go-flowrate/flowrate"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-ftp-protocol/protocol"
@@ -75,7 +75,7 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 	}
 
 	if downLimit > 0 {
-		downloader.aggWriter = flowcontrol.NewWriter(progress, downLimit)
+		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
 	} else {
 		downloader.aggWriter = progress
 	}
