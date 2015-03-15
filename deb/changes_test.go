@@ -11,7 +11,7 @@ type ChangesSuite struct {
 
 var _ = Suite(&ChangesSuite{})
 
-func (s *ChangesSuite) TestParseChanges(c *C) {
+func (s *ChangesSuite) TestParseAndVerify(c *C) {
 	dir := c.MkDir()
 	path := filepath.Join(dir, "calamares.changes")
 
@@ -21,7 +21,10 @@ func (s *ChangesSuite) TestParseChanges(c *C) {
 	f.WriteString(changesFile)
 	f.Close()
 
-	changes, err := ParseChangesFile(path, true, true, &NullVerifier{})
+	changes, err := NewChanges(path)
+	c.Check(err, IsNil)
+
+	err = changes.VerifyAndParse(true, true, &NullVerifier{})
 	c.Check(err, IsNil)
 
 	c.Check(changes.Distribution, Equals, "sid")
@@ -31,6 +34,7 @@ func (s *ChangesSuite) TestParseChanges(c *C) {
 	c.Check(changes.Files[0].Checksums.MD5, Equals, "05fd8f3ffe8f362c5ef9bad2f936a56e")
 	c.Check(changes.Files[0].Checksums.SHA1, Equals, "79f10e955dab6eb25b7f7bae18213f367a3a0396")
 	c.Check(changes.Files[0].Checksums.SHA256, Equals, "35b3280a7b1ffe159a276128cb5c408d687318f60ecbb8ab6dedb2e49c4e82dc")
+	c.Check(changes.BasePath, Equals, dir)
 }
 
 var changesFile = `Format: 1.8
