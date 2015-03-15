@@ -2,10 +2,13 @@ package deb
 
 import (
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 )
 
 // Changes is a result of .changes file parsing
@@ -144,4 +147,38 @@ func (c *Changes) Cleanup() error {
 	}
 
 	return os.RemoveAll(c.TempDir)
+}
+
+// CollectChangesFiles walks filesystem collecting all .changes files
+func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (changesFiles, failedFiles []string) {
+	for _, location := range locations {
+		info, err2 := os.Stat(location)
+		if err2 != nil {
+			reporter.Warning("Unable to process %s: %s", location, err2)
+			failedFiles = append(failedFiles, location)
+			continue
+		}
+		if info.IsDir() {
+			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
+				if err3 != nil {
+					return err3
+				}
+				if info.IsDir() {
+					return nil
+				}
+
+				if strings.HasSuffix(info.Name(), ".changes") {
+					changesFiles = append(changesFiles, path)
+				}
+
+				return nil
+			})
+		} else if strings.HasSuffix(info.Name(), ".changes") {
+			changesFiles = append(changesFiles, location)
+		}
+	}
+
+	sort.Strings(changesFiles)
+
+	return
 }
