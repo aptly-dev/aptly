@@ -124,6 +124,10 @@ func (c *Changes) Prepare() error {
 			return err
 		}
 
+		if info.Size != file.Checksums.Size {
+			return fmt.Errorf("size mismatch: expected %v != obtained %v", file.Checksums.Size, info.Size)
+		}
+
 		if info.MD5 != file.Checksums.MD5 {
 			return fmt.Errorf("checksum mismatch MD5: expected %v != obtained %v", file.Checksums.MD5, info.MD5)
 		}
