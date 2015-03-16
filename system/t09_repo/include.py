@@ -105,7 +105,7 @@ class IncludeRepo5Test(BaseTest):
             self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
 
             for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1.tar.gz", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
-                path = os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1.dsc")
+                path = os.path.join(self.tempSrcDir, "01", path)
                 if os.path.exists(path):
                     raise Exception("path %s shouldn't exist" % (path, ))
 
@@ -143,6 +143,11 @@ class IncludeRepo6Test(BaseTest):
     def check(self):
         try:
             super(IncludeRepo6Test, self).check()
+
+            for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
+                path = os.path.join(self.tempSrcDir, "01", path)
+                if not os.path.exists(path):
+                    raise Exception("path %s doesn't exist" % (path, ))
         finally:
             shutil.rmtree(self.tempSrcDir)
 
@@ -173,5 +178,37 @@ class IncludeRepo7Test(BaseTest):
     def check(self):
         try:
             super(IncludeRepo7Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo8Test(BaseTest):
+    """
+    include packages to local repo: wrong signature
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+    expectedCode = 1
+
+    def prepare(self):
+        super(IncludeRepo8Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        with open(os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1_amd64.changes"), "r+") as f:
+            contents = f.read()
+            f.seek(0, 0)
+            f.write(contents.replace('Julian', 'Andrey'))
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo8Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
