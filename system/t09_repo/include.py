@@ -7,11 +7,12 @@ from lib import BaseTest
 
 gpgRemove = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
 changesRemove = lambda _, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), "")
+tempDirRemove = lambda self, s: s.replace(self.tempSrcDir, "")
 
 
 class IncludeRepo1Test(BaseTest):
     """
-    incldue packages to local repo: .changes file from directory
+    include packages to local repo: .changes file from directory
     """
     fixtureCmds = [
         "aptly repo create unstable",
@@ -31,7 +32,7 @@ class IncludeRepo1Test(BaseTest):
 
 class IncludeRepo2Test(BaseTest):
     """
-    incldue packages to local repo: .changes file from file + custom repo
+    include packages to local repo: .changes file from file + custom repo
     """
     fixtureCmds = [
         "aptly repo create my-unstable",
@@ -52,7 +53,7 @@ class IncludeRepo2Test(BaseTest):
 
 class IncludeRepo3Test(BaseTest):
     """
-    incldue packages to local repo: broken repo flag
+    include packages to local repo: broken repo flag
     """
     fixtureCmds = [
     ]
@@ -62,10 +63,85 @@ class IncludeRepo3Test(BaseTest):
 
 class IncludeRepo4Test(BaseTest):
     """
-    incldue packages to local repo: missing repo
+    include packages to local repo: missing repo
     """
     fixtureCmds = [
     ]
     runCmd = "aptly repo include -no-remove-files -ignore-signatures -keyring=${files}/aptly.pub ${changes}"
     outputMatchPrepare = changesRemove
     expectedCode = 1
+
+
+class IncludeRepo5Test(BaseTest):
+    """
+    include packages to local repo: remove files being added
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    outputMatchPrepare = gpgRemove
+
+    def prepare(self):
+        super(IncludeRepo5Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.diff.gz"),
+                    os.path.join(self.tempSrcDir, "01", "pyspi_0.6.1-1.3.diff.gz"))
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            self.check_output()
+            self.check_cmd_output("aptly repo show -with-packages unstable", "repo_show")
+
+            # check pool
+            self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
+            self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
+            self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+
+            for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1.tar.gz", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
+                path = os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1.dsc")
+                if os.path.exists(path):
+                    raise Exception("path %s shouldn't exist" % (path, ))
+
+            path = os.path.join(self.tempSrcDir, "01", "pyspi_0.6.1-1.3.diff.gz")
+            if not os.path.exists(path):
+                raise Exception("path %s doesn't exist" % (path, ))
+
+        finally:
+            shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo6Test(BaseTest):
+    """
+    include packages to local repo: missing files
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+    expectedCode = 1
+
+    def prepare(self):
+        super(IncludeRepo6Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0755)
+
+        for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
+            shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes", path),
+                        os.path.join(self.tempSrcDir, "01", path))
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo6Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
