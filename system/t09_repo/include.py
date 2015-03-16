@@ -288,7 +288,7 @@ class IncludeRepo11Test(BaseTest):
     fixtureCmds = [
         "aptly repo create unstable",
     ]
-    runCmd = "aptly repo include -accept-unsigned "
+    runCmd = "aptly repo include -accept-unsigned -keyring=${files}/aptly.pub "
     outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
