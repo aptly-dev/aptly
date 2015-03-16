@@ -315,12 +315,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
 	}
 
-	packageFiles, failedFiles, err = deb.CollectPackageFiles(sources, reporter)
-
-	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to collect package files: %s", err))
-		return
-	}
+	packageFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
 
 	list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
 	if err != nil {

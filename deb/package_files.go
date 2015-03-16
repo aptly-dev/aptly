@@ -2,12 +2,15 @@ package deb
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"hash/fnv"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 // PackageFile is a single file entry in package
@@ -75,4 +78,66 @@ func (files PackageFiles) Swap(i, j int) {
 // Less compares by filename
 func (files PackageFiles) Less(i, j int) bool {
 	return files[i].Filename < files[j].Filename
+}
+
+func (files PackageFiles) parseSumField(input string, setter func(sum *utils.ChecksumInfo, data string)) (PackageFiles, error) {
+	for _, line := range strings.Split(input, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+
+		if len(parts) < 3 {
+			return nil, fmt.Errorf("unparseable hash sum line: %#v", line)
+		}
+
+		size, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse size: %s", err)
+		}
+
+		filename := filepath.Base(parts[len(parts)-1])
+
+		found := false
+		pos := 0
+		for i, file := range files {
+			if file.Filename == filename {
+				found = true
+				pos = i
+				break
+			}
+		}
+
+		if !found {
+			files = append(files, PackageFile{Filename: filename})
+			pos = len(files) - 1
+		}
+
+		files[pos].Checksums.Size = size
+		setter(&files[pos].Checksums, parts[0])
+	}
+
+	return files, nil
+}
+
+// ParseSumFields populates PackageFiles by parsing stanza checksums fields
+func (files PackageFiles) ParseSumFields(stanza Stanza) (PackageFiles, error) {
+	var err error
+
+	files, err = files.parseSumField(stanza["Files"], func(sum *utils.ChecksumInfo, data string) { sum.MD5 = data })
+	if err != nil {
+		return nil, err
+	}
+
+	files, err = files.parseSumField(stanza["Checksums-Sha1"], func(sum *utils.ChecksumInfo, data string) { sum.SHA1 = data })
+	if err != nil {
+		return nil, err
+	}
+	files, err = files.parseSumField(stanza["Checksums-Sha256"], func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }

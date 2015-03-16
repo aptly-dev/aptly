@@ -43,6 +43,10 @@ func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File,
 	return
 }
 
+func (n *NullVerifier) IsClearSigned(clearsign io.Reader) (bool, error) {
+	return false, nil
+}
+
 type PackageListMixinSuite struct {
 	p1, p2, p3 *Package
 	list       *PackageList

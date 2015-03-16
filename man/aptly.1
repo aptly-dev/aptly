@@ -797,6 +797,45 @@ Options:
 \-\fBwith\-deps\fR=false
 include dependencies into search results
 .
+.SH "ADD PACKAGES TO LOCAL REPOSITORIES BASED ON \.CHANGES FILES"
+\fBaptly\fR \fBrepo\fR \fBinclude\fR <file\.changes>|\fIdirectory\fR \fB\|\.\|\.\|\.\fR
+.
+.P
+Command include looks for \.changes files in list of arguments or specified directories\. Each \.changes file is verified, parsed, referenced files are put into separate temporary directory and added into local repository\. Successfully imported files are removed by default\.
+.
+.P
+Example:
+.
+.P
+$ aptly repo include \-repo=foo\-release incoming/
+.
+.P
+Options:
+.
+.TP
+\-\fBaccept\-unsigned\fR=false
+accept unsigned \.changes files
+.
+.TP
+\-\fBforce\-replace\fR=false
+when adding package that conflicts with existing package, remove existing package
+.
+.TP
+\-\fBignore\-signatures\fR=false
+disable verification of \.changes file signature
+.
+.TP
+\-\fBkeyring\fR=
+gpg keyring to use when verifying Release file (could be specified multiple times)
+.
+.TP
+\-\fBno\-remove\-files\fR=false
+don\(cqt remove files that have been imported successfully into repository
+.
+.TP
+\-\fBrepo\fR={{\.Distribution}}
+which repo should files go to, defaults to Distribution field of \.changes file
+.
 .SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
 \fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
 .

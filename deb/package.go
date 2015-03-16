@@ -114,62 +114,20 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 	delete(input, "Version")
 	delete(input, "Architecture")
 
+	var err error
+
 	files := make(PackageFiles, 0, 3)
-
-	parseSums := func(field string, setter func(sum *utils.ChecksumInfo, data string)) error {
-		for _, line := range strings.Split(input[field], "\n") {
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			parts := strings.Fields(line)
-
-			if len(parts) != 3 {
-				return fmt.Errorf("unparseable hash sum line: %#v", line)
-			}
-
-			size, err := strconv.ParseInt(parts[1], 10, 64)
-			if err != nil {
-				return fmt.Errorf("unable to parse size: %s", err)
-			}
-
-			filename := filepath.Base(parts[2])
-
-			found := false
-			pos := 0
-			for i, file := range files {
-				if file.Filename == filename {
-					found = true
-					pos = i
-					break
-				}
-			}
-
-			if !found {
-				files = append(files, PackageFile{Filename: filename, downloadPath: input["Directory"]})
-				pos = len(files) - 1
-			}
-
-			files[pos].Checksums.Size = size
-			setter(&files[pos].Checksums, parts[0])
-		}
-
-		delete(input, field)
-
-		return nil
-	}
-
-	err := parseSums("Files", func(sum *utils.ChecksumInfo, data string) { sum.MD5 = data })
+	files, err = files.ParseSumFields(input)
 	if err != nil {
 		return nil, err
 	}
-	err = parseSums("Checksums-Sha1", func(sum *utils.ChecksumInfo, data string) { sum.SHA1 = data })
-	if err != nil {
-		return nil, err
-	}
-	err = parseSums("Checksums-Sha256", func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
-	if err != nil {
-		return nil, err
+
+	delete(input, "Files")
+	delete(input, "Checksums-Sha1")
+	delete(input, "Checksums-Sha256")
+
+	for i := range files {
+		files[i].downloadPath = input["Directory"]
 	}
 
 	result.UpdateFiles(files)
