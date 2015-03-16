@@ -204,11 +204,46 @@ class IncludeRepo8Test(BaseTest):
             contents = f.read()
             f.seek(0, 0)
             f.write(contents.replace('Julian', 'Andrey'))
+            f.truncate()
 
         self.runCmd += self.tempSrcDir
 
     def check(self):
         try:
             super(IncludeRepo8Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo9Test(BaseTest):
+    """
+    include packages to local repo: unsigned
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+    expectedCode = 1
+
+    def prepare(self):
+        super(IncludeRepo9Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        with open(os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1_amd64.changes"), "r+") as f:
+            contents = f.readlines()
+            contents = contents[3:31]
+            f.seek(0, 0)
+            f.write("".join(contents))
+            f.truncate()
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo9Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
