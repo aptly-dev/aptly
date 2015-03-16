@@ -145,3 +145,33 @@ class IncludeRepo6Test(BaseTest):
             super(IncludeRepo6Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo7Test(BaseTest):
+    """
+    include packages to local repo: wrong checksum
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+    expectedCode = 1
+
+    def prepare(self):
+        super(IncludeRepo7Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        with open(os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1.dsc"), "w") as f:
+            f.write("A" * 949)  # file size
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo7Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
