@@ -25,6 +25,10 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
 
+	if verifier == nil {
+		verifier = &utils.GpgVerifier{}
+	}
+
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 	acceptUnsigned := context.Flags().Lookup("accept-unsigned").Value.Get().(bool)
 	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
