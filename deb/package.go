@@ -294,6 +294,21 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 	panic("unknown relation")
 }
 
+// GetName returns package name
+func (p *Package) GetName() string {
+	return p.Name
+}
+
+// GetVersion returns package version
+func (p *Package) GetVersion() string {
+	return p.Version
+}
+
+// GetArchitecture returns package arch
+func (p *Package) GetArchitecture() string {
+	return p.Architecture
+}
+
 // GetDependencies compiles list of dependenices by flags from options
 func (p *Package) GetDependencies(options int) (dependencies []string) {
 	deps := p.Deps()
