@@ -99,10 +99,20 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 		packageFiles, _ := deb.CollectPackageFiles([]string{changes.TempDir}, reporter)
 
+		var restriction deb.PackageQuery
+
+		restriction, err = changes.PackageQuery()
+		if err != nil {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
+			changes.Cleanup()
+			continue
+		}
+
 		var processedFiles2, failedFiles2 []string
 
 		processedFiles2, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			context.CollectionFactory().PackageCollection(), reporter)
+			context.CollectionFactory().PackageCollection(), reporter, restriction)
 
 		if err != nil {
 			return fmt.Errorf("unable to import package files: %s", err)

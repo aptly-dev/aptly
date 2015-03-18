@@ -53,7 +53,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 
 // ImportPackageFiles imports files into local repository
 func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier utils.Verifier,
-	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter) (processedFiles []string, failedFiles []string, err error) {
+	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
 	}
@@ -147,6 +147,12 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		}
 		if err != nil {
 			// some files haven't been imported
+			continue
+		}
+
+		if restriction != nil && !restriction.Matches(p) {
+			reporter.Warning("%s has been ignored as it doesn't match restriction", p)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 
