@@ -42,6 +42,23 @@ var (
 // GpgKey is key in GPG representation
 type GpgKey string
 
+// Matches checks two keys for equality
+func (key1 GpgKey) Matches(key2 GpgKey) bool {
+	if key1 == key2 {
+		return true
+	}
+
+	if len(key1) == 8 && len(key2) == 16 {
+		return key1 == key2[8:]
+	}
+
+	if len(key1) == 16 && len(key2) == 8 {
+		return key1[8:] == key2
+	}
+
+	return false
+}
+
 // GpgKeyInfo is response from signature verification
 type GpgKeyInfo struct {
 	GoodKeys    []GpgKey
