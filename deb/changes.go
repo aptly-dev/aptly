@@ -198,6 +198,37 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 	return &AndQuery{L: archQuery, R: nameQuery}, nil
 }
 
+// GetField implements PackageLike interface
+func (c *Changes) GetField(field string) string {
+	return c.Stanza[field]
+}
+
+// MatchesDependency implements PackageLike interface
+func (c *Changes) MatchesDependency(d Dependency) bool {
+	return false
+}
+
+// MatchesArchitecture implements PackageLike interface
+func (c *Changes) MatchesArchitecture(arch string) bool {
+	return false
+}
+
+// GetName implements PackageLike interface
+func (c *Changes) GetName() string {
+	return ""
+}
+
+// GetVersion implements PackageLike interface
+func (c *Changes) GetVersion() string {
+	return ""
+
+}
+
+// GetArchitecture implements PackageLike interface
+func (c *Changes) GetArchitecture() string {
+	return ""
+}
+
 // CollectChangesFiles walks filesystem collecting all .changes files
 func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (changesFiles, failedFiles []string) {
 	for _, location := range locations {
