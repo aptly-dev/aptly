@@ -47,11 +47,11 @@ func (u *Uploaders) ExpandGroups(items []string) []string {
 }
 
 // IsAllowed checks whether listed keys are allowed to upload given .changes file
-func (u *Uploaders) IsAllowed(keys []utils.GpgKey, changes *Changes) bool {
+func (u *Uploaders) IsAllowed(changes *Changes) bool {
 	for _, rule := range u.Rules {
 		if rule.CompiledCondition.Matches(changes) {
 			deny := u.ExpandGroups(rule.Deny)
-			for _, key := range keys {
+			for _, key := range changes.SignatureKeys {
 				for _, item := range deny {
 					if item == "*" || key.Matches(utils.GpgKey(item)) {
 						return false
@@ -60,7 +60,7 @@ func (u *Uploaders) IsAllowed(keys []utils.GpgKey, changes *Changes) bool {
 			}
 
 			allow := u.ExpandGroups(rule.Allow)
-			for _, key := range keys {
+			for _, key := range changes.SignatureKeys {
 				for _, item := range allow {
 					if item == "*" || key.Matches(utils.GpgKey(item)) {
 						return true

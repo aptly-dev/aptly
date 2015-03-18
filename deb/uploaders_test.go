@@ -58,22 +58,22 @@ func (s *UploadersSuite) TestIsAllowed(c *C) {
 	}
 
 	// no keys - not allowed
-	c.Check(u.IsAllowed([]utils.GpgKey{}, &Changes{Stanza: Stanza{"Source": "calamares"}}), Equals, false)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{}, Stanza: Stanza{"Source": "calamares"}}), Equals, false)
 
 	// no rule - not allowed
-	c.Check(u.IsAllowed([]utils.GpgKey{"37E1C17570096AD1", "EC4B033C70096AD1"}, &Changes{Stanza: Stanza{"Source": "unknown-calamares"}}), Equals, false)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"37E1C17570096AD1", "EC4B033C70096AD1"}, Stanza: Stanza{"Source": "unknown-calamares"}}), Equals, false)
 
 	// first rule: allow anyone do stuff with calamares
-	c.Check(u.IsAllowed([]utils.GpgKey{"ABCD1234", "1234ABCD"}, &Changes{Stanza: Stanza{"Source": "calamares"}}), Equals, true)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"ABCD1234", "1234ABCD"}, Stanza: Stanza{"Source": "calamares"}}), Equals, true)
 
 	// second rule: nobody is allowed to do stuff with never-calamares
-	c.Check(u.IsAllowed([]utils.GpgKey{"ABCD1234", "1234ABCD"}, &Changes{Stanza: Stanza{"Source": "never-calamares"}}), Equals, false)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"ABCD1234", "1234ABCD"}, Stanza: Stanza{"Source": "never-calamares"}}), Equals, false)
 
 	// third rule: anyone from the group or explicit key
-	c.Check(u.IsAllowed([]utils.GpgKey{"45678901", "12345678"}, &Changes{Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
-	c.Check(u.IsAllowed([]utils.GpgKey{"37E1C17570096AD1"}, &Changes{Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
-	c.Check(u.IsAllowed([]utils.GpgKey{"70096AD1"}, &Changes{Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"45678901", "12345678"}, Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"37E1C17570096AD1"}, Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"70096AD1"}, Stanza: Stanza{"Source": "some-calamares"}}), Equals, true)
 
 	// fourth rule: some are not allowed
-	c.Check(u.IsAllowed([]utils.GpgKey{"ABCD1234", "45678901"}, &Changes{Stanza: Stanza{"Source": "some-calamares"}}), Equals, false)
+	c.Check(u.IsAllowed(&Changes{SignatureKeys: []utils.GpgKey{"ABCD1234", "45678901"}, Stanza: Stanza{"Source": "some-calamares"}}), Equals, false)
 }

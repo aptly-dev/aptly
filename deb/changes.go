@@ -22,6 +22,7 @@ type Changes struct {
 	Binary                []string
 	Architectures         []string
 	Stanza                Stanza
+	SignatureKeys         []utils.GpgKey
 }
 
 // NewChanges moves .changes file into temporary directory and creates Changes structure
@@ -67,11 +68,13 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		_, err = verifier.VerifyClearsigned(input, false)
+		keyInfo, err := verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err
 		}
 		input.Seek(0, 0)
+
+		c.SignatureKeys = keyInfo.GoodKeys
 	}
 
 	var text *os.File
