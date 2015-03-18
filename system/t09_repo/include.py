@@ -312,3 +312,38 @@ class IncludeRepo11Test(BaseTest):
             super(IncludeRepo11Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo12Test(BaseTest):
+    """
+    include packages to local repo: unsigned + -accept-unsigned + restriction breakage
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -accept-unsigned -keyring=${files}/aptly.pub "
+    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+    expectedCode = 1
+
+    def prepare(self):
+        super(IncludeRepo12Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        with open(os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1_amd64.changes"), "r+") as f:
+            contents = f.readlines()
+            contents = contents[3:31]
+            contents[3] = "Binary: hardlink-dbg\n"
+            f.seek(0, 0)
+            f.write("".join(contents))
+            f.truncate()
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo12Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
