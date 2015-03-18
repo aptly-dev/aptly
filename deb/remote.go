@@ -263,7 +263,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error
 		}
 		defer inrelease.Close()
 
-		err = verifier.VerifyClearsigned(inrelease)
+		_, err = verifier.VerifyClearsigned(inrelease, true)
 		if err != nil {
 			goto splitsignature
 		}

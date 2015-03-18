@@ -63,7 +63,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		err = verifier.VerifyClearsigned(input)
+		_, err = verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err
 		}
