@@ -7,22 +7,25 @@ import (
 )
 
 type ChangesSuite struct {
+	Dir, Path string
 }
 
 var _ = Suite(&ChangesSuite{})
 
-func (s *ChangesSuite) TestParseAndVerify(c *C) {
-	dir := c.MkDir()
-	path := filepath.Join(dir, "calamares.changes")
+func (s *ChangesSuite) SetUpTest(c *C) {
+	s.Dir = c.MkDir()
+	s.Path = filepath.Join(s.Dir, "calamares.changes")
 
-	f, err := os.Create(path)
+	f, err := os.Create(s.Path)
 	c.Assert(err, IsNil)
 
 	f.WriteString(changesFile)
 	f.Close()
+}
 
-	changes, err := NewChanges(path)
-	c.Check(err, IsNil)
+func (s *ChangesSuite) TestParseAndVerify(c *C) {
+	changes, err := NewChanges(s.Path)
+	c.Assert(err, IsNil)
 
 	err = changes.VerifyAndParse(true, true, &NullVerifier{})
 	c.Check(err, IsNil)
@@ -34,7 +37,24 @@ func (s *ChangesSuite) TestParseAndVerify(c *C) {
 	c.Check(changes.Files[0].Checksums.MD5, Equals, "05fd8f3ffe8f362c5ef9bad2f936a56e")
 	c.Check(changes.Files[0].Checksums.SHA1, Equals, "79f10e955dab6eb25b7f7bae18213f367a3a0396")
 	c.Check(changes.Files[0].Checksums.SHA256, Equals, "35b3280a7b1ffe159a276128cb5c408d687318f60ecbb8ab6dedb2e49c4e82dc")
-	c.Check(changes.BasePath, Equals, dir)
+	c.Check(changes.BasePath, Equals, s.Dir)
+	c.Check(changes.Architectures, DeepEquals, []string{"source", "amd64"})
+	c.Check(changes.Source, Equals, "calamares")
+	c.Check(changes.Binary, DeepEquals, []string{"calamares", "calamares-dbg"})
+}
+
+func (s *ChangesSuite) TestPackageQuery(c *C) {
+	changes, err := NewChanges(s.Path)
+	c.Assert(err, IsNil)
+
+	err = changes.VerifyAndParse(true, true, &NullVerifier{})
+	c.Check(err, IsNil)
+
+	q, err := changes.PackageQuery()
+	c.Check(err, IsNil)
+
+	c.Check(q.String(), Equals,
+		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), ((Name (= calamares-dbg)) | (Name (= calamares)))))")
 }
 
 var changesFile = `Format: 1.8

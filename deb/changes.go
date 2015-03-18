@@ -18,6 +18,9 @@ type Changes struct {
 	Files                 PackageFiles
 	BasePath, ChangesName string
 	TempDir               string
+	Source                string
+	Binary                []string
+	Architectures         []string
 	Stanza                Stanza
 }
 
@@ -90,6 +93,9 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 
 	c.Distribution = c.Stanza["Distribution"]
 	c.Changes = c.Stanza["Changes"]
+	c.Source = c.Stanza["Source"]
+	c.Binary = strings.Fields(c.Stanza["Binary"])
+	c.Architectures = strings.Fields(c.Stanza["Architecture"])
 
 	c.Files, err = c.Files.ParseSumFields(c.Stanza)
 	if err != nil {
@@ -151,6 +157,44 @@ func (c *Changes) Cleanup() error {
 	}
 
 	return os.RemoveAll(c.TempDir)
+}
+
+// PackageQuery returns query that every package should match to be included
+func (c *Changes) PackageQuery() (PackageQuery, error) {
+	var archQuery PackageQuery = &FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: ""}
+	for _, arch := range c.Architectures {
+		archQuery = &OrQuery{L: &FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: arch}, R: archQuery}
+	}
+
+	// if c.Source is empty, this would never match
+	sourceQuery := &AndQuery{
+		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"},
+		R: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Source},
+	}
+
+	var binaryQuery PackageQuery
+	if len(c.Binary) > 0 {
+		binaryQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Binary[0]}
+		for _, binary := range c.Binary[1:] {
+			binaryQuery = &OrQuery{
+				L: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: binary},
+				R: binaryQuery,
+			}
+		}
+
+		binaryQuery = &AndQuery{
+			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"}},
+			R: binaryQuery}
+	}
+
+	var nameQuery PackageQuery
+	if binaryQuery == nil {
+		nameQuery = sourceQuery
+	} else {
+		nameQuery = &OrQuery{L: sourceQuery, R: binaryQuery}
+	}
+
+	return &AndQuery{L: archQuery, R: nameQuery}, nil
 }
 
 // CollectChangesFiles walks filesystem collecting all .changes files
