@@ -24,6 +24,7 @@ type Changes struct {
 	Stanza                Stanza
 }
 
+// NewChanges moves .changes file into temporary directory and creates Changes structure
 func NewChanges(path string) (*Changes, error) {
 	var err error
 
