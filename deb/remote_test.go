@@ -30,8 +30,8 @@ func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) e
 	return nil
 }
 
-func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader) error {
-	return nil
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*utils.GpgKeyInfo, error) {
+	return nil, nil
 }
 
 func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
