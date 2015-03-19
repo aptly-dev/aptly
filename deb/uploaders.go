@@ -1,6 +1,8 @@
 package deb
 
 import (
+	"encoding/json"
+	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/smira/aptly/utils"
 )
 
@@ -16,6 +18,23 @@ type UploadersRule struct {
 type Uploaders struct {
 	Groups map[string][]string `json:"groups"`
 	Rules  []UploadersRule     `json:"rules"`
+}
+
+// NewUploadersFromFile loads Uploaders structue from .json file
+func NewUploadersFromFile(path string) (*Uploaders, error) {
+	uploaders = &deb.Uploaders{}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("error loading uploaders file: %s", err)
+	}
+	defer f.Close()
+
+	err = json.NewDecoder(JsonConfigReader.New(f)).Decode(&uploaders)
+	if err != nil {
+		return nil, fmt.Errorf("error loading uploaders file: %s", err)
+	}
+
+	return uploaders, nil
 }
 
 func (u *Uploaders) expandGroupsInternal(items []string, trail []string) []string {
