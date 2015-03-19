@@ -2,8 +2,10 @@ package deb
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/smira/aptly/utils"
+	"os"
 )
 
 // UploadersRule is single rule of format: what packages can group or key upload
@@ -14,6 +16,11 @@ type UploadersRule struct {
 	CompiledCondition PackageQuery `json:"-"`
 }
 
+func (u UploadersRule) String() string {
+	b, _ := json.Marshal(u)
+	return string(b)
+}
+
 // Uploaders is configuration of restrictions for .changes file importing
 type Uploaders struct {
 	Groups map[string][]string `json:"groups"`
@@ -22,7 +29,7 @@ type Uploaders struct {
 
 // NewUploadersFromFile loads Uploaders structue from .json file
 func NewUploadersFromFile(path string) (*Uploaders, error) {
-	uploaders = &deb.Uploaders{}
+	uploaders := &Uploaders{}
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("error loading uploaders file: %s", err)
@@ -66,14 +73,14 @@ func (u *Uploaders) ExpandGroups(items []string) []string {
 }
 
 // IsAllowed checks whether listed keys are allowed to upload given .changes file
-func (u *Uploaders) IsAllowed(changes *Changes) bool {
+func (u *Uploaders) IsAllowed(changes *Changes) error {
 	for _, rule := range u.Rules {
 		if rule.CompiledCondition.Matches(changes) {
 			deny := u.ExpandGroups(rule.Deny)
 			for _, key := range changes.SignatureKeys {
 				for _, item := range deny {
 					if item == "*" || key.Matches(utils.GpgKey(item)) {
-						return false
+						return fmt.Errorf("denied according to rule: %s", rule)
 					}
 				}
 			}
@@ -82,12 +89,12 @@ func (u *Uploaders) IsAllowed(changes *Changes) bool {
 			for _, key := range changes.SignatureKeys {
 				for _, item := range allow {
 					if item == "*" || key.Matches(utils.GpgKey(item)) {
-						return true
+						return nil
 					}
 				}
 			}
 		}
 	}
 
-	return false
+	return fmt.Errorf("denied as no rule matches")
 }
