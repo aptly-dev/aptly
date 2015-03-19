@@ -44,6 +44,9 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
 	if uploadersFile != "" {
 		uploaders, err = deb.NewUploadersFromFile(uploadersFile)
+		if err != nil {
+			return err
+		}
 
 		for i := range uploaders.Rules {
 			uploaders.Rules[i].CompiledCondition, err = query.Parse(uploaders.Rules[i].Condition)
@@ -77,12 +80,14 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		if uploaders != nil && !uploaders.IsAllowed(changes) {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("changes file is not allowed accoring to uploaders config: %s, keys %#v",
-				changes.ChangesName, changes.SignatureKeys)
-			changes.Cleanup()
-			continue
+		if uploaders != nil {
+			if err = uploaders.IsAllowed(changes); err != nil {
+				failedFiles = append(failedFiles, path)
+				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
+					changes.ChangesName, changes.SignatureKeys, err)
+				changes.Cleanup()
+				continue
+			}
 		}
 
 		err = changes.Prepare()
