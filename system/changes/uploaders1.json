@@ -1,0 +1,7 @@
+// no groups, no rules => deny all
+{
+    "groups": {
+    },
+    "rules": [
+    ]
+}

@@ -347,3 +347,62 @@ class IncludeRepo12Test(BaseTest):
             super(IncludeRepo12Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo13Test(BaseTest):
+    """
+    include packages to local repo: with denying uploaders.json
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders1.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+    expectedCode = 1
+
+
+class IncludeRepo14Test(BaseTest):
+    """
+    include packages to local repo: allow with uploaders.json
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders2.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+
+
+class IncludeRepo15Test(BaseTest):
+    """
+    include packages to local repo: no uploaders.json
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders-404.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+    expectedCode = 1
+
+
+class IncludeRepo16Test(BaseTest):
+    """
+    include packages to local repo: malformed JSON
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders3.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+    expectedCode = 1
+
+
+class IncludeRepo17Test(BaseTest):
+    """
+    include packages to local repo: malformed rule
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders4.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+    expectedCode = 1
