@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -39,6 +40,19 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("error parsing -repo template: %s", err)
 	}
 
+	uploaders := (*deb.Uploaders)(nil)
+	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
+	if uploadersFile != "" {
+		uploaders, err = deb.NewUploadersFromFile(uploadersFile)
+
+		for i := range uploaders.Rules {
+			uploaders.Rules[i].CompiledCondition, err = query.Parse(uploaders.Rules[i].Condition)
+			if err != nil {
+				return fmt.Errorf("error parsing query %s: %s", uploaders.Rules[i].Condition, err)
+			}
+		}
+	}
+
 	reporter := &aptly.ConsoleResultReporter{Progress: context.Progress()}
 
 	var changesFiles, failedFiles, processedFiles []string
@@ -59,6 +73,14 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
+			changes.Cleanup()
+			continue
+		}
+
+		if uploaders != nil && !uploaders.IsAllowed(changes) {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("changes file is not allowed accoring to uploaders config: %s, keys %#v",
+				changes.ChangesName, changes.SignatureKeys)
 			changes.Cleanup()
 			continue
 		}
@@ -187,6 +209,7 @@ Example:
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of .changes file signature")
 	cmd.Flag.Bool("accept-unsigned", false, "accept unsigned .changes files")
+	cmd.Flag.String("uploaders-file", "", "path to uploaders.json file")
 
 	return cmd
 }
