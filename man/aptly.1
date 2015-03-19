@@ -804,6 +804,9 @@ include dependencies into search results
 Command include looks for \.changes files in list of arguments or specified directories\. Each \.changes file is verified, parsed, referenced files are put into separate temporary directory and added into local repository\. Successfully imported files are removed by default\.
 .
 .P
+Additionally uploads could be restricted with <uploaders\.json> file\. Rules in this file control uploads based on GPG key ID of \.changes file signature and queries on \.changes file fields\.
+.
+.P
 Example:
 .
 .P
@@ -835,6 +838,10 @@ don\(cqt remove files that have been imported successfully into repository
 .TP
 \-\fBrepo\fR={{\.Distribution}}
 which repo should files go to, defaults to Distribution field of \.changes file
+.
+.TP
+\-\fBuploaders\-file\fR=
+path to uploaders\.json file
 .
 .SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
 \fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
