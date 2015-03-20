@@ -80,16 +80,6 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			continue
 		}
 
-		if uploaders != nil {
-			if err = uploaders.IsAllowed(changes); err != nil {
-				failedFiles = append(failedFiles, path)
-				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
-					changes.ChangesName, changes.SignatureKeys, err)
-				changes.Cleanup()
-				continue
-			}
-		}
-
 		err = changes.Prepare()
 		if err != nil {
 			failedFiles = append(failedFiles, path)
@@ -112,6 +102,27 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
 			changes.Cleanup()
 			continue
+		}
+
+		currentUploaders := uploaders
+		if repo.Uploaders != nil {
+			currentUploaders = repo.Uploaders
+			for i := range currentUploaders.Rules {
+				currentUploaders.Rules[i].CompiledCondition, err = query.Parse(currentUploaders.Rules[i].Condition)
+				if err != nil {
+					return fmt.Errorf("error parsing query %s: %s", currentUploaders.Rules[i].Condition, err)
+				}
+			}
+		}
+
+		if currentUploaders != nil {
+			if err = currentUploaders.IsAllowed(changes); err != nil {
+				failedFiles = append(failedFiles, path)
+				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
+					changes.ChangesName, changes.SignatureKeys, err)
+				changes.Cleanup()
+				continue
+			}
 		}
 
 		err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
