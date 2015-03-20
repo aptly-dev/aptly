@@ -22,6 +22,8 @@ type LocalRepo struct {
 	DefaultDistribution string `codec:",omitempty"`
 	// DefaultComponent
 	DefaultComponent string `codec:",omitempty"`
+	// Uploaders configuration
+	Uploaders *Uploaders `code:",omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 }
