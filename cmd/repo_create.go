@@ -18,6 +18,14 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	repo.DefaultDistribution = context.Flags().Lookup("distribution").Value.String()
 	repo.DefaultComponent = context.Flags().Lookup("component").Value.String()
 
+	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
+	if uploadersFile != "" {
+		repo.Uploaders, err = deb.NewUploadersFromFile(uploadersFile)
+		if err != nil {
+			return err
+		}
+	}
+
 	err = context.CollectionFactory().LocalRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add local repo: %s", err)
@@ -47,6 +55,7 @@ Example:
 	cmd.Flag.String("comment", "", "any text that would be used to described local repository")
 	cmd.Flag.String("distribution", "", "default distribution when publishing")
 	cmd.Flag.String("component", "main", "default component when publishing")
+	cmd.Flag.String("uploaders-file", "", "uploaders.json to be used when including .changes into this repository")
 
 	return cmd
 }
