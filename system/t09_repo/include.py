@@ -406,3 +406,26 @@ class IncludeRepo17Test(BaseTest):
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders4.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
     outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+
+class IncludeRepo18Test(BaseTest):
+    """
+    include packages to local repo: repo uploaders.json + global uploaders.json
+    """
+    fixtureCmds = [
+        "aptly repo create -uploaders-file=${changes}/uploaders2.json unstable",
+    ]
+    runCmd = "aptly repo include -uploaders-file=${changes}/uploaders1.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+
+
+class IncludeRepo19Test(BaseTest):
+    """
+    include packages to local repo: per-repo uploaders.json
+    """
+    fixtureCmds = [
+        "aptly repo create -uploaders-file=${changes}/uploaders1.json unstable",
+    ]
+    runCmd = "aptly repo include -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+    expectedCode = 1
