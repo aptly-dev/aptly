@@ -27,6 +27,11 @@ type Uploaders struct {
 	Rules  []UploadersRule     `json:"rules"`
 }
 
+func (u *Uploaders) String() string {
+	b, _ := json.Marshal(u)
+	return string(b)
+}
+
 // NewUploadersFromFile loads Uploaders structue from .json file
 func NewUploadersFromFile(path string) (*Uploaders, error) {
 	uploaders := &Uploaders{}
