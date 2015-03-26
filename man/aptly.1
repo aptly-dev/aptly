@@ -10,7 +10,7 @@
 Common command format:
 .
 .P
-\fBaptly\fR [\fIglobal options\fR\|\.\|\.\|\.] \fIcommand\fR \fIsubcommand\fR [\fIoptions\fR\|\.\|\.\|\.] \fIarguments\fR
+\fBaptly\fR [\fIglobal options\fR\.\.\.] \fIcommand\fR \fIsubcommand\fR [\fIoptions\fR\.\.\.] \fIarguments\fR
 .
 .P
 aptly has integrated help that matches contents of this manual page, to get help, prepend \fBhelp\fR to command name:
@@ -22,7 +22,7 @@ aptly has integrated help that matches contents of this manual page, to get help
 aptly is a tool to create partial and full mirrors of remote repositories, manage local repositories, filter them, merge, upgrade individual packages, take snapshots and publish them back as Debian repositories\.
 .
 .P
-aptly\(cqs goal is to establish repeatability and controlled changes in a package\-centric environment\. aptly allows one to fix a set of packages in a repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows one to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
+aptly\'s goal is to establish repeatability and controlled changes in a package\-centric environment\. aptly allows one to fix a set of packages in a repository, so that package installation and upgrade becomes deterministic\. At the same time aptly allows one to perform controlled, fine\-grained changes in repository contents to transition your package environment to new version\.
 .
 .SH "CONFIGURATION"
 aptly looks for configuration file first in \fB~/\.aptly\.conf\fR then in \fB/etc/aptly\.conf\fR and, if no config file found, new one is created in home directory\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly\fR, it will be created if missing\.
@@ -51,6 +51,7 @@ Configuration file is stored in JSON format (default values shown below):
   "S3PublishEndpoints": {
     "test": {
       "region": "us\-east\-1",
+      "s3endpoint": "",
       "bucket": "repo",
       "awsAccessKeyID": "",
       "awsSecretAccessKey": "",
@@ -115,11 +116,11 @@ follow dependency from binary package to source package
 .
 .TP
 \fBgpgDisableSign\fR
-don\(cqt sign published repositories with gpg(1), also can be disabled on per\-repo basis using \fB\-skip\-signing\fR flag when publishing
+don\'t sign published repositories with gpg(1), also can be disabled on per\-repo basis using \fB\-skip\-signing\fR flag when publishing
 .
 .TP
 \fBgpgDisableVerify\fR
-don\(cqt verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
+don\'t verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
 .
 .TP
 \fBdownloadSourcePackages\fR
@@ -143,6 +144,10 @@ aptly could be configured to publish repository directly to Amazon S3\. First, p
 .TP
 \fBregion\fR
 Amazon region for S3 bucket (e\.g\. \fBus\-east\-1\fR)
+.
+.TP
+\fBs3endpoint\fR
+Custom S3 Endpoint url for non\-Amazon S3, leave empty to use Amazon\.
 .
 .TP
 \fBbucket\fR
@@ -225,22 +230,22 @@ syntax is the same as for dependency conditions, but instead of package name fie
 .P
 Supported fields:
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 all field names from Debian package control files are supported except for \fBFilename\fR, \fBMD5sum\fR, \fBSHA1\fR, \fBSHA256\fR, \fBSize\fR, \fBFiles\fR, \fBChecksums\-SHA1\fR, \fBChecksums\-SHA256\fR\.
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 \fB$Source\fR is a name of source package (for binary packages)
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 \fB$SourceVersion\fR is a version of source package
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 \fB$Architecture\fR is \fBArchitecture\fR for binary packages and \fBsource\fR for source packages, when matching with equal (\fB=\fR) operator, package with \fBany\fR architecture matches all architectures but \fBsource\fR\.
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 \fB$Version\fR has the same value as \fBVersion\fR, but comparison operators use Debian version precedence rules
 .
-.IP "\[ci]" 4
+.IP "\(bu" 4
 \fB$PackageType\fR is \fBdeb\fR for binary packages and \fBsource\fR for source packages
 .
 .IP "" 0
@@ -265,7 +270,7 @@ pattern matching, like shell patterns, supported special symbols are: \fB[^]?*\f
 regular expression matching, e\.g\.: \fBName (~ \.*\-dev)\fR
 .
 .P
-Simple terms could be combined into more complex queries using operators \fB,\fR (and), \fB|\fR (or) and \fB!\fR (not), parentheses \fB()\fR are used to change operator precedence\. Match value could be enclosed in single (\fB\(cq\fR) or double (\fB"\fR) quotes if required to resolve ambiguity, quotes inside quoted string should escaped with slash (\fB\e\fR)\.
+Simple terms could be combined into more complex queries using operators \fB,\fR (and), \fB|\fR (or) and \fB!\fR (not), parentheses \fB()\fR are used to change operator precedence\. Match value could be enclosed in single (\fB\'\fR) or double (\fB"\fR) quotes if required to resolve ambiguity, quotes inside quoted string should escaped with slash (\fB\e\fR)\.
 .
 .P
 Examples:
@@ -302,7 +307,7 @@ matches all packages that provide \fBmail\-transport\fR with name that has no su
 When specified on command line, query may have to be quoted according to shell rules, so that it stays single argument:
 .
 .P
-\fBaptly repo import percona stable \(cqmysql\-client (>= 3\.6)\(cq\fR
+\fBaptly repo import percona stable \'mysql\-client (>= 3\.6)\'\fR
 .
 .SH "GLOBAL OPTIONS"
 .
@@ -316,7 +321,7 @@ location of configuration file (default locations are /etc/aptly\.conf, ~/\.aptl
 .
 .TP
 \-\fBdep\-follow\-all\-variants\fR=false
-when processing dependencies, follow a & b if depdency is \(cqa|b\(cq
+when processing dependencies, follow a & b if depdency is \'a|b\'
 .
 .TP
 \-\fBdep\-follow\-recommends\fR=false
@@ -331,10 +336,10 @@ when processing dependencies, follow from binary to Source packages
 when processing dependencies, follow Suggests
 .
 .SH "CREATE NEW MIRROR"
-\fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \|\.\|\.\|\.]
+\fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \.\.\.]
 .
 .P
-Creates mirror \fIname\fR of remote repository, aptly supports both regular and flat Debian repositories exported via HTTP and FTP\. aptly would try download Release file from remote repository and verify its\(cq signature\. Command line format resembles apt utlitily sources\.list(5)\.
+Creates mirror \fIname\fR of remote repository, aptly supports both regular and flat Debian repositories exported via HTTP and FTP\. aptly would try download Release file from remote repository and verify its\' signature\. Command line format resembles apt utlitily sources\.list(5)\.
 .
 .P
 PPA urls could specified in short format:
@@ -527,7 +532,7 @@ Example:
 .
 .nf
 
-$ aptly mirror search wheezy\-main \(cq$Architecture (i386), Name (% *\-dev)\(cq
+$ aptly mirror search wheezy\-main \'$Architecture (i386), Name (% *\-dev)\'
 .
 .fi
 .
@@ -564,7 +569,7 @@ when adding package that conflicts with existing package, remove existing packag
 remove files that have been imported successfully into repository
 .
 .SH "COPY PACKAGES BETWEEN LOCAL REPOSITORIES"
-\fBaptly\fR \fBrepo\fR \fBcopy\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBcopy\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
 Command copy copies packages matching \fIpackage\-query\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
@@ -573,14 +578,14 @@ Command copy copies packages matching \fIpackage\-query\fR from local repo \fIsr
 Example:
 .
 .P
-$ aptly repo copy testing stable \(cqmyapp (=0\.1\.12)\(cq
+$ aptly repo copy testing stable \'myapp (=0\.1\.12)\'
 .
 .P
 Options:
 .
 .TP
 \-\fBdry\-run\fR=false
-don\(cqt copy, just show what would be copied
+don\'t copy, just show what would be copied
 .
 .TP
 \-\fBwith\-deps\fR=false
@@ -668,7 +673,7 @@ default distribution when publishing
 uploaders\.json to be used when including \.changes into this repository
 .
 .SH "IMPORT PACKAGES FROM MIRROR TO LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBimport\fR \fIsrc\-mirror\fR \fIdst\-repo\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBimport\fR \fIsrc\-mirror\fR \fIdst\-repo\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
 Command import looks up packages matching \fIpackage\-query\fR in mirror \fIsrc\-mirror\fR and copies them to local repo \fIdst\-repo\fR\.
@@ -684,7 +689,7 @@ Options:
 .
 .TP
 \-\fBdry\-run\fR=false
-don\(cqt import, just show what would be imported
+don\'t import, just show what would be imported
 .
 .TP
 \-\fBwith\-deps\fR=false
@@ -710,7 +715,7 @@ Options:
 display list in machine\-readable format
 .
 .SH "MOVE PACKAGES BETWEEN LOCAL REPOSITORIES"
-\fBaptly\fR \fBrepo\fR \fBmove\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBmove\fR \fIsrc\-name\fR \fIdst\-name\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
 Command move moves packages matching \fIpackage\-query\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
@@ -719,37 +724,37 @@ Command move moves packages matching \fIpackage\-query\fR from local repo \fIsrc
 Example:
 .
 .P
-$ aptly repo move testing stable \(cqmyapp (=0\.1\.12)\(cq
+$ aptly repo move testing stable \'myapp (=0\.1\.12)\'
 .
 .P
 Options:
 .
 .TP
 \-\fBdry\-run\fR=false
-don\(cqt move, just show what would be moved
+don\'t move, just show what would be moved
 .
 .TP
 \-\fBwith\-deps\fR=false
 follow dependencies when processing package\-spec
 .
 .SH "REMOVE PACKAGES FROM LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBremove\fR \fIname\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBremove\fR \fIname\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
-Commands removes packages matching \fIpackage\-query\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \(cqaptly db cleanup\(cq\.
+Commands removes packages matching \fIpackage\-query\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \'aptly db cleanup\'\.
 .
 .P
 Example:
 .
 .P
-$ aptly repo remove testing \(cqmyapp (=0\.1\.12)\(cq
+$ aptly repo remove testing \'myapp (=0\.1\.12)\'
 .
 .P
 Options:
 .
 .TP
 \-\fBdry\-run\fR=false
-don\(cqt remove, just show what would be removed
+don\'t remove, just show what would be removed
 .
 .SH "SHOW DETAILS ABOUT LOCAL REPOSITORY"
 \fBaptly\fR \fBrepo\fR \fBshow\fR \fIname\fR
@@ -792,7 +797,7 @@ Example:
 .
 .nf
 
-$ aptly repo search my\-software \(cq$Architecture (i386), Name (% *\-dev)\(cq
+$ aptly repo search my\-software \'$Architecture (i386), Name (% *\-dev)\'
 .
 .fi
 .
@@ -890,7 +895,7 @@ display list in machine\-readable format
 .
 .TP
 \-\fBsort\fR=name
-display list in \(cqname\(cq or creation \(cqtime\(cq order
+display list in \'name\' or creation \'time\' order
 .
 .SH "SHOWS DETAILS ABOUT SNAPSHOT"
 \fBaptly\fR \fBsnapshot\fR \fBshow\fR \fIname\fR
@@ -919,7 +924,7 @@ Options:
 show list of packages
 .
 .SH "VERIFY DEPENDENCIES IN SNAPSHOT"
-\fBaptly\fR \fBsnapshot\fR \fBverify\fR \fIname\fR [\fIsource\fR \|\.\|\.\|\.]
+\fBaptly\fR \fBsnapshot\fR \fBverify\fR \fIname\fR [\fIsource\fR \.\.\.]
 .
 .P
 Verify does dependency resolution in snapshot \fIname\fR, possibly using additional snapshots \fIsource\fR as dependency sources\. All unsatisfied dependencies are printed\.
@@ -938,10 +943,10 @@ $ aptly snapshot verify wheezy\-main wheezy\-contrib wheezy\-non\-free
 .IP "" 0
 .
 .SH "PULL PACKAGES FROM ANOTHER SNAPSHOT"
-\fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBsnapshot\fR \fBpull\fR \fIname\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
-Command pull pulls new packages along with its\(cq dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
+Command pull pulls new packages along with its\' dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \'package\-name\' or as package queries\.
 .
 .P
 Example:
@@ -965,15 +970,15 @@ pull all the packages that satisfy the dependency version requirements
 .
 .TP
 \-\fBdry\-run\fR=false
-don\(cqt create destination snapshot, just show what would be pulled
+don\'t create destination snapshot, just show what would be pulled
 .
 .TP
 \-\fBno\-deps\fR=false
-don\(cqt process dependencies, just pull listed packages
+don\'t process dependencies, just pull listed packages
 .
 .TP
 \-\fBno\-remove\fR=false
-don\(cqt remove other package versions when pulling package
+don\'t remove other package versions when pulling package
 .
 .SH "DIFFERENCE BETWEEN TWO SNAPSHOTS"
 \fBaptly\fR \fBsnapshot\fR \fBdiff\fR \fIname\-a\fR \fIname\-b\fR
@@ -999,10 +1004,10 @@ Options:
 .
 .TP
 \-\fBonly\-matching\fR=false
-display diff only for matching packages (don\(cqt display missing packages)
+display diff only for matching packages (don\'t display missing packages)
 .
 .SH "MERGES SNAPSHOTS"
-\fBaptly\fR \fBsnapshot\fR \fBmerge\fR \fIdestination\fR \fIsource\fR [\fIsource\fR\|\.\|\.\|\.]
+\fBaptly\fR \fBsnapshot\fR \fBmerge\fR \fIdestination\fR \fIsource\fR [\fIsource\fR\.\.\.]
 .
 .P
 Merge command merges several \fIsource\fR snapshots into one \fIdestination\fR snapshot\. Merge happens from left to right\. By default, packages with the same name\-architecture pair are replaced during merge (package from latest snapshot on the list wins)\. If run with only one source snapshot, merge copies \fIsource\fR into \fIdestination\fR\.
@@ -1029,13 +1034,13 @@ use only the latest version of each package
 .
 .TP
 \-\fBno\-remove\fR=false
-don\(cqt remove duplicate arch/name packages
+don\'t remove duplicate arch/name packages
 .
 .SH "DELETE SNAPSHOT"
 \fBaptly\fR \fBsnapshot\fR \fBdrop\fR \fIname\fR
 .
 .P
-Drop removes information about a snapshot\. If snapshot is published, it can\(cqt be dropped\.
+Drop removes information about a snapshot\. If snapshot is published, it can\'t be dropped\.
 .
 .P
 Example:
@@ -1082,7 +1087,7 @@ Example:
 .
 .nf
 
-$ aptly snapshot search wheezy\-main \(cq$Architecture (i386), Name (% *\-dev)\(cq
+$ aptly snapshot search wheezy\-main \'$Architecture (i386), Name (% *\-dev)\'
 .
 .fi
 .
@@ -1096,10 +1101,10 @@ Options:
 include dependencies into search results
 .
 .SH "FILTER PACKAGES IN SNAPSHOT PRODUCING ANOTHER SNAPSHOT"
-\fBaptly\fR \fBsnapshot\fR \fBfilter\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBsnapshot\fR \fBfilter\fR \fIsource\fR \fIdestination\fR \fIpackage\-query\fR \fB\.\.\.\fR
 .
 .P
-Command filter does filtering in snapshot \fIsource\fR, producing another snapshot \fIdestination\fR\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
+Command filter does filtering in snapshot \fIsource\fR, producing another snapshot \fIdestination\fR\. Packages could be specified simply as \'package\-name\' or as package queries\.
 .
 .P
 Example:
@@ -1108,7 +1113,7 @@ Example:
 .
 .nf
 
-$ aptly snapshot filter wheezy\-main wheezy\-required \(cqPriorioty (required)\(cq
+$ aptly snapshot filter wheezy\-main wheezy\-required \'Priorioty (required)\'
 .
 .fi
 .
@@ -1257,7 +1262,7 @@ GPG secret keyring to use (instead of default)
 .
 .TP
 \-\fBskip\-signing\fR=false
-don\(cqt sign Release files with GPG
+don\'t sign Release files with GPG
 .
 .SH "PUBLISH SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [[\fIendpoint\fR:]\fIprefix\fR]
@@ -1340,7 +1345,7 @@ GPG secret keyring to use (instead of default)
 .
 .TP
 \-\fBskip\-signing\fR=false
-don\(cqt sign Release files with GPG
+don\'t sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
@@ -1414,7 +1419,7 @@ GPG secret keyring to use (instead of default)
 .
 .TP
 \-\fBskip\-signing\fR=false
-don\(cqt sign Release files with GPG
+don\'t sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED LOCAL REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBupdate\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
@@ -1471,7 +1476,7 @@ GPG secret keyring to use (instead of default)
 .
 .TP
 \-\fBskip\-signing\fR=false
-don\(cqt sign Release files with GPG
+don\'t sign Release files with GPG
 .
 .SH "SEARCH FOR PACKAGES MATCHING QUERY"
 \fBaptly\fR \fBpackage\fR \fBsearch\fR \fIpackage\-query\fR
@@ -1486,7 +1491,7 @@ Example:
 .
 .nf
 
-$ aptly package search \(cq$Architecture (i386), Name (% *\-dev)\(cq
+$ aptly package search \'$Architecture (i386), Name (% *\-dev)\'
 .
 .fi
 .
@@ -1505,7 +1510,7 @@ Example:
 .
 .nf
 
-$ aptly package show nginx\-light_1\.2\.1\-2\.2+wheezy2_i386\(cq
+$ aptly package show nginx\-light_1\.2\.1\-2\.2+wheezy2_i386\'
 .
 .fi
 .
@@ -1526,7 +1531,7 @@ display information about mirrors, snapshots and local repos referencing this pa
 \fBaptly\fR \fBdb\fR \fBcleanup\fR
 .
 .P
-Database cleanup removes information about unreferenced packages and removes files in the package pool that aren\(cqt used by packages anymore
+Database cleanup removes information about unreferenced packages and removes files in the package pool that aren\'t used by packages anymore
 .
 .P
 Example:
@@ -1549,7 +1554,7 @@ be verbose when loading objects/removing them
 \fBaptly\fR \fBdb\fR \fBrecover\fR
 .
 .P
-Database recover does its\(cq best to recover the database after a crash\. It is recommended to backup the DB before running recover\.
+Database recover does its\' best to recover the database after a crash\. It is recommended to backup the DB before running recover\.
 .
 .P
 Example:
@@ -1561,7 +1566,7 @@ $ aptly db recover
 \fBaptly\fR \fBserve\fR
 .
 .P
-Command serve starts embedded HTTP server (not suitable for real production usage) to serve contents of public/ subdirectory of aptly\(cqs root that contains published repositories\.
+Command serve starts embedded HTTP server (not suitable for real production usage) to serve contents of public/ subdirectory of aptly\'s root that contains published repositories\.
 .
 .P
 Example:
@@ -1607,7 +1612,7 @@ Example:
 .P
 $ aptly graph
 .
-.SH "SHOW CURRENT APTLY\(cqS CONFIG"
+.SH "SHOW CURRENT APTLY\'S CONFIG"
 \fBaptly\fR \fBconfig\fR \fBshow\fR
 .
 .P
@@ -1620,7 +1625,7 @@ Example:
 $ aptly config show
 .
 .SH "RUN APTLY TASKS"
-\fBaptly\fR \fBtask\fR \fBrun\fR \-filename=\fIfilename\fR \fB|\fR \fIcommand1\fR, \fIcommand2\fR, \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBtask\fR \fBrun\fR \-filename=\fIfilename\fR \fB|\fR \fIcommand1\fR, \fIcommand2\fR, \fB\.\.\.\fR
 .
 .P
 Command helps organise multiple aptly commands in one single aptly task, running as single thread\.

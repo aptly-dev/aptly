@@ -43,6 +43,7 @@ Configuration file is stored in JSON format (default values shown below):
       "S3PublishEndpoints": {
         "test": {
           "region": "us-east-1",
+          "s3endpoint": "",
           "bucket": "repo",
           "awsAccessKeyID": "",
           "awsSecretAccessKey": "",
@@ -124,6 +125,8 @@ and associated settings:
 
    * `region`:
      Amazon region for S3 bucket (e.g. `us-east-1`)
+   * `s3endpoint`:
+     Custom S3 Endpoint url for non-Amazon S3, leave empty to use Amazon.
    * `bucket`:
      bucket name
    * `prefix`:

@@ -40,9 +40,13 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "", false)
+	stor, err := NewPublishedStorage("aa", "bbb", "ccc", "", "", "", "", "", "", false)
 	c.Check(stor, IsNil)
-	c.Check(err, ErrorMatches, "unknown region: .*")
+	c.Check(err, ErrorMatches, "unknown Amazon region: .*")
+
+	stor2, err2 := NewPublishedStorage("aa", "bbb", "ccc", "ddd", "", "", "", "", "", false)
+	c.Check(stor2, NotNil)
+	c.Check(err2, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestPutFile(c *C) {
