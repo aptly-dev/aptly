@@ -121,7 +121,6 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 		if strings.HasPrefix(header.Name, "data.tar") {
 			var tarInput io.Reader
 
-			fmt.Println(header.Name)
 			switch header.Name {
 			case "data.tar":
 				tarInput = library
