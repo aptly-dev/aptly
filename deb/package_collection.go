@@ -10,9 +10,8 @@ import (
 
 // PackageCollection does management of packages in DB
 type PackageCollection struct {
-	db           database.Storage
-	encodeBuffer bytes.Buffer
-	codecHandle  *codec.MsgpackHandle
+	db          database.Storage
+	codecHandle *codec.MsgpackHandle
 }
 
 // Verify interface
@@ -163,43 +162,45 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 
 // Update adds or updates information about package in DB checking for conficts first
 func (collection *PackageCollection) Update(p *Package) error {
-	encoder := codec.NewEncoder(&collection.encodeBuffer, collection.codecHandle)
+	var encodeBuffer bytes.Buffer
 
-	collection.encodeBuffer.Reset()
-	collection.encodeBuffer.WriteByte(0xc1)
-	collection.encodeBuffer.WriteByte(0x1)
+	encoder := codec.NewEncoder(&encodeBuffer, collection.codecHandle)
+
+	encodeBuffer.Reset()
+	encodeBuffer.WriteByte(0xc1)
+	encodeBuffer.WriteByte(0x1)
 	err := encoder.Encode(p)
 	if err != nil {
 		return err
 	}
 
-	err = collection.db.Put(p.Key(""), collection.encodeBuffer.Bytes())
+	err = collection.db.Put(p.Key(""), encodeBuffer.Bytes())
 	if err != nil {
 		return err
 	}
 
 	// Encode offloaded fields one by one
 	if p.files != nil {
-		collection.encodeBuffer.Reset()
+		encodeBuffer.Reset()
 		err = encoder.Encode(*p.files)
 		if err != nil {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xF"), collection.encodeBuffer.Bytes())
+		err = collection.db.Put(p.Key("xF"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
 	}
 
 	if p.deps != nil {
-		collection.encodeBuffer.Reset()
+		encodeBuffer.Reset()
 		err = encoder.Encode(*p.deps)
 		if err != nil {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xD"), collection.encodeBuffer.Bytes())
+		err = collection.db.Put(p.Key("xD"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
@@ -208,13 +209,13 @@ func (collection *PackageCollection) Update(p *Package) error {
 	}
 
 	if p.extra != nil {
-		collection.encodeBuffer.Reset()
+		encodeBuffer.Reset()
 		err = encoder.Encode(*p.extra)
 		if err != nil {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xE"), collection.encodeBuffer.Bytes())
+		err = collection.db.Put(p.Key("xE"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
