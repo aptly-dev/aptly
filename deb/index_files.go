@@ -215,6 +215,35 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 	return file
 }
 
+func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *indexFile {
+	if arch == "source" {
+		udeb = false
+	}
+	key := fmt.Sprintf("ci-%s-%s-%v", component, arch, udeb)
+	file, ok := files.indexes[key]
+	if !ok {
+		var relativePath string
+
+		if udeb {
+			relativePath = filepath.Join(component, fmt.Sprintf("Contents-udeb-%s", arch))
+		} else {
+			relativePath = filepath.Join(component, fmt.Sprintf("Contents-%s", arch))
+		}
+
+		file = &indexFile{
+			parent:       files,
+			discardable:  true,
+			compressable: true,
+			signable:     false,
+			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
 func (files *indexFiles) ReleaseFile() *indexFile {
 	return &indexFile{
 		parent:       files,
