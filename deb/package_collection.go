@@ -3,6 +3,7 @@ package deb
 import (
 	"bytes"
 	"fmt"
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/ugorji/go/codec"
 	"path/filepath"
@@ -158,6 +159,41 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 	}
 
 	return files
+}
+
+// loadContents loads or calculates and saves package contents
+func (collection *PackageCollection) loadContents(p *Package, packagePool aptly.PackagePool) []string {
+	encoded, err := collection.db.Get(p.Key("xC"))
+	if err == nil {
+		contents := []string{}
+
+		decoder := codec.NewDecoderBytes(encoded, collection.codecHandle)
+		err = decoder.Decode(&contents)
+		if err != nil {
+			panic("unable to decode contents")
+		}
+
+		return contents
+	}
+
+	if err != database.ErrNotFound {
+		panic("unable to load contents")
+	}
+
+	contents := p.CalculateContents(packagePool)
+
+	var buf bytes.Buffer
+	err = codec.NewEncoder(&buf, collection.codecHandle).Encode(contents)
+	if err != nil {
+		panic("unable to encode contents")
+	}
+
+	err = collection.db.Put(p.Key("xC"), buf.Bytes())
+	if err != nil {
+		panic("unable to save contents")
+	}
+
+	return contents
 }
 
 // Update adds or updates information about package in DB checking for conficts first

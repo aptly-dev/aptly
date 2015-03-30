@@ -32,9 +32,10 @@ type Package struct {
 	// Is this >= 0.6 package?
 	V06Plus bool
 	// Offload fields
-	deps  *PackageDependencies
-	extra *Stanza
-	files *PackageFiles
+	deps     *PackageDependencies
+	extra    *Stanza
+	files    *PackageFiles
+	contents []string
 	// Mother collection
 	collection *PackageCollection
 }
@@ -345,6 +346,16 @@ func (p *Package) GetDependencies(options int) (dependencies []string) {
 	return
 }
 
+// QualifiedName returns [$SECTION/]$NAME
+func (p *Package) QualifiedName() string {
+	section := p.Extra()["Section"]
+	if section != "" {
+		return section + "/" + p.Name
+	}
+
+	return p.Name
+}
+
 // Extra returns Stanza of extra fields (it may load it from collection)
 func (p *Package) Extra() Stanza {
 	if p.extra == nil {
@@ -381,6 +392,43 @@ func (p *Package) Files() PackageFiles {
 	}
 
 	return *p.files
+}
+
+// Contents returns cached package contents
+func (p *Package) Contents(packagePool aptly.PackagePool) []string {
+	if p.IsSource {
+		return nil
+	}
+
+	if p.contents == nil {
+		if p.collection == nil {
+			panic("contents == nil && collection == nil")
+		}
+
+		p.contents = p.collection.loadContents(p, packagePool)
+	}
+
+	return p.contents
+}
+
+// CalculateContents looks up contents in package file
+func (p *Package) CalculateContents(packagePool aptly.PackagePool) []string {
+	if p.IsSource {
+		return nil
+	}
+
+	file := p.Files()[0]
+	path, err := packagePool.Path(file.Filename, file.Checksums.MD5)
+	if err != nil {
+		panic(err)
+	}
+
+	contents, err := GetContentsFromDeb(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return contents
 }
 
 // UpdateFiles saves new state of files
