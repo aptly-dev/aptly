@@ -28,7 +28,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 				}
 
 				if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-					strings.HasSuffix(info.Name(), ".dsc") {
+					strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 					packageFiles = append(packageFiles, path)
 				}
 
@@ -36,7 +36,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 			})
 		} else {
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-				strings.HasSuffix(info.Name(), ".dsc") {
+				strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 				packageFiles = append(packageFiles, location)
 			} else {
 				reporter.Warning("Unknown file extension: %s", location)
