@@ -236,6 +236,8 @@ class BaseTest(object):
             self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
         except:
             if self.captureResults:
+                if match_prepare is not None:
+                    contents = match_prepare(contents)
                 with open(self.get_gold_filename(gold_name), "w") as f:
                     f.write(contents)
             else:

@@ -1,6 +1,7 @@
 import os
 import hashlib
 import inspect
+import zlib
 from lib import BaseTest
 
 
@@ -10,6 +11,13 @@ def strip_processor(output):
 
 def sorted_processor(output):
     return "\n".join(sorted(output.split("\n")))
+
+
+def ungzip_if_required(output):
+    if output.startswith("\x1f\x8b"):
+        return zlib.decompress(output, 16+zlib.MAX_WBITS)
+
+    return output
 
 
 class PublishSnapshot1Test(BaseTest):
@@ -54,6 +62,9 @@ class PublishSnapshot1Test(BaseTest):
 
         self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
         self.check_file_contents('public/dists/maverick/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
+
+        self.check_file_contents('public/dists/maverick/main/Contents-i386.gz', 'contents_i386', match_prepare=ungzip_if_required)
+        self.check_file_contents('public/dists/maverick/main/Contents-amd64.gz', 'contents_amd64', match_prepare=ungzip_if_required)
 
         # verify signatures
         self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),

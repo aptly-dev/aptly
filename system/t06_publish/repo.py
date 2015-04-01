@@ -1,11 +1,19 @@
 import os
 import hashlib
 import inspect
+import zlib
 from lib import BaseTest
 
 
 def strip_processor(output):
     return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
+
+
+def ungzip_if_required(output):
+    if output.startswith("\x1f\x8b"):
+        return zlib.decompress(output, 16+zlib.MAX_WBITS)
+
+    return output
 
 
 class PublishRepo1Test(BaseTest):
@@ -44,6 +52,7 @@ class PublishRepo1Test(BaseTest):
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
         self.check_file_contents('public/dists/maverick/main/source/Sources', 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/Contents-i386.gz', 'contents_i386', match_prepare=ungzip_if_required)
 
         # verify signatures
         self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
