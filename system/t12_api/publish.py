@@ -54,6 +54,7 @@ class PublishAPITestRepo(APITest):
 
         self.check_exists("public/" + prefix + "/dists/wheezy/Release")
         self.check_exists("public/" + prefix + "/dists/wheezy/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/dists/wheezy/main/Contents-i386.gz")
         self.check_exists("public/" + prefix + "/dists/wheezy/main/source/Sources")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
@@ -81,7 +82,9 @@ class PublishAPITestRepo(APITest):
 
         self.check_exists("public/dists/" + distribution + "/Release")
         self.check_exists("public/dists/" + distribution + "/main/binary-i386/Packages")
+        self.check_exists("public/dists/" + distribution + "/main/Contents-i386.gz")
         self.check_exists("public/dists/" + distribution + "/main/binary-amd64/Packages")
+        self.check_not_exists("public/dists/" + distribution + "/main/Contents-amd64.gz")
         self.check_exists("public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
         all_repos = self.get("/api/publish")
@@ -132,6 +135,7 @@ class PublishSnapshotAPITest(APITest):
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/dists/squeeze/main/Contents-i386.gz")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 

@@ -30,11 +30,14 @@ class PublishSwitch1Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -107,11 +110,14 @@ class PublishSwitch2Test(BaseTest):
         self.check_exists('public/ppa/dists/maverick/Release')
         self.check_exists('public/ppa/dists/maverick/Release.gpg')
 
+        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/ppa/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/ppa/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -145,11 +151,14 @@ class PublishSwitch3Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -179,8 +188,10 @@ class PublishSwitch4Test(BaseTest):
         self.check_exists('public/ppa/dists/maverick/Release')
         self.check_exists('public/ppa/dists/maverick/Release.gpg')
 
+        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-i386.gz')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.bz2')
@@ -261,9 +272,14 @@ class PublishSwitch8Test(BaseTest):
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages')
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.bz2')
+            self.check_exists('public/dists/maverick/' + component + '/Contents-i386.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.bz2')
+            if component == "c":
+                self.check_not_exists('public/dists/maverick/' + component + '/Contents-amd64.gz')
+            else:
+                self.check_exists('public/dists/maverick/' + component + '/Contents-amd64.gz')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources.gz')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources.bz2')
