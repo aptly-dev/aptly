@@ -24,6 +24,7 @@ type indexFile struct {
 	parent       *indexFiles
 	discardable  bool
 	compressable bool
+	onlyGzip     bool
 	signable     bool
 	relativePath string
 	tempFilename string
@@ -73,6 +74,9 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 	exts := []string{""}
 	if file.compressable {
 		exts = append(exts, ".gz", ".bz2")
+		if file.onlyGzip {
+			exts = []string{".gz"}
+		}
 	}
 
 	for _, ext := range exts {
@@ -234,6 +238,7 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 			parent:       files,
 			discardable:  true,
 			compressable: true,
+			onlyGzip:     true,
 			signable:     false,
 			relativePath: relativePath,
 		}
