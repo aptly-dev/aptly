@@ -81,7 +81,7 @@ class PublishUpdate1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
-                             'main/binary-i386/Release', 'main/source/Release']):
+                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 

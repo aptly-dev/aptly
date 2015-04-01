@@ -80,7 +80,8 @@ class PublishSwitch1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
                              'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
-                             'main/binary-amd64/Release', 'main/binary-i386/Release']):
+                             'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/Contents-amd64.gz',
+                             'main/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -331,7 +332,9 @@ class PublishSwitch8Test(BaseTest):
                              'c/binary-i386/Packages.gz', 'b/source/Sources.gz', 'b/binary-i386/Packages',
                              'a/binary-amd64/Release', 'b/binary-amd64/Release', 'c/binary-amd64/Release',
                              'a/binary-i386/Release', 'b/binary-i386/Release', 'c/binary-i386/Release',
-                             'a/source/Release', 'b/source/Release', 'c/source/Release']):
+                             'a/source/Release', 'b/source/Release', 'c/source/Release',
+                             'b/Contents-amd64.gz', 'c/Contents-i386.gz', 'a/Contents-i386.gz',
+                             'a/Contents-amd64.gz', 'b/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
