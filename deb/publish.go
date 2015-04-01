@@ -43,6 +43,8 @@ type PublishedRepo struct {
 	Architectures []string
 	// SourceKind is "local"/"repo"
 	SourceKind string
+	// Skip contents generation
+	SkipContents bool
 
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
@@ -525,6 +527,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		list.PrepareIndex()
 
+		contentIndexes := map[string]*ContentsIndex{}
+
 		err = list.ForEachIndexed(func(pkg *Package) error {
 			if progress != nil {
 				progress.AddBar(1)
@@ -550,6 +554,19 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				if pkg.MatchesArchitecture(arch) {
 					var bufWriter *bufio.Writer
 
+					if !p.SkipContents {
+						key := fmt.Sprintf("%s-%v", arch, pkg.IsUdeb)
+
+						contentIndex := contentIndexes[key]
+
+						if contentIndex == nil {
+							contentIndex = NewContentsIndex()
+							contentIndexes[key] = contentIndex
+						}
+
+						contentIndex.Push(pkg, packagePool)
+					}
+
 					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
 					if err != nil {
 						return err
@@ -569,12 +586,32 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.files = nil
 			pkg.deps = nil
 			pkg.extra = nil
+			pkg.contents = nil
 
 			return nil
 		})
 
 		if err != nil {
 			return fmt.Errorf("unable to process packages: %s", err)
+		}
+
+		for _, arch := range p.Architectures {
+			for _, udeb := range []bool{true, false} {
+				index := contentIndexes[fmt.Sprintf("%s-%v", arch, udeb)]
+				if index == nil || index.Empty() {
+					continue
+				}
+
+				bufWriter, err := indexes.ContentsIndex(component, arch, udeb).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+
+				_, err = index.WriteTo(bufWriter)
+				if err != nil {
+					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+			}
 		}
 
 		if progress != nil {
