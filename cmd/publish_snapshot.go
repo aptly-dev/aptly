@@ -116,11 +116,11 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
-	published.Origin = cmd.Flag.Lookup("origin").Value.String()
-	published.Label = cmd.Flag.Lookup("label").Value.String()
+	published.Origin = context.Flags().Lookup("origin").Value.String()
+	published.Label = context.Flags().Lookup("label").Value.String()
 
-	if cmd.Flag.IsSet("skip-contents") {
-		published.SkipContents = cmd.Flag.Lookup("skip-contents").Value.Get().(bool)
+	if context.Flags().IsSet("skip-contents") {
+		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
 
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)

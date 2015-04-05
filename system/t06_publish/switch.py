@@ -419,3 +419,29 @@ class PublishSwitch12Test(BaseTest):
     ]
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick snap2 snap1"
     expectedCode = 1
+
+
+class PublishSwitch13Test(BaseTest):
+    """
+    publish switch: -skip-contents
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-contents snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch13Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')

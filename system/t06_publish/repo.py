@@ -668,3 +668,25 @@ class PublishRepo27Test(BaseTest):
 
         # verify contents except of sums
         self.check_file_contents('public/dists/maverick/main/debian-installer/binary-i386/Packages', 'udeb_binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+
+
+class PublishRepo28Test(BaseTest):
+    """
+    publish repo: -skip-contents
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files} ${udebs}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-contents local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo28Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
+        self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
+        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Release')
+        self.check_not_exists('public/dists/maverick/main/Contents-udeb-i386.gz')

@@ -90,8 +90,8 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 			"the same package pool.\n")
 	}
 
-	if cmd.Flag.IsSet("skip-contents") {
-		published.SkipContents = cmd.Flag.Lookup("skip-contents").Value.Get().(bool)
+	if context.Flags().IsSet("skip-contents") {
+		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), forceOverwrite)
