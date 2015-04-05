@@ -3,6 +3,7 @@ package deb
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 	"io"
 	"sort"
 	"strings"
@@ -56,9 +57,12 @@ func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 
 	for _, path := range paths {
 		packages := index.index[path]
-		parts := make([]string, len(packages))
+		parts := make([]string, 0, len(packages))
 		for i := range packages {
-			parts[i] = packages[i].QualifiedName()
+			name := packages[i].QualifiedName()
+			if !utils.StrSliceHasItem(parts, name) {
+				parts = append(parts, name)
+			}
 		}
 		nn, err = fmt.Fprintf(w, "%s %s\n", path, strings.Join(parts, ","))
 		n += int64(nn)
