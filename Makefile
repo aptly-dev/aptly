@@ -18,14 +18,6 @@ else
 GOM=gom
 endif
 
-UNAME := $(shell uname)
-
-ifeq ($(UNAME), Darwin)
-GOLDFLAGS=
-else
-GOLDFLAGS=--ldflags='-extldflags -static'
-endif
-
 all: test check system-test
 
 prepare:
@@ -48,7 +40,7 @@ check:
 	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
 
 install:
-	$(GOM) build -o $(BINPATH)/aptly $(GOLDFLAGS)
+	$(GOM) build -o $(BINPATH)/aptly
 
 system-test: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
