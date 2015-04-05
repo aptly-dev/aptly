@@ -119,6 +119,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	published.Origin = cmd.Flag.Lookup("origin").Value.String()
 	published.Label = cmd.Flag.Lookup("label").Value.String()
 
+	if cmd.Flag.IsSet("skip-contents") {
+		published.SkipContents = cmd.Flag.Lookup("skip-contents").Value.Get().(bool)
+	}
+
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
 		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())
@@ -203,6 +207,7 @@ Example:
 	cmd.Flag.String("passphrase-file", "", "GPG passhprase-file for the key (warning: could be insecure)")
 	cmd.Flag.Bool("batch", false, "run GPG with detached tty")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
+	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
