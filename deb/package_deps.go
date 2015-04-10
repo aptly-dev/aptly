@@ -22,6 +22,12 @@ func parseDependencies(input Stanza, key string) []string {
 
 	delete(input, key)
 
+	value = strings.TrimSpace(value)
+	if value == "" {
+		// empty line is no depdencies
+		return nil
+	}
+
 	result := strings.Split(value, ",")
 	for i := range result {
 		result[i] = strings.TrimSpace(result[i])
