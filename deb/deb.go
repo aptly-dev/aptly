@@ -8,7 +8,7 @@ import (
 	"github.com/mkrautz/goar"
 	"github.com/remyoudompheng/go-liblzma"
 	"github.com/smira/aptly/utils"
-	"github.com/smira/lzma"
+	"github.com/uli-go/xz/lzma"
 	"io"
 	"os"
 	"strings"
@@ -141,8 +141,10 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 				defer unxz.Close()
 				tarInput = unxz
 			case "data.tar.lzma":
-				unlzma := lzma.NewReader(library)
-				defer unlzma.Close()
+				unlzma, err := lzma.NewReader(library)
+				if err != nil {
+					return nil, fmt.Errorf("unable to unlzma: %s", err)
+				}
 				tarInput = unlzma
 			default:
 				return nil, fmt.Errorf("unsupported tar compression: %s", header.Name)
