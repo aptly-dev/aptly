@@ -11,7 +11,7 @@ env:
     - secure: "OxiVNmre2JzUszwPNNilKDgIqtfX2gnRSsVz6nuySB1uO2yQsOQmKWJ9cVYgH2IB5H8eWXKOhexcSE28kz6TPLRuEcU9fnqKY3uEkdwm7rJfz9lf+7C4bJEUdA1OIzJppjnWUiXxD7CEPL1DlnMZM24eDQYqa/4WKACAgkK53gE="
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-virtualenv graphviz liblzma-dev
+  - sudo apt-get install -y python-virtualenv graphviz
   - virtualenv env
   - . env/bin/activate
   - pip install boto requests python-swiftclient
