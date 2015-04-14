@@ -67,7 +67,8 @@ package:
 	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
 	gzip root/usr/share/man/man1/aptly.1
 	fpm -s dir -t deb -n aptly -v $(VERSION) --url=http://www.aptly.info/ --license=MIT --vendor="Andrey Smirnov <me@smira.ru>" \
-	   -f -m "Andrey Smirnov <me@smira.ru>" --description="Debian repository management tool" --deb-recommends bzip2 --deb-recommends graphviz -C root/ .
+	   -f -m "Andrey Smirnov <me@smira.ru>" --description="Debian repository management tool" --deb-recommends bzip2 \
+	   --deb-recommends graphviz --deb-recommends xz-utils -C root/ .
 	mv aptly_$(VERSION)_*.deb ~
 
 src-package:
