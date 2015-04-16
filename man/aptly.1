@@ -52,13 +52,15 @@ Configuration file is stored in JSON format (default values shown below):
     "test": {
       "region": "us\-east\-1",
       "bucket": "repo",
+      "endpoint": "",
       "awsAccessKeyID": "",
       "awsSecretAccessKey": "",
       "prefix": "",
       "acl": "public\-read",
       "storageClass": "",
       "encryptionMethod": "",
-      "plusWorkaround": false
+      "plusWorkaround": false,
+      "disableMultiDel": false
     }
   },
   "SwiftPublishEndpoints": {
@@ -138,7 +140,7 @@ configuration of Amazon S3 publishing endpoints (see below)
 configuration of OpenStack Swift publishing endpoints (see below)
 .
 .SH "S3 PUBLISHING ENDPOINTS"
-aptly could be configured to publish repository directly to Amazon S3\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
+aptly could be configured to publish repository directly to Amazon S3 (or S3\-compatible cloud storage)\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
 .
 .TP
 \fBregion\fR
@@ -147,6 +149,10 @@ Amazon region for S3 bucket (e\.g\. \fBus\-east\-1\fR)
 .TP
 \fBbucket\fR
 bucket name
+.
+.TP
+\fBendpoint\fR
+(optional) when using S3\-compatible cloud storage, specify hostname of service endpoint here, region is ignored if endpoint is set (set region to some human\-readable name) (should be left blank for real Amazon S3)
 .
 .TP
 \fBprefix\fR
@@ -170,7 +176,11 @@ bucket name
 .
 .TP
 \fBplusWorkaround\fR
-(optional) workaround misbehavior in apt and Amazon S3 for files with \fB+\fR in filename by creating two copies of package files with \fB+\fR in filename: one original and another one with spaces instead of plus signs With \fBplusWorkaround\fR enabled, package files with plus sign would be stored twice\. aptly might not cleanup files with spaces when published repository is dropped or updated (switched) to new version of repository (snapshot)\.
+(optional) workaround misbehavior in apt and Amazon S3 for files with \fB+\fR in filename by creating two copies of package files with \fB+\fR in filename: one original and another one with spaces instead of plus signs With \fBplusWorkaround\fR enabled, package files with plus sign would be stored twice\. aptly might not cleanup files with spaces when published repository is dropped or updated (switched) to new version of repository (snapshot)
+.
+.TP
+\fBdisableMultiDel\fR
+for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
 .
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
