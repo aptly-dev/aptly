@@ -25,10 +25,10 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	c.Assert(s.srv, NotNil)
 
 	auth, _ := aws.GetAuth("aa", "bb")
-	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "", "", "", false)
+	s.storage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "", "", "", false, true)
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala", "", "", false)
+	s.prefixedStorage, err = NewPublishedStorageRaw(auth, aws.Region{Name: "test-1", S3Endpoint: s.srv.URL(), S3LocationConstraint: true}, "test", "", "lala", "", "", false, true)
 	c.Assert(err, IsNil)
 
 	err = s.storage.s3.Bucket("test").PutBucket("private")
@@ -40,7 +40,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "", false)
+	stor, err := NewPublishedStorage("aa", "bbb", "", "", "", "", "", "", "", false, false)
 	c.Check(stor, IsNil)
 	c.Check(err, ErrorMatches, "unknown region: .*")
 }
@@ -120,8 +120,6 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
-	c.Skip("multiple-delete not available in s3test")
-
 	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "lala/a", "lala/b", "lala/c"}
 	for _, path := range paths {
 		err := s.storage.bucket.Put(path, []byte("test"), "binary/octet-stream", "private")
@@ -133,8 +131,7 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "test/a", "test/b", "testa"})
-
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "testa"})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {

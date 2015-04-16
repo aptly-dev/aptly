@@ -20,6 +20,7 @@ type PublishedStorage struct {
 	storageClass     string
 	encryptionMethod string
 	plusWorkaround   bool
+	disableMultiDel  bool
 }
 
 // Check interface
@@ -29,7 +30,7 @@ var (
 
 // NewPublishedStorageRaw creates published storage from raw aws credentials
 func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround bool) (*PublishedStorage, error) {
+	storageClass, encryptionMethod string, plusWorkaround, disabledMultiDel bool) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
 	}
@@ -44,7 +45,8 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		prefix:           prefix,
 		storageClass:     storageClass,
 		encryptionMethod: encryptionMethod,
-		plusWorkaround:   plusWorkaround}
+		plusWorkaround:   plusWorkaround,
+		disableMultiDel:  disabledMultiDel}
 	result.bucket = result.s3.Bucket(bucket)
 
 	return result, nil
@@ -52,19 +54,33 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, region, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround bool) (*PublishedStorage, error) {
+func NewPublishedStorage(accessKey, secretKey, region, endpoint, bucket, defaultACL, prefix,
+	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel bool) (*PublishedStorage, error) {
 	auth, err := aws.GetAuth(accessKey, secretKey)
 	if err != nil {
 		return nil, err
 	}
 
-	awsRegion, ok := aws.Regions[region]
-	if !ok {
-		return nil, fmt.Errorf("unknown region: %#v", region)
+	var awsRegion aws.Region
+
+	if endpoint == "" {
+		var ok bool
+
+		awsRegion, ok = aws.Regions[region]
+		if !ok {
+			return nil, fmt.Errorf("unknown region: %#v", region)
+		}
+	} else {
+		awsRegion = aws.Region{
+			Name:                 region,
+			S3Endpoint:           endpoint,
+			S3LocationConstraint: true,
+			S3LowercaseBucket:    true,
+		}
 	}
 
-	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod, plusWorkaround)
+	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod,
+		plusWorkaround, disableMultiDel)
 }
 
 // String
@@ -135,27 +151,33 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 		return err
 	}
 
-	numParts := (len(filelist) + page - 1) / page
-
-	for i := 0; i < numParts; i++ {
-		var part []string
-		if i == numParts-1 {
-			part = filelist[i*page:]
-		} else {
-			part = filelist[i*page : (i+1)*page]
+	if storage.disableMultiDel {
+		for i := range filelist {
+			err = storage.bucket.Del(filepath.Join(storage.prefix, path, filelist[i]))
+			if err != nil {
+				return fmt.Errorf("error deleting path %s from %s: %s", filelist[i], storage, err)
+			}
 		}
-		paths := make([]string, len(part))
+	} else {
+		numParts := (len(filelist) + page - 1) / page
 
-		for i := range part {
-			paths[i] = filepath.Join(storage.prefix, path, part[i])
-		}
+		for i := 0; i < numParts; i++ {
+			var part []string
+			if i == numParts-1 {
+				part = filelist[i*page:]
+			} else {
+				part = filelist[i*page : (i+1)*page]
+			}
+			paths := make([]string, len(part))
 
-		err = storage.bucket.MultiDel(paths)
-		if err != nil {
-			return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
-		}
-		if err != nil {
-			return err
+			for i := range part {
+				paths[i] = filepath.Join(storage.prefix, path, part[i])
+			}
+
+			err = storage.bucket.MultiDel(paths)
+			if err != nil {
+				return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
+			}
 		}
 	}
 
