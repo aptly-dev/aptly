@@ -66,13 +66,15 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    \"test\": {\n"+
 		"      \"region\": \"us-east-1\",\n"+
 		"      \"bucket\": \"repo\",\n"+
+		"      \"endpoint\": \"\",\n"+
 		"      \"awsAccessKeyID\": \"\",\n"+
 		"      \"awsSecretAccessKey\": \"\",\n"+
 		"      \"prefix\": \"\",\n"+
 		"      \"acl\": \"\",\n"+
 		"      \"storageClass\": \"\",\n"+
 		"      \"encryptionMethod\": \"\",\n"+
-		"      \"plusWorkaround\": false\n"+
+		"      \"plusWorkaround\": false,\n"+
+		"      \"disableMultiDel\": false\n"+
 		"    }\n"+
 		"  },\n"+
 		"  \"SwiftPublishEndpoints\": {\n"+

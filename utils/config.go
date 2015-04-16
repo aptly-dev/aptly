@@ -29,6 +29,7 @@ type ConfigStructure struct {
 type S3PublishRoot struct {
 	Region           string `json:"region"`
 	Bucket           string `json:"bucket"`
+	Endpoint         string `json:"endpoint"`
 	AccessKeyID      string `json:"awsAccessKeyID"`
 	SecretAccessKey  string `json:"awsSecretAccessKey"`
 	Prefix           string `json:"prefix"`
@@ -36,6 +37,7 @@ type S3PublishRoot struct {
 	StorageClass     string `json:"storageClass"`
 	EncryptionMethod string `json:"encryptionMethod"`
 	PlusWorkaround   bool   `json:"plusWorkaround"`
+	DisableMultiDel  bool   `json:"disableMultiDel"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
