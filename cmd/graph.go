@@ -35,8 +35,13 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	os.Remove(tempfile.Name())
 
 	format := context.Flags().Lookup("format").Value.String()
+	output := context.Flags().Lookup("output").Value.String()
 
 	tempfilename := tempfile.Name() + "." + format
+	if output != "" {
+		fmt.Printf("set file name option as  %s .  will output as %s.%s .\n", output, output, format)
+		tempfilename = output + "." + format
+	}
 
 	command := exec.Command("dot", "-T"+format, "-o"+tempfilename)
 	command.Stderr = os.Stderr
@@ -66,6 +71,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+
 	fmt.Printf("Rendered to %s file: %s, trying to open it...\n", format, tempfilename)
 
 	_ = exec.Command("open", tempfilename).Run()
@@ -90,6 +96,7 @@ Example:
 	}
 
 	cmd.Flag.String("format", "png", "render graph to specified format (png, svg, pdf, etc.)")
+	cmd.Flag.String("output", "", "specically output filename , default is output /tmp/aptlyxxxx.png")
 
 	return cmd
 }
