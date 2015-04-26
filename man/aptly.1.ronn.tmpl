@@ -161,7 +161,7 @@ and associated settings:
      would be stored twice. aptly might not cleanup files with spaces when published
      repository is dropped or updated (switched) to new version of repository (snapshot)
    * `disableMultiDel`:
-     for S3-compatible cloud storages which do not support `MultiDel` S3 API,
+     (optional) for S3-compatible cloud storages which do not support `MultiDel` S3 API,
      enable this setting (file deletion would be slower with this setting enabled)
 
 In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
