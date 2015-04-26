@@ -13,7 +13,7 @@ type UploadersRule struct {
 	Condition         string       `json:"condition"`
 	Allow             []string     `json:"allow"`
 	Deny              []string     `json:"deny"`
-	CompiledCondition PackageQuery `json:"-"`
+	CompiledCondition PackageQuery `json:"-" codec:"-"`
 }
 
 func (u UploadersRule) String() string {
