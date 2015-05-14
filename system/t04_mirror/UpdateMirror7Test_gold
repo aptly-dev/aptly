@@ -14,4 +14,4 @@ Downloading http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbunt
 Downloading http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/i386/libiniparser_3.1-1_i386.deb...
 Mirror `flat` has been successfully updated.
 gpgv: Good signature from "home:DeepDiver1975 OBS Project <home:DeepDiver1975@build.opensuse.org>"
-gpgv: Signature made Tue May 21 23:01:30 2013 MSK using DSA key ID 1048C1FF
+gpgv:  DSA key ID 1048C1FF

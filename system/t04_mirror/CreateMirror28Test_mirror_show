@@ -10,8 +10,7 @@ Last update: never
 Information from release file:
 Architectures: i386 amd64
 Codename: dist
-Components: mongodb
-Date: Wed, 25 Feb 2015 17:35:02 UTC
+Components: 10gen
 Description:  mongodb packages
 
 Label: mongodb

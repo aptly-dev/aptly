@@ -1,4 +1,6 @@
 Downloading http://security.debian.org/dists/wheezy/updates/InRelease...
+gpgv:  RSA key ID C857C906
+gpgv: Good signature from "Debian Security Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 gpgv:  RSA key ID 46925553
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
 

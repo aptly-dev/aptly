@@ -17,5 +17,5 @@ Description:  Debian 7.0 Security Updates
 
 Label: Debian-Security
 Origin: Debian
-Suite: stable
+Suite: oldstable
 Version: 7.0

@@ -11,10 +11,10 @@ Information from release file:
 Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
 Codename: squeeze
 Components: main contrib non-free
-Date: Sat, 19 Jul 2014 11:02:06 UTC
+Date: Sat, 25 Apr 2015 11:01:14 UTC
 Description:  Debian 6.0.10 Released 19 July 2014
 
 Label: Debian
 Origin: Debian
-Suite: oldstable
+Suite: oldoldstable
 Version: 6.0.10

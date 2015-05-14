@@ -16,6 +16,8 @@ Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sysvinit/sysvinit_2.88dsf
 Mirror `wheezy-main` has been successfully updated.
 Packages filtered: 36038 -> 5.
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 gpgv: Good signature from "Wheezy Stable Release Key <debian-release@lists.debian.org>"
+gpgv:  RSA key ID 2B90D010
 gpgv:  RSA key ID 46925553
 gpgv:  RSA key ID 65FFB764
