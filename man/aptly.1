@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "April 2015" "" ""
+.TH "APTLY" "1" "May 2015" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -180,7 +180,7 @@ bucket name
 .
 .TP
 \fBdisableMultiDel\fR
-for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
+(optional) for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
 .
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
@@ -1639,6 +1639,10 @@ Options:
 .TP
 \-\fBformat\fR=png
 render graph to specified format (png, svg, pdf, etc\.)
+.
+.TP
+\-\fBoutput\fR=
+specify output filename, default is to open result in viewer
 .
 .SH "SHOW CURRENT APTLY\(cqS CONFIG"
 \fBaptly\fR \fBconfig\fR \fBshow\fR
