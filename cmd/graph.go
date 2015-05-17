@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func aptlyGraph(cmd *commander.Command, args []string) error {
@@ -37,11 +39,11 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	format := context.Flags().Lookup("format").Value.String()
 	output := context.Flags().Lookup("output").Value.String()
 
-	tempfilename := tempfile.Name() + "." + format
-	if output != "" {
-		fmt.Printf("set file name option as  %s .  will output as %s.%s .\n", output, output, format)
-		tempfilename = output + "." + format
+	if filepath.Ext(output) != "" {
+		format = filepath.Ext(output)[1:]
 	}
+
+	tempfilename := tempfile.Name() + "." + format
 
 	command := exec.Command("dot", "-T"+format, "-o"+tempfilename)
 	command.Stderr = os.Stderr
@@ -71,10 +73,19 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	if output != "" {
+		err = utils.CopyFile(tempfilename, output)
+		if err != nil {
+			return fmt.Errorf("unable to copy %s -> %s: %s", tempfilename, output, err)
+		}
+		_ = os.Remove(tempfilename)
 
-	fmt.Printf("Rendered to %s file: %s, trying to open it...\n", format, tempfilename)
+		fmt.Printf("Output saved to %s\n", output)
+	} else {
+		fmt.Printf("Rendered to %s file: %s, trying to open it...\n", format, tempfilename)
 
-	_ = exec.Command("open", tempfilename).Run()
+		_ = exec.Command("open", tempfilename).Run()
+	}
 
 	return err
 }
@@ -96,7 +107,7 @@ Example:
 	}
 
 	cmd.Flag.String("format", "png", "render graph to specified format (png, svg, pdf, etc.)")
-	cmd.Flag.String("output", "", "specically output filename , default is output /tmp/aptlyxxxx.png")
+	cmd.Flag.String("output", "", "specify output filename, default is to open result in viewer")
 
 	return cmd
 }
