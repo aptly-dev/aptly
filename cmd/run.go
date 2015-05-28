@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ctx "github.com/smira/aptly/context"
 	"github.com/smira/commander"
+	"os"
 )
 
 // Run runs single command starting from root cmd with args, optionally initializing context
@@ -14,7 +15,7 @@ func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode
 			if !ok {
 				panic(r)
 			}
-			fmt.Println("ERROR:", fatal.Message)
+			fmt.Fprintln(os.Stderr, "ERROR:", fatal.Message)
 			returnCode = fatal.ReturnCode
 		}
 	}()
