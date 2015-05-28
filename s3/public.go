@@ -6,6 +6,7 @@ import (
 	"github.com/mitchellh/goamz/s3"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +47,12 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		storageClass:     storageClass,
 		encryptionMethod: encryptionMethod,
 		plusWorkaround:   plusWorkaround,
-		disableMultiDel:  disabledMultiDel}
+		disableMultiDel:  disabledMultiDel,
+	}
+
+	result.s3.HTTPClient = func() *http.Client {
+		return aws.RetryingClient
+	}
 	result.bucket = result.s3.Bucket(bucket)
 
 	return result, nil
