@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
@@ -51,11 +50,8 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		disableMultiDel:  disabledMultiDel,
 	}
 
-	rt := &(*aws.RetryingClient.Transport.(*aws.ResilientTransport))
-	rt.Deadline = func() time.Time { return time.Time{} }
-
 	result.s3.HTTPClient = func() *http.Client {
-		return aws.NewClient(rt)
+		return RetryingClient
 	}
 	result.bucket = result.s3.Bucket(bucket)
 
