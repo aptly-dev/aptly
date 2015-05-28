@@ -153,7 +153,7 @@ class CreateMirror14Test(BaseTest):
     """
     create mirror: flat repository
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
@@ -166,7 +166,7 @@ class CreateMirror15Test(BaseTest):
     """
     create mirror: flat repository + components
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./ main"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./ main"
     expectedCode = 1
 
 
