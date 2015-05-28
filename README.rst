@@ -83,24 +83,24 @@ Integrations
 
 Vagrant:
 
--   [Vagrant configuration](https://github.com/sepulworld/aptly-vagrant) by
+-   `Vagrant configuration <https://github.com/sepulworld/aptly-vagrant>`_ by
     Zane Williamson, allowing to bring two virtual servers, one with aptly installed
     and another one set up to install packages from repository published by aptly
 
 Docker:
 
--    [Docker container](https://github.com/mikepurvis/aptly-docker) with aptly inside by Mike Purvis
+-    `Docker container <https://github.com/mikepurvis/aptly-docker>`_ with aptly inside by Mike Purvis
 
 With configuration management systems:
 
--   [Chef cookbook](https://github.com/hw-cookbooks/aptly) by Aaron Baer
+-   `Chef cookbook <https://github.com/hw-cookbooks/aptly>`_ by Aaron Baer
     (Heavy Water Operations, LLC)
--   [Puppet module](https://github.com/alphagov/puppet-aptly) by
+-   `Puppet module <https://github.com/alphagov/puppet-aptly>`_ by
     Government Digital Services
--   [SaltStack Formula](https://github.com/saltstack-formulas/aptly-formula) by
+-   `SaltStack Formula <https://github.com/saltstack-formulas/aptly-formula>`_ by
     Forrest Alvarez and Brian Jackson
--   [Ansible role](https://github.com/aioue/ansible-role-aptly) by Tom Paine
+-   `Ansible role <https://github.com/aioue/ansible-role-aptly>`_ by Tom Paine
 
 CLI for aptly API:
 
--   [Ruby aptly CLI/library](https://github.com/sepulworld/aptly_cli) by Zane Williamson
+-   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
