@@ -108,6 +108,33 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	c.Check(list, DeepEquals, []string{"a", "b", "c"})
 }
 
+func (s *PublishedStorageSuite) TestFilelistPlusWorkaround(c *C) {
+	s.storage.plusWorkaround = true
+	s.prefixedStorage.plusWorkaround = true
+
+	paths := []string{"a", "b", "c", "testa", "test/a+1", "test/a 1", "lala/a+b", "lala/a b", "lala/c"}
+	for _, path := range paths {
+		err := s.storage.bucket.Put(path, []byte("test"), "binary/octet-stream", "private")
+		c.Check(err, IsNil)
+	}
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+b", "lala/c", "test/a+1", "testa"})
+
+	list, err = s.storage.Filelist("test")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a+1"})
+
+	list, err = s.storage.Filelist("test2")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{})
+
+	list, err = s.prefixedStorage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a+b", "c"})
+}
+
 func (s *PublishedStorageSuite) TestRemove(c *C) {
 	err := s.storage.bucket.Put("a/b", []byte("test"), "binary/octet-stream", "private")
 	c.Check(err, IsNil)
@@ -119,7 +146,50 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	c.Check(err, ErrorMatches, "The specified key does not exist.")
 }
 
+func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
+	s.storage.plusWorkaround = true
+
+	err := s.storage.bucket.Put("a/b+c", []byte("test"), "binary/octet-stream", "private")
+	c.Check(err, IsNil)
+
+	err = s.storage.bucket.Put("a/b", []byte("test"), "binary/octet-stream", "private")
+	c.Check(err, IsNil)
+
+	err = s.storage.Remove("a/b+c")
+	c.Check(err, IsNil)
+
+	_, err = s.storage.bucket.Get("a/b+c")
+	c.Check(err, ErrorMatches, "The specified key does not exist.")
+
+	_, err = s.storage.bucket.Get("a/b c")
+	c.Check(err, ErrorMatches, "The specified key does not exist.")
+
+	err = s.storage.Remove("a/b")
+	c.Check(err, IsNil)
+
+	_, err = s.storage.bucket.Get("a/b")
+	c.Check(err, ErrorMatches, "The specified key does not exist.")
+
+}
+
 func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
+	s.storage.plusWorkaround = true
+
+	paths := []string{"a", "b", "c", "testa", "test/a+1", "test/a 1", "lala/a+b", "lala/a b", "lala/c"}
+	for _, path := range paths {
+		err := s.storage.bucket.Put(path, []byte("test"), "binary/octet-stream", "private")
+		c.Check(err, IsNil)
+	}
+
+	err := s.storage.RemoveDirs("test", nil)
+	c.Check(err, IsNil)
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+b", "lala/c", "testa"})
+}
+
+func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "lala/a", "lala/b", "lala/c"}
 	for _, path := range paths {
 		err := s.storage.bucket.Put(path, []byte("test"), "binary/octet-stream", "private")

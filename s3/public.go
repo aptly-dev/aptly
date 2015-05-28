@@ -145,6 +145,11 @@ func (storage *PublishedStorage) Remove(path string) error {
 	if err != nil {
 		return fmt.Errorf("error deleting %s from %s: %s", path, storage, err)
 	}
+
+	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
+		// try to remove workaround version, but don't care about result
+		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
+	}
 	return nil
 }
 
@@ -152,7 +157,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
 	const page = 1000
 
-	filelist, err := storage.Filelist(path)
+	filelist, err := storage.internalFilelist(path, false)
 	if err != nil {
 		return err
 	}
@@ -233,6 +238,10 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 
 // Filelist returns list of files under prefix
 func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
+	return storage.internalFilelist(prefix, true)
+}
+
+func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaround bool) ([]string, error) {
 	result := []string{}
 	marker := ""
 	prefix = filepath.Join(storage.prefix, prefix)
@@ -246,12 +255,18 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		}
 		lastKey := ""
 		for _, key := range contents.Contents {
+			lastKey = key.Key
+			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(lastKey, " ") != -1 {
+				// if we use plusWorkaround, we want to hide those duplicates
+				/// from listing
+				continue
+			}
+
 			if prefix == "" {
 				result = append(result, key.Key)
 			} else {
 				result = append(result, key.Key[len(prefix):])
 			}
-			lastKey = key.Key
 		}
 		if contents.IsTruncated {
 			marker = contents.NextMarker
