@@ -23,7 +23,7 @@ func verifyPath(path string) bool {
 
 func verifyDir(c *gin.Context) bool {
 	if !verifyPath(c.Params.ByName("dir")) {
-		c.Fail(400, fmt.Errorf("wrong dir"))
+		c.AbortWithError(400, fmt.Errorf("wrong dir"))
 		return false
 	}
 
@@ -52,7 +52,7 @@ func apiFilesListDirs(c *gin.Context) {
 	})
 
 	if err != nil && !os.IsNotExist(err) {
-		c.Fail(400, err)
+		c.AbortWithError(400, err)
 		return
 	}
 
@@ -69,13 +69,13 @@ func apiFilesUpload(c *gin.Context) {
 	err := os.MkdirAll(path, 0777)
 
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
 	err = c.Request.ParseMultipartForm(10 * 1024 * 1024)
 	if err != nil {
-		c.Fail(400, err)
+		c.AbortWithError(400, err)
 		return
 	}
 
@@ -85,7 +85,7 @@ func apiFilesUpload(c *gin.Context) {
 		for _, file := range files {
 			src, err := file.Open()
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 			defer src.Close()
@@ -93,14 +93,14 @@ func apiFilesUpload(c *gin.Context) {
 			destPath := filepath.Join(path, filepath.Base(file.Filename))
 			dst, err := os.Create(destPath)
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 			defer dst.Close()
 
 			_, err = io.Copy(dst, src)
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 
@@ -137,9 +137,9 @@ func apiFilesListFiles(c *gin.Context) {
 
 	if err != nil {
 		if os.IsNotExist(err) {
-			c.Fail(404, err)
+			c.AbortWithError(404, err)
 		} else {
-			c.Fail(500, err)
+			c.AbortWithError(500, err)
 		}
 		return
 	}
@@ -155,7 +155,7 @@ func apiFilesDeleteDir(c *gin.Context) {
 
 	err := os.RemoveAll(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
@@ -169,14 +169,14 @@ func apiFilesDeleteFile(c *gin.Context) {
 	}
 
 	if !verifyPath(c.Params.ByName("name")) {
-		c.Fail(400, fmt.Errorf("wrong file"))
+		c.AbortWithError(400, fmt.Errorf("wrong file"))
 		return
 	}
 
 	err := os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("name")))
 	if err != nil {
 		if err1, ok := err.(*os.PathError); !ok || !os.IsNotExist(err1.Err) {
-			c.Fail(500, err)
+			c.AbortWithError(500, err)
 			return
 		}
 	}
