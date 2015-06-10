@@ -75,7 +75,7 @@ func apiPublishList(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
@@ -101,18 +101,19 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Signing        SigningOptions
 	}
 
-	if !c.Bind(&b) {
+	if err := c.Bind(&b); err != nil {
+		c.AbortWithError(500, err)
 		return
 	}
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
 	if len(b.Sources) == 0 {
-		c.Fail(400, fmt.Errorf("unable to publish: soures are empty"))
+		c.AbortWithError(400, fmt.Errorf("unable to publish: soures are empty"))
 		return
 	}
 
@@ -131,13 +132,13 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			snapshot, err = snapshotCollection.ByName(source.Name)
 			if err != nil {
-				c.Fail(404, fmt.Errorf("unable to publish: %s", err))
+				c.AbortWithError(404, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			err = snapshotCollection.LoadComplete(snapshot)
 			if err != nil {
-				c.Fail(500, fmt.Errorf("unable to publish: %s", err))
+				c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
@@ -155,19 +156,19 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			localRepo, err = localCollection.ByName(source.Name)
 			if err != nil {
-				c.Fail(404, fmt.Errorf("unable to publish: %s", err))
+				c.AbortWithError(404, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			err = localCollection.LoadComplete(localRepo)
 			if err != nil {
-				c.Fail(500, fmt.Errorf("unable to publish: %s", err))
+				c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
 			}
 
 			sources = append(sources, localRepo)
 		}
 	} else {
-		c.Fail(400, fmt.Errorf("unknown SourceKind"))
+		c.AbortWithError(400, fmt.Errorf("unknown SourceKind"))
 		return
 	}
 
@@ -177,7 +178,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, context.CollectionFactory())
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
 		return
 	}
 	published.Origin = b.Origin
@@ -186,19 +187,19 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	duplicate := collection.CheckDuplicate(published)
 	if duplicate != nil {
 		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())
-		c.Fail(400, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate))
+		c.AbortWithError(400, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate))
 		return
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
 		return
 	}
 
 	err = collection.Add(published)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to save to DB: %s", err))
 	}
 
 	c.JSON(201, published)
@@ -219,13 +220,14 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 	}
 
-	if !c.Bind(&b) {
+	if err := c.Bind(&b); err != nil {
+		c.AbortWithError(500, err)
 		return
 	}
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
@@ -244,12 +246,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		c.Fail(404, fmt.Errorf("unable to update: %s", err))
+		c.AbortWithError(404, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 	err = collection.LoadComplete(published, context.CollectionFactory())
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
@@ -257,7 +259,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if published.SourceKind == "local" {
 		if len(b.Snapshots) > 0 {
-			c.Fail(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
+			c.AbortWithError(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
 		updatedComponents = published.Components()
@@ -268,19 +270,19 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		publishedComponents := published.Components()
 		for _, snapshotInfo := range b.Snapshots {
 			if !utils.StrSliceHasItem(publishedComponents, snapshotInfo.Component) {
-				c.Fail(404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
+				c.AbortWithError(404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
 				return
 			}
 
 			snapshot, err := snapshotCollection.ByName(snapshotInfo.Name)
 			if err != nil {
-				c.Fail(404, err)
+				c.AbortWithError(404, err)
 				return
 			}
 
 			err = snapshotCollection.LoadComplete(snapshot)
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 
@@ -288,23 +290,23 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			updatedComponents = append(updatedComponents, snapshotInfo.Component)
 		}
 	} else {
-		c.Fail(500, fmt.Errorf("unknown published repository type"))
+		c.AbortWithError(500, fmt.Errorf("unknown published repository type"))
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to update: %s", err))
 	}
 
 	err = collection.Update(published)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to save to DB: %s", err))
 	}
 
 	err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to update: %s", err))
 	}
 
 	c.JSON(200, published)
@@ -330,7 +332,7 @@ func apiPublishDrop(c *gin.Context) {
 	err := collection.Remove(context, storage, prefix, distribution,
 		context.CollectionFactory(), context.Progress(), force)
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to drop: %s", err))
+		c.AbortWithError(500, fmt.Errorf("unable to drop: %s", err))
 		return
 	}
 
