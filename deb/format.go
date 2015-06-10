@@ -102,6 +102,10 @@ func writeField(w *bufio.Writer, field, value string) (err error) {
 		if !strings.HasSuffix(value, "\n") {
 			value = value + "\n"
 		}
+
+		if field != "Description" {
+			value = "\n" + value
+		}
 		_, err = w.WriteString(field + ":" + value)
 	}
 
