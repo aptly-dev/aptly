@@ -1,6 +1,8 @@
 
+
  .
  .
+ 02f9a93097a8f798a054e26154dbe5789088c069
  C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
  Data files and self-defined functions can be manipulated by the internal
  Gnuplot is a portable command-line driven interactive data and function
@@ -22,7 +24,7 @@ Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.
 Package: gnuplot-x11
 Priority: optional
 Replaces: gnuplot (<< 4.0.0)
-SHA1: 02f9a93097a8f798a054e26154dbe5789088c069
+SHA1:
 Section: math
 Size: 724388
 Source: gnuplot

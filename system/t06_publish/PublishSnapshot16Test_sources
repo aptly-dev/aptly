@@ -1,27 +1,32 @@
-Package: gnuplot
-Version: 4.6.1-1~maverick2
-Section: math
-Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
-Architecture: any all
-Package-List: gnuplot deb math optional
+
+
+ 021df43737184e40b1ef8cef3cbd18b9 2431 gnuplot_4.6.1-1~maverick2.dsc
+ 103201f00bd80a7408dfb0e0b630eb14 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
+ 1ea21a628223159b0297ae65fe8293afd5aab3c0 4959670 gnuplot_4.6.1.orig.tar.gz
+ 2dd7bd3ee9abf89a0c2d518dfea56e7cbf01e0c2 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
+ 4c9a06461f402482c30cf94e267eb877 4959670 gnuplot_4.6.1.orig.tar.gz
+ e1e3ad5ad145cf7909a029a4dba6b9fffb5faabc3bc6b5099a3d6a92c7b5da2c 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
+ f4bf99907d0fea7db90b6e50147f1730b5bde2fbb93d9e58478b6b94409eebc6 4959670 gnuplot_4.6.1.orig.tar.gz
+ gnuplot deb math optional
  gnuplot-doc deb doc optional
  gnuplot-nox deb math optional
  gnuplot-x11 deb math optional
-Dm-Upload-Allowed: yes
-Checksums-Sha1: 2dd7bd3ee9abf89a0c2d518dfea56e7cbf01e0c2 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
- 1ea21a628223159b0297ae65fe8293afd5aab3c0 4959670 gnuplot_4.6.1.orig.tar.gz
+Architecture: any all
 Binary: gnuplot, gnuplot-nox, gnuplot-x11, gnuplot-doc
+Build-Depends: debhelper (>= 7), libpng-dev, libx11-dev, libxt-dev, pkg-config, texinfo (>= 4.8), texlive-latex-base, texlive-latex-recommended, texlive-latex-extra, liblua5.1-dev, zlib1g-dev, libgd2-noxpm-dev, quilt, libwxgtk2.8-dev, libcairo2-dev, libpango1.0-dev, libedit-dev, autoconf, automake
+Checksums-Sha1:
+Checksums-Sha256:
 Directory: pool/main/g/gnuplot
-Vcs-Browser: http://git.debian.org/?p=debian-science/packages/gnuplot.git
-Vcs-Git: git://git.debian.org/git/debian-science/packages/gnuplot.git
+Dm-Upload-Allowed: yes
+Files:
 Format: 3.0 (quilt)
-Files: 103201f00bd80a7408dfb0e0b630eb14 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
- 021df43737184e40b1ef8cef3cbd18b9 2431 gnuplot_4.6.1-1~maverick2.dsc
- 4c9a06461f402482c30cf94e267eb877 4959670 gnuplot_4.6.1.orig.tar.gz
 Homepage: http://gnuplot.sourceforge.net/
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Package-List:
+Package: gnuplot
+Section: math
 Standards-Version: 3.8.4
 Uploaders: Bradley Smith <bradsmith@debian.org>, Anton Gladky <gladky.anton@gmail.com>
-Checksums-Sha256: e1e3ad5ad145cf7909a029a4dba6b9fffb5faabc3bc6b5099a3d6a92c7b5da2c 18955 gnuplot_4.6.1-1~maverick2.debian.tar.gz
- f4bf99907d0fea7db90b6e50147f1730b5bde2fbb93d9e58478b6b94409eebc6 4959670 gnuplot_4.6.1.orig.tar.gz
-Build-Depends: debhelper (>= 7), libpng-dev, libx11-dev, libxt-dev, pkg-config, texinfo (>= 4.8), texlive-latex-base, texlive-latex-recommended, texlive-latex-extra, liblua5.1-dev, zlib1g-dev, libgd2-noxpm-dev, quilt, libwxgtk2.8-dev, libcairo2-dev, libpango1.0-dev, libedit-dev, autoconf, automake
-
+Vcs-Browser: http://git.debian.org/?p=debian-science/packages/gnuplot.git
+Vcs-Git: git://git.debian.org/git/debian-science/packages/gnuplot.git
+Version: 4.6.1-1~maverick2
