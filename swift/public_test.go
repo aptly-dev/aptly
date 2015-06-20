@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	TestAddress = "localhost:5324"
+	TestAddress = "localhost:5487"
 	AuthURL     = "http://" + TestAddress + "/v1.0"
 )
 
