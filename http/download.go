@@ -145,6 +145,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
+	req.Close = true
 
 	proxyURL, _ := downloader.client.Transport.(*http.Transport).Proxy(req)
 	if proxyURL == nil && (req.URL.Scheme == "http" || req.URL.Scheme == "https") {
