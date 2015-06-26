@@ -90,7 +90,7 @@ class UpdateMirror7Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg flat http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./",
+        "aptly mirror create --keyring=aptlytest.gpg flat http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
@@ -118,7 +118,7 @@ class UpdateMirror9Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
@@ -133,7 +133,7 @@ class UpdateMirror10Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% libapache2-*)), !($$PackageType (source))' flat-src http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% libferris*)), !($$PackageType (source))' flat-src http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
