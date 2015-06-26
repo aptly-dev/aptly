@@ -84,13 +84,13 @@ func (s *ControlFileSuite) SetUpTest(c *C) {
 func (s *ControlFileSuite) TestReadStanza(c *C) {
 	r := NewControlFileReader(s.reader)
 
-	stanza1, err := r.ReadStanza()
+	stanza1, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
-	stanza2, err := r.ReadStanza()
+	stanza2, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
-	stanza3, err := r.ReadStanza()
+	stanza3, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 	c.Assert(stanza3, IsNil)
 
@@ -103,7 +103,7 @@ func (s *ControlFileSuite) TestReadStanza(c *C) {
 
 func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	r := NewControlFileReader(s.reader)
-	stanza, err := r.ReadStanza()
+	stanza, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
 	buf := &bytes.Buffer{}
@@ -116,7 +116,7 @@ func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	str := buf.String()
 
 	r = NewControlFileReader(buf)
-	stanza2, err := r.ReadStanza()
+	stanza2, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
 	c.Assert(stanza2, DeepEquals, stanza)
@@ -140,7 +140,7 @@ func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
 		reader := bytes.NewBufferString(controlFile)
 		r := NewControlFileReader(reader)
 		for {
-			s, e := r.ReadStanza()
+			s, e := r.ReadStanza(false)
 			if s == nil && e == nil {
 				break
 			}

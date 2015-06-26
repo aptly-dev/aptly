@@ -22,7 +22,7 @@ func (s *PackageSuite) SetUpTest(c *C) {
 	s.stanza = packageStanza.Copy()
 
 	buf := bytes.NewBufferString(sourcePackageMeta)
-	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza()
+	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza(false)
 }
 
 func (s *PackageSuite) TestNewFromPara(c *C) {
@@ -43,7 +43,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 }
 
 func (s *PackageSuite) TestNewUdebFromPara(c *C) {
-	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
 	p := NewUdebPackageFromControlFile(stanza)
 
 	c.Check(p.IsSource, Equals, false)
@@ -152,7 +152,7 @@ func (s *PackageSuite) TestGetField(c *C) {
 
 	p4, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
 
-	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
 	p5 := NewUdebPackageFromControlFile(stanza5)
 
 	c.Check(p.GetField("$Source"), Equals, "alien-arena")

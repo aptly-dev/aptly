@@ -51,7 +51,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 
 				if tarHeader.Name == "./control" || tarHeader.Name == "control" {
 					reader := NewControlFileReader(untar)
-					stanza, err := reader.ReadStanza()
+					stanza, err := reader.ReadStanza(false)
 					if err != nil {
 						return nil, err
 					}
@@ -91,7 +91,7 @@ func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, err
 	}
 
 	reader := NewControlFileReader(text)
-	stanza, err := reader.ReadStanza()
+	stanza, err := reader.ReadStanza(false)
 	if err != nil {
 		return nil, err
 	}

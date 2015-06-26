@@ -92,11 +92,33 @@ func (s Stanza) Copy() (result Stanza) {
 	return
 }
 
-// Write single field from Stanza to writer
-func writeField(w *bufio.Writer, field, value string) (err error) {
-	_, multiline := multilineFields[field]
+func isMultilineField(field string, isRelease bool) bool {
+	switch field {
+	case "Description":
+		return true
+	case "Files":
+		return true
+	case "Changes":
+		return true
+	case "Checksums-Sha1":
+		return true
+	case "Checksums-Sha256":
+		return true
+	case "Package-List":
+		return true
+	case "MD5Sum":
+		return isRelease
+	case "SHA1":
+		return isRelease
+	case "SHA256":
+		return isRelease
+	}
+	return false
+}
 
-	if !multiline {
+// Write single field from Stanza to writer
+func writeField(w *bufio.Writer, field, value string, isRelease bool) (err error) {
+	if !isMultilineField(field, isRelease) {
 		_, err = w.WriteString(field + ": " + value + "\n")
 	} else {
 		if !strings.HasSuffix(value, "\n") {
@@ -126,7 +148,7 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 		value, ok := s[field]
 		if ok {
 			delete(s, field)
-			err := writeField(w, field, value)
+			err := writeField(w, field, value, isRelease)
 			if err != nil {
 				return err
 			}
@@ -134,7 +156,7 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 	}
 
 	for field, value := range s {
-		err := writeField(w, field, value)
+		err := writeField(w, field, value, isRelease)
 		if err != nil {
 			return err
 		}
@@ -147,20 +169,6 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 var (
 	ErrMalformedStanza = errors.New("malformed stanza syntax")
 )
-
-var multilineFields = make(map[string]bool)
-
-func init() {
-	multilineFields["Description"] = true
-	multilineFields["Files"] = true
-	multilineFields["Changes"] = true
-	multilineFields["Checksums-Sha1"] = true
-	multilineFields["Checksums-Sha256"] = true
-	multilineFields["Package-List"] = true
-	multilineFields["SHA256"] = true
-	multilineFields["SHA1"] = true
-	multilineFields["MD5Sum"] = true
-}
 
 func canonicalCase(field string) string {
 	upper := strings.ToUpper(field)
@@ -202,7 +210,7 @@ func NewControlFileReader(r io.Reader) *ControlFileReader {
 }
 
 // ReadStanza reeads one stanza from control file
-func (c *ControlFileReader) ReadStanza() (Stanza, error) {
+func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 	stanza := make(Stanza, 32)
 	lastField := ""
 	lastFieldMultiline := false
@@ -230,7 +238,7 @@ func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 				return nil, ErrMalformedStanza
 			}
 			lastField = canonicalCase(parts[0])
-			_, lastFieldMultiline = multilineFields[lastField]
+			lastFieldMultiline = isMultilineField(lastField, isRelease)
 			if lastFieldMultiline {
 				stanza[lastField] = parts[1]
 				if parts[1] != "" {

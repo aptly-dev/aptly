@@ -305,7 +305,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 
 	cfr := NewControlFileReader(rf)
-	st, err := cfr.ReadStanza()
+	st, err := cfr.ReadStanza(true)
 	c.Assert(err, IsNil)
 
 	c.Check(st["Origin"], Equals, "ppa squeeze")
@@ -318,13 +318,13 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	cfr = NewControlFileReader(pf)
 
 	for i := 0; i < 3; i++ {
-		st, err = cfr.ReadStanza()
+		st, err = cfr.ReadStanza(false)
 		c.Assert(err, IsNil)
 
 		c.Check(st["Filename"], Equals, "pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 	}
 
-	st, err = cfr.ReadStanza()
+	st, err = cfr.ReadStanza(false)
 	c.Assert(err, IsNil)
 	c.Assert(st, IsNil)
 
@@ -332,7 +332,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	c.Assert(err, IsNil)
 
 	cfr = NewControlFileReader(drf)
-	st, err = cfr.ReadStanza()
+	st, err = cfr.ReadStanza(true)
 	c.Assert(err, IsNil)
 
 	c.Check(st["Archive"], Equals, "squeeze")

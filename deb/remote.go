@@ -304,7 +304,7 @@ ok:
 	defer release.Close()
 
 	sreader := NewControlFileReader(release)
-	stanza, err := sreader.ReadStanza()
+	stanza, err := sreader.ReadStanza(true)
 	if err != nil {
 		return err
 	}
@@ -443,7 +443,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		sreader := NewControlFileReader(packagesReader)
 
 		for {
-			stanza, err := sreader.ReadStanza()
+			stanza, err := sreader.ReadStanza(false)
 			if err != nil {
 				return err
 			}
