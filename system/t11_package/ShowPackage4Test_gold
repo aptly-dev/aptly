@@ -1,7 +1,7 @@
 
 
 
-  /Users/smira/.aptly/pool/58/6a/nginx-full_1.2.1-2.2+wheezy2_amd64.deb
+  ${HOME}/.aptly/pool/58/6a/nginx-full_1.2.1-2.2+wheezy2_amd64.deb
 Architecture: amd64
 Conflicts: nginx-extras, nginx-light, nginx-naxsi
 Depends: nginx-common (= 1.2.1-2.2+wheezy2), libc6 (>= 2.10), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libssl1.0.0 (>= 1.0.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)
