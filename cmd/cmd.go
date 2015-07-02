@@ -2,12 +2,14 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"os"
+	"text/template"
 	"time"
 )
 
@@ -32,6 +34,32 @@ func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
 	}
 
 	return
+}
+
+// PrintPackageList shows package list with specified format or default representation
+func PrintPackageList(result *deb.PackageList, format string) error {
+	if format == "" {
+		return result.ForEach(func(p *deb.Package) error {
+			context.Progress().Printf("%s\n", p)
+			return nil
+		})
+	}
+
+	formatTemplate, err := template.New("format").Parse(format)
+	if err != nil {
+		return fmt.Errorf("error parsing -format template: %s", err)
+	}
+
+	return result.ForEach(func(p *deb.Package) error {
+		b := &bytes.Buffer{}
+		err = formatTemplate.Execute(b, p.ExtendedStanza())
+		if err != nil {
+			return fmt.Errorf("error applying template: %s", err)
+		}
+		context.Progress().Printf("%s\n", b.String())
+		return nil
+	})
+
 }
 
 // LookupOption checks boolean flag with default (usually config) and command-line

@@ -170,14 +170,19 @@ func (p *Package) String() string {
 	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
 }
 
-// MarshalJSON implements json.Marshaller interface
-func (p *Package) MarshalJSON() ([]byte, error) {
+// ExtendedStanza returns package stanza enhanced with aptly-specific fields
+func (p *Package) ExtendedStanza() Stanza {
 	stanza := p.Stanza()
 	stanza["FilesHash"] = fmt.Sprintf("%08x", p.FilesHash)
 	stanza["Key"] = string(p.Key(""))
 	stanza["ShortKey"] = string(p.ShortKey(""))
 
-	return json.Marshal(stanza)
+	return stanza
+}
+
+// MarshalJSON implements json.Marshaller interface
+func (p *Package) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.ExtendedStanza())
 }
 
 // GetField returns fields from package

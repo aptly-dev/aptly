@@ -21,6 +21,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("with-deps", false, "include dependencies into search results")
+	cmd.Flag.String("format", "", "custom format for result printing")
 
 	return cmd
 }
