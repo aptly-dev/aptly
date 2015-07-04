@@ -274,6 +274,27 @@ When specified on command line, query may have to be quoted according to shell r
 
   `aptly repo import percona stable 'mysql-client (>= 3.6)'`
 
+## PACKAGE DISPLAY FORMAT
+
+Some aptly commands (`aptly mirror search`, `aptly package search`, ...) support `-format` flag
+which allows to customize how search results are printed. Golang templates are used to specify
+display format, with all package stanza fields available to template. In addition to package stanza
+fields aptly provides:
+
+ * `Key`:
+   internal aptly package ID, unique for all packages in aptly
+   (combination of `ShortKey` and `FilesHash`).
+
+ * `FilesHash`:
+   hash that includes MD5 of all packages files.
+
+ * `ShortKey`:
+   package ID, which is unique in single list (mirror, repo, snapshot, ...), but not unique
+   in whole aptly package collection.
+
+For example, default aptly display format could be presented with the following template:
+`{{"{{"}}.Package{{"}}"}}_{{"{{"}}.Version{{"}}"}}_{{"{{"}}.Architecture{{"}}"}}`. To display package name with dependencies:
+`{{"{{"}}.Package{{"}}"}} | {{"{{"}}.Depends{{"}}"}}`. More information on Golang template syntax: http://godoc.org/text/template
 
 ## GLOBAL OPTIONS
 
