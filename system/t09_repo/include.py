@@ -59,6 +59,7 @@ class IncludeRepo3Test(BaseTest):
     ]
     runCmd = "aptly repo include -no-remove-files -keyring=${files}/aptly.pub -repo=my-{{.Distribution} ${changes}"
     expectedCode = 1
+    outputMatchPrepare = lambda _, s: s.replace('; missing space?', '')
 
 
 class IncludeRepo4Test(BaseTest):
