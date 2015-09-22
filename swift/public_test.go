@@ -1,13 +1,17 @@
 package swift
 
 import (
-	"github.com/ncw/swift/swifttest"
-	"github.com/smira/aptly/files"
-
+	"fmt"
 	. "gopkg.in/check.v1"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/ncw/swift/swifttest"
+
+	"github.com/smira/aptly/files"
 )
 
 const (
@@ -16,6 +20,7 @@ const (
 )
 
 type PublishedStorageSuite struct {
+	TestAddress, AuthURL     string
 	srv                      *swifttest.SwiftServer
 	storage, prefixedStorage *PublishedStorage
 }
@@ -24,6 +29,12 @@ var _ = Suite(&PublishedStorageSuite{})
 
 func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	var err error
+
+	rand.Seed(int64(time.Now().Nanosecond()))
+
+	s.TestAddress = fmt.Sprintf("localhost:%d", rand.Intn(10000)+20000)
+	s.AuthURL = "http://" + s.TestAddress + "/v1.0"
+
 	s.srv, err = swifttest.NewSwiftServer(TestAddress)
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
