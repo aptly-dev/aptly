@@ -230,7 +230,9 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 			if lastFieldMultiline {
 				stanza[lastField] += line + "\n"
 			} else {
-				stanza[lastField] += strings.TrimSpace(line)
+				//if we trim the line, folded field case gets interpreted badly during string.Fields(stanza[...])
+				// Binary is an example of such field
+				stanza[lastField] += line
 			}
 		} else {
 			parts := strings.SplitN(line, ":", 2)
