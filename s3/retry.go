@@ -78,7 +78,7 @@ func (t *ResilientTransport) tries(req *http.Request) (res *http.Response, err e
 		if !t.ShouldRetry(req, res, err) {
 			break
 		}
-		if try == MaxTries-1 {
+		if try == (t.MaxTries - 1) {
 			break
 		}
 		if res != nil {
