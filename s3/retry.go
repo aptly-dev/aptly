@@ -43,7 +43,8 @@ func NewClient(rt *ResilientTransport) *http.Client {
 			}
 			return c, nil
 		},
-		Proxy: http.ProxyFromEnvironment,
+		DisableKeepAlives: true,
+		Proxy:             http.ProxyFromEnvironment,
 	}
 	// TODO: Would be nice is ResilientTransport allowed clients to initialize
 	// with http.Transport attributes.
@@ -75,6 +76,9 @@ func (t *ResilientTransport) tries(req *http.Request) (res *http.Response, err e
 		res, err = t.transport.RoundTrip(req)
 
 		if !t.ShouldRetry(req, res, err) {
+			break
+		}
+		if try == MaxTries-1 {
 			break
 		}
 		if res != nil {
