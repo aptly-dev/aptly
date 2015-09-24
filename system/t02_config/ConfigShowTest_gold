@@ -13,5 +13,6 @@
     "ppaDistributorID": "ubuntu",
     "ppaCodename": "",
     "S3PublishEndpoints": {},
-    "SwiftPublishEndpoints": {}
+    "SwiftPublishEndpoints": {},
+    "GCSPublishEndpoints": {}
 }
