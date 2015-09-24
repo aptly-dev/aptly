@@ -230,7 +230,7 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 			if lastFieldMultiline {
 				stanza[lastField] += line + "\n"
 			} else {
-				stanza[lastField] += strings.TrimSpace(line)
+				stanza[lastField] += " " + strings.TrimSpace(line)
 			}
 		} else {
 			parts := strings.SplitN(line, ":", 2)
