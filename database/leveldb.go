@@ -43,7 +43,8 @@ var (
 
 func internalOpen(path string) (*leveldb.DB, error) {
 	o := &opt.Options{
-		Filter: filter.NewBloomFilter(10),
+		Filter:                 filter.NewBloomFilter(10),
+		OpenFilesCacheCapacity: 256,
 	}
 
 	return leveldb.OpenFile(path, o)
