@@ -22,6 +22,7 @@ type PublishedStorage struct {
 	encryptionMethod string
 	plusWorkaround   bool
 	disableMultiDel  bool
+	pathCache        map[string]string
 }
 
 // Check interface
@@ -157,7 +158,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
 	const page = 1000
 
-	filelist, err := storage.internalFilelist(path, false)
+	filelist, _, err := storage.internalFilelist(path, false)
 	if err != nil {
 		return err
 	}
@@ -212,17 +213,25 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	poolPath := filepath.Join(storage.prefix, relPath)
 
 	var (
-		dstKey *s3.Key
-		err    error
+		err error
 	)
 
-	dstKey, err = storage.bucket.GetKey(poolPath)
-	if err != nil {
-		if s3err, ok := err.(*s3.Error); !ok || s3err.StatusCode != 404 {
-			return fmt.Errorf("error getting information about %s from %s: %s", poolPath, storage, err)
+	if storage.pathCache == nil {
+		paths, md5s, err := storage.internalFilelist(storage.prefix, true)
+		if err != nil {
+			return fmt.Errorf("error caching paths under prefix: %s", err)
 		}
-	} else {
-		destinationMD5 := strings.Replace(dstKey.ETag, "\"", "", -1)
+
+		storage.pathCache = make(map[string]string, len(paths))
+
+		for i := range paths {
+			storage.pathCache[paths[i]] = md5s[i]
+		}
+	}
+
+	destinationMD5, exists := storage.pathCache[relPath]
+
+	if exists {
 		if destinationMD5 == sourceMD5 {
 			return nil
 		}
@@ -233,16 +242,23 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	return storage.PutFile(relPath, sourcePath)
+	err = storage.PutFile(relPath, sourcePath)
+	if err == nil {
+		storage.pathCache[relPath] = sourceMD5
+	}
+
+	return err
 }
 
 // Filelist returns list of files under prefix
 func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
-	return storage.internalFilelist(prefix, true)
+	paths, _, err := storage.internalFilelist(prefix, true)
+	return paths, err
 }
 
-func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaround bool) ([]string, error) {
-	result := []string{}
+func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaround bool) (paths []string, md5s []string, err error) {
+	paths = make([]string, 0, 1024)
+	md5s = make([]string, 0, 1024)
 	marker := ""
 	prefix = filepath.Join(storage.prefix, prefix)
 	if prefix != "" {
@@ -251,7 +267,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 	for {
 		contents, err := storage.bucket.List(prefix, "", marker, 1000)
 		if err != nil {
-			return nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
+			return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
 		}
 		lastKey := ""
 		for _, key := range contents.Contents {
@@ -263,10 +279,11 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 			}
 
 			if prefix == "" {
-				result = append(result, key.Key)
+				paths = append(paths, key.Key)
 			} else {
-				result = append(result, key.Key[len(prefix):])
+				paths = append(paths, key.Key[len(prefix):])
 			}
+			md5s = append(md5s, strings.Replace(key.ETag, "\"", "", -1))
 		}
 		if contents.IsTruncated {
 			marker = contents.NextMarker
@@ -282,7 +299,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 		}
 	}
 
-	return result, nil
+	return paths, md5s, nil
 }
 
 // RenameFile renames (moves) file
