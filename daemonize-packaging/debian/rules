@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# DH_GOPKG is the upstream path which you would normally “go get”.
+# Using it allows us to build applications without patching locations.
+export DH_GOPKG := github.com/smira/aptly
+
+# our path
+PACKAGE_DIR := src/github.com/smira/aptly
+SOURCE_DIR := $(CURDIR)/$(PACKAGE_DIR)
+DEST_DIR := $(CURDIR)/debian/aptly
+
+%:
+	dh $@ --sourcedirectory=$(SOURCE_DIR)
+
+override_dh_auto_test:
+	# nothing for now
+
+override_dh_auto_clean:
+	rm -f aptly
+	rm -fr $(DEST_DIR)
+
+override_dh_auto_build:
+	GOPATH=:$(CURDIR):$(SOURCE_DIR)/_vendor go build -o aptly $(PACKAGE_DIR)/main.go
+
+override_dh_auto_install:
+	dh_bash-completion
+	mkdir -p $(DEST_DIR)/usr/bin
+	cp aptly  $(DEST_DIR)/usr/bin/
