@@ -26,16 +26,16 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 	for {
 		header, err := library.Next()
 		if err == io.EOF {
-			return nil, fmt.Errorf("unable to find control.tar.gz part")
+			return nil, fmt.Errorf("unable to find control.tar.gz part in package %s", packageFile)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("unable to read .deb archive: %s", err)
+			return nil, fmt.Errorf("unable to read .deb archive %s: %s", packageFile, err)
 		}
 
 		if header.Name == "control.tar.gz" {
 			ungzip, err := gzip.NewReader(library)
 			if err != nil {
-				return nil, fmt.Errorf("unable to ungzip: %s", err)
+				return nil, fmt.Errorf("unable to ungzip control file from %s. Error: %s", packageFile, err)
 			}
 			defer ungzip.Close()
 
@@ -43,10 +43,10 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 			for {
 				tarHeader, err := untar.Next()
 				if err == io.EOF {
-					return nil, fmt.Errorf("unable to find control file")
+					return nil, fmt.Errorf("unable to find control file in %s", packageFile)
 				}
 				if err != nil {
-					return nil, fmt.Errorf("unable to read .tar archive: %s", err)
+					return nil, fmt.Errorf("unable to read .tar archive from %s. Error: %s", packageFile, err)
 				}
 
 				if tarHeader.Name == "./control" || tarHeader.Name == "control" {
@@ -112,10 +112,10 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 	for {
 		header, err := library.Next()
 		if err == io.EOF {
-			return nil, fmt.Errorf("unable to find data.tar.* part")
+			return nil, fmt.Errorf("unable to find data.tar.* part in %s", packageFile)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("unable to read .deb archive: %s", err)
+			return nil, fmt.Errorf("unable to read .deb archive from %s: %s", packageFile, err)
 		}
 
 		if strings.HasPrefix(header.Name, "data.tar") {
@@ -127,7 +127,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 			case "data.tar.gz":
 				ungzip, err := gzip.NewReader(library)
 				if err != nil {
-					return nil, fmt.Errorf("unable to ungzip: %s", err)
+					return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile,err)
 				}
 				defer ungzip.Close()
 				tarInput = ungzip
@@ -136,7 +136,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 			case "data.tar.xz":
 				unxz, err := xz.NewReader(library)
 				if err != nil {
-					return nil, fmt.Errorf("unable to unxz: %s", err)
+					return nil, fmt.Errorf("unable to unxz data.tar.xz from %s: %s", packageFile, err)
 				}
 				defer unxz.Close()
 				tarInput = unxz
@@ -145,7 +145,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 				defer unlzma.Close()
 				tarInput = unlzma
 			default:
-				return nil, fmt.Errorf("unsupported tar compression: %s", header.Name)
+				return nil, fmt.Errorf("unsupported tar compression in %s: %s", packageFile, header.Name)
 			}
 
 			untar := tar.NewReader(tarInput)
@@ -156,7 +156,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 					return results, nil
 				}
 				if err != nil {
-					return nil, fmt.Errorf("unable to read .tar archive: %s", err)
+					return nil, fmt.Errorf("unable to read .tar archive from %s: %s", packageFile, err)
 				}
 
 				if tarHeader.Typeflag == tar.TypeDir {
