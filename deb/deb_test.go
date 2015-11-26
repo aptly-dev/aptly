@@ -28,7 +28,7 @@ func (s *DebSuite) TestGetControlFileFromDeb(c *C) {
 
 	_, _File, _, _ := runtime.Caller(0)
 	_, err = GetControlFileFromDeb(_File)
-	c.Check(err, ErrorMatches, "unable to read .deb archive: ar: missing global header")
+	c.Check(err, ErrorMatches, "^.+ar: missing global header")
 
 	st, err := GetControlFileFromDeb(s.debFile)
 	c.Check(err, IsNil)
