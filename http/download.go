@@ -327,7 +327,11 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		if !foundChecksum {
-			file, err = DownloadTemp(downloader, tryURL)
+			if !ignoreMismatch {
+				continue
+			} else {
+				file, err = DownloadTemp(downloader, tryURL)
+			}
 		}
 
 		if err != nil {
