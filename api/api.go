@@ -32,25 +32,27 @@ func cacheFlusher() {
 	for {
 		<-ticker
 
-		// lock everything to eliminate in-progress calls
-		r := context.CollectionFactory().RemoteRepoCollection()
-		r.Lock()
-		defer r.Unlock()
+		func() {
+			// lock everything to eliminate in-progress calls
+			r := context.CollectionFactory().RemoteRepoCollection()
+			r.Lock()
+			defer r.Unlock()
 
-		l := context.CollectionFactory().LocalRepoCollection()
-		l.Lock()
-		defer l.Unlock()
+			l := context.CollectionFactory().LocalRepoCollection()
+			l.Lock()
+			defer l.Unlock()
 
-		s := context.CollectionFactory().SnapshotCollection()
-		s.Lock()
-		defer s.Unlock()
+			s := context.CollectionFactory().SnapshotCollection()
+			s.Lock()
+			defer s.Unlock()
 
-		p := context.CollectionFactory().PublishedRepoCollection()
-		p.Lock()
-		defer p.Unlock()
+			p := context.CollectionFactory().PublishedRepoCollection()
+			p.Lock()
+			defer p.Unlock()
 
-		// all collections locked, flush them
-		context.CollectionFactory().Flush()
+			// all collections locked, flush them
+			context.CollectionFactory().Flush()
+		}()
 	}
 }
 
