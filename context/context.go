@@ -99,7 +99,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 
 			if err != nil {
-				fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
 				utils.SaveConfig(configLocations[0], &utils.Config)
 			}
 		}
