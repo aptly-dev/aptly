@@ -334,7 +334,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -367,7 +367,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 

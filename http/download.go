@@ -349,5 +349,9 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 
 		return uncompressed, file, err
 	}
+
+	if err == nil {
+		err = fmt.Errorf("no candidates for %s found", url)
+	}
 	return nil, nil, err
 }
