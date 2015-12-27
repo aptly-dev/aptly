@@ -37,7 +37,7 @@ func (pool *PackagePool) RelativePath(filename string, hashMD5 string) (string, 
 		return "", fmt.Errorf("unable to compute pool location for filename %v, MD5 is missing", filename)
 	}
 
-	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
+	return filepath.Join(hashMD5[0:2], hashMD5[2:4], hashMD5[4:6], hashMD5[6:8], hashMD5[8:10], filename), nil
 }
 
 // Path returns full path to package file in pool given any name and hash of file contents
