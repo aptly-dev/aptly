@@ -46,6 +46,7 @@ Example:
 	}
 
 	cmd.Flag.String("listen", ":8080", "host:port for HTTP listening")
+	cmd.Flag.Bool("no-lock", false, "don't lock the database")
 
 	return cmd
 

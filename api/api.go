@@ -22,17 +22,36 @@ func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
 }
 
-// Periodically flushes CollectionFactory to free up memory used by collections,
-// flushing caches.
+const (
+	ACQUIREDB = iota
+	RELEASEDB
+)
+
+// Periodically flushes CollectionFactory to free up memory used by
+// collections, flushing caches. If the two channels are provided,
+// they are used to acquire and release the database.
 //
 // Should be run in goroutine!
-func cacheFlusher() {
+func cacheFlusher(requests chan int, acks chan error) {
 	ticker := time.Tick(15 * time.Minute)
 
 	for {
 		<-ticker
 
 		func() {
+			// lock database if needed
+			if requests != nil {
+				requests <- ACQUIREDB
+				err := <-acks
+				if err != nil {
+					return
+				}
+				defer func() {
+					requests <- RELEASEDB
+					<-acks
+				}()
+			}
+
 			// lock everything to eliminate in-progress calls
 			r := context.CollectionFactory().RemoteRepoCollection()
 			r.Lock()
@@ -53,6 +72,34 @@ func cacheFlusher() {
 			// all collections locked, flush them
 			context.CollectionFactory().Flush()
 		}()
+	}
+}
+
+// Acquire database lock and release it when not needed anymore. Two
+// channels must be provided. The first one is to receive requests to
+// acquire/release the database and the second one is to send acks.
+//
+// Should be run in a goroutine!
+func acquireDatabase(requests chan int, acks chan error) {
+	clients := 0
+	for {
+		request := <-requests
+		switch request {
+		case ACQUIREDB:
+			if clients == 0 {
+				acks <- context.ReOpenDatabase()
+			} else {
+				acks <- nil
+			}
+			clients++
+		case RELEASEDB:
+			clients--
+			if clients == 0 {
+				acks <- context.CloseDatabase()
+			} else {
+				acks <- nil
+			}
+		}
 	}
 }
 
