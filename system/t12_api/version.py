@@ -7,4 +7,4 @@ class VersionAPITest(APITest):
     """
 
     def check(self):
-        self.check_equal(self.get("/api/version").json(), {'Version': '0.9.6~dev'})
+        self.check_equal(self.get("/api/version").json(), {'Version': '0.9.6'})
