@@ -27,7 +27,7 @@ class APITest(BaseTest):
         if APITest.aptly_server is None:
             super(APITest, self).prepare()
 
-            APITest.aptly_server = self._start_process("aptly api serve -listen=%s" % (self.base_url),)
+            APITest.aptly_server = self._start_process("aptly api serve -no-lock -listen=%s" % (self.base_url),)
             time.sleep(1)
 
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", "upload")):
