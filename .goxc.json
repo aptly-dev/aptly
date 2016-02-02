@@ -1,0 +1,38 @@
+{
+	"AppName": "aptly",
+	"ArtifactsDest": "xc-out/",
+	"TasksExclude": [
+		"rmbin"
+	],
+    "TasksAppend": [
+        "bintray"
+    ],
+    "TaskSettings": {
+        "deb": {
+            "metadata": {
+                "maintainer": "Andrey Smirnov",
+                "maintainerEmail": "me@smira.ru",
+                "description": "Debian repository management tool"
+            },
+            "metadata-deb": {
+                "License": "MIT",
+                "Homepage": "https://www.aptly.info/",
+                "Recommends": "bzip2, graphviz, xz-utils",
+                "Depends": ""
+            },
+            "other-mapped-files": {
+                "/": "root/"
+            }
+        },
+        "bintray": {
+            "repository": "aptly",
+            "subject": "smira",
+            "package": "aptly",
+            "downloadspage": "bintray.md"
+        }
+    },
+	"Arch": "386 amd64",
+	"Os": "linux darwin freebsd",
+	"MainDirsExclude": "man,_vendor",
+	"ConfigVersion": "0.9"
+}

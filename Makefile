@@ -59,18 +59,6 @@ mem.png: mem.dat mem.gp
 	gnuplot mem.gp
 	open mem.png
 
-package:
-	rm -rf root/
-	mkdir -p root/usr/bin/ root/usr/share/man/man1/ root/etc/bash_completion.d
-	cp $(BINPATH)/aptly root/usr/bin
-	cp man/aptly.1 root/usr/share/man/man1
-	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
-	gzip root/usr/share/man/man1/aptly.1
-	fpm -s dir -t deb -n aptly -v $(VERSION) --url=http://www.aptly.info/ --license=MIT --vendor="Andrey Smirnov <me@smira.ru>" \
-	   -f -m "Andrey Smirnov <me@smira.ru>" --description="Debian repository management tool" --deb-recommends bzip2 \
-	   --deb-recommends graphviz --deb-recommends xz-utils -C root/ .
-	mv aptly_$(VERSION)_*.deb ~
-
 src-package:
 	rm -rf aptly-$(VERSION)
 	mkdir -p aptly-$(VERSION)/src/github.com/smira/aptly/
@@ -83,5 +71,13 @@ src-package:
 	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
 	rm -rf aptly-$(VERSION)
 	curl -T aptly-$(VERSION)-src.tar.bz2 -usmira:$(BINTRAY_KEY) https://api.bintray.com/content/smira/aptly/aptly/$(VERSION)/$(VERSION)/aptly-$(VERSION)-src.tar.bz2
+
+goxc:
+	rm -rf root/
+	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d
+	cp man/aptly.1 root/usr/share/man/man1
+	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
+	gzip root/usr/share/man/man1/aptly.1
+	gom exec goxc -pv=$(VERSION) -max-processors=4
 
 .PHONY: coverage.out
