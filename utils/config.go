@@ -32,6 +32,7 @@ type S3PublishRoot struct {
 	Endpoint         string `json:"endpoint"`
 	AccessKeyID      string `json:"awsAccessKeyID"`
 	SecretAccessKey  string `json:"awsSecretAccessKey"`
+	SessionToken     string `json:"awsSessionToken"`
 	Prefix           string `json:"prefix"`
 	ACL              string `json:"acl"`
 	StorageClass     string `json:"storageClass"`
