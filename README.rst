@@ -90,6 +90,7 @@ Vagrant:
 Docker:
 
 -    `Docker container <https://github.com/mikepurvis/aptly-docker>`_ with aptly inside by Mike Purvis
+-    `Docker container <https://github.com/bryanhong/docker-aptly>`_ with aptly and nginx by Bryan Hong
 
 With configuration management systems:
 
