@@ -69,6 +69,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"endpoint\": \"\",\n"+
 		"      \"awsAccessKeyID\": \"\",\n"+
 		"      \"awsSecretAccessKey\": \"\",\n"+
+		"      \"awsSessionToken\": \"\",\n"+
 		"      \"prefix\": \"\",\n"+
 		"      \"acl\": \"\",\n"+
 		"      \"storageClass\": \"\",\n"+

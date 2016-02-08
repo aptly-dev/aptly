@@ -74,7 +74,7 @@ func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, b
 	}
 
 	if endpoint != "" {
-		config.Endpoint = aws.String(endpoint)
+		config = config.WithEndpoint(endpoint).WithS3ForcePathStyle(true)
 	}
 
 	if accessKey != "" {
