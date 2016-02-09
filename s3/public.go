@@ -2,11 +2,12 @@ package s3
 
 import (
 	"fmt"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,8 +16,9 @@ import (
 // PublishedStorage abstract file system with published files (actually hosted on S3)
 type PublishedStorage struct {
 	s3               *s3.S3
-	bucket           *s3.Bucket
-	acl              s3.ACL
+	config           *aws.Config
+	bucket           string
+	acl              string
 	prefix           string
 	storageClass     string
 	encryptionMethod string
@@ -31,8 +33,11 @@ var (
 )
 
 // NewPublishedStorageRaw creates published storage from raw aws credentials
-func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround, disabledMultiDel bool) (*PublishedStorage, error) {
+func NewPublishedStorageRaw(
+	bucket, defaultACL, prefix, storageClass, encryptionMethod string,
+	plusWorkaround, disabledMultiDel bool,
+	config *aws.Config,
+) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
 	}
@@ -41,9 +46,13 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		storageClass = ""
 	}
 
+	sess := session.New(config)
+
 	result := &PublishedStorage{
-		s3:               s3.New(auth, region),
-		acl:              s3.ACL(defaultACL),
+		s3:               s3.New(sess),
+		bucket:           bucket,
+		config:           config,
+		acl:              defaultACL,
 		prefix:           prefix,
 		storageClass:     storageClass,
 		encryptionMethod: encryptionMethod,
@@ -51,48 +60,34 @@ func NewPublishedStorageRaw(auth aws.Auth, region aws.Region, bucket, defaultACL
 		disableMultiDel:  disabledMultiDel,
 	}
 
-	result.s3.HTTPClient = func() *http.Client {
-		return RetryingClient
-	}
-	result.bucket = result.s3.Bucket(bucket)
-
 	return result, nil
 }
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, region, endpoint, bucket, defaultACL, prefix,
+func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
 	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel bool) (*PublishedStorage, error) {
-	auth, err := aws.GetAuth(accessKey, secretKey)
-	if err != nil {
-		return nil, err
+
+	config := &aws.Config{
+		HTTPClient: RetryingClient,
+		Region:     aws.String(region),
 	}
 
-	var awsRegion aws.Region
-
-	if endpoint == "" {
-		var ok bool
-
-		awsRegion, ok = aws.Regions[region]
-		if !ok {
-			return nil, fmt.Errorf("unknown region: %#v", region)
-		}
-	} else {
-		awsRegion = aws.Region{
-			Name:                 region,
-			S3Endpoint:           endpoint,
-			S3LocationConstraint: true,
-			S3LowercaseBucket:    true,
-		}
+	if endpoint != "" {
+		config = config.WithEndpoint(endpoint).WithS3ForcePathStyle(true)
 	}
 
-	return NewPublishedStorageRaw(auth, awsRegion, bucket, defaultACL, prefix, storageClass, encryptionMethod,
-		plusWorkaround, disableMultiDel)
+	if accessKey != "" {
+		config.Credentials = credentials.NewStaticCredentials(accessKey, secretKey, sessionToken)
+	}
+
+	return NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
+		encryptionMethod, plusWorkaround, disableMultiDel, config)
 }
 
 // String
 func (storage *PublishedStorage) String() string {
-	return fmt.Sprintf("S3: %s:%s/%s", storage.s3.Region.Name, storage.bucket.Name, storage.prefix)
+	return fmt.Sprintf("S3: %s:%s/%s", *storage.config.Region, storage.bucket, storage.prefix)
 }
 
 // MkDir creates directory recursively under public path
@@ -106,7 +101,6 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	var (
 		source *os.File
 		err    error
-		fi     os.FileInfo
 	)
 	source, err = os.Open(sourceFilename)
 	if err != nil {
@@ -114,22 +108,20 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
-	fi, err = source.Stat()
-	if err != nil {
-		return err
-	}
-
-	headers := map[string][]string{
-		"Content-Type": {"binary/octet-stream"},
+	params := &s3.PutObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+		Body:   source,
+		ACL:    aws.String(storage.acl),
 	}
 	if storage.storageClass != "" {
-		headers["x-amz-storage-class"] = []string{storage.storageClass}
+		params.StorageClass = aws.String(storage.storageClass)
 	}
 	if storage.encryptionMethod != "" {
-		headers["x-amz-server-side-encryption"] = []string{storage.encryptionMethod}
+		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
 	}
 
-	err = storage.bucket.PutReaderHeader(filepath.Join(storage.prefix, path), source, fi.Size(), headers, storage.acl)
+	_, err = storage.s3.PutObject(params)
 	if err != nil {
 		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
 	}
@@ -142,7 +134,11 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 
 // Remove removes single file under public path
 func (storage *PublishedStorage) Remove(path string) error {
-	err := storage.bucket.Del(filepath.Join(storage.prefix, path))
+	params := &s3.DeleteObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(path),
+	}
+	_, err := storage.s3.DeleteObject(params)
 	if err != nil {
 		return fmt.Errorf("error deleting %s from %s: %s", path, storage, err)
 	}
@@ -165,7 +161,11 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 
 	if storage.disableMultiDel {
 		for i := range filelist {
-			err = storage.bucket.Del(filepath.Join(storage.prefix, path, filelist[i]))
+			params := &s3.DeleteObjectInput{
+				Bucket: aws.String(storage.bucket),
+				Key:    aws.String(filepath.Join(storage.prefix, path, filelist[i])),
+			}
+			_, err := storage.s3.DeleteObject(params)
 			if err != nil {
 				return fmt.Errorf("error deleting path %s from %s: %s", filelist[i], storage, err)
 			}
@@ -180,13 +180,23 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 			} else {
 				part = filelist[i*page : (i+1)*page]
 			}
-			paths := make([]string, len(part))
+			paths := make([]*s3.ObjectIdentifier, len(part))
 
 			for i := range part {
-				paths[i] = filepath.Join(storage.prefix, path, part[i])
+				paths[i] = &s3.ObjectIdentifier{
+					Key: aws.String(filepath.Join(storage.prefix, path, part[i])),
+				}
 			}
 
-			err = storage.bucket.MultiDel(paths)
+			params := &s3.DeleteObjectsInput{
+				Bucket: aws.String(storage.bucket),
+				Delete: &s3.Delete{
+					Objects: paths,
+					Quiet:   aws.Bool(true),
+				},
+			}
+
+			_, err := storage.s3.DeleteObjects(params)
 			if err != nil {
 				return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
 			}
@@ -265,13 +275,19 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 		prefix += "/"
 	}
 	for {
-		contents, err := storage.bucket.List(prefix, "", marker, 1000)
+		params := &s3.ListObjectsInput{
+			Bucket:  aws.String(storage.bucket),
+			Prefix:  aws.String(prefix),
+			MaxKeys: aws.Int64(1000),
+		}
+
+		contents, err := storage.s3.ListObjects(params)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
 		}
 		lastKey := ""
 		for _, key := range contents.Contents {
-			lastKey = key.Key
+			lastKey = *key.Key
 			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(lastKey, " ") != -1 {
 				// if we use plusWorkaround, we want to hide those duplicates
 				/// from listing
@@ -279,14 +295,14 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 			}
 
 			if prefix == "" {
-				paths = append(paths, key.Key)
+				paths = append(paths, *key.Key)
 			} else {
-				paths = append(paths, key.Key[len(prefix):])
+				paths = append(paths, (*key.Key)[len(prefix):])
 			}
-			md5s = append(md5s, strings.Replace(key.ETag, "\"", "", -1))
+			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
 		}
-		if contents.IsTruncated {
-			marker = contents.NextMarker
+		if contents.IsTruncated != nil && *contents.IsTruncated {
+			marker = *contents.NextMarker
 			if marker == "" {
 				// From the s3 docs: If response does not include the
 				// NextMarker and it is truncated, you can use the value of the
@@ -304,7 +320,16 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 
 // RenameFile renames (moves) file
 func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
-	err := storage.bucket.Copy(filepath.Join(storage.prefix, oldName), filepath.Join(storage.prefix, newName), storage.acl)
+	source := fmt.Sprintf("/%s/%s", storage.bucket, filepath.Join(storage.prefix, oldName))
+
+	params := &s3.CopyObjectInput{
+		Bucket:     aws.String(storage.bucket),
+		CopySource: aws.String(source),
+		Key:        aws.String(filepath.Join(storage.prefix, newName)),
+		ACL:        aws.String(storage.acl),
+	}
+
+	_, err := storage.s3.CopyObject(params)
 	if err != nil {
 		return fmt.Errorf("error copying %s -> %s in %s: %s", oldName, newName, storage, err)
 	}
