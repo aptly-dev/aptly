@@ -78,6 +78,6 @@ goxc:
 	cp man/aptly.1 root/usr/share/man/man1
 	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
 	gzip root/usr/share/man/man1/aptly.1
-	gom exec goxc -pv=$(VERSION) -max-processors=4
+	gom exec goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
 .PHONY: coverage.out
