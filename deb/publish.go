@@ -290,6 +290,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"SourceKind":    p.SourceKind,
 		"Sources":       sources,
 		"Storage":       p.Storage,
+		"SkipContents":  p.SkipContents,
 	})
 }
 

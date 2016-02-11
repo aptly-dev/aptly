@@ -41,6 +41,7 @@ class PublishAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -74,6 +75,7 @@ class PublishAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': ".",
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -129,6 +131,7 @@ class PublishSnapshotAPITest(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
             'Storage': ''})
@@ -188,6 +191,7 @@ class PublishUpdateAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -238,6 +242,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': ''}
@@ -261,6 +266,7 @@ class PublishSwitchAPITestRepo(APITest):
                         json={
                             "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
                             "Signing": DefaultSigningOptions,
+                            "SkipContents": True,
                         })
         repo_expected = {
             'Architectures': ['i386', 'source'],
@@ -268,6 +274,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': True,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
             'Storage': ''}

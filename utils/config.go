@@ -21,6 +21,7 @@ type ConfigStructure struct {
 	DownloadSourcePackages bool                        `json:"downloadSourcePackages"`
 	PpaDistributorID       string                      `json:"ppaDistributorID"`
 	PpaCodename            string                      `json:"ppaCodename"`
+	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
 }

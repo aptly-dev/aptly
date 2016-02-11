@@ -97,6 +97,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Label          string
 		Origin         string
 		ForceOverwrite bool
+		SkipContents   *bool
 		Architectures  []string
 		Signing        SigningOptions
 	}
@@ -183,6 +184,11 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	published.Origin = b.Origin
 	published.Label = b.Label
 
+	published.SkipContents = context.Config().SkipContentsPublishing
+	if b.SkipContents != nil {
+		published.SkipContents = *b.SkipContents
+	}
+
 	duplicate := collection.CheckDuplicate(published)
 	if duplicate != nil {
 		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())
@@ -213,6 +219,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	var b struct {
 		ForceOverwrite bool
 		Signing        SigningOptions
+		SkipContents   *bool
 		Snapshots      []struct {
 			Component string `binding:"required"`
 			Name      string `binding:"required"`
@@ -289,6 +296,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 	} else {
 		c.Fail(500, fmt.Errorf("unknown published repository type"))
+	}
+
+	if b.SkipContents != nil {
+		published.SkipContents = *b.SkipContents
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
