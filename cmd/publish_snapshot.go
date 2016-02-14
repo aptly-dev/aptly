@@ -119,6 +119,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	published.Origin = context.Flags().Lookup("origin").Value.String()
 	published.Label = context.Flags().Lookup("label").Value.String()
 
+	published.SkipContents = context.Config().SkipContentsPublishing
+
 	if context.Flags().IsSet("skip-contents") {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
