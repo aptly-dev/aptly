@@ -27,6 +27,29 @@ const (
 	RELEASEDB
 )
 
+// Flushes all collections which cache in-memory objects
+func flushColections() {
+	// lock everything to eliminate in-progress calls
+	r := context.CollectionFactory().RemoteRepoCollection()
+	r.Lock()
+	defer r.Unlock()
+
+	l := context.CollectionFactory().LocalRepoCollection()
+	l.Lock()
+	defer l.Unlock()
+
+	s := context.CollectionFactory().SnapshotCollection()
+	s.Lock()
+	defer s.Unlock()
+
+	p := context.CollectionFactory().PublishedRepoCollection()
+	p.Lock()
+	defer p.Unlock()
+
+	// all collections locked, flush them
+	context.CollectionFactory().Flush()
+}
+
 // Periodically flushes CollectionFactory to free up memory used by
 // collections, flushing caches. If the two channels are provided,
 // they are used to acquire and release the database.
@@ -38,40 +61,12 @@ func cacheFlusher(requests chan int, acks chan error) {
 	for {
 		<-ticker
 
-		func() {
-			// lock database if needed
-			if requests != nil {
-				requests <- ACQUIREDB
-				err := <-acks
-				if err != nil {
-					return
-				}
-				defer func() {
-					requests <- RELEASEDB
-					<-acks
-				}()
-			}
-
-			// lock everything to eliminate in-progress calls
-			r := context.CollectionFactory().RemoteRepoCollection()
-			r.Lock()
-			defer r.Unlock()
-
-			l := context.CollectionFactory().LocalRepoCollection()
-			l.Lock()
-			defer l.Unlock()
-
-			s := context.CollectionFactory().SnapshotCollection()
-			s.Lock()
-			defer s.Unlock()
-
-			p := context.CollectionFactory().PublishedRepoCollection()
-			p.Lock()
-			defer p.Unlock()
-
-			// all collections locked, flush them
-			context.CollectionFactory().Flush()
-		}()
+		// if aptly API runs in -no-lock mode,
+		// caches are flushed when DB is closed anyway, no need
+		// to flush them here
+		if requests == nil {
+			flushColections()
+		}
 	}
 }
 
@@ -95,6 +90,7 @@ func acquireDatabase(requests chan int, acks chan error) {
 		case RELEASEDB:
 			clients--
 			if clients == 0 {
+				flushColections()
 				acks <- context.CloseDatabase()
 			} else {
 				acks <- nil
