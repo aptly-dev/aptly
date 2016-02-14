@@ -302,7 +302,10 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
 		}
 		if contents.IsTruncated != nil && *contents.IsTruncated {
-			marker = *contents.NextMarker
+			marker = ""
+			if contents.NextMarker != nil {
+				marker = *contents.NextMarker
+			}
 			if marker == "" {
 				// From the s3 docs: If response does not include the
 				// NextMarker and it is truncated, you can use the value of the
