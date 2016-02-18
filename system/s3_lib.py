@@ -22,7 +22,7 @@ class S3Test(BaseTest):
         return super(S3Test, self).fixture_available() and s3_conn is not None
 
     def prepare(self):
-        self.bucket_name = "aptly-sys-test-" + str(uuid.uuid4())
+        self.bucket_name = "aptly-sys-test-" + str(uuid.uuid1())
         self.bucket = s3_conn.create_bucket(self.bucket_name)
         self.configOverride = {"S3PublishEndpoints": {
             "test1": {
