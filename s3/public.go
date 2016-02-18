@@ -69,8 +69,7 @@ func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, b
 	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel bool) (*PublishedStorage, error) {
 
 	config := &aws.Config{
-		HTTPClient: RetryingClient,
-		Region:     aws.String(region),
+		Region: aws.String(region),
 	}
 
 	if endpoint != "" {
