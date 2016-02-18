@@ -134,7 +134,13 @@ func (files PackageFiles) ParseSumFields(stanza Stanza) (PackageFiles, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	files, err = files.parseSumField(stanza["Checksums-Sha256"], func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
+	if err != nil {
+		return nil, err
+	}
+
+	files, err = files.parseSumField(stanza["Checksums-Sha512"], func(sum *utils.ChecksumInfo, data string) { sum.SHA512 = data })
 	if err != nil {
 		return nil, err
 	}

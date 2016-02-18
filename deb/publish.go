@@ -670,6 +670,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release["MD5Sum"] = ""
 	release["SHA1"] = ""
 	release["SHA256"] = ""
+	release["SHA512"] = ""
 
 	release["Components"] = strings.Join(p.Components(), " ")
 
@@ -677,6 +678,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		release["MD5Sum"] += fmt.Sprintf(" %s %8d %s\n", info.MD5, info.Size, path)
 		release["SHA1"] += fmt.Sprintf(" %s %8d %s\n", info.SHA1, info.Size, path)
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
+		release["SHA512"] += fmt.Sprintf(" %s %8d %s\n", info.SHA512, info.Size, path)
 	}
 
 	releaseFile := indexes.ReleaseFile()

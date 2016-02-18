@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
 	"hash"
 	"io"
@@ -16,6 +17,7 @@ type ChecksumInfo struct {
 	MD5    string
 	SHA1   string
 	SHA256 string
+	SHA512 string
 }
 
 // ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for given file
@@ -51,7 +53,7 @@ var (
 // NewChecksumWriter creates checksum calculator for given writer w
 func NewChecksumWriter() *ChecksumWriter {
 	return &ChecksumWriter{
-		hashes: []hash.Hash{md5.New(), sha1.New(), sha256.New()},
+		hashes: []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
 	}
 }
 
@@ -71,6 +73,7 @@ func (c *ChecksumWriter) Sum() ChecksumInfo {
 	c.sum.MD5 = fmt.Sprintf("%x", c.hashes[0].Sum(nil))
 	c.sum.SHA1 = fmt.Sprintf("%x", c.hashes[1].Sum(nil))
 	c.sum.SHA256 = fmt.Sprintf("%x", c.hashes[2].Sum(nil))
+	c.sum.SHA512 = fmt.Sprintf("%x", c.hashes[3].Sum(nil))
 
 	return c.sum
 }

@@ -73,8 +73,10 @@ class PublishSwitch1Test(BaseTest):
                 h = hashlib.md5()
             elif len(fileHash) == 40:
                 h = hashlib.sha1()
-            else:
+            elif len(fileHash) == 64:
                 h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
 
             h.update(self.read_file(os.path.join('public/dists/maverick', path)))
 
@@ -331,8 +333,10 @@ class PublishSwitch8Test(BaseTest):
                 h = hashlib.md5()
             elif len(fileHash) == 40:
                 h = hashlib.sha1()
-            else:
+            elif len(fileHash) == 64:
                 h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
 
             h.update(self.read_file(os.path.join('public/dists/maverick', path)))
 
