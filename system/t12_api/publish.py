@@ -61,7 +61,7 @@ class PublishAPITestRepo(APITest):
 
         # publishing under root, custom distribution, architectures
         distribution = self.random_name()
-        resp = self.post("/api/publish",
+        resp = self.post("/api/publish/:.",
                          json={
                              "SourceKind": "local",
                              "Sources": [{"Name": repo_name}],
