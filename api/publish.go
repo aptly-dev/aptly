@@ -205,6 +205,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	err = collection.Add(published)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		return
 	}
 
 	c.JSON(201, published)
@@ -296,6 +297,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 	} else {
 		c.Fail(500, fmt.Errorf("unknown published repository type"))
+		return
 	}
 
 	if b.SkipContents != nil {
@@ -305,17 +307,20 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	err = collection.Update(published)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		return
 	}
 
 	err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	c.JSON(200, published)

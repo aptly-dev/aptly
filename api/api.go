@@ -142,6 +142,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.Fail(500, fmt.Errorf("unable to search: %s", err))
+			return
 		}
 	}
 
