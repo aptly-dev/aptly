@@ -882,7 +882,7 @@ class PublishSnapshot35Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (dmraid)' -with-udebs squeeze http://mirror.yandex.ru/debian/ squeeze main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs squeeze http://mirror.yandex.ru/debian/ squeeze-lts main non-free",
         "aptly mirror update -keyring=aptlytest.gpg squeeze",
         "aptly snapshot create squeeze from mirror squeeze",
     ]
@@ -892,51 +892,51 @@ class PublishSnapshot35Test(BaseTest):
     def check(self):
         super(PublishSnapshot35Test, self).check()
 
-        self.check_exists('public/dists/squeeze/InRelease')
-        self.check_exists('public/dists/squeeze/Release')
-        self.check_exists('public/dists/squeeze/Release.gpg')
+        self.check_exists('public/dists/squeeze-lts/InRelease')
+        self.check_exists('public/dists/squeeze-lts/Release')
+        self.check_exists('public/dists/squeeze-lts/Release.gpg')
 
-        self.check_exists('public/dists/squeeze/main/binary-i386/Release')
-        self.check_exists('public/dists/squeeze/main/binary-i386/Packages')
-        self.check_exists('public/dists/squeeze/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/squeeze/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/squeeze/main/Contents-i386.gz')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Release')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages.gz')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/squeeze/main/Contents-udeb-i386.gz')
-        self.check_exists('public/dists/squeeze/main/binary-amd64/Release')
-        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages')
-        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages.gz')
-        self.check_exists('public/dists/squeeze/main/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/squeeze/main/Contents-amd64.gz')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Release')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages.gz')
-        self.check_exists('public/dists/squeeze/main/debian-installer/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/squeeze/main/Contents-udeb-amd64.gz')
-        self.check_not_exists('public/dists/squeeze/main/source/Sources')
-        self.check_not_exists('public/dists/squeeze/main/source/Sources.gz')
-        self.check_not_exists('public/dists/squeeze/main/source/Sources.bz2')
+        self.check_exists('public/dists/squeeze-lts/main/binary-i386/Release')
+        self.check_exists('public/dists/squeeze-lts/main/binary-i386/Packages')
+        self.check_exists('public/dists/squeeze-lts/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/squeeze-lts/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/squeeze-lts/main/Contents-i386.gz')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-i386/Release')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-i386/Packages')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-i386/Packages.gz')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/squeeze-lts/main/Contents-udeb-i386.gz')
+        self.check_exists('public/dists/squeeze-lts/main/binary-amd64/Release')
+        self.check_exists('public/dists/squeeze-lts/main/binary-amd64/Packages')
+        self.check_exists('public/dists/squeeze-lts/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/squeeze-lts/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/squeeze-lts/main/Contents-amd64.gz')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-amd64/Release')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-amd64/Packages')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/squeeze-lts/main/debian-installer/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/squeeze-lts/main/Contents-udeb-amd64.gz')
+        self.check_not_exists('public/dists/squeeze-lts/main/source/Sources')
+        self.check_not_exists('public/dists/squeeze-lts/main/source/Sources.gz')
+        self.check_not_exists('public/dists/squeeze-lts/main/source/Sources.bz2')
 
-        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
-        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb')
-        self.check_exists('public/pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_amd64.deb')
-        self.check_exists('public/pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_i386.deb')
+        self.check_exists('public/pool/main/g/gnupg/gpgv-udeb_1.4.10-4+squeeze7_amd64.udeb')
+        self.check_exists('public/pool/main/g/gnupg/gpgv-udeb_1.4.10-4+squeeze7_i386.udeb')
+        self.check_exists('public/pool/main/g/gnupg/gpgv_1.4.10-4+squeeze7_amd64.deb')
+        self.check_exists('public/pool/main/g/gnupg/gpgv_1.4.10-4+squeeze7_i386.deb')
 
-        self.check_file_contents('public/dists/squeeze/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-i386/Packages', 'packages_udeb_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/squeeze/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-amd64/Packages', 'packages_udeb_amd64', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze-lts/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze-lts/main/debian-installer/binary-i386/Packages', 'packages_udeb_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze-lts/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/squeeze-lts/main/debian-installer/binary-amd64/Packages', 'packages_udeb_amd64', match_prepare=sorted_processor)
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/squeeze/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/squeeze-lts/Release', 'release', match_prepare=strip_processor)
 
-        self.check_file_contents('public/dists/squeeze/main/debian-installer/binary-i386/Release', 'release_udeb_i386', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/squeeze-lts/main/debian-installer/binary-i386/Release', 'release_udeb_i386', match_prepare=strip_processor)
 
         # verify sums
-        release = self.read_file('public/dists/squeeze/Release').split("\n")
+        release = self.read_file('public/dists/squeeze-lts/Release').split("\n")
         release = [l for l in release if l.startswith(" ")]
         pathsSeen = set()
         for l in release:
@@ -945,7 +945,7 @@ class PublishSnapshot35Test(BaseTest):
 
             fileSize = int(fileSize)
 
-            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/squeeze/', path))
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/squeeze-lts/', path))
             if fileSize != st.st_size:
                 raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
 
@@ -958,7 +958,7 @@ class PublishSnapshot35Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/squeeze', path)))
+            h.update(self.read_file(os.path.join('public/dists/squeeze-lts', path)))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))

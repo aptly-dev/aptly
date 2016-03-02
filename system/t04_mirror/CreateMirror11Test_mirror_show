@@ -1,20 +1,21 @@
 Name: mirror11
 Archive Root URL: http://mirror.yandex.ru/debian/
-Distribution: squeeze
+Distribution: squeeze-lts
 Components: main, contrib, non-free
-Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
+Architectures: amd64, i386
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
-Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
-Codename: squeeze
+Architectures: amd64 i386
+Codename: squeeze-lts
 Components: main contrib non-free
-Date: Sat, 25 Apr 2015 11:01:14 UTC
-Description:  Debian 6.0.10 Released 19 July 2014
+Date: Wed, 02 Mar 2016 08:57:11 UTC
+Description:  Long Term Support for Debian 6.0
 
 Label: Debian
 Origin: Debian
-Suite: oldoldstable
-Version: 6.0.10
+Suite: squeeze-lts
+Valid-Until: Wed, 09 Mar 2016 08:57:11 UTC
+Version: 6.0-lts

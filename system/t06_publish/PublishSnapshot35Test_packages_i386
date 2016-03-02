@@ -1,87 +1,92 @@
-Package: dmraid
-Priority: optional
-Section: admin
-Installed-Size: 176
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: i386
-Version: 1.0.0.rc16-4.1
-Depends: libc6 (>= 2.3), libdmraid1.0.0.rc16 (>= 1.0.0.rc16), libselinux1 (>= 1.32), libsepol1 (>= 1.14), udev, dmsetup
-Filename: pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_i386.deb
-Size: 37984
-MD5sum: f8aea4e9eaea341b112f02e9efe1678e
-SHA1: bb96a258038c79bc04eef49d5875deed4c67dd16
-SHA256: 6a8294bef99040055009da41597869bfdb17ac89c3166e49c57340abe7f702ba
-Description: Device-Mapper Software RAID support tool
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- The following formats are supported:
-  Highpoint HPT37X/HPT45X
-  Intel Software RAID
-  LSI Logic MegaRAID
-  NVidia NForce RAID (nvraid)
-  Promise FastTrack
-  Silicon Image(tm) Medley(tm)
-  VIA Software RAID
- .
- Please read the documentation in /usr/share/doc/dmraid BEFORE attempting
- any use of this software. Improper use can cause data loss!
-Tag: admin::filesystem, admin::kernel, hardware::storage, implemented-in::c, interface::commandline, role::program, scope::utility, use::scanning
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 
-Package: libdmraid-dev
-Priority: optional
-Section: libdevel
-Installed-Size: 440
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: i386
-Source: dmraid
-Version: 1.0.0.rc16-4.1
-Depends: libdmraid1.0.0.rc16 (= 1.0.0.rc16-4.1)
-Filename: pool/main/d/dmraid/libdmraid-dev_1.0.0.rc16-4.1_i386.deb
-Size: 145808
-MD5sum: 5395970df02ab5f1609cd7eccc15ead1
-SHA1: f27bd38eeb58a32ee7e58ac8a2950649bd4ef17b
-SHA256: 2abe9142ce6aa341df57303b5bc847522779ea9109b0fe734e2ae4419872da71
-Description: Device-Mapper Software RAID support tool - header files
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- This package contains the header files needed to link programs against
- dmraid.
-Tag: admin::hardware, devel::lang:c, devel::library, hardware::storage, implemented-in::c, qa::low-popcon, role::devel-lib, use::driver
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 
-Package: libdmraid1.0.0.rc16
-Priority: optional
-Section: libs
-Installed-Size: 268
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: i386
-Source: dmraid
-Version: 1.0.0.rc16-4.1
-Replaces: libdmraid1.0.0.rc15 (<< 1.0.0.rc16-1)
-Depends: libc6 (>= 2.7), libdevmapper1.02.1 (>= 2:1.02.20)
-Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16_1.0.0.rc16-4.1_i386.deb
-Size: 106088
-MD5sum: 9330ba2ffd2f22d695fdf692f8120159
-SHA1: 6b262419836e8cad4500043f5e9e6a1581074023
-SHA256: 2b2238679ac8ff4776a3a2caf533c551700d9f92a7d2af23d6457acf7de5d6c8
-Description: Device-Mapper Software RAID support tool - shared library
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- This package contains the dmraid shared library, which implements
- the back half of dmraid, including on-disk metadata formats.
-Tag: admin::hardware, admin::kernel, devel::lang:c, devel::library, hardware::storage, implemented-in::c, role::{devel-lib,kernel,shared-lib}, use::driver
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 
+
+ .
+ .
+ .
+ .
+ .
+ .
+ GnuPG 1.4 is the standalone, non-modularized series. In contrast to
+ GnuPG does not use any patented algorithms. This means it cannot be
+ GnuPG does not use any patented algorithms. This means it cannot be
+ GnuPG is GNU's tool for secure communication and data storage.
+ GnuPG is GNU's tool for secure communication and data storage.
+ GnuPG is GNU's tool for secure communication and data storage.
+ HKPS keyservers. Install the gnupg-curl package if you want to use
+ It can be used to encrypt data and to create digital signatures.
+ It can be used to encrypt data and to create digital signatures.
+ It includes an advanced key management facility and is compliant
+ It includes an advanced key management facility and is compliant
+ The gnupg package is built without libcurl. So it does not support
+ This package contains the keyserver helper tools built with libcurl,
+ a number of countries).
+ a number of countries).
+ compatible with PGP2, because that uses IDEA (which is patented in
+ compatible with PGP2, because that uses IDEA (which is patented in
+ different (and simpler) way to check that the public keys used to
+ environments, but also with less dependencies.
+ gpgv is a stripped-down version of gnupg which is only able to check
+ make the signature are trustworthy.
+ signatures.  It is smaller than the full-blown gnupg and uses a
+ the keyserver helper tools built with libcurl and supporting HKPS.
+ the version 2 series, shipped with the gnupg2 package, it comes
+ variant of gnupg. This package provides support for HKPS keyservers.
+ which replace the ones in the gnupg package built with the "curl shim"
+ with no support for S/MIME and some other tools useful for desktop
+ with the proposed OpenPGP Internet standard as described in RFC2440.
+ with the proposed OpenPGP Internet standard as described in RFC2440.
+Architecture: i386
+Architecture: i386
+Architecture: i386
+Depends: libbz2-1.0, libc6 (>= 2.3.3), libreadline6 (>= 6.0), zlib1g (>= 1:1.1.4)
+Depends: libbz2-1.0, libc6 (>= 2.3.4), libreadline6 (>= 6.0), libusb-0.1-4 (>= 2:0.1.12), zlib1g (>= 1:1.1.4), dpkg (>= 1.15.4) | install-info, gpgv
+Depends: libc6 (>= 2.2), libcurl3-gnutls (>= 7.16.2-1), libldap-2.4-2 (>= 2.4.7), gnupg
+Description: GNU privacy guard - a free PGP replacement
+Description: GNU privacy guard - a free PGP replacement (cURL)
+Description: GNU privacy guard - signature verification tool
+Filename: pool/main/g/gnupg/gnupg-curl_1.4.10-4+squeeze7_i386.deb
+Filename: pool/main/g/gnupg/gnupg_1.4.10-4+squeeze7_i386.deb
+Filename: pool/main/g/gnupg/gpgv_1.4.10-4+squeeze7_i386.deb
+Homepage: http://www.gnupg.org
+Homepage: http://www.gnupg.org
+Homepage: http://www.gnupg.org
+Installed-Size: 112
+Installed-Size: 360
+Installed-Size: 4716
+MD5sum: 56584086a7532d7773a054d1d22475eb
+MD5sum: e02f1f1fd33852b86a593c39ae3fdecc
+MD5sum: f1095cd75a367403c7b06526f64db203
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Package: gnupg
+Package: gnupg-curl
+Package: gpgv
+Priority: important
+Priority: important
+Priority: optional
+Recommends: libldap-2.4-2 (>= 2.4.7), gnupg-curl
+SHA1: 03856f88b6bf9e6802bc3c4fe4749120a86d5c33
+SHA1: 61e3ac5be7be0169c798c76e81386fa7d88c8aef
+SHA1: 81e8e6fc65e5c19192b7292263a85623b6dd7b8f
+SHA256: 0b659fde216eb16d5a69e52e2cde0060d72d2a87cdfaa0116f1ee2f2931e6a58
+SHA256: 21fef750f4a0c5f939cee8fdf5e1323159d09e646e4c66e505d8417c18561a03
+SHA256: b393dd08b06ab2e4337b4450e196a42d0da63b8dce3d635410101c57bbd23846
+Section: utils
+Section: utils
+Section: utils
+Size: 204070
+Size: 2089258
+Size: 72890
+Source: gnupg
+Source: gnupg
+Suggests: gnupg
+Suggests: gnupg-doc, xloadimage | imagemagick | eog, libpcsclite1
+Tag: implemented-in::c, interface::commandline, network::client, protocol::http, role::plugin, role::program, scope::utility, security::authentication, security::cryptography, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::{authentication,cryptography,privacy}, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::checking
+Version: 1.4.10-4+squeeze7
+Version: 1.4.10-4+squeeze7
+Version: 1.4.10-4+squeeze7

@@ -1,40 +1,46 @@
-Package: dmraid-udeb
-Version: 1.0.0.rc16-4.1
-Installed-Size: 36
-Priority: optional
-Section: debian-installer
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: i386
-Description: Device-Mapper Software RAID support tool (udeb)
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- This is the minimal package (udeb) used by debian-installer
-MD5sum: 4d8bb4dafb0ef9059dac75846e162784
-SHA1: fd5c73e08d4c5381b1136c2ff170332d77526246
-SHA256: fe4ff3351186f03039f8cd6f78e8e4f473a75b613f950caac06fa21dda2d59e8
-Source: dmraid
-Size: 11022
-Filename: pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb
-Depends: libc6-udeb (>= 2.11), libdmraid1.0.0.rc16-udeb (>= 1.0.0.rc16), dmsetup-udeb
 
-Package: libdmraid1.0.0.rc16-udeb
-Version: 1.0.0.rc16-4.1
-Installed-Size: 212
-Priority: optional
-Section: debian-installer
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: i386
-Description: Device-Mapper Software RAID support tool - shared library (udeb)
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- This is the minimal package (udeb shared library) used by debian-installer
-MD5sum: aba78093c15c8bcd8e237f6a578c6c65
-SHA1: c5e95d443889775a48d6c48bf332a21a37ce63c6
-SHA256: 1c51dbf4cd1a5a683fd60e2b4f44dc6f8f574de3aea52354541a9a105f10f918
-Depends: libc6-udeb (>= 2.11), libdevmapper1.02.1-udeb (>= 2:1.02.48)
-Source: dmraid
-Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16-udeb_1.0.0.rc16-4.1_i386.udeb
-Size: 89490
 
+
+ .
+ .
+ GnuPG is GNU's tool for secure communication and data storage.
+ GnuPG is GNU's tool for secure communication and data storage.
+ It can be used to encrypt data and to create digital signatures.
+ It can be used to encrypt data and to create digital signatures.
+ It includes an advanced key management facility and is compliant
+ It includes an advanced key management facility and is compliant
+ This is GnuPG packaged in minimal form for use in debian-installer.
+ This is GnuPG's signature verification tool, gpgv, packaged in minimal
+ form for use in debian-installer.
+ with the proposed OpenPGP Internet standard as described in RFC2440.
+ with the proposed OpenPGP Internet standard as described in RFC2440.
+Architecture: i386
+Architecture: i386
+Depends: libc6-udeb (>= 2.11), libusb-0.1-udeb (>= 2:0.1.12), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Depends: libc6-udeb (>= 2.11), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Description: GNU privacy guard - a free PGP replacement
+Description: minimal signature verification tool
+Filename: pool/main/g/gnupg/gnupg-udeb_1.4.10-4+squeeze7_i386.udeb
+Filename: pool/main/g/gnupg/gpgv-udeb_1.4.10-4+squeeze7_i386.udeb
+Installed-Size: 240
+Installed-Size: 712
+MD5sum: 040b67ff566d348e7f598d48921e94b8
+MD5sum: 5e258bc5f5b12ae956d6b762a566ca11
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Package: gnupg-udeb
+Package: gpgv-udeb
+Priority: extra
+Priority: extra
+SHA1: 0690c70d614cae68ad3f0240ce0288c8e65e7d4d
+SHA1: 49e473d362c2ef52ca06c3af2b8204ef4d077d65
+SHA256: 63db5571ebbdb51512bd6c8d7b96358c0db8ec9e5932573fd8e2652c4ffe56d7
+SHA256: b5c806e730b4504290095444676379388036a51a2723ecf1fbc6cd20d3891c61
+Section: debian-installer
+Section: debian-installer
+Size: 133478
+Size: 380214
+Source: gnupg
+Source: gnupg
+Version: 1.4.10-4+squeeze7
+Version: 1.4.10-4+squeeze7
