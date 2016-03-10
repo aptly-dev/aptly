@@ -45,6 +45,7 @@ Example:
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("backports", false, "change the backports status of this repository")
 
 	return cmd
 }

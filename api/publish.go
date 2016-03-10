@@ -97,6 +97,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Label          string
 		Origin         string
 		ForceOverwrite bool
+		Backports      bool
 		SkipContents   *bool
 		Architectures  []string
 		Signing        SigningOptions
@@ -183,6 +184,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	}
 	published.Origin = b.Origin
 	published.Label = b.Label
+	published.Backports = b.Backports
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 	if b.SkipContents != nil {
@@ -220,6 +222,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	var b struct {
 		ForceOverwrite bool
 		Signing        SigningOptions
+		Backports      *bool
 		SkipContents   *bool
 		Snapshots      []struct {
 			Component string `binding:"required"`
@@ -298,6 +301,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	} else {
 		c.Fail(500, fmt.Errorf("unknown published repository type"))
 		return
+	}
+
+	if b.Backports != nil {
+		published.Backports = *b.Backports
 	}
 
 	if b.SkipContents != nil {
