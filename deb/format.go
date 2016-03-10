@@ -106,6 +106,8 @@ func isMultilineField(field string, isRelease bool) bool {
 		return true
 	case "Checksums-Sha256":
 		return true
+	case "Checksums-Sha512":
+		return true
 	case "Package-List":
 		return true
 	case "MD5Sum":
