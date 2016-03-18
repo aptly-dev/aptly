@@ -151,7 +151,7 @@ func (pool *PackagePool) Import(path string, hashMD5 string) error {
 	}
 
 	// create subdirs as necessary
-	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
+	err = os.MkdirAll(filepath.Dir(poolPath), 0777)
 	if err != nil {
 		return err
 	}

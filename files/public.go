@@ -32,7 +32,7 @@ func (storage *PublishedStorage) PublicPath() string {
 
 // MkDir creates directory recursively under public path
 func (storage *PublishedStorage) MkDir(path string) error {
-	return os.MkdirAll(filepath.Join(storage.rootPath, path), 0755)
+	return os.MkdirAll(filepath.Join(storage.rootPath, path), 0777)
 }
 
 // PutFile puts file into published storage at specified path
@@ -87,7 +87,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	baseName := filepath.Base(sourcePath)
 	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
-	err := os.MkdirAll(poolPath, 0755)
+	err := os.MkdirAll(poolPath, 0777)
 	if err != nil {
 		return err
 	}
