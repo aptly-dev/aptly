@@ -40,6 +40,8 @@ type S3PublishRoot struct {
 	EncryptionMethod string `json:"encryptionMethod"`
 	PlusWorkaround   bool   `json:"plusWorkaround"`
 	DisableMultiDel  bool   `json:"disableMultiDel"`
+	ForceSigV2       bool   `json:"forceSigV2"`
+	Debug            bool   `json:"debug"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point

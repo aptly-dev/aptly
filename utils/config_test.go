@@ -76,7 +76,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"storageClass\": \"\",\n"+
 		"      \"encryptionMethod\": \"\",\n"+
 		"      \"plusWorkaround\": false,\n"+
-		"      \"disableMultiDel\": false\n"+
+		"      \"disableMultiDel\": false,\n"+
+		"      \"forceSigV2\": false,\n"+
+		"      \"debug\": false\n"+
 		"    }\n"+
 		"  },\n"+
 		"  \"SwiftPublishEndpoints\": {\n"+
