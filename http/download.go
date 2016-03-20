@@ -167,7 +167,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		return
 	}
 
-	err = os.MkdirAll(filepath.Dir(task.destination), 0755)
+	err = os.MkdirAll(filepath.Dir(task.destination), 0777)
 	if err != nil {
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
