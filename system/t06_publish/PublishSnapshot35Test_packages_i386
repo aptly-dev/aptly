@@ -2,91 +2,80 @@
 
 
 
- .
- .
- .
- .
- .
- .
- GnuPG 1.4 is the standalone, non-modularized series. In contrast to
- GnuPG does not use any patented algorithms. This means it cannot be
- GnuPG does not use any patented algorithms. This means it cannot be
- GnuPG is GNU's tool for secure communication and data storage.
- GnuPG is GNU's tool for secure communication and data storage.
- GnuPG is GNU's tool for secure communication and data storage.
- HKPS keyservers. Install the gnupg-curl package if you want to use
- It can be used to encrypt data and to create digital signatures.
- It can be used to encrypt data and to create digital signatures.
- It includes an advanced key management facility and is compliant
- It includes an advanced key management facility and is compliant
- The gnupg package is built without libcurl. So it does not support
- This package contains the keyserver helper tools built with libcurl,
- a number of countries).
- a number of countries).
- compatible with PGP2, because that uses IDEA (which is patented in
- compatible with PGP2, because that uses IDEA (which is patented in
- different (and simpler) way to check that the public keys used to
- environments, but also with less dependencies.
- gpgv is a stripped-down version of gnupg which is only able to check
- make the signature are trustworthy.
- signatures.  It is smaller than the full-blown gnupg and uses a
- the keyserver helper tools built with libcurl and supporting HKPS.
- the version 2 series, shipped with the gnupg2 package, it comes
- variant of gnupg. This package provides support for HKPS keyservers.
- which replace the ones in the gnupg package built with the "curl shim"
- with no support for S/MIME and some other tools useful for desktop
- with the proposed OpenPGP Internet standard as described in RFC2440.
- with the proposed OpenPGP Internet standard as described in RFC2440.
+
+Architecture: all
 Architecture: i386
 Architecture: i386
 Architecture: i386
-Depends: libbz2-1.0, libc6 (>= 2.3.3), libreadline6 (>= 6.0), zlib1g (>= 1:1.1.4)
-Depends: libbz2-1.0, libc6 (>= 2.3.4), libreadline6 (>= 6.0), libusb-0.1-4 (>= 2:0.1.12), zlib1g (>= 1:1.1.4), dpkg (>= 1.15.4) | install-info, gpgv
-Depends: libc6 (>= 2.2), libcurl3-gnutls (>= 7.16.2-1), libldap-2.4-2 (>= 2.4.7), gnupg
+Depends: libbz2-1.0, libc6 (>= 2.4), libreadline6 (>= 6.0), libusb-0.1-4 (>= 2:0.1.12), zlib1g (>= 1:1.1.4), dpkg (>= 1.15.4) | install-info, gpgv
+Depends: libbz2-1.0, libc6 (>= 2.4), zlib1g (>= 1:1.1.4)
+Depends: libc6 (>= 2.4), libcurl3-gnutls (>= 7.16.2), libldap-2.4-2 (>= 2.4.7), gnupg
+Description-Md5: 19709c7fc27595437225fd34d295b347
+Description-Md5: 3f8767984a5f4b323de309446d07435d
+Description-Md5: 55306a4e1e1fd63e577767c1b9f5161c
+Description-Md5: 8bbdb812806fb623e26b7b93f549c74b
 Description: GNU privacy guard - a free PGP replacement
 Description: GNU privacy guard - a free PGP replacement (cURL)
 Description: GNU privacy guard - signature verification tool
-Filename: pool/main/g/gnupg/gnupg-curl_1.4.10-4+squeeze7_i386.deb
-Filename: pool/main/g/gnupg/gnupg_1.4.10-4+squeeze7_i386.deb
-Filename: pool/main/g/gnupg/gpgv_1.4.10-4+squeeze7_i386.deb
+Description: GNU privacy guard - signature verification tool (win32 build)
+Filename: pool/main/g/gnupg/gnupg-curl_1.4.12-7+deb7u7_i386.deb
+Filename: pool/main/g/gnupg/gnupg_1.4.12-7+deb7u7_i386.deb
+Filename: pool/main/g/gnupg/gpgv-win32_1.4.12-7+deb7u7_all.deb
+Filename: pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_i386.deb
 Homepage: http://www.gnupg.org
 Homepage: http://www.gnupg.org
 Homepage: http://www.gnupg.org
-Installed-Size: 112
-Installed-Size: 360
-Installed-Size: 4716
-MD5sum: 56584086a7532d7773a054d1d22475eb
-MD5sum: e02f1f1fd33852b86a593c39ae3fdecc
-MD5sum: f1095cd75a367403c7b06526f64db203
+Homepage: http://www.gnupg.org
+Installed-Size: 1480
+Installed-Size: 401
+Installed-Size: 4613
+Installed-Size: 89
+MD5sum: 5f15f3ac2f586b95ab21c3f83fd1bf35
+MD5sum: 7619869434ee598ba4b1e3de3a48b7a6
+MD5sum: b7456c472a331b1e905712328d25da27
+MD5sum: f892c96687ced1c2adfd8f00d9ca6f5a
 Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
 Package: gnupg
 Package: gnupg-curl
 Package: gpgv
+Package: gpgv-win32
+Priority: extra
 Priority: important
 Priority: important
 Priority: optional
 Recommends: libldap-2.4-2 (>= 2.4.7), gnupg-curl
-SHA1: 03856f88b6bf9e6802bc3c4fe4749120a86d5c33
-SHA1: 61e3ac5be7be0169c798c76e81386fa7d88c8aef
-SHA1: 81e8e6fc65e5c19192b7292263a85623b6dd7b8f
-SHA256: 0b659fde216eb16d5a69e52e2cde0060d72d2a87cdfaa0116f1ee2f2931e6a58
-SHA256: 21fef750f4a0c5f939cee8fdf5e1323159d09e646e4c66e505d8417c18561a03
-SHA256: b393dd08b06ab2e4337b4450e196a42d0da63b8dce3d635410101c57bbd23846
+SHA1: 31e0942b2511a2c73723271163efc0eb29d056ff
+SHA1: 72c9a6c444d8a6e8ec57f2b778c631946def9d1a
+SHA1: 9889f1717f36e00b6143aed530bd3d0c54c116fd
+SHA1: df8a0ef18df0fb86167128ac6c31d6709c2f9c6b
+SHA256: 27760f636f6dbfe387dfbede1131fe7a0dd5fd3b0ab562213193ffa7cfcadfb5
+SHA256: 6898801e3f3c97a30bef1ee50381479b69360a28807fb63fcce4abef4da1aec7
+SHA256: b852d7681ea328bd8b45140973624781e65d0363961d92bcc2ab0bbf1cc6ed52
+SHA256: cff40c87faea248c77de7d9fc50fcbc80631cd1bc8cec2b1033e0db452e08ea6
 Section: utils
 Section: utils
 Section: utils
-Size: 204070
-Size: 2089258
-Size: 72890
+Section: utils
+Size: 1938694
+Size: 221686
+Size: 617064
+Size: 63192
+Source: gnupg
 Source: gnupg
 Source: gnupg
 Suggests: gnupg
 Suggests: gnupg-doc, xloadimage | imagemagick | eog, libpcsclite1
+Suggests: wine
 Tag: implemented-in::c, interface::commandline, network::client, protocol::http, role::plugin, role::program, scope::utility, security::authentication, security::cryptography, suite::gnu, use::checking, works-with::file, works-with::text
-Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::{authentication,cryptography,privacy}, suite::gnu, use::checking, works-with::file, works-with::text
-Tag: interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::checking
-Version: 1.4.10-4+squeeze7
-Version: 1.4.10-4+squeeze7
-Version: 1.4.10-4+squeeze7
+Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::authentication, security::cryptography, security::privacy, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::checking
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7

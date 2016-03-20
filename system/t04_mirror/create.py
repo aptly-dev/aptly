@@ -90,7 +90,7 @@ class CreateMirror9Test(BaseTest):
     """
     create mirror: repo with InRelease verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
 
@@ -117,7 +117,7 @@ class CreateMirror11Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ squeeze-lts"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 

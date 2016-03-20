@@ -1,5 +1,5 @@
-Origin: . squeeze-lts
-Label: . squeeze-lts
-Archive: squeeze-lts
+Origin: . wheezy
+Label: . wheezy
+Archive: wheezy
 Architecture: i386
 Component: main

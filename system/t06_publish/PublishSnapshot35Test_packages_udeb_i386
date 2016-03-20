@@ -1,46 +1,35 @@
 
 
 
- .
- .
- GnuPG is GNU's tool for secure communication and data storage.
- GnuPG is GNU's tool for secure communication and data storage.
- It can be used to encrypt data and to create digital signatures.
- It can be used to encrypt data and to create digital signatures.
- It includes an advanced key management facility and is compliant
- It includes an advanced key management facility and is compliant
- This is GnuPG packaged in minimal form for use in debian-installer.
- This is GnuPG's signature verification tool, gpgv, packaged in minimal
- form for use in debian-installer.
- with the proposed OpenPGP Internet standard as described in RFC2440.
- with the proposed OpenPGP Internet standard as described in RFC2440.
 Architecture: i386
 Architecture: i386
-Depends: libc6-udeb (>= 2.11), libusb-0.1-udeb (>= 2:0.1.12), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
-Depends: libc6-udeb (>= 2.11), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Depends: libc6-udeb (>= 2.13), libusb-0.1-udeb, zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Depends: libc6-udeb (>= 2.13), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Description-Md5: 0d5b74cda45e2a6526c6943d2cd0c362
+Description-Md5: c52656f4cc79fd4b089086b9173d2923
 Description: GNU privacy guard - a free PGP replacement
 Description: minimal signature verification tool
-Filename: pool/main/g/gnupg/gnupg-udeb_1.4.10-4+squeeze7_i386.udeb
-Filename: pool/main/g/gnupg/gpgv-udeb_1.4.10-4+squeeze7_i386.udeb
-Installed-Size: 240
-Installed-Size: 712
-MD5sum: 040b67ff566d348e7f598d48921e94b8
-MD5sum: 5e258bc5f5b12ae956d6b762a566ca11
+Filename: pool/main/g/gnupg/gnupg-udeb_1.4.12-7+deb7u7_i386.udeb
+Filename: pool/main/g/gnupg/gpgv-udeb_1.4.12-7+deb7u7_i386.udeb
+Installed-Size: 275
+Installed-Size: 783
+MD5sum: 1abee98b231ab5b25dd7976ab61247cf
+MD5sum: e12304db5e3c3401e64ad5967a5c9064
 Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Package: gnupg-udeb
 Package: gpgv-udeb
 Priority: extra
 Priority: extra
-SHA1: 0690c70d614cae68ad3f0240ce0288c8e65e7d4d
-SHA1: 49e473d362c2ef52ca06c3af2b8204ef4d077d65
-SHA256: 63db5571ebbdb51512bd6c8d7b96358c0db8ec9e5932573fd8e2652c4ffe56d7
-SHA256: b5c806e730b4504290095444676379388036a51a2723ecf1fbc6cd20d3891c61
+SHA1: e64cb327e89ba41ba6aaeca7e9e69cf18479ed40
+SHA1: f6937084ae96b269131a08bb365619e704f91d21
+SHA256: 7d86005e0f2a7bdeff3204ccb0e50d6d06b07011621acb56ad322480bd11494c
+SHA256: 96eae21eb31fa79d196dfbec63594f62c39753aad59d02d69bf9495ad486ec01
 Section: debian-installer
 Section: debian-installer
-Size: 133478
-Size: 380214
+Size: 125582
+Size: 343860
 Source: gnupg
 Source: gnupg
-Version: 1.4.10-4+squeeze7
-Version: 1.4.10-4+squeeze7
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7

@@ -165,9 +165,9 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs squeeze http://mirror.yandex.ru/debian/ squeeze-lts main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
     ]
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg squeeze"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
     def output_processor(self, output):

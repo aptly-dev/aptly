@@ -1,6 +1,8 @@
-Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/InRelease...
-gpgv: Signature made Fri Feb  7 06:56:50 2014 MSK using RSA key ID 46925553
+Downloading http://mirror.yandex.ru/debian/dists/wheezy-backports/InRelease...
+gpgv:  RSA key ID 46925553
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
+gpgv:  RSA key ID 2B90D010
+gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 
-Mirror [mirror9]: http://mirror.yandex.ru/debian-backports/ squeeze-backports successfully added.
+Mirror [mirror9]: http://mirror.yandex.ru/debian/ wheezy-backports successfully added.
 You can run 'aptly mirror update mirror9' to download repository contents.
