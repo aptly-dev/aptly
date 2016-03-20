@@ -143,7 +143,7 @@ func (g *GpgSigner) Init() error {
 func (g *GpgSigner) DetachedSign(source string, destination string) error {
 	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
 
-	args := []string{"-o", destination, "--armor", "--yes"}
+	args := []string{"-o", destination, "--digest-algo", "SHA256", "--armor", "--yes"}
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--detach-sign", source)
 	cmd := exec.Command("gpg", args...)
@@ -156,7 +156,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 // ClearSign clear-signs the file
 func (g *GpgSigner) ClearSign(source string, destination string) error {
 	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
-	args := []string{"-o", destination, "--yes"}
+	args := []string{"-o", destination, "--digest-algo", "SHA256", "--yes"}
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--clearsign", source)
 	cmd := exec.Command("gpg", args...)
