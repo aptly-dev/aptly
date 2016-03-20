@@ -3,11 +3,14 @@ package s3
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
+	"github.com/smira/go-aws-auth"
 	"os"
 	"path/filepath"
 	"strings"
@@ -63,10 +66,14 @@ func NewPublishedStorageRaw(
 	return result, nil
 }
 
+func signV2(req *request.Request) {
+	awsauth.SignS3(req.HTTPRequest)
+}
+
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
 func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel bool) (*PublishedStorage, error) {
+	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel, forceSigV2, debug bool) (*PublishedStorage, error) {
 
 	config := &aws.Config{
 		Region: aws.String(region),
@@ -80,8 +87,20 @@ func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, b
 		config.Credentials = credentials.NewStaticCredentials(accessKey, secretKey, sessionToken)
 	}
 
-	return NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
+	if debug {
+		config = config.WithLogLevel(aws.LogDebug)
+	}
+
+	result, err := NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
 		encryptionMethod, plusWorkaround, disableMultiDel, config)
+
+	if err == nil && forceSigV2 {
+		result.s3.Handlers.Sign.Clear()
+		result.s3.Handlers.Sign.PushBackNamed(corehandlers.BuildContentLengthHandler)
+		result.s3.Handlers.Sign.PushBack(signV2)
+	}
+
+	return result, err
 }
 
 // String
