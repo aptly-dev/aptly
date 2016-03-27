@@ -287,26 +287,20 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaround bool) (paths []string, md5s []string, err error) {
 	paths = make([]string, 0, 1024)
 	md5s = make([]string, 0, 1024)
-	marker := ""
 	prefix = filepath.Join(storage.prefix, prefix)
 	if prefix != "" {
 		prefix += "/"
 	}
-	for {
-		params := &s3.ListObjectsInput{
-			Bucket:  aws.String(storage.bucket),
-			Prefix:  aws.String(prefix),
-			MaxKeys: aws.Int64(1000),
-		}
 
-		contents, err := storage.s3.ListObjects(params)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
-		}
-		lastKey := ""
+	params := &s3.ListObjectsInput{
+		Bucket:  aws.String(storage.bucket),
+		Prefix:  aws.String(prefix),
+		MaxKeys: aws.Int64(1000),
+	}
+
+	err = storage.s3.ListObjectsPages(params, func(contents *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, key := range contents.Contents {
-			lastKey = *key.Key
-			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(lastKey, " ") != -1 {
+			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(*key.Key, " ") != -1 {
 				// if we use plusWorkaround, we want to hide those duplicates
 				/// from listing
 				continue
@@ -319,21 +313,12 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 			}
 			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
 		}
-		if contents.IsTruncated != nil && *contents.IsTruncated {
-			marker = ""
-			if contents.NextMarker != nil {
-				marker = *contents.NextMarker
-			}
-			if marker == "" {
-				// From the s3 docs: If response does not include the
-				// NextMarker and it is truncated, you can use the value of the
-				// last Key in the response as the marker in the subsequent
-				// request to get the next set of object keys.
-				marker = lastKey
-			}
-		} else {
-			break
-		}
+
+		return true
+	})
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
 	}
 
 	return paths, md5s, nil
