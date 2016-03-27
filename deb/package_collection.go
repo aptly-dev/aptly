@@ -282,7 +282,7 @@ func (collection *PackageCollection) DeleteByKey(key []byte) error {
 
 // Scan does full scan on all the packages
 func (collection *PackageCollection) Scan(q PackageQuery) (result *PackageList) {
-	result = NewPackageList()
+	result = NewPackageListWithDuplicates(true, 0)
 
 	for _, key := range collection.db.KeysByPrefix([]byte("P")) {
 		pkg, err := collection.ByKey(key)
