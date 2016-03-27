@@ -105,3 +105,7 @@ With configuration management systems:
 CLI for aptly API:
 
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
+
+Scala sbt:
+
+-   `sbt aptly plugin <https://github.com/amalakar/sbt-aptly>`_ by Arup Malakar
