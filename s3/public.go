@@ -66,10 +66,6 @@ func NewPublishedStorageRaw(
 	return result, nil
 }
 
-func signV2(req *request.Request) {
-	awsauth.SignS3(req.HTTPRequest)
-}
-
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
 func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
@@ -95,9 +91,20 @@ func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, b
 		encryptionMethod, plusWorkaround, disableMultiDel, config)
 
 	if err == nil && forceSigV2 {
+		creds := []awsauth.Credentials{}
+
+		if accessKey != "" {
+			creds = append(creds, awsauth.Credentials{
+				AccessKeyID:     accessKey,
+				SecretAccessKey: secretKey,
+			})
+		}
+
 		result.s3.Handlers.Sign.Clear()
 		result.s3.Handlers.Sign.PushBackNamed(corehandlers.BuildContentLengthHandler)
-		result.s3.Handlers.Sign.PushBack(signV2)
+		result.s3.Handlers.Sign.PushBack(func(req *request.Request) {
+			awsauth.SignS3(req.HTTPRequest, creds...)
+		})
 	}
 
 	return result, err
