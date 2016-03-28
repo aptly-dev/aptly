@@ -407,15 +407,7 @@ func (p *Package) Contents(packagePool aptly.PackagePool) []string {
 		return nil
 	}
 
-	if p.contents == nil {
-		if p.collection == nil {
-			panic("contents == nil && collection == nil")
-		}
-
-		p.contents = p.collection.loadContents(p, packagePool)
-	}
-
-	return p.contents
+	return p.collection.loadContents(p, packagePool)
 }
 
 // CalculateContents looks up contents in package file
