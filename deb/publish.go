@@ -641,6 +641,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 				var bufWriter *bufio.Writer
 				bufWriter, err = indexes.ReleaseIndex(component, arch, udeb).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to get ReleaseIndex writer: %s", err)
+				}
 
 				err = release.WriteTo(bufWriter, false, true)
 				if err != nil {

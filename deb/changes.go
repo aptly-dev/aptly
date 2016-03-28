@@ -257,7 +257,7 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 				return nil
 			})
 
-			if err != nil {
+			if err2 != nil {
 				reporter.Warning("Unable to process %s: %s", location, err2)
 				failedFiles = append(failedFiles, location)
 				continue
