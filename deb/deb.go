@@ -127,7 +127,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 			case "data.tar.gz":
 				ungzip, err := gzip.NewReader(library)
 				if err != nil {
-					return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile,err)
+					return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile, err)
 				}
 				defer ungzip.Close()
 				tarInput = ungzip

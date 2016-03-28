@@ -34,6 +34,12 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 
 				return nil
 			})
+
+			if err2 != nil {
+				reporter.Warning("Unable to process %s: %s", location, err2)
+				failedFiles = append(failedFiles, location)
+				continue
+			}
 		} else {
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
 				strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {

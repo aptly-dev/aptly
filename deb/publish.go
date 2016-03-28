@@ -294,7 +294,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// String returns human-readable represenation of PublishedRepo
+// String returns human-readable representation of PublishedRepo
 func (p *PublishedRepo) String() string {
 	var sources = []string{}
 

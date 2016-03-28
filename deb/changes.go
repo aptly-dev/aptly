@@ -256,6 +256,12 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 
 				return nil
 			})
+
+			if err != nil {
+				reporter.Warning("Unable to process %s: %s", location, err2)
+				failedFiles = append(failedFiles, location)
+				continue
+			}
 		} else if strings.HasSuffix(info.Name(), ".changes") {
 			changesFiles = append(changesFiles, location)
 		}

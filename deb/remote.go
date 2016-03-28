@@ -146,7 +146,7 @@ func (repo *RemoteRepo) IsFlat() bool {
 	return repo.Distribution == "" || (strings.HasPrefix(repo.Distribution, ".") && strings.HasSuffix(repo.Distribution, "/"))
 }
 
-// NumPackages return number of packages retrived from remote repo
+// NumPackages return number of packages retrieved from remote repo
 func (repo *RemoteRepo) NumPackages() int {
 	if repo.packageRefs == nil {
 		return 0

@@ -282,7 +282,7 @@ func depSliceDeduplicate(s []Dependency) []Dependency {
 
 // VerifyDependencies looks for missing dependencies in package list.
 //
-// Analysis would be peformed for each architecture, in specified sources
+// Analysis would be performed for each architecture, in specified sources
 func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList, progress aptly.Progress) ([]Dependency, error) {
 	l.PrepareIndex()
 	missing := make([]Dependency, 0, 128)
