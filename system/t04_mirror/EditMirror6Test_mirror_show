@@ -11,10 +11,10 @@ Information from release file:
 Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 Codename: wheezy
 Components: main contrib non-free
-Date: Sat, 05 Sep 2015 11:44:23 UTC
-Description:  Debian 7.9 Released 05 September 2015
+Date: Sat, 02 Apr 2016 12:02:38 UTC
+Description:  Debian 7.10 Released 02 April 2016
 
 Label: Debian
 Origin: Debian
 Suite: oldstable
-Version: 7.9
+Version: 7.10

@@ -27,7 +27,7 @@ Downloading http://mirror.yandex.ru/debian/pool/main/g/gnupg/gpgv-win32_1.4.12-7
 Downloading http://mirror.yandex.ru/debian/pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_amd64.deb...
 Downloading http://mirror.yandex.ru/debian/pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_i386.deb...
 Mirror `wheezy` has been successfully updated.
-Packages filtered: 57430 -> 11.
+Packages filtered: 57415 -> 11.
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 gpgv: Good signature from "Wheezy Stable Release Key <debian-release@lists.debian.org>"

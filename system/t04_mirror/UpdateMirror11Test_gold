@@ -14,7 +14,7 @@ Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sysvinit/sysv-rc_2.88dsf-
 Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sysvinit/sysvinit-utils_2.88dsf-41+deb7u1_i386.deb...
 Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sysvinit/sysvinit_2.88dsf-41+deb7u1_i386.deb...
 Mirror `wheezy-main` has been successfully updated.
-Packages filtered: 36033 -> 5.
+Packages filtered: 36024 -> 5.
 gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 gpgv: Good signature from "Wheezy Stable Release Key <debian-release@lists.debian.org>"

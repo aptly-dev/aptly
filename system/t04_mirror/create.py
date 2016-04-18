@@ -130,7 +130,7 @@ class CreateMirror12Test(BaseTest):
     """
     create mirror: repo with Release+Release.gpg verification, failure
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ squeeze-lts"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
