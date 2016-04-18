@@ -103,7 +103,7 @@ func (s *RemoteRepoSuite) TearDownTest(c *C) {
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{}, false, false)
-	c.Assert(err, ErrorMatches, ".*(hexadecimal escape|percent-encoded characters) in host.*")
+	c.Assert(err, ErrorMatches, ".*(hexadecimal escape in host|percent-encoded characters in host|invalid URL escape).*")
 }
 
 func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
