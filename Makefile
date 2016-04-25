@@ -50,7 +50,7 @@ system-test: install
 travis: $(TRAVIS_TARGET) system-test
 
 test:
-	$(GOM) test -v ./... -gocheck.v=true
+	$(GOM) test -v `go list ./... | grep -v vendor/` -gocheck.v=true
 
 coveralls: coverage.out
 	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken=$(COVERALLS_TOKEN)
