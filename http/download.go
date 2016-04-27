@@ -3,6 +3,7 @@ package http
 import (
 	"compress/bzip2"
 	"compress/gzip"
+	"github.com/smira/go-xz"
 	"fmt"
 	"github.com/mxk/go-flowrate/flowrate"
 	"github.com/smira/aptly/aptly"
@@ -321,6 +322,10 @@ var compressionMethods = []struct {
 	{
 		extenstion:     ".gz",
 		transformation: func(r io.Reader) (io.Reader, error) { return gzip.NewReader(r) },
+	},
+	{
+		extenstion:     ".xz",
+		transformation: func(r io.Reader) (io.Reader, error) { return xz.NewReader(r) },
 	},
 	{
 		extenstion:     "",
