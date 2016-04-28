@@ -329,6 +329,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
 
 	err := s.flat.Fetch(downloader, nil)
@@ -359,9 +360,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.HTTPError{Code: 404})
 	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.HTTPError{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
 
 	err := s.flat.Fetch(downloader, nil)
