@@ -24,6 +24,7 @@ type ConfigStructure struct {
 	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
+	APIHookCmd             string                      `json:"APIHookCmd"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
@@ -76,6 +77,7 @@ var Config = ConfigStructure{
 	PpaCodename:            "",
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	APIHookCmd:             "",
 }
 
 // LoadConfig loads configuration from json file
