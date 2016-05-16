@@ -43,6 +43,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	repo.Filter = context.Flags().Lookup("filter").Value.String()
 	repo.FilterWithDeps = context.Flags().Lookup("filter-with-deps").Value.Get().(bool)
 	repo.SkipComponentCheck = context.Flags().Lookup("force-components").Value.Get().(bool)
+	repo.SkipArchitectureCheck = context.Flags().Lookup("force-architectures").Value.Get().(bool)
 
 	if repo.Filter != "" {
 		_, err = query.Parse(repo.Filter)
@@ -97,6 +98,7 @@ Example:
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("force-components", false, "(only with component list) skip check that requested components are listed in Release file")
+	cmd.Flag.Bool("force-architectures", false, "(only with architecture list) skip check that requested architectures are listed in Release file")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd

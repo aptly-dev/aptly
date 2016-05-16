@@ -13,6 +13,7 @@ Options:
   -dep-follow-suggests=false: when processing dependencies, follow Suggests
   -filter="": filter packages in mirror
   -filter-with-deps=false: when filtering, include dependencies of matching packages as well
+  -force-architectures=false: (only with architecture list) skip check that requested architectures are listed in Release file
   -force-components=false: (only with component list) skip check that requested components are listed in Release file
   -ignore-signatures=false: disable verification of Release file signatures
   -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
