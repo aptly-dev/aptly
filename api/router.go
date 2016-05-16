@@ -7,31 +7,34 @@ import (
 	"strconv"
 	"strings"
 	"os/exec"
+	"encoding/json"
 )
 
 var context *ctx.AptlyContext
 
 // middleware to track API calls and call a hook script
-func ApiHooks(cmd string) gin.HandlerFunc {
+func ApiHooks(cmd string, conf string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		// env := os.Environ()
 		var env []string
-		env = append(env, ("METHOD="      + c.Request.Method))
-		env = append(env, ("REQ_URL="     + c.Request.URL.String()))
-		env = append(env, ("REMOTE_HOST=" + c.Request.RemoteAddr))
-		env = append(env, ("STATUS="      + strconv.Itoa(c.Writer.Status())))
+		env = append(env,
+			("APTLY_METHOD="      + c.Request.Method),
+			("APTLY_REQ_URL="     + c.Request.URL.String()),
+			("APTLY_REMOTE_ADDR=" + c.Request.RemoteAddr),
+			("APTLY_STATUS="      + strconv.Itoa(c.Writer.Status())),
+			("APTLY_CONFIG="      + conf),
+		)
 
 		// collect all named params
 		for _, p := range c.Params {
-			env = append(env, "PARAM_" + p.Key + "=" + p.Value)
+			env = append(env, "APTLY_PARAM_" + p.Key + "=" + p.Value)
 		}
 
 		// collect the query params
 		for k, v := range c.Request.URL.Query() {
 			// separate multiple query params of the same name with some "special" char
-			env = append(env, "QUERY_" + k + "=" + strings.Join(v, ","))
+			env = append(env, "APTLY_QUERY_" + k + "=" + strings.Join(v, ","))
 		}
 
 		cmd := exec.Command(cmd)
@@ -51,9 +54,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	router := gin.Default()
 	router.Use(gin.ErrorLogger())
 
-	api_hook_cmd := context.Config().APIHookCmd
+	conf := context.Config()
+	api_hook_cmd := conf.APIHookCmd
 	if api_hook_cmd != "" {
-		router.Use(ApiHooks(api_hook_cmd))
+		conf_str, _ := json.Marshal(conf)
+		router.Use(ApiHooks(api_hook_cmd, string(conf_str)))
 	}
 
 	if context.Flags().Lookup("no-lock").Value.Get().(bool) {
