@@ -60,6 +60,8 @@ type RemoteRepo struct {
 	FilterWithDeps bool
 	// SkipComponentCheck skips component list verification
 	SkipComponentCheck bool
+	// SkipArchitectureCheck skips architecture list verification
+	SkipArchitectureCheck bool
 	// Status marks state of repository (being updated, no action)
 	Status int
 	// WorkerPID is PID of the process modifying the mirror (if any)
@@ -316,9 +318,9 @@ ok:
 		architectures = utils.StrSlicesSubstract(architectures, []string{"source"})
 		if len(repo.Architectures) == 0 {
 			repo.Architectures = architectures
-		} else {
+		} else if !repo.SkipArchitectureCheck {
 			err = utils.StringsIsSubset(repo.Architectures, architectures,
-				fmt.Sprintf("architecture %%s not available in repo %s", repo))
+				fmt.Sprintf("architecture %%s not available in repo %s, use -force-architectures to override", repo))
 			if err != nil {
 				return err
 			}
