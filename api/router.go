@@ -5,7 +5,6 @@ import (
 	ctx "github.com/smira/aptly/context"
 	"net/http"
 	"strconv"
-	"strings"
 	"os/exec"
 	"encoding/json"
 )
@@ -17,24 +16,17 @@ func ApiHooks(cmd string, conf string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		var env []string
-		env = append(env,
+		params , _ := json.Marshal(c.Params)
+		query, _   := json.Marshal(c.Request.URL.Query())
+
+		env := []string{
 			("APTLY_METHOD="      + c.Request.Method),
 			("APTLY_REQ_URL="     + c.Request.URL.String()),
 			("APTLY_REMOTE_ADDR=" + c.Request.RemoteAddr),
 			("APTLY_STATUS="      + strconv.Itoa(c.Writer.Status())),
 			("APTLY_CONFIG="      + conf),
-		)
-
-		// collect all named params
-		for _, p := range c.Params {
-			env = append(env, "APTLY_PARAM_" + p.Key + "=" + p.Value)
-		}
-
-		// collect the query params
-		for k, v := range c.Request.URL.Query() {
-			// separate multiple query params of the same name with some "special" char
-			env = append(env, "APTLY_QUERY_" + k + "=" + strings.Join(v, ","))
+			("APTLY_PARAMS="      + string(params)),
+			("APTLY_QUERY="       + string(query)),
 		}
 
 		cmd := exec.Command(cmd)
