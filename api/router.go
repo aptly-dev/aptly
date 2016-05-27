@@ -29,14 +29,14 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			requests <- ACQUIREDB
 			err := <-acks
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 			defer func() {
 				requests <- RELEASEDB
 				err = <-acks
 				if err != nil {
-					c.Fail(500, err)
+					c.AbortWithError(500, err)
 					return
 				}
 			}()
