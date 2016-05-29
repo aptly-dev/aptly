@@ -77,6 +77,12 @@ class BaseTest(object):
         "gpgDisableSign": False,
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
+        "apiUsers": {
+            "admin": {
+                "password": "admin",
+                "roles": ["admin"]
+            }
+        }
     }
     configOverride = {}
     environmentOverride = {}

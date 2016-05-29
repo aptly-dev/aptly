@@ -350,6 +350,33 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	return publishedStorage
 }
 
+func (context *AptlyContext) AuthenticateAPIUser(userId string, password string) bool  {
+	context.Lock()
+	defer context.Unlock()
+	var apiUsers = context.config().ApiUsers
+	if nil != apiUsers {
+		if apiUser, ok := apiUsers[userId]; ok {
+			if (apiUser.Password == password) {
+				return true
+			}
+			return false
+		}
+		return false
+	}
+	return true
+}
+
+func (context *AptlyContext) AuthorizeAPIUser(userId string, role string) bool {
+	if apiUser, ok := context.config().ApiUsers[userId]; ok {
+		if (utils.StrSliceHasItem(apiUser.Roles, role)) {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
+
 // UploadPath builds path to upload storage
 func (context *AptlyContext) UploadPath() string {
 	return filepath.Join(context.Config().RootDir, "upload")

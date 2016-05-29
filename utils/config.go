@@ -24,6 +24,7 @@ type ConfigStructure struct {
 	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
+	ApiUsers               map[string]ApiUser          `json:"ApiUsers"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
@@ -53,6 +54,12 @@ type SwiftPublishRoot struct {
 	TenantID  string `json:"tenantid"`
 	Prefix    string `json:"prefix"`
 	Container string `json:"container"`
+}
+
+// ApiUsers describes credentials and roles for the API
+type ApiUser struct {
+	Password string   `json:"password"`
+	Roles    []string `json:"roles"`
 }
 
 // Config is configuration for aptly, shared by all modules

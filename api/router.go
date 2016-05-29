@@ -50,23 +50,19 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	authMiddleware := &jwt.GinJWTMiddleware{
-		Realm: "test zone",
+		Realm: "aptly",
 		Key: []byte("secret key"),
 		Timeout: time.Hour,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
-			if (userId == "admin" && password == "admin") {
+			if (context.AuthenticateAPIUser(userId, password)) {
 				return userId, true
 			}
 
 			return userId, false
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
-			if userId == "admin" {
-				return true
-			}
-
-			return false
+			return context.AuthorizeAPIUser(userId, "admin")
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
