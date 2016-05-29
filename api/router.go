@@ -2,8 +2,10 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/appleboy/gin-jwt"
 	ctx "github.com/smira/aptly/context"
 	"net/http"
+	"time"
 )
 
 var context *ctx.AptlyContext
@@ -47,7 +49,41 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		go cacheFlusher(nil, nil)
 	}
 
+	authMiddleware := &jwt.GinJWTMiddleware{
+		Realm: "test zone",
+		Key: []byte("secret key"),
+		Timeout: time.Hour,
+		MaxRefresh: time.Hour * 24,
+		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
+			if (userId == "admin" && password == "admin") {
+				return userId, true
+			}
+
+			return userId, false
+		},
+		Authorizator: func(userId string, c *gin.Context) bool {
+			if userId == "admin" {
+				return true
+			}
+
+			return false
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code": code,
+				"message": message,
+			})
+		},
+	}
+
+	router.POST("/login", authMiddleware.LoginHandler)
+
 	root := router.Group("/api")
+	root.Use(authMiddleware.MiddlewareFunc())
+
+	{
+		root.GET("/refresh_token", authMiddleware.RefreshHandler)
+	}
 
 	{
 		root.GET("/version", apiVersion)
