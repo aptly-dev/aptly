@@ -14,5 +14,7 @@
   "ppaCodename": "",
   "skipContentsPublishing": false,
   "S3PublishEndpoints": {},
-  "SwiftPublishEndpoints": {}
+  "SwiftPublishEndpoints": {},
+  "ApiUsers": {},
+  "apiSecretKey": "supersecretkey"
 }

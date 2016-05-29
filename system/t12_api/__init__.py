@@ -9,3 +9,4 @@ from .version import *
 from .graph import *
 from .snapshots import *
 from .packages import *
+from .auth import *

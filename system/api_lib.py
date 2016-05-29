@@ -17,14 +17,13 @@ class APITest(BaseTest):
     """
     BaseTest + testing aptly API
     """
+
     aptly_server = None
     base_url = "127.0.0.1:8765"
 
     api_token    = None
-
     api_username = "admin"
     api_password = "admin"
-    authenticate = bool(True)
 
     def fixture_available(self):
         return super(APITest, self).fixture_available() and requests is not None
@@ -110,7 +109,7 @@ class APITest(BaseTest):
         return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(15))
 
     def prepareAuthentication(self, **kwargs):
-        if self.authenticate:
+        if self.requireAuthentication:
                 self.requestToken()
                 kwargs = self.setAuthenticationHeader(**kwargs)
         return kwargs

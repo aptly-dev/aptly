@@ -72,10 +72,13 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		},
 	}
 
-	router.POST("/login", authMiddleware.LoginHandler)
-
 	root := router.Group("/api")
-	root.Use(authMiddleware.MiddlewareFunc())
+
+	// Secure only if users are defined
+	if (nil != context.Config().ApiUsers && len(context.Config().ApiUsers)>0) {
+		root.Use(authMiddleware.MiddlewareFunc())
+		router.POST("/login", authMiddleware.LoginHandler)
+	}
 
 	{
 		root.GET("/refresh_token", authMiddleware.RefreshHandler)

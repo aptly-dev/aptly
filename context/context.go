@@ -351,8 +351,6 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 }
 
 func (context *AptlyContext) AuthenticateAPIUser(userId string, password string) bool  {
-	context.Lock()
-	defer context.Unlock()
 	var apiUsers = context.config().ApiUsers
 	if nil != apiUsers {
 		if apiUser, ok := apiUsers[userId]; ok {
@@ -367,17 +365,13 @@ func (context *AptlyContext) AuthenticateAPIUser(userId string, password string)
 }
 
 func (context *AptlyContext) AuthorizeAPIUser(userId string, role string) bool {
-	var apiUsers = context.config().ApiUsers
-	if nil != apiUsers {
-		if apiUser, ok := context.config().ApiUsers[userId]; ok {
-			if (utils.StrSliceHasItem(apiUser.Roles, role)) {
-				return true
-			}
-			return false
+	if apiUser, ok := context.config().ApiUsers[userId]; ok {
+		if (utils.StrSliceHasItem(apiUser.Roles, role)) {
+			return true
 		}
 		return false
 	}
-	return true
+	return false
 }
 
 func (context *AptlyContext) APISecretKey() string {

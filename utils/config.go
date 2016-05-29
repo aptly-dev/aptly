@@ -80,6 +80,7 @@ var Config = ConfigStructure{
 	PpaCodename:            "",
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	ApiUsers:               map[string]ApiUser{},
 	APISecretKey:           "supersecretkey",
 }
 
