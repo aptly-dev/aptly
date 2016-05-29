@@ -367,13 +367,22 @@ func (context *AptlyContext) AuthenticateAPIUser(userId string, password string)
 }
 
 func (context *AptlyContext) AuthorizeAPIUser(userId string, role string) bool {
-	if apiUser, ok := context.config().ApiUsers[userId]; ok {
-		if (utils.StrSliceHasItem(apiUser.Roles, role)) {
-			return true
+	var apiUsers = context.config().ApiUsers
+	if nil != apiUsers {
+		if apiUser, ok := context.config().ApiUsers[userId]; ok {
+			if (utils.StrSliceHasItem(apiUser.Roles, role)) {
+				return true
+			}
+			return false
 		}
 		return false
 	}
-	return false
+	return true
+}
+
+func (context *AptlyContext) APISecretKey() string {
+	return context.config().APISecretKey
+
 }
 
 

@@ -120,8 +120,9 @@ class APITest(BaseTest):
             if self.api_token is None:
                 payload = {'username': self.api_username, 'password': self.api_password}
                 headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-                response = requests.post("http://%s/login" % (self.base_url), headers=headers, data=json.dumps(payload)).json()
-                self.api_token = response["token"]
+                response = requests.post("http://%s/login" % (self.base_url), headers=headers, data=json.dumps(payload))
+                if response.status_code == 200:
+                    self.api_token = response.json()["token"]
 
     def setAuthenticationHeader(self, **kwargs):
         if not "headers" in kwargs:

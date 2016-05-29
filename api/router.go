@@ -51,7 +51,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm: "aptly",
-		Key: []byte("secret key"),
+		Key: []byte(context.APISecretKey()),
 		Timeout: time.Hour,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {

@@ -25,6 +25,7 @@ type ConfigStructure struct {
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
 	ApiUsers               map[string]ApiUser          `json:"ApiUsers"`
+	APISecretKey           string                      `json:"apiSecretKey"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
@@ -79,6 +80,7 @@ var Config = ConfigStructure{
 	PpaCodename:            "",
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	APISecretKey:           "supersecretkey",
 }
 
 // LoadConfig loads configuration from json file

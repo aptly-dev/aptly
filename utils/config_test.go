@@ -42,6 +42,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		Roles: []string{"admin"},
 	}}
 
+	s.config.APISecretKey = "supersecretaptlykey"
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -104,7 +106,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"        \"admin\"\n"+
                 "      ]\n"+
 		"    }\n"+
-		"  }\n"+
+		"  },\n"+
+		"  \"apiSecretKey\": \"supersecretaptlykey\"\n"+
 		"}")
 }
 
