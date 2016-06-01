@@ -18,7 +18,7 @@ else
 GOM=gom
 endif
 
-all: test check system-test
+all: test check system-test system-test.api
 
 prepare:
 	go get -u github.com/mattn/gom
@@ -42,10 +42,19 @@ check:
 install:
 	$(GOM) build -o $(BINPATH)/aptly
 
-system-test: install
+install.fixtures: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
+
+system-test: install.fixtures
 	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long
+
+system-test.api: install.fixtures
+	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long --auth t12_api
+
+system-test.api.noauth: install.fixtures
+	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long t12_api
+
 
 travis: $(TRAVIS_TARGET) system-test
 

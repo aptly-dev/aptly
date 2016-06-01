@@ -2,8 +2,10 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/appleboy/gin-jwt"
 	ctx "github.com/smira/aptly/context"
 	"net/http"
+	"time"
 )
 
 var context *ctx.AptlyContext
@@ -29,14 +31,14 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			requests <- ACQUIREDB
 			err := <-acks
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 			defer func() {
 				requests <- RELEASEDB
 				err = <-acks
 				if err != nil {
-					c.Fail(500, err)
+					c.AbortWithError(500, err)
 					return
 				}
 			}()
@@ -47,7 +49,40 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		go cacheFlusher(nil, nil)
 	}
 
+	authMiddleware := &jwt.GinJWTMiddleware{
+		Realm: "aptly",
+		Key: []byte(context.APISecretKey()),
+		Timeout: time.Hour,
+		MaxRefresh: time.Hour * 24,
+		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
+			if (context.AuthenticateAPIUser(userId, password)) {
+				return userId, true
+			}
+
+			return userId, false
+		},
+		Authorizator: func(userId string, c *gin.Context) bool {
+			return context.AuthorizeAPIUser(userId, "admin")
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code": code,
+				"message": message,
+			})
+		},
+	}
+
 	root := router.Group("/api")
+
+	// Secure only if users are defined
+	if (nil != context.Config().ApiUsers && len(context.Config().ApiUsers)>0) {
+		root.Use(authMiddleware.MiddlewareFunc())
+		router.POST("/login", authMiddleware.LoginHandler)
+	}
+
+	{
+		root.GET("/refresh_token", authMiddleware.RefreshHandler)
+	}
 
 	{
 		root.GET("/version", apiVersion)

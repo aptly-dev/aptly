@@ -47,7 +47,7 @@ class Serve1Test(BaseTest):
                 proc.send_signal(signal.SIGINT)
                 proc.wait()
 
-            if proc.returncode != 2:
+            if proc.returncode != -2:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, 2, output))
             self.output = output
         except Exception, e:

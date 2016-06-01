@@ -62,6 +62,7 @@ class BaseTest(object):
     fixtureDB = False
     fixtureGpg = False
     fixtureWebServer = False
+    requireAuthentication = False
 
     expectedCode = 0
     configFile = {
@@ -78,6 +79,16 @@ class BaseTest(object):
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
     }
+
+    # Extend config on --auth
+    configFileAPIUsers = {
+        "admin": {
+            "password": "admin",
+            "roles": ["admin"]
+        }
+    }
+    configFileAPISecretKey = "supersecretaptlykey"
+
     configOverride = {}
     environmentOverride = {}
 
@@ -103,6 +114,9 @@ class BaseTest(object):
 
     def prepare_default_config(self):
         cfg = self.configFile.copy()
+        if self.requireAuthentication == True:
+            cfg["apiUsers"] = self.configFileAPIUsers
+            cfg["apiSecretKey"] = self.configFileAPISecretKey
         cfg.update(**self.configOverride)
         f = open(os.path.join(os.environ["HOME"], ".aptly.conf"), "w")
         f.write(json.dumps(cfg))

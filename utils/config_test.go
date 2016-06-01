@@ -37,6 +37,13 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": {
 		Container: "repo"}}
 
+	s.config.ApiUsers = map[string]ApiUser{"admin": {
+		Password: "admin",
+		Roles: []string{"admin"},
+	}}
+
+	s.config.APISecretKey = "supersecretaptlykey"
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -91,7 +98,16 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"prefix\": \"\",\n"+
 		"      \"container\": \"repo\"\n"+
 		"    }\n"+
-		"  }\n"+
+		"  },\n"+
+		"  \"ApiUsers\": {\n"+
+		"    \"admin\": {\n"+
+		"      \"password\": \"admin\",\n"+
+		"      \"roles\": [\n"+
+		"        \"admin\"\n"+
+                "      ]\n"+
+		"    }\n"+
+		"  },\n"+
+		"  \"apiSecretKey\": \"supersecretaptlykey\"\n"+
 		"}")
 }
 

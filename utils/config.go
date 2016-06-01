@@ -24,6 +24,8 @@ type ConfigStructure struct {
 	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
+	ApiUsers               map[string]ApiUser          `json:"ApiUsers"`
+	APISecretKey           string                      `json:"apiSecretKey"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
@@ -55,6 +57,12 @@ type SwiftPublishRoot struct {
 	Container string `json:"container"`
 }
 
+// ApiUsers describes credentials and roles for the API
+type ApiUser struct {
+	Password string   `json:"password"`
+	Roles    []string `json:"roles"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
@@ -72,6 +80,8 @@ var Config = ConfigStructure{
 	PpaCodename:            "",
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	ApiUsers:               map[string]ApiUser{},
+	APISecretKey:           "supersecretkey",
 }
 
 // LoadConfig loads configuration from json file

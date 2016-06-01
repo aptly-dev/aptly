@@ -21,7 +21,7 @@ except ImportError:
         return s
 
 
-def run(include_long_tests=False, capture_results=False, tests=None, filters=None):
+def run(include_long_tests=False, capture_results=False, tests=None, filters=None, require_authentication=False):
     """
     Run system test.
     """
@@ -70,6 +70,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
             try:
                 t.captureResults = capture_results
+                t.requireAuthentication = require_authentication
                 t.test()
             except BaseException:
                 numFailed += 1
@@ -102,6 +103,7 @@ if __name__ == "__main__":
     random.seed()
     include_long_tests = False
     capture_results = False
+    require_authentication = False
     tests = None
     args = sys.argv[1:]
 
@@ -110,6 +112,8 @@ if __name__ == "__main__":
             include_long_tests = True
         elif args[0] == "--capture":
             capture_results = True
+        elif args[0] == "--auth":
+            require_authentication = True
 
         args = args[1:]
 
@@ -122,4 +126,4 @@ if __name__ == "__main__":
         else:
             filters.append(arg)
 
-    run(include_long_tests, capture_results, tests, filters)
+    run(include_long_tests, capture_results, tests, filters, require_authentication)

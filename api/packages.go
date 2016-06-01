@@ -8,7 +8,7 @@ import (
 func apiPackagesShow(c *gin.Context) {
 	p, err := context.CollectionFactory().PackageCollection().ByKey([]byte(c.Params.ByName("key")))
 	if err != nil {
-		c.Fail(404, err)
+		c.AbortWithError(404, err)
 		return
 	}
 
