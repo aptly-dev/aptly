@@ -1,10 +1,20 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	ctx "github.com/smira/aptly/context"
 	"net/http"
+
+	"github.com/DanielHeckrath/gin-prometheus"
+	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	ctx "github.com/smira/aptly/context"
 )
+
+func prometheusHandler() gin.HandlerFunc {
+	h := prometheus.UninstrumentedHandler()
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
 
 var context *ctx.AptlyContext
 
@@ -47,65 +57,66 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		go cacheFlusher(nil, nil)
 	}
 
+	router.GET("/metrics", prometheusHandler())
 	root := router.Group("/api")
 
 	{
-		root.GET("/version", apiVersion)
+		root.GET("/version", ginprom.InstrumentHandlerFunc("version", apiVersion))
 	}
 
 	{
-		root.GET("/repos", apiReposList)
-		root.POST("/repos", apiReposCreate)
-		root.GET("/repos/:name", apiReposShow)
-		root.PUT("/repos/:name", apiReposEdit)
-		root.DELETE("/repos/:name", apiReposDrop)
+		root.GET("/repos", ginprom.InstrumentHandlerFunc("reposList", apiReposList))
+		root.POST("/repos", ginprom.InstrumentHandlerFunc("reposCreate", apiReposCreate))
+		root.GET("/repos/:name", ginprom.InstrumentHandlerFunc("reposShow", apiReposShow))
+		root.PUT("/repos/:name", ginprom.InstrumentHandlerFunc("reposEdit", apiReposEdit))
+		root.DELETE("/repos/:name", ginprom.InstrumentHandlerFunc("reposDrop", apiReposDrop))
 
-		root.GET("/repos/:name/packages", apiReposPackagesShow)
-		root.POST("/repos/:name/packages", apiReposPackagesAdd)
-		root.DELETE("/repos/:name/packages", apiReposPackagesDelete)
+		root.GET("/repos/:name/packages", ginprom.InstrumentHandlerFunc("reposPackagesShow", apiReposPackagesShow))
+		root.POST("/repos/:name/packages", ginprom.InstrumentHandlerFunc("reposPackagesAdd", apiReposPackagesAdd))
+		root.DELETE("/repos/:name/packages", ginprom.InstrumentHandlerFunc("reposPackagesDelete", apiReposPackagesDelete))
 
-		root.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
-		root.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
+		root.POST("/repos/:name/file/:dir/:file", ginprom.InstrumentHandlerFunc("reposPackageFromFile", apiReposPackageFromFile))
+		root.POST("/repos/:name/file/:dir", ginprom.InstrumentHandlerFunc("reposPackageFromDir", apiReposPackageFromDir))
 
-		root.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
+		root.POST("/repos/:name/snapshots", ginprom.InstrumentHandlerFunc("snapshotsCreateFromRepository", apiSnapshotsCreateFromRepository))
 	}
 
 	{
-		root.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
+		root.POST("/mirrors/:name/snapshots", ginprom.InstrumentHandlerFunc("snapshotsCreateFromMirror", apiSnapshotsCreateFromMirror))
 	}
 
 	{
-		root.GET("/files", apiFilesListDirs)
-		root.POST("/files/:dir", apiFilesUpload)
-		root.GET("/files/:dir", apiFilesListFiles)
-		root.DELETE("/files/:dir", apiFilesDeleteDir)
-		root.DELETE("/files/:dir/:name", apiFilesDeleteFile)
+		root.GET("/files", ginprom.InstrumentHandlerFunc("filesListDirs", apiFilesListDirs))
+		root.POST("/files/:dir", ginprom.InstrumentHandlerFunc("filesUpload", apiFilesUpload))
+		root.GET("/files/:dir", ginprom.InstrumentHandlerFunc("filesListFiles", apiFilesListFiles))
+		root.DELETE("/files/:dir", ginprom.InstrumentHandlerFunc("filesDeleteDir", apiFilesDeleteDir))
+		root.DELETE("/files/:dir/:name", ginprom.InstrumentHandlerFunc("filesDeleteFile", apiFilesDeleteFile))
 	}
 
 	{
-		root.GET("/publish", apiPublishList)
-		root.POST("/publish", apiPublishRepoOrSnapshot)
-		root.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
-		root.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
-		root.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
+		root.GET("/publish", ginprom.InstrumentHandlerFunc("publishList", apiPublishList))
+		root.POST("/publish", ginprom.InstrumentHandlerFunc("publishRepoOrSnapshot", apiPublishRepoOrSnapshot))
+		root.POST("/publish/:prefix", ginprom.InstrumentHandlerFunc("publishRepoOrSnapshot", apiPublishRepoOrSnapshot))
+		root.PUT("/publish/:prefix/:distribution", ginprom.InstrumentHandlerFunc("publishUpdateSwitch", apiPublishUpdateSwitch))
+		root.DELETE("/publish/:prefix/:distribution", ginprom.InstrumentHandlerFunc("publishDrop", apiPublishDrop))
 	}
 
 	{
-		root.GET("/snapshots", apiSnapshotsList)
-		root.POST("/snapshots", apiSnapshotsCreate)
-		root.PUT("/snapshots/:name", apiSnapshotsUpdate)
-		root.GET("/snapshots/:name", apiSnapshotsShow)
-		root.GET("/snapshots/:name/packages", apiSnapshotsSearchPackages)
-		root.DELETE("/snapshots/:name", apiSnapshotsDrop)
-		root.GET("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
+		root.GET("/snapshots", ginprom.InstrumentHandlerFunc("snapshotsList", apiSnapshotsList))
+		root.POST("/snapshots", ginprom.InstrumentHandlerFunc("snapshotsCreate", apiSnapshotsCreate))
+		root.PUT("/snapshots/:name", ginprom.InstrumentHandlerFunc("snapshotsUpdate", apiSnapshotsUpdate))
+		root.GET("/snapshots/:name", ginprom.InstrumentHandlerFunc("snapshotsShow", apiSnapshotsShow))
+		root.GET("/snapshots/:name/packages", ginprom.InstrumentHandlerFunc("snapshotsSearchPackages", apiSnapshotsSearchPackages))
+		root.DELETE("/snapshots/:name", ginprom.InstrumentHandlerFunc("snapshotsDrop", apiSnapshotsDrop))
+		root.GET("/snapshots/:name/diff/:withSnapshot", ginprom.InstrumentHandlerFunc("snapshotsDiff", apiSnapshotsDiff))
 	}
 
 	{
-		root.GET("/packages/:key", apiPackagesShow)
+		root.GET("/packages/:key", ginprom.InstrumentHandlerFunc("packagesShow", apiPackagesShow))
 	}
 
 	{
-		root.GET("/graph.:ext", apiGraph)
+		root.GET("/graph.:ext", ginprom.InstrumentHandlerFunc("graph", apiGraph))
 	}
 
 	return router
