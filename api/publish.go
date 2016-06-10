@@ -96,6 +96,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Distribution   string
 		Label          string
 		Origin         string
+		Description    string
 		ForceOverwrite bool
 		SkipContents   *bool
 		Architectures  []string
@@ -183,6 +184,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	}
 	published.Origin = b.Origin
 	published.Label = b.Label
+	published.Description = b.Description
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 	if b.SkipContents != nil {

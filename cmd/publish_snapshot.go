@@ -118,6 +118,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	}
 	published.Origin = context.Flags().Lookup("origin").Value.String()
 	published.Label = context.Flags().Lookup("label").Value.String()
+	published.Description = context.Flags().Lookup("description").Value.String()
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 
@@ -212,6 +213,7 @@ Example:
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
+	cmd.Flag.String("description", "", "description to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 
 	return cmd

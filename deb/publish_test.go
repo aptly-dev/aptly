@@ -391,6 +391,9 @@ func (s *PublishedRepoSuite) TestString(c *C) {
 	repo.Label = "mylabel"
 	c.Check(repo.String(), Equals,
 		"./squeeze (origin: myorigin, label: mylabel) [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
+	repo.Description = "mydesc"
+	c.Check(repo.String(), Equals,
+		"./squeeze (origin: myorigin, label: mylabel, description: mydesc) [i386, amd64] publishes {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 	c.Check(s.repo3.String(), Equals,
 		"linux/natty [] publishes {contrib: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}, {main: [snap]: Snapshot from mirror [yandex]: http://mirror.yandex.ru/debian/ squeeze}")
 	c.Check(s.repo5.String(), Equals,
