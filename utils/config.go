@@ -30,6 +30,7 @@ type ConfigStructure struct { // nolint: maligned
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
+	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -72,6 +73,14 @@ type SwiftPublishRoot struct {
 	Container      string `json:"container"`
 }
 
+// AzurePublishRoot describes single Azure publishing entry point
+type AzurePublishRoot struct {
+	AccountName string `json:"accountName"`
+	AccountKey  string `json:"accountKey"`
+	Container   string `json:"container"`
+	Prefix      string `json:"prefix"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
@@ -93,6 +102,7 @@ var Config = ConfigStructure{
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	AzurePublishRoots:      map[string]AzurePublishRoot{},
 }
 
 // LoadConfig loads configuration from json file
