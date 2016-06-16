@@ -3,17 +3,6 @@ package context
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/http"
-	"github.com/smira/aptly/s3"
-	"github.com/smira/aptly/swift"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,6 +10,19 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/s3"
+	"github.com/smira/aptly/sftp"
+	"github.com/smira/aptly/swift"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 // AptlyContext is a common context shared by all commands
@@ -338,6 +340,20 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			var err error
 			publishedStorage, err = swift.NewPublishedStorage(params.UserName, params.Password,
 				params.AuthURL, params.Tenant, params.TenantID, params.Container, params.Prefix)
+			if err != nil {
+				Fatal(err)
+			}
+		} else if strings.HasPrefix(name, "sftp:") {
+			keyLen := len("sftp:")
+			fmt.Fprintf(os.Stderr, "SFTP %s\n", name[keyLen:])
+			params, ok := context.config().SFTPPublishRoots[name[keyLen:]]
+			if !ok {
+				Fatal(fmt.Errorf("published SFTP storage %v not configured", name[keyLen:]))
+			}
+			fmt.Fprintf(os.Stderr, "URI %s\n", params.URL)
+
+			var err error
+			publishedStorage, err = sftp.NewPublishedStorage(params.URL)
 			if err != nil {
 				Fatal(err)
 			}

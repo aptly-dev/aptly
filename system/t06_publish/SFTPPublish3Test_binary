@@ -1,0 +1,29 @@
+Package: gnuplot-x11
+Version: 4.6.1-1~maverick2
+Installed-Size: 1604
+Priority: optional
+Section: math
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Architecture: i386
+Description: Command-line driven interactive plotting program
+ Gnuplot is a portable command-line driven interactive data and function
+ plotting utility that supports lots of output formats, including drivers
+ for many printers, (La)TeX, (x)fig, Postscript, and so on. The X11-output
+ is packaged in gnuplot-x11.
+ .
+ Data files and self-defined functions can be manipulated by the internal
+ C-like language. Can perform smoothing, spline-fitting, or nonlinear fits,
+ and can work with complex numbers.
+ .
+ This package contains the terminal driver that enables gnuplot to plot
+ images interactively under X11. Most users will want this, it is however
+ packaged separately so that low-end systems don't need X installed to use
+ gnuplot.
+MD5sum: fcad938905d0ace50a6ce0c73b2c6583
+SHA1: 02f9a93097a8f798a054e26154dbe5789088c069
+Replaces: gnuplot (<< 4.0.0)
+Filename: pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb
+Depends: gnuplot-nox (>= 4.6.1-1~maverick2), libc6 (>= 2.11), libcairo2 (>= 1.6.0), libedit2 (>= 2.5.cvs.20010821-1), libgcc1 (>= 1:4.1.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libglib2.0-0 (>= 2.12.0), liblua5.1-0, libpango1.0-0 (>= 1.14.0), libstdc++6 (>= 4.1.1), libwxbase2.8-0 (>= 2.8.11.0), libwxgtk2.8-0 (>= 2.8.11.0), libx11-6
+Size: 724388
+Source: gnuplot
+

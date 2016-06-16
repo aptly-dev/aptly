@@ -11,6 +11,7 @@ import random
 
 from lib import BaseTest
 from s3_lib import S3Test
+from sftp_lib import SFTPTest
 from swift_lib import SwiftTest
 from api_lib import APITest
 
@@ -39,7 +40,8 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
             o = getattr(testModule, name)
 
             if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
-                    o is not SwiftTest and o is not S3Test and o is not APITest):
+                    o is not SwiftTest and o is not S3Test and o is not APITest
+                    and o is not SFTPTest):
                 continue
 
             newBase = o.__bases__[0]

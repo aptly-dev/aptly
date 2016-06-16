@@ -9,4 +9,5 @@ from .snapshot import *
 from .switch import *
 from .update import *
 from .s3 import *
+from .sftp import *
 from .swift import *
