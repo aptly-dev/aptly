@@ -6,6 +6,7 @@ import signal
 import socket
 import subprocess
 import tempfile
+import time
 
 class SFTPTest(BaseTest):
     """
@@ -35,6 +36,11 @@ class SFTPTest(BaseTest):
             ["sftpserver", "-p", str(port), "-l", "DEBUG", "-k", key],
             preexec_fn=os.setsid,
             cwd=self.tmpdir)
+
+        # Wait a bit for the server to star and connect.
+        # TODO: perhaps attempt to connect to port to see if the server is
+        # actually up. Arbitrarily waiting is a bit daft.
+        time.sleep(5)
 
         self.configOverride = {"SFTPPublishEndpoints": {
             "test1": {
