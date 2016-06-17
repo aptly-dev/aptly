@@ -24,6 +24,7 @@ before_install:
   - pip install boto requests python-swiftclient sftpserver
 install:
   - make prepare
+  - ssh-keygen -t rsa -q -P "" -f /home/travis/.ssh/id_rsa
 
 script: make travis
 
