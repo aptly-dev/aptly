@@ -15,19 +15,25 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+	collection := context.CollectionFactory().SnapshotCollection()
+
+	snapshot, err := collection.ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	err = collection.LoadComplete(snapshot)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+	descr, err := snapshot.DescriptionWithSources(collection)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
 	fmt.Printf("Name: %s\n", snapshot.Name)
 	fmt.Printf("Created At: %s\n", snapshot.CreatedAt.Format("2006-01-02 15:04:05 MST"))
-	fmt.Printf("Description: %s\n", snapshot.Description)
+	fmt.Printf("Description: %s\n", descr)
 	fmt.Printf("Number of packages: %d\n", snapshot.NumPackages())
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)

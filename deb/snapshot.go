@@ -95,6 +95,23 @@ func (s *Snapshot) String() string {
 	return fmt.Sprintf("[%s]: %s", s.Name, s.Description)
 }
 
+// String returns description of snapshot, with current source names
+func (s *Snapshot) DescriptionWithSources(collection *SnapshotCollection) (string, error) {
+	if s.SourceKind == "snapshot" {
+		sourceDescription := make([]string, len(s.SourceIDs))
+		for i, s := range s.SourceIDs {
+			source, err := collection.ByUUID(s)
+			if err != nil {
+				return "", err
+			}
+			sourceDescription[i] = fmt.Sprintf("'%s'", source.Name)
+		}
+		return fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")), nil
+	} else {
+		return s.Description, nil
+	}
+}
+
 // NumPackages returns number of packages in snapshot
 func (s *Snapshot) NumPackages() int {
 	return s.packageRefs.Len()

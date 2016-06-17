@@ -28,7 +28,11 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 			fmt.Printf("List of snapshots:\n")
 
 			err = collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
-				fmt.Printf(" * %s\n", snapshot.String())
+				descr, err := snapshot.DescriptionWithSources(collection)
+				if err != nil {
+					return err
+				}
+				fmt.Printf(" * [%s]: %s\n", snapshot.Name, descr)
 				return nil
 			})
 
