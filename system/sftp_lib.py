@@ -18,6 +18,7 @@ class SFTPTest(BaseTest):
     def prepare(self):
         print " +++++  prepare!    ++++++"
         self.tmpdir = tempfile.mkdtemp()
+        print self.tmpdir
 
         # Grab a port, then free it and hope it's still fine by the time server
         # attempts to grab it again.
@@ -25,11 +26,13 @@ class SFTPTest(BaseTest):
         sock.bind(('', 0))
         port = sock.getsockname()[1]
         sock.close()
+        print str(port)
         # FIXME: keys are somewhat hardcoded both in the test and the
         # actual code as in both cases we assume them to be ~/.ssh/id_rsa
         key = os.path.join(os.environ["HOME"], ".ssh/id_rsa")
+        print key
         self.proc = subprocess.Popen(
-            ["sftpserver", "-p", str(port), "-l", "INFO", "-k", key],
+            ["sftpserver", "-p", str(port), "-l", "DEBUG", "-k", key],
             preexec_fn=os.setsid,
             cwd=self.tmpdir)
 
