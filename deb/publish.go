@@ -334,6 +334,51 @@ func (p *PublishedRepo) String() string {
 		strings.Join(sources, ", "))
 }
 
+// String returns human-readable representation of PublishedRepo, with current source snapshot names
+func (p *PublishedRepo) StringWithSources(collection *SnapshotCollection) string {
+	var sources = []string{}
+
+	for _, component := range p.Components() {
+		var source string
+
+		item := p.sourceItems[component]
+		if item.snapshot != nil {
+			sourceDesc, err := item.snapshot.DescriptionWithSources(collection)
+			if err != nil {
+				// Fallback
+				source = item.snapshot.String()
+			}
+			source = fmt.Sprintf("[%s]: %s", item.snapshot.Name, sourceDesc)
+		} else if item.localRepo != nil {
+			source = item.localRepo.String()
+		} else {
+			panic("no snapshot/localRepo")
+		}
+
+		sources = append(sources, fmt.Sprintf("{%s: %s}", component, source))
+	}
+
+	var extra string
+
+	if p.Origin != "" {
+		extra += fmt.Sprintf("origin: %s", p.Origin)
+	}
+
+	if p.Label != "" {
+		if extra != "" {
+			extra += ", "
+		}
+		extra += fmt.Sprintf("label: %s", p.Label)
+	}
+
+	if extra != "" {
+		extra = " (" + extra + ")"
+	}
+
+	return fmt.Sprintf("%s/%s%s [%s] publishes %s", p.StoragePrefix(), p.Distribution, extra, strings.Join(p.Architectures, ", "),
+		strings.Join(sources, ", "))
+}
+
 // StoragePrefix returns combined storage & prefix for the repo
 func (p *PublishedRepo) StoragePrefix() string {
 	result := p.Prefix

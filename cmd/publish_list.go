@@ -27,7 +27,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 		if raw {
 			published = append(published, fmt.Sprintf("%s %s", repo.StoragePrefix(), repo.Distribution))
 		} else {
-			published = append(published, repo.String())
+			published = append(published, repo.StringWithSources(context.CollectionFactory().SnapshotCollection()))
 		}
 		return nil
 	})
