@@ -22,6 +22,7 @@ gom 'github.com/smira/lzma', :commit => '7f0af6269940baa2c938fabe73e0d7ba4120568
 gom 'github.com/golang/snappy', :commit => '723cc1e459b8eea2dea4583200fd60757d40097a'
 gom 'github.com/syndtr/goleveldb/leveldb', :commit => '917f41c560270110ceb73c5b38be2a9127387071'
 gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
+gom 'github.com/ulikunitz/xz', :commit => 'f852725cf3ed4e7dca9bd458fe881ff02b27eae4'
 gom 'github.com/vaughan0/go-ini', :commit => 'a98ad7ee00ec53921f08832bc06ecf7fd600e6a1'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 gom 'golang.org/x/crypto/ssh/terminal', :commit => 'a7ead6ddf06233883deca151dffaef2effbf498f'

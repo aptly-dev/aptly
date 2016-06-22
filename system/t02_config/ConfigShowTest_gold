@@ -13,6 +13,7 @@
     "ppaDistributorID": "ubuntu",
     "ppaCodename": "",
     "skipContentsPublishing": false,
+    "appStreamDir": "",
     "S3PublishEndpoints": {},
     "SwiftPublishEndpoints": {}
 }
