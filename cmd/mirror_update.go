@@ -52,6 +52,11 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
+	if len(repo.ReleaseFiles) == 0 {
+		context.Progress().Printf("Repository %s has no Release file, disabling checksum verification.\n", repo.Name)
+		ignoreMismatch = true
+	}
+
 	context.Progress().Printf("Downloading & parsing package files...\n")
 	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, context.CollectionFactory(), ignoreMismatch)
 	if err != nil {

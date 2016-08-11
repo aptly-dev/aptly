@@ -274,6 +274,10 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 		// 0. Just download release file to temporary URL
 		release, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("Release").String())
 		if err != nil {
+			if err1, ok := err.(*http.Error); ok && (err1.Code == 404 || err1.Code == 403) {
+				// this repo has no Release file - ignore
+				return nil
+			}
 			return err
 		}
 	} else {
@@ -302,6 +306,10 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 		// 2. try Release + Release.gpg
 		release, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("Release").String())
 		if err != nil {
+			if err1, ok := err.(*http.Error); ok && (err1.Code == 404 || err1.Code == 403) {
+				// this repo has no Release file - ignore
+				return nil
+			}
 			return err
 		}
 
