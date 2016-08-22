@@ -63,6 +63,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"ppaDistributorID\": \"\",\n"+
 		"  \"ppaCodename\": \"\",\n"+
 		"  \"skipContentsPublishing\": false,\n"+
+		"  \"appStreamDir\": \"\",\n"+
 		"  \"S3PublishEndpoints\": {\n"+
 		"    \"test\": {\n"+
 		"      \"region\": \"us-east-1\",\n"+

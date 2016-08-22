@@ -3,6 +3,7 @@ package utils
 import (
 	"compress/bzip2"
 	"compress/gzip"
+	"github.com/ulikunitz/xz"
 	"io/ioutil"
 	"os"
 
@@ -41,7 +42,20 @@ func (s *CompressSuite) TestCompress(c *C) {
 	_, err = gzReader.Read(buf)
 	c.Assert(err, IsNil)
 
+	file.Close()
 	gzReader.Close()
+
+	c.Check(string(buf), Equals, testString)
+
+	file, err = os.Open(s.tempfile.Name() + ".xz")
+	c.Assert(err, IsNil)
+
+	xzReader, err := xz.NewReader(file)
+	c.Assert(err, IsNil)
+
+	_, err = xzReader.Read(buf)
+	c.Assert(err, IsNil)
+
 	file.Close()
 
 	c.Check(string(buf), Equals, testString)

@@ -23,8 +23,11 @@ type indexFiles struct {
 type indexFile struct {
 	parent       *indexFiles
 	discardable  bool
-	compressable bool
-	onlyGzip     bool
+	ignoreFlat   bool
+	compressOnly bool
+	compressGzip bool
+	compressBzip bool
+	compressGxz  bool
 	signable     bool
 	relativePath string
 	tempFilename string
@@ -61,7 +64,7 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 		return fmt.Errorf("unable to write to index file: %s", err)
 	}
 
-	if file.compressable {
+	if file.compressGzip || file.compressBzip || file.compressGxz {
 		err = utils.CompressFile(file.tempFile)
 		if err != nil {
 			file.tempFile.Close()
@@ -71,12 +74,18 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 
 	file.tempFile.Close()
 
-	exts := []string{""}
-	if file.compressable {
-		exts = append(exts, ".gz", ".bz2")
-		if file.onlyGzip {
-			exts = []string{".gz"}
-		}
+	exts := []string{}
+	if !file.ignoreFlat {
+		exts = append(exts, "")
+	}
+	if file.compressGzip {
+		exts = append(exts, ".gz")
+	}
+	if file.compressBzip {
+		exts = append(exts, ".bz2")
+	}
+	if file.compressGxz {
+		exts = append(exts, ".xz")
 	}
 
 	for _, ext := range exts {
@@ -95,6 +104,10 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 	}
 
 	for _, ext := range exts {
+		if file.compressOnly && !(ext == ".gz" || ext == ".bz2" || ext == ".xz") {
+			continue
+		}
+
 		err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+ext),
 			file.tempFilename+ext)
 		if err != nil {
@@ -175,7 +188,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 		file = &indexFile{
 			parent:       files,
 			discardable:  false,
-			compressable: true,
+			compressGzip: true,
+			compressBzip: true,
 			signable:     false,
 			relativePath: relativePath,
 		}
@@ -208,7 +222,6 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 		file = &indexFile{
 			parent:       files,
 			discardable:  udeb,
-			compressable: false,
 			signable:     false,
 			relativePath: relativePath,
 		}
@@ -237,8 +250,37 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 		file = &indexFile{
 			parent:       files,
 			discardable:  true,
-			compressable: true,
-			onlyGzip:     true,
+			ignoreFlat:   true,
+			compressOnly: true,
+			compressGzip: true,
+			signable:     false,
+			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
+func (files *indexFiles) AppStreamIndex(component, name string) *indexFile {
+	key := fmt.Sprintf("ai-%s-%s", component, name)
+	file, ok := files.indexes[key]
+	if !ok {
+		relativePath := filepath.Join(component, "appstream", name)
+		ext := filepath.Ext(name)
+
+		xz := false
+		if ext == ".yml" {
+			xz = true
+		}
+
+		file = &indexFile{
+			parent:       files,
+			discardable:  false,
+			compressOnly: true,
+			compressGzip: true,
+			compressGxz:  xz,
 			signable:     false,
 			relativePath: relativePath,
 		}
@@ -251,11 +293,10 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 
 func (files *indexFiles) ReleaseFile() *indexFile {
 	return &indexFile{
-		parent:       files,
-		discardable:  false,
-		compressable: false,
-		signable:     true,
-		relativePath: "Release",
+		parent:        files,
+		discardable:   false,
+		signable:      true,
+		relativePath:  "Release",
 	}
 }
 

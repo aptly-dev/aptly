@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -452,6 +454,36 @@ func (p *PublishedRepo) GetLabel() string {
 	return p.Label
 }
 
+// GetAppStream returns full path list of appstream files
+func (p *PublishedRepo) GetAppStream(component string) ([]string, error) {
+	if utils.Config.AppStreamDir == "" {
+		return nil, errors.New("AppStream directory unconfigured")
+	}
+
+	appStreamDir := filepath.Join(utils.Config.AppStreamDir, p.Prefix, "dists", p.Distribution, component)
+	files := []string{}
+
+	err := filepath.Walk(appStreamDir, func(path string, info os.FileInfo, err error) error {
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		ext := filepath.Ext(path)
+		if stat.Mode().IsRegular() && (ext == ".yml" || ext == ".tar") {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	return files, nil
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress, forceOverwrite bool) error {
@@ -626,6 +658,34 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			// For all architectures, pregenerate .udeb indexes
 			for _, arch := range p.Architectures {
 				indexes.PackageIndex(component, arch, true)
+			}
+		}
+
+		// AppStream file colection
+		if utils.Config.AppStreamDir != "" {
+			appstream, err := p.GetAppStream(component)
+			if err != nil {
+				return fmt.Errorf("Unable to get AppStream files: %s...\n", err)
+			}
+
+			for _, file := range appstream {
+				base := filepath.Base(file)
+
+				fi, err := os.Open(file)
+				if err != nil {
+					return fmt.Errorf("unable to open %s file: %v", base, err)
+				}
+				defer fi.Close()
+
+				w, err := indexes.AppStreamIndex(component, base).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to write %s file: %v", base, err)
+				}
+
+				_, err = io.Copy(w, fi)
+				if err != nil {
+					return fmt.Errorf("unable to copy %s file: %v", base, err)
+				}
 			}
 		}
 

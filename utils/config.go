@@ -22,6 +22,7 @@ type ConfigStructure struct {
 	PpaDistributorID       string                      `json:"ppaDistributorID"`
 	PpaCodename            string                      `json:"ppaCodename"`
 	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
+	AppStreamDir           string                      `json:"appStreamDir"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
 }
@@ -70,6 +71,7 @@ var Config = ConfigStructure{
 	DownloadSourcePackages: false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
+	AppStreamDir:           "",
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 }
