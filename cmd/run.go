@@ -44,3 +44,14 @@ func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode
 
 	return
 }
+
+func makeCmdRun() *commander.Command {
+	return &commander.Command{
+		UsageLine: "run",
+		Short:     "run aptly from configuration files",
+		Subcommands: []*commander.Command{
+			makeCmdRunSetup(),
+			makeCmdRunPublish(),
+		},
+	}
+}

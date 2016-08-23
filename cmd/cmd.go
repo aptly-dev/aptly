@@ -104,6 +104,7 @@ package environment to new version.`,
 			makeCmdPublish(),
 			makeCmdVersion(),
 			makeCmdPackage(),
+			makeCmdRun(),
 			makeCmdAPI(),
 		},
 	}
