@@ -37,6 +37,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": {
 		Container: "repo"}}
 
+	s.config.SFTPPublishRoots = map[string]SFTPPublishRoot{"test": {
+		URL: "repo"}}
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -90,6 +93,11 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"tenantid\": \"\",\n"+
 		"      \"prefix\": \"\",\n"+
 		"      \"container\": \"repo\"\n"+
+		"    }\n"+
+		"  },\n"+
+		"  \"SFTPPublishEndpoints\": {\n"+
+		"    \"test\": {\n"+
+		"      \"uri\": \"repo\"\n"+
 		"    }\n"+
 		"  }\n"+
 		"}")

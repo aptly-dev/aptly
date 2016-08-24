@@ -12,6 +12,7 @@ gom 'github.com/mattn/go-shellwords', :commit => 'c7ca6f94add751566a61cf2199e1de
 gom 'github.com/mkrautz/goar', :commit => '282caa8bd9daba480b51f1d5a988714913b97aad'
 gom 'github.com/mxk/go-flowrate/flowrate', :commit => 'cca7078d478f8520f85629ad7c68962d31ed7682'
 gom 'github.com/ncw/swift', :commit => '384ef27c70645e285f8bb9d02276bf654d06027e'
+gom 'github.com/pkg/sftp', :commit => '4c7551ad7e113c8cc02a45b8d159065fc9c2a734'
 gom 'github.com/smira/go-aws-auth', :commit => '0070896e9d7f4f9f2d558532b2d896ce2239992a'
 gom 'github.com/smira/go-xz', :commit => '0c531f070014e218b21f3cfca801cc992d52726d'
 gom 'github.com/smira/commander', :commit => 'f408b00e68d5d6e21b9f18bd310978dafc604e47'
@@ -24,6 +25,7 @@ gom 'github.com/syndtr/goleveldb/leveldb', :commit => '917f41c560270110ceb73c5b3
 gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece5810165097b'
 gom 'github.com/vaughan0/go-ini', :commit => 'a98ad7ee00ec53921f08832bc06ecf7fd600e6a1'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
+gom 'golang.org/x/crypto/ssh', :commit => 'a7ead6ddf06233883deca151dffaef2effbf498f'
 gom 'golang.org/x/crypto/ssh/terminal', :commit => 'a7ead6ddf06233883deca151dffaef2effbf498f'
 
 group :test do

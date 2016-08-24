@@ -21,9 +21,11 @@ env:
 before_install:
   - virtualenv env
   - . env/bin/activate
-  - pip install boto requests python-swiftclient
+  - pip install --upgrade setuptools
+  - pip install boto requests python-swiftclient sftpserver
 install:
   - make prepare
+  - ssh-keygen -t rsa -q -P "" -f /home/travis/.ssh/id_rsa
 
 script: make travis
 
