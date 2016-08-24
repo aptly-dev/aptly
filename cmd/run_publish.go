@@ -8,7 +8,8 @@ import (
 
 func aptlyRunPublish(cmd *commander.Command, args []string) error {
 
-  return nil
+	return nil
+
 }
 
 

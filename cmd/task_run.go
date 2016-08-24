@@ -10,6 +10,38 @@ import (
 	"github.com/smira/commander"
 )
 
+func aptlyTaskRunCommands(cmdList [][]string) error {
+	commandErrored := false
+	var err error
+
+	for i, command := range cmdList {
+		if !commandErrored {
+			err = context.ReOpenDatabase()
+			if err != nil {
+				return fmt.Errorf("failed to reopen DB: %s", err)
+			}
+			context.Progress().ColoredPrintf("@g%d) [Running]: %s@!", (i + 1), strings.Join(command, " "))
+			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
+			context.Progress().Flush()
+
+			returnCode := Run(RootCommand(), command, false)
+			if returnCode != 0 {
+				commandErrored = true
+			}
+			context.Progress().ColoredPrintf("\n@yEnd command output: ------------------------------@!")
+			CleanupContext()
+		} else {
+			context.Progress().ColoredPrintf("@r%d) [Skipping]: %s@!", (i + 1), strings.Join(command, " "))
+		}
+	}
+
+	if commandErrored {
+		err = fmt.Errorf("at least one command has reported an error")
+	}
+	return err
+}
+
+
 func aptlyTaskRun(cmd *commander.Command, args []string) error {
 	var err error
 	var cmdList [][]string
@@ -78,32 +110,9 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		cmdList = formatCommands(args)
 	}
 
-	commandErrored := false
+	fmt.Println(cmdList)
 
-	for i, command := range cmdList {
-		if !commandErrored {
-			err := context.ReOpenDatabase()
-			if err != nil {
-				return fmt.Errorf("failed to reopen DB: %s", err)
-			}
-			context.Progress().ColoredPrintf("@g%d) [Running]: %s@!", (i + 1), strings.Join(command, " "))
-			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
-			context.Progress().Flush()
-
-			returnCode := Run(RootCommand(), command, false)
-			if returnCode != 0 {
-				commandErrored = true
-			}
-			context.Progress().ColoredPrintf("\n@yEnd command output: ------------------------------@!")
-			CleanupContext()
-		} else {
-			context.Progress().ColoredPrintf("@r%d) [Skipping]: %s@!", (i + 1), strings.Join(command, " "))
-		}
-	}
-
-	if commandErrored {
-		err = fmt.Errorf("at least one command has reported an error")
-	}
+	err = aptlyTaskRunCommands(cmdList)
 
 	return err
 }
