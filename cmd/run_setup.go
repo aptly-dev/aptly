@@ -139,8 +139,6 @@ func (mirror *AptlyMirrorStruct) genCreateAptlyMirrorCmd() ([]string, error) {
 
 	args := createStringArray("mirror", "create", filter_cmd, filter_with_deps_cmd, mirror.Name, mirror.Url, mirror.Dist, component)
 
-	fmt.Println(args)
-
 	return args, nil
 }
 
@@ -167,9 +165,9 @@ func (c *aptlySetupConfigStruct) genCreateReposCmds() ([][]string, error) {
 			if e != nil {
 				return nil, e
 			}
+			commands = append(commands, cmd_create)
 		}
 	}
-	commands = append(commands, cmd_create)
 	return commands, nil
 }
 
@@ -226,14 +224,22 @@ func aptlyRunSetup(cmd *commander.Command, args []string) error {
 	}
 
 	var commands [][]string
-	for _, cmd := range repoCommands {
-		commands = append(commands, cmd)
-	}
-	for _, cmd := range mirrorCommands {
-		commands = append(commands, cmd)
+
+	if repoCommands != nil  {
+		for _, cmd := range repoCommands {
+			commands = append(commands, cmd)
+		}
+  }
+
+	if mirrorCommands != nil {
+		for _, cmd := range mirrorCommands {
+			commands = append(commands, cmd)
+		}
 	}
 
-	err = aptlyTaskRunCommands(commands)
+	if commands != nil {
+		err = aptlyTaskRunCommands(commands)
+	}
 
 	return err
 }
