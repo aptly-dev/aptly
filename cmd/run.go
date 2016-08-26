@@ -51,7 +51,6 @@ func makeCmdRun() *commander.Command {
 		Short:     "run aptly from configuration files",
 		Subcommands: []*commander.Command{
 			makeCmdRunSetup(),
-			makeCmdRunPublish(),
 		},
 	}
 }
