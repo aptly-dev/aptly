@@ -1,32 +1,33 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/smira/commander"
 	"io/ioutil"
 	"strings"
-	"encoding/json"
-	"github.com/smira/commander"
 )
 
 type AptlyFilterStruct struct {
-	Name				string		`json:"name"`
-	Version			string		`json:"version"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }
 
 type aptlySetupConfigStruct struct {
-	Mirrors					[]AptlyMirrorStruct
+	Mirrors []AptlyMirrorStruct
+	Repos   []string
 }
 
 type AptlyMirrorStruct struct {
-	Name						string							`json:"name"`
-	Url							string							`json:"url"`
-	Dist 						string							`json:"dist"`
-	Component				string 							`json:"component"`
-	Filter					[]AptlyFilterStruct `json:"filter"`
-	FilterDeps			bool								`json:"filter-with-deps"`
+	Name       string              `json:"name"`
+	Url        string              `json:"url"`
+	Dist       string              `json:"dist"`
+	Component  string              `json:"component"`
+	Filter     []AptlyFilterStruct `json:"filter"`
+	FilterDeps bool                `json:"filter-with-deps"`
 }
 
-func createStringArray(array ...string) []string{
+func createStringArray(array ...string) []string {
 
 	var strings_arr []string
 
@@ -46,21 +47,21 @@ func isEmpty(element string) bool {
 }
 
 func mirrorExists(mirror_name string) bool {
-	 mirror, _ := context.CollectionFactory().RemoteRepoCollection().ByName(mirror_name)
+	mirror, _ := context.CollectionFactory().RemoteRepoCollection().ByName(mirror_name)
 
-	 if mirror == nil {
-		 return false
-	 }
-	 return true
+	if mirror == nil {
+		return false
+	}
+	return true
 }
 
 func repoExists(repo_name string) bool {
-	 repo, _ := context.CollectionFactory().LocalRepoCollection().ByName(repo_name)
+	repo, _ := context.CollectionFactory().LocalRepoCollection().ByName(repo_name)
 
-	 if repo == nil {
-		 return false
-	 }
-	 return true
+	if repo == nil {
+		return false
+	}
+	return true
 }
 
 func (filter *AptlyFilterStruct) createAptlyMirrorFilter() string {
@@ -70,7 +71,7 @@ func (filter *AptlyFilterStruct) createAptlyMirrorFilter() string {
 		f = append(f, fmt.Sprintf("Name (= %s)", filter.Name))
 	}
 
-  if !isEmpty(filter.Version) {
+	if !isEmpty(filter.Version) {
 		f = append(f, fmt.Sprintf("$Version (= %s)", filter.Version))
 	}
 
@@ -86,7 +87,17 @@ func (filter *AptlyFilterStruct) createAptlyMirrorFilter() string {
 
 }
 
-func (mirror *AptlyMirrorStruct) createAptlyMirror() ([]string, error) {
+func genCreateAptlyRepoCmd(repo_name string) ([]string, error) {
+	var cmd []string
+	if repo_name == "" {
+		return cmd, fmt.Errorf("Missing mirror name")
+	}
+	cmd = createStringArray("repo", "create", repo_name)
+	fmt.Println(cmd)
+	return cmd, nil
+}
+
+func (mirror *AptlyMirrorStruct) genCreateAptlyMirrorCmd() ([]string, error) {
 
 	filter_with_deps_cmd := ""
 	filter_cmd := ""
@@ -133,7 +144,7 @@ func (mirror *AptlyMirrorStruct) createAptlyMirror() ([]string, error) {
 	return args, nil
 }
 
-func (mirror *AptlyMirrorStruct) updateAptlyMirror() ([]string, error) {
+func (mirror *AptlyMirrorStruct) genUpdateAptlyMirrorCmd() ([]string, error) {
 
 	if isEmpty(mirror.Name) {
 		return nil, fmt.Errorf("Missing name from mirror")
@@ -144,25 +155,42 @@ func (mirror *AptlyMirrorStruct) updateAptlyMirror() ([]string, error) {
 
 }
 
+func (c *aptlySetupConfigStruct) genCreateReposCmds() ([][]string, error) {
 
-func (m *aptlySetupConfigStruct) createAndUpdateMirrors() ([][]string, error) {
+	var commands [][]string
+	var cmd_create []string
+	var e error
+
+	for _, repo_name := range c.Repos {
+		if !repoExists(repo_name) {
+			cmd_create, e = genCreateAptlyRepoCmd(repo_name)
+			if e != nil {
+				return nil, e
+			}
+		}
+	}
+	commands = append(commands, cmd_create)
+	return commands, nil
+}
+
+func (c *aptlySetupConfigStruct) genCreateAndUpdateMirrorCmds() ([][]string, error) {
 
 	var commands [][]string
 	var cmd_create []string
 	var cmd_update []string
 	var e error
 
-	for _, mirror := range m.Mirrors {
+	for _, mirror := range c.Mirrors {
 
-		if ! mirrorExists(mirror.Name) {
-			cmd_create, e = mirror.createAptlyMirror()
+		if !mirrorExists(mirror.Name) {
+			cmd_create, e = mirror.genCreateAptlyMirrorCmd()
 			if e != nil {
 				return nil, e
 			}
 			commands = append(commands, cmd_create)
 		}
 
-		cmd_update, e = mirror.updateAptlyMirror()
+		cmd_update, e = mirror.genUpdateAptlyMirrorCmd()
 		if e != nil {
 			return nil, e
 		}
@@ -183,25 +211,32 @@ func aptlyRunSetup(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("Unable to read file: %s", err)
 	}
 
-	var mirrors aptlySetupConfigStruct
+	var c aptlySetupConfigStruct
 
-	json.Unmarshal(f, &mirrors)
+	json.Unmarshal(f, &c)
 
-	commands, err := mirrors.createAndUpdateMirrors()
+	mirrorCommands, err := c.genCreateAndUpdateMirrorCmds()
 	if err != nil {
 		return err
 	}
 
- 	err = aptlyTaskRunCommands(commands)
+	repoCommands, err := c.genCreateReposCmds()
+	if err != nil {
+		return err
+	}
 
-	/*if returnCode != 0 {
-		}
-		return fmt.Errorf("at least one command has reported an error")
-	}*/
+	var commands [][]string
+	for _, cmd := range repoCommands {
+		commands = append(commands, cmd)
+	}
+	for _, cmd := range mirrorCommands {
+		commands = append(commands, cmd)
+	}
 
-  return err
+	err = aptlyTaskRunCommands(commands)
+
+	return err
 }
-
 
 func makeCmdRunSetup() *commander.Command {
 	cmd := &commander.Command{
@@ -215,6 +250,6 @@ in aptly.conf.
 ex:
   $ aptly run setup
 `,
-  }
+	}
 	return cmd
 }
