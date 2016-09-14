@@ -46,13 +46,17 @@ type S3PublishRoot struct {
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
 type SwiftPublishRoot struct {
-	UserName  string `json:"osname"`
-	Password  string `json:"password"`
-	AuthURL   string `json:"authurl"`
-	Tenant    string `json:"tenant"`
-	TenantID  string `json:"tenantid"`
-	Prefix    string `json:"prefix"`
-	Container string `json:"container"`
+	UserName       string `json:"osname"`
+	Password       string `json:"password"`
+	AuthURL        string `json:"authurl"`
+	Tenant         string `json:"tenant"`
+	TenantID       string `json:"tenantid"`
+	Domain         string `json:"domain"`
+	DomainID       string `json:"domainid"`
+	TenantDomain   string `json:"tenantdomain"`
+	TenantDomainID string `json:"tenantdomainid"`
+	Prefix         string `json:"prefix"`
+	Container      string `json:"container"`
 }
 
 // Config is configuration for aptly, shared by all modules
