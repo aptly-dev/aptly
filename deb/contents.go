@@ -49,7 +49,7 @@ func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) {
 // Empty checks whether index contains no packages
 func (index *ContentsIndex) Empty() bool {
 	key := index.Key("")
-	return len(index.db.FetchByPrefix(key)) == 0
+	return !index.db.HasPrefix(key)
 }
 
 // WriteTo dumps sorted mapping of files to qualified package names

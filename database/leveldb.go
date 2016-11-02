@@ -21,6 +21,7 @@ type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
 	Delete(key []byte) error
+	HasPrefix(prefix []byte) bool
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
@@ -118,7 +119,7 @@ func (l *levelDB) Delete(key []byte) error {
 	return l.db.Delete(key, nil)
 }
 
-// KeysByPrefix returns all keys that start with prefix
+// HasKeysByPrefix checks whether there is any k
 func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
 
@@ -133,6 +134,13 @@ func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	}
 
 	return result
+}
+
+// HasPrefix checks whether it can find any key with given prefix and returns true if one exists
+func (l *levelDB) HasPrefix(prefix []byte) bool {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+	return iterator.Seek(prefix) && bytes.HasPrefix(iterator.Key(), prefix)
 }
 
 // FetchByPrefix returns all values with keys that start with prefix
