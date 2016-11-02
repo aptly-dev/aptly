@@ -561,7 +561,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						contentIndex := contentIndexes[key]
 
 						if contentIndex == nil {
-							contentIndex = NewContentsIndex()
+							contentIndex = NewContentsIndex(collectionFactory.db, *p, component, arch, pkg.IsUdeb)
 							contentIndexes[key] = contentIndex
 						}
 

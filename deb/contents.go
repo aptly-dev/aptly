@@ -3,22 +3,29 @@ package deb
 import (
 	"fmt"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/database"
 	"io"
-	"sort"
 	"strings"
 )
 
 // ContentsIndex calculates mapping from files to packages, with sorting and aggregation
 type ContentsIndex struct {
-	index map[string][]*Package
+	db           database.Storage
+	repo         PublishedRepo
+	component    string
+	architecture string
+	udeb         bool
 }
 
 // NewContentsIndex creates empty ContentsIndex
-func NewContentsIndex() *ContentsIndex {
-	return &ContentsIndex{
-		index: make(map[string][]*Package),
-	}
+func NewContentsIndex(db database.Storage, repo PublishedRepo, component string, architecture string, udeb bool) *ContentsIndex {
+	return &ContentsIndex{db: db, repo: repo, component: component, architecture: architecture}
+}
+
+// Key generates unique identifier for contents index file with given path
+func (index *ContentsIndex) Key(path string) []byte {
+	refKey := index.repo.RefKey(index.component)
+	return []byte(fmt.Sprintf("C%s_%s_%v$%s", refKey, index.architecture, index.udeb, path))
 }
 
 // Push adds package to contents index, calculating package contents as required
@@ -26,28 +33,28 @@ func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) {
 	contents := p.Contents(packagePool)
 
 	for _, path := range contents {
-		index.index[path] = append(index.index[path], p)
+		var value []byte
+		key := index.Key(path)
+		dbValue, _ := index.db.Get(key)
+		if dbValue == nil {
+			value = []byte(p.QualifiedName())
+		} else {
+			name := "," + p.QualifiedName()
+			value = []byte(string(dbValue) + name)
+		}
+		index.db.Put(key, value)
 	}
 }
 
 // Empty checks whether index contains no packages
 func (index *ContentsIndex) Empty() bool {
-	return len(index.index) == 0
+	key := index.Key("")
+	return len(index.db.FetchByPrefix(key)) == 0
 }
 
 // WriteTo dumps sorted mapping of files to qualified package names
 func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 	var n int64
-
-	paths := make([]string, len(index.index))
-
-	i := 0
-	for path := range index.index {
-		paths[i] = path
-		i++
-	}
-
-	sort.Strings(paths)
 
 	nn, err := fmt.Fprintf(w, "%s %s\n", "FILE", "LOCATION")
 	n += int64(nn)
@@ -55,16 +62,18 @@ func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 		return n, err
 	}
 
-	for _, path := range paths {
-		packages := index.index[path]
-		parts := make([]string, 0, len(packages))
-		for i := range packages {
-			name := packages[i].QualifiedName()
-			if !utils.StrSliceHasItem(parts, name) {
-				parts = append(parts, name)
-			}
+	keyPrefix := index.Key("")
+	keys := index.db.KeysByPrefix(keyPrefix)
+	for i := range keys {
+		key := keys[i]
+
+		value, err := index.db.Get(key)
+		if err != nil {
+			return n, err
 		}
-		nn, err = fmt.Fprintf(w, "%s %s\n", path, strings.Join(parts, ","))
+		parts := strings.Split(string(key), "$")
+		path := parts[len(parts)-1]
+		nn, err = fmt.Fprintf(w, "%s %s\n", path, string(value))
 		n += int64(nn)
 		if err != nil {
 			return n, err
