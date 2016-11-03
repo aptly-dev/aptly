@@ -29,21 +29,31 @@ func (index *ContentsIndex) Key(path string) []byte {
 }
 
 // Push adds package to contents index, calculating package contents as required
-func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) {
+func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) error {
 	contents := p.Contents(packagePool)
 
 	for _, path := range contents {
 		var value []byte
 		key := index.Key(path)
-		dbValue, _ := index.db.Get(key)
+		dbValue, err := index.db.Get(key)
+
+		if err != nil && err != database.ErrNotFound {
+			return err
+		}
+
 		if dbValue == nil {
 			value = []byte(p.QualifiedName())
 		} else {
 			name := "," + p.QualifiedName()
 			value = []byte(string(dbValue) + name)
 		}
-		index.db.Put(key, value)
+		err = index.db.Put(key, value)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 // Empty checks whether index contains no packages

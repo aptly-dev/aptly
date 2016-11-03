@@ -565,7 +565,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 							contentIndexes[key] = contentIndex
 						}
 
-						contentIndex.Push(pkg, packagePool)
+						err = contentIndex.Push(pkg, packagePool)
+						if err != nil {
+							return err
+						}
 					}
 
 					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
