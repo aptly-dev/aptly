@@ -32,6 +32,9 @@ func (index *ContentsIndex) Key(path string) []byte {
 func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) error {
 	contents := p.Contents(packagePool)
 
+	index.db.StartBatch()
+	defer index.db.FinishBatch()
+
 	for _, path := range contents {
 		var value []byte
 		key := index.Key(path)
