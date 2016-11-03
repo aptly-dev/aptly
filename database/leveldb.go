@@ -16,6 +16,9 @@ var (
 	ErrNotFound = errors.New("key not found")
 )
 
+// StorageProcessor is a function to process one single storage entry
+type StorageProcessor func(key []byte, value []byte) error
+
 // Storage is an interface to KV storage
 type Storage interface {
 	Get(key []byte) ([]byte, error)
@@ -24,6 +27,7 @@ type Storage interface {
 	HasPrefix(prefix []byte) bool
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
+	ProcessByPrefix(prefix []byte, proc StorageProcessor) error
 	Close() error
 	ReOpen() error
 	StartBatch()
@@ -141,6 +145,22 @@ func (l *levelDB) HasPrefix(prefix []byte) bool {
 	iterator := l.db.NewIterator(nil, nil)
 	defer iterator.Release()
 	return iterator.Seek(prefix) && bytes.HasPrefix(iterator.Key(), prefix)
+}
+
+// ProcessByPrefix iterates through all entries where key starts with prefix and calls
+// StorageProcessor on key value pair
+func (l *levelDB) ProcessByPrefix(prefix []byte, proc StorageProcessor) error {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		err := proc(iterator.Key(), iterator.Value())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // FetchByPrefix returns all values with keys that start with prefix

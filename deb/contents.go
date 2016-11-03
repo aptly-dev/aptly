@@ -62,23 +62,14 @@ func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 		return n, err
 	}
 
-	keyPrefix := index.Key("")
-	keys := index.db.KeysByPrefix(keyPrefix)
-	for i := range keys {
-		key := keys[i]
-
-		value, err := index.db.Get(key)
-		if err != nil {
-			return n, err
-		}
+	prefix := index.Key("")
+	err = index.db.ProcessByPrefix(prefix, func(key []byte, value []byte) error {
 		parts := strings.Split(string(key), "$")
 		path := parts[len(parts)-1]
 		nn, err = fmt.Fprintf(w, "%s %s\n", path, string(value))
 		n += int64(nn)
-		if err != nil {
-			return n, err
-		}
-	}
+		return err
+	})
 
-	return n, nil
+	return n, err
 }
