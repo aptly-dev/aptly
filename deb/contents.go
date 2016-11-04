@@ -22,10 +22,15 @@ func NewContentsIndex(db database.Storage, repo PublishedRepo, component string,
 	return &ContentsIndex{db: db, repo: repo, component: component, architecture: architecture}
 }
 
-// Key generates unique identifier for contents index file with given path
-func (index *ContentsIndex) Key(path string) []byte {
+// Key generates unique identifier for contents index file with given path and package name
+func (index *ContentsIndex) Key(path string, pkg string) []byte {
 	refKey := index.repo.RefKey(index.component)
-	return []byte(fmt.Sprintf("C%s_%s_%v$%s", refKey, index.architecture, index.udeb, path))
+	// For prefix to still work when pkg is empty only append
+	// separator when pkg is set
+	if pkg != "" {
+		pkg = "$" + pkg
+	}
+	return []byte(fmt.Sprintf("xI%s_%s_%v$%s%s", refKey, index.architecture, index.udeb, path, pkg))
 }
 
 // Push adds package to contents index, calculating package contents as required
@@ -36,21 +41,11 @@ func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) erro
 	defer index.db.FinishBatch()
 
 	for _, path := range contents {
-		var value []byte
-		key := index.Key(path)
-		dbValue, err := index.db.Get(key)
+		// for performance reasons we only write to leveldb during push.
+		// Merging of qualified names per path will be done in WriteTo
+		key := index.Key(path, p.QualifiedName())
 
-		if err != nil && err != database.ErrNotFound {
-			return err
-		}
-
-		if dbValue == nil {
-			value = []byte(p.QualifiedName())
-		} else {
-			name := "," + p.QualifiedName()
-			value = []byte(string(dbValue) + name)
-		}
-		err = index.db.Put(key, value)
+		err := index.db.Put(key, nil)
 		if err != nil {
 			return err
 		}
@@ -61,12 +56,15 @@ func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) erro
 
 // Empty checks whether index contains no packages
 func (index *ContentsIndex) Empty() bool {
-	key := index.Key("")
+	key := index.Key("", "")
 	return !index.db.HasPrefix(key)
 }
 
 // WriteTo dumps sorted mapping of files to qualified package names
 func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
+	// For performance reasons push method wrote on key per path and package
+	// in this method we know need to merge all pkg with have the same path
+	// and write it to contents index file
 	var n int64
 
 	nn, err := fmt.Fprintf(w, "%s %s\n", "FILE", "LOCATION")
@@ -75,14 +73,37 @@ func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 		return n, err
 	}
 
-	prefix := index.Key("")
+	prefix := index.Key("", "")
+	currentPath := ""
+	currentPkgs := make([]string, 0, 1)
+
 	err = index.db.ProcessByPrefix(prefix, func(key []byte, value []byte) error {
 		parts := strings.Split(string(key), "$")
-		path := parts[len(parts)-1]
-		nn, err = fmt.Fprintf(w, "%s %s\n", path, string(value))
-		n += int64(nn)
-		return err
+		path := parts[len(parts)-2]
+		pkg := parts[len(parts)-1]
+
+		if currentPath != "" && currentPath != path {
+			nn, err = fmt.Fprintf(w, "%s %s\n", currentPath, strings.Join(currentPkgs, ","))
+			n += int64(nn)
+			if err != nil {
+				return err
+			}
+			currentPkgs = make([]string, 0, 1)
+		}
+
+		currentPath = path
+		currentPkgs = append(currentPkgs, pkg)
+		return nil
 	})
+
+	if err != nil {
+		return n, err
+	}
+
+	if len(currentPkgs) > 0 && currentPath != "" {
+		nn, err = fmt.Fprintf(w, "%s %s\n", currentPath, strings.Join(currentPkgs, ","))
+		n += int64(nn)
+	}
 
 	return n, err
 }
