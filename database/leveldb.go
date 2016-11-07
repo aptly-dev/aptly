@@ -50,6 +50,11 @@ func internalOpen(path string) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter:                 filter.NewBloomFilter(10),
 		OpenFilesCacheCapacity: 256,
+
+		// reduce compacting of db
+		CompactionL0Trigger:    32,
+		WriteL0PauseTrigger:    96,
+		WriteL0SlowdownTrigger: 64,
 	}
 
 	return leveldb.OpenFile(path, o)
