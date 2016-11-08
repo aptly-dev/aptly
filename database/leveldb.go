@@ -128,7 +128,7 @@ func (l *levelDB) Delete(key []byte) error {
 	return l.db.Delete(key, nil)
 }
 
-// HasKeysByPrefix checks whether there is any k
+// KeysByPrefix returns all keys that start with prefix
 func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	result := make([][]byte, 0, 20)
 

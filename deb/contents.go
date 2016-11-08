@@ -63,7 +63,7 @@ func (index *ContentsIndex) Empty() bool {
 // WriteTo dumps sorted mapping of files to qualified package names
 func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 	// For performance reasons push method wrote on key per path and package
-	// in this method we know need to merge all pkg with have the same path
+	// in this method we now need to merge all pkg with have the same path
 	// and write it to contents index file
 	var n int64
 
