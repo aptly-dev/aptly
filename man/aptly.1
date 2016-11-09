@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "March 2016" "" ""
+.TH "APTLY" "1" "November 2016" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -389,6 +389,10 @@ filter packages in mirror
 .TP
 \-\fBfilter\-with\-deps\fR=false
 when filtering, include dependencies of matching packages as well
+.
+.TP
+\-\fBforce\-architectures\fR=false
+(only with architecture list) skip check that requested architectures are listed in Release file
 .
 .TP
 \-\fBforce\-components\fR=false
@@ -1571,7 +1575,7 @@ Example:
 .
 .nf
 
-$ aptly package show nginx\-light_1\.2\.1\-2\.2+wheezy2_i386\(cq
+$ aptly package show \(cqnginx\-light_1\.2\.1\-2\.2+wheezy2_i386\(cq
 .
 .fi
 .
@@ -1823,6 +1827,12 @@ x539 (https://github\.com/x539)
 .
 .IP "\[ci]" 4
 Phil Frost (https://github\.com/bitglue)
+.
+.IP "\[ci]" 4
+Benoit Foucher (https://github\.com/bentoi)
+.
+.IP "\[ci]" 4
+Geoffrey Thomas (https://github\.com/geofft)
 .
 .IP "" 0
 
