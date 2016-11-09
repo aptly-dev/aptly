@@ -62,7 +62,7 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 	}
 
 	if file.compressable {
-		err = utils.CompressFile(file.tempFile)
+		err = utils.CompressFile(file.tempFile, file.onlyGzip)
 		if err != nil {
 			file.tempFile.Close()
 			return fmt.Errorf("unable to compress index file: %s", err)

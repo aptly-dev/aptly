@@ -27,7 +27,7 @@ func (s *CompressSuite) TearDownTest(c *C) {
 }
 
 func (s *CompressSuite) TestCompress(c *C) {
-	err := CompressFile(s.tempfile)
+	err := CompressFile(s.tempfile, false)
 	c.Assert(err, IsNil)
 
 	buf := make([]byte, len(testString))
