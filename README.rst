@@ -98,6 +98,8 @@ With configuration management systems:
     (Heavy Water Operations, LLC)
 -   `Puppet module <https://github.com/alphagov/puppet-aptly>`_ by
     Government Digital Services
+-   `Puppet module <https://github.com/tubemogul/puppet-aptly>`_ by
+    TubeMogul
 -   `SaltStack Formula <https://github.com/saltstack-formulas/aptly-formula>`_ by
     Forrest Alvarez and Brian Jackson
 -   `Ansible role <https://github.com/aioue/ansible-role-aptly>`_ by Tom Paine
