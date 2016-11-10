@@ -88,6 +88,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"authurl\": \"\",\n"+
 		"      \"tenant\": \"\",\n"+
 		"      \"tenantid\": \"\",\n"+
+		"      \"domain\": \"\",\n"+
+		"      \"domainid\": \"\",\n"+
+		"      \"tenantdomain\": \"\",\n"+
+		"      \"tenantdomainid\": \"\",\n"+
 		"      \"prefix\": \"\",\n"+
 		"      \"container\": \"repo\"\n"+
 		"    }\n"+

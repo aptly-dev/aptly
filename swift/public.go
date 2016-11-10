@@ -29,7 +29,7 @@ var (
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified Swift access
 // keys, tenant and tenantId
-func NewPublishedStorage(username string, password string, authURL string, tenant string, tenantID string, container string, prefix string) (*PublishedStorage, error) {
+func NewPublishedStorage(username string, password string, authURL string, tenant string, tenantID string, domain string, domainID string, tenantDomain string, tenantDomainID string, container string, prefix string) (*PublishedStorage, error) {
 	if username == "" {
 		if username = os.Getenv("OS_USERNAME"); username == "" {
 			username = os.Getenv("ST_USER")
@@ -51,6 +51,18 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 	if tenantID == "" {
 		tenantID = os.Getenv("OS_TENANT_ID")
 	}
+  if domain == "" {
+		domain = os.Getenv("OS_USER_DOMAIN_NAME")
+	}
+	if domainID == "" {
+		domainID = os.Getenv("OS_USER_DOMAIN_ID")
+	}
+	if tenantDomain == "" {
+		tenantDomain = os.Getenv("OS_PROJECT_DOMAIN")
+	}
+	if tenantDomainID == "" {
+		tenantDomainID = os.Getenv("OS_PROJECT_DOMAIN_ID")
+	}
 
 	ct := swift.Connection{
 		UserName:       username,
@@ -59,6 +71,10 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 		UserAgent:      "aptly/" + aptly.Version,
 		Tenant:         tenant,
 		TenantId:       tenantID,
+		Domain:         domain,
+		DomainId:       domainID,
+		TenantDomain:   tenantDomain,
+		TenantDomainId: tenantDomainID,
 		ConnectTimeout: 60 * time.Second,
 		Timeout:        60 * time.Second,
 	}
