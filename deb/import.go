@@ -10,7 +10,7 @@ import (
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files
-func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, failedFiles []string, err error) {
+func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, failedFiles []string) {
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
@@ -28,15 +28,21 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 				}
 
 				if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-					strings.HasSuffix(info.Name(), ".dsc") {
+					strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 					packageFiles = append(packageFiles, path)
 				}
 
 				return nil
 			})
+
+			if err2 != nil {
+				reporter.Warning("Unable to process %s: %s", location, err2)
+				failedFiles = append(failedFiles, location)
+				continue
+			}
 		} else {
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
-				strings.HasSuffix(info.Name(), ".dsc") {
+				strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 				packageFiles = append(packageFiles, location)
 			} else {
 				reporter.Warning("Unknown file extension: %s", location)
@@ -53,7 +59,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 
 // ImportPackageFiles imports files into local repository
 func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier utils.Verifier,
-	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter) (processedFiles []string, failedFiles []string, err error) {
+	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
 	}
@@ -87,6 +93,24 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		}
 		if err != nil {
 			reporter.Warning("Unable to read file %s: %s", file, err)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p.Name == "" {
+			reporter.Warning("Empty package name on %s", file)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p.Version == "" {
+			reporter.Warning("Empty version on %s", file)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p.Architecture == "" {
+			reporter.Warning("Empty architecture on %s", file)
 			failedFiles = append(failedFiles, file)
 			continue
 		}
@@ -129,6 +153,12 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		}
 		if err != nil {
 			// some files haven't been imported
+			continue
+		}
+
+		if restriction != nil && !restriction.Matches(p) {
+			reporter.Warning("%s has been ignored as it doesn't match restriction", p)
+			failedFiles = append(failedFiles, file)
 			continue
 		}
 

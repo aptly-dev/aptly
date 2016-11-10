@@ -60,3 +60,17 @@ class ShowPackage6Test(BaseTest):
     ]
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
     runCmd = "aptly package show -with-references nginx-full_1.2.1-2.2+wheezy2_amd64"
+
+
+class ShowPackage7Test(BaseTest):
+    """
+    show package: with duplicates
+    """
+    fixtureCmds = [
+        "aptly repo create a",
+        "aptly repo create b",
+        "aptly repo add a ${files}",
+        "aptly repo add b ${testfiles}"
+    ]
+    outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    runCmd = "aptly package show -with-references \"pyspi (0.6.1-1.3)\""

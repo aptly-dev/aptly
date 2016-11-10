@@ -12,6 +12,7 @@
   "downloadSourcePackages": false,
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
+  "skipContentsPublishing": false,
   "S3PublishEndpoints": {},
   "SwiftPublishEndpoints": {}
 }

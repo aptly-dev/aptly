@@ -1,40 +1,35 @@
-Package: dmraid-udeb
-Version: 1.0.0.rc16-4.1
-Installed-Size: 32
-Priority: optional
-Section: debian-installer
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: amd64
-Description: Device-Mapper Software RAID support tool (udeb)
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- This is the minimal package (udeb) used by debian-installer
-MD5sum: 721685fde18001ad0c9ac172c3118983
-SHA1: 88e229b76cb5866c8868a491a6690b3fde2b33d5
-SHA256: efae69921b97494e40437712053b60a5105fa433f3cfbae3bb2991d341eb95a6
-Filename: pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb
-Depends: libc6-udeb (>= 2.11), libdmraid1.0.0.rc16-udeb (>= 1.0.0.rc16), dmsetup-udeb
-Source: dmraid
-Size: 11806
 
-Package: libdmraid1.0.0.rc16-udeb
-Version: 1.0.0.rc16-4.1
-Installed-Size: 0
-Priority: optional
-Section: debian-installer
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: amd64
-Description: Device-Mapper Software RAID support tool - shared library (udeb)
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- This is the minimal package (udeb shared library) used by debian-installer
-MD5sum: efae3ee2d1ccd78aaec7d452ecba4c6a
-SHA1: 2ef8c01a0375c92f59fed32949b9469cc53d0b99
-SHA256: aabf098de9fcf2da0c0f66f2d9f1cb61f7e244dd2b009361e40cd29827749d44
-Size: 92372
-Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16-udeb_1.0.0.rc16-4.1_amd64.udeb
-Source: dmraid
-Depends: libc6-udeb (>= 2.11), libdevmapper1.02.1-udeb (>= 2:1.02.48)
 
+
+Architecture: amd64
+Architecture: amd64
+Depends: libc6-udeb (>= 2.13), libusb-0.1-udeb, zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Depends: libc6-udeb (>= 2.13), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
+Description-Md5: 0d5b74cda45e2a6526c6943d2cd0c362
+Description-Md5: c52656f4cc79fd4b089086b9173d2923
+Description: GNU privacy guard - a free PGP replacement
+Description: minimal signature verification tool
+Filename: pool/main/g/gnupg/gnupg-udeb_1.4.12-7+deb7u7_amd64.udeb
+Filename: pool/main/g/gnupg/gpgv-udeb_1.4.12-7+deb7u7_amd64.udeb
+Installed-Size: 301
+Installed-Size: 833
+MD5sum: 2fda838d1101cc202ddd087c8c98b635
+MD5sum: 6d90567115ee873d4ce6c87991cfaed0
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Package: gnupg-udeb
+Package: gpgv-udeb
+Priority: extra
+Priority: extra
+SHA1: 5d32171182e956f8277d44378b1623bbeae23110
+SHA1: dbe121bae44db6eb6108311f41997c4ede1178b2
+SHA256: 4abcb1191d8a3e58d88fb56084f9d784255ba68c767babc3c2819b7a1a689b78
+SHA256: dd7230f9d025c47e8c94e4101e2970e94aed50ec0c65801f9c7cd0a03d6723e1
+Section: debian-installer
+Section: debian-installer
+Size: 130734
+Size: 354018
+Source: gnupg
+Source: gnupg
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7

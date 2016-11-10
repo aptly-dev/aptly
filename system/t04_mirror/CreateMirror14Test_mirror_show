@@ -1,5 +1,5 @@
 Name: mirror14
-Archive Root URL: http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/
+Archive Root URL: http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/
 Distribution: ./
 Components: 
 Architectures: 
@@ -8,9 +8,11 @@ Download .udebs: no
 Last update: never
 
 Information from release file:
-Date: Tue May 21 21:01:30 2013
-Description:  Open Build Service home:DeepDiver1975 xUbuntu_10.04
+Architectures: i386 amd64
+Archive: Debian_7.0
+Codename: Debian_7.0
+Date: Fri Apr 25 04:32:23 2014
+Description:  monkeyiq's Home Project (Debian_7.0)
 
-Label: DeepDiver1975's Home Project (xUbuntu_10.04)
-Origin: Open Build Service home:DeepDiver1975 xUbuntu_10.04
-Version: 0.00
+Label: home:monkeyiq
+Origin: obs://build.opensuse.org/home:monkeyiq/Debian_7.0

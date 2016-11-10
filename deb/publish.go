@@ -3,12 +3,12 @@ package deb
 import (
 	"bufio"
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 	"io/ioutil"
 	"log"
@@ -47,6 +47,8 @@ type PublishedRepo struct {
 	Architectures []string
 	// SourceKind is "local"/"repo"
 	SourceKind string
+	// Skip contents generation
+	SkipContents bool
 
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
@@ -289,10 +291,11 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"SourceKind":    p.SourceKind,
 		"Sources":       sources,
 		"Storage":       p.Storage,
+		"SkipContents":  p.SkipContents,
 	})
 }
 
-// String returns human-readable represenation of PublishedRepo
+// String returns human-readable representation of PublishedRepo
 func (p *PublishedRepo) String() string {
 	var sources = []string{}
 
@@ -578,6 +581,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		list.PrepareIndex()
 
+		contentIndexes := map[string]*ContentsIndex{}
+
 		err = list.ForEachIndexed(func(pkg *Package) error {
 			if progress != nil {
 				progress.AddBar(1)
@@ -603,6 +608,19 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				if pkg.MatchesArchitecture(arch) {
 					var bufWriter *bufio.Writer
 
+					if !p.SkipContents {
+						key := fmt.Sprintf("%s-%v", arch, pkg.IsUdeb)
+
+						contentIndex := contentIndexes[key]
+
+						if contentIndex == nil {
+							contentIndex = NewContentsIndex()
+							contentIndexes[key] = contentIndex
+						}
+
+						contentIndex.Push(pkg, packagePool)
+					}
+
 					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
 					if err != nil {
 						return err
@@ -622,12 +640,32 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.files = nil
 			pkg.deps = nil
 			pkg.extra = nil
+			pkg.contents = nil
 
 			return nil
 		})
 
 		if err != nil {
 			return fmt.Errorf("unable to process packages: %s", err)
+		}
+
+		for _, arch := range p.Architectures {
+			for _, udeb := range []bool{true, false} {
+				index := contentIndexes[fmt.Sprintf("%s-%v", arch, udeb)]
+				if index == nil || index.Empty() {
+					continue
+				}
+
+				bufWriter, err := indexes.ContentsIndex(component, arch, udeb).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+
+				_, err = index.WriteTo(bufWriter)
+				if err != nil {
+					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+			}
 		}
 
 		if progress != nil {
@@ -656,6 +694,9 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 				var bufWriter *bufio.Writer
 				bufWriter, err = indexes.ReleaseIndex(component, arch, udeb).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to get ReleaseIndex writer: %s", err)
+				}
 
 				err = release.WriteTo(bufWriter, false, true)
 				if err != nil {
@@ -682,9 +723,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{"source"}), " ")
 	release["Description"] = " "+p.GetDescription()+"\n"
-	release["MD5Sum"] = "\n"
-	release["SHA1"] = "\n"
-	release["SHA256"] = "\n"
+	release["MD5Sum"] = ""
+	release["SHA1"] = ""
+	release["SHA256"] = ""
+	release["SHA512"] = ""
 
 	release["Components"] = p.ComponentPrefix + strings.Join(p.Components(), " " + p.ComponentPrefix)
 
@@ -692,6 +734,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		release["MD5Sum"] += fmt.Sprintf(" %s %8d %s\n", info.MD5, info.Size, path)
 		release["SHA1"] += fmt.Sprintf(" %s %8d %s\n", info.SHA1, info.Size, path)
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
+		release["SHA512"] += fmt.Sprintf(" %s %8d %s\n", info.SHA512, info.Size, path)
 	}
 
 	releaseFile := indexes.ReleaseFile()
@@ -1053,7 +1096,8 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 
 // Remove removes published repository, cleaning up directories, files
 func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly.PublishedStorageProvider,
-	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
+	force bool) error {
 	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return err
@@ -1094,7 +1138,9 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents,
 			publishedStorageProvider.GetPublishedStorage(storage), collectionFactory, progress)
 		if err != nil {
-			return err
+			if !force {
+				return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)
+			}
 		}
 	}
 

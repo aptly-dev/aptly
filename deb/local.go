@@ -2,9 +2,9 @@ package deb
 
 import (
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"github.com/smira/aptly/database"
+	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 	"log"
 	"sync"
@@ -22,6 +22,8 @@ type LocalRepo struct {
 	DefaultDistribution string `codec:",omitempty"`
 	// DefaultComponent
 	DefaultComponent string `codec:",omitempty"`
+	// Uploaders configuration
+	Uploaders *Uploaders `code:",omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 }

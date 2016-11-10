@@ -96,10 +96,12 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		return fmt.Errorf("unable to search: %s", err)
 	}
 
-	result.ForEach(func(p *deb.Package) error {
-		context.Progress().Printf("%s\n", p)
-		return nil
-	})
+	if result.Len() == 0 {
+		return fmt.Errorf("no results")
+	}
+
+	format := context.Flags().Lookup("format").Value.String()
+	PrintPackageList(result, format)
 
 	return err
 }
@@ -120,6 +122,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("with-deps", false, "include dependencies into search results")
+	cmd.Flag.String("format", "", "custom format for result printing")
 
 	return cmd
 }

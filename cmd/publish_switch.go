@@ -90,6 +90,10 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 			"the same package pool.\n")
 	}
 
+	if context.Flags().IsSet("skip-contents") {
+		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
+	}
+
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
@@ -143,6 +147,7 @@ This command would switch published repository (with one component) named ppa/wh
 	cmd.Flag.String("passphrase-file", "", "GPG passhprase-file for the key (warning: could be insecure)")
 	cmd.Flag.Bool("batch", false, "run GPG with detached tty")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
+	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 

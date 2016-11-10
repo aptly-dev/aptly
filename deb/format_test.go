@@ -84,18 +84,18 @@ func (s *ControlFileSuite) SetUpTest(c *C) {
 func (s *ControlFileSuite) TestReadStanza(c *C) {
 	r := NewControlFileReader(s.reader)
 
-	stanza1, err := r.ReadStanza()
+	stanza1, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
-	stanza2, err := r.ReadStanza()
+	stanza2, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
-	stanza3, err := r.ReadStanza()
+	stanza3, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 	c.Assert(stanza3, IsNil)
 
 	c.Check(stanza1["Format"], Equals, "3.0 (quilt)")
-	c.Check(stanza1["Build-Depends"], Equals, "debhelper (>= 8),bash-completion (>= 1:1.1-3),libcurl4-nss-dev, libreadline-dev, libxml2-dev, libpcre3-dev, liboauth-dev, xsltproc, docbook-xsl, docbook-xml, dh-autoreconf")
+	c.Check(stanza1["Build-Depends"], Equals, "debhelper (>= 8), bash-completion (>= 1:1.1-3), libcurl4-nss-dev, libreadline-dev, libxml2-dev, libpcre3-dev, liboauth-dev, xsltproc, docbook-xsl, docbook-xml, dh-autoreconf")
 	c.Check(stanza1["Files"], Equals, " 3d5f65778bf3f89be03c313b0024b62c 1980 bti_032-1.dsc\n"+
 		" 1e0d0b693fdeebec268004ba41701baf 59773 bti_032.orig.tar.gz\n"+" ac1229a6d685023aeb8fcb0806324aa8 5065 bti_032-1.debian.tar.gz\n")
 	c.Check(len(stanza2), Equals, 20)
@@ -103,12 +103,12 @@ func (s *ControlFileSuite) TestReadStanza(c *C) {
 
 func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	r := NewControlFileReader(s.reader)
-	stanza, err := r.ReadStanza()
+	stanza, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
 	buf := &bytes.Buffer{}
 	w := bufio.NewWriter(buf)
-	err = stanza.Copy().WriteTo(w, false, false)
+	err = stanza.Copy().WriteTo(w, true, false)
 	c.Assert(err, IsNil)
 	err = w.Flush()
 	c.Assert(err, IsNil)
@@ -116,11 +116,23 @@ func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	str := buf.String()
 
 	r = NewControlFileReader(buf)
-	stanza2, err := r.ReadStanza()
+	stanza2, err := r.ReadStanza(false)
 	c.Assert(err, IsNil)
 
 	c.Assert(stanza2, DeepEquals, stanza)
 	c.Assert(strings.HasPrefix(str, "Package: "), Equals, true)
+}
+
+func (s *ControlFileSuite) TestCanonicalCase(c *C) {
+	c.Check(canonicalCase("Package"), Equals, "Package")
+	c.Check(canonicalCase("package"), Equals, "Package")
+	c.Check(canonicalCase("pAckaGe"), Equals, "Package")
+	c.Check(canonicalCase("MD5Sum"), Equals, "MD5Sum")
+	c.Check(canonicalCase("SHA1"), Equals, "SHA1")
+	c.Check(canonicalCase("SHA256"), Equals, "SHA256")
+	c.Check(canonicalCase("Package-List"), Equals, "Package-List")
+	c.Check(canonicalCase("package-list"), Equals, "Package-List")
+	c.Check(canonicalCase("packaGe-lIst"), Equals, "Package-List")
 }
 
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
@@ -128,7 +140,7 @@ func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
 		reader := bytes.NewBufferString(controlFile)
 		r := NewControlFileReader(reader)
 		for {
-			s, e := r.ReadStanza()
+			s, e := r.ReadStanza(false)
 			if s == nil && e == nil {
 				break
 			}

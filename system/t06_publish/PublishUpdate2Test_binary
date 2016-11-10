@@ -1,4 +1,5 @@
 
+
  (name, value) pairs from the user, via conventional methods such as
  .
  .
@@ -19,6 +20,7 @@ Package: libboost-program-options-dev
 Priority: optional
 SHA1: 36895eb64cfe89c33c0a2f7ac2f0c6e0e889e04b
 SHA256: c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12
+SHA512: d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c
 Section: libdevel
 Size: 2738
 Source: boost-defaults

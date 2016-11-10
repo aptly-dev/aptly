@@ -1,0 +1,5 @@
+gpgv:  DSA key ID 16DB3E6D
+gpgv: Good signature from "Aptly Tester (don't use it) <test@aptly.info>"
+Loading repository unstable for changes file hardlink_0.2.1_amd64.changes...
+[+] hardlink_0.2.1_source added
+[+] hardlink_0.2.1_amd64 added

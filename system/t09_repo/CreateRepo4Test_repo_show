@@ -1,0 +1,6 @@
+Name: repo4
+Comment: 
+Default Distribution: 
+Default Component: main
+Uploaders: {"groups":{"developers":["21DBB89C16DB3E6D","37E1C17570096AD1"]},"rules":[{"condition":"Source (dangerous) | Source (kernel)","allow":null,"deny":["*"]},{"condition":"Source (hardlink)","allow":["developers","admins"],"deny":null}]}
+Number of packages: 0

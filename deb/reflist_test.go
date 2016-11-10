@@ -281,11 +281,11 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	reflistB := NewPackageRefListFromPackageList(listB)
 	reflistC := NewPackageRefListFromPackageList(listC)
 
-	mergeAB := reflistA.Merge(reflistB, true)
-	mergeBA := reflistB.Merge(reflistA, true)
-	mergeAC := reflistA.Merge(reflistC, true)
-	mergeBC := reflistB.Merge(reflistC, true)
-	mergeCB := reflistC.Merge(reflistB, true)
+	mergeAB := reflistA.Merge(reflistB, true, false)
+	mergeBA := reflistB.Merge(reflistA, true, false)
+	mergeAC := reflistA.Merge(reflistC, true, false)
+	mergeBC := reflistB.Merge(reflistC, true, false)
+	mergeCB := reflistC.Merge(reflistB, true, false)
 
 	c.Check(toStrSlice(mergeAB), DeepEquals,
 		[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 dpkg 1.0 00000000", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
@@ -298,11 +298,11 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	c.Check(toStrSlice(mergeCB), DeepEquals,
 		[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 dpkg 1.0 00000000", "Pi386 lib 1.0 00000000"})
 
-	mergeABall := reflistA.Merge(reflistB, false)
-	mergeBAall := reflistB.Merge(reflistA, false)
-	mergeACall := reflistA.Merge(reflistC, false)
-	mergeBCall := reflistB.Merge(reflistC, false)
-	mergeCBall := reflistC.Merge(reflistB, false)
+	mergeABall := reflistA.Merge(reflistB, false, false)
+	mergeBAall := reflistB.Merge(reflistA, false, false)
+	mergeACall := reflistA.Merge(reflistC, false, false)
+	mergeBCall := reflistB.Merge(reflistC, false, false)
+	mergeCBall := reflistC.Merge(reflistB, false, false)
 
 	c.Check(mergeABall, DeepEquals, mergeBAall)
 	c.Check(toStrSlice(mergeBAall), DeepEquals,
@@ -316,6 +316,11 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 	c.Check(toStrSlice(mergeBCall), DeepEquals,
 		[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000044", "Pi386 dpkg 1.0 00034445",
 			"Pi386 lib 1.0 00000000"})
+
+	mergeBCwithConflicts := reflistB.Merge(reflistC, false, true)
+	c.Check(toStrSlice(mergeBCwithConflicts), DeepEquals,
+		[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000044",
+			"Pi386 dpkg 1.0 00000000", "Pi386 dpkg 1.0 00034445", "Pi386 lib 1.0 00000000"})
 }
 
 func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {

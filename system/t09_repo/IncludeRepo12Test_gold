@@ -1,0 +1,6 @@
+Loading repository unstable for changes file hardlink_0.2.1_amd64.changes...
+[+] hardlink_0.2.1_source added
+[!] hardlink_0.2.1_amd64 has been ignored as it doesn't match restriction
+[!] Some files were skipped due to errors:
+  /01/hardlink_0.2.1_amd64.deb
+ERROR: some files failed to be added

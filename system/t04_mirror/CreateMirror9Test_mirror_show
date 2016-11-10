@@ -1,20 +1,21 @@
 Name: mirror9
-Archive Root URL: http://mirror.yandex.ru/debian-backports/
-Distribution: squeeze-backports
+Archive Root URL: http://mirror.yandex.ru/debian/
+Distribution: wheezy-backports
 Components: main, contrib, non-free
-Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
+Architectures: amd64, armel, armhf, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
-Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 ButAutomaticUpgrades: yes
-Codename: squeeze-backports
+Codename: wheezy-backports
 Components: main contrib non-free
-Description:  Backports for the Squeeze Distribution
+Description:  Backports for the Wheezy Distribution
 
 Label: Debian Backports
 NotAutomatic: yes
 Origin: Debian Backports
-Suite: squeeze-backports
+Suite: wheezy-backports
+Version: 

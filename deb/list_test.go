@@ -379,6 +379,20 @@ func (s *PackageListSuite) TestFilter(c *C) {
 		&FieldQuery{Field: "$Architecture", Relation: VersionRegexp, Value: "i.*6", Regexp: regexp.MustCompile("i.*6")}, &PkgQuery{"app", "1.1~bp1", "i386"}}}, false, nil, 0, nil)
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "app_1.1~bp1_i386")
+
+	result, err = s.il.Filter([]PackageQuery{&AndQuery{
+		&FieldQuery{Field: "Name", Relation: VersionRegexp, Value: "a", Regexp: regexp.MustCompile("a")},
+		&NotQuery{Q: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: "data"}},
+	}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "aa_2.0-1_i386 app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 mailer_3.5.8_i386")
+
+	result, err = s.il.Filter([]PackageQuery{&AndQuery{
+		&NotQuery{Q: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: "data"}},
+		&FieldQuery{Field: "Name", Relation: VersionRegexp, Value: "a", Regexp: regexp.MustCompile("a")},
+	}}, false, nil, 0, nil)
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "aa_2.0-1_i386 app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 mailer_3.5.8_i386")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {

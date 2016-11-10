@@ -43,7 +43,8 @@ var (
 
 func internalOpen(path string) (*leveldb.DB, error) {
 	o := &opt.Options{
-		Filter: filter.NewBloomFilter(10),
+		Filter:                 filter.NewBloomFilter(10),
+		OpenFilesCacheCapacity: 256,
 	}
 
 	return leveldb.OpenFile(path, o)
@@ -60,7 +61,7 @@ func OpenDB(path string) (Storage, error) {
 
 // RecoverDB recovers LevelDB database from corruption
 func RecoverDB(path string) error {
-	stor, err := storage.OpenFile(path)
+	stor, err := storage.OpenFile(path, false)
 	if err != nil {
 		return err
 	}

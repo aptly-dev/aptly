@@ -36,6 +36,10 @@ type PackageList struct {
 	packagesIndex []*Package
 	// Map of packages for each virtual package (provides)
 	providesIndex map[string][]*Package
+	// Package key generation function
+	keyFunc func(p *Package) string
+	// Allow duplicates?
+	duplicatesAllowed bool
 }
 
 // PackageConflictError means that package can't be added to the list due to error
@@ -49,9 +53,35 @@ var (
 	_ PackageCatalog = &PackageList{}
 )
 
-// NewPackageList creates empty package list
+func packageShortKey(p *Package) string {
+	return string(p.ShortKey(""))
+}
+
+func packageFullKey(p *Package) string {
+	return string(p.Key(""))
+}
+
+// NewPackageList creates empty package list without duplicate package
 func NewPackageList() *PackageList {
-	return &PackageList{packages: make(map[string]*Package, 1000)}
+	return NewPackageListWithDuplicates(false, 1000)
+}
+
+func NewPackageListWithDuplicates(duplicates bool, capacity int) *PackageList {
+	if capacity == 0 {
+		capacity = 1000
+	}
+
+	result := &PackageList{
+		packages:          make(map[string]*Package, capacity),
+		duplicatesAllowed: duplicates,
+		keyFunc:           packageShortKey,
+	}
+
+	if duplicates {
+		result.keyFunc = packageFullKey
+	}
+
+	return result
 }
 
 // NewPackageListFromRefList loads packages list from PackageRefList
@@ -61,7 +91,7 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 		return NewPackageList(), nil
 	}
 
-	result := &PackageList{packages: make(map[string]*Package, reflist.Len())}
+	result := NewPackageListWithDuplicates(false, reflist.Len())
 
 	if progress != nil {
 		progress.InitBar(int64(reflist.Len()), false)
@@ -91,7 +121,7 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 
 // Add appends package to package list, additionally checking for uniqueness
 func (l *PackageList) Add(p *Package) error {
-	key := string(p.ShortKey(""))
+	key := l.keyFunc(p)
 	existing, ok := l.packages[key]
 	if ok {
 		if !existing.Equals(p) {
@@ -170,7 +200,7 @@ func (l *PackageList) Append(pl *PackageList) error {
 
 // Remove removes package from the list, and updates index when required
 func (l *PackageList) Remove(p *Package) {
-	delete(l.packages, string(p.ShortKey("")))
+	delete(l.packages, l.keyFunc(p))
 	if l.indexed {
 		for _, provides := range p.Provides {
 			for i, pkg := range l.providesIndex[provides] {
@@ -252,7 +282,7 @@ func depSliceDeduplicate(s []Dependency) []Dependency {
 
 // VerifyDependencies looks for missing dependencies in package list.
 //
-// Analysis would be peformed for each architecture, in specified sources
+// Analysis would be performed for each architecture, in specified sources
 func (l *PackageList) VerifyDependencies(options int, architectures []string, sources *PackageList, progress aptly.Progress) ([]Dependency, error) {
 	l.PrepareIndex()
 	missing := make([]Dependency, 0, 128)
@@ -365,7 +395,7 @@ func (l *PackageList) PrepareIndex() {
 
 // Scan searches package index using full scan
 func (l *PackageList) Scan(q PackageQuery) (result *PackageList) {
-	result = NewPackageList()
+	result = NewPackageListWithDuplicates(l.duplicatesAllowed, 0)
 	for _, pkg := range l.packages {
 		if q.Matches(pkg) {
 			result.Add(pkg)
@@ -382,7 +412,7 @@ func (l *PackageList) SearchSupported() bool {
 
 // SearchByKey looks up package by exact key reference
 func (l *PackageList) SearchByKey(arch, name, version string) (result *PackageList) {
-	result = NewPackageList()
+	result = NewPackageListWithDuplicates(l.duplicatesAllowed, 0)
 
 	pkg := l.packages["P"+arch+" "+name+" "+version]
 	if pkg != nil {

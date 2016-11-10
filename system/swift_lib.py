@@ -37,7 +37,7 @@ class SwiftTest(BaseTest):
         return super(SwiftTest, self).fixture_available() and swift_conn is not None
 
     def prepare(self):
-        self.container_name = "aptly-sys-test-" + str(uuid.uuid4())
+        self.container_name = "aptly-sys-test-" + str(uuid.uuid1())
         swift_conn.put_container(self.container_name)
 
         self.configOverride = {"SwiftPublishEndpoints": {

@@ -1,7 +1,7 @@
 List of mirrors:
  * [mirror1]: http://mirror.yandex.ru/debian/ wheezy
- * [mirror2]: http://mirror.yandex.ru/debian/ squeeze [src]
- * [mirror3]: http://mirror.yandex.ru/debian/ squeeze
- * [mirror4]: http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./
+ * [mirror2]: http://mirror.yandex.ru/debian/ wheezy [src]
+ * [mirror3]: http://mirror.yandex.ru/debian/ wheezy
+ * [mirror4]: http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./
 
 To get more information about mirror, run `aptly mirror show <name>`.

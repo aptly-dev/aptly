@@ -21,6 +21,7 @@ func makeCmdRepo() *commander.Command {
 			makeCmdRepoShow(),
 			makeCmdRepoRename(),
 			makeCmdRepoSearch(),
+			makeCmdRepoInclude(),
 		},
 	}
 }

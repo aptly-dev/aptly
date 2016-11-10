@@ -1,0 +1,14 @@
+
+{
+    "groups": {
+        "developers": ["21DBB89C16DB3E6D", "37E1C17570096AD1"],
+    },
+    "rules": [
+        { "condition": "Source (dangerous) | Source (kernel)",
+          "deny": ["*"],
+        },
+        { "condition": "Source (hardlink)",
+          "allow": ["developers", "admins"],
+        }
+    ]
+}

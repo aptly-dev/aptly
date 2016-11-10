@@ -1,10 +1,10 @@
 package http
 
 import (
-	"code.google.com/p/mxk/go1/flowcontrol"
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
+	"github.com/mxk/go-flowrate/flowrate"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-ftp-protocol/protocol"
@@ -75,7 +75,7 @@ func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.
 	}
 
 	if downLimit > 0 {
-		downloader.aggWriter = flowcontrol.NewWriter(progress, downLimit)
+		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
 	} else {
 		downloader.aggWriter = progress
 	}
@@ -145,6 +145,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
 	}
+	req.Close = true
 
 	proxyURL, _ := downloader.client.Transport.(*http.Transport).Proxy(req)
 	if proxyURL == nil && (req.URL.Scheme == "http" || req.URL.Scheme == "https") {
@@ -166,7 +167,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		return
 	}
 
-	err = os.MkdirAll(filepath.Dir(task.destination), 0755)
+	err = os.MkdirAll(filepath.Dir(task.destination), 0777)
 	if err != nil {
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
@@ -208,6 +209,8 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 			err = fmt.Errorf("%s: sha1 hash mismatch %#v != %#v", task.url, actual.SHA1, task.expected.SHA1)
 		} else if task.expected.SHA256 != "" && actual.SHA256 != task.expected.SHA256 {
 			err = fmt.Errorf("%s: sha256 hash mismatch %#v != %#v", task.url, actual.SHA256, task.expected.SHA256)
+		} else if task.expected.SHA512 != "" && actual.SHA512 != task.expected.SHA512 {
+			err = fmt.Errorf("%s: sha512 hash mismatch %#v != %#v", task.url, actual.SHA512, task.expected.SHA512)
 		}
 
 		if err != nil {
@@ -326,6 +329,10 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		if !foundChecksum {
+			if !ignoreMismatch {
+				continue
+			}
+
 			file, err = DownloadTemp(downloader, tryURL)
 		}
 
@@ -343,6 +350,10 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		return uncompressed, file, err
+	}
+
+	if err == nil {
+		err = fmt.Errorf("no candidates for %s found", url)
 	}
 	return nil, nil, err
 }

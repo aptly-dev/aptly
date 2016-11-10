@@ -5,6 +5,7 @@ import (
 	"github.com/smira/aptly/cmd"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -43,6 +44,12 @@ func capitalize(s string) string {
 	return strings.Join(parts, " ")
 }
 
+var authorsS string
+
+func authors() string {
+	return authorsS
+}
+
 func main() {
 	command := cmd.RootCommand()
 	command.UsageLine = "aptly"
@@ -56,8 +63,23 @@ func main() {
 		"findCommand": findCommand,
 		"toUpper":     strings.ToUpper,
 		"capitalize":  capitalize,
+		"authors":     authors,
 	})
 	template.Must(templ.ParseFiles(filepath.Join(filepath.Dir(_File), "aptly.1.ronn.tmpl")))
+
+	authorsF, err := os.Open(filepath.Join(filepath.Dir(_File), "..", "AUTHORS"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authorsB, err := ioutil.ReadAll(authorsF)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authorsF.Close()
+
+	authorsS = string(authorsB)
 
 	output, err := os.Create(filepath.Join(filepath.Dir(_File), "aptly.1.ronn"))
 	if err != nil {

@@ -1,20 +1,20 @@
 Name: mirror11
 Archive Root URL: http://mirror.yandex.ru/debian/
-Distribution: squeeze
+Distribution: wheezy
 Components: main, contrib, non-free
-Architectures: amd64, armel, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, sparc
+Architectures: amd64, armel, armhf, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
-Architectures: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
-Codename: squeeze
+Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
+Codename: wheezy
 Components: main contrib non-free
-Date: Sat, 19 Jul 2014 11:02:06 UTC
-Description:  Debian 6.0.10 Released 19 July 2014
+Date: Sat, 04 Jun 2016 11:47:54 UTC
+Description:  Debian 7.11 Released 04 June 2016
 
 Label: Debian
 Origin: Debian
 Suite: oldstable
-Version: 6.0.10
+Version: 7.11

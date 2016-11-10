@@ -1,8 +1,8 @@
 package deb
 
 import (
-	"code.google.com/p/gographviz"
 	"fmt"
+	"github.com/awalterschulze/gographviz"
 	"strings"
 )
 

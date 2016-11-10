@@ -154,6 +154,7 @@ class BaseTest(object):
         if not hasattr(command, "__iter__"):
             params = {
                 'files': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"),
+                'changes': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"),
                 'udebs': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "udebs"),
                 'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
                 'aptlyroot': os.path.join(os.environ["HOME"], ".aptly"),
@@ -235,6 +236,8 @@ class BaseTest(object):
             self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
         except:
             if self.captureResults:
+                if match_prepare is not None:
+                    contents = match_prepare(contents)
                 with open(self.get_gold_filename(gold_name), "w") as f:
                     f.write(contents)
             else:

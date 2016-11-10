@@ -90,7 +90,7 @@ class CreateMirror9Test(BaseTest):
     """
     create mirror: repo with InRelease verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
 
@@ -117,7 +117,7 @@ class CreateMirror11Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ squeeze"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
@@ -130,7 +130,7 @@ class CreateMirror12Test(BaseTest):
     """
     create mirror: repo with Release+Release.gpg verification, failure
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ squeeze"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
@@ -153,7 +153,7 @@ class CreateMirror14Test(BaseTest):
     """
     create mirror: flat repository
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./"
     fixtureGpg = True
     outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
@@ -166,7 +166,7 @@ class CreateMirror15Test(BaseTest):
     """
     create mirror: flat repository + components
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./ main"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./ main"
     expectedCode = 1
 
 
@@ -231,6 +231,7 @@ class CreateMirror20Test(BaseTest):
     create mirror: using failing HTTP_PROXY
     """
     fixtureGpg = True
+    outputMatchPrepare = lambda _, s: s.replace('getsockopt: ', '')
 
     runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://security.debian.org/ wheezy/updates main"
     environmentOverride = {"HTTP_PROXY": "127.0.0.1:3137"}

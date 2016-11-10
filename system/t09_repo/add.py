@@ -283,3 +283,15 @@ class AddRepo14Test(BaseTest):
         super(AddRepo14Test, self).check()
         # check pool
         self.check_file_not_empty('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class AddRepo15Test(BaseTest):
+    """
+    add package with wrong case in stanza and missing fields
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo15 -distribution=squeeze repo15",
+    ]
+    runCmd = "aptly repo add repo15 ${testfiles}"
+    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+    expectedCode = 1

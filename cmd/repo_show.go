@@ -29,6 +29,9 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Comment: %s\n", repo.Comment)
 	fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
 	fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
+	if repo.Uploaders != nil {
+		fmt.Printf("Uploaders: %s\n", repo.Uploaders)
+	}
 	fmt.Printf("Number of packages: %d\n", repo.NumPackages())
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)

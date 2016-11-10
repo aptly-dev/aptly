@@ -7,9 +7,9 @@ class ListMirror1Test(BaseTest):
     """
     fixtureCmds = [
         "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ wheezy",
-        "aptly mirror create -with-sources --ignore-signatures mirror2 http://mirror.yandex.ru/debian/ squeeze contrib",
-        "aptly -architectures=i386 mirror create --ignore-signatures mirror3 http://mirror.yandex.ru/debian/ squeeze non-free",
-        "aptly mirror create -ignore-signatures mirror4 http://download.opensuse.org/repositories/home:/DeepDiver1975/xUbuntu_10.04/ ./",
+        "aptly mirror create -with-sources --ignore-signatures mirror2 http://mirror.yandex.ru/debian/ wheezy contrib",
+        "aptly -architectures=i386 mirror create --ignore-signatures mirror3 http://mirror.yandex.ru/debian/ wheezy non-free",
+        "aptly mirror create -ignore-signatures mirror4 http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./",
     ]
     runCmd = "aptly mirror list"
 

@@ -270,8 +270,9 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 
 // Merge merges reflist r into current reflist. If overrideMatching, merge
 // replaces matching packages (by architecture/name) with reference from r.
-// Otherwise, all packages are saved.
-func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result *PackageRefList) {
+// If ignoreConflicting is set, all packages are preserved, otherwise conflciting
+// packages are overwritten with packages from "right" snapshot.
+func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConflicting bool) (result *PackageRefList) {
 	var overriddenArch, overridenName []byte
 
 	// pointer to left and right reflists
@@ -314,7 +315,7 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching bool) (result
 			partsR := bytes.Split(rr, []byte(" "))
 			archR, nameR, versionR := partsR[0][1:], partsR[1], partsR[2]
 
-			if bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) && bytes.Equal(versionL, versionR) {
+			if !ignoreConflicting && bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) && bytes.Equal(versionL, versionR) {
 				// conflicting duplicates with same arch, name, version, but different file hash
 				result.Refs = append(result.Refs, r.Refs[ir])
 				il++

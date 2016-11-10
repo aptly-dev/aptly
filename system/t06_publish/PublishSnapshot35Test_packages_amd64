@@ -1,87 +1,81 @@
-Package: dmraid
-Priority: optional
-Section: admin
-Installed-Size: 112
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: amd64
-Version: 1.0.0.rc16-4.1
-Depends: libc6 (>= 2.3), libdmraid1.0.0.rc16 (>= 1.0.0.rc16), libselinux1 (>= 1.32), libsepol1 (>= 1.14), udev, dmsetup
-Filename: pool/main/d/dmraid/dmraid_1.0.0.rc16-4.1_amd64.deb
-Size: 38620
-MD5sum: 35da9bcdd12c7fb08eb7192f0a17ddf2
-SHA1: 6a89d3f9e3b80a172811bb7d74eac43f119a8b7c
-SHA256: 125405c4b0a7364bf209c161f393d4d0152ba9d02a55a95d90a7637f7b373b8f
-Description: Device-Mapper Software RAID support tool
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- The following formats are supported:
-  Highpoint HPT37X/HPT45X
-  Intel Software RAID
-  LSI Logic MegaRAID
-  NVidia NForce RAID (nvraid)
-  Promise FastTrack
-  Silicon Image(tm) Medley(tm)
-  VIA Software RAID
- .
- Please read the documentation in /usr/share/doc/dmraid BEFORE attempting
- any use of this software. Improper use can cause data loss!
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
-Tag: admin::filesystem, admin::kernel, hardware::storage, implemented-in::c, interface::commandline, role::program, scope::utility, use::scanning
 
-Package: libdmraid-dev
-Priority: optional
-Section: libdevel
-Installed-Size: 496
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: amd64
-Source: dmraid
-Version: 1.0.0.rc16-4.1
-Depends: libdmraid1.0.0.rc16 (= 1.0.0.rc16-4.1)
-Filename: pool/main/d/dmraid/libdmraid-dev_1.0.0.rc16-4.1_amd64.deb
-Size: 152618
-MD5sum: bb209b5796592d786c28844b949216dc
-SHA1: cd8baba807fa92a88a265a044d821df8b677b5cb
-SHA256: 081a48ad5372a941c35d41733da89a52cbe2d8f49032c2a4ef03148e4049615f
-Description: Device-Mapper Software RAID support tool - header files
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- This package contains the header files needed to link programs against
- dmraid.
-Tag: admin::hardware, devel::lang:c, devel::library, hardware::storage, implemented-in::c, qa::low-popcon, role::devel-lib, use::driver
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
 
-Package: libdmraid1.0.0.rc16
-Priority: optional
-Section: libs
-Installed-Size: 244
-Maintainer: Giuseppe Iuculano <iuculano@debian.org>
-Architecture: amd64
-Source: dmraid
-Version: 1.0.0.rc16-4.1
-Replaces: libdmraid1.0.0.rc15 (<< 1.0.0.rc16-1)
-Depends: libc6 (>= 2.7), libdevmapper1.02.1 (>= 2:1.02.20)
-Filename: pool/main/d/dmraid/libdmraid1.0.0.rc16_1.0.0.rc16-4.1_amd64.deb
-Size: 108978
-MD5sum: a66d03bb1ddad78f879660ddedf86295
-SHA1: 6292936617c466e67a3148c66d0c27c068d055d3
-SHA256: 29f06bd3ae42e3380b356b69598be07724d178af35f2f1a64648c7f8ff85bef9
-Description: Device-Mapper Software RAID support tool - shared library
- dmraid discovers, activates, deactivates and displays properties
- of software RAID sets (eg, ATARAID) and contained DOS partitions.
- .
- dmraid uses the Linux device-mapper to create devices with respective
- mappings for the ATARAID sets discovered.
- .
- This package contains the dmraid shared library, which implements
- the back half of dmraid, including on-disk metadata formats.
-Homepage: http://people.redhat.com/~heinzm/sw/dmraid/
-Tag: admin::hardware, admin::kernel, devel::lang:c, devel::library, hardware::storage, implemented-in::c, role::{devel-lib,kernel,shared-lib}, use::driver
 
+
+
+Architecture: all
+Architecture: amd64
+Architecture: amd64
+Architecture: amd64
+Depends: libbz2-1.0, libc6 (>= 2.4), libreadline6 (>= 6.0), libusb-0.1-4 (>= 2:0.1.12), zlib1g (>= 1:1.1.4), dpkg (>= 1.15.4) | install-info, gpgv
+Depends: libbz2-1.0, libc6 (>= 2.4), zlib1g (>= 1:1.1.4)
+Depends: libc6 (>= 2.4), libcurl3-gnutls (>= 7.16.2), libldap-2.4-2 (>= 2.4.7), gnupg
+Description-Md5: 19709c7fc27595437225fd34d295b347
+Description-Md5: 3f8767984a5f4b323de309446d07435d
+Description-Md5: 55306a4e1e1fd63e577767c1b9f5161c
+Description-Md5: 8bbdb812806fb623e26b7b93f549c74b
+Description: GNU privacy guard - a free PGP replacement
+Description: GNU privacy guard - a free PGP replacement (cURL)
+Description: GNU privacy guard - signature verification tool
+Description: GNU privacy guard - signature verification tool (win32 build)
+Filename: pool/main/g/gnupg/gnupg-curl_1.4.12-7+deb7u7_amd64.deb
+Filename: pool/main/g/gnupg/gnupg_1.4.12-7+deb7u7_amd64.deb
+Filename: pool/main/g/gnupg/gpgv-win32_1.4.12-7+deb7u7_all.deb
+Filename: pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_amd64.deb
+Homepage: http://www.gnupg.org
+Homepage: http://www.gnupg.org
+Homepage: http://www.gnupg.org
+Homepage: http://www.gnupg.org
+Installed-Size: 130
+Installed-Size: 1480
+Installed-Size: 438
+Installed-Size: 4962
+MD5sum: 17916456c6e84c434205bad15e98e902
+MD5sum: 56699ccfefc9bb6c39325d746363c018
+MD5sum: 5f15f3ac2f586b95ab21c3f83fd1bf35
+MD5sum: 91a07e1a42703f0ce59c4a1de60e961d
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Package: gnupg
+Package: gnupg-curl
+Package: gpgv
+Package: gpgv-win32
+Priority: extra
+Priority: important
+Priority: important
+Priority: optional
+Recommends: libldap-2.4-2 (>= 2.4.7), gnupg-curl
+SHA1: 8dae53bc42d1f35054ce35124da8b92f6097f1c2
+SHA1: bc5c60462be7702988e083cf68c7f8edfcb962a5
+SHA1: c03f15e5ee0fba0b77a51e063db87708aee0e422
+SHA1: df8a0ef18df0fb86167128ac6c31d6709c2f9c6b
+SHA256: 27760f636f6dbfe387dfbede1131fe7a0dd5fd3b0ab562213193ffa7cfcadfb5
+SHA256: 2920249908a8297f85006def6a55fb99abfcc8466cac2b9f28d01ce8315df065
+SHA256: 8361f45f51a7e70e3367e5b2df59fa8defc8648a76afa4159da3f249460f5b33
+SHA256: b626c3320c0ba2c41c5214bf8175c713f3713cc393e9361a977dc0202c197875
+Section: utils
+Section: utils
+Section: utils
+Section: utils
+Size: 1956126
+Size: 228244
+Size: 617064
+Size: 64308
+Source: gnupg
+Source: gnupg
+Source: gnupg
+Suggests: gnupg
+Suggests: gnupg-doc, xloadimage | imagemagick | eog, libpcsclite1
+Suggests: wine
+Tag: implemented-in::c, interface::commandline, network::client, protocol::http, role::plugin, role::program, scope::utility, security::authentication, security::cryptography, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::authentication, security::cryptography, security::privacy, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::checking
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7
+Version: 1.4.12-7+deb7u7

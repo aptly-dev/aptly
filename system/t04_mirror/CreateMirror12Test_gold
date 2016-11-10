@@ -1,9 +1,11 @@
-Downloading http://mirror.yandex.ru/debian/dists/squeeze/InRelease...
-Downloading http://mirror.yandex.ru/debian/dists/squeeze/Release...
-Downloading http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg...
-gpgv: keyblock resource `${HOME}/.gnupg/aptlytest.gpg': file open error
-gpgv:  RSA key ID 473041FA
-gpgv: Can't check signature: public key not found
-gpgv:  RSA key ID B98321F9
-gpgv: Can't check signature: public key not found
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/InRelease...
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release...
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release.gpg...
+
+gpgv:  RSA key ID 46925553
+
+gpgv:  RSA key ID 2B90D010
+
+gpgv:  RSA key ID 65FFB764
+
 ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

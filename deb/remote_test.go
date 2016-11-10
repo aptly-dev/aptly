@@ -30,8 +30,8 @@ func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) e
 	return nil
 }
 
-func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader) error {
-	return nil
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*utils.GpgKeyInfo, error) {
+	return nil, nil
 }
 
 func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
@@ -41,6 +41,10 @@ func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File,
 	os.Remove(text.Name())
 
 	return
+}
+
+func (n *NullVerifier) IsClearSigned(clearsign io.Reader) (bool, error) {
+	return false, nil
 }
 
 type PackageListMixinSuite struct {
@@ -99,7 +103,7 @@ func (s *RemoteRepoSuite) TearDownTest(c *C) {
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
 	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{}, false, false)
-	c.Assert(err, ErrorMatches, ".*hexadecimal escape in host.*")
+	c.Assert(err, ErrorMatches, ".*(hexadecimal escape in host|percent-encoded characters in host|invalid URL escape).*")
 }
 
 func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
@@ -330,7 +334,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -363,7 +367,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, false)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 

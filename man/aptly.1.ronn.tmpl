@@ -32,7 +32,7 @@ Configuration file is stored in JSON format (default values shown below):
       "downloadSpeedLimit": 0,
       "architectures": [],
       "dependencyFollowSuggests": false,
-      "dependencyFollowRecommends": false
+      "dependencyFollowRecommends": false,
       "dependencyFollowAllVariants": false,
       "dependencyFollowSource": false,
       "gpgDisableSign": false,
@@ -40,17 +40,22 @@ Configuration file is stored in JSON format (default values shown below):
       "downloadSourcePackages": false,
       "ppaDistributorID": "ubuntu",
       "ppaCodename": "",
+      "skipContentsPublishing": false,
       "S3PublishEndpoints": {
         "test": {
           "region": "us-east-1",
           "bucket": "repo",
+          "endpoint": "",
           "awsAccessKeyID": "",
           "awsSecretAccessKey": "",
           "prefix": "",
           "acl": "public-read",
           "storageClass": "",
           "encryptionMethod": "",
-          "plusWorkaround": false
+          "plusWorkaround": false,
+          "disableMultiDel": false,
+          "forceSigV2": false,
+          "debug": false
         }
       },
       "SwiftPublishEndpoints": {
@@ -118,7 +123,8 @@ Options:
 
 ## S3 PUBLISHING ENDPOINTS
 
-aptly could be configured to publish repository directly to Amazon S3. First, publishing
+aptly could be configured to publish repository directly to Amazon S3 (or S3-compatible
+cloud storage). First, publishing
 endpoints should be described in aptly configuration file. Each endpoint has name
 and associated settings:
 
@@ -126,6 +132,10 @@ and associated settings:
      Amazon region for S3 bucket (e.g. `us-east-1`)
    * `bucket`:
      bucket name
+   * `endpoint`:
+     (optional) when using S3-compatible cloud storage, specify hostname of service endpoint here,
+     region is ignored if endpoint is set (set region to some human-readable name)
+     (should be left blank for real Amazon S3)
    * `prefix`:
      (optional) do publishing under specified prefix in the bucket, defaults to
      no prefix (bucket root)
@@ -152,7 +162,10 @@ and associated settings:
      and another one with spaces instead of plus signs
      With `plusWorkaround` enabled, package files with plus sign
      would be stored twice. aptly might not cleanup files with spaces when published
-     repository is dropped or updated (switched) to new version of repository (snapshot).
+     repository is dropped or updated (switched) to new version of repository (snapshot)
+   * `disableMultiDel`:
+     (optional) for S3-compatible cloud storages which do not support `MultiDel` S3 API,
+     enable this setting (file deletion would be slower with this setting enabled)
 
 In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
 publishing prefix on the command line, e.g.:
@@ -264,6 +277,27 @@ When specified on command line, query may have to be quoted according to shell r
 
   `aptly repo import percona stable 'mysql-client (>= 3.6)'`
 
+## PACKAGE DISPLAY FORMAT
+
+Some aptly commands (`aptly mirror search`, `aptly package search`, ...) support `-format` flag
+which allows to customize how search results are printed. Golang templates are used to specify
+display format, with all package stanza fields available to template. In addition to package stanza
+fields aptly provides:
+
+ * `Key`:
+   internal aptly package ID, unique for all packages in aptly
+   (combination of `ShortKey` and `FilesHash`).
+
+ * `FilesHash`:
+   hash that includes MD5 of all packages files.
+
+ * `ShortKey`:
+   package ID, which is unique in single list (mirror, repo, snapshot, ...), but not unique
+   in whole aptly package collection.
+
+For example, default aptly display format could be presented with the following template:
+`{{"{{"}}.Package{{"}}"}}_{{"{{"}}.Version{{"}}"}}_{{"{{"}}.Architecture{{"}}"}}`. To display package name with dependencies:
+`{{"{{"}}.Package{{"}}"}} | {{"{{"}}.Depends{{"}}"}}`. More information on Golang template syntax: http://godoc.org/text/template
 
 ## GLOBAL OPTIONS
 
@@ -283,11 +317,15 @@ When specified on command line, query may have to be quoted according to shell r
 
 {{template "command" findCommand . "serve"}}
 
+{{template "command" findCommand . "api"}}
+
 {{template "command" findCommand . "graph"}}
 
 {{template "command" findCommand . "config"}}
 
 {{template "command" findCommand . "task"}}
+
+{{template "command" findCommand . "config"}}
 
 ## ENVIRONMENT
 
@@ -309,7 +347,7 @@ to proxy all HTTP requests.
 
 ## AUTHORS
 
-Andrey Smirnov (me@smira.ru)
+{{authors}}
 
 {{end}}
 

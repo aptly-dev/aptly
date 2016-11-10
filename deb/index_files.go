@@ -24,6 +24,7 @@ type indexFile struct {
 	parent       *indexFiles
 	discardable  bool
 	compressable bool
+	onlyGzip     bool
 	signable     bool
 	relativePath string
 	tempFilename string
@@ -61,7 +62,7 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 	}
 
 	if file.compressable {
-		err = utils.CompressFile(file.tempFile)
+		err = utils.CompressFile(file.tempFile, file.onlyGzip)
 		if err != nil {
 			file.tempFile.Close()
 			return fmt.Errorf("unable to compress index file: %s", err)
@@ -73,6 +74,9 @@ func (file *indexFile) Finalize(signer utils.Signer) error {
 	exts := []string{""}
 	if file.compressable {
 		exts = append(exts, ".gz", ".bz2")
+		if file.onlyGzip {
+			exts = []string{".gz"}
+		}
 	}
 
 	for _, ext := range exts {
@@ -205,6 +209,36 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 			parent:       files,
 			discardable:  udeb,
 			compressable: false,
+			signable:     false,
+			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
+func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *indexFile {
+	if arch == "source" {
+		udeb = false
+	}
+	key := fmt.Sprintf("ci-%s-%s-%v", component, arch, udeb)
+	file, ok := files.indexes[key]
+	if !ok {
+		var relativePath string
+
+		if udeb {
+			relativePath = filepath.Join(component, fmt.Sprintf("Contents-udeb-%s", arch))
+		} else {
+			relativePath = filepath.Join(component, fmt.Sprintf("Contents-%s", arch))
+		}
+
+		file = &indexFile{
+			parent:       files,
+			discardable:  true,
+			compressable: true,
+			onlyGzip:     true,
 			signable:     false,
 			relativePath: relativePath,
 		}

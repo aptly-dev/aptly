@@ -32,9 +32,10 @@ type Package struct {
 	// Is this >= 0.6 package?
 	V06Plus bool
 	// Offload fields
-	deps  *PackageDependencies
-	extra *Stanza
-	files *PackageFiles
+	deps     *PackageDependencies
+	extra    *Stanza
+	files    *PackageFiles
+	contents []string
 	// Mother collection
 	collection *PackageCollection
 }
@@ -75,6 +76,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 			MD5:    strings.TrimSpace(md5),
 			SHA1:   strings.TrimSpace(input["SHA1"]),
 			SHA256: strings.TrimSpace(input["SHA256"]),
+			SHA512: strings.TrimSpace(input["SHA512"]),
 		},
 	}})
 
@@ -83,6 +85,7 @@ func NewPackageFromControlFile(input Stanza) *Package {
 	delete(input, "MD5Sum")
 	delete(input, "SHA1")
 	delete(input, "SHA256")
+	delete(input, "SHA512")
 	delete(input, "Size")
 
 	depends := &PackageDependencies{}
@@ -114,62 +117,20 @@ func NewSourcePackageFromControlFile(input Stanza) (*Package, error) {
 	delete(input, "Version")
 	delete(input, "Architecture")
 
+	var err error
+
 	files := make(PackageFiles, 0, 3)
-
-	parseSums := func(field string, setter func(sum *utils.ChecksumInfo, data string)) error {
-		for _, line := range strings.Split(input[field], "\n") {
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			parts := strings.Fields(line)
-
-			if len(parts) != 3 {
-				return fmt.Errorf("unparseable hash sum line: %#v", line)
-			}
-
-			size, err := strconv.ParseInt(parts[1], 10, 64)
-			if err != nil {
-				return fmt.Errorf("unable to parse size: %s", err)
-			}
-
-			filename := filepath.Base(parts[2])
-
-			found := false
-			pos := 0
-			for i, file := range files {
-				if file.Filename == filename {
-					found = true
-					pos = i
-					break
-				}
-			}
-
-			if !found {
-				files = append(files, PackageFile{Filename: filename, downloadPath: input["Directory"]})
-				pos = len(files) - 1
-			}
-
-			files[pos].Checksums.Size = size
-			setter(&files[pos].Checksums, parts[0])
-		}
-
-		delete(input, field)
-
-		return nil
-	}
-
-	err := parseSums("Files", func(sum *utils.ChecksumInfo, data string) { sum.MD5 = data })
+	files, err = files.ParseSumFields(input)
 	if err != nil {
 		return nil, err
 	}
-	err = parseSums("Checksums-Sha1", func(sum *utils.ChecksumInfo, data string) { sum.SHA1 = data })
-	if err != nil {
-		return nil, err
-	}
-	err = parseSums("Checksums-Sha256", func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data })
-	if err != nil {
-		return nil, err
+
+	delete(input, "Files")
+	delete(input, "Checksums-Sha1")
+	delete(input, "Checksums-Sha256")
+
+	for i := range files {
+		files[i].downloadPath = input["Directory"]
 	}
 
 	result.UpdateFiles(files)
@@ -211,14 +172,19 @@ func (p *Package) String() string {
 	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
 }
 
-// MarshalJSON implements json.Marshaller interface
-func (p *Package) MarshalJSON() ([]byte, error) {
+// ExtendedStanza returns package stanza enhanced with aptly-specific fields
+func (p *Package) ExtendedStanza() Stanza {
 	stanza := p.Stanza()
 	stanza["FilesHash"] = fmt.Sprintf("%08x", p.FilesHash)
 	stanza["Key"] = string(p.Key(""))
 	stanza["ShortKey"] = string(p.ShortKey(""))
 
-	return json.Marshal(stanza)
+	return stanza
+}
+
+// MarshalJSON implements json.Marshaller interface
+func (p *Package) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.ExtendedStanza())
 }
 
 // GetField returns fields from package
@@ -336,6 +302,21 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 	panic("unknown relation")
 }
 
+// GetName returns package name
+func (p *Package) GetName() string {
+	return p.Name
+}
+
+// GetVersion returns package version
+func (p *Package) GetVersion() string {
+	return p.Version
+}
+
+// GetArchitecture returns package arch
+func (p *Package) GetArchitecture() string {
+	return p.Architecture
+}
+
 // GetDependencies compiles list of dependenices by flags from options
 func (p *Package) GetDependencies(options int) (dependencies []string) {
 	deps := p.Deps()
@@ -370,6 +351,16 @@ func (p *Package) GetDependencies(options int) (dependencies []string) {
 	}
 
 	return
+}
+
+// QualifiedName returns [$SECTION/]$NAME
+func (p *Package) QualifiedName() string {
+	section := p.Extra()["Section"]
+	if section != "" {
+		return section + "/" + p.Name
+	}
+
+	return p.Name
 }
 
 // Extra returns Stanza of extra fields (it may load it from collection)
@@ -410,6 +401,35 @@ func (p *Package) Files() PackageFiles {
 	return *p.files
 }
 
+// Contents returns cached package contents
+func (p *Package) Contents(packagePool aptly.PackagePool) []string {
+	if p.IsSource {
+		return nil
+	}
+
+	return p.collection.loadContents(p, packagePool)
+}
+
+// CalculateContents looks up contents in package file
+func (p *Package) CalculateContents(packagePool aptly.PackagePool) []string {
+	if p.IsSource {
+		return nil
+	}
+
+	file := p.Files()[0]
+	path, err := packagePool.Path(file.Filename, file.Checksums.MD5)
+	if err != nil {
+		panic(err)
+	}
+
+	contents, err := GetContentsFromDeb(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return contents
+}
+
 // UpdateFiles saves new state of files
 func (p *Package) UpdateFiles(files PackageFiles) {
 	p.files = &files
@@ -432,7 +452,7 @@ func (p *Package) Stanza() (result Stanza) {
 	}
 
 	if p.IsSource {
-		md5, sha1, sha256 := make([]string, 0), make([]string, 0), make([]string, 0)
+		md5, sha1, sha256, sha512 := []string{}, []string{}, []string{}, []string{}
 
 		for _, f := range p.Files() {
 			if f.Checksums.MD5 != "" {
@@ -444,11 +464,21 @@ func (p *Package) Stanza() (result Stanza) {
 			if f.Checksums.SHA256 != "" {
 				sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename))
 			}
+			if f.Checksums.SHA512 != "" {
+				sha512 = append(sha512, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA512, f.Checksums.Size, f.Filename))
+			}
 		}
 
 		result["Files"] = strings.Join(md5, "")
-		result["Checksums-Sha1"] = strings.Join(sha1, "")
-		result["Checksums-Sha256"] = strings.Join(sha256, "")
+		if len(sha1) > 0 {
+			result["Checksums-Sha1"] = strings.Join(sha1, "")
+		}
+		if len(sha256) > 0 {
+			result["Checksums-Sha256"] = strings.Join(sha256, "")
+		}
+		if len(sha512) > 0 {
+			result["Checksums-Sha512"] = strings.Join(sha512, "")
+		}
 	} else {
 		f := p.Files()[0]
 		result["Filename"] = f.DownloadURL()
@@ -456,10 +486,13 @@ func (p *Package) Stanza() (result Stanza) {
 			result["MD5sum"] = f.Checksums.MD5
 		}
 		if f.Checksums.SHA1 != "" {
-			result["SHA1"] = " " + f.Checksums.SHA1
+			result["SHA1"] = f.Checksums.SHA1
 		}
 		if f.Checksums.SHA256 != "" {
-			result["SHA256"] = " " + f.Checksums.SHA256
+			result["SHA256"] = f.Checksums.SHA256
+		}
+		if f.Checksums.SHA512 != "" {
+			result["SHA512"] = f.Checksums.SHA512
 		}
 		result["Size"] = fmt.Sprintf("%d", f.Checksums.Size)
 	}

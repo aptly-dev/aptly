@@ -1,25 +1,26 @@
-Package: nginx-full
-Version: 1.2.1-2.2+wheezy2
-Installed-Size: 915
-Priority: optional
-Section: httpd
-Maintainer: Kartik Mistry <kartik@debian.org>
+
+
+
+  mirror [wheezy-main-src]: http://mirror.yandex.ru/debian/ wheezy [src]
+  mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
 Architecture: amd64
+Conflicts: nginx-extras, nginx-light, nginx-naxsi
+Depends: nginx-common (= 1.2.1-2.2+wheezy2), libc6 (>= 2.10), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libssl1.0.0 (>= 1.0.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)
+Description-md5: b334eec6202adf5e9045cc6066a082d1
 Description: nginx web/proxy server (standard version)
+Filename: nginx-full_1.2.1-2.2+wheezy2_amd64.deb
+Homepage: http://nginx.net
+Installed-Size: 915
 MD5sum: 586a2ff5648004cd0114447f5df46a29
+Maintainer: Kartik Mistry <kartik@debian.org>
+Package: nginx-full
+Priority: optional
+Provides: httpd, nginx
+References to package:
 SHA1: 7bf9b91714046f12d765adad860677f5b650c616
 SHA256: aa724376b6bf534c8ff38a8c5de4d4208d4de2b57946f875857349436542306b
-Homepage: http://nginx.net
-Source: nginx
+Section: httpd
 Size: 435328
-Conflicts: nginx-extras, nginx-light, nginx-naxsi
-Description-md5: b334eec6202adf5e9045cc6066a082d1
+Source: nginx
 Tag: network::server, protocol::http, role::program
-Filename: nginx-full_1.2.1-2.2+wheezy2_amd64.deb
-Depends: nginx-common (= 1.2.1-2.2+wheezy2), libc6 (>= 2.10), libexpat1 (>= 2.0.1), libgd2-noxpm (>= 2.0.36~rc1~dfsg) | libgd2-xpm (>= 2.0.36~rc1~dfsg), libgeoip1 (>= 1.4.8+dfsg), libpam0g (>= 0.99.7.1), libpcre3 (>= 8.10), libssl1.0.0 (>= 1.0.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)
-Provides: httpd, nginx
-
-References to package:
-  mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
-  mirror [wheezy-main-src]: http://mirror.yandex.ru/debian/ wheezy [src]
-
+Version: 1.2.1-2.2+wheezy2

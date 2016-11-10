@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -25,10 +24,8 @@ func aptlyPackageSearch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("no results")
 	}
 
-	result.ForEach(func(p *deb.Package) error {
-		context.Progress().Printf("%s\n", p)
-		return nil
-	})
+	format := context.Flags().Lookup("format").Value.String()
+	PrintPackageList(result, format)
 
 	return err
 }
@@ -47,6 +44,8 @@ Example:
 `,
 		Flag: *flag.NewFlagSet("aptly-package-search", flag.ExitOnError),
 	}
+
+	cmd.Flag.String("format", "", "custom format for result printing")
 
 	return cmd
 }

@@ -10,8 +10,8 @@ Last update: never
 Information from release file:
 Architectures: amd64 i386 source
 Codename: wheezy
-Components: openmanage openmanage/801 openmanage/740 openmanage/730
-Date: Wed, 22 Oct 2014 18:50:39 UTC
+Components: openmanage openmanage/820 openmanage/810 openmanage/801 openmanage/740 openmanage/730
+Date: Mon, 14 Sep 2015 21:24:43 UTC
 Description:  Unofficial Dell OMSA build for Ubuntu
 
 Label: Dell OMSA Archive

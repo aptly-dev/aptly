@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"strings"
+	"unicode"
 )
 
 // Stanza or paragraph of Debian control file
@@ -29,6 +30,7 @@ var (
 		"MD5Sum",
 		"SHA1",
 		"SHA256",
+		"SHA512",
 	}
 
 	canonicalOrderBinary = []string{
@@ -58,6 +60,7 @@ var (
 		"MD5sum",
 		"SHA1",
 		"SHA256",
+		"SHA512",
 		"Description",
 	}
 
@@ -91,15 +94,45 @@ func (s Stanza) Copy() (result Stanza) {
 	return
 }
 
-// Write single field from Stanza to writer
-func writeField(w *bufio.Writer, field, value string) (err error) {
-	_, multiline := multilineFields[field]
+func isMultilineField(field string, isRelease bool) bool {
+	switch field {
+	case "Description":
+		return true
+	case "Files":
+		return true
+	case "Changes":
+		return true
+	case "Checksums-Sha1":
+		return true
+	case "Checksums-Sha256":
+		return true
+	case "Checksums-Sha512":
+		return true
+	case "Package-List":
+		return true
+	case "MD5Sum":
+		return isRelease
+	case "SHA1":
+		return isRelease
+	case "SHA256":
+		return isRelease
+	case "SHA512":
+		return isRelease
+	}
+	return false
+}
 
-	if !multiline {
+// Write single field from Stanza to writer
+func writeField(w *bufio.Writer, field, value string, isRelease bool) (err error) {
+	if !isMultilineField(field, isRelease) {
 		_, err = w.WriteString(field + ": " + value + "\n")
 	} else {
 		if !strings.HasSuffix(value, "\n") {
 			value = value + "\n"
+		}
+
+		if field != "Description" {
+			value = "\n" + value
 		}
 		_, err = w.WriteString(field + ":" + value)
 	}
@@ -121,7 +154,7 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 		value, ok := s[field]
 		if ok {
 			delete(s, field)
-			err := writeField(w, field, value)
+			err := writeField(w, field, value, isRelease)
 			if err != nil {
 				return err
 			}
@@ -129,7 +162,7 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 	}
 
 	for field, value := range s {
-		err := writeField(w, field, value)
+		err := writeField(w, field, value, isRelease)
 		if err != nil {
 			return err
 		}
@@ -143,18 +176,33 @@ var (
 	ErrMalformedStanza = errors.New("malformed stanza syntax")
 )
 
-var multilineFields = make(map[string]bool)
+func canonicalCase(field string) string {
+	upper := strings.ToUpper(field)
+	switch upper {
+	case "SHA1", "SHA256", "SHA512":
+		return upper
+	case "MD5SUM":
+		return "MD5Sum"
+	case "NOTAUTOMATIC":
+		return "NotAutomatic"
+	case "BUTAUTOMATICUPGRADES":
+		return "ButAutomaticUpgrades"
+	}
 
-func init() {
-	multilineFields["Description"] = true
-	multilineFields["Files"] = true
-	multilineFields["Changes"] = true
-	multilineFields["Checksums-Sha1"] = true
-	multilineFields["Checksums-Sha256"] = true
-	multilineFields["Package-List"] = true
-	multilineFields["SHA256"] = true
-	multilineFields["SHA1"] = true
-	multilineFields["MD5Sum"] = true
+	startOfWord := true
+
+	return strings.Map(func(r rune) rune {
+		if startOfWord {
+			startOfWord = false
+			return unicode.ToUpper(r)
+		}
+
+		if r == '-' {
+			startOfWord = true
+		}
+
+		return unicode.ToLower(r)
+	}, field)
 }
 
 // ControlFileReader implements reading of control files stanza by stanza
@@ -168,7 +216,7 @@ func NewControlFileReader(r io.Reader) *ControlFileReader {
 }
 
 // ReadStanza reeads one stanza from control file
-func (c *ControlFileReader) ReadStanza() (Stanza, error) {
+func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 	stanza := make(Stanza, 32)
 	lastField := ""
 	lastFieldMultiline := false
@@ -188,15 +236,15 @@ func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 			if lastFieldMultiline {
 				stanza[lastField] += line + "\n"
 			} else {
-				stanza[lastField] += strings.TrimSpace(line)
+				stanza[lastField] += " " + strings.TrimSpace(line)
 			}
 		} else {
 			parts := strings.SplitN(line, ":", 2)
 			if len(parts) != 2 {
 				return nil, ErrMalformedStanza
 			}
-			lastField = parts[0]
-			_, lastFieldMultiline = multilineFields[lastField]
+			lastField = canonicalCase(parts[0])
+			lastFieldMultiline = isMultilineField(lastField, isRelease)
 			if lastFieldMultiline {
 				stanza[lastField] = parts[1]
 				if parts[1] != "" {

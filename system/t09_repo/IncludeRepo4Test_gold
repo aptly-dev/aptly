@@ -1,0 +1,5 @@
+Loading repository unstable for changes file hardlink_0.2.1_amd64.changes...
+[!] unable to process file hardlink_0.2.1_amd64.changes: local repo with name unstable not found
+[!] Some files were skipped due to errors:
+  /hardlink_0.2.1_amd64.changes
+ERROR: some files failed to be added

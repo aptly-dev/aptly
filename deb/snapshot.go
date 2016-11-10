@@ -2,11 +2,11 @@ package deb
 
 import (
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"errors"
 	"fmt"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 	"log"
 	"sort"

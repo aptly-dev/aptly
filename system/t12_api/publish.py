@@ -41,6 +41,7 @@ class PublishAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -54,12 +55,13 @@ class PublishAPITestRepo(APITest):
 
         self.check_exists("public/" + prefix + "/dists/wheezy/Release")
         self.check_exists("public/" + prefix + "/dists/wheezy/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/dists/wheezy/main/Contents-i386.gz")
         self.check_exists("public/" + prefix + "/dists/wheezy/main/source/Sources")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
         # publishing under root, custom distribution, architectures
         distribution = self.random_name()
-        resp = self.post("/api/publish",
+        resp = self.post("/api/publish/:.",
                          json={
                              "SourceKind": "local",
                              "Sources": [{"Name": repo_name}],
@@ -73,6 +75,7 @@ class PublishAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': ".",
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -81,7 +84,9 @@ class PublishAPITestRepo(APITest):
 
         self.check_exists("public/dists/" + distribution + "/Release")
         self.check_exists("public/dists/" + distribution + "/main/binary-i386/Packages")
+        self.check_exists("public/dists/" + distribution + "/main/Contents-i386.gz")
         self.check_exists("public/dists/" + distribution + "/main/binary-amd64/Packages")
+        self.check_not_exists("public/dists/" + distribution + "/main/Contents-amd64.gz")
         self.check_exists("public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
         all_repos = self.get("/api/publish")
@@ -126,12 +131,14 @@ class PublishSnapshotAPITest(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
             'Storage': ''})
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix + "/dists/squeeze/main/Contents-i386.gz")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 
@@ -184,6 +191,7 @@ class PublishUpdateAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -234,6 +242,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': ''}
@@ -257,6 +266,7 @@ class PublishSwitchAPITestRepo(APITest):
                         json={
                             "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
                             "Signing": DefaultSigningOptions,
+                            "SkipContents": True,
                         })
         repo_expected = {
             'Architectures': ['i386', 'source'],
@@ -264,6 +274,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Label': '',
             'Origin': '',
             'Prefix': prefix,
+            'SkipContents': True,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
             'Storage': ''}

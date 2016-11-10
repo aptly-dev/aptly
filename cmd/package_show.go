@@ -3,11 +3,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"os"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
 )
 
 func printReferencesTo(p *deb.Package) (err error) {
@@ -125,7 +126,7 @@ inclusion into mirrors/snapshots/local repos is shown.
 
 Example:
 
-    $ aptly package show nginx-light_1.2.1-2.2+wheezy2_i386'
+    $ aptly package show 'nginx-light_1.2.1-2.2+wheezy2_i386'
 `,
 		Flag: *flag.NewFlagSet("aptly-package-show", flag.ExitOnError),
 	}

@@ -99,7 +99,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 
 			if err != nil {
-				fmt.Printf("Config file not found, creating default config at %s\n\n", configLocations[0])
+				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
 				utils.SaveConfig(configLocations[0], &utils.Config)
 			}
 		}
@@ -321,9 +321,11 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			}
 
 			var err error
-			publishedStorage, err = s3.NewPublishedStorage(params.AccessKeyID, params.SecretAccessKey,
-				params.Region, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
-				params.EncryptionMethod, params.PlusWorkaround)
+			publishedStorage, err = s3.NewPublishedStorage(
+				params.AccessKeyID, params.SecretAccessKey, params.SessionToken,
+				params.Region, params.Endpoint, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
+				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
+				params.ForceSigV2, params.Debug)
 			if err != nil {
 				Fatal(err)
 			}

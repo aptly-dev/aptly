@@ -97,6 +97,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		Label          string
 		Origin         string
 		ForceOverwrite bool
+		SkipContents   *bool
 		Architectures  []string
 		Signing        SigningOptions
 	}
@@ -183,6 +184,11 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	published.Origin = b.Origin
 	published.Label = b.Label
 
+	published.SkipContents = context.Config().SkipContentsPublishing
+	if b.SkipContents != nil {
+		published.SkipContents = *b.SkipContents
+	}
+
 	duplicate := collection.CheckDuplicate(published)
 	if duplicate != nil {
 		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())
@@ -199,6 +205,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	err = collection.Add(published)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		return
 	}
 
 	c.JSON(201, published)
@@ -213,6 +220,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	var b struct {
 		ForceOverwrite bool
 		Signing        SigningOptions
+		SkipContents   *bool
 		Snapshots      []struct {
 			Component string `binding:"required"`
 			Name      string `binding:"required"`
@@ -289,22 +297,30 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 	} else {
 		c.Fail(500, fmt.Errorf("unknown published repository type"))
+		return
+	}
+
+	if b.SkipContents != nil {
+		published.SkipContents = *b.SkipContents
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	err = collection.Update(published)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to save to DB: %s", err))
+		return
 	}
 
 	err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	c.JSON(200, published)
@@ -312,6 +328,8 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 // DELETE /publish/:prefix/:distribution
 func apiPublishDrop(c *gin.Context) {
+	force := c.Request.URL.Query().Get("force") == "1"
+
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := c.Params.ByName("distribution")
@@ -326,7 +344,7 @@ func apiPublishDrop(c *gin.Context) {
 	defer collection.Unlock()
 
 	err := collection.Remove(context, storage, prefix, distribution,
-		context.CollectionFactory(), context.Progress())
+		context.CollectionFactory(), context.Progress(), force)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to drop: %s", err))
 		return

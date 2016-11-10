@@ -22,7 +22,7 @@ func (s *PackageSuite) SetUpTest(c *C) {
 	s.stanza = packageStanza.Copy()
 
 	buf := bytes.NewBufferString(sourcePackageMeta)
-	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza()
+	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza(false)
 }
 
 func (s *PackageSuite) TestNewFromPara(c *C) {
@@ -43,7 +43,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 }
 
 func (s *PackageSuite) TestNewUdebFromPara(c *C) {
-	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
 	p := NewUdebPackageFromControlFile(stanza)
 
 	c.Check(p.IsSource, Equals, false)
@@ -125,6 +125,10 @@ func (s *PackageSuite) TestStanza(c *C) {
 	p := NewPackageFromControlFile(s.stanza.Copy())
 	stanza := p.Stanza()
 
+	for k := range s.stanza {
+		c.Check(stanza[k], Equals, s.stanza[k])
+	}
+
 	c.Assert(stanza, DeepEquals, s.stanza)
 
 	p, _ = NewSourcePackageFromControlFile(s.sourceStanza.Copy())
@@ -152,7 +156,7 @@ func (s *PackageSuite) TestGetField(c *C) {
 
 	p4, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
 
-	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza()
+	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
 	p5 := NewUdebPackageFromControlFile(stanza5)
 
 	c.Check(p.GetField("$Source"), Equals, "alien-arena")
@@ -445,7 +449,7 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 	c.Check(result, Equals, true)
 }
 
-var packageStanza = Stanza{"Source": "alien-arena", "Pre-Depends": "dpkg (>= 1.6)", "Suggests": "alien-arena-mars", "Recommends": "aliean-arena-luna", "Depends": "libc6 (>= 2.7), alien-arena-data (>= 7.40)", "Filename": "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb", "SHA1": " 46955e48cad27410a83740a21d766ce362364024", "SHA256": " eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5", "Priority": "extra", "Maintainer": "Debian Games Team <pkg-games-devel@lists.alioth.debian.org>", "Description": "Common files for Alien Arena client and server ALIEN ARENA is a standalone 3D first person online deathmatch shooter\n crafted from the original source code of Quake II and Quake III, released\n by id Software under the GPL license. With features including 32 bit\n graphics, new particle engine and effects, light blooms, reflective water,\n hi resolution textures and skins, hi poly models, stain maps, ALIEN ARENA\n pushes the envelope of graphical beauty rivaling today's top games.\n .\n This package installs the common files for Alien Arena.\n", "Homepage": "http://red.planetarena.org", "Tag": "role::app-data, role::shared-lib, special::auto-inst-parts", "Installed-Size": "456", "Version": "7.40-2", "Replaces": "alien-arena (<< 7.33-1)", "Size": "187518", "MD5sum": "1e8cba92c41420aa7baa8a5718d67122", "Package": "alien-arena-common", "Section": "contrib/games", "Architecture": "i386"}
+var packageStanza = Stanza{"Source": "alien-arena", "Pre-Depends": "dpkg (>= 1.6)", "Suggests": "alien-arena-mars", "Recommends": "aliean-arena-luna", "Depends": "libc6 (>= 2.7), alien-arena-data (>= 7.40)", "Filename": "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb", "SHA1": "46955e48cad27410a83740a21d766ce362364024", "SHA256": "eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5", "Priority": "extra", "Maintainer": "Debian Games Team <pkg-games-devel@lists.alioth.debian.org>", "Description": "Common files for Alien Arena client and server ALIEN ARENA is a standalone 3D first person online deathmatch shooter\n crafted from the original source code of Quake II and Quake III, released\n by id Software under the GPL license. With features including 32 bit\n graphics, new particle engine and effects, light blooms, reflective water,\n hi resolution textures and skins, hi poly models, stain maps, ALIEN ARENA\n pushes the envelope of graphical beauty rivaling today's top games.\n .\n This package installs the common files for Alien Arena.\n", "Homepage": "http://red.planetarena.org", "Tag": "role::app-data, role::shared-lib, special::auto-inst-parts", "Installed-Size": "456", "Version": "7.40-2", "Replaces": "alien-arena (<< 7.33-1)", "Size": "187518", "MD5sum": "1e8cba92c41420aa7baa8a5718d67122", "Package": "alien-arena-common", "Section": "contrib/games", "Architecture": "i386"}
 
 const sourcePackageMeta = `Package: access-modifier-checker
 Binary: libaccess-modifier-checker-java, libaccess-modifier-checker-java-doc

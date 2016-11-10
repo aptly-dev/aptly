@@ -21,6 +21,7 @@ type ConfigStructure struct {
 	DownloadSourcePackages bool                        `json:"downloadSourcePackages"`
 	PpaDistributorID       string                      `json:"ppaDistributorID"`
 	PpaCodename            string                      `json:"ppaCodename"`
+	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
 }
@@ -29,13 +30,18 @@ type ConfigStructure struct {
 type S3PublishRoot struct {
 	Region           string `json:"region"`
 	Bucket           string `json:"bucket"`
+	Endpoint         string `json:"endpoint"`
 	AccessKeyID      string `json:"awsAccessKeyID"`
 	SecretAccessKey  string `json:"awsSecretAccessKey"`
+	SessionToken     string `json:"awsSessionToken"`
 	Prefix           string `json:"prefix"`
 	ACL              string `json:"acl"`
 	StorageClass     string `json:"storageClass"`
 	EncryptionMethod string `json:"encryptionMethod"`
 	PlusWorkaround   bool   `json:"plusWorkaround"`
+	DisableMultiDel  bool   `json:"disableMultiDel"`
+	ForceSigV2       bool   `json:"forceSigV2"`
+	Debug            bool   `json:"debug"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point

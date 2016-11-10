@@ -33,3 +33,12 @@ class SearchPackage4Test(BaseTest):
     fixtureDB = True
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
     runCmd = "aptly package search coreutils"
+
+
+class SearchPackage5Test(BaseTest):
+    """
+    search package: with format
+    """
+    fixtureDB = True
+    outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    runCmd = "aptly package search -format='{{.Package}}#{{.Version}}' '$$Architecture (i386), Name (% *-dev)'"

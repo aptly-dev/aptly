@@ -1,2 +1,2 @@
 Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release...
-ERROR: unable to edit: architecture x56 not available in repo [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
+ERROR: unable to edit: architecture x56 not available in repo [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy, use -force-architectures to override

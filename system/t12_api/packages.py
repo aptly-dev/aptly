@@ -27,6 +27,7 @@ class PackagesAPITestShow(APITest):
             'Build-Depends': 'debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev',
             'Checksums-Sha1': ' 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz\n 56c8a9b1f4ab636052be8966690998cbe865cd6c 1782 pyspi_0.6.1-1.3.dsc\n 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz\n',
             'Checksums-Sha256': ' 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz\n d494aaf526f1ec6b02f14c2f81e060a5722d6532ddc760ec16972e45c2625989 1782 pyspi_0.6.1-1.3.dsc\n 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz\n',
+            'Checksums-Sha512': ' fde06b7dc5762a04986d0669420822f6a1e82b195322ae9cbd2dae40bda557c57ad77fe3546007ea645f801c4cd30ef4eb0e96efb2dee6b71c4c9a187d643683 1782 pyspi_0.6.1-1.3.dsc\n',
             'Files': ' 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz\n b72cb94699298a117b7c82641c68b6fd 1782 pyspi_0.6.1-1.3.dsc\n def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz\n',
             'FilesHash': '3a8b37cbd9a3559e',
             'Format': '1.0',

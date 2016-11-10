@@ -2,12 +2,12 @@ package deb
 
 import (
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
@@ -60,6 +60,8 @@ type RemoteRepo struct {
 	FilterWithDeps bool
 	// SkipComponentCheck skips component list verification
 	SkipComponentCheck bool
+	// SkipArchitectureCheck skips architecture list verification
+	SkipArchitectureCheck bool
 	// Status marks state of repository (being updated, no action)
 	Status int
 	// WorkerPID is PID of the process modifying the mirror (if any)
@@ -146,7 +148,7 @@ func (repo *RemoteRepo) IsFlat() bool {
 	return repo.Distribution == "" || (strings.HasPrefix(repo.Distribution, ".") && strings.HasSuffix(repo.Distribution, "/"))
 }
 
-// NumPackages return number of packages retrived from remote repo
+// NumPackages return number of packages retrieved from remote repo
 func (repo *RemoteRepo) NumPackages() int {
 	if repo.packageRefs == nil {
 		return 0
@@ -263,7 +265,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error
 		}
 		defer inrelease.Close()
 
-		err = verifier.VerifyClearsigned(inrelease)
+		_, err = verifier.VerifyClearsigned(inrelease, true)
 		if err != nil {
 			goto splitsignature
 		}
@@ -304,7 +306,7 @@ ok:
 	defer release.Close()
 
 	sreader := NewControlFileReader(release)
-	stanza, err := sreader.ReadStanza()
+	stanza, err := sreader.ReadStanza(true)
 	if err != nil {
 		return err
 	}
@@ -316,9 +318,9 @@ ok:
 		architectures = utils.StrSlicesSubstract(architectures, []string{"source"})
 		if len(repo.Architectures) == 0 {
 			repo.Architectures = architectures
-		} else {
+		} else if !repo.SkipArchitectureCheck {
 			err = utils.StringsIsSubset(repo.Architectures, architectures,
-				fmt.Sprintf("architecture %%s not available in repo %s", repo))
+				fmt.Sprintf("architecture %%s not available in repo %s, use -force-architectures to override", repo))
 			if err != nil {
 				return err
 			}
@@ -443,7 +445,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		sreader := NewControlFileReader(packagesReader)
 
 		for {
-			stanza, err := sreader.ReadStanza()
+			stanza, err := sreader.ReadStanza(false)
 			if err != nil {
 				return err
 			}

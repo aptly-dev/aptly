@@ -257,27 +257,32 @@ func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file.gz", "x")
-	r, file, err = DownloadTryCompression(d, "http://example.com/file", nil, false)
+	r, file, err = DownloadTryCompression(d, "http://example.com/file", nil, true)
 	c.Assert(err, ErrorMatches, "unexpected EOF")
 	c.Assert(d.Empty(), Equals, true)
 }
 
 func (s *DownloaderSuite) TestDownloadTryCompressionErrors(c *C) {
 	d := NewFakeDownloader()
-	_, _, err := DownloadTryCompression(d, "http://example.com/file", nil, false)
+	_, _, err := DownloadTryCompression(d, "http://example.com/file", nil, true)
 	c.Assert(err, ErrorMatches, "unexpected request.*")
 
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file", errors.New("403"))
-	_, _, err = DownloadTryCompression(d, "http://example.com/file", nil, false)
+	_, _, err = DownloadTryCompression(d, "http://example.com/file", nil, true)
 	c.Assert(err, ErrorMatches, "403")
 
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file", rawData)
-	_, _, err = DownloadTryCompression(d, "http://example.com/file", map[string]utils.ChecksumInfo{"file": {Size: 7}}, false)
+	expectedChecksums := map[string]utils.ChecksumInfo{
+		"file.bz2": {Size: 7},
+		"file.gz":  {Size: 7},
+		"file":     {Size: 7},
+	}
+	_, _, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false)
 	c.Assert(err, ErrorMatches, "checksums don't match.*")
 }

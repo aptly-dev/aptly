@@ -22,35 +22,80 @@ func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
 }
 
-// Periodically flushes CollectionFactory to free up memory used by collections,
-// flushing caches.
+const (
+	ACQUIREDB = iota
+	RELEASEDB
+)
+
+// Flushes all collections which cache in-memory objects
+func flushColections() {
+	// lock everything to eliminate in-progress calls
+	r := context.CollectionFactory().RemoteRepoCollection()
+	r.Lock()
+	defer r.Unlock()
+
+	l := context.CollectionFactory().LocalRepoCollection()
+	l.Lock()
+	defer l.Unlock()
+
+	s := context.CollectionFactory().SnapshotCollection()
+	s.Lock()
+	defer s.Unlock()
+
+	p := context.CollectionFactory().PublishedRepoCollection()
+	p.Lock()
+	defer p.Unlock()
+
+	// all collections locked, flush them
+	context.CollectionFactory().Flush()
+}
+
+// Periodically flushes CollectionFactory to free up memory used by
+// collections, flushing caches. If the two channels are provided,
+// they are used to acquire and release the database.
 //
 // Should be run in goroutine!
-func cacheFlusher() {
+func cacheFlusher(requests chan int, acks chan error) {
 	ticker := time.Tick(15 * time.Minute)
 
 	for {
 		<-ticker
 
-		// lock everything to eliminate in-progress calls
-		r := context.CollectionFactory().RemoteRepoCollection()
-		r.Lock()
-		defer r.Unlock()
+		// if aptly API runs in -no-lock mode,
+		// caches are flushed when DB is closed anyway, no need
+		// to flush them here
+		if requests == nil {
+			flushColections()
+		}
+	}
+}
 
-		l := context.CollectionFactory().LocalRepoCollection()
-		l.Lock()
-		defer l.Unlock()
-
-		s := context.CollectionFactory().SnapshotCollection()
-		s.Lock()
-		defer s.Unlock()
-
-		p := context.CollectionFactory().PublishedRepoCollection()
-		p.Lock()
-		defer p.Unlock()
-
-		// all collections locked, flush them
-		context.CollectionFactory().Flush()
+// Acquire database lock and release it when not needed anymore. Two
+// channels must be provided. The first one is to receive requests to
+// acquire/release the database and the second one is to send acks.
+//
+// Should be run in a goroutine!
+func acquireDatabase(requests chan int, acks chan error) {
+	clients := 0
+	for {
+		request := <-requests
+		switch request {
+		case ACQUIREDB:
+			if clients == 0 {
+				acks <- context.ReOpenDatabase()
+			} else {
+				acks <- nil
+			}
+			clients++
+		case RELEASEDB:
+			clients--
+			if clients == 0 {
+				flushColections()
+				acks <- context.CloseDatabase()
+			} else {
+				acks <- nil
+			}
+		}
 	}
 }
 
@@ -97,6 +142,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.Fail(500, fmt.Errorf("unable to search: %s", err))
+			return
 		}
 	}
 

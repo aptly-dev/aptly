@@ -7,6 +7,7 @@ import inspect
 import fnmatch
 import sys
 import traceback
+import random
 
 from lib import BaseTest
 from s3_lib import S3Test
@@ -98,6 +99,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
 if __name__ == "__main__":
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
+    random.seed()
     include_long_tests = False
     capture_results = False
     tests = None

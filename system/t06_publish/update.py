@@ -31,6 +31,7 @@ class PublishUpdate1Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
@@ -71,8 +72,10 @@ class PublishUpdate1Test(BaseTest):
                 h = hashlib.md5()
             elif len(fileHash) == 40:
                 h = hashlib.sha1()
-            else:
+            elif len(fileHash) == 64:
                 h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
 
             h.update(self.read_file(os.path.join('public/dists/maverick', path)))
 
@@ -81,7 +84,7 @@ class PublishUpdate1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
-                             'main/binary-i386/Release', 'main/source/Release']):
+                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -108,6 +111,7 @@ class PublishUpdate2Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
@@ -147,6 +151,7 @@ class PublishUpdate3Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
@@ -245,6 +250,7 @@ class PublishUpdate7Test(BaseTest):
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/contrib/Contents-i386.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources')
         self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
@@ -309,3 +315,27 @@ class PublishUpdate10Test(BaseTest):
         super(PublishUpdate10Test, self).check()
 
         self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
+
+
+class PublishUpdate11Test(BaseTest):
+    """
+    publish update: -skip-contents
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}/",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-contents local-repo",
+        "aptly repo remove local-repo pyspi"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -skip-contents maverick"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate11Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')

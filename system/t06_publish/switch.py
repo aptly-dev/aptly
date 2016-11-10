@@ -30,11 +30,14 @@ class PublishSwitch1Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -70,8 +73,10 @@ class PublishSwitch1Test(BaseTest):
                 h = hashlib.md5()
             elif len(fileHash) == 40:
                 h = hashlib.sha1()
-            else:
+            elif len(fileHash) == 64:
                 h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
 
             h.update(self.read_file(os.path.join('public/dists/maverick', path)))
 
@@ -80,7 +85,8 @@ class PublishSwitch1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
                              'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
-                             'main/binary-amd64/Release', 'main/binary-i386/Release']):
+                             'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/Contents-amd64.gz',
+                             'main/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -106,11 +112,14 @@ class PublishSwitch2Test(BaseTest):
         self.check_exists('public/ppa/dists/maverick/Release')
         self.check_exists('public/ppa/dists/maverick/Release.gpg')
 
+        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/ppa/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/ppa/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -144,11 +153,14 @@ class PublishSwitch3Test(BaseTest):
         self.check_exists('public/dists/maverick/Release')
         self.check_exists('public/dists/maverick/Release.gpg')
 
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
@@ -178,8 +190,10 @@ class PublishSwitch4Test(BaseTest):
         self.check_exists('public/ppa/dists/maverick/Release')
         self.check_exists('public/ppa/dists/maverick/Release.gpg')
 
+        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/ppa/dists/maverick/main/Contents-i386.gz')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_not_exists('public/ppa/dists/maverick/main/binary-amd64/Packages.bz2')
@@ -260,9 +274,14 @@ class PublishSwitch8Test(BaseTest):
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages')
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-i386/Packages.bz2')
+            self.check_exists('public/dists/maverick/' + component + '/Contents-i386.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.gz')
             self.check_exists('public/dists/maverick/' + component + '/binary-amd64/Packages.bz2')
+            if component == "c":
+                self.check_not_exists('public/dists/maverick/' + component + '/Contents-amd64.gz')
+            else:
+                self.check_exists('public/dists/maverick/' + component + '/Contents-amd64.gz')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources.gz')
             self.check_exists('public/dists/maverick/' + component + '/source/Sources.bz2')
@@ -314,8 +333,10 @@ class PublishSwitch8Test(BaseTest):
                 h = hashlib.md5()
             elif len(fileHash) == 40:
                 h = hashlib.sha1()
-            else:
+            elif len(fileHash) == 64:
                 h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
 
             h.update(self.read_file(os.path.join('public/dists/maverick', path)))
 
@@ -331,7 +352,9 @@ class PublishSwitch8Test(BaseTest):
                              'c/binary-i386/Packages.gz', 'b/source/Sources.gz', 'b/binary-i386/Packages',
                              'a/binary-amd64/Release', 'b/binary-amd64/Release', 'c/binary-amd64/Release',
                              'a/binary-i386/Release', 'b/binary-i386/Release', 'c/binary-i386/Release',
-                             'a/source/Release', 'b/source/Release', 'c/source/Release']):
+                             'a/source/Release', 'b/source/Release', 'c/source/Release',
+                             'b/Contents-amd64.gz', 'c/Contents-i386.gz', 'a/Contents-i386.gz',
+                             'a/Contents-amd64.gz', 'b/Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -400,3 +423,29 @@ class PublishSwitch12Test(BaseTest):
     ]
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick snap2 snap1"
     expectedCode = 1
+
+
+class PublishSwitch13Test(BaseTest):
+    """
+    publish switch: -skip-contents
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-contents snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch13Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')
