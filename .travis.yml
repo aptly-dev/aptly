@@ -21,7 +21,11 @@ env:
 before_install:
   - virtualenv env
   - . env/bin/activate
+  - pip install -U pip setuptools
   - pip install boto requests python-swiftclient
+  - mkdir -p $GOPATH/src/github.com/smira
+  - ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/smira || true
+  - cd $GOPATH/src/github.com/smira/aptly
 install:
   - make prepare
 
