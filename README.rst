@@ -107,6 +107,7 @@ With configuration management systems:
 CLI for aptly API:
 
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
+-   `Python aptly CLI (good for CI) <https://github.com/TimSusa/aptly_api_cli>`_ by Tim Susa
 
 Scala sbt:
 
