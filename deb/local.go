@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/aptly-dev/aptly/database"
 	"github.com/pborman/uuid"
@@ -93,7 +92,6 @@ func (repo *LocalRepo) RefKey() []byte {
 
 // LocalRepoCollection does listing, updating/adding/deleting of LocalRepos
 type LocalRepoCollection struct {
-	*sync.RWMutex
 	db    database.Storage
 	cache map[string]*LocalRepo
 }
@@ -101,7 +99,6 @@ type LocalRepoCollection struct {
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	return &LocalRepoCollection{
-		RWMutex: &sync.RWMutex{},
 		db:      db,
 		cache:   make(map[string]*LocalRepo),
 	}
