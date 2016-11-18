@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pborman/uuid"
@@ -879,7 +878,6 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 
 // PublishedRepoCollection does listing, updating/adding/deleting of PublishedRepos
 type PublishedRepoCollection struct {
-	*sync.RWMutex
 	db   database.Storage
 	list []*PublishedRepo
 }
@@ -887,7 +885,6 @@ type PublishedRepoCollection struct {
 // NewPublishedRepoCollection loads PublishedRepos from DB and makes up collection
 func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
 	return &PublishedRepoCollection{
-		RWMutex: &sync.RWMutex{},
 		db:      db,
 	}
 }
