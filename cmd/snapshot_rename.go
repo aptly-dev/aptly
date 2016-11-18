@@ -19,19 +19,20 @@ func aptlySnapshotRename(cmd *commander.Command, args []string) error {
 	}
 
 	oldName, newName := args[0], args[1]
+	collectionFactory := context.NewCollectionFactory()
 
-	snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(oldName)
+	snapshot, err = collectionFactory.SnapshotCollection().ByName(oldName)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
 
-	_, err = context.CollectionFactory().SnapshotCollection().ByName(newName)
+	_, err = collectionFactory.SnapshotCollection().ByName(newName)
 	if err == nil {
 		return fmt.Errorf("unable to rename: snapshot %s already exists", newName)
 	}
 
 	snapshot.Name = newName
-	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
+	err = collectionFactory.SnapshotCollection().Update(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}

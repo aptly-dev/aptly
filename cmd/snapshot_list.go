@@ -29,7 +29,8 @@ func aptlySnapshotListTxt(cmd *commander.Command, args []string) error {
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)
 
-	collection := context.CollectionFactory().SnapshotCollection()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	if raw {
 		collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {

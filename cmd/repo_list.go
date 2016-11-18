@@ -29,13 +29,14 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 
-	repos := make([]string, context.CollectionFactory().LocalRepoCollection().Len())
+	collectionFactory := context.NewCollectionFactory()
+	repos := make([]string, collectionFactory.LocalRepoCollection().Len())
 	i := 0
-	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+	collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
-			e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+			e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
 			if e != nil {
 				return e
 			}
