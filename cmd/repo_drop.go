@@ -15,17 +15,18 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 	}
 
 	name := args[0]
+	collectionFactory := context.NewCollectionFactory()
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	repo, err := collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	published := context.CollectionFactory().PublishedRepoCollection().ByLocalRepo(repo)
+	published := collectionFactory.PublishedRepoCollection().ByLocalRepo(repo)
 	if len(published) > 0 {
 		fmt.Printf("Local repo `%s` is published currently:\n", repo.Name)
 		for _, repo := range published {
-			err = context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+			err = collectionFactory.PublishedRepoCollection().LoadComplete(repo, collectionFactory)
 			if err != nil {
 				return fmt.Errorf("unable to load published: %s", err)
 			}
@@ -37,7 +38,7 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 
 	force := context.Flags().Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshots := context.CollectionFactory().SnapshotCollection().ByLocalRepoSource(repo)
+		snapshots := collectionFactory.SnapshotCollection().ByLocalRepoSource(repo)
 
 		if len(snapshots) > 0 {
 			fmt.Printf("Local repo `%s` was used to create following snapshots:\n", repo.Name)
@@ -49,7 +50,7 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().Drop(repo)
+	err = collectionFactory.LocalRepoCollection().Drop(repo)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

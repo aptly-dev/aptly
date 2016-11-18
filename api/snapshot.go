@@ -12,9 +12,8 @@ import (
 func apiSnapshotsList(c *gin.Context) {
 	SortMethodString := c.Request.URL.Query().Get("sort")
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	if SortMethodString == "" {
 		SortMethodString = "name"
@@ -46,13 +45,9 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().RemoteRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
-
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.RemoteRepoCollection()
+	snapshotCollection := collectionFactory.SnapshotCollection()
 
 	repo, err = collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -115,9 +110,8 @@ func apiSnapshotsCreate(c *gin.Context) {
 		}
 	}
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
 
 	sources := make([]*deb.Snapshot, len(b.SourceSnapshots))
 
@@ -141,7 +135,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 	for _, ref := range b.PackageRefs {
 		var p *deb.Package
 
-		p, err = context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
+		p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
 		if err != nil {
 			if err == database.ErrNotFound {
 				c.AbortWithError(404, fmt.Errorf("package %s: %s", ref, err))
@@ -185,13 +179,9 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
-
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.LocalRepoCollection()
+	snapshotCollection := collectionFactory.SnapshotCollection()
 
 	repo, err = collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -240,9 +230,8 @@ func apiSnapshotsUpdate(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshot, err = collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -264,7 +253,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 		snapshot.Description = b.Description
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
+	err = collectionFactory.SnapshotCollection().Update(snapshot)
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
@@ -275,9 +264,8 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 // GET /api/snapshots/:name
 func apiSnapshotsShow(c *gin.Context) {
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -299,13 +287,9 @@ func apiSnapshotsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
-
-	publishedCollection := context.CollectionFactory().PublishedRepoCollection()
-	publishedCollection.RLock()
-	defer publishedCollection.RUnlock()
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	publishedCollection := collectionFactory.PublishedRepoCollection()
 
 	snapshot, err := snapshotCollection.ByName(name)
 	if err != nil {
@@ -341,9 +325,8 @@ func apiSnapshotsDrop(c *gin.Context) {
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshotA, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -370,7 +353,7 @@ func apiSnapshotsDiff(c *gin.Context) {
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.CollectionFactory().PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
@@ -391,9 +374,8 @@ func apiSnapshotsDiff(c *gin.Context) {
 
 // GET /api/snapshots/:name/packages
 func apiSnapshotsSearchPackages(c *gin.Context) {
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -407,5 +389,5 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 		return
 	}
 
-	showPackages(c, snapshot.RefList())
+	showPackages(c, snapshot.RefList(), collectionFactory)
 }

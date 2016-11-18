@@ -4,7 +4,6 @@ package api
 import (
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -35,43 +34,6 @@ type dbRequest struct {
 	err  chan<- error
 }
 
-// Flushes all collections which cache in-memory objects
-func flushColections() {
-	// lock everything to eliminate in-progress calls
-	r := context.CollectionFactory().RemoteRepoCollection()
-	r.Lock()
-	defer r.Unlock()
-
-	l := context.CollectionFactory().LocalRepoCollection()
-	l.Lock()
-	defer l.Unlock()
-
-	s := context.CollectionFactory().SnapshotCollection()
-	s.Lock()
-	defer s.Unlock()
-
-	p := context.CollectionFactory().PublishedRepoCollection()
-	p.Lock()
-	defer p.Unlock()
-
-	// all collections locked, flush them
-	context.CollectionFactory().Flush()
-}
-
-// Periodically flushes CollectionFactory to free up memory used by
-// collections, flushing caches.
-//
-// Should be run in goroutine!
-func cacheFlusher() {
-	ticker := time.Tick(15 * time.Minute)
-
-	for {
-		<-ticker
-
-		flushColections()
-	}
-}
-
 // Acquire database lock and release it when not needed anymore.
 //
 // Should be run in a goroutine!
@@ -94,7 +56,6 @@ func acquireDatabase(requests <-chan dbRequest) {
 		case releasedb:
 			clients--
 			if clients == 0 {
-				flushColections()
 				err = context.CloseDatabase()
 			} else {
 				err = nil
@@ -107,10 +68,10 @@ func acquireDatabase(requests <-chan dbRequest) {
 
 // Common piece of code to show list of packages,
 // with searching & details if requested
-func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
+func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) {
 	result := []*deb.Package{}
 
-	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), nil)
+	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return

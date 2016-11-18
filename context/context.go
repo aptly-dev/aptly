@@ -42,7 +42,6 @@ type AptlyContext struct {
 	database          database.Storage
 	packagePool       aptly.PackagePool
 	publishedStorages map[string]aptly.PublishedStorage
-	collectionFactory *deb.CollectionFactory
 	dependencyOptions int
 	architecturesList []string
 	// Debug features
@@ -293,20 +292,16 @@ func (context *AptlyContext) ReOpenDatabase() error {
 	return err
 }
 
-// CollectionFactory builds factory producing all kinds of collections
-func (context *AptlyContext) CollectionFactory() *deb.CollectionFactory {
+// NewCollectionFactory builds factory producing all kinds of collections
+func (context *AptlyContext) NewCollectionFactory() *deb.CollectionFactory {
 	context.Lock()
 	defer context.Unlock()
 
-	if context.collectionFactory == nil {
-		db, err := context._database()
-		if err != nil {
-			Fatal(err)
-		}
-		context.collectionFactory = deb.NewCollectionFactory(db)
+	db, err := context._database()
+	if err != nil {
+		Fatal(err)
 	}
-
-	return context.collectionFactory
+	return deb.NewCollectionFactory(db)
 }
 
 // PackagePool returns instance of PackagePool

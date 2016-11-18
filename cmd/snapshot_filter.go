@@ -19,21 +19,22 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	}
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
+	collectionFactory := context.NewCollectionFactory()
 
 	// Load <source> snapshot
-	source, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
+	source, err := collectionFactory.SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(source)
+	err = collectionFactory.SnapshotCollection().LoadComplete(source)
 	if err != nil {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
 
 	// Convert snapshot to package list
 	context.Progress().Printf("Loading packages (%d)...\n", source.RefList().Len())
-	packageList, err := deb.NewPackageListFromRefList(source.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	packageList, err := deb.NewPackageListFromRefList(source.RefList(), collectionFactory.PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -75,7 +76,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	destination := deb.NewSnapshotFromPackageList(args[1], []*deb.Snapshot{source}, result,
 		fmt.Sprintf("Filtered '%s', query was: '%s'", source.Name, strings.Join(args[2:], " ")))
 
-	err = context.CollectionFactory().SnapshotCollection().Add(destination)
+	err = collectionFactory.SnapshotCollection().Add(destination)
 	if err != nil {
 		return fmt.Errorf("unable to create snapshot: %s", err)
 	}

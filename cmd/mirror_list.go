@@ -16,10 +16,11 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	}
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+	collectionFactory := context.NewCollectionFactory()
 
-	repos := make([]string, context.CollectionFactory().RemoteRepoCollection().Len())
+	repos := make([]string, collectionFactory.RemoteRepoCollection().Len())
 	i := 0
-	context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
