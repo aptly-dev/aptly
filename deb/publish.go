@@ -885,7 +885,7 @@ type PublishedRepoCollection struct {
 // NewPublishedRepoCollection loads PublishedRepos from DB and makes up collection
 func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
 	return &PublishedRepoCollection{
-		db:      db,
+		db: db,
 	}
 }
 
@@ -939,26 +939,27 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 
 // Update stores updated information about repo in DB
 func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
-	transaction, err := collection.db.OpenTransaction()
+	batch := collection.db.CreateBatch()
+
+	err := batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
-	defer transaction.Discard()
 
-	err = transaction.Put(repo.Key(), repo.Encode())
+	err = batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 
 	if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			err = transaction.Put(repo.RefKey(component), item.packageRefs.Encode())
+			err = batch.Put(repo.RefKey(component), item.packageRefs.Encode())
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -1200,12 +1201,6 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
 	force, skipCleanup bool) error {
 
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
 	// TODO: load via transaction
 	collection.loadList()
 
@@ -1258,17 +1253,18 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		}
 	}
 
-	err = transaction.Delete(repo.Key())
+	batch := collection.db.CreateBatch()
+	err = batch.Delete(repo.Key())
 	if err != nil {
 		return err
 	}
 
 	for _, component := range repo.Components() {
-		err = transaction.Delete(repo.RefKey(component))
+		err = batch.Delete(repo.RefKey(component))
 		if err != nil {
 			return err
 		}
 	}
 
-	return transaction.Commit()
+	return batch.Write()
 }

@@ -279,7 +279,6 @@ func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction
 	}
 
 	p.collection = collection
-
 	return nil
 }
 

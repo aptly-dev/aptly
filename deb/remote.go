@@ -758,8 +758,8 @@ type RemoteRepoCollection struct {
 // NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
 func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
 	return &RemoteRepoCollection{
-		db:      db,
-		cache:   make(map[string]*RemoteRepo),
+		db:    db,
+		cache: make(map[string]*RemoteRepo),
 	}
 }
 
@@ -817,24 +817,19 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
+	batch := collection.db.CreateBatch()
 
-	err = transaction.Put(repo.Key(), repo.Encode())
+	err := batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 	if repo.packageRefs != nil {
-		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
+		err = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 		if err != nil {
 			return err
 		}
 	}
-
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -923,13 +918,15 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 
 	delete(collection.cache, repo.UUID)
 
-	if err = transaction.Delete(repo.Key()); err != nil {
+	batch := collection.db.CreateBatch()
+	err = batch.Delete(repo.Key())
+	if err != nil {
 		return err
 	}
 
-	if err = transaction.Delete(repo.RefKey()); err != nil {
+	err = batch.Delete(repo.RefKey())
+	if err != nil {
 		return err
 	}
-
-	return transaction.Commit()
+	return batch.Write()
 }
