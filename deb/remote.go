@@ -696,6 +696,9 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
+	collection.db.StartBatch()
+	defer collection.db.ResetBatch()
+
 	err := collection.db.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
@@ -706,7 +709,7 @@ func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
 			return err
 		}
 	}
-	return nil
+	return collection.db.FinishBatch()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -778,10 +781,16 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
+	collection.db.StartBatch()
+	defer collection.db.ResetBatch()
 	err := collection.db.Delete(repo.Key())
 	if err != nil {
 		return err
 	}
 
-	return collection.db.Delete(repo.RefKey())
+	err = collection.db.Delete(repo.RefKey())
+	if err != nil {
+		return err
+	}
+	return collection.db.FinishBatch()
 }

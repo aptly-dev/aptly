@@ -215,6 +215,9 @@ func (collection *PackageCollection) Update(p *Package) error {
 		return err
 	}
 
+	collection.db.StartBatch()
+	defer collection.db.ResetBatch()
+
 	err = collection.db.Put(p.Key(""), encodeBuffer.Bytes())
 	if err != nil {
 		return err
@@ -265,8 +268,7 @@ func (collection *PackageCollection) Update(p *Package) error {
 	}
 
 	p.collection = collection
-
-	return nil
+	return collection.db.FinishBatch()
 }
 
 // AllPackageRefs returns list of all packages as PackageRefList

@@ -215,14 +215,21 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 
 // Update stores updated information about repo in DB
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
+	collection.db.StartBatch()
+	defer collection.db.ResetBatch()
+
 	err := collection.db.Put(snapshot.Key(), snapshot.Encode())
 	if err != nil {
 		return err
 	}
 	if snapshot.packageRefs != nil {
-		return collection.db.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+		err = collection.db.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+		if err != nil {
+			return err
+		}
 	}
-	return nil
+
+	return collection.db.FinishBatch()
 }
 
 // LoadComplete loads additional information about snapshot
@@ -345,12 +352,19 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 	collection.list[len(collection.list)-1], collection.list[snapshotPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
+	collection.db.StartBatch()
+	defer collection.db.ResetBatch()
 	err := collection.db.Delete(snapshot.Key())
 	if err != nil {
 		return err
 	}
 
-	return collection.db.Delete(snapshot.RefKey())
+	err = collection.db.Delete(snapshot.RefKey())
+	if err != nil {
+		return err
+	}
+
+	return collection.db.FinishBatch()
 }
 
 // Snapshot sorting methods
