@@ -20,18 +20,19 @@ func aptlyRepoRename(cmd *commander.Command, args []string) error {
 
 	oldName, newName := args[0], args[1]
 
-	repo, err = context.CollectionFactory().LocalRepoCollection().ByName(oldName)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err = collectionFactory.LocalRepoCollection().ByName(oldName)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
 
-	_, err = context.CollectionFactory().LocalRepoCollection().ByName(newName)
+	_, err = collectionFactory.LocalRepoCollection().ByName(newName)
 	if err == nil {
 		return fmt.Errorf("unable to rename: local repo %s already exists", newName)
 	}
 
 	repo.Name = newName
-	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+	err = collectionFactory.LocalRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}

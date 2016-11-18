@@ -46,9 +46,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 			c.Next()
 		})
-
-	} else {
-		go cacheFlusher()
 	}
 
 	root := router.Group("/api")

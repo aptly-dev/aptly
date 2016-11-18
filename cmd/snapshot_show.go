@@ -28,13 +28,14 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 	var err error
 	name := args[0]
+	collectionFactory := context.NewCollectionFactory()
 
-	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+	snapshot, err := collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -49,21 +50,21 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 			var name string
 			if snapshot.SourceKind == deb.SourceSnapshot {
 				var source *deb.Snapshot
-				source, err = context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				source, err = collectionFactory.SnapshotCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == deb.SourceLocalRepo {
 				var source *deb.LocalRepo
-				source, err = context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				source, err = collectionFactory.LocalRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == deb.SourceRemoteRepo {
 				var source *deb.RemoteRepo
-				source, err = context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				source, err = collectionFactory.RemoteRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
@@ -78,7 +79,7 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		ListPackagesRefList(snapshot.RefList())
+		ListPackagesRefList(snapshot.RefList(), collectionFactory)
 	}
 
 	return err

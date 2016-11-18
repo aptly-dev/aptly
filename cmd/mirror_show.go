@@ -32,12 +32,13 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -85,7 +86,7 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 		if repo.LastDownloadDate.IsZero() {
 			fmt.Printf("Unable to show package list, mirror hasn't been downloaded yet.\n")
 		} else {
-			ListPackagesRefList(repo.RefList())
+			ListPackagesRefList(repo.RefList(), collectionFactory)
 		}
 	}
 

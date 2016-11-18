@@ -22,19 +22,20 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	verifier := context.GetVerifier()
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
 	context.Progress().Printf("Loading packages...\n")
 
-	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -48,8 +49,8 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	var processedFiles, failedFiles2 []string
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		context.CollectionFactory().PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()}, nil,
-		context.CollectionFactory().ChecksumCollection)
+		collectionFactory.PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()}, nil,
+		collectionFactory.ChecksumCollection)
 	failedFiles = append(failedFiles, failedFiles2...)
 	if err != nil {
 		return fmt.Errorf("unable to import package files: %s", err)
@@ -59,7 +60,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+	err = collectionFactory.LocalRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to save: %s", err)
 	}
