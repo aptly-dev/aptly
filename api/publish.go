@@ -166,8 +166,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	}
 
 	collection := collectionFactory.PublishedRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
 
 	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory)
 	if err != nil {
