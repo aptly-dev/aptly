@@ -31,6 +31,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	noRemoveFiles := context.Flags().Lookup("no-remove-files").Value.Get().(bool)
 	repoTemplateString := context.Flags().Lookup("repo").Value.Get().(string)
+	collectionFactory := context.NewCollectionFactory()
 
 	uploaders := (*deb.Uploaders)(nil)
 	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
@@ -55,8 +56,8 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	changesFiles, failedFiles = deb.CollectChangesFiles(args, reporter)
 	_, failedFiles2, err = deb.ImportChangesFiles(
 		changesFiles, reporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles, verifier, repoTemplateString,
-		context.Progress(), context.CollectionFactory().LocalRepoCollection(), context.CollectionFactory().PackageCollection(),
-		context.PackagePool(), context.CollectionFactory().ChecksumCollection,
+		context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
+		context.PackagePool(), collectionFactory.ChecksumCollection,
 		uploaders, query.Parse)
 	failedFiles = append(failedFiles, failedFiles2...)
 
