@@ -99,8 +99,8 @@ type LocalRepoCollection struct {
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	return &LocalRepoCollection{
-		db:      db,
-		cache:   make(map[string]*LocalRepo),
+		db:    db,
+		cache: make(map[string]*LocalRepo),
 	}
 }
 
@@ -158,23 +158,18 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	err = transaction.Put(repo.Key(), repo.Encode())
+	batch := collection.db.CreateBatch()
+	err := batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 	if repo.packageRefs != nil {
-		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
+		err = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 		if err != nil {
 			return err
 		}
 	}
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for local repo
@@ -256,20 +251,16 @@ func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
 
 	delete(collection.cache, repo.UUID)
 
-	if _, err = transaction.Get(repo.Key()); err != nil {
-		if err == database.ErrNotFound {
-			return errors.New("local repo not found")
-		}
+	batch := collection.db.CreateBatch()
+	err = batch.Delete(repo.Key())
+	if err != nil {
 		return err
 	}
 
-	if err = transaction.Delete(repo.Key()); err != nil {
+	err = batch.Delete(repo.RefKey())
+	if err != nil {
 		return err
 	}
 
-	if err = transaction.Delete(repo.RefKey()); err != nil {
-		return err
-	}
-
-	return transaction.Commit()
+	return batch.Write()
 }
