@@ -159,15 +159,9 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 // Update stores updated information about repo in DB
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
 	batch := collection.db.CreateBatch()
-	err := batch.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		err = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
 	return batch.Write()
 }
@@ -252,15 +246,7 @@ func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
 	delete(collection.cache, repo.UUID)
 
 	batch := collection.db.CreateBatch()
-	err = batch.Delete(repo.Key())
-	if err != nil {
-		return err
-	}
-
-	err = batch.Delete(repo.RefKey())
-	if err != nil {
-		return err
-	}
-
+	batch.Delete(repo.Key())
+	batch.Delete(repo.RefKey())
 	return batch.Write()
 }
