@@ -221,15 +221,9 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 	batch := collection.db.CreateBatch()
 
-	err := batch.Put(snapshot.Key(), snapshot.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(snapshot.Key(), snapshot.Encode())
 	if snapshot.packageRefs != nil {
-		err = batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
 	}
 
 	return batch.Write()
@@ -405,16 +399,8 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 	delete(collection.cache, snapshot.UUID)
 
 	batch := collection.db.CreateBatch()
-	err = batch.Delete(snapshot.Key())
-	if err != nil {
-		return err
-	}
-
-	err = batch.Delete(snapshot.RefKey())
-	if err != nil {
-		return err
-	}
-
+	batch.Delete(snapshot.Key())
+	batch.Delete(snapshot.RefKey())
 	return batch.Write()
 }
 
