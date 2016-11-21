@@ -34,9 +34,8 @@ type Storage interface {
 	FetchByPrefix(prefix []byte) [][]byte
 	Open() error
 	Close() error
-	StartBatch()
-	ResetBatch()
-	FinishBatch() error
+	StartBatch() *leveldb.Batch
+	FinishBatch(b *leveldb.Batch) error
 	CompactDB() error
 	Drop() error
 }
@@ -44,7 +43,6 @@ type Storage interface {
 type levelDB struct {
 	path  string
 	db    *leveldb.DB
-	batch *leveldb.Batch
 }
 
 // Check interface
@@ -129,10 +127,6 @@ func (l *levelDB) Get(key []byte) ([]byte, error) {
 
 // Put saves key to database, if key has the same value in DB already, it is not saved
 func (l *levelDB) Put(key []byte, value []byte) error {
-	if l.batch != nil {
-		l.batch.Put(key, value)
-		return nil
-	}
 	old, err := l.db.Get(key, nil)
 	if err != nil {
 		if err != leveldb.ErrNotFound {
@@ -148,10 +142,6 @@ func (l *levelDB) Put(key []byte, value []byte) error {
 
 // Delete removes key from DB
 func (l *levelDB) Delete(key []byte) error {
-	if l.batch != nil {
-		l.batch.Delete(key)
-		return nil
-	}
 	return l.db.Delete(key, nil)
 }
 
@@ -233,29 +223,14 @@ func (l *levelDB) Open() error {
 	return err
 }
 
-// StartBatch starts batch processing of keys
-//
-// All subsequent Get, Put and Delete would work on batch
-func (l *levelDB) StartBatch() {
-	if l.batch != nil {
-		panic("batch already started")
-	}
-	l.batch = new(leveldb.Batch)
+// StartBatch returns batch for processings keys
+func (l *levelDB) StartBatch() *leveldb.Batch {
+	return new(leveldb.Batch)
 }
 
-// ResetBatch reverts current batch
-func (l *levelDB) ResetBatch() {
-	l.batch = nil
-}
-
-// FinishBatch finalizes the batch, saving operations
-func (l *levelDB) FinishBatch() error {
-	if l.batch == nil {
-		panic("no batch")
-	}
-	err := l.db.Write(l.batch, nil)
-	l.batch = nil
-	return err
+// FinishBatch finalizes given batch, saving operations
+func (l *levelDB) FinishBatch(b *leveldb.Batch) error {
+	return l.db.Write(b, nil)
 }
 
 // CompactDB compacts database by merging layers

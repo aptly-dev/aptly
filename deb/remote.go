@@ -696,20 +696,13 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	collection.db.StartBatch()
-	defer collection.db.ResetBatch()
+	batch := collection.db.StartBatch()
 
-	err := collection.db.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
-	return collection.db.FinishBatch()
+	return collection.db.FinishBatch(batch)
 }
 
 // LoadComplete loads additional information for remote repo
@@ -781,16 +774,8 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
-	collection.db.StartBatch()
-	defer collection.db.ResetBatch()
-	err := collection.db.Delete(repo.Key())
-	if err != nil {
-		return err
-	}
-
-	err = collection.db.Delete(repo.RefKey())
-	if err != nil {
-		return err
-	}
-	return collection.db.FinishBatch()
+	batch := collection.db.StartBatch()
+	batch.Delete(repo.Key())
+	batch.Delete(repo.RefKey())
+	return collection.db.FinishBatch(batch)
 }

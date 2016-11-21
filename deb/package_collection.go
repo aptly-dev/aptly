@@ -7,6 +7,7 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/ugorji/go/codec"
 )
 
@@ -215,13 +216,8 @@ func (collection *PackageCollection) Update(p *Package) error {
 		return err
 	}
 
-	collection.db.StartBatch()
-	defer collection.db.ResetBatch()
-
-	err = collection.db.Put(p.Key(""), encodeBuffer.Bytes())
-	if err != nil {
-		return err
-	}
+	batch := collection.db.StartBatch()
+	batch.Put(p.Key(""), encodeBuffer.Bytes())
 
 	// Encode offloaded fields one by one
 	if p.files != nil {
@@ -231,10 +227,7 @@ func (collection *PackageCollection) Update(p *Package) error {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xF"), encodeBuffer.Bytes())
-		if err != nil {
-			return err
-		}
+		batch.Put(p.Key("xF"), encodeBuffer.Bytes())
 	}
 
 	if p.deps != nil {
@@ -244,10 +237,7 @@ func (collection *PackageCollection) Update(p *Package) error {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xD"), encodeBuffer.Bytes())
-		if err != nil {
-			return err
-		}
+		batch.Put(p.Key("xD"), encodeBuffer.Bytes())
 
 		p.deps = nil
 	}
@@ -259,16 +249,13 @@ func (collection *PackageCollection) Update(p *Package) error {
 			return err
 		}
 
-		err = collection.db.Put(p.Key("xE"), encodeBuffer.Bytes())
-		if err != nil {
-			return err
-		}
+		batch.Put(p.Key("xE"), encodeBuffer.Bytes())
 
 		p.extra = nil
 	}
 
 	p.collection = collection
-	return collection.db.FinishBatch()
+	return collection.db.FinishBatch(batch)
 }
 
 // AllPackageRefs returns list of all packages as PackageRefList
@@ -276,15 +263,11 @@ func (collection *PackageCollection) AllPackageRefs() *PackageRefList {
 	return &PackageRefList{Refs: collection.db.KeysByPrefix([]byte("P"))}
 }
 
-// DeleteByKey deletes package in DB by key
-func (collection *PackageCollection) DeleteByKey(key []byte) error {
+// DeleteByKey adds package delete to given batch
+func (collection *PackageCollection) DeleteByKey(key []byte, batch *leveldb.Batch) {
 	for _, key := range [][]byte{key, append([]byte("xF"), key...), append([]byte("xD"), key...), append([]byte("xE"), key...)} {
-		err := collection.db.Delete(key)
-		if err != nil {
-			return err
-		}
+		batch.Delete(key)
 	}
-	return nil
 }
 
 // Scan does full scan on all the packages

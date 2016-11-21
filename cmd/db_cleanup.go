@@ -176,15 +176,13 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		}
 
 		if !dryRun {
-			db.StartBatch()
-			err = toDelete.ForEach(func(ref []byte) error {
-				return collectionFactory.PackageCollection().DeleteByKey(ref)
+			batch := db.StartBatch()
+			toDelete.ForEach(func(ref []byte) error {
+				collectionFactory.PackageCollection().DeleteByKey(ref, batch)
+				return nil
 			})
-			if err != nil {
-				return err
-			}
 
-			err = db.FinishBatch()
+			err = db.FinishBatch(batch)
 			if err != nil {
 				return fmt.Errorf("unable to write to DB: %s", err)
 			}
