@@ -637,8 +637,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			// to push each path of the package into the database.
 			// We'll want this batched so as to avoid an excessive
 			// amount of write() calls.
-			tempBatch := tempDB.CreateBatch()
-			defer tempBatch.Write()
+			batch := tempDB.CreateBatch()
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
@@ -657,7 +656,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 								contentIndexesMap[key] = contentIndex
 							}
 
-							contentIndex.Push(qualifiedName, contents, tempBatch)
+							contentIndex.Push(qualifiedName, contents, batch)
 						}
 					}
 
@@ -682,7 +681,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.extra = nil
 			pkg.contents = nil
 
-			return nil
+			return batch.Write()
 		})
 
 		if err != nil {
@@ -940,23 +939,11 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 // Update stores updated information about repo in DB
 func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
 	batch := collection.db.CreateBatch()
-
-	err := batch.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
-
-	err = batch.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(repo.Key(), repo.Encode())
 
 	if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			err = batch.Put(repo.RefKey(component), item.packageRefs.Encode())
-			if err != nil {
-				return err
-			}
+			batch.Put(repo.RefKey(component), item.packageRefs.Encode())
 		}
 	}
 	return batch.Write()
@@ -1254,16 +1241,10 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	}
 
 	batch := collection.db.CreateBatch()
-	err = batch.Delete(repo.Key())
-	if err != nil {
-		return err
-	}
+	batch.Delete(repo.Key())
 
 	for _, component := range repo.Components() {
-		err = batch.Delete(repo.RefKey(component))
-		if err != nil {
-			return err
-		}
+		batch.Delete(repo.RefKey(component))
 	}
 
 	return batch.Write()
