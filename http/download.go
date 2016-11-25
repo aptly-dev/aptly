@@ -152,6 +152,7 @@ func retryableError(err error) bool {
 
 func (downloader *downloaderImpl) newRequest(ctx context.Context, method, url string) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, nil)
+
 	if err != nil {
 		return nil, errors.Wrap(err, url)
 	}
@@ -230,7 +231,11 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 	defer outfile.Close()
 
 	checksummer := utils.NewChecksumWriter()
-	writers := []io.Writer{outfile, downloader.aggWriter}
+	writers := []io.Writer{outfile}
+
+	if downloader.progress != nil {
+		writers = append(writers, downloader.progress)
+	}
 
 	if expected != nil {
 		writers = append(writers, checksummer)
