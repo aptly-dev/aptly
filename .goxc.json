@@ -2,10 +2,12 @@
 	"AppName": "aptly",
 	"ArtifactsDest": "xc-out/",
 	"TasksExclude": [
-		"rmbin"
+		"rmbin",
+		"go-test",
+		"go-vet"
 	],
     "TasksAppend": [
-        "bintray"
+		"bintray"
     ],
     "TaskSettings": {
         "deb": {
@@ -33,6 +35,6 @@
     },
 	"Arch": "386 amd64",
 	"Os": "linux darwin freebsd",
-	"MainDirsExclude": "man,_vendor",
+	"MainDirsExclude": "man,vendor",
 	"ConfigVersion": "0.9"
 }
