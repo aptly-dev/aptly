@@ -113,7 +113,9 @@ func (s *PackageCollectionSuite) TestDeleteByKey(c *C) {
 	_, err = s.db.Get(s.p.Key("xF"))
 	c.Check(err, IsNil)
 
-	err = s.collection.DeleteByKey(s.p.Key(""))
+	batch := s.db.StartBatch()
+	s.collection.DeleteByKey(s.p.Key(""), batch)
+	err = s.db.FinishBatch(batch)
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByKey(s.p.Key(""))

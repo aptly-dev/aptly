@@ -176,9 +176,9 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 	err := s.db.Put(key, value)
 	c.Assert(err, IsNil)
 
-	s.db.StartBatch()
-	s.db.Put(key2, value2)
-	s.db.Delete(key)
+	batch := s.db.StartBatch()
+	batch.Put(key2, value2)
+	batch.Delete(key)
 
 	v, err := s.db.Get(key)
 	c.Check(err, IsNil)
@@ -187,7 +187,7 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 	_, err = s.db.Get(key2)
 	c.Check(err, ErrorMatches, "key not found")
 
-	err = s.db.FinishBatch()
+	err = s.db.FinishBatch(batch)
 	c.Check(err, IsNil)
 
 	v2, err := s.db.Get(key2)
@@ -196,11 +196,6 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 
 	_, err = s.db.Get(key)
 	c.Check(err, ErrorMatches, "key not found")
-
-	c.Check(func() { s.db.FinishBatch() }, Panics, "no batch")
-
-	s.db.StartBatch()
-	c.Check(func() { s.db.StartBatch() }, Panics, "batch already started")
 }
 
 func (s *LevelDBSuite) TestCompactDB(c *C) {
