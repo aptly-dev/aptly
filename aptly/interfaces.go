@@ -82,7 +82,7 @@ type Downloader interface {
 	// Download starts new download task
 	Download(url string, destination string, result chan<- error)
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(url string, destination string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool)
+	DownloadWithChecksum(url string, destination string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int)
 	// Pause pauses task processing
 	Pause()
 	// Resume resumes task processing

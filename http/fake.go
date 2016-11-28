@@ -59,7 +59,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool) {
+func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int) {
 	var expectation expectedRequest
 	if len(f.expected) > 0 && f.expected[0].URL == url {
 		expectation, f.expected = f.expected[0], f.expected[1:]
@@ -116,7 +116,7 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 
 // Download performs fake download by matching against first expectation in the queue
 func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
-	f.DownloadWithChecksum(url, filename, result, utils.ChecksumInfo{Size: -1}, false)
+	f.DownloadWithChecksum(url, filename, result, utils.ChecksumInfo{Size: -1}, false, 1)
 }
 
 // Shutdown does nothing

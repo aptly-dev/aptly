@@ -403,7 +403,7 @@ ok:
 
 // DownloadPackageIndexes downloads & parses package index files
 func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, collectionFactory *CollectionFactory,
-	ignoreMismatch bool) error {
+	ignoreMismatch bool, maxTries int) error {
 	if repo.packageList != nil {
 		panic("packageList != nil")
 	}
@@ -433,7 +433,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 	for _, info := range packagesURLs {
 		url, kind := info[0], info[1]
-		packagesReader, packagesFile, err := http.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch)
+		packagesReader, packagesFile, err := http.DownloadTryCompression(d, url, repo.ReleaseFiles, ignoreMismatch, maxTries)
 		if err != nil {
 			return err
 		}
