@@ -19,7 +19,13 @@ type ContentsIndex struct {
 
 // NewContentsIndex creates empty ContentsIndex
 func NewContentsIndex(db database.Storage, repo PublishedRepo, component string, architecture string, udeb bool) *ContentsIndex {
-	return &ContentsIndex{db: db, repo: repo, component: component, architecture: architecture}
+	index := &ContentsIndex{db: db, repo: repo, component: component, architecture: architecture}
+
+	// clean up old values
+	key := index.Key("", "")
+	db.DeleteByPrefix(key)
+
+	return index
 }
 
 // Key generates unique identifier for contents index file with given path and package name

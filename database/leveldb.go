@@ -28,6 +28,7 @@ type Storage interface {
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	ProcessByPrefix(prefix []byte, proc StorageProcessor) error
+	DeleteByPrefix(prefix []byte) error
 	Close() error
 	ReOpen() error
 	StartBatch()
@@ -162,6 +163,21 @@ func (l *levelDB) ProcessByPrefix(prefix []byte, proc StorageProcessor) error {
 		err := proc(iterator.Key(), iterator.Value())
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteByPrefix deletes all entries with given prefix
+func (l *levelDB) DeleteByPrefix(prefix []byte) error {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		key := iterator.Key()
+		if err := l.Delete(key); err != nil {
+			return nil
 		}
 	}
 
