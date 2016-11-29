@@ -23,7 +23,9 @@ func NewContentsIndex(db database.Storage, repo PublishedRepo, component string,
 
 	// clean up old values
 	key := index.Key("", "")
+	db.StartBatch()
 	db.DeleteByPrefix(key)
+	db.FinishBatch()
 
 	return index
 }

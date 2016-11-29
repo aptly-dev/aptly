@@ -177,7 +177,7 @@ func (l *levelDB) DeleteByPrefix(prefix []byte) error {
 	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
 		key := iterator.Key()
 		if err := l.Delete(key); err != nil {
-			return nil
+			return err
 		}
 	}
 
