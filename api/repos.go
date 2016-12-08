@@ -79,15 +79,9 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
-	if b.Comment != "" {
-		repo.Comment = b.Comment
-	}
-	if b.DefaultDistribution != "" {
-		repo.DefaultDistribution = b.DefaultDistribution
-	}
-	if b.DefaultComponent != "" {
-		repo.DefaultComponent = b.DefaultComponent
-	}
+	repo.Comment = b.Comment
+	repo.DefaultDistribution = b.DefaultDistribution
+	repo.DefaultComponent = b.DefaultComponent
 
 	err = collection.Update(repo)
 	if err != nil {
