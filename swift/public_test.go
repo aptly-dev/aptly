@@ -34,10 +34,10 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
 
-	s.storage, err = NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "test", "")
+	s.storage, err = NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "", "", "", "", "test", "")
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "test", "lala")
+	s.prefixedStorage, err = NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "", "", "", "", "test", "lala")
 	c.Assert(err, IsNil)
 
 	s.storage.conn.ContainerCreate("test", nil)
@@ -48,7 +48,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
-	stor, err := NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "", "")
+	stor, err := NewPublishedStorage("swifttest", "swifttest", s.AuthURL, "", "", "", "", "", "", "", "")
 	c.Check(stor, NotNil)
 	c.Check(err, IsNil)
 }

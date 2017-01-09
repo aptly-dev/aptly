@@ -52,6 +52,7 @@ type downloadTask struct {
 	result         chan<- error
 	expected       utils.ChecksumInfo
 	ignoreMismatch bool
+	triesLeft      int
 }
 
 // NewDownloader creates new instance of Downloader which specified number
@@ -127,13 +128,13 @@ func (downloader *downloaderImpl) GetProgress() aptly.Progress {
 
 // Download starts new download task
 func (downloader *downloaderImpl) Download(url string, destination string, result chan<- error) {
-	downloader.DownloadWithChecksum(url, destination, result, utils.ChecksumInfo{Size: -1}, false)
+	downloader.DownloadWithChecksum(url, destination, result, utils.ChecksumInfo{Size: -1}, false, 1)
 }
 
 // DownloadWithChecksum starts new download task with checksum verification
 func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error,
-	expected utils.ChecksumInfo, ignoreMismatch bool) {
-	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch}
+	expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int) {
+		downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch, triesLeft: maxTries}
 }
 
 // handleTask processes single download task
@@ -153,32 +154,59 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		req.URL.RawQuery = ""
 	}
 
-	resp, err := downloader.client.Do(req)
+
+	var temppath string
+	for task.triesLeft > 0 {
+
+		temppath, err = downloader.downloadTask(req, task)
+
+		if err != nil {
+			task.triesLeft--
+		} else {
+			// successful download
+			break
+		}
+	}
+
+	// still an error after retrying, giving up
 	if err != nil {
+		task.result <- err
+		return
+	}
+
+	err = os.Rename(temppath, task.destination)
+	if err != nil {
+		os.Remove(temppath)
 		task.result <- fmt.Errorf("%s: %s", task.url, err)
 		return
+	}
+
+	task.result <- nil
+}
+
+func (downloader *downloaderImpl) downloadTask(req *http.Request, task *downloadTask) (string, error) {
+	resp, err := downloader.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("%s: %s", task.url, err)
 	}
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		task.result <- &HTTPError{Code: resp.StatusCode, URL: task.url}
-		return
+		return "", &HTTPError{Code: resp.StatusCode, URL: task.url}
 	}
 
 	err = os.MkdirAll(filepath.Dir(task.destination), 0777)
 	if err != nil {
-		task.result <- fmt.Errorf("%s: %s", task.url, err)
-		return
+		return "", fmt.Errorf("%s: %s", task.url, err)
 	}
 
 	temppath := task.destination + ".down"
 
 	outfile, err := os.Create(temppath)
 	if err != nil {
-		task.result <- fmt.Errorf("%s: %s", task.url, err)
-		return
+		return "", fmt.Errorf("%s: %s", task.url, err)
 	}
 	defer outfile.Close()
 
@@ -194,8 +222,7 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
 		os.Remove(temppath)
-		task.result <- fmt.Errorf("%s: %s", task.url, err)
-		return
+		return "", fmt.Errorf("%s: %s", task.url, err)
 	}
 
 	if task.expected.Size != -1 {
@@ -218,20 +245,12 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 				downloader.progress.Printf("WARNING: %s\n", err.Error())
 			} else {
 				os.Remove(temppath)
-				task.result <- err
-				return
+				return "", err
 			}
 		}
 	}
 
-	err = os.Rename(temppath, task.destination)
-	if err != nil {
-		os.Remove(temppath)
-		task.result <- fmt.Errorf("%s: %s", task.url, err)
-		return
-	}
-
-	task.result <- nil
+	return temppath, nil
 }
 
 // process implements download thread in goroutine
@@ -253,13 +272,13 @@ func (downloader *downloaderImpl) process() {
 //
 // Temporary file would be already removed, so no need to cleanup
 func DownloadTemp(downloader aptly.Downloader, url string) (*os.File, error) {
-	return DownloadTempWithChecksum(downloader, url, utils.ChecksumInfo{Size: -1}, false)
+	return DownloadTempWithChecksum(downloader, url, utils.ChecksumInfo{Size: -1}, false, 1)
 }
 
 // DownloadTempWithChecksum is a DownloadTemp with checksum verification
 //
 // Temporary file would be already removed, so no need to cleanup
-func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected utils.ChecksumInfo, ignoreMismatch bool) (*os.File, error) {
+func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (*os.File, error) {
 	tempdir, err := ioutil.TempDir(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
@@ -274,7 +293,7 @@ func DownloadTempWithChecksum(downloader aptly.Downloader, url string, expected 
 	}
 
 	ch := make(chan error, 1)
-	downloader.DownloadWithChecksum(url, tempfile, ch, expected, ignoreMismatch)
+	downloader.DownloadWithChecksum(url, tempfile, ch, expected, ignoreMismatch, maxTries)
 
 	err = <-ch
 
@@ -311,7 +330,7 @@ var compressionMethods = []struct {
 
 // DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
 // it finds existing file.
-func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool) (io.Reader, *os.File, error) {
+func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (io.Reader, *os.File, error) {
 	var err error
 
 	for _, method := range compressionMethods {
@@ -322,7 +341,7 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 
 		for suffix, expected := range expectedChecksums {
 			if strings.HasSuffix(tryURL, suffix) {
-				file, err = DownloadTempWithChecksum(downloader, tryURL, expected, ignoreMismatch)
+				file, err = DownloadTempWithChecksum(downloader, tryURL, expected, ignoreMismatch, maxTries)
 				foundChecksum = true
 				break
 			}
