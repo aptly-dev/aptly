@@ -1,6 +1,8 @@
 Name: snap2
 Description: Filtered 'snap1', query was: 'mame unrar'
 Number of packages: 4
+Sources:
+  snap1 [snapshot]
 Packages:
   mame_0.146-5_amd64
   unrar_1:4.1.4-1_amd64
