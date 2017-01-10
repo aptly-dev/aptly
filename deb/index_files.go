@@ -267,7 +267,7 @@ func (files *indexFiles) AppStreamIndex(component, name string) *indexFile {
 	key := fmt.Sprintf("ai-%s-%s", component, name)
 	file, ok := files.indexes[key]
 	if !ok {
-		relativePath := filepath.Join(component, "appstream", name)
+		relativePath := filepath.Join(component, "dep11", name)
 		ext := filepath.Ext(name)
 
 		xz := false
