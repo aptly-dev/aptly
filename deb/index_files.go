@@ -3,11 +3,12 @@ package deb
 import (
 	"bufio"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 type indexFiles struct {
@@ -239,6 +240,28 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 			discardable:  true,
 			compressable: true,
 			onlyGzip:     true,
+			signable:     false,
+			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
+func (files *indexFiles) AddonIndex(component, path string) *indexFile {
+	key := fmt.Sprintf("ai-%s-%s", component, path)
+	file, ok := files.indexes[key]
+
+	if !ok {
+		relativePath := filepath.Join(component, path)
+
+		file = &indexFile{
+			parent:       files,
+			discardable:  false,
+			compressable: false,
+			onlyGzip:     false,
 			signable:     false,
 			relativePath: relativePath,
 		}
