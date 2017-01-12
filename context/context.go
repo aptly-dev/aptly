@@ -3,6 +3,14 @@ package context
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
@@ -14,13 +22,6 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"path/filepath"
-	"runtime"
-	"runtime/pprof"
-	"strings"
-	"sync"
-	"time"
 )
 
 // AptlyContext is a common context shared by all commands
@@ -353,6 +354,11 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 // UploadPath builds path to upload storage
 func (context *AptlyContext) UploadPath() string {
 	return filepath.Join(context.Config().RootDir, "upload")
+}
+
+// AddonPath builds the local addon folder
+func (context *AptlyContext) AddonPath() string {
+	return filepath.Join(context.config().RootDir, "addon")
 }
 
 // UpdateFlags sets internal copy of flags in the context
