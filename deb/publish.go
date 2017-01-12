@@ -5,11 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,6 +13,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 type repoSourceItem struct {
@@ -450,6 +451,40 @@ func (p *PublishedRepo) GetLabel() string {
 		return p.Prefix + " " + p.Distribution
 	}
 	return p.Label
+}
+
+// GetAddonFiles returns a map of files to be added to a repo. Key being the relative
+// path from component folder, and value being the full local FS path.
+func (p *PublishedRepo) GetAddonFiles(addonDir string, component string) (map[string]string, error) {
+	files := make(map[string]string)
+
+	if addonDir == "" {
+		return files, nil
+	}
+
+	fsPath := filepath.Join(addonDir, p.Prefix, "dists", p.Distribution, component)
+	if err := filepath.Walk(fsPath, func(path string, info os.FileInfo, err error) error {
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !stat.Mode().IsRegular() {
+			return nil
+		}
+
+		relativePath, err := filepath.Rel(fsPath, path)
+		if err != nil {
+			return err
+		}
+
+		files[relativePath] = path
+		return nil
+	}); err != nil && !os.IsNotExist(err) {
+		return files, err
+	}
+
+	return files, nil
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
