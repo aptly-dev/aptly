@@ -196,7 +196,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.AddonPath(), nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
 		return
@@ -304,7 +304,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.SkipContents = *b.SkipContents
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.AddonPath(), nil, b.ForceOverwrite)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to update: %s", err))
 		return

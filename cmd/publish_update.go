@@ -58,7 +58,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), forceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.AddonPath(), context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
