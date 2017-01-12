@@ -3,12 +3,11 @@ package deb
 import (
 	"bufio"
 	"fmt"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 )
 
 type indexFiles struct {
