@@ -652,7 +652,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		if progress != nil {
 			progress.ShutdownBar()
-      progress.Printf("Finding addon files...\n")
 		}
 
   	for component := range p.sourceItems {
@@ -677,10 +676,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
           return fmt.Errorf("unable to write addon file: %v", err)
         }
       }
-    }
-
-    if progress != nil {
-      progress.Printf("Generating index files...\n")
     }
 
 		udebs := []bool{false}
