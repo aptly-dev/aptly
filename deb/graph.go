@@ -7,12 +7,25 @@ import (
 )
 
 // BuildGraph generates graph contents from aptly object database
-func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, error) {
+func BuildGraph(collectionFactory *CollectionFactory, vertical bool) (gographviz.Interface, error) {
 	var err error
 
 	graph := gographviz.NewEscape()
 	graph.SetDir(true)
 	graph.SetName("aptly")
+
+	var labelStart string
+	var labelEnd string
+
+	if vertical {
+		graph.AddAttr("aptly", "rankdir", "LR")
+		labelStart = ""
+		labelEnd = ""
+	} else {
+		graph.AddAttr("aptly", "rankdir", "TB")
+		labelStart = "{"
+		labelEnd = "}"
+	}
 
 	existingNodes := map[string]bool{}
 
@@ -26,9 +39,9 @@ func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, err
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkgoldenrod1",
-			"label": fmt.Sprintf("{Mirror %s|url: %s|dist: %s|comp: %s|arch: %s|pkgs: %d}",
-				repo.Name, repo.ArchiveRoot, repo.Distribution, strings.Join(repo.Components, ", "),
-				strings.Join(repo.Architectures, ", "), repo.NumPackages()),
+			"label": fmt.Sprintf("%sMirror %s|url: %s|dist: %s|comp: %s|arch: %s|pkgs: %d%s", labelStart, repo.Name, repo.ArchiveRoot,
+				repo.Distribution, strings.Join(repo.Components, ", "),
+				strings.Join(repo.Architectures, ", "), repo.NumPackages(), labelEnd),
 		})
 		existingNodes[repo.UUID] = true
 		return nil
@@ -48,8 +61,8 @@ func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, err
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "mediumseagreen",
-			"label": fmt.Sprintf("{Repo %s|comment: %s|pkgs: %d}",
-				repo.Name, repo.Comment, repo.NumPackages()),
+			"label": fmt.Sprintf("%sRepo %s|comment: %s|pkgs: %d%s", labelStart,
+				repo.Name, repo.Comment, repo.NumPackages(), labelEnd),
 		})
 		existingNodes[repo.UUID] = true
 		return nil
@@ -72,14 +85,15 @@ func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, err
 
 		description := snapshot.Description
 		if snapshot.SourceKind == "repo" {
-			description = "Snapshot from repo"
+			description = "Snapshot from repo\n"
 		}
 
 		graph.AddNode("aptly", snapshot.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "cadetblue1",
-			"label":     fmt.Sprintf("{Snapshot %s|%s|pkgs: %d}", snapshot.Name, description, snapshot.NumPackages()),
+			"label":     fmt.Sprintf("%sSnapshot %s|%s|pkgs: %d%s", labelStart,
+				snapshot.Name, description, snapshot.NumPackages(), labelEnd),
 		})
 
 		if snapshot.SourceKind == "repo" || snapshot.SourceKind == "local" || snapshot.SourceKind == "snapshot" {
@@ -102,8 +116,9 @@ func BuildGraph(collectionFactory *CollectionFactory) (gographviz.Interface, err
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkolivegreen1",
-			"label": fmt.Sprintf("{Published %s/%s|comp: %s|arch: %s}", repo.Prefix, repo.Distribution,
-				strings.Join(repo.Components(), " "), strings.Join(repo.Architectures, ", ")),
+			"label": fmt.Sprintf("%sPublished %s/%s|comp: %s|arch: %s%s", labelStart,
+				repo.Prefix, repo.Distribution, strings.Join(repo.Components(), " "),
+				strings.Join(repo.Architectures, ", "), labelEnd),
 		})
 
 		for _, uuid := range repo.Sources {

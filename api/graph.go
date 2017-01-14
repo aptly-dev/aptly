@@ -11,14 +11,20 @@ import (
 	"os/exec"
 )
 
-// GET /api/graph.:ext
+// GET /api/graph.:ext/:vertical
 func apiGraph(c *gin.Context) {
 	var (
 		err    error
 		output []byte
+		vertical bool = false
 	)
 
 	ext := c.Params.ByName("ext")
+
+	// TODO: api is untested!
+	if c.Params.ByName("vertical") == "vertical" {
+		vertical = true
+	}
 
 	factory := context.CollectionFactory()
 
@@ -31,7 +37,7 @@ func apiGraph(c *gin.Context) {
 	factory.PublishedRepoCollection().RLock()
 	defer factory.PublishedRepoCollection().RUnlock()
 
-	graph, err := deb.BuildGraph(factory)
+	graph, err := deb.BuildGraph(factory, vertical)
 	if err != nil {
 		c.JSON(500, err)
 		return
