@@ -21,10 +21,10 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	vertical := context.Flags().Lookup("vertical").Value.Get().(bool)
+	layout := context.Flags().Lookup("layout").Value.String()
 
 	fmt.Printf("Generating graph...\n")
-	graph, err := deb.BuildGraph(context.CollectionFactory(), vertical)
+	graph, err := deb.BuildGraph(context.CollectionFactory(), layout)
 
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ Example:
 
 	cmd.Flag.String("format", "png", "render graph to specified format (png, svg, pdf, etc.)")
 	cmd.Flag.String("output", "", "specify output filename, default is to open result in viewer")
-	cmd.Flag.Bool("vertical", false, "try to achieve a more vertical graph layout")
+	cmd.Flag.String("layout", "horizontal", "create a more 'vertical' or a more 'horizontal' graph layout")
 
 	return cmd
 }

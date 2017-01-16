@@ -7,7 +7,7 @@ import (
 )
 
 // BuildGraph generates graph contents from aptly object database
-func BuildGraph(collectionFactory *CollectionFactory, vertical bool) (gographviz.Interface, error) {
+func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz.Interface, error) {
 	var err error
 
 	graph := gographviz.NewEscape()
@@ -17,14 +17,16 @@ func BuildGraph(collectionFactory *CollectionFactory, vertical bool) (gographviz
 	var labelStart string
 	var labelEnd string
 
-	if vertical {
-		graph.AddAttr("aptly", "rankdir", "LR")
-		labelStart = ""
-		labelEnd = ""
-	} else {
-		graph.AddAttr("aptly", "rankdir", "TB")
-		labelStart = "{"
-		labelEnd = "}"
+	switch layout {
+		case "vertical":
+			graph.AddAttr("aptly", "rankdir", "LR")
+			labelStart = ""
+			labelEnd = ""
+		case "horizontal":
+			fallthrough
+		default:
+			labelStart = "{"
+			labelEnd = "}"
 	}
 
 	existingNodes := map[string]bool{}
