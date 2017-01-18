@@ -2,6 +2,8 @@ Name: snap1
 Created At: 2014-06-29 01:43:01 MSK
 Description: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
 Number of packages: 56121
+Sources:
+  wheezy-main [repo]
 Packages:
   0ad-data_0~r11863-1_all
   2ping_2.0-1_all
