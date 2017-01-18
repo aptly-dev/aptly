@@ -5,11 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,6 +13,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
 )
 
 type repoSourceItem struct {
@@ -677,7 +679,14 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 	release["Components"] = strings.Join(p.Components(), " ")
 
-	for path, info := range indexes.generatedFiles {
+	sortedPaths := make([]string, 0, len(indexes.generatedFiles))
+	for path := range indexes.generatedFiles {
+		sortedPaths = append(sortedPaths, path)
+	}
+	sort.Strings(sortedPaths)
+
+	for _, path := range sortedPaths {
+		info := indexes.generatedFiles[path]
 		release["MD5Sum"] += fmt.Sprintf(" %s %8d %s\n", info.MD5, info.Size, path)
 		release["SHA1"] += fmt.Sprintf(" %s %8d %s\n", info.SHA1, info.Size, path)
 		release["SHA256"] += fmt.Sprintf(" %s %8d %s\n", info.SHA256, info.Size, path)
