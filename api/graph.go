@@ -39,6 +39,13 @@ func apiGraph(c *gin.Context) {
 
 	buf := bytes.NewBufferString(graph.String())
 
+	if ext == "dot" || ext == "gv" {
+		// If the raw dot data is requested, return it as string.
+		// This allows client-side rendering rather than server-side.
+		c.String(200, buf.String())
+		return
+	}
+
 	command := exec.Command("dot", "-T"+ext)
 	command.Stderr = os.Stderr
 
