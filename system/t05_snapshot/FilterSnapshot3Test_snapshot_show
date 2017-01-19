@@ -1,6 +1,8 @@
 Name: snap2
 Description: Filtered 'snap1', query was: 'Priority (required) nginx xyz'
 Number of packages: 123
+Sources:
+  snap1 [snapshot]
 Packages:
   debconf_1.5.49_all
   debconf-i18n_1.5.49_all

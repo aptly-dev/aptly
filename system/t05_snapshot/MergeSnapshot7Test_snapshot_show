@@ -2,6 +2,10 @@ Name: snap4
 Created At: 2014-06-29 02:16:12 MSK
 Description: Merged from sources: 'snap3', 'snap2', 'snap1'
 Number of packages: 58817
+Sources:
+  snap3 [snapshot]
+  snap2 [snapshot]
+  snap1 [snapshot]
 Packages:
   0ad-data_0~r11863-1_all
   0ad-data-common_0.0.16-1~bpo70+1_all

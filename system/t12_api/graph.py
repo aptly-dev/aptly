@@ -17,6 +17,10 @@ class GraphAPITest(APITest):
         self.check_equal(resp.headers["Content-Type"], "image/svg+xml")
         self.check_equal(resp.content[:4], '<?xm')
 
+        resp = self.get("/api/graph.dot")
+        self.check_equal(resp.headers["Content-Type"], "text/plain; charset=utf-8")
+        self.check_equal(resp.content[:13], 'digraph aptly')
+
         # make sure our default layout is horizontal
         default = self.get("/api/graph.svg").content
         horizontal = self.get("/api/graph.svg?layout=horizontal").content
