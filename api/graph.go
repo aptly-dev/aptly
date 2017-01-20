@@ -11,7 +11,7 @@ import (
 	"os/exec"
 )
 
-// GET /api/graph.:ext
+// GET /api/graph.:ext?layout=[vertical|horizontal(default)]
 func apiGraph(c *gin.Context) {
 	var (
 		err    error
@@ -19,6 +19,7 @@ func apiGraph(c *gin.Context) {
 	)
 
 	ext := c.Params.ByName("ext")
+	layout := c.Request.URL.Query().Get("layout")
 
 	factory := context.CollectionFactory()
 
@@ -31,7 +32,7 @@ func apiGraph(c *gin.Context) {
 	factory.PublishedRepoCollection().RLock()
 	defer factory.PublishedRepoCollection().RUnlock()
 
-	graph, err := deb.BuildGraph(factory)
+	graph, err := deb.BuildGraph(factory, layout)
 	if err != nil {
 		c.JSON(500, err)
 		return
