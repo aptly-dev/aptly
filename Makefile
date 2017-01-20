@@ -80,4 +80,7 @@ goxc:
 	gzip root/usr/share/man/man1/aptly.1
 	gom exec goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-.PHONY: coverage.out
+man:
+	make -C man
+
+.PHONY: coverage.out man
