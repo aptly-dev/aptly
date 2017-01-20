@@ -20,7 +20,6 @@ func apiGraph(c *gin.Context) {
 
 	ext := c.Params.ByName("ext")
 	layout := c.Request.URL.Query().Get("layout")
-	fmt.Printf("Layout is: "+layout)
 
 	factory := context.CollectionFactory()
 

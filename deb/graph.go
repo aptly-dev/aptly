@@ -87,7 +87,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 
 		description := snapshot.Description
 		if snapshot.SourceKind == "repo" {
-			description = "Snapshot from repo\n"
+			description = "Snapshot from repo"
 		}
 
 		graph.AddNode("aptly", snapshot.UUID, map[string]string{
