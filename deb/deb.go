@@ -2,16 +2,20 @@ package deb
 
 import (
 	"archive/tar"
+	"bufio"
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
-	"github.com/mkrautz/goar"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-xz"
-	"github.com/smira/lzma"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/h2non/filetype/matchers"
+	"github.com/mkrautz/goar"
+
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-xz"
+	"github.com/smira/lzma"
 )
 
 // GetControlFileFromDeb reads control file from deb package
@@ -119,29 +123,41 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 		}
 
 		if strings.HasPrefix(header.Name, "data.tar") {
+			bufReader := bufio.NewReader(library)
+			signature, err := bufReader.Peek(270)
+
+			var isTar bool
+			if err == nil {
+				isTar = matchers.Tar(signature)
+			}
+
 			var tarInput io.Reader
 
 			switch header.Name {
 			case "data.tar":
-				tarInput = library
+				tarInput = bufReader
 			case "data.tar.gz":
-				ungzip, err := gzip.NewReader(library)
-				if err != nil {
-					return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile, err)
+				if isTar {
+					tarInput = bufReader
+				} else {
+					ungzip, err := gzip.NewReader(bufReader)
+					if err != nil {
+						return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile, err)
+					}
+					defer ungzip.Close()
+					tarInput = ungzip
 				}
-				defer ungzip.Close()
-				tarInput = ungzip
 			case "data.tar.bz2":
-				tarInput = bzip2.NewReader(library)
+				tarInput = bzip2.NewReader(bufReader)
 			case "data.tar.xz":
-				unxz, err := xz.NewReader(library)
+				unxz, err := xz.NewReader(bufReader)
 				if err != nil {
 					return nil, fmt.Errorf("unable to unxz data.tar.xz from %s: %s", packageFile, err)
 				}
 				defer unxz.Close()
 				tarInput = unxz
 			case "data.tar.lzma":
-				unlzma := lzma.NewReader(library)
+				unlzma := lzma.NewReader(bufReader)
 				defer unlzma.Close()
 				tarInput = unlzma
 			default:
