@@ -8,8 +8,40 @@ import signal
 import subprocess
 import shlex
 import time
+import errno
 
 from lib import BaseTest
+from socket import error as socket_error
+
+class RootDirInaccessible(BaseTest):
+    """
+    serve command aborts if rootDir is inaccessible
+    """
+    fixtureDB = False
+    fixturePool = False
+    configOverride = { "rootDir": "/rootDir/does/not/exist" }
+    runCmd = "aptly serve -listen=127.0.0.1:8765"
+
+    def run(self):
+        try:
+            proc = subprocess.Popen(shlex.split(self.runCmd), stderr=subprocess.STDOUT, stdout=subprocess.PIPE, bufsize=0)
+            time.sleep(1)
+
+            conn = httplib.HTTPConnection("127.0.0.1", 8765)
+            conn.request("GET", "/")
+            r = conn.getresponse()
+            self.http_response = r.read()
+            output = os.read(proc.stdout.fileno(), 8192)
+
+        except socket_error as serr:
+            if serr.errno != errno.ECONNREFUSED:
+                raise serr
+
+        finally:
+            self.output, err = proc.communicate()
+
+    def check(self):
+        self.check_output()
 
 
 class Serve1Test(BaseTest):

@@ -20,7 +20,7 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	}
 
 	if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
-		return fmt.Errorf("Configured rootDir '%s' inaccesible, check access rights", context.Config().RootDir)
+		return fmt.Errorf("Configured rootDir '%s' is inaccessible, check access rights", context.Config().RootDir)
 	}
 
 	listen := context.Flags().Lookup("listen").Value.String()
