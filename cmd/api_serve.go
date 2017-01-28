@@ -6,6 +6,7 @@ import (
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"net/http"
+	"golang.org/x/sys/unix"
 )
 
 func aptlyAPIServe(cmd *commander.Command, args []string) error {
@@ -16,6 +17,10 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
+	}
+
+	if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
+		return fmt.Errorf("Configured rootDir '%s' inaccesible, check access rights", context.Config().RootDir)
 	}
 
 	listen := context.Flags().Lookup("listen").Value.String()

@@ -12,6 +12,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"golang.org/x/sys/unix"
 )
 
 func aptlyServe(cmd *commander.Command, args []string) error {
@@ -20,6 +21,10 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
+	}
+
+	if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
+		return fmt.Errorf("Configured rootDir '%s' inaccesible, check access rights", context.Config().RootDir)
 	}
 
 	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
