@@ -3,11 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/smira/aptly/api"
+	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"net/http"
-	"os"
-	"golang.org/x/sys/unix"
 )
 
 func aptlyAPIServe(cmd *commander.Command, args []string) error {
@@ -26,16 +25,9 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	// anything else must fail.
 	// E.g.: Running the service under a different user may lead to a rootDir
 	// that exists but is not usable due to access permissions.
-	// Config loads and returns current configuration
-	_, err = os.Stat(context.Config().RootDir);
+	err = utils.DirIsAccessible(context.Config().RootDir)
 	if err != nil {
-		if ! os.IsNotExist(err) {
-			return fmt.Errorf("Something went wrong, %v", err)
-		}
-	} else {
-		if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
-			return fmt.Errorf("Configured rootDir '%s' is inaccessible, check access rights", context.Config().RootDir)
-		}
+		return err
 	}
 
 	listen := context.Flags().Lookup("listen").Value.String()
