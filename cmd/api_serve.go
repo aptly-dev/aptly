@@ -6,6 +6,7 @@ import (
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 	"net/http"
+	"os"
 	"golang.org/x/sys/unix"
 )
 
@@ -19,8 +20,22 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
-		return fmt.Errorf("Configured rootDir '%s' is inaccessible, check access rights", context.Config().RootDir)
+	// There are only two working options for aptly's rootDir:
+	//   1. rootDir does not exist, then we'll create it
+	//   2. rootDir exists and is writable
+	// anything else must fail.
+	// E.g.: Running the service under a different user may lead to a rootDir
+	// that exists but is not usable due to access permissions.
+	// Config loads and returns current configuration
+	_, err = os.Stat(context.Config().RootDir);
+	if err != nil {
+		if ! os.IsNotExist(err) {
+			return fmt.Errorf("Something went wrong, %v", err)
+		}
+	} else {
+		if unix.Access(context.Config().RootDir, unix.W_OK) != nil {
+			return fmt.Errorf("Configured rootDir '%s' is inaccessible, check access rights", context.Config().RootDir)
+		}
 	}
 
 	listen := context.Flags().Lookup("listen").Value.String()

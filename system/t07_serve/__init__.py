@@ -19,7 +19,10 @@ class RootDirInaccessible(BaseTest):
     """
     fixtureDB = False
     fixturePool = False
-    configOverride = { "rootDir": "/rootDir/does/not/exist" }
+
+    configOverride = {
+        "rootDir": "/root" # any directory that exists but is not writable
+    }
     runCmd = "aptly serve -listen=127.0.0.1:8765"
 
     def run(self):
