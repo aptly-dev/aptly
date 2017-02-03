@@ -29,6 +29,35 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Created At: %s\n", snapshot.CreatedAt.Format("2006-01-02 15:04:05 MST"))
 	fmt.Printf("Description: %s\n", snapshot.Description)
 	fmt.Printf("Number of packages: %d\n", snapshot.NumPackages())
+	if len(snapshot.SourceIDs) > 0 {
+		fmt.Printf("Sources:\n")
+		for _, sourceID := range snapshot.SourceIDs {
+			var name string
+			if snapshot.SourceKind == "snapshot" {
+				source, err := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				name = source.Name
+			} else if snapshot.SourceKind == "local" {
+				source, err := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				name = source.Name
+			} else if snapshot.SourceKind == "repo" {
+				source, err := context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				name = source.Name
+			}
+
+			if name != "" {
+				fmt.Printf("  %s [%s]\n", name, snapshot.SourceKind)
+			}
+		}
+	}
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {

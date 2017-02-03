@@ -2,6 +2,9 @@ Name: snap3
 Created At: 2014-06-29 01:50:10 MSK
 Description: Pulled into 'snap1' with 'snap2' as source, pull request was: 'rsyslog (>= 7.4.4)'
 Number of packages: 56126
+Sources:
+  snap1 [snapshot]
+  snap2 [snapshot]
 Packages:
   0ad-data_0~r11863-1_all
   2ping_2.0-1_all

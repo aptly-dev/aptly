@@ -1,6 +1,8 @@
 Name: snap2
 Description: Filtered 'snap1', query was: 'rsyslog (>= 7.4.4)'
 Number of packages: 9
+Sources:
+  snap1 [snapshot]
 Packages:
   init-system-helpers_1.18~bpo70+1_all
   libestr0_0.1.9-1~bpo70+1_amd64
