@@ -4,6 +4,7 @@ ALL_PACKAGES=api aptly context cmd console database deb files http query swift s
 BINPATH=$(abspath ./vendor/bin)
 GOM_ENVIRONMENT=-test
 PYTHON?=python
+TESTS?=
 
 ifeq ($(GOVERSION), devel)
 TRAVIS_TARGET=coveralls
@@ -45,7 +46,7 @@ install:
 system-test: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long
+	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
 
 travis: $(TRAVIS_TARGET) system-test
 

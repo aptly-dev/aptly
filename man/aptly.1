@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "January 2017" "" ""
+.TH "APTLY" "1" "February 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -554,10 +554,13 @@ download source packages in addition to binary packages
 download \.udeb packages (Debian installer support)
 .
 .SH "SEARCH MIRROR FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in mirror that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -823,10 +826,13 @@ Example:
 $ aptly repo rename wheezy\-min wheezy\-main
 .
 .SH "SEARCH REPO FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBrepo\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBrepo\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in local repository that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -1117,10 +1123,13 @@ Example:
 $ aptly snapshot rename wheezy\-min wheezy\-main
 .
 .SH "SEARCH SNAPSHOT FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBsnapshot\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBsnapshot\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in snapshot that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -1560,10 +1569,13 @@ $ aptly publish show wheezy
 .IP "" 0
 .
 .SH "SEARCH FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBpackage\fR \fBsearch\fR \fIpackage\-query\fR
+\fBaptly\fR \fBpackage\fR \fBsearch\fR [\fIpackage\-query\fR]
 .
 .P
-Command search displays list of packages in whole DB that match package query
+Command search displays list of packages in whole DB that match package query\.
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
