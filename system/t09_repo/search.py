@@ -47,3 +47,12 @@ class SearchRepo5Test(BaseTest):
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
     fixtureCmds = ["aptly repo create wheezy-main", "aptly repo import wheezy-main wheezy-main Name"]
     runCmd = "aptly repo search -format='{{.Package}}#{{.Version}}' wheezy-main '$$Architecture (i386), Name (% *-dev)'"
+
+class SearchRepo6Test(BaseTest):
+    """
+    search repo: without query
+    """
+    fixtureDB = True
+    outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    fixtureCmds = ["aptly repo create wheezy-main", "aptly repo import wheezy-main wheezy-main Name"]
+    runCmd = "aptly repo search wheezy-main"
