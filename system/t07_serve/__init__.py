@@ -8,9 +8,24 @@ import signal
 import subprocess
 import shlex
 import time
+import errno
 
 from lib import BaseTest
+from socket import error as socket_error
 
+class RootDirInaccessible(BaseTest):
+    """
+    serve command aborts if rootDir is inaccessible
+    """
+    fixtureDB = False
+    fixturePool = False
+
+    configOverride = {
+        "rootDir": "/root" # any directory that exists but is not writable
+    }
+
+    runCmd = "aptly serve -listen=127.0.0.1:8765"
+    expectedCode = 1
 
 class Serve1Test(BaseTest):
     """

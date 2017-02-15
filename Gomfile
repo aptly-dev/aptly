@@ -26,6 +26,7 @@ gom 'github.com/ugorji/go/codec', :commit => '71c2886f5a673a35f909803f38ece58101
 gom 'github.com/vaughan0/go-ini', :commit => 'a98ad7ee00ec53921f08832bc06ecf7fd600e6a1'
 gom 'github.com/wsxiaoys/terminal/color', :commit => '5668e431776a7957528361f90ce828266c69ed08'
 gom 'golang.org/x/crypto/ssh/terminal', :commit => 'a7ead6ddf06233883deca151dffaef2effbf498f'
+gom 'golang.org/x/sys/unix', :commit => '7a6e5648d140666db5d920909e082ca00a87ba2c'
 
 group :test do
     gom 'gopkg.in/check.v1'

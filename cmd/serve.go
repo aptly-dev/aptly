@@ -22,6 +22,17 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
+	// There are only two working options for aptly's rootDir:
+	//   1. rootDir does not exist, then we'll create it
+	//   2. rootDir exists and is writable
+	// anything else must fail.
+	// E.g.: Running the service under a different user may lead to a rootDir
+	// that exists but is not usable due to access permissions.
+	err = utils.DirIsAccessible(context.Config().RootDir)
+	if err != nil {
+		return err
+	}
+
 	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
 		fmt.Printf("No published repositories, unable to serve.\n")
 		return nil
