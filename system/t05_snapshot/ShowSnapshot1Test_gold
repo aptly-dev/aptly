@@ -2,6 +2,8 @@ Name: snap1
 Created At: 2014-06-28 03:01:02 MSK
 Description: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
 Number of packages: 661
+Sources:
+  wheezy-non-free [repo]
 Packages:
   abs-guide_6.5-1_all
   album_4.06-2_all

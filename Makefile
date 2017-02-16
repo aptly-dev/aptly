@@ -1,9 +1,10 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 PACKAGES=context database deb files http query swift s3 utils
 ALL_PACKAGES=api aptly context cmd console database deb files http query swift s3 utils
-BINPATH=$(abspath ./_vendor/bin)
+BINPATH=$(abspath ./vendor/bin)
 GOM_ENVIRONMENT=-test
 PYTHON?=python
+TESTS?=
 
 ifeq ($(GOVERSION), devel)
 TRAVIS_TARGET=coveralls
@@ -45,7 +46,7 @@ install:
 system-test: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long
+	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
 
 travis: $(TRAVIS_TARGET) system-test
 
@@ -65,7 +66,7 @@ src-package:
 	cd aptly-$(VERSION)/src/github.com/smira/ && git clone https://github.com/smira/aptly && cd aptly && git checkout v$(VERSION)
 	cd aptly-$(VERSION)/src/github.com/smira/aptly && gom -production install
 	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . \( -name .git -o -name .bzr -o -name .hg \) -print | xargs rm -rf
-	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/_vendor/{pkg,bin}
+	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/vendor/{pkg,bin}
 	mkdir -p aptly-$(VERSION)/bash_completion.d
 	(cd aptly-$(VERSION)/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/$(VERSION)/aptly)
 	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
@@ -80,4 +81,7 @@ goxc:
 	gzip root/usr/share/man/man1/aptly.1
 	gom exec goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-.PHONY: coverage.out
+man:
+	make -C man
+
+.PHONY: coverage.out man

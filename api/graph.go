@@ -11,7 +11,7 @@ import (
 	"os/exec"
 )
 
-// GET /api/graph.:ext
+// GET /api/graph.:ext?layout=[vertical|horizontal(default)]
 func apiGraph(c *gin.Context) {
 	var (
 		err    error
@@ -19,6 +19,7 @@ func apiGraph(c *gin.Context) {
 	)
 
 	ext := c.Params.ByName("ext")
+	layout := c.Request.URL.Query().Get("layout")
 
 	factory := context.CollectionFactory()
 
@@ -31,13 +32,20 @@ func apiGraph(c *gin.Context) {
 	factory.PublishedRepoCollection().RLock()
 	defer factory.PublishedRepoCollection().RUnlock()
 
-	graph, err := deb.BuildGraph(factory)
+	graph, err := deb.BuildGraph(factory, layout)
 	if err != nil {
 		c.JSON(500, err)
 		return
 	}
 
 	buf := bytes.NewBufferString(graph.String())
+
+	if ext == "dot" || ext == "gv" {
+		// If the raw dot data is requested, return it as string.
+		// This allows client-side rendering rather than server-side.
+		c.String(200, buf.String())
+		return
+	}
 
 	command := exec.Command("dot", "-T"+ext)
 	command.Stderr = os.Stderr

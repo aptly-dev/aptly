@@ -270,6 +270,14 @@ class BaseTest(object):
         if a != b:
             self.verify_match(a, b, match_prepare=pprint.pformat)
 
+    def check_ge(self, a, b):
+        if not a >= b:
+            raise Exception("%s is not greater or equal to %s" % (a, b))
+
+    def check_gt(self, a, b):
+        if not a > b:
+            raise Exception("%s is not greater to %s" % (a, b))
+
     def check_in(self, item, l):
         if not item in l:
             raise Exception("item %r not in %r", item, l)

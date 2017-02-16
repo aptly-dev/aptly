@@ -57,3 +57,12 @@ class SearchSnapshot6Test(BaseTest):
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
     fixtureCmds = ["aptly snapshot create wheezy-main from mirror wheezy-main"]
     runCmd = "aptly snapshot search -format='{{.Package}}#{{.Version}}' wheezy-main '$$Architecture (i386), Name (% *-dev)'"
+
+class SearchSnapshot7Test(BaseTest):
+    """
+    search snapshot: without query
+    """
+    fixtureDB = True
+    outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    fixtureCmds = ["aptly snapshot create wheezy-main from mirror wheezy-main"]
+    runCmd = "aptly snapshot search -format='{{.Package}}#{{.Version}}' wheezy-main"

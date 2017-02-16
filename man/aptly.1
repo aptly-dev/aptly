@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "November 2016" "" ""
+.TH "APTLY" "1" "February 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -506,6 +506,10 @@ disable verification of Release file signatures
 \-\fBkeyring\fR=
 gpg keyring to use when verifying Release file (could be specified multiple times)
 .
+.TP
+\-\fBmax\-tries\fR=1
+max download tries till process fails with download error
+.
 .SH "RENAMES MIRROR"
 \fBaptly\fR \fBmirror\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR
 .
@@ -550,10 +554,13 @@ download source packages in addition to binary packages
 download \.udeb packages (Debian installer support)
 .
 .SH "SEARCH MIRROR FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBmirror\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in mirror that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -819,10 +826,13 @@ Example:
 $ aptly repo rename wheezy\-min wheezy\-main
 .
 .SH "SEARCH REPO FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBrepo\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBrepo\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in local repository that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -1113,10 +1123,13 @@ Example:
 $ aptly snapshot rename wheezy\-min wheezy\-main
 .
 .SH "SEARCH SNAPSHOT FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBsnapshot\fR \fBsearch\fR \fIname\fR \fIpackage\-query\fR
+\fBaptly\fR \fBsnapshot\fR \fBsearch\fR \fIname\fR [\fIpackage\-query\fR]
 .
 .P
 Command search displays list of packages in snapshot that match package query
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -1536,11 +1549,33 @@ don\(cqt generate Contents indexes
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
 .
-.SH "SEARCH FOR PACKAGES MATCHING QUERY"
-\fBaptly\fR \fBpackage\fR \fBsearch\fR \fIpackage\-query\fR
+.SH "SHOWS DETAILS OF PUBLISHED REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBshow\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
-Command search displays list of packages in whole DB that match package query
+Command show displays full information of a published repository\.
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish show wheezy
+.
+.fi
+.
+.IP "" 0
+.
+.SH "SEARCH FOR PACKAGES MATCHING QUERY"
+\fBaptly\fR \fBpackage\fR \fBsearch\fR [\fIpackage\-query\fR]
+.
+.P
+Command search displays list of packages in whole DB that match package query\.
+.
+.P
+If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -1689,6 +1724,10 @@ Options:
 render graph to specified format (png, svg, pdf, etc\.)
 .
 .TP
+\-\fBlayout\fR=horizontal
+create a more \(cqvertical\(cq or a more \(cqhorizontal\(cq graph layout
+.
+.TP
 \-\fBoutput\fR=
 specify output filename, default is to open result in viewer
 .
@@ -1833,6 +1872,15 @@ Benoit Foucher (https://github\.com/bentoi)
 .
 .IP "\[ci]" 4
 Geoffrey Thomas (https://github\.com/geofft)
+.
+.IP "\[ci]" 4
+Oliver Sauder (https://github\.com/sliverc)
+.
+.IP "\[ci]" 4
+Harald Sitter (https://github\.com/apachelogger)
+.
+.IP "\[ci]" 4
+Johannes Layher (https://github\.com/jola5)
 .
 .IP "" 0
 

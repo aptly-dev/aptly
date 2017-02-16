@@ -40,6 +40,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	ignoreMismatch := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
+	maxTries := context.Flags().Lookup("max-tries").Value.Get().(int)
 
 	verifier, err := getVerifier(context.Flags())
 	if err != nil {
@@ -52,7 +53,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	context.Progress().Printf("Downloading & parsing package files...\n")
-	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), context.CollectionFactory(), ignoreMismatch)
+	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), context.CollectionFactory(), ignoreMismatch, maxTries)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -121,7 +122,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	// In separate goroutine (to avoid blocking main), push queue to downloader
 	go func() {
 		for _, task := range queue {
-			context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch)
+			context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch, maxTries)
 		}
 
 		// We don't need queue after this point
@@ -187,6 +188,7 @@ Example:
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
+	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
 	return cmd

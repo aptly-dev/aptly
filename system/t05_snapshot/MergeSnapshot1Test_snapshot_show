@@ -2,6 +2,9 @@ Name: snap3
 Created At: 2014-06-29 02:23:49 MSK
 Description: Merged from sources: 'snap1', 'snap2'
 Number of packages: 56782
+Sources:
+  snap1 [snapshot]
+  snap2 [snapshot]
 Packages:
   0ad-data_0~r11863-1_all
   2ping_2.0-1_all

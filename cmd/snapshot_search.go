@@ -2,16 +2,21 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"sort"
 )
 
 func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error {
-	var err error
-	if len(args) != 2 {
+	var (
+		err error
+		q   deb.PackageQuery
+	)
+
+	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
@@ -68,9 +73,13 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 
 	list.PrepareIndex()
 
-	q, err := query.Parse(args[1])
-	if err != nil {
-		return fmt.Errorf("unable to search: %s", err)
+	if len(args) == 2 {
+		q, err = query.Parse(args[1])
+		if err != nil {
+			return fmt.Errorf("unable to search: %s", err)
+		}
+	} else {
+		q = &deb.MatchAllQuery{}
 	}
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
@@ -109,10 +118,12 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 func makeCmdSnapshotSearch() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotMirrorRepoSearch,
-		UsageLine: "search <name> <package-query>",
+		UsageLine: "search <name> [<package-query>]",
 		Short:     "search snapshot for packages matching query",
 		Long: `
 Command search displays list of packages in snapshot that match package query
+
+If query is not specified, all the packages are displayed.
 
 Example:
 

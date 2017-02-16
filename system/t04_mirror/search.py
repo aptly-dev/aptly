@@ -43,3 +43,12 @@ class SearchMirror5Test(BaseTest):
     fixtureDB = True
     outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
     runCmd = "aptly mirror search -format='{{.Package}}#{{.Version}}' wheezy-main '$$Architecture (i386), Name (% *-dev)'"
+
+
+class SearchMirror6Test(BaseTest):
+    """
+    search mirror: no query
+    """
+    fixtureDB = True
+    outputMatchPrepare = lambda _, s: "\n".join(sorted(s.split("\n")))
+    runCmd = "aptly mirror search -format='{{.Package}}#{{.Version}}' wheezy-main"

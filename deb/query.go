@@ -72,6 +72,9 @@ type DependencyQuery struct {
 	Dep Dependency
 }
 
+// MatchAllQuery is query that matches all the packages
+type MatchAllQuery struct{}
+
 // Matches if any of L, R matches
 func (q *OrQuery) Matches(pkg PackageLike) bool {
 	return q.L.Matches(pkg) || q.R.Matches(pkg)
@@ -274,4 +277,24 @@ func (q *PkgQuery) Query(list PackageCatalog) (result *PackageList) {
 // String interface
 func (q *PkgQuery) String() string {
 	return fmt.Sprintf("%s_%s_%s", q.Pkg, q.Version, q.Arch)
+}
+
+// Matches on specific properties
+func (q *MatchAllQuery) Matches(pkg PackageLike) bool {
+	return true
+}
+
+// Fast is always true for match all query
+func (q *MatchAllQuery) Fast(list PackageCatalog) bool {
+	return true
+}
+
+// Query looks up specific package
+func (q *MatchAllQuery) Query(list PackageCatalog) (result *PackageList) {
+	return list.Scan(q)
+}
+
+// String interface
+func (q *MatchAllQuery) String() string {
+	return ""
 }
