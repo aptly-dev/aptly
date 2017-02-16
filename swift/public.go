@@ -106,7 +106,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 
 // String
 func (storage *PublishedStorage) String() string {
-	return fmt.Sprintf("Swift: %s:%s/%s", storage.conn.StorageUrl, storage.container, storage.prefix)
+	return fmt.Sprintf("Swift: %s/%s/%s", storage.conn.StorageUrl, storage.container, storage.prefix)
 }
 
 // MkDir creates directory recursively under public path
