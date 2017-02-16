@@ -16,13 +16,19 @@ var (
 	ErrNotFound = errors.New("key not found")
 )
 
+// StorageProcessor is a function to process one single storage entry
+type StorageProcessor func(key []byte, value []byte) error
+
 // Storage is an interface to KV storage
 type Storage interface {
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
 	Delete(key []byte) error
+	HasPrefix(prefix []byte) bool
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
+	ProcessByPrefix(prefix []byte, proc StorageProcessor) error
+	DeleteByPrefix(prefix []byte) error
 	Close() error
 	ReOpen() error
 	StartBatch()
@@ -45,6 +51,11 @@ func internalOpen(path string) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter:                 filter.NewBloomFilter(10),
 		OpenFilesCacheCapacity: 256,
+
+		// reduce compacting of db
+		CompactionL0Trigger:    32,
+		WriteL0PauseTrigger:    96,
+		WriteL0SlowdownTrigger: 64,
 	}
 
 	return leveldb.OpenFile(path, o)
@@ -133,6 +144,44 @@ func (l *levelDB) KeysByPrefix(prefix []byte) [][]byte {
 	}
 
 	return result
+}
+
+// HasPrefix checks whether it can find any key with given prefix and returns true if one exists
+func (l *levelDB) HasPrefix(prefix []byte) bool {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+	return iterator.Seek(prefix) && bytes.HasPrefix(iterator.Key(), prefix)
+}
+
+// ProcessByPrefix iterates through all entries where key starts with prefix and calls
+// StorageProcessor on key value pair
+func (l *levelDB) ProcessByPrefix(prefix []byte, proc StorageProcessor) error {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		err := proc(iterator.Key(), iterator.Value())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteByPrefix deletes all entries with given prefix
+func (l *levelDB) DeleteByPrefix(prefix []byte) error {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		key := iterator.Key()
+		if err := l.Delete(key); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // FetchByPrefix returns all values with keys that start with prefix
