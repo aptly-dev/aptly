@@ -51,10 +51,16 @@ var (
 	_ Storage = &levelDB{}
 )
 
-func internalOpen(path string) (*leveldb.DB, error) {
+func internalOpen(path string, throttleCompaction bool) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter:                 filter.NewBloomFilter(10),
 		OpenFilesCacheCapacity: 256,
+	}
+
+	if throttleCompaction {
+		o.CompactionL0Trigger = 32
+		o.WriteL0PauseTrigger = 96
+		o.WriteL0SlowdownTrigger = 64
 	}
 
 	return leveldb.OpenFile(path, o)
@@ -62,7 +68,7 @@ func internalOpen(path string) (*leveldb.DB, error) {
 
 // OpenDB opens (creates) LevelDB database
 func OpenDB(path string) (Storage, error) {
-	db, err := internalOpen(path)
+	db, err := internalOpen(path, false)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +100,11 @@ func (l *levelDB) CreateTemporary() (Storage, error) {
 		return nil, err
 	}
 
-	return OpenDB(tempdir)
+	db, err := internalOpen(tempdir, true)
+	if err != nil {
+		return nil, err
+	}
+	return &levelDB{db: db, path: tempdir}, nil
 }
 
 // Get key value from database
@@ -212,7 +222,7 @@ func (l *levelDB) ReOpen() error {
 	}
 
 	var err error
-	l.db, err = internalOpen(l.path)
+	l.db, err = internalOpen(l.path, false)
 	return err
 }
 
