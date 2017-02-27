@@ -71,6 +71,29 @@ func (s *LevelDBSuite) TestGetPut(c *C) {
 	c.Assert(result, DeepEquals, value)
 }
 
+func (s *LevelDBSuite) TestTemporaryDelete(c *C) {
+	var (
+		key   = []byte("key")
+		value = []byte("value")
+	)
+
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	temp, err := s.db.CreateTemporary()
+	c.Assert(err, IsNil)
+
+	c.Check(s.db.HasPrefix([]byte(nil)), Equals, true)
+	c.Check(temp.HasPrefix([]byte(nil)), Equals, false)
+
+	err = temp.Put(key, value)
+	c.Assert(err, IsNil)
+	c.Check(temp.HasPrefix([]byte(nil)), Equals, true)
+
+	c.Assert(temp.Close(), IsNil)
+	c.Assert(temp.Drop(), IsNil)
+}
+
 func (s *LevelDBSuite) TestDelete(c *C) {
 	var (
 		key   = []byte("key")
@@ -107,8 +130,39 @@ func (s *LevelDBSuite) TestByPrefix(c *C) {
 	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 	c.Check(s.db.KeysByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
 
+	keys := [][]byte{}
+	values := [][]byte{}
+
+	c.Check(s.db.ProcessByPrefix([]byte{0x80}, func(k, v []byte) error {
+		keys = append(keys, append([]byte(nil), k...))
+		values = append(values, append([]byte(nil), v...))
+		return nil
+	}), IsNil)
+
+	c.Check(values, DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
+	c.Check(keys, DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
+
+	c.Check(s.db.ProcessByPrefix([]byte{0x80}, func(k, v []byte) error {
+		return ErrNotFound
+	}), Equals, ErrNotFound)
+
+	c.Check(s.db.ProcessByPrefix([]byte{0xa0}, func(k, v []byte) error {
+		return ErrNotFound
+	}), IsNil)
+
 	c.Check(s.db.FetchByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
 	c.Check(s.db.KeysByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
+}
+
+func (s *LevelDBSuite) TestHasPrefix(c *C) {
+	c.Check(s.db.HasPrefix([]byte(nil)), Equals, false)
+	c.Check(s.db.HasPrefix([]byte{0x80}), Equals, false)
+
+	s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
+
+	c.Check(s.db.HasPrefix([]byte(nil)), Equals, true)
+	c.Check(s.db.HasPrefix([]byte{0x80}), Equals, true)
+	c.Check(s.db.HasPrefix([]byte{0x79}), Equals, false)
 }
 
 func (s *LevelDBSuite) TestBatch(c *C) {

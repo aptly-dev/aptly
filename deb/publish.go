@@ -469,6 +469,13 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
+	tempDB, err := collectionFactory.TemporaryDB()
+	if err != nil {
+		return err
+	}
+	defer tempDB.Close()
+	defer tempDB.Drop()
+
 	if progress != nil {
 		progress.Printf("Loading packages...\n")
 	}
@@ -563,7 +570,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						contentIndex := contentIndexes[key]
 
 						if contentIndex == nil {
-							contentIndex = NewContentsIndex()
+							contentIndex = NewContentsIndex(tempDB)
 							contentIndexes[key] = contentIndex
 						}
 

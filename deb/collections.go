@@ -1,8 +1,9 @@
 package deb
 
 import (
-	"github.com/smira/aptly/database"
 	"sync"
+
+	"github.com/smira/aptly/database"
 )
 
 // CollectionFactory is a single place to generate all desired collections
@@ -19,6 +20,13 @@ type CollectionFactory struct {
 // NewCollectionFactory creates new factory
 func NewCollectionFactory(db database.Storage) *CollectionFactory {
 	return &CollectionFactory{Mutex: &sync.Mutex{}, db: db}
+}
+
+// TemporaryDB creates new temporary DB
+//
+// DB should be closed/droped after being used
+func (factory *CollectionFactory) TemporaryDB() (database.Storage, error) {
+	return factory.db.CreateTemporary()
 }
 
 // PackageCollection returns (or creates) new PackageCollection
