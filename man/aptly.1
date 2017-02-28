@@ -1685,20 +1685,17 @@ host:port for HTTP listening
 \fBaptly\fR \fBapi\fR \fBserve\fR
 .
 .P
-Stat HTTP server with aptly REST API\.
+Start HTTP server with aptly REST API\. The server can listen to either a port or Unix domain socket\. When using a socket, Aptly will fully manage the socket file\.
 .
 .P
-Example:
-.
-.P
-$ aptly api serve \-listen=:8080
+Example: $ aptly api serve \-listen=:8080 $ aptly api serve \-listen=unix:///tmp/aptly\.sock
 .
 .P
 Options:
 .
 .TP
 \-\fBlisten\fR=:8080
-host:port for HTTP listening
+host:port for HTTP listening or unix://path to listen on a Unix domain socket
 .
 .TP
 \-\fBno\-lock\fR=false
@@ -1881,6 +1878,9 @@ Harald Sitter (https://github\.com/apachelogger)
 .
 .IP "\[ci]" 4
 Johannes Layher (https://github\.com/jola5)
+.
+.IP "\[ci]" 4
+Charles Hsu (https://github\.com/charz)
 .
 .IP "" 0
 

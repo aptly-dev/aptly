@@ -23,7 +23,7 @@ before_install:
   - . env/bin/activate
   - pip install six packaging appdirs
   - pip install -U pip setuptools
-  - pip install boto requests python-swiftclient
+  - pip install boto requests requests-unixsocket python-swiftclient
   - mkdir -p $GOPATH/src/github.com/smira
   - ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/smira || true
   - cd $GOPATH/src/github.com/smira/aptly
