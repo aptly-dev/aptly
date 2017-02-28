@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+
 	"github.com/smira/aptly/api"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"net/http"
 )
 
 func aptlyAPIServe(cmd *commander.Command, args []string) error {
@@ -34,6 +38,22 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)
 
+	listenURL, err := url.Parse(listen)
+	if err == nil && listenURL.Scheme == "unix" {
+		file := listenURL.Path
+		os.Remove(file)
+		listener, err := net.Listen("unix", file)
+		if err != nil {
+			return fmt.Errorf("failed to listen on: %s\n%s", file, err)
+		}
+		defer listener.Close()
+		err = http.Serve(listener, api.Router(context))
+		if err != nil {
+			return fmt.Errorf("unable to serve: %s", err)
+		}
+		return nil
+	}
+
 	err = http.ListenAndServe(listen, api.Router(context))
 	if err != nil {
 		return fmt.Errorf("unable to serve: %s", err)
@@ -48,16 +68,19 @@ func makeCmdAPIServe() *commander.Command {
 		UsageLine: "serve",
 		Short:     "start API HTTP service",
 		Long: `
-Stat HTTP server with aptly REST API.
+Start HTTP server with aptly REST API. The server can listen to either a port
+or Unix domain socket. When using a socket, Aptly will fully manage the socket
+file.
 
 Example:
 
   $ aptly api serve -listen=:8080
+  $ aptly api serve -listen=unix:///tmp/aptly.sock
 `,
 		Flag: *flag.NewFlagSet("aptly-serve", flag.ExitOnError),
 	}
 
-	cmd.Flag.String("listen", ":8080", "host:port for HTTP listening")
+	cmd.Flag.String("listen", ":8080", "host:port for HTTP listening or unix://path to listen on a Unix domain socket")
 	cmd.Flag.Bool("no-lock", false, "don't lock the database")
 
 	return cmd
