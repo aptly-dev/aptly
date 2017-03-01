@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/smira/aptly/api"
+	"github.com/smira/aptly/systemd/activation"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -34,8 +35,24 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	listen := context.Flags().Lookup("listen").Value.String()
+	// Try to recycle systemd fds for listening
+	listeners, err := activation.Listeners(true)
+	if len(listeners) > 1 {
+		panic("Got more than 1 listener from systemd. This is currently not supported!")
+	}
+	if err == nil && len(listeners) == 1 {
+		listener := listeners[0]
+		defer listener.Close()
+		fmt.Printf("\nTaking over web server at: %s (press Ctrl+C to quit)...\n", listener.Addr().String())
+		err = http.Serve(listener, api.Router(context))
+		if err != nil {
+			return fmt.Errorf("unable to serve: %s", err)
+		}
+		return nil
+	}
 
+	// If there are none: use the listen argument.
+	listen := context.Flags().Lookup("listen").Value.String()
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)
 
 	listenURL, err := url.Parse(listen)
@@ -70,7 +87,8 @@ func makeCmdAPIServe() *commander.Command {
 		Long: `
 Start HTTP server with aptly REST API. The server can listen to either a port
 or Unix domain socket. When using a socket, Aptly will fully manage the socket
-file.
+file. This command also supports taking over from a systemd file descriptors to
+enable systemd socket activation.
 
 Example:
 
