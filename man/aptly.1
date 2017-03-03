@@ -633,16 +633,22 @@ don\(cqt copy, just show what would be copied
 follow dependencies when processing package\-spec
 .
 .SH "CREATE LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBcreate\fR \fIname\fR
+\fBaptly\fR \fBrepo\fR \fBcreate\fR \fIname\fR [ \fBfrom\fR \fBsnapshot\fR \fIsnapshot\fR ]
 .
 .P
 Create local package repository\. Repository would be empty when created, packages could be added from files, copied or moved from another local repository or imported from the mirror\.
+.
+.P
+If local package repository is created from snapshot, repo initial contents are copied from snapsot contents\.
 .
 .P
 Example:
 .
 .P
 $ aptly repo create testing
+.
+.P
+$ aptly repo create mysql35 from snapshot mysql\-35\-2017
 .
 .P
 Options:
