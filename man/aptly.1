@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "February 2017" "" ""
+.TH "APTLY" "1" "March 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -1685,10 +1685,13 @@ host:port for HTTP listening
 \fBaptly\fR \fBapi\fR \fBserve\fR
 .
 .P
-Start HTTP server with aptly REST API\. The server can listen to either a port or Unix domain socket\. When using a socket, Aptly will fully manage the socket file\.
+Start HTTP server with aptly REST API\. The server can listen to either a port or Unix domain socket\. When using a socket, Aptly will fully manage the socket file\. This command also supports taking over from a systemd file descriptors to enable systemd socket activation\.
 .
 .P
-Example: $ aptly api serve \-listen=:8080 $ aptly api serve \-listen=unix:///tmp/aptly\.sock
+Example:
+.
+.P
+$ aptly api serve \-listen=:8080 $ aptly api serve \-listen=unix:///tmp/aptly\.sock
 .
 .P
 Options:
