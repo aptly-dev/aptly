@@ -186,6 +186,18 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 			}
 		}
 
+		// matching debug ddeb packages, they're not present in the Binary field
+		var ddebQuery PackageQuery
+		ddebQuery = &AndQuery{
+			L: &FieldQuery{Field: "Name", Relation: VersionPatternMatch, Value: "*-dbgsym"},
+			R: &FieldQuery{Field: "Source", Relation: VersionEqual, Value: c.Source},
+		}
+
+		binaryQuery = &OrQuery{
+			L: binaryQuery,
+			R: ddebQuery,
+		}
+
 		binaryQuery = &AndQuery{
 			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"}},
 			R: binaryQuery}
