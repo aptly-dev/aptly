@@ -54,7 +54,7 @@ func (s *ChangesSuite) TestPackageQuery(c *C) {
 	c.Check(err, IsNil)
 
 	c.Check(q.String(), Equals,
-		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), ((Name (= calamares-dbg)) | (Name (= calamares)))))")
+		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), (((Name (= calamares-dbg)) | (Name (= calamares))) | ((Source (= calamares)), ((Name (= calamares-dbg-dbgsym)) | (Name (= calamares-dbgsym)))))))")
 }
 
 var changesFile = `Format: 1.8

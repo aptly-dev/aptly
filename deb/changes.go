@@ -179,11 +179,29 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 	var binaryQuery PackageQuery
 	if len(c.Binary) > 0 {
 		binaryQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Binary[0]}
+		// matching debug ddeb packages, they're not present in the Binary field
+		var ddebQuery PackageQuery
+		ddebQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", c.Binary[0])}
+
 		for _, binary := range c.Binary[1:] {
 			binaryQuery = &OrQuery{
 				L: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: binary},
 				R: binaryQuery,
 			}
+			ddebQuery = &OrQuery{
+				L: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", binary)},
+				R: ddebQuery,
+			}
+		}
+
+		ddebQuery = &AndQuery{
+			L: &FieldQuery{Field: "Source", Relation: VersionEqual, Value: c.Source},
+			R: ddebQuery,
+		}
+
+		binaryQuery = &OrQuery{
+			L: binaryQuery,
+			R: ddebQuery,
 		}
 
 		binaryQuery = &AndQuery{
