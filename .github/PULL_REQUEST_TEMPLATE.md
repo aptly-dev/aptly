@@ -17,5 +17,6 @@ Why this change is important?
 - [ ] unit-test added (if change is algorithm)
 - [ ] functional test added/updated (if change is functional)
 - [ ] man page updated (if applicable)
+- [ ] bash completion updated (if applicable)
 - [ ] documentation updated
 - [ ] author name in `AUTHORS`
