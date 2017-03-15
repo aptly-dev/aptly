@@ -63,3 +63,27 @@ class CreateRepo6Test(BaseTest):
     runCmd = "aptly repo create -uploaders-file=${changes}/uploaders-not-found.json repo6"
     expectedCode = 1
     outputMatchPrepare = changesRemove
+
+
+class CreateRepo7Test(BaseTest):
+    """
+    create local repo: from snapshot
+    """
+    fixtureCmds = [
+        "aptly repo create repo1",
+        "aptly repo add repo1 ${files}",
+        "aptly snapshot create snap1 from repo repo1",
+    ]
+    runCmd = "aptly repo create repo2 from snapshot snap1"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show -with-packages repo2", "repo_show")
+
+
+class CreateRepo8Test(BaseTest):
+    """
+    create local repo: from missing snapshot
+    """
+    runCmd = "aptly repo create repo2 from snapshot snap-missing"
+    expectedCode = 1
