@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/mxk/go-flowrate/flowrate"
 	"github.com/smira/aptly/aptly"
@@ -62,12 +63,11 @@ type downloadTask struct {
 func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.Downloader {
 	transport := http.Transport{}
 	transport.Proxy = http.DefaultTransport.(*http.Transport).Proxy
-	transport.DialContext = http.DefaultTransport.(*http.Transport).DialContext
-	transport.MaxIdleConns = http.DefaultTransport.(*http.Transport).MaxIdleConns
-	transport.IdleConnTimeout = http.DefaultTransport.(*http.Transport).IdleConnTimeout
+	transport.ResponseHeaderTimeout = 30 * time.Second
 	transport.TLSHandshakeTimeout = http.DefaultTransport.(*http.Transport).TLSHandshakeTimeout
 	transport.ExpectContinueTimeout = http.DefaultTransport.(*http.Transport).ExpectContinueTimeout
 	transport.DisableCompression = true
+	initTransport(&transport)
 	transport.RegisterProtocol("ftp", &protocol.FTPRoundTripper{})
 
 	downloader := &downloaderImpl{
