@@ -4,16 +4,19 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
-	"github.com/mxk/go-flowrate/flowrate"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-ftp-protocol/protocol"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/mxk/go-flowrate/flowrate"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-ftp-protocol/protocol"
+	"github.com/smira/go-xz"
 )
 
 // HTTPError is download error connected to HTTP code
@@ -58,8 +61,13 @@ type downloadTask struct {
 // NewDownloader creates new instance of Downloader which specified number
 // of threads and download limit in bytes/sec
 func NewDownloader(threads int, downLimit int64, progress aptly.Progress) aptly.Downloader {
-	transport := *http.DefaultTransport.(*http.Transport)
+	transport := http.Transport{}
+	transport.Proxy = http.DefaultTransport.(*http.Transport).Proxy
+	transport.ResponseHeaderTimeout = 30 * time.Second
+	transport.TLSHandshakeTimeout = http.DefaultTransport.(*http.Transport).TLSHandshakeTimeout
+	transport.ExpectContinueTimeout = http.DefaultTransport.(*http.Transport).ExpectContinueTimeout
 	transport.DisableCompression = true
+	initTransport(&transport)
 	transport.RegisterProtocol("ftp", &protocol.FTPRoundTripper{})
 
 	downloader := &downloaderImpl{
@@ -134,7 +142,7 @@ func (downloader *downloaderImpl) Download(url string, destination string, resul
 // DownloadWithChecksum starts new download task with checksum verification
 func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string, result chan<- error,
 	expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int) {
-		downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch, triesLeft: maxTries}
+	downloader.queue <- &downloadTask{url: url, destination: destination, result: result, expected: expected, ignoreMismatch: ignoreMismatch, triesLeft: maxTries}
 }
 
 // handleTask processes single download task
@@ -153,7 +161,6 @@ func (downloader *downloaderImpl) handleTask(task *downloadTask) {
 		req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
 		req.URL.RawQuery = ""
 	}
-
 
 	var temppath string
 	for task.triesLeft > 0 {
@@ -321,6 +328,10 @@ var compressionMethods = []struct {
 	{
 		extenstion:     ".gz",
 		transformation: func(r io.Reader) (io.Reader, error) { return gzip.NewReader(r) },
+	},
+	{
+		extenstion:     ".xz",
+		transformation: func(r io.Reader) (io.Reader, error) { return xz.NewReader(r) },
 	},
 	{
 		extenstion:     "",

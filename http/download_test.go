@@ -3,9 +3,6 @@ package http
 import (
 	"errors"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
 	"net"
@@ -13,6 +10,10 @@ import (
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
+	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )
@@ -204,6 +205,7 @@ func (s *DownloaderSuite) TestDownloadTempError(c *C) {
 const (
 	bzipData = "BZh91AY&SY\xcc\xc3q\xd4\x00\x00\x02A\x80\x00\x10\x02\x00\x0c\x00 \x00!\x9ah3M\x19\x97\x8b\xb9\"\x9c(Hfa\xb8\xea\x00"
 	gzipData = "\x1f\x8b\x08\x00\xc8j\xb0R\x00\x03+I-.\xe1\x02\x00\xc65\xb9;\x05\x00\x00\x00"
+	xzData   = "\xfd\x37\x7a\x58\x5a\x00\x00\x04\xe6\xd6\xb4\x46\x02\x00\x21\x01\x16\x00\x00\x00\x74\x2f\xe5\xa3\x01\x00\x04\x74\x65\x73\x74\x0a\x00\x00\x00\x00\x9d\xed\x31\x1d\x0f\x9f\xd7\xe6\x00\x01\x1d\x05\xb8\x2d\x80\xaf\x1f\xb6\xf3\x7d\x01\x00\x00\x00\x00\x04\x59\x5a"
 	rawData  = "test"
 )
 
@@ -213,6 +215,7 @@ func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	expectedChecksums := map[string]utils.ChecksumInfo{
 		"file.bz2": {Size: int64(len(bzipData))},
 		"file.gz":  {Size: int64(len(gzipData))},
+		"file.xz":  {Size: int64(len(xzData))},
 		"file":     {Size: int64(len(rawData))},
 	}
 
@@ -239,11 +242,25 @@ func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 
-	// bzip2 & gzip not available, but raw is
+	// bzip2 & gzip not available, but xz is
 	buf = make([]byte, 4)
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
+	d.ExpectResponse("http://example.com/file.xz", xzData)
+	r, file, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false, 1)
+	c.Assert(err, IsNil)
+	defer file.Close()
+	io.ReadFull(r, buf)
+	c.Assert(string(buf), Equals, rawData)
+	c.Assert(d.Empty(), Equals, true)
+
+	// bzip2, gzip & xz not available, but raw is
+	buf = make([]byte, 4)
+	d = NewFakeDownloader()
+	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
+	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
+	d.ExpectError("http://example.com/file.xz", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file", rawData)
 	r, file, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false, 1)
 	c.Assert(err, IsNil)
@@ -270,6 +287,7 @@ func (s *DownloaderSuite) TestDownloadTryCompressionErrors(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
+	d.ExpectError("http://example.com/file.xz", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file", errors.New("403"))
 	_, _, err = DownloadTryCompression(d, "http://example.com/file", nil, true, 1)
 	c.Assert(err, ErrorMatches, "403")
@@ -277,10 +295,12 @@ func (s *DownloaderSuite) TestDownloadTryCompressionErrors(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
+	d.ExpectError("http://example.com/file.xz", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file", rawData)
 	expectedChecksums := map[string]utils.ChecksumInfo{
 		"file.bz2": {Size: 7},
 		"file.gz":  {Size: 7},
+		"file.xz":  {Size: 7},
 		"file":     {Size: 7},
 	}
 	_, _, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false, 1)
