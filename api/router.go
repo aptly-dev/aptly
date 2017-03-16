@@ -4,9 +4,40 @@ import (
 	"github.com/gin-gonic/gin"
 	ctx "github.com/smira/aptly/context"
 	"net/http"
+	"strconv"
+	"os/exec"
+	"encoding/json"
 )
 
 var context *ctx.AptlyContext
+
+// middleware to track API calls and call a hook script
+func ApiHooks(cmd string, conf string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		params , _ := json.Marshal(c.Params)
+		query, _   := json.Marshal(c.Request.URL.Query())
+
+		env := []string{
+			("APTLY_METHOD="      + c.Request.Method),
+			("APTLY_REQ_URL="     + c.Request.URL.String()),
+			("APTLY_REMOTE_ADDR=" + c.Request.RemoteAddr),
+			("APTLY_STATUS="      + strconv.Itoa(c.Writer.Status())),
+			("APTLY_CONFIG="      + conf),
+			("APTLY_PARAMS="      + string(params)),
+			("APTLY_QUERY="       + string(query)),
+		}
+
+		cmd := exec.Command(cmd)
+		cmd.Env = env
+
+		// fire and forget
+		go func(){
+			cmd.Run()
+		}()
+	}
+}
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
@@ -14,6 +45,13 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router := gin.Default()
 	router.Use(gin.ErrorLogger())
+
+	conf := context.Config()
+	api_hook_cmd := conf.APIHookCmd
+	if api_hook_cmd != "" {
+		conf_str, _ := json.Marshal(conf)
+		router.Use(ApiHooks(api_hook_cmd, string(conf_str)))
+	}
 
 	if context.Flags().Lookup("no-lock").Value.Get().(bool) {
 		// We use a goroutine to count the number of
