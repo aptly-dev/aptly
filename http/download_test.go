@@ -3,9 +3,6 @@ package http
 import (
 	"errors"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/utils"
 	"io"
 	"io/ioutil"
 	"net"
@@ -13,6 +10,10 @@ import (
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/console"
+	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )
@@ -247,7 +248,7 @@ func (s *DownloaderSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectError("http://example.com/file.bz2", &HTTPError{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &HTTPError{Code: 404})
 	d.ExpectResponse("http://example.com/file.xz", xzData)
-	r, file, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false)
+	r, file, err = DownloadTryCompression(d, "http://example.com/file", expectedChecksums, false, 1)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
