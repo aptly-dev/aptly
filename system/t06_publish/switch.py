@@ -449,3 +449,56 @@ class PublishSwitch13Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')
+
+
+class PublishSwitch14Test(BaseTest):
+    """
+    publish switch: -use-symlinks
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -use-symlinks snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch14Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
+
+        self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
+        self.check_exists('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
+        self.check_not_exists('public/pool/main/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_i386.deb')
+        self.check_not_exists('public/pool/main/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_amd64.deb')
+
+        self.check_file_is_regular('public/dists/maverick/InRelease')
+        self.check_file_is_regular('public/dists/maverick/Release')
+        self.check_file_is_regular('public/dists/maverick/Release.gpg')
+
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-i386.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-amd64.gz')
+
+        self.check_file_is_symlink('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_i386.deb')
+        self.check_file_is_symlink('public/pool/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
