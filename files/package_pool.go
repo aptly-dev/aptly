@@ -35,7 +35,7 @@ func (pool *PackagePool) RelativePath(filename string, hash string) (string, err
 	}
 
 	if len(hash) < 4 {
-		return "", fmt.Errorf("unable to compute pool location for filename %v, %s is missing", filename, pool.hashSelector)
+		return "", fmt.Errorf("unable to compute pool location for filename %v, %s is missing", filename, pool.HashSelector())
 	}
 
 	return filepath.Join(hash[0:2], hash[2:4], filename), nil
@@ -62,7 +62,7 @@ func (pool *PackagePool) SetHashSelector(hashSelector string) {
 		hashSelector = "SHA512"
 	} else {
 		if hashSelector != "" {
-			fmt.Printf("Invalid hash name %s, defaulting to MD5", hashSelector)
+			fmt.Printf("Invalid hash name %s, defaulting to MD5\n", hashSelector)
 		}
 		hashSelector = "MD5"
 	}
@@ -71,7 +71,7 @@ func (pool *PackagePool) SetHashSelector(hashSelector string) {
 	if pool.hashSelector == "" {
 		pool.hashSelector = hashSelector
 	} else if pool.hashSelector != hashSelector {
-		fmt.Printf("Hash name used for file paths can only be set once, current %s, new %s", pool.hashSelector, hashSelector)
+		fmt.Printf("Hash name used for file paths can only be set once, current %s, new %s\n", pool.hashSelector, hashSelector)
 	}
 }
 

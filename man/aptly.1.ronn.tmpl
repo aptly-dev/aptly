@@ -68,7 +68,8 @@ Configuration file is stored in JSON format (default values shown below):
           "tenant": "",
           "tenantid": ""
         }
-      }
+      },
+      "hashSelector": ""
     }
 
 Options:
@@ -120,6 +121,10 @@ Options:
 
   * `SwiftPublishEndpoints`:
     configuration of OpenStack Swift publishing endpoints (see below)
+
+  * `hashSelector`:
+    selects which hash to use for pool path names, default is MD5, can be set to SHA1,
+    SHA256, or SHA512 before initializing the pool directory
 
 ## S3 PUBLISHING ENDPOINTS
 
