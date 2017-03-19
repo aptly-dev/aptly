@@ -138,7 +138,7 @@ class PublishSnapshotAPITest(APITest):
             "SourceKind": "snapshot",
             "Sources": [{"Component": "main", "Name": "%s"}],
             "Storage": "",
-            "UseSymLinks": false}""" % (prefix, snapshot_name ))
+            "UseSymLinks": false}""" % (prefix, snapshot_name )))
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
