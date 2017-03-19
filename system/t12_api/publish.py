@@ -1,5 +1,6 @@
 import os
 import inspect
+import json
 
 from api_lib import APITest
 
@@ -35,17 +36,17 @@ class PublishAPITestRepo(APITest):
                              "Sources": [{"Name": repo_name}],
                              "Signing": DefaultSigningOptions,
                          })
-        repo_expected = {
-            'Architectures': ['i386', 'source'],
-            'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
-            'Prefix': prefix,
-            'SkipContents': False,
-            'SourceKind': 'local',
-            'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': '',
-            'UseSymLinks': False}
+        repo_expected = json.loads( """{
+            "Architectures": ["i386", "source"],
+            "Distribution": "wheezy",
+            "Label": "",
+            "Origin": "",
+            "Prefix": "%s",
+            "SkipContents": false,
+            "SourceKind": "local",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % ( prefix, repo_name ) )
 
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo_expected)
@@ -70,17 +71,17 @@ class PublishAPITestRepo(APITest):
                              "Distribution": distribution,
                              "Architectures": ["i386", "amd64"],
                          })
-        repo2_expected = {
-            'Architectures': ['amd64', 'i386'],
-            'Distribution': distribution,
-            'Label': '',
-            'Origin': '',
-            'Prefix': ".",
-            'SkipContents': False,
-            'SourceKind': 'local',
-            'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': '',
-            'UseSymLinks': False}
+        repo2_expected = json.loads( """{
+            "Architectures": ["amd64", "i386"],
+            "Distribution": "%s",
+            "Label": "",
+            "Origin": "",
+            "Prefix": ".",
+            "SkipContents": false,
+            "SourceKind": "local",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % ( distribution, repo_name ) )
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo2_expected)
 
@@ -127,17 +128,17 @@ class PublishSnapshotAPITest(APITest):
                              "Distribution": "squeeze",
                          })
         self.check_equal(resp.status_code, 201)
-        self.check_equal(resp.json(), {
-            'Architectures': ['i386'],
-            'Distribution': 'squeeze',
-            'Label': '',
-            'Origin': '',
-            'Prefix': prefix,
-            'SkipContents': False,
-            'SourceKind': 'snapshot',
-            'Sources': [{'Component': 'main', 'Name': snapshot_name}],
-            'Storage': '',
-            'UseSymLinks': False})
+        self.check_equal(resp.json(), json.loads( """{
+            "Architectures": ["i386"],
+            "Distribution": "squeeze",
+            "Label": "",
+            "Origin": "",
+            "Prefix": "%s",
+            "SkipContents": false,
+            "SourceKind": "snapshot",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % (prefix, snapshot_name ))
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
@@ -188,17 +189,17 @@ class PublishUpdateAPITestRepo(APITest):
                         json={
                             "Signing": DefaultSigningOptions,
                         })
-        repo_expected = {
-            'Architectures': ['i386', 'source'],
-            'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
-            'Prefix': prefix,
-            'SkipContents': False,
-            'SourceKind': 'local',
-            'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': '',
-            'UseSymLinks': False}
+        repo_expected = json.loads( """{
+            "Architectures": ["i386", "source"],
+            "Distribution": "wheezy",
+            "Label": "",
+            "Origin": "",
+            "Prefix": "%s",
+            "SkipContents": false,
+            "SourceKind": "local",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % ( prefix, repo_name ) )
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
@@ -240,17 +241,17 @@ class PublishSwitchAPITestRepo(APITest):
                          })
 
         self.check_equal(resp.status_code, 201)
-        repo_expected = {
-            'Architectures': ['i386', 'source'],
-            'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
-            'Prefix': prefix,
-            'SkipContents': False,
-            'SourceKind': 'snapshot',
-            'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
-            'Storage': '',
-            'UseSymLinks': False}
+        repo_expected = json.loads( """{
+            "Architectures": ["i386", "source"],
+            "Distribution": "wheezy",
+            "Label": "",
+            "Origin": "",
+            "Prefix": "%s",
+            "SkipContents": false,
+            "SourceKind": "snapshot",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % ( prefix, snapshot1_name ) )
         self.check_equal(resp.json(), repo_expected)
 
         self.check_not_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
@@ -273,17 +274,17 @@ class PublishSwitchAPITestRepo(APITest):
                             "Signing": DefaultSigningOptions,
                             "SkipContents": True,
                         })
-        repo_expected = {
-            'Architectures': ['i386', 'source'],
-            'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
-            'Prefix': prefix,
-            'SkipContents': True,
-            'SourceKind': 'snapshot',
-            'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
-            'Storage': '',
-            'UseSymLinks': False}
+        repo_expected = json.loads( """{
+            "Architectures": ["i386", "source"],
+            "Distribution": "wheezy",
+            "Label": "",
+            "Origin": "",
+            "Prefix": "%s",
+            "SkipContents": true,
+            "SourceKind": "snapshot",
+            "Sources": [{"Component": "main", "Name": "%s"}],
+            "Storage": "",
+            "UseSymLinks": false}""" % ( prefix, snapshot2_name ) )
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
