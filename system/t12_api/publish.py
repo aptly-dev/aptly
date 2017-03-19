@@ -44,7 +44,8 @@ class PublishAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'UseSymLinks': False}
 
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo_expected)
@@ -78,7 +79,8 @@ class PublishAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'UseSymLinks': False}
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo2_expected)
 
@@ -134,7 +136,8 @@ class PublishSnapshotAPITest(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
-            'Storage': ''})
+            'Storage': '',
+            'UseSymLinks': False})
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
@@ -194,7 +197,8 @@ class PublishUpdateAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'UseSymLinks': False}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
@@ -245,7 +249,8 @@ class PublishSwitchAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
-            'Storage': ''}
+            'Storage': '',
+            'UseSymLinks': False}
         self.check_equal(resp.json(), repo_expected)
 
         self.check_not_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
@@ -277,7 +282,8 @@ class PublishSwitchAPITestRepo(APITest):
             'SkipContents': True,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
-            'Storage': ''}
+            'Storage': '',
+            'UseSymLinks': False}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
