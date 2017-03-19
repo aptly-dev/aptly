@@ -417,7 +417,7 @@ func (p *Package) CalculateContents(packagePool aptly.PackagePool) []string {
 	}
 
 	file := p.Files()[0]
-	path, err := packagePool.Path(file.Filename, file.Checksums.MD5)
+	path, err := packagePool.Path(file.Filename, file.SelectChecksum(packagePool.HashSelector()))
 	if err != nil {
 		panic(err)
 	}
@@ -540,7 +540,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 	}
 
 	for i, f := range p.Files() {
-		sourcePath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+		sourcePath, err := packagePool.Path(f.Filename, f.SelectChecksum(packagePool.HashSelector()))
 		if err != nil {
 			return err
 		}
@@ -600,7 +600,7 @@ func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageD
 	result = make([]PackageDownloadTask, 0, 1)
 
 	for _, f := range p.Files() {
-		poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+		poolPath, err := packagePool.Path(f.Filename, f.SelectChecksum(packagePool.HashSelector()))
 		if err != nil {
 			return nil, err
 		}
@@ -638,7 +638,7 @@ func (p *Package) FilepathList(packagePool aptly.PackagePool) ([]string, error) 
 	result := make([]string, len(p.Files()))
 
 	for i, f := range p.Files() {
-		result[i], err = packagePool.RelativePath(f.Filename, f.Checksums.MD5)
+		result[i], err = packagePool.RelativePath(f.Filename, f.SelectChecksum(packagePool.HashSelector()))
 		if err != nil {
 			return nil, err
 		}

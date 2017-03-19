@@ -12,15 +12,19 @@ import (
 // PackagePool stores all the package files, deduplicating them.
 type PackagePool interface {
 	// Path returns full path to package file in pool given any name and hash of file contents
-	Path(filename string, hashMD5 string) (string, error)
-	// RelativePath returns path relative to pool's root for package files given MD5 and original filename
-	RelativePath(filename string, hashMD5 string) (string, error)
+	Path(filename string, hash string) (string, error)
+	// RelativePath returns path relative to pool's root for package files given hash and original filename
+	RelativePath(filename string, hash string) (string, error)
 	// FilepathList returns file paths of all the files in the pool
 	FilepathList(progress Progress) ([]string, error)
 	// Remove deletes file in package pool returns its size
 	Remove(path string) (size int64, err error)
 	// Import copies file into package pool
-	Import(path string, hashMD5 string) error
+	Import(path string, hash string) error
+	// Get name of hash to use for selecting file paths
+	HashSelector() string
+	// Set name of hash to use for selecting file paths
+	SetHashSelector(hashName string)
 }
 
 // PublishedStorage is abstraction of filesystem storing all published repositories

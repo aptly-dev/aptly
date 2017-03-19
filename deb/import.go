@@ -127,7 +127,17 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			p.UpdateFiles([]PackageFile{{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
-		err = pool.Import(file, checksums.MD5)
+		checksum := checksums.MD5
+
+		if pool.HashSelector() == "SHA1" {
+			checksum = checksums.SHA1
+		} else if pool.HashSelector() == "SHA256" {
+			checksum = checksums.SHA256
+		} else if pool.HashSelector() == "SHA512" {
+			checksum = checksums.SHA512
+		}
+
+		err = pool.Import(file, checksum)
 		if err != nil {
 			reporter.Warning("Unable to import file %s into pool: %s", file, err)
 			failedFiles = append(failedFiles, file)
@@ -142,7 +152,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 				continue
 			}
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = pool.Import(sourceFile, f.Checksums.MD5)
+			err = pool.Import(sourceFile, f.SelectChecksum(pool.HashSelector()))
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)

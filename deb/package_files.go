@@ -23,9 +23,23 @@ type PackageFile struct {
 	downloadPath string
 }
 
+// Select the appropriate hash 
+func (f *PackageFile) SelectChecksum(hashSelector string) string {
+	if hashSelector == "SHA1" {
+		return f.Checksums.SHA1
+	}
+	if hashSelector == "SHA256" {
+		return f.Checksums.SHA256
+	}
+	if hashSelector == "SHA512" {
+		return f.Checksums.SHA512
+	}
+	return f.Checksums.MD5
+}
+
 // Verify that package file is present and correct
 func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
-	poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+	poolPath, err := packagePool.Path(f.Filename, f.SelectChecksum(packagePool.HashSelector()))
 	if err != nil {
 		return false, err
 	}

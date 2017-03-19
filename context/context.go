@@ -300,6 +300,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 
 	if context.packagePool == nil {
 		context.packagePool = files.NewPackagePool(context.config().RootDir)
+		context.packagePool.SetHashSelector(context.config().HashSelector)
 	}
 
 	return context.packagePool
