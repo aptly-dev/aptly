@@ -14,5 +14,6 @@
     "ppaCodename": "",
     "skipContentsPublishing": false,
     "S3PublishEndpoints": {},
-    "SwiftPublishEndpoints": {}
+    "SwiftPublishEndpoints": {},
+    "hashSelector": "MD5"
 }
