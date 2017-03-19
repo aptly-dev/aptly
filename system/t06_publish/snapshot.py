@@ -1035,6 +1035,23 @@ class PublishSnapshot37Test(BaseTest):
 
         self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Release')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-i386.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Release')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-amd64.gz')
+
+        self.check_file_is_symlink('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
+
         # verify contents except of sums
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
