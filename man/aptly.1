@@ -49,6 +49,7 @@ Configuration file is stored in JSON format (default values shown below):
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
   "skipContentsPublishing": false,
+  "useSymlinks": false,
   "S3PublishEndpoints": {
     "test": {
       "region": "us\-east\-1",
@@ -1326,6 +1327,10 @@ GPG secret keyring to use (instead of default)
 don\(cqt generate Contents indexes
 .
 .TP
+\-\fBuse\-symlinks\fR=false
+use symlinks instead of hardlinks when publishing
+.
+.TP
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
 .
@@ -1413,6 +1418,10 @@ GPG secret keyring to use (instead of default)
 don\(cqt generate Contents indexes
 .
 .TP
+\-\fBuse\-symlinks\fR=false
+use symlinks instead of hardlinks when publishing
+.
+.TP
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
 .
@@ -1491,6 +1500,10 @@ GPG secret keyring to use (instead of default)
 don\(cqt generate Contents indexes
 .
 .TP
+\-\fBuse\-symlinks\fR=false
+use symlinks instead of hardlinks when publishing
+.
+.TP
 \-\fBskip\-signing\fR=false
 don\(cqt sign Release files with GPG
 .
@@ -1550,6 +1563,10 @@ GPG secret keyring to use (instead of default)
 .TP
 \-\fBskip\-contents\fR=false
 don\(cqt generate Contents indexes
+.
+.TP
+\-\fBuse\-symlinks\fR=false
+use symlinks instead of hardlinks when publishing
 .
 .TP
 \-\fBskip\-signing\fR=false

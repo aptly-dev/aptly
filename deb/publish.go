@@ -48,6 +48,9 @@ type PublishedRepo struct {
 	// Skip contents generation
 	SkipContents bool
 
+	// Use symlinks
+	UseSymlinks bool
+
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
 
@@ -257,6 +260,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	}
 
 	result.Distribution = distribution
+	result.UseSymlinks = false
 
 	return result, nil
 }
@@ -293,6 +297,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Sources":       sources,
 		"Storage":       p.Storage,
 		"SkipContents":  p.SkipContents,
+		"UseSymlinks":   p.UseSymlinks,
 	})
 }
 
@@ -554,7 +559,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 			if matches {
 				hadUdebs = hadUdebs || pkg.IsUdeb
-				err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, component, forceOverwrite)
+				err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, component, forceOverwrite, p.UseSymlinks)
 				if err != nil {
 					return err
 				}
