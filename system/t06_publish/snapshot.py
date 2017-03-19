@@ -1008,9 +1008,9 @@ class PublishSnapshot37Test(BaseTest):
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
-        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap37 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -use-symlinks -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1"
+    runCmd = "aptly publish snapshot -use-symlinks -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap37"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
