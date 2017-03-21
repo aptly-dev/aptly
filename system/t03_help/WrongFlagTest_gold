@@ -11,6 +11,7 @@ Options:
   -dep-follow-recommends=false: when processing dependencies, follow Recommends
   -dep-follow-source=false: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests=false: when processing dependencies, follow Suggests
+  -dep-verbose-resolve=false: when processing dependencies, print detailed logs
   -filter="": filter packages in mirror
   -filter-with-deps=false: when filtering, include dependencies of matching packages as well
   -force-architectures=false: (only with architecture list) skip check that requested architectures are listed in Release file

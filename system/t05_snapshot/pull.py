@@ -231,3 +231,16 @@ class PullSnapshot14Test(BaseTest):
         "aptly snapshot create sensu from mirror sensu",
     ]
     runCmd = "aptly snapshot pull -architectures=amd64,i386 -all-matches empty sensu destination 'sensu (>0.12)' 'sensu (<0.9.6)'"
+
+
+class PullSnapshot15Test(BaseTest):
+    """
+    pull snapshot: verbose logs
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-backports",
+    ]
+    runCmd = "aptly snapshot pull -dep-verbose-resolve snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
+    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))

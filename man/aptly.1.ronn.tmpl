@@ -35,6 +35,7 @@ Configuration file is stored in JSON format (default values shown below):
       "dependencyFollowRecommends": false,
       "dependencyFollowAllVariants": false,
       "dependencyFollowSource": false,
+      "dependencyVerboseResolve": false,
       "gpgDisableSign": false,
       "gpgDisableVerify": false,
       "downloadSourcePackages": false,
@@ -98,6 +99,9 @@ Options:
 
   * `dependencyFollowSource`:
     follow dependency from binary package to source package
+
+  * `dependencyVerboseResolve`:
+    print additional details while resolving dependencies (useful for debugging)
 
   * `gpgDisableSign`:
     don't sign published repositories with gpg(1), also can be disabled on

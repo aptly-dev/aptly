@@ -3,6 +3,7 @@ package deb
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
@@ -20,6 +21,8 @@ const (
 	DepFollowAllVariants
 	// DepFollowBuild pulls build dependencies
 	DepFollowBuild
+	// DepVerboseResolve emits additional logs while dependencies are being resolved
+	DepVerboseResolve
 )
 
 // PackageList is list of unique (by key) packages
@@ -346,6 +349,14 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 		progress.ShutdownBar()
 	}
 
+	if options&DepVerboseResolve == DepVerboseResolve && progress != nil {
+		missingStr := make([]string, len(missing))
+		for i := range missing {
+			missingStr[i] = missing[i].String()
+		}
+		progress.ColoredPrintf("@{y}Missing dependencies:@| %s", strings.Join(missingStr, ", "))
+	}
+
 	return missing, nil
 }
 
@@ -462,6 +473,11 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
 func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+	return l.FilterWithProgress(queries, withDependencies, source, dependencyOptions, architecturesList, nil)
+}
+
+// FilterWithProgress filters package index by specified queries (ORed together), possibly pulling dependencies and displays progress
+func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
 	if !l.indexed {
 		panic("list not indexed, can't filter")
 	}
@@ -488,7 +504,7 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 			added = 0
 
 			// find missing dependencies
-			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, nil)
+			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
 			if err != nil {
 				return nil, err
 			}
@@ -501,9 +517,12 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 					continue
 				}
 
-				searchResults := l.Search(dep, false)
+				searchResults := l.Search(dep, true)
 				if searchResults != nil {
 					for _, p := range searchResults {
+						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+							progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
+						}
 						result.Add(p)
 						dependencySource.Add(p)
 						added++
@@ -511,6 +530,11 @@ func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, sour
 							break
 						}
 					}
+				} else {
+					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+						progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
+					}
+
 				}
 			}
 		}

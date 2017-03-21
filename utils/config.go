@@ -16,6 +16,7 @@ type ConfigStructure struct {
 	DepFollowRecommends    bool                        `json:"dependencyFollowRecommends"`
 	DepFollowAllVariants   bool                        `json:"dependencyFollowAllVariants"`
 	DepFollowSource        bool                        `json:"dependencyFollowSource"`
+	DepVerboseResolve      bool                        `json:"dependencyVerboseResolve"`
 	GpgDisableSign         bool                        `json:"gpgDisableSign"`
 	GpgDisableVerify       bool                        `json:"gpgDisableVerify"`
 	DownloadSourcePackages bool                        `json:"downloadSourcePackages"`
