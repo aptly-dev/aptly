@@ -3,12 +3,13 @@ package api
 
 import (
 	"fmt"
+	"sort"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
-	"sort"
-	"time"
 )
 
 // Lock order acquisition (canonical):
@@ -23,8 +24,8 @@ func apiVersion(c *gin.Context) {
 }
 
 const (
-	ACQUIREDB = iota
-	RELEASEDB
+	acquiredb = iota
+	releasedb
 )
 
 // Flushes all collections which cache in-memory objects
@@ -80,14 +81,14 @@ func acquireDatabase(requests chan int, acks chan error) {
 	for {
 		request := <-requests
 		switch request {
-		case ACQUIREDB:
+		case acquiredb:
 			if clients == 0 {
 				acks <- context.ReOpenDatabase()
 			} else {
 				acks <- nil
 			}
 			clients++
-		case RELEASEDB:
+		case releasedb:
 			clients--
 			if clients == 0 {
 				flushColections()

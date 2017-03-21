@@ -2,22 +2,23 @@
 package utils
 
 import (
-  "fmt"
-  "os"
-  "golang.org/x/sys/unix"
+	"fmt"
+	"os"
+
+	"golang.org/x/sys/unix"
 )
 
-// check if directory exists and is accessible
+// DirIsAccessible verifies that directory exists and is accessible
 func DirIsAccessible(filename string) error {
-  _, err := os.Stat(filename);
-  if err != nil {
-    if ! os.IsNotExist(err) {
-      return fmt.Errorf("Something went wrong, %v", err)
-    }
-  } else {
-    if unix.Access(filename, unix.W_OK) != nil {
-      return fmt.Errorf("'%s' is inaccessible, check access rights", filename)
-    }
-  }
-  return nil
+	_, err := os.Stat(filename)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("Something went wrong, %v", err)
+		}
+	} else {
+		if unix.Access(filename, unix.W_OK) != nil {
+			return fmt.Errorf("'%s' is inaccessible, check access rights", filename)
+		}
+	}
+	return nil
 }

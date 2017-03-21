@@ -3,9 +3,10 @@ package deb
 import (
 	"bytes"
 	"encoding/json"
+	"sort"
+
 	"github.com/AlekSi/pointer"
 	"github.com/ugorji/go/codec"
-	"sort"
 )
 
 // PackageRefList is a list of keys of packages, this is basis for snapshot
@@ -389,7 +390,7 @@ func (l *PackageRefList) FilterLatestRefs() {
 			}
 
 			// Compensate for the reduced set
-			i -= 1
+			i--
 		}
 
 		lastArch, lastName, lastVer = arch, name, ver

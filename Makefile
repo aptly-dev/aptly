@@ -35,8 +35,10 @@ coverage: coverage.out
 	rm -f coverage.out
 
 check:
-	go vet -shadow=true $(ALL_PACKAGES:%=./%)
-	golint $(ALL_PACKAGES:%=./%)
+	go vet $(ALL_PACKAGES:%=./%)
+	for package in $(ALL_PACKAGES); do \
+		golint ./$$package; \
+	done
 
 install:
 	go install -v
@@ -46,7 +48,7 @@ system-test: install
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
 
-travis: $(TRAVIS_TARGET) system-test
+travis: $(TRAVIS_TARGET) check system-test
 
 test:
 	go test -v `go list ./... | grep -v vendor/` -gocheck.v=true

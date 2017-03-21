@@ -104,7 +104,7 @@ func StrSliceDeduplicate(s []string) []string {
 
 // StrSlicesSubstract finds all the strings which are in l but not in r, both slices shoult be sorted
 func StrSlicesSubstract(l, r []string) []string {
-	result := make([]string, 0)
+	var result []string
 
 	// pointer to left and right reflists
 	il, ir := 0, 0

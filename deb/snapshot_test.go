@@ -2,6 +2,7 @@ package deb
 
 import (
 	"errors"
+
 	"github.com/smira/aptly/database"
 
 	. "gopkg.in/check.v1"
@@ -195,7 +196,7 @@ func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
 
 	repo3, _ := NewRemoteRepo("other", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{}, false, false)
 
-	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot{})
+	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot(nil))
 }
 
 func (s *SnapshotCollectionSuite) TestFindByLocalRepoSource(c *C) {
@@ -209,7 +210,7 @@ func (s *SnapshotCollectionSuite) TestFindByLocalRepoSource(c *C) {
 
 	lrepo3 := NewLocalRepo("other", "")
 
-	c.Check(s.collection.ByLocalRepoSource(lrepo3), DeepEquals, []*Snapshot{})
+	c.Check(s.collection.ByLocalRepoSource(lrepo3), DeepEquals, []*Snapshot(nil))
 }
 
 func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
@@ -225,7 +226,7 @@ func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
 
 	c.Check(s.collection.BySnapshotSource(s.snapshot1), DeepEquals, []*Snapshot{snapshot3, snapshot4})
 	c.Check(s.collection.BySnapshotSource(s.snapshot2), DeepEquals, []*Snapshot{snapshot3})
-	c.Check(s.collection.BySnapshotSource(snapshot5), DeepEquals, []*Snapshot{})
+	c.Check(s.collection.BySnapshotSource(snapshot5), DeepEquals, []*Snapshot(nil))
 }
 
 func (s *SnapshotCollectionSuite) TestDrop(c *C) {
