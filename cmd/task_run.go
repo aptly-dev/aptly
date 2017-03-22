@@ -20,7 +20,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 		var finfo os.FileInfo
 		if finfo, err = os.Stat(filename); os.IsNotExist(err) || finfo.IsDir() {
-			return fmt.Errorf("no such file, %s\n", filename)
+			return fmt.Errorf("no such file, %s", filename)
 		}
 
 		fmt.Print("Reading file...\n\n")

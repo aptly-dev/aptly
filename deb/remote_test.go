@@ -2,16 +2,17 @@ package deb
 
 import (
 	"errors"
+	"io"
+	"io/ioutil"
+	"os"
+	"sort"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
 	"github.com/smira/aptly/utils"
-	"io"
-	"io/ioutil"
-	"os"
-	"sort"
 
 	. "gopkg.in/check.v1"
 )
@@ -197,7 +198,7 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 
 func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
 	downloader := http.NewFakeDownloader()
-	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
 
@@ -257,8 +258,8 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
 	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
@@ -286,11 +287,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
 	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
@@ -327,9 +328,9 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
 
 	err := s.flat.Fetch(downloader, nil)
@@ -358,13 +359,13 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
 
 	err := s.flat.Fetch(downloader, nil)

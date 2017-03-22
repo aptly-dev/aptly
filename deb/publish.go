@@ -921,7 +921,7 @@ func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, 
 
 // BySnapshot looks up repository by snapshot source
 func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*PublishedRepo {
-	result := make([]*PublishedRepo, 0)
+	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == "snapshot" {
 			if r.SourceUUID == snapshot.UUID {
@@ -941,7 +941,7 @@ func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*Pub
 
 // ByLocalRepo looks up repository by local repo source
 func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*PublishedRepo {
-	result := make([]*PublishedRepo, 0)
+	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == "local" {
 			if r.SourceUUID == repo.UUID {

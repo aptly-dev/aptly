@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"strings"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"os/signal"
-	"strings"
 )
 
 func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
@@ -88,7 +89,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	defer func() {
 		// on any interruption, unlock the mirror
-		err := context.ReOpenDatabase()
+		err = context.ReOpenDatabase()
 		if err == nil {
 			repo.MarkAsIdle()
 			context.CollectionFactory().RemoteRepoCollection().Update(repo)
@@ -130,7 +131,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}()
 
 	// Wait for all downloads to finish
-	errors := make([]string, 0)
+	var errors []string
 
 	for count > 0 {
 		select {
@@ -149,7 +150,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	signal.Stop(sigch)
 
 	if len(errors) > 0 {
-		return fmt.Errorf("unable to update: download errors:\n  %s\n", strings.Join(errors, "\n  "))
+		return fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 	}
 
 	err = context.ReOpenDatabase()

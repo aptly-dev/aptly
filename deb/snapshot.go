@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"log"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 // Snapshot is immutable state of repository: list of packages
@@ -251,7 +252,7 @@ func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
 
 // ByRemoteRepoSource looks up snapshots that have specified RemoteRepo as a source
 func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
 		if s.SourceKind == "repo" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
@@ -263,7 +264,7 @@ func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Sn
 
 // ByLocalRepoSource looks up snapshots that have specified LocalRepo as a source
 func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
 		if s.SourceKind == "local" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
@@ -275,7 +276,7 @@ func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snap
 
 // BySnapshotSource looks up snapshots that have specified snapshot as a source
 func (collection *SnapshotCollection) BySnapshotSource(snapshot *Snapshot) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
 		if s.SourceKind == "snapshot" && utils.StrSliceHasItem(s.SourceIDs, snapshot.UUID) {

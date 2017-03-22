@@ -58,7 +58,7 @@ func (s *ListSuite) TestStrSliceDeduplicate(c *C) {
 }
 
 func (s *ListSuite) TestStrSlicesSubstract(c *C) {
-	empty := []string{}
+	empty := []string(nil)
 	l1 := []string{"r1", "r2", "r3", "r4"}
 	l2 := []string{"r1", "r3"}
 	l3 := []string{"r2", "r4"}

@@ -19,14 +19,14 @@ import (
 	"github.com/smira/go-xz"
 )
 
-// HTTPError is download error connected to HTTP code
-type HTTPError struct {
+// Error is download error connected to HTTP code
+type Error struct {
 	Code int
 	URL  string
 }
 
 // Error
-func (e *HTTPError) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("HTTP code %d while fetching %s", e.Code, e.URL)
 }
 
@@ -201,7 +201,7 @@ func (downloader *downloaderImpl) downloadTask(req *http.Request, task *download
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return "", &HTTPError{Code: resp.StatusCode, URL: task.url}
+		return "", &Error{Code: resp.StatusCode, URL: task.url}
 	}
 
 	err = os.MkdirAll(filepath.Dir(task.destination), 0777)
@@ -367,7 +367,7 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		}
 
 		if err != nil {
-			if err1, ok := err.(*HTTPError); ok && (err1.Code == 404 || err1.Code == 403) {
+			if err1, ok := err.(*Error); ok && (err1.Code == 404 || err1.Code == 403) {
 				continue
 			}
 			return nil, nil, err
