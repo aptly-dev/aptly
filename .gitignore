@@ -27,7 +27,6 @@ coverage*.out
 
 *.pyc
 
-vendor/
 xc-out/
 root/
 

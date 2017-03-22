@@ -66,17 +66,12 @@ Binary executables (depends almost only on libc) are available for download from
 
 If you have Go environment set up, you can build aptly from source by running (go 1.6+ required)::
 
-    go get -u github.com/mattn/gom
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
     cd $GOPATH/src/github.com/smira/aptly
-    gom -production install
-    gom build -o $GOPATH/bin/aptly
+    go install .
 
-Aptly is using `gom <https://github.com/mattn/gom>`_ to fix external dependencies, so regular ``go get github.com/smira/aptly``
-should work as well, but might fail or produce different result (if external libraries got updated).
-
-If you don't have Go installed (or older version), you can easily install Go using `gvm <https://github.com/moovweb/gvm/>`_.
+Binary would be installed to ```$GOPATH/bin/aptly``.
 
 Integrations
 ------------
