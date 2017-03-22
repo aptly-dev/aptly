@@ -1,0 +1,31 @@
+{
+    "dependencies": {
+        "github.com/gin-gonic/gin": {
+            "revision": "b1758d3bfa09e61ddbc1c9a627e936eec6a170de"
+        },
+        "github.com/h2non/filetype": {
+            "branch": "master"
+        },
+        "github.com/mkrautz/goar": {
+            "branch": "master"
+        },
+        "github.com/smira/go-uuid": {
+            "branch": "master"
+        },
+        "github.com/smira/go-xz": {
+            "branch": "master"
+        },
+        "github.com/ugorji/go": {
+            "revision": "71c2886f5a673a35f909803f38ece5810165097b"
+        },
+        "golang.org/x/crypto": {
+            "branch": "master"
+        },
+        "golang.org/x/sys": {
+            "branch": "master"
+        },
+        "gopkg.in/check.v1": {
+            "branch": "v1"
+        }
+    }
+}

@@ -1,0 +1,10 @@
+script:
+  - go build ./...
+  - go test ./...
+  - gofmt -l -s -w .
+  - git diff --exit-code
+
+language: go
+
+go:
+  - 1.7.1
