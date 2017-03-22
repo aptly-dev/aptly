@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"sort"
 )
 
 func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {

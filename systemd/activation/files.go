@@ -26,6 +26,7 @@ const (
 	listenFdsStart = 3
 )
 
+// Files returns all the fds passed from systemd
 func Files(unsetEnv bool) []*os.File {
 	if unsetEnv {
 		defer os.Unsetenv("LISTEN_PID")

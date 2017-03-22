@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
-	"strings"
 )
 
 // SigningOptions is a shared between publish API GPG options structure

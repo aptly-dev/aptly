@@ -51,7 +51,7 @@ type PublishedRepo struct {
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
 
-	// Legacy fields for compatibily with old published repositories (< 0.6)
+	// Legacy fields for compatibility with old published repositories (< 0.6)
 	Component string
 	// SourceUUID is UUID of either snapshot or local repo
 	SourceUUID string `codec:"SnapshotUUID"`

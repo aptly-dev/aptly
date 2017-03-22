@@ -2,8 +2,9 @@ package deb
 
 import (
 	"fmt"
-	"github.com/awalterschulze/gographviz"
 	"strings"
+
+	"github.com/awalterschulze/gographviz"
 )
 
 // BuildGraph generates graph contents from aptly object database
@@ -18,15 +19,15 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	var labelEnd string
 
 	switch layout {
-		case "vertical":
-			graph.AddAttr("aptly", "rankdir", "LR")
-			labelStart = ""
-			labelEnd = ""
-		case "horizontal":
-			fallthrough
-		default:
-			labelStart = "{"
-			labelEnd = "}"
+	case "vertical":
+		graph.AddAttr("aptly", "rankdir", "LR")
+		labelStart = ""
+		labelEnd = ""
+	case "horizontal":
+		fallthrough
+	default:
+		labelStart = "{"
+		labelEnd = "}"
 	}
 
 	existingNodes := map[string]bool{}
@@ -94,7 +95,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "cadetblue1",
-			"label":     fmt.Sprintf("%sSnapshot %s|%s|pkgs: %d%s", labelStart,
+			"label": fmt.Sprintf("%sSnapshot %s|%s|pkgs: %d%s", labelStart,
 				snapshot.Name, description, snapshot.NumPackages(), labelEnd),
 		})
 

@@ -1,8 +1,9 @@
 package query
 
 import (
-	"github.com/smira/aptly/deb"
 	"regexp"
+
+	"github.com/smira/aptly/deb"
 
 	. "gopkg.in/check.v1"
 )

@@ -1,9 +1,10 @@
 package deb
 
 import (
-	"github.com/smira/aptly/utils"
 	"path/filepath"
 	"runtime"
+
+	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )

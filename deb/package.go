@@ -3,11 +3,12 @@ package deb
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // Package is single instance of Debian package
@@ -317,7 +318,7 @@ func (p *Package) GetArchitecture() string {
 	return p.Architecture
 }
 
-// GetDependencies compiles list of dependenices by flags from options
+// GetDependencies compiles list of dependncies by flags from options
 func (p *Package) GetDependencies(options int) (dependencies []string) {
 	deps := p.Deps()
 

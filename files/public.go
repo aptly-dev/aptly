@@ -2,11 +2,12 @@ package files
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
 	"io"
 	"os"
 	"path/filepath"
 	"syscall"
+
+	"github.com/smira/aptly/aptly"
 )
 
 // PublishedStorage abstract file system with public dirs (published repos)
