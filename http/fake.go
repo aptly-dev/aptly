@@ -2,11 +2,12 @@ package http
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 type expectedRequest struct {

@@ -2,6 +2,10 @@ package s3
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -11,9 +15,6 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
 	"github.com/smira/go-aws-auth"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)

@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/smira/aptly/cmd"
-	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,6 +10,10 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+
+	"github.com/smira/aptly/cmd"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 func allFlags(flags *flag.FlagSet) []*flag.Flag {

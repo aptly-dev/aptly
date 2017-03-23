@@ -2,12 +2,13 @@ package files
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/smira/aptly/aptly"
 )
 
 // PackagePool is deduplicated storage of package files on filesystem

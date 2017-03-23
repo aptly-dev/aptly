@@ -3,10 +3,11 @@ package deb
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/ugorji/go/codec"
-	"path/filepath"
 )
 
 // PackageCollection does management of packages in DB

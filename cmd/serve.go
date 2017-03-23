@@ -2,16 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"net"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 func aptlyServe(cmd *commander.Command, args []string) error {

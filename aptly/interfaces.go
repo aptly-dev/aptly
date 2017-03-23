@@ -3,8 +3,9 @@
 package aptly
 
 import (
-	"github.com/smira/aptly/utils"
 	"io"
+
+	"github.com/smira/aptly/utils"
 )
 
 // PackagePool is asbtraction of package pool storage.

@@ -1,0 +1,292 @@
+{
+    "memo": "4ce49ad4105227467bccc48eec5832d84749da3dee8dc8f6574cd32fec3970c1",
+    "projects": [
+        {
+            "name": "github.com/AlekSi/pointer",
+            "version": "v1.0.0",
+            "revision": "08a25bac605b3fcb6cc27f3917b2c2c87451963d",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/DisposaBoy/JsonConfigReader",
+            "branch": "master",
+            "revision": "33a99fdf1d5ee1f79b5077e9c06f955ad356d5f4",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/awalterschulze/gographviz",
+            "version": "v1.0",
+            "revision": "761fd5fbb34e4c2c138c280395b65b48e4ff5a53",
+            "packages": [
+                ".",
+                "ast",
+                "parser",
+                "scanner",
+                "token"
+            ]
+        },
+        {
+            "name": "github.com/aws/aws-sdk-go",
+            "version": "v1.8.0",
+            "revision": "2db5849d2939d93075d911138309a83235032bea",
+            "packages": [
+                "aws",
+                "aws/awserr",
+                "aws/awsutil",
+                "aws/client",
+                "aws/client/metadata",
+                "aws/corehandlers",
+                "aws/credentials",
+                "aws/credentials/ec2rolecreds",
+                "aws/credentials/endpointcreds",
+                "aws/credentials/stscreds",
+                "aws/defaults",
+                "aws/ec2metadata",
+                "aws/endpoints",
+                "aws/request",
+                "aws/session",
+                "aws/signer/v4",
+                "private/protocol",
+                "private/protocol/query",
+                "private/protocol/query/queryutil",
+                "private/protocol/rest",
+                "private/protocol/restxml",
+                "private/protocol/xml/xmlutil",
+                "service/s3",
+                "service/sts"
+            ]
+        },
+        {
+            "name": "github.com/cheggaaa/pb",
+            "version": "v1.0.10",
+            "revision": "cdf719fac0dd208251aa828e687c2d5802053b51",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/gin-gonic/gin",
+            "revision": "b1758d3bfa09e61ddbc1c9a627e936eec6a170de",
+            "packages": [
+                ".",
+                "binding",
+                "render"
+            ]
+        },
+        {
+            "name": "github.com/go-ini/ini",
+            "version": "v1.26.0",
+            "revision": "1730955e3146956d6a087861380f9b4667ed5071",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/golang/snappy",
+            "branch": "master",
+            "revision": "553a641470496b2327abcac10b36396bd98e45c9",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/h2non/filetype",
+            "branch": "master",
+            "revision": "0df83c38d14ff5f653d419d480eaac286ccbc823",
+            "packages": [
+                "matchers"
+            ]
+        },
+        {
+            "name": "github.com/jlaffaye/ftp",
+            "branch": "master",
+            "revision": "7b85eb4638a2c0473acefcfb929a98f879c15c86",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/jmespath/go-jmespath",
+            "version": "0.2.2",
+            "revision": "3433f3ea46d9f8019119e7dd41274e112a2359a9",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/julienschmidt/httprouter",
+            "version": "v1.1",
+            "revision": "8c199fb6259ffc1af525cc3ad52ee60ba8359669",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mattn/go-runewidth",
+            "version": "v0.0.2",
+            "revision": "9e777a8366cce605130a531d2cd6363d07ad7317",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mattn/go-shellwords",
+            "version": "v1.0.2",
+            "revision": "005a0944d84452842197c2108bd9168ced206f78",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mkrautz/goar",
+            "branch": "master",
+            "revision": "282caa8bd9daba480b51f1d5a988714913b97aad",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mxk/go-flowrate",
+            "branch": "master",
+            "revision": "cca7078d478f8520f85629ad7c68962d31ed7682",
+            "packages": [
+                "flowrate"
+            ]
+        },
+        {
+            "name": "github.com/ncw/swift",
+            "branch": "master",
+            "revision": "8e9b10220613abdbc2896808ee6b43e411a4fa6c",
+            "packages": [
+                ".",
+                "swifttest"
+            ]
+        },
+        {
+            "name": "github.com/smira/commander",
+            "branch": "master",
+            "revision": "f408b00e68d5d6e21b9f18bd310978dafc604e47",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/smira/flag",
+            "branch": "master",
+            "revision": "357ed3e599ffcbd4aeaa828e1d10da2df3ea5107",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/smira/go-aws-auth",
+            "branch": "master",
+            "revision": "0070896e9d7f4f9f2d558532b2d896ce2239992a",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/smira/go-ftp-protocol",
+            "branch": "master",
+            "revision": "066b75c2b70dca7ae10b1b88b47534a3c31ccfaa",
+            "packages": [
+                "protocol"
+            ]
+        },
+        {
+            "name": "github.com/smira/go-uuid",
+            "branch": "master",
+            "revision": "ed3ca8a15a931b141440a7e98e4f716eec255f7d",
+            "packages": [
+                "uuid"
+            ]
+        },
+        {
+            "name": "github.com/smira/go-xz",
+            "branch": "master",
+            "revision": "0c531f070014e218b21f3cfca801cc992d52726d",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/smira/lzma",
+            "branch": "master",
+            "revision": "7f0af6269940baa2c938fabe73e0d7ba41205683",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/syndtr/goleveldb",
+            "branch": "master",
+            "revision": "3c5717caf1475fd25964109a0fc640bd150fce43",
+            "packages": [
+                "leveldb",
+                "leveldb/cache",
+                "leveldb/comparer",
+                "leveldb/errors",
+                "leveldb/filter",
+                "leveldb/iterator",
+                "leveldb/journal",
+                "leveldb/memdb",
+                "leveldb/opt",
+                "leveldb/storage",
+                "leveldb/table",
+                "leveldb/util"
+            ]
+        },
+        {
+            "name": "github.com/ugorji/go",
+            "revision": "71c2886f5a673a35f909803f38ece5810165097b",
+            "packages": [
+                "codec"
+            ]
+        },
+        {
+            "name": "github.com/wsxiaoys/terminal",
+            "branch": "master",
+            "revision": "0940f3fc43a0ed42d04916b1c04578462c650b09",
+            "packages": [
+                "color"
+            ]
+        },
+        {
+            "name": "golang.org/x/crypto",
+            "branch": "master",
+            "revision": "459e26527287adbc2adcc5d0d49abff9a5f315a7",
+            "packages": [
+                "ssh/terminal"
+            ]
+        },
+        {
+            "name": "golang.org/x/sys",
+            "branch": "master",
+            "revision": "99f16d856c9836c42d24e7ab64ea72916925fa97",
+            "packages": [
+                "unix"
+            ]
+        },
+        {
+            "name": "gopkg.in/check.v1",
+            "branch": "v1",
+            "revision": "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "gopkg.in/h2non/filetype.v1",
+            "version": "v1.0.1",
+            "revision": "3093b8ebec6efb56ac813238b8beab4ed4eaac6a",
+            "packages": [
+                "types"
+            ]
+        }
+    ]
+}

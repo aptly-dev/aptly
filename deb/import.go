@@ -1,12 +1,13 @@
 package deb
 
 import (
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files

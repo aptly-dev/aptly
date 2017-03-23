@@ -2,11 +2,12 @@ package deb
 
 import (
 	"bytes"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )

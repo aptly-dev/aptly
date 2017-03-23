@@ -2,13 +2,14 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
-	"os"
-	"path/filepath"
 )
 
 // GET /api/repos

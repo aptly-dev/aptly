@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/smira/aptly/cmd"
 	"os"
+
+	"github.com/smira/aptly/cmd"
 )
 
 func main() {

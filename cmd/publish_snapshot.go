@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"strings"
 )
 
 func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {

@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func verifyPath(path string) bool {

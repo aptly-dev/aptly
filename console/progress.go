@@ -2,10 +2,11 @@ package console
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/cheggaaa/pb"
 	"github.com/smira/aptly/aptly"
 	"github.com/wsxiaoys/terminal/color"
-	"strings"
 )
 
 const (

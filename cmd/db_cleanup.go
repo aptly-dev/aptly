@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
-	"sort"
-	"strings"
 )
 
 // aptly db cleanup
@@ -153,7 +154,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	context.Progress().ColoredPrintf("@{w!}Loading list of all packages...@|")
 	allPackageRefs := context.CollectionFactory().PackageCollection().AllPackageRefs()
 
-	toDelete := allPackageRefs.Substract(existingPackageRefs)
+	toDelete := allPackageRefs.Subtract(existingPackageRefs)
 
 	// delete packages that are no longer referenced
 	context.Progress().ColoredPrintf("@{r!}Deleting unreferenced packages (%d)...@|", toDelete.Len())

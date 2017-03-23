@@ -2,12 +2,13 @@ package swift
 
 import (
 	"fmt"
-	. "gopkg.in/check.v1"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"time"
+
+	. "gopkg.in/check.v1"
 
 	"github.com/ncw/swift/swifttest"
 

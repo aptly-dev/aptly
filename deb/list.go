@@ -2,9 +2,10 @@ package deb
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
-	"sort"
 )
 
 // Dependency options
@@ -66,6 +67,7 @@ func NewPackageList() *PackageList {
 	return NewPackageListWithDuplicates(false, 1000)
 }
 
+// NewPackageListWithDuplicates creates empty package list which might allow or block duplicate packages
 func NewPackageListWithDuplicates(duplicates bool, capacity int) *PackageList {
 	if capacity == 0 {
 		capacity = 1000
@@ -247,7 +249,7 @@ func (l *PackageList) Strings() []string {
 
 	for _, p := range l.packages {
 		result[i] = string(p.Key(""))
-		i += 1
+		i++
 	}
 
 	return result

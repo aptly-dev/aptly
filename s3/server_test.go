@@ -28,15 +28,15 @@ type s3Error struct {
 	Code       string
 	Message    string
 	BucketName string
-	RequestId  string
-	HostId     string
+	RequestID  string
+	HostID     string
 }
 
 type action struct {
 	srv   *Server
 	w     http.ResponseWriter
 	req   *http.Request
-	reqId string
+	reqID string
 }
 
 // Config controls the internal behaviour of the Server. A nil config is the default
@@ -62,7 +62,7 @@ func (c *Config) send409Conflict() bool {
 // All of the data for the server is kept in memory.
 type Server struct {
 	url      string
-	reqId    int
+	reqID    int
 	listener net.Listener
 	mu       sync.Mutex
 	buckets  map[string]*bucket
@@ -144,9 +144,9 @@ func (srv *Server) serveHTTP(w http.ResponseWriter, req *http.Request) {
 		srv:   srv,
 		w:     w,
 		req:   req,
-		reqId: fmt.Sprintf("%09X", srv.reqId),
+		reqID: fmt.Sprintf("%09X", srv.reqID),
 	}
-	srv.reqId++
+	srv.reqID++
 
 	var r resource
 	defer func() {
@@ -158,7 +158,7 @@ func (srv *Server) serveHTTP(w http.ResponseWriter, req *http.Request) {
 			case bucketResource:
 				err.BucketName = r.name
 			}
-			err.RequestId = a.reqId
+			err.RequestID = a.reqID
 			// TODO HostId
 			w.Header().Set("Content-Type", `xml version="1.0" encoding="UTF-8"`)
 			w.WriteHeader(err.statusCode)

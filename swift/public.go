@@ -3,18 +3,19 @@ package swift
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ncw/swift"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ncw/swift"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/files"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)
 type PublishedStorage struct {
-	conn              swift.Connection
+	conn              *swift.Connection
 	container         string
 	prefix            string
 	supportBulkDelete bool
@@ -51,7 +52,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 	if tenantID == "" {
 		tenantID = os.Getenv("OS_TENANT_ID")
 	}
-  if domain == "" {
+	if domain == "" {
 		domain = os.Getenv("OS_USER_DOMAIN_NAME")
 	}
 	if domainID == "" {
@@ -64,7 +65,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 		tenantDomainID = os.Getenv("OS_PROJECT_DOMAIN_ID")
 	}
 
-	ct := swift.Connection{
+	ct := &swift.Connection{
 		UserName:       username,
 		ApiKey:         password,
 		AuthUrl:        authURL,
