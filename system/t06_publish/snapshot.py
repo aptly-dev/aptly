@@ -999,3 +999,55 @@ class PublishSnapshot36Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Release')
         self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')
+
+
+class PublishSnapshot37Test(BaseTest):
+    """
+    publish snapshot: -use-symlinks
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap37 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -use-symlinks -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap37"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot37Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Release')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-amd64.gz')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages')
+        self.check_not_exists('public/dists/maverick/main/debian-installer/binary-amd64/Packages')
+
+        self.check_exists('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
+
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Release')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-i386.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Release')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_file_is_regular('public/dists/maverick/main/binary-amd64/Packages.bz2')
+        self.check_file_is_regular('public/dists/maverick/main/Contents-amd64.gz')
+
+        self.check_file_is_symlink('public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')

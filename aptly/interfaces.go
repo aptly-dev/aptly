@@ -35,7 +35,7 @@ type PublishedStorage interface {
 	// Remove removes single file under public path
 	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location
-	LinkFromPool(publishedDirectory string, sourcePool PackagePool, sourcePath, sourceMD5 string, force bool) error
+	LinkFromPool(publishedDirectory string, sourcePool PackagePool, sourcePath, sourceMD5 string, force bool, symlinks bool) error
 	// Filelist returns list of files under prefix
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file

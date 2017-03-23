@@ -375,13 +375,13 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	file.Close()
 
-	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
+	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false, false)
 	c.Check(err, IsNil)
 	c.Check(p.Files()[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Files()[0].downloadPath, Equals, "pool/non-free/a/alien-arena")
 
 	p.IsSource = true
-	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
+	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false, false)
 	c.Check(err, IsNil)
 	c.Check(p.Extra()["Directory"], Equals, "pool/non-free/a/alien-arena")
 }
