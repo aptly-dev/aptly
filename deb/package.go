@@ -533,7 +533,7 @@ func (p *Package) Equals(p2 *Package) bool {
 
 // LinkFromPool links package file from pool to dist's pool location
 func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packagePool aptly.PackagePool,
-	prefix, component string, force bool) error {
+	prefix, component string, force bool, symlinks bool) error {
 	poolDir, err := p.PoolDirectory()
 	if err != nil {
 		return err
@@ -548,7 +548,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 		relPath := filepath.Join("pool", component, poolDir)
 		publishedDirectory := filepath.Join(prefix, relPath)
 
-		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath, f.Checksums.MD5, force)
+		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath, f.Checksums.MD5, force, symlinks)
 		if err != nil {
 			return err
 		}

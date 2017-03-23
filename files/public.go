@@ -80,23 +80,19 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
+	sourcePath, sourceMD5 string, force bool, symlinks bool) error {
 	// verify that package pool is local pool is filesystem pool
 	_ = sourcePool.(*PackagePool)
 
 	baseName := filepath.Base(sourcePath)
 	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
-	err := os.MkdirAll(poolPath, 0777)
-	if err != nil {
-		return err
-	}
-
 	var dstStat, srcStat os.FileInfo
 
-	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
+	dstStat, err := os.Stat(filepath.Join(poolPath, baseName))
 	if err == nil {
 		// already exists, check source file
+		// when using symlinks, this should be the same file
 		srcStat, err = os.Stat(sourcePath)
 		if err != nil {
 			// source file doesn't exist? problem!
@@ -124,7 +120,24 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	}
 
 	// destination doesn't exist (or forced), create link
-	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	if symlinks {
+		err = os.Symlink(sourcePath, filepath.Join(poolPath, baseName))
+	} else {
+		err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	}
+	if err != nil {
+		// Perhaps the output directory didn't exist?
+		err = os.MkdirAll(poolPath, 0777)
+		if err != nil {
+			return err
+		}
+		if symlinks {
+			err = os.Symlink(sourcePath, filepath.Join(poolPath, baseName))
+		} else {
+			err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
+		}
+	}
+	return err
 }
 
 // Filelist returns list of files under prefix

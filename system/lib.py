@@ -266,6 +266,14 @@ class BaseTest(object):
         if os.stat(os.path.join(os.environ["HOME"], ".aptly", path))[6] == 0:
             raise Exception("file %s is empty" % (path, ))
 
+    def check_file_is_symlink(self, path):
+        if not os.path.islink(os.path.join(os.environ["HOME"], ".aptly", path)):
+            raise Exception("path %s doesn't exist" % (path, ))
+
+    def check_file_is_regular(self, path):
+        if not os.path.isfile(os.path.join(os.environ["HOME"], ".aptly", path)):
+            raise Exception("path %s doesn't exist" % (path, ))
+
     def check_equal(self, a, b):
         if a != b:
             self.verify_match(a, b, match_prepare=pprint.pformat)
