@@ -1,8 +1,9 @@
 package console
 
 import (
-	"golang.org/x/crypto/ssh/terminal"
 	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // RunningOnTerminal checks whether stdout is terminal

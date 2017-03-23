@@ -2,6 +2,7 @@ package deb
 
 import (
 	"errors"
+
 	"github.com/smira/aptly/database"
 
 	. "gopkg.in/check.v1"

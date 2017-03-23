@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
 	"github.com/ugorji/go/codec"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 
 	. "gopkg.in/check.v1"
 )

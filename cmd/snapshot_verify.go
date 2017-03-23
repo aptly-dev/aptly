@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
-	"sort"
 )
 
 func aptlySnapshotVerify(cmd *commander.Command, args []string) error {

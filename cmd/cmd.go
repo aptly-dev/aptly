@@ -4,13 +4,14 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"text/template"
+	"time"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"text/template"
-	"time"
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList

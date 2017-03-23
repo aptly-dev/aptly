@@ -1,0 +1,4 @@
+{
+    "DisableAll": true,
+    "Enable": ["vet", "golint", "gofmt", "deadcode", "goimports", "misspell"]
+}

@@ -2,13 +2,14 @@ package deb
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // Changes is a result of .changes file parsing

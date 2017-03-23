@@ -3,14 +3,15 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
 )
 
 func aptlyGraph(cmd *commander.Command, args []string) error {

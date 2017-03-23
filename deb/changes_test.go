@@ -1,9 +1,10 @@
 package deb
 
 import (
-	. "gopkg.in/check.v1"
 	"os"
 	"path/filepath"
+
+	. "gopkg.in/check.v1"
 )
 
 type ChangesSuite struct {

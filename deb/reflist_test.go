@@ -2,6 +2,7 @@ package deb
 
 import (
 	"errors"
+
 	"github.com/smira/aptly/database"
 
 	. "gopkg.in/check.v1"
@@ -156,12 +157,12 @@ func (s *PackageRefListSuite) TestSubstract(c *C) {
 	l4 := &PackageRefList{Refs: [][]byte{r4, r5}}
 	l5 := &PackageRefList{Refs: [][]byte{r1, r2, r3}}
 
-	c.Check(l1.Substract(empty), DeepEquals, l1)
-	c.Check(l1.Substract(l2), DeepEquals, l3)
-	c.Check(l1.Substract(l3), DeepEquals, l2)
-	c.Check(l1.Substract(l4), DeepEquals, l5)
-	c.Check(empty.Substract(l1), DeepEquals, empty)
-	c.Check(l2.Substract(l3), DeepEquals, l2)
+	c.Check(l1.Subtract(empty), DeepEquals, l1)
+	c.Check(l1.Subtract(l2), DeepEquals, l3)
+	c.Check(l1.Subtract(l3), DeepEquals, l2)
+	c.Check(l1.Subtract(l4), DeepEquals, l5)
+	c.Check(empty.Subtract(l1), DeepEquals, empty)
+	c.Check(l2.Subtract(l3), DeepEquals, l2)
 }
 
 func (s *PackageRefListSuite) TestDiff(c *C) {

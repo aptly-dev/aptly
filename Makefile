@@ -17,7 +17,8 @@ prepare:
 	go get -u github.com/mattn/goveralls
 	go get -u github.com/axw/gocov/gocov
 	go get -u golang.org/x/tools/cmd/cover
-	go get -u github.com/golang/lint/golint
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
 
 dev:
 	go get -u github.com/golang/dep/...
@@ -35,10 +36,7 @@ coverage: coverage.out
 	rm -f coverage.out
 
 check:
-	go vet $(ALL_PACKAGES:%=./%)
-	for package in $(ALL_PACKAGES); do \
-		golint ./$$package; \
-	done
+	gometalinter --vendor --vendored-linters --config=linter.json ./...
 
 install:
 	go install -v

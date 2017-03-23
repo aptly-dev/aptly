@@ -3,12 +3,6 @@ package deb
 import (
 	"bytes"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/http"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
 	"os"
@@ -20,6 +14,13 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 // RemoteRepo statuses
