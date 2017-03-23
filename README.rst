@@ -11,8 +11,8 @@ aptly
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/gojp/goreportcard
-    :target: http://goreportcard.com/report/gojp/goreportcard
+.. image:: http://goreportcard.com/badge/smira/aptly
+    :target: http://goreportcard.com/report/smira/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
