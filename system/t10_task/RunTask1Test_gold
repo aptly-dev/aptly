@@ -21,6 +21,6 @@ End command output: ------------------------------
 4) [Running]: version
 
 Begin command output: ----------------------------
-aptly version: 0.9.8~dev
+aptly version: ${APTLY_VERSION}
 
 End command output: ------------------------------

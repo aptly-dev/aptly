@@ -1,7 +1,7 @@
 package aptly
 
-// Version of aptly
-const Version = "0.9.8~dev"
+// Version of aptly (filled in at link time)
+var Version string
 
 // EnableDebug triggers some debugging features
 const EnableDebug = false

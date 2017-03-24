@@ -5,6 +5,8 @@ class RunTask1Test(BaseTest):
     """
     task run: simple commands, 1-word command
     """
+    gold_processor = BaseTest.expand_environ
+
     runCmd = "aptly task run repo list, repo create local, repo drop local, version"
 
 
