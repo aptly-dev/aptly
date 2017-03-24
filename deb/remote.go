@@ -506,14 +506,14 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skip_existing_packages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
 	seen := make(map[string]struct{}, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
 		download := true
-		if repo.packageRefs != nil && skip_existing_packages {
-			download = ! repo.packageRefs.Has(p)
+		if repo.packageRefs != nil && skipExistingPackages {
+			download = !repo.packageRefs.Has(p)
 		}
 
 		if download {

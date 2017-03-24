@@ -81,10 +81,10 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		queue        []deb.PackageDownloadTask
 	)
 
-	skip_existing_packages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
+	skipExistingPackages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
 
 	context.Progress().Printf("Building download queue...\n")
-	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), skip_existing_packages)
+	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), skipExistingPackages)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -190,7 +190,7 @@ Example:
 	cmd.Flag.Bool("force", false, "force update mirror even if it is locked by another process")
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
-	cmd.Flag.Bool("skip-existing-packages", false, "do not check file existance for packages listed in the internal database of the mirror")
+	cmd.Flag.Bool("skip-existing-packages", false, "do not check file existence for packages listed in the internal database of the mirror")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
