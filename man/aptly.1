@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "March 2017" "" ""
+.TH "APTLY" "1" "April 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -50,6 +50,21 @@ Configuration file is stored in JSON format (default values shown below):
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
   "skipContentsPublishing": false,
+  "FileSystemPublishEndpoints": {
+    "test1": {
+      "rootDir": "/opt/srv1/aptly_public",
+      "linkMethod": "symlink"
+    },
+    "test2": {
+      "rootDir": "/opt/srv2/aptly_public",
+      "linkMethod": "copy",
+      "verifyMethod": "md5"
+    },
+    "test3": {
+      "rootDir": "/opt/srv3/aptly_public",
+      "linkMethod": "hardlink"
+    }
+  },
   "S3PublishEndpoints": {
     "test": {
       "region": "us\-east\-1",
@@ -89,7 +104,7 @@ Options:
 .
 .TP
 \fBrootDir\fR
-is root of directory storage to store database (\fBrootDir\fR/db), downloaded packages (\fBrootDir\fR/pool) and published repositories (\fBrootDir\fR/public)
+is root of directory storage to store database (\fBrootDir\fR/db), downloaded packages (\fBrootDir\fR/pool) and the default for published repositories (\fBrootDir\fR/public)
 .
 .TP
 \fBdownloadConcurrency\fR
@@ -146,6 +161,27 @@ configuration of Amazon S3 publishing endpoints (see below)
 .TP
 \fBSwiftPublishEndpoints\fR
 configuration of OpenStack Swift publishing endpoints (see below)
+.
+.SH "FILESYSTEM PUBLISHING ENDPOINTS"
+aptly defaults to publish to a single publish directory under \fBrootDir\fR/public\. For a more advanced publishing strategy, you can define one or more filesystem endpoints in the \fBFileSystemPublishEndpoints\fR list of the aptly configuration file\. Each endpoint has a name and the following associated settings:
+.
+.TP
+\fBrootDir\fR
+The publish directory, e\.g\., \fB/opt/srv/aptly_public\fR\.
+.
+.TP
+\fBlinkMethod\fR
+This is one of \fBhardlink\fR, \fBsymlink\fR or \fBcopy\fR\. It specifies how aptly links the files from the internal pool to the published directory\. If not specified, empty or wrong, this defaults to \fBhardlink\fR\.
+.
+.TP
+\fBverifyMethod\fR
+This is used only when setting the \fBlinkMethod\fR to \fBcopy\fR\. Possible values are \fBmd5\fR and \fBsize\fR\. It specifies how aptly compares existing links from the internal pool to the published directory\. The \fBsize\fR method compares only the file sizes, whereas the \fBmd5\fR method calculates the md5 checksum of the found file and compares it to the desired one\. If not specified, empty or wrong, this defaults to \fBmd5\fR\.
+.
+.P
+In order to publish to such an endpoint, specify the endpoint as \fBfilesystem:endpoint\-name\fR with \fBendpoint\-name\fR as the name given in the aptly configuration file\. For example:
+.
+.P
+\fBaptly publish snapshot wheezy\-main filesystem:test1:wheezy/daily\fR
 .
 .SH "S3 PUBLISHING ENDPOINTS"
 aptly could be configured to publish repository directly to Amazon S3 (or S3\-compatible cloud storage)\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:

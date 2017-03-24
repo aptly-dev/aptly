@@ -317,7 +317,14 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
 		if name == "" {
-			publishedStorage = files.NewPublishedStorage(context.config().RootDir)
+			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().RootDir, "public"), "hardlink", "")
+		} else if strings.HasPrefix(name, "filesystem:") {
+			params, ok := context.config().FileSystemPublishRoots[name[11:]]
+			if !ok {
+				Fatal(fmt.Errorf("published local storage %v not configured", name[6:]))
+			}
+
+			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
 			params, ok := context.config().S3PublishRoots[name[3:]]
 			if !ok {
