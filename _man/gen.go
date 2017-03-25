@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"text/template"
 
@@ -56,8 +55,7 @@ func main() {
 	command.UsageLine = "aptly"
 	command.Dispatch(nil)
 
-	_, _File, _, _ := runtime.Caller(0)
-	_File, _ = filepath.Abs(_File)
+	_File, _ := filepath.Abs("./man")
 
 	templ := template.New("man").Funcs(template.FuncMap{
 		"allFlags":    allFlags,
