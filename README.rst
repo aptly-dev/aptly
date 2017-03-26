@@ -69,7 +69,7 @@ If you have Go environment set up, you can build aptly from source by running (g
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
     cd $GOPATH/src/github.com/smira/aptly
-    go install .
+    make install
 
 Binary would be installed to ```$GOPATH/bin/aptly``.
 
