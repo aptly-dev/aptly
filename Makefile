@@ -39,7 +39,7 @@ check:
 	gometalinter --vendor --vendored-linters --config=linter.json ./...
 
 install:
-	go install -x -v -ldflags "-X main.Version=$(VERSION)"
+	go install -v -ldflags "-X main.Version=$(VERSION)"
 
 system-test: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
