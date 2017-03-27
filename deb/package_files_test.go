@@ -61,3 +61,13 @@ func (s *PackageFilesSuite) TestDownloadURL(c *C) {
 func (s *PackageFilesSuite) TestHash(c *C) {
 	c.Check(s.files.Hash(), Equals, uint64(0xc8901eedd79ac51b))
 }
+
+func (s *PackageFilesSuite) TestSelectChecksum(c *C) {
+	c.Check(s.files[0].SelectChecksum(""), Equals, "1e8cba92c41420aa7baa8a5718d67122")
+	c.Check(s.files[0].SelectChecksum("MD5"), Equals, "1e8cba92c41420aa7baa8a5718d67122")
+	c.Check(s.files[0].SelectChecksum("SHA1"), Equals, "46955e48cad27410a83740a21d766ce362364024")
+	c.Check(s.files[0].SelectChecksum("SHA256"), Equals, "eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5")
+
+	// We check about the empty string since the package file does not have a SHA512 set
+	c.Check(s.files[0].SelectChecksum("SHA512"), Equals, "")
+}

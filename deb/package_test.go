@@ -395,11 +395,52 @@ func (s *PackageSuite) TestFilepathList(c *C) {
 	c.Check(list, DeepEquals, []string{"1e/8c/alien-arena-common_7.40-2_i386.deb"})
 }
 
+func (s *PackageSuite) TestFilepathListSHA256(c *C) {
+	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool.SetHashSelector("SHA256")
+	p := NewPackageFromControlFile(s.stanza)
+
+	list, err := p.FilepathList(packagePool)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"eb/4a/alien-arena-common_7.40-2_i386.deb"})
+}
+
 func (s *PackageSuite) TestDownloadList(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 	p.Files()[0].Checksums.Size = 5
 	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
+
+	list, err := p.DownloadList(packagePool)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []PackageDownloadTask{
+		{
+			RepoURI:         "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			DestinationPath: poolPath,
+			Checksums: utils.ChecksumInfo{Size: 5,
+				MD5:    "1e8cba92c41420aa7baa8a5718d67122",
+				SHA1:   "46955e48cad27410a83740a21d766ce362364024",
+				SHA256: "eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5"}}})
+
+	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
+	c.Assert(err, IsNil)
+
+	file, err := os.Create(poolPath)
+	c.Assert(err, IsNil)
+	file.WriteString("abcde")
+	file.Close()
+
+	list, err = p.DownloadList(packagePool)
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []PackageDownloadTask{})
+}
+
+func (s *PackageSuite) TestDownloadListSHA256(c *C) {
+	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool.SetHashSelector("SHA256")
+	p := NewPackageFromControlFile(s.stanza)
+	p.Files()[0].Checksums.Size = 5
+	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.SHA256)
 
 	list, err := p.DownloadList(packagePool)
 	c.Check(err, IsNil)
@@ -446,6 +487,27 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 	p.Files()[0].Checksums.Size = 5
 
 	result, err = p.VerifyFiles(packagePool)
+	c.Check(err, IsNil)
+	c.Check(result, Equals, true)
+}
+
+func (s *PackageSuite) TestVerifyFilesSHA256(c *C) {
+	p := NewPackageFromControlFile(s.stanza)
+
+	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool.SetHashSelector("SHA256")
+	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.SHA256)
+
+	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
+	c.Assert(err, IsNil)
+
+	file, err := os.Create(poolPath)
+	c.Assert(err, IsNil)
+	file.WriteString("abcde")
+	file.Close()
+	p.Files()[0].Checksums.Size = 5
+
+	result, err := p.VerifyFiles(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }

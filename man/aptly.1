@@ -76,7 +76,8 @@ Configuration file is stored in JSON format (default values shown below):
       "tenant": "",
       "tenantid": ""
     }
-  }
+  },
+  "hashSelector": ""
 }
 .
 .fi
@@ -141,6 +142,10 @@ configuration of Amazon S3 publishing endpoints (see below)
 .TP
 \fBSwiftPublishEndpoints\fR
 configuration of OpenStack Swift publishing endpoints (see below)
+.
+.TP
+\fBhashSelector\fR
+selects which hash to use for pool path names, default is MD5, can be set to SHA1, SHA256, or SHA512 before initializing the pool directory
 .
 .SH "S3 PUBLISHING ENDPOINTS"
 aptly could be configured to publish repository directly to Amazon S3 (or S3\-compatible cloud storage)\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:

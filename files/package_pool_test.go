@@ -17,7 +17,6 @@ var _ = Suite(&PackagePoolSuite{})
 
 func (s *PackagePoolSuite) SetUpTest(c *C) {
 	s.pool = NewPackagePool(c.MkDir())
-
 }
 
 func (s *PackagePoolSuite) TestRelativePath(c *C) {
@@ -117,4 +116,27 @@ func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
 
 	err := s.pool.Import(debFile, "91b1a1480b90b9e269ca44d897b12575")
 	c.Check(err, ErrorMatches, "unable to import into pool.*")
+}
+
+func (s *PackagePoolSuite) TestHashSelectorDefault(c *C) {
+	hashName := s.pool.HashSelector()
+	c.Check(hashName, Equals, "MD5")
+
+	// Check that once set the setting is immutable
+	s.pool.SetHashSelector("SHA256")
+	hashName = s.pool.HashSelector()
+	c.Check(hashName, Equals, "MD5")
+}
+
+func (s *PackagePoolSuite) TestHashSelectorSHA256(c *C) {
+	s.pool.SetHashSelector("SHA256")
+
+	// Check that the setting can be set
+	hashName := s.pool.HashSelector()
+	c.Check(hashName, Equals, "SHA256")
+
+	// Check that once set the setting is immutable
+	s.pool.SetHashSelector("MD5")
+	hashName = s.pool.HashSelector()
+	c.Check(hashName, Equals, "SHA256")
 }

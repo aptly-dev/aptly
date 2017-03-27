@@ -15,6 +15,7 @@ import (
 type PackagePool struct {
 	sync.Mutex
 	rootPath string
+	hashSelector string
 }
 
 // Check interface
@@ -28,22 +29,56 @@ func NewPackagePool(root string) *PackagePool {
 }
 
 // RelativePath returns path relative to pool's root for package files given MD5 and original filename
-func (pool *PackagePool) RelativePath(filename string, hashMD5 string) (string, error) {
+func (pool *PackagePool) RelativePath(filename string, hash string) (string, error) {
 	filename = filepath.Base(filename)
 	if filename == "." || filename == "/" {
 		return "", fmt.Errorf("filename %s is invalid", filename)
 	}
 
-	if len(hashMD5) < 4 {
-		return "", fmt.Errorf("unable to compute pool location for filename %v, MD5 is missing", filename)
+	if len(hash) < 4 {
+		return "", fmt.Errorf("unable to compute pool location for filename %v, %s is missing", filename, pool.HashSelector())
 	}
 
-	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
+	return filepath.Join(hash[0:2], hash[2:4], filename), nil
+}
+
+// Return name of hash that is used for selecting the file path
+func (pool *PackagePool) HashSelector() string {
+	if pool.hashSelector == "" {
+		pool.hashSelector = "MD5"
+	} 
+
+	return pool.hashSelector
+}
+
+// Set the name of hash selector that is used for selecting the file path
+func (pool *PackagePool) SetHashSelector(hashSelector string) {
+	if hashSelector == "MD5" || hashSelector == "md5" || hashSelector == "MD5Sum" || hashSelector == "MD5sum" {
+		hashSelector = "MD5"
+	} else if hashSelector == "SHA1" || hashSelector == "sha1" {
+		hashSelector = "SHA1"
+	} else if hashSelector == "SHA256" || hashSelector == "sha256" {
+		hashSelector = "SHA256"
+	} else if hashSelector == "SHA512" || hashSelector == "sha512" {
+		hashSelector = "SHA512"
+	} else {
+		if hashSelector != "" {
+			fmt.Printf("Invalid hash name %s, defaulting to MD5\n", hashSelector)
+		}
+		hashSelector = "MD5"
+	}
+
+	// You only have one chance to set the hash selector
+	if pool.hashSelector == "" {
+		pool.hashSelector = hashSelector
+	} else if pool.hashSelector != hashSelector {
+		fmt.Printf("Hash name used for file paths can only be set once, current %s, new %s\n", pool.hashSelector, hashSelector)
+	}
 }
 
 // Path returns full path to package file in pool given any name and hash of file contents
-func (pool *PackagePool) Path(filename string, hashMD5 string) (string, error) {
-	relative, err := pool.RelativePath(filename, hashMD5)
+func (pool *PackagePool) Path(filename string, hash string) (string, error) {
+	relative, err := pool.RelativePath(filename, hash)
 	if err != nil {
 		return "", err
 	}
@@ -114,7 +149,7 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 }
 
 // Import copies file into package pool
-func (pool *PackagePool) Import(path string, hashMD5 string) error {
+func (pool *PackagePool) Import(path string, hash string) error {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -129,7 +164,7 @@ func (pool *PackagePool) Import(path string, hashMD5 string) error {
 		return err
 	}
 
-	poolPath, err := pool.Path(path, hashMD5)
+	poolPath, err := pool.Path(path, hash)
 	if err != nil {
 		return err
 	}
