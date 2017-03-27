@@ -1,8 +1,10 @@
 import requests_unixsocket
 import time
+import os
 import urllib
 
 from lib import BaseTest
+
 
 class UnixSocketAPITest(BaseTest):
     aptly_server = None
@@ -33,4 +35,4 @@ class UnixSocketAPITest(BaseTest):
         r = session.get('http+unix://%s/api/version' % urllib.quote(UnixSocketAPITest.socket_path, safe=''))
         # Just needs to come back, we actually don't care much about the code.
         # Only needs to verify that the socket is actually responding.
-        self.check_equal(r.json(), {'Version': '0.9.8~dev'})
+        self.check_equal(r.json(), {'Version': os.environ['APTLY_VERSION']})

@@ -98,6 +98,12 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         sys.exit(1)
 
 if __name__ == "__main__":
+    if 'APTLY_VERSION' not in os.environ:
+        try:
+            os.environ['APTLY_VERSION'] = os.popen("make version").read().strip()
+        except BaseException, e:
+            print "Failed to capture current version: ", e
+
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     random.seed()
     include_long_tests = False

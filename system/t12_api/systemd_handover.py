@@ -1,9 +1,10 @@
 import requests_unixsocket
-import time
 import urllib
+import os
 import os.path
 
 from lib import BaseTest
+
 
 class SystemdAPIHandoverTest(BaseTest):
     aptly_server = None
@@ -37,9 +38,9 @@ class SystemdAPIHandoverTest(BaseTest):
     Verify we can listen on a unix domain socket.
     """
     def check(self):
-        if self.aptly_server == None:
+        if self.aptly_server is None:
             print("Skipping test as we failed to setup a listener.")
             return
         session = requests_unixsocket.Session()
         r = session.get('http+unix://%s/api/version' % urllib.quote(self.socket_path, safe=''))
-        self.check_equal(r.json(), {'Version': '0.9.8~dev'})
+        self.check_equal(r.json(), {'Version': os.environ['APTLY_VERSION']})
