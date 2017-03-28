@@ -510,6 +510,10 @@ gpg keyring to use when verifying Release file (could be specified multiple time
 \-\fBmax\-tries\fR=1
 max download tries till process fails with download error
 .
+.TP
+\-\fBskip\-existing\-packages\fR=false
+do not check file existence for packages listed in the internal database of the mirror
+.
 .SH "RENAMES MIRROR"
 \fBaptly\fR \fBmirror\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR
 .
@@ -1890,6 +1894,9 @@ Johannes Layher (https://github\.com/jola5)
 .
 .IP "\[ci]" 4
 Charles Hsu (https://github\.com/charz)
+.
+.IP "\[ci]" 4
+Clemens Rabe (https://github\.com/seeraven)
 .
 .IP "" 0
 

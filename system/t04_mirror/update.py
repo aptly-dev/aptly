@@ -172,3 +172,34 @@ class UpdateMirror12Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror13Test(BaseTest):
+    """
+    update mirrors: regular update with --skip-existing-packages option
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror14Test(BaseTest):
+    """
+    update mirrors: regular update with --skip-existing-packages option
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+    ]
+    runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+

@@ -506,27 +506,33 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
 	seen := make(map[string]struct{}, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
-		list, err2 := p.DownloadList(packagePool)
-		if err2 != nil {
-			return err2
+		download := true
+		if repo.packageRefs != nil && skipExistingPackages {
+			download = !repo.packageRefs.Has(p)
 		}
-		p.files = nil
 
-		for _, task := range list {
-			key := task.RepoURI + "-" + task.DestinationPath
-			_, found := seen[key]
-			if !found {
-				queue = append(queue, task)
-				downloadSize += task.Checksums.Size
-				seen[key] = struct{}{}
+		if download {
+			list, err2 := p.DownloadList(packagePool)
+			if err2 != nil {
+				return err2
+			}
+			p.files = nil
+
+			for _, task := range list {
+				key := task.RepoURI + "-" + task.DestinationPath
+				_, found := seen[key]
+				if !found {
+					queue = append(queue, task)
+					downloadSize += task.Checksums.Size
+					seen[key] = struct{}{}
+				}
 			}
 		}
-
 		return nil
 	})
 	if err != nil {
