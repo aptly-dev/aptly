@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
+VERSION=$(shell git describe --tags | sed 's@^v@@' | sed 's@-@+@g')
 PACKAGES=context database deb files http query swift s3 utils
-ALL_PACKAGES=api aptly context cmd console database deb files http query swift s3 utils
 PYTHON?=python
 TESTS?=
 BINPATH?=$(GOPATH)/bin
@@ -39,12 +39,12 @@ check:
 	gometalinter --vendor --vendored-linters --config=linter.json ./...
 
 install:
-	go install -v
+	go install -v -ldflags "-X main.Version=$(VERSION)"
 
 system-test: install
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
+	APTLY_VERSION=$(VERSION) PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
 
 travis: $(TRAVIS_TARGET) check system-test
 
@@ -66,7 +66,6 @@ src-package:
 	(cd aptly-$(VERSION)/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/$(VERSION)/aptly)
 	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
 	rm -rf aptly-$(VERSION)
-	curl -T aptly-$(VERSION)-src.tar.bz2 -usmira:$(BINTRAY_KEY) https://api.bintray.com/content/smira/aptly/aptly/$(VERSION)/$(VERSION)/aptly-$(VERSION)-src.tar.bz2
 
 goxc:
 	rm -rf root/
@@ -79,4 +78,7 @@ goxc:
 man:
 	make -C man
 
-.PHONY: coverage.out man
+version:
+	@echo $(VERSION)
+
+.PHONY: coverage.out man version

@@ -28,6 +28,7 @@ before_install:
   - mkdir -p $GOPATH/src/github.com/smira
   - ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/smira || true
   - cd $GOPATH/src/github.com/smira/aptly
+  - make version
 install:
   - make prepare
 
