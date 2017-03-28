@@ -22,6 +22,7 @@ type ConfigStructure struct {
 	PpaDistributorID       string                      `json:"ppaDistributorID"`
 	PpaCodename            string                      `json:"ppaCodename"`
 	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
+	UseSymlinks            bool                        `json:"useSymlinks"`
 	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
 }
