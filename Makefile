@@ -58,20 +58,11 @@ mem.png: mem.dat mem.gp
 	gnuplot mem.gp
 	open mem.png
 
-src-package:
-	rm -rf aptly-$(VERSION)
-	mkdir -p aptly-$(VERSION)/src/github.com/smira/aptly/
-	cd aptly-$(VERSION)/src/github.com/smira/ && git clone https://github.com/smira/aptly && cd aptly && git checkout v$(VERSION)
-	mkdir -p aptly-$(VERSION)/bash_completion.d
-	(cd aptly-$(VERSION)/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/$(VERSION)/aptly)
-	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
-	rm -rf aptly-$(VERSION)
-
 goxc:
 	rm -rf root/
 	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d
 	cp man/aptly.1 root/usr/share/man/man1
-	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
+	cp bash_completion.d/aptly root/etc/bash_completion.d
 	gzip root/usr/share/man/man1/aptly.1
 	goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
