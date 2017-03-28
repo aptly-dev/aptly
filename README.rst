@@ -19,7 +19,7 @@ Aptly is a swiss army knife for Debian repository management.
 .. image:: http://www.aptly.info/img/aptly_logo.png
     :target: http://www.aptly.info/
 
-Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support use
+Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support please use
 mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
 
 Aptly features: ("+" means planned features)
@@ -42,7 +42,7 @@ Current limitations:
 Download
 --------
 
-To install aptly on Debian/Ubuntu, add new repository to /etc/apt/sources.list::
+To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list``::
 
     deb http://repo.aptly.info/ squeeze main
 
