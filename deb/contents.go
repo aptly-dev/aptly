@@ -26,8 +26,8 @@ func NewContentsIndex(db database.Storage) *ContentsIndex {
 }
 
 // Push adds package to contents index, calculating package contents as required
-func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool) error {
-	contents := p.Contents(packagePool)
+func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool, progress aptly.Progress) error {
+	contents := p.Contents(packagePool, progress)
 	qualifiedName := []byte(p.QualifiedName())
 
 	for _, path := range contents {

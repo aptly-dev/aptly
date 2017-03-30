@@ -694,3 +694,15 @@ class PublishRepo28Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Release')
         self.check_not_exists('public/dists/maverick/main/Contents-udeb-i386.gz')
+
+
+class PublishRepo29Test(BaseTest):
+    """
+    publish repo: broken .deb file for contents
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${testfiles}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo"
+    gold_processor = BaseTest.expand_environ
