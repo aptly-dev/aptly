@@ -43,6 +43,7 @@ Configuration file is stored in JSON format (default values shown below):
   "dependencyFollowRecommends": false,
   "dependencyFollowAllVariants": false,
   "dependencyFollowSource": false,
+  "dependencyVerboseResolve": false,
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
   "downloadSourcePackages": false,
@@ -117,6 +118,10 @@ when dependency looks like \fBpackage\-a | package\-b\fR, follow both variants a
 .TP
 \fBdependencyFollowSource\fR
 follow dependency from binary package to source package
+.
+.TP
+\fBdependencyVerboseResolve\fR
+print additional details while resolving dependencies (useful for debugging)
 .
 .TP
 \fBgpgDisableSign\fR
@@ -360,6 +365,10 @@ when processing dependencies, follow from binary to Source packages
 .TP
 \-\fBdep\-follow\-suggests\fR=false
 when processing dependencies, follow Suggests
+.
+.TP
+\-\fBdep\-verbose\-resolve\fR=false
+when processing dependencies, print detailed logs
 .
 .SH "CREATE NEW MIRROR"
 \fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \|\.\|\.\|\.]

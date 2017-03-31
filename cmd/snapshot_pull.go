@@ -96,7 +96,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	}
 
 	// Filter with dependencies as requested
-	result, err := sourcePackageList.Filter(queries, !noDeps, packageList, context.DependencyOptions(), architecturesList)
+	result, err := sourcePackageList.FilterWithProgress(queries, !noDeps, packageList, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}

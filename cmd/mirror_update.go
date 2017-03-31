@@ -69,7 +69,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 
 		var oldLen, newLen int
-		oldLen, newLen, err = repo.ApplyFilter(context.DependencyOptions(), filterQuery)
+		oldLen, newLen, err = repo.ApplyFilter(context.DependencyOptions(), filterQuery, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}

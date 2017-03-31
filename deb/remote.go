@@ -491,14 +491,14 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 }
 
 // ApplyFilter applies filtering to already built PackageList
-func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery) (oldLen, newLen int, err error) {
+func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery, progress aptly.Progress) (oldLen, newLen int, err error) {
 	repo.packageList.PrepareIndex()
 
 	emptyList := NewPackageList()
 	emptyList.PrepareIndex()
 
 	oldLen = repo.packageList.Len()
-	repo.packageList, err = repo.packageList.Filter([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures)
+	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures, progress)
 	if repo.packageList != nil {
 		newLen = repo.packageList.Len()
 	}

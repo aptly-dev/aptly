@@ -66,7 +66,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	}
 
 	// Filter with dependencies as requested
-	result, err := packageList.Filter(queries, withDeps, nil, context.DependencyOptions(), architecturesList)
+	result, err := packageList.FilterWithProgress(queries, withDeps, nil, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to filter: %s", err)
 	}

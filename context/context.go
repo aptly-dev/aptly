@@ -149,6 +149,9 @@ func (context *AptlyContext) DependencyOptions() int {
 		if context.lookupOption(context.config().DepFollowSource, "dep-follow-source") {
 			context.dependencyOptions |= deb.DepFollowSource
 		}
+		if context.lookupOption(context.config().DepVerboseResolve, "dep-verbose-resolve") {
+			context.dependencyOptions |= deb.DepVerboseResolve
+		}
 	}
 
 	return context.dependencyOptions
