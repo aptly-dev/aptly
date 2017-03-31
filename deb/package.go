@@ -403,32 +403,38 @@ func (p *Package) Files() PackageFiles {
 }
 
 // Contents returns cached package contents
-func (p *Package) Contents(packagePool aptly.PackagePool) []string {
+func (p *Package) Contents(packagePool aptly.PackagePool, progress aptly.Progress) []string {
 	if p.IsSource {
 		return nil
 	}
 
-	return p.collection.loadContents(p, packagePool)
+	return p.collection.loadContents(p, packagePool, progress)
 }
 
 // CalculateContents looks up contents in package file
-func (p *Package) CalculateContents(packagePool aptly.PackagePool) []string {
+func (p *Package) CalculateContents(packagePool aptly.PackagePool, progress aptly.Progress) ([]string, error) {
 	if p.IsSource {
-		return nil
+		return nil, nil
 	}
 
 	file := p.Files()[0]
 	path, err := packagePool.Path(file.Filename, file.Checksums.MD5)
 	if err != nil {
-		panic(err)
+		if progress != nil {
+			progress.ColoredPrintf("@y[!]@| @!Failed to build pool path: @| %s", err)
+		}
+		return nil, err
 	}
 
 	contents, err := GetContentsFromDeb(path)
 	if err != nil {
-		panic(err)
+		if progress != nil {
+			progress.ColoredPrintf("@y[!]@| @!Failed to generate package contents: @| %s", err)
+		}
+		return nil, err
 	}
 
-	return contents
+	return contents, nil
 }
 
 // UpdateFiles saves new state of files
