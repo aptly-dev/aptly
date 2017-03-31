@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 	"github.com/smira/go-aws-auth"
 )
 
@@ -240,7 +241,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 	// verify that package pool is local pool in filesystem
 	_ = sourcePool.(*files.PackagePool)
 
@@ -266,8 +267,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	}
 
 	destinationMD5, exists := storage.pathCache[relPath]
+	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
+		if sourceMD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
 		if destinationMD5 == sourceMD5 {
 			return nil
 		}

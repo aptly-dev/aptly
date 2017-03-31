@@ -26,7 +26,7 @@ type PackageFile struct {
 
 // Verify that package file is present and correct
 func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
-	poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+	poolPath, err := packagePool.Path(f.Filename, f.Checksums)
 	if err != nil {
 		return false, err
 	}

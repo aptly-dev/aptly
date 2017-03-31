@@ -367,7 +367,7 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	publishedStorage := files.NewPublishedStorage(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums)
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	c.Assert(err, IsNil)
 
@@ -399,7 +399,7 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
 	p := NewPackageFromControlFile(s.stanza)
 	p.Files()[0].Checksums.Size = 5
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums)
 
 	list, err := p.DownloadList(packagePool)
 	c.Check(err, IsNil)
@@ -429,7 +429,7 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
 	packagePool := files.NewPackagePool(c.MkDir())
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums)
 
 	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
 	c.Assert(err, IsNil)

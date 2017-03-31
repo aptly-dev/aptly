@@ -13,6 +13,7 @@ import (
 	"github.com/ncw/swift/swifttest"
 
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 )
 
 type PublishedStorageSuite struct {
@@ -161,7 +162,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 
 	// first link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}, false)
 	c.Check(err, IsNil)
 
 	data, err := s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -169,7 +170,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// duplicate link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}, false)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -177,7 +178,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -185,7 +186,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict and force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", true)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}, true)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")

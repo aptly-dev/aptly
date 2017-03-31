@@ -128,7 +128,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			p.UpdateFiles([]PackageFile{{Filename: filepath.Base(file), Checksums: checksums}})
 		}
 
-		err = pool.Import(file, checksums.MD5)
+		err = pool.Import(file, checksums)
 		if err != nil {
 			reporter.Warning("Unable to import file %s into pool: %s", file, err)
 			failedFiles = append(failedFiles, file)
@@ -143,7 +143,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 				continue
 			}
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = pool.Import(sourceFile, f.Checksums.MD5)
+			err = pool.Import(sourceFile, f.Checksums)
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)

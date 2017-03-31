@@ -30,7 +30,7 @@ func (s *PackageFilesSuite) SetUpTest(c *C) {
 
 func (s *PackageFilesSuite) TestVerify(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
-	poolPath, _ := packagePool.Path(s.files[0].Filename, s.files[0].Checksums.MD5)
+	poolPath, _ := packagePool.Path(s.files[0].Filename, s.files[0].Checksums)
 
 	result, err := s.files[0].Verify(packagePool)
 	c.Check(err, IsNil)
