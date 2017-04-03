@@ -88,7 +88,7 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 		if withFiles {
 			fmt.Printf("Files in the pool:\n")
 			for _, f := range p.Files() {
-				path, err := context.PackagePool().Path(f.Filename, f.Checksums.MD5)
+				path, err := context.PackagePool().Path(f.Filename, f.Checksums)
 				if err != nil {
 					return err
 				}

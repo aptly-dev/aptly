@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // PackagePool is deduplicated storage of package files on filesystem
@@ -27,12 +28,14 @@ func NewPackagePool(root string) *PackagePool {
 	return &PackagePool{rootPath: filepath.Join(root, "pool")}
 }
 
-// RelativePath returns path relative to pool's root for package files given MD5 and original filename
-func (pool *PackagePool) RelativePath(filename string, hashMD5 string) (string, error) {
+// RelativePath returns path relative to pool's root for package files given checksum info and original filename
+func (pool *PackagePool) RelativePath(filename string, checksums utils.ChecksumInfo) (string, error) {
 	filename = filepath.Base(filename)
 	if filename == "." || filename == "/" {
 		return "", fmt.Errorf("filename %s is invalid", filename)
 	}
+
+	hashMD5 := checksums.MD5
 
 	if len(hashMD5) < 4 {
 		return "", fmt.Errorf("unable to compute pool location for filename %v, MD5 is missing", filename)
@@ -41,9 +44,9 @@ func (pool *PackagePool) RelativePath(filename string, hashMD5 string) (string, 
 	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
 }
 
-// Path returns full path to package file in pool given any name and hash of file contents
-func (pool *PackagePool) Path(filename string, hashMD5 string) (string, error) {
-	relative, err := pool.RelativePath(filename, hashMD5)
+// Path returns full path to package file in pool given  filename and hash of file contents
+func (pool *PackagePool) Path(filename string, checksums utils.ChecksumInfo) (string, error) {
+	relative, err := pool.RelativePath(filename, checksums)
 	if err != nil {
 		return "", err
 	}
@@ -114,7 +117,7 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 }
 
 // Import copies file into package pool
-func (pool *PackagePool) Import(path string, hashMD5 string) error {
+func (pool *PackagePool) Import(path string, checksums utils.ChecksumInfo) error {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -129,7 +132,7 @@ func (pool *PackagePool) Import(path string, hashMD5 string) error {
 		return err
 	}
 
-	poolPath, err := pool.Path(path, hashMD5)
+	poolPath, err := pool.Path(path, checksums)
 	if err != nil {
 		return err
 	}

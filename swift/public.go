@@ -11,6 +11,7 @@ import (
 	"github.com/ncw/swift"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)
@@ -186,7 +187,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 	// verify that package pool is local pool in filesystem
 	_ = sourcePool.(*files.PackagePool)
 
@@ -205,7 +206,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 			return fmt.Errorf("error getting information about %s from %s: %s", poolPath, storage, err)
 		}
 	} else {
-		if !force && info.Hash != sourceMD5 {
+		if sourceChecksums.MD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
+		if !force && info.Hash != sourceChecksums.MD5 {
 			return fmt.Errorf("error putting file to %s: file already exists and is different: %s", poolPath, storage)
 
 		}

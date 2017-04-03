@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // PublishedStorage abstract file system with public dirs (published repos)
@@ -81,7 +82,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 	// verify that package pool is local pool is filesystem pool
 	_ = sourcePool.(*PackagePool)
 

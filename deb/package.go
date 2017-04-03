@@ -418,7 +418,7 @@ func (p *Package) CalculateContents(packagePool aptly.PackagePool, progress aptl
 	}
 
 	file := p.Files()[0]
-	path, err := packagePool.Path(file.Filename, file.Checksums.MD5)
+	path, err := packagePool.Path(file.Filename, file.Checksums)
 	if err != nil {
 		if progress != nil {
 			progress.ColoredPrintf("@y[!]@| @!Failed to build pool path: @| %s", err)
@@ -547,7 +547,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 	}
 
 	for i, f := range p.Files() {
-		sourcePath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+		sourcePath, err := packagePool.Path(f.Filename, f.Checksums)
 		if err != nil {
 			return err
 		}
@@ -555,7 +555,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 		relPath := filepath.Join("pool", component, poolDir)
 		publishedDirectory := filepath.Join(prefix, relPath)
 
-		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath, f.Checksums.MD5, force)
+		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath, f.Checksums, force)
 		if err != nil {
 			return err
 		}
@@ -607,7 +607,7 @@ func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageD
 	result = make([]PackageDownloadTask, 0, 1)
 
 	for _, f := range p.Files() {
-		poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
+		poolPath, err := packagePool.Path(f.Filename, f.Checksums)
 		if err != nil {
 			return nil, err
 		}
@@ -645,7 +645,7 @@ func (p *Package) FilepathList(packagePool aptly.PackagePool) ([]string, error) 
 	result := make([]string, len(p.Files()))
 
 	for i, f := range p.Files() {
-		result[i], err = packagePool.RelativePath(f.Filename, f.Checksums.MD5)
+		result[i], err = packagePool.RelativePath(f.Filename, f.Checksums)
 		if err != nil {
 			return nil, err
 		}
