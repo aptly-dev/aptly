@@ -81,18 +81,9 @@ type Progress interface {
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	// Download starts new download task
-	Download(url string, destination string, result chan<- error)
+	Download(url string, destination string) error
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(url string, destination string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int)
-	// Pause pauses task processing
-	Pause()
-	// Resume resumes task processing
-	Resume()
-	// Shutdown stops downloader after current tasks are finished,
-	// but doesn't process rest of queue
-	Shutdown()
-	// Abort stops downloader without waiting for shutdown
-	Abort()
+	DownloadWithChecksum(url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
 }
