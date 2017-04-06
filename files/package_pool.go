@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
+
+	"github.com/smira/go-uuid/uuid"
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
@@ -15,21 +18,33 @@ import (
 // PackagePool is deduplicated storage of package files on filesystem
 type PackagePool struct {
 	sync.Mutex
-	rootPath string
+
+	rootPath           string
+	supportLegacyPaths bool
 }
 
 // Check interface
 var (
-	_ aptly.PackagePool = (*PackagePool)(nil)
+	_ aptly.PackagePool      = (*PackagePool)(nil)
+	_ aptly.LocalPackagePool = (*PackagePool)(nil)
 )
 
 // NewPackagePool creates new instance of PackagePool which specified root
 func NewPackagePool(root string) *PackagePool {
-	return &PackagePool{rootPath: filepath.Join(root, "pool")}
+	rootPath := filepath.Join(root, "pool")
+	rootPath, err := filepath.Abs(rootPath)
+	if err != nil {
+		panic(err)
+	}
+
+	return &PackagePool{
+		rootPath:           rootPath,
+		supportLegacyPaths: true,
+	}
 }
 
-// RelativePath returns path relative to pool's root for package files given checksum info and original filename
-func (pool *PackagePool) RelativePath(filename string, checksums utils.ChecksumInfo) (string, error) {
+// LegacyPath returns path relative to pool's root for pre-1.1 aptly (based on MD5)
+func (pool *PackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
 	filename = filepath.Base(filename)
 	if filename == "." || filename == "/" {
 		return "", fmt.Errorf("filename %s is invalid", filename)
@@ -42,16 +57,6 @@ func (pool *PackagePool) RelativePath(filename string, checksums utils.ChecksumI
 	}
 
 	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
-}
-
-// Path returns full path to package file in pool given  filename and hash of file contents
-func (pool *PackagePool) Path(filename string, checksums utils.ChecksumInfo) (string, error) {
-	relative, err := pool.RelativePath(filename, checksums)
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(pool.rootPath, relative), nil
 }
 
 // FilepathList returns file paths of all the files in the pool
@@ -117,56 +122,141 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 }
 
 // Import copies file into package pool
-func (pool *PackagePool) Import(path string, checksums utils.ChecksumInfo) error {
+//
+// - srcPath is full path to source file as it is now
+// - basename is desired human-readable name (canonical filename)
+// - checksums are used to calculate file placement
+// - move indicates whether srcPath can be removed
+func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool) (string, error) {
 	pool.Lock()
 	defer pool.Unlock()
 
-	source, err := os.Open(path)
+	source, err := os.Open(srcPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer source.Close()
 
 	sourceInfo, err := source.Stat()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	poolPath, err := pool.Path(path, checksums)
+	// build target path
+	// TODO: replace with new build scheme
+	poolPath, err := pool.LegacyPath(basename, checksums)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	targetInfo, err := os.Stat(poolPath)
+	fullPoolPath := filepath.Join(pool.rootPath, poolPath)
+
+	targetInfo, err := os.Stat(fullPoolPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			// unable to stat target location?
-			return err
+			return "", err
 		}
 	} else {
-		// target already exists
-		if targetInfo.Size() != sourceInfo.Size() {
-			// trying to overwrite file?
-			return fmt.Errorf("unable to import into pool: file %s already exists", poolPath)
+		// target already exists and same size
+		if targetInfo.Size() == sourceInfo.Size() {
+			return poolPath, nil
 		}
 
-		// assume that target is already there
-		return nil
+		// trying to overwrite file?
+		return "", fmt.Errorf("unable to import into pool: file %s already exists", poolPath)
+	}
+
+	if pool.supportLegacyPaths {
+		// file doesn't exist at new location, check legacy location
+		var (
+			legacyTargetInfo           os.FileInfo
+			legacyPath, legacyFullPath string
+		)
+
+		legacyPath, err = pool.LegacyPath(basename, checksums)
+		if err != nil {
+			return "", err
+		}
+		legacyFullPath = filepath.Join(pool.rootPath, legacyPath)
+
+		legacyTargetInfo, err = os.Stat(legacyFullPath)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return "", err
+			}
+		} else {
+			// legacy file exists
+			if legacyTargetInfo.Size() == sourceInfo.Size() {
+				// file exists at legacy path and it's same size, consider it's already in the pool
+				return legacyPath, nil
+			}
+
+			// size is different, import at new path
+		}
 	}
 
 	// create subdirs as necessary
-	err = os.MkdirAll(filepath.Dir(poolPath), 0777)
+	poolDir := filepath.Dir(fullPoolPath)
+	err = os.MkdirAll(poolDir, 0777)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	target, err := os.Create(poolPath)
+	// check if we can use hardlinks instead of copying/moving
+	poolDirInfo, err := os.Stat(poolDir)
 	if err != nil {
-		return err
+		return "", err
 	}
-	defer target.Close()
 
-	_, err = io.Copy(target, source)
+	if poolDirInfo.Sys().(*syscall.Stat_t).Dev == sourceInfo.Sys().(*syscall.Stat_t).Dev {
+		// same filesystem, try to use hardlink
+		err = os.Link(srcPath, fullPoolPath)
+	} else {
+		err = os.ErrInvalid
+	}
 
-	return err
+	if err != nil {
+		// different filesystems or failed hardlink, fallback to copy
+		var target *os.File
+		target, err = os.Create(fullPoolPath)
+		if err != nil {
+			return "", err
+		}
+		defer target.Close()
+
+		_, err = io.Copy(target, source)
+
+		if err == nil {
+			err = target.Close()
+		}
+	}
+
+	if err == nil && move {
+		err = os.Remove(srcPath)
+	}
+
+	return poolPath, err
+}
+
+// Open returns io.ReadCloser to access the file
+func (pool *PackagePool) Open(path string) (io.ReadCloser, error) {
+	return os.Open(filepath.Join(pool.rootPath, path))
+}
+
+// Stat returns Unix stat(2) info
+func (pool *PackagePool) Stat(path string) (os.FileInfo, error) {
+	return os.Stat(filepath.Join(pool.rootPath, path))
+}
+
+// Link generates hardlink to destination path
+func (pool *PackagePool) Link(path, dstPath string) error {
+	return os.Link(filepath.Join(pool.rootPath, path), dstPath)
+}
+
+// GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)
+func (pool *PackagePool) GenerateTempPath(filename string) (string, error) {
+	random := uuid.NewRandom().String()
+
+	return filepath.Join(pool.rootPath, random[0:2], random[2:4], random[4:]+filename), nil
 }
