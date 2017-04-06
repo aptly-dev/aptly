@@ -4,24 +4,46 @@ package aptly
 
 import (
 	"io"
+	"os"
 
 	"github.com/smira/aptly/utils"
 )
+
+// ReadSeekerCloser = ReadSeeker + Closer
+type ReadSeekerCloser interface {
+	io.ReadSeeker
+	io.Closer
+}
 
 // PackagePool is asbtraction of package pool storage.
 //
 // PackagePool stores all the package files, deduplicating them.
 type PackagePool interface {
-	// Path returns full path to package file in pool given any name and hash of file contents
-	Path(filename string, checksums utils.ChecksumInfo) (string, error)
-	// RelativePath returns path relative to pool's root for package files given checksums and original filename
-	RelativePath(filename string, checksums utils.ChecksumInfo) (string, error)
+	// Import copies file into package pool
+	//
+	// - srcPath is full path to source file as it is now
+	// - basename is desired human-readable name (canonical filename)
+	// - checksums are used to calculate file placement
+	// - move indicates whether srcPath can be removed
+	Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool) (path string, err error)
+	// LegacyPath returns legacy (pre 1.1) path to package file (relative to root)
+	LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error)
+	// Stat returns Unix stat(2) info
+	Stat(path string) (os.FileInfo, error)
+	// Open returns ReadSeekerCloser to access the file
+	Open(path string) (ReadSeekerCloser, error)
 	// FilepathList returns file paths of all the files in the pool
 	FilepathList(progress Progress) ([]string, error)
 	// Remove deletes file in package pool returns its size
 	Remove(path string) (size int64, err error)
-	// Import copies file into package pool
-	Import(path string, checksums utils.ChecksumInfo) error
+}
+
+// LocalPackagePool is implemented by PackagePools residing on the same filesystem
+type LocalPackagePool interface {
+	// GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)
+	GenerateTempPath(filename string) (string, error)
+	// Link generates hardlink to destination path
+	Link(path, dstPath string) error
 }
 
 // PublishedStorage is abstraction of filesystem storing all published repositories

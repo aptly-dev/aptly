@@ -240,7 +240,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 }
 
 // Open returns io.ReadCloser to access the file
-func (pool *PackagePool) Open(path string) (io.ReadCloser, error) {
+func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	return os.Open(filepath.Join(pool.rootPath, path))
 }
 

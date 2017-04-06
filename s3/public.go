@@ -2,6 +2,7 @@ package s3
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,8 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/pkg/errors"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-aws-auth"
 )
@@ -135,6 +136,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
+	err = storage.putFile(path, source)
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
+	}
+
+	return err
+}
+
+// putFile uploads file-like object to
+func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker) error {
+
 	params := &s3.PutObjectInput{
 		Bucket: aws.String(storage.bucket),
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
@@ -148,13 +160,18 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
 	}
 
-	_, err = storage.s3.PutObject(params)
+	_, err := storage.s3.PutObject(params)
 	if err != nil {
-		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+		return err
 	}
 
 	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
-		return storage.PutFile(strings.Replace(path, "+", " ", -1), sourceFilename)
+		_, err = source.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+
+		return storage.putFile(strings.Replace(path, "+", " ", -1), source)
 	}
 	return nil
 }
@@ -167,7 +184,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 	}
 	_, err := storage.s3.DeleteObject(params)
 	if err != nil {
-		return fmt.Errorf("error deleting %s from %s: %s", path, storage, err)
+		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
 	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
@@ -242,21 +259,15 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
-	// verify that package pool is local pool in filesystem
-	_ = sourcePool.(*files.PackagePool)
 
 	baseName := filepath.Base(sourcePath)
 	relPath := filepath.Join(publishedDirectory, baseName)
 	poolPath := filepath.Join(storage.prefix, relPath)
 
-	var (
-		err error
-	)
-
 	if storage.pathCache == nil {
 		paths, md5s, err := storage.internalFilelist(storage.prefix, true)
 		if err != nil {
-			return fmt.Errorf("error caching paths under prefix: %s", err)
+			return errors.Wrap(err, "error caching paths under prefix")
 		}
 
 		storage.pathCache = make(map[string]string, len(paths))
@@ -284,7 +295,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	err = storage.PutFile(relPath, sourcePath)
+	source, err := sourcePool.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	err = storage.putFile(relPath, source)
 	if err == nil {
 		storage.pathCache[relPath] = sourceMD5
 	}
