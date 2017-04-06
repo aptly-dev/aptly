@@ -304,6 +304,8 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	err = storage.putFile(relPath, source)
 	if err == nil {
 		storage.pathCache[relPath] = sourceMD5
+	} else {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
 	}
 
 	return err

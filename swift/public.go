@@ -3,14 +3,15 @@ package swift
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/ncw/swift"
+	"github.com/pkg/errors"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 )
 
@@ -129,12 +130,18 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
-	_, err = storage.conn.ObjectPut(storage.container, filepath.Join(storage.prefix, path), source, false, "", "", nil)
-
+	err = storage.putFile(path, source)
 	if err != nil {
-		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
 	}
-	return nil
+
+	return err
+}
+
+func (storage *PublishedStorage) putFile(path string, source io.Reader) error {
+	_, err := storage.conn.ObjectPut(storage.container, filepath.Join(storage.prefix, path), source, false, "", "", nil)
+
+	return err
 }
 
 // Remove removes single file under public path
@@ -188,8 +195,6 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
-	// verify that package pool is local pool in filesystem
-	_ = sourcePool.(*files.PackagePool)
 
 	baseName := filepath.Base(sourcePath)
 	relPath := filepath.Join(publishedDirectory, baseName)
@@ -216,7 +221,18 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	return storage.PutFile(relPath, sourcePath)
+	source, err := sourcePool.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	err = storage.putFile(relPath, source)
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
+	}
+
+	return err
 }
 
 // Filelist returns list of files under prefix
