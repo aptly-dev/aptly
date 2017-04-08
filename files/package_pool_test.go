@@ -189,6 +189,24 @@ func (s *PackagePoolSuite) TestLink(c *C) {
 	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
 }
 
+func (s *PackagePoolSuite) TestSymlink(c *C) {
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	c.Check(err, IsNil)
+
+	tmpDir := c.MkDir()
+	dstPath := filepath.Join(tmpDir, filepath.Base(s.debFile))
+	c.Check(s.pool.Symlink(path, dstPath), IsNil)
+
+	info, err := os.Stat(dstPath)
+	c.Assert(err, IsNil)
+	c.Check(info.Size(), Equals, int64(2738))
+	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+
+	info, err = os.Lstat(dstPath)
+	c.Assert(err, IsNil)
+	c.Check(info.Sys().(*syscall.Stat_t).Mode&syscall.S_IFMT, Equals, uint16(syscall.S_IFLNK))
+}
+
 func (s *PackagePoolSuite) TestGenerateRandomPath(c *C) {
 	path, err := s.pool.GenerateTempPath("a.deb")
 	c.Check(err, IsNil)

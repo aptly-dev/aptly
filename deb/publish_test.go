@@ -132,11 +132,10 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.repo5, _ = NewPublishedRepo("files:other", "ppa", "maverick", []string{"source"}, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 	s.repo5.SkipContents = true
 
-	poolPath, _ := s.packagePool.Path(s.p1.Files()[0].Filename, s.p1.Files()[0].Checksums)
-	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
-	f, err := os.Create(poolPath)
-	c.Assert(err, IsNil)
-	f.Close()
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
+
+	s.p1.Files()[0].PoolPath, _ = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false)
 }
 
 func (s *PublishedRepoSuite) TearDownTest(c *C) {

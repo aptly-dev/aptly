@@ -204,8 +204,7 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 		if downloadLimit == 0 {
 			downloadLimit = context.config().DownloadLimit
 		}
-		context.downloader = http.NewDownloader(context.config().DownloadConcurrency,
-			downloadLimit*1024, context._progress())
+		context.downloader = http.NewDownloader(downloadLimit*1024, context._progress())
 	}
 
 	return context.downloader
@@ -416,7 +415,6 @@ func (context *AptlyContext) Shutdown() {
 		context.database = nil
 	}
 	if context.downloader != nil {
-		context.downloader.Abort()
 		context.downloader = nil
 	}
 	if context.progress != nil {
@@ -431,7 +429,6 @@ func (context *AptlyContext) Cleanup() {
 	defer context.Unlock()
 
 	if context.downloader != nil {
-		context.downloader.Shutdown()
 		context.downloader = nil
 	}
 	if context.progress != nil {

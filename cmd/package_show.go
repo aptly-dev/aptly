@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
@@ -87,11 +88,17 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 
 		if withFiles {
 			fmt.Printf("Files in the pool:\n")
+			packagePool := context.PackagePool()
 			for _, f := range p.Files() {
-				path, err := context.PackagePool().Path(f.Filename, f.Checksums)
+				path, err := f.GetPoolPath(packagePool)
 				if err != nil {
 					return err
 				}
+
+				if pp, ok := packagePool.(aptly.LocalPackagePool); ok {
+					path = pp.FullPath(path)
+				}
+
 				fmt.Printf("  %s\n", path)
 			}
 			fmt.Printf("\n")

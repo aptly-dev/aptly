@@ -123,14 +123,14 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	ch := make(chan error, count)
 
 	// In separate goroutine (to avoid blocking main), push queue to downloader
-	go func() {
+	/*go func() {
 		for _, task := range queue {
 			context.Downloader().DownloadWithChecksum(repo.PackageURL(task.RepoURI).String(), task.DestinationPath, ch, task.Checksums, ignoreMismatch, maxTries)
 		}
 
 		// We don't need queue after this point
 		queue = nil
-	}()
+	}()*/
 
 	// Wait for all downloads to finish
 	var errors []string

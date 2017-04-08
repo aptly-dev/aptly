@@ -44,6 +44,12 @@ type LocalPackagePool interface {
 	GenerateTempPath(filename string) (string, error)
 	// Link generates hardlink to destination path
 	Link(path, dstPath string) error
+	// Symlink generates symlink to destination path
+	Symlink(path, dstPath string) error
+	// FullPath generates full path to the file in pool
+	//
+	// Please use with care: it's not supposed to be used to access files
+	FullPath(path string) string
 }
 
 // PublishedStorage is abstraction of filesystem storing all published repositories

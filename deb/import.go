@@ -116,19 +116,24 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
+		var files PackageFiles
+
+		if isSourcePackage {
+			files = p.Files()
+		}
+
 		var checksums utils.ChecksumInfo
 		checksums, err = utils.ChecksumsForFile(file)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		if isSourcePackage {
-			p.UpdateFiles(append(p.Files(), PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
-		} else {
-			p.UpdateFiles([]PackageFile{{Filename: filepath.Base(file), Checksums: checksums}})
+		mainPackageFile := PackageFile{
+			Filename:  filepath.Base(file),
+			Checksums: checksums,
 		}
 
-		err = pool.Import(file, checksums)
+		mainPackageFile.PoolPath, err = pool.Import(file, mainPackageFile.Filename, &mainPackageFile.Checksums, false)
 		if err != nil {
 			reporter.Warning("Unable to import file %s into pool: %s", file, err)
 			failedFiles = append(failedFiles, file)
@@ -137,13 +142,10 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 		candidateProcessedFiles = append(candidateProcessedFiles, file)
 
-		// go over all files, except for the last one (.dsc/.deb itself)
-		for _, f := range p.Files() {
-			if filepath.Base(f.Filename) == filepath.Base(file) {
-				continue
-			}
+		// go over all the other files
+		for _, f := range files {
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = pool.Import(sourceFile, f.Checksums)
+			f.PoolPath, err = pool.Import(sourceFile, f.Filename, &f.Checksums, false)
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)
@@ -156,6 +158,8 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			// some files haven't been imported
 			continue
 		}
+
+		p.UpdateFiles(append(files, mainPackageFile))
 
 		if restriction != nil && !restriction.Matches(p) {
 			reporter.Warning("%s has been ignored as it doesn't match restriction", p)

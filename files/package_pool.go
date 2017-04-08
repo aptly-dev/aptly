@@ -164,7 +164,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		}
 
 		// trying to overwrite file?
-		return "", fmt.Errorf("unable to import into pool: file %s already exists", poolPath)
+		return "", fmt.Errorf("unable to import into pool: file %s already exists", fullPoolPath)
 	}
 
 	if pool.supportLegacyPaths {
@@ -252,6 +252,18 @@ func (pool *PackagePool) Stat(path string) (os.FileInfo, error) {
 // Link generates hardlink to destination path
 func (pool *PackagePool) Link(path, dstPath string) error {
 	return os.Link(filepath.Join(pool.rootPath, path), dstPath)
+}
+
+// Symlink generates symlink to destination path
+func (pool *PackagePool) Symlink(path, dstPath string) error {
+	return os.Symlink(filepath.Join(pool.rootPath, path), dstPath)
+}
+
+// FullPath generates full path to the file in pool
+//
+// Please use with care: it's not supposed to be used to access files
+func (pool *PackagePool) FullPath(path string) string {
+	return filepath.Join(pool.rootPath, path)
 }
 
 // GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)

@@ -1,7 +1,7 @@
 package deb
 
 import (
-	"os"
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/smira/aptly/files"
@@ -30,19 +30,15 @@ func (s *PackageFilesSuite) SetUpTest(c *C) {
 
 func (s *PackageFilesSuite) TestVerify(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
-	poolPath, _ := packagePool.Path(s.files[0].Filename, s.files[0].Checksums)
 
 	result, err := s.files[0].Verify(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
-	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
-	c.Assert(err, IsNil)
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
-	file, err := os.Create(poolPath)
-	c.Assert(err, IsNil)
-	file.WriteString("abcde")
-	file.Close()
+	s.files[0].PoolPath, _ = packagePool.Import(tmpFilepath, s.files[0].Filename, &s.files[0].Checksums, false)
 
 	result, err = s.files[0].Verify(packagePool)
 	c.Check(err, IsNil)

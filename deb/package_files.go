@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -20,18 +19,20 @@ type PackageFile struct {
 	Filename string
 	// Hashes for the file
 	Checksums utils.ChecksumInfo
+	// PoolPath persists relative path to file in the package pool
+	PoolPath string
 	// Temporary field used while downloading, stored relative path on the mirror
 	downloadPath string
 }
 
 // Verify that package file is present and correct
 func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
-	poolPath, err := packagePool.Path(f.Filename, f.Checksums)
+	poolPath, err := f.GetPoolPath(packagePool)
 	if err != nil {
 		return false, err
 	}
 
-	st, err := os.Stat(poolPath)
+	st, err := packagePool.Stat(poolPath)
 	if err != nil {
 		return false, nil
 	}
@@ -39,6 +40,19 @@ func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
 	// verify size
 	// TODO: verify checksum if configured
 	return st.Size() == f.Checksums.Size, nil
+}
+
+// GetPoolPath returns path to the file in the pool
+//
+// For legacy packages which do not have PoolPath field set, that calculates LegacyPath via pool
+func (f *PackageFile) GetPoolPath(packagePool aptly.PackagePool) (string, error) {
+	var err error
+
+	if f.PoolPath == "" {
+		f.PoolPath, err = packagePool.LegacyPath(f.Filename, &f.Checksums)
+	}
+
+	return f.PoolPath, err
 }
 
 // DownloadURL return relative URL to package download location

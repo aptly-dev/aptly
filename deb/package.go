@@ -418,7 +418,7 @@ func (p *Package) CalculateContents(packagePool aptly.PackagePool, progress aptl
 	}
 
 	file := p.Files()[0]
-	path, err := packagePool.Path(file.Filename, file.Checksums)
+	poolPath, err := file.GetPoolPath(packagePool)
 	if err != nil {
 		if progress != nil {
 			progress.ColoredPrintf("@y[!]@| @!Failed to build pool path: @| %s", err)
@@ -426,7 +426,16 @@ func (p *Package) CalculateContents(packagePool aptly.PackagePool, progress aptl
 		return nil, err
 	}
 
-	contents, err := GetContentsFromDeb(path)
+	reader, err := packagePool.Open(poolPath)
+	if err != nil {
+		if progress != nil {
+			progress.ColoredPrintf("@y[!]@| @!Failed to open package in pool: @| %s", err)
+		}
+		return nil, err
+	}
+	defer reader.Close()
+
+	contents, err := GetContentsFromDeb(reader, file.Filename)
 	if err != nil {
 		if progress != nil {
 			progress.ColoredPrintf("@y[!]@| @!Failed to generate package contents: @| %s", err)
@@ -547,7 +556,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 	}
 
 	for i, f := range p.Files() {
-		sourcePath, err := packagePool.Path(f.Filename, f.Checksums)
+		sourcePoolPath, err := f.GetPoolPath(packagePool)
 		if err != nil {
 			return err
 		}
@@ -555,7 +564,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 		relPath := filepath.Join("pool", component, poolDir)
 		publishedDirectory := filepath.Join(prefix, relPath)
 
-		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePath, f.Checksums, force)
+		err = publishedStorage.LinkFromPool(publishedDirectory, packagePool, sourcePoolPath, f.Checksums, force)
 		if err != nil {
 			return err
 		}
@@ -604,14 +613,9 @@ type PackageDownloadTask struct {
 // DownloadList returns list of missing package files for download in format
 // [[srcpath, dstpath]]
 func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageDownloadTask, err error) {
-	result = make([]PackageDownloadTask, 0, 1)
+	/*result = make([]PackageDownloadTask, 0, 1)
 
 	for _, f := range p.Files() {
-		poolPath, err := packagePool.Path(f.Filename, f.Checksums)
-		if err != nil {
-			return nil, err
-		}
-
 		verified, err := f.Verify(packagePool)
 		if err != nil {
 			return nil, err
@@ -622,7 +626,8 @@ func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageD
 		}
 	}
 
-	return result, nil
+	return result, nil*/
+	panic("NEEDS REWORK")
 }
 
 // VerifyFiles verifies that all package files have neen correctly downloaded
@@ -645,7 +650,7 @@ func (p *Package) FilepathList(packagePool aptly.PackagePool) ([]string, error) 
 	result := make([]string, len(p.Files()))
 
 	for i, f := range p.Files() {
-		result[i], err = packagePool.RelativePath(f.Filename, f.Checksums)
+		result[i], err = f.GetPoolPath(packagePool)
 		if err != nil {
 			return nil, err
 		}
