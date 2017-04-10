@@ -477,11 +477,6 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 					return err
 				}
 			}
-
-			err = collectionFactory.PackageCollection().Update(p)
-			if err != nil {
-				return err
-			}
 		}
 
 		progress.ShutdownBar()
@@ -508,7 +503,7 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 // BuildDownloadQueue builds queue, discards current PackageList
 func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
-	seen := make(map[string]struct{}, repo.packageList.Len())
+	seen := make(map[string]int, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
 		download := true
@@ -521,15 +516,17 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipEx
 			if err2 != nil {
 				return err2
 			}
-			p.files = nil
 
 			for _, task := range list {
-				key := task.RepoURI + "-" + task.DestinationPath
-				_, found := seen[key]
+				key := task.File.DownloadURL()
+				idx, found := seen[key]
 				if !found {
 					queue = append(queue, task)
-					downloadSize += task.Checksums.Size
-					seen[key] = struct{}{}
+					downloadSize += task.File.Checksums.Size
+					seen[key] = len(queue) - 1
+				} else {
+					// hook up the task to duplicate entry already on the list
+					queue[idx].Additional = append(queue[idx].Additional, task)
 				}
 			}
 		}
@@ -539,17 +536,22 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipEx
 		return
 	}
 
-	repo.tempPackageRefs = NewPackageRefListFromPackageList(repo.packageList)
-	// free up package list, we don't need it after this point
-	repo.packageList = nil
-
 	return
 }
 
 // FinalizeDownload swaps for final value of package refs
-func (repo *RemoteRepo) FinalizeDownload() {
+func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory) error {
 	repo.LastDownloadDate = time.Now()
-	repo.packageRefs = repo.tempPackageRefs
+	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+
+	// update all the packages in collection
+	err := repo.packageList.ForEach(func(p *Package) error {
+		return collectionFactory.PackageCollection().Update(p)
+	})
+
+	repo.packageList = nil
+
+	return err
 }
 
 // Encode does msgpack encoding of RemoteRepo

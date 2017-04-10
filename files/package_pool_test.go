@@ -132,7 +132,7 @@ func (s *PackagePoolSuite) TestImportMove(c *C) {
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
 	c.Check(info.Size(), Equals, int64(2738))
-	c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint16(1))
+	c.Check(int(info.Sys().(*syscall.Stat_t).Nlink), Equals, 1)
 }
 
 func (s *PackagePoolSuite) TestImportNotExist(c *C) {
@@ -204,7 +204,7 @@ func (s *PackagePoolSuite) TestSymlink(c *C) {
 
 	info, err = os.Lstat(dstPath)
 	c.Assert(err, IsNil)
-	c.Check(info.Sys().(*syscall.Stat_t).Mode&syscall.S_IFMT, Equals, uint16(syscall.S_IFLNK))
+	c.Check(int(info.Sys().(*syscall.Stat_t).Mode&syscall.S_IFMT), Equals, int(syscall.S_IFLNK))
 }
 
 func (s *PackagePoolSuite) TestGenerateRandomPath(c *C) {

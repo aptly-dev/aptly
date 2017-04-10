@@ -267,11 +267,12 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -293,10 +294,11 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, true)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -313,11 +315,12 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 }
 
@@ -340,12 +343,13 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
 	q := make([]string, 4)
 	for i := range q {
-		q[i] = queue[i].RepoURI
+		q[i] = queue[i].File.DownloadURL()
 	}
 	sort.Strings(q)
 	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
@@ -353,7 +357,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -383,10 +387,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, true)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -407,10 +412,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(s.downloader.Empty(), Equals, true)
 
 	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.repo.packageRefs, NotNil)
 }
 
@@ -430,11 +436,12 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -457,10 +464,11 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, true)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -478,11 +486,12 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 
@@ -508,12 +517,13 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
 	q := make([]string, 4)
 	for i := range q {
-		q[i] = queue[i].RepoURI
+		q[i] = queue[i].File.DownloadURL()
 	}
 	sort.Strings(q)
 	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
@@ -521,7 +531,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -553,10 +563,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, true)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -578,10 +589,11 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(downloader.Empty(), Equals, true)
 
 	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory)
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 

@@ -605,29 +605,27 @@ func (p *Package) PoolDirectory() (string, error) {
 
 // PackageDownloadTask is a element of download queue for the package
 type PackageDownloadTask struct {
-	RepoURI         string
-	DestinationPath string
-	Checksums       utils.ChecksumInfo
+	File       *PackageFile
+	Additional []PackageDownloadTask
 }
 
 // DownloadList returns list of missing package files for download in format
 // [[srcpath, dstpath]]
 func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageDownloadTask, err error) {
-	/*result = make([]PackageDownloadTask, 0, 1)
+	result = make([]PackageDownloadTask, 0, 1)
 
-	for _, f := range p.Files() {
+	for idx, f := range p.Files() {
 		verified, err := f.Verify(packagePool)
 		if err != nil {
 			return nil, err
 		}
 
 		if !verified {
-			result = append(result, PackageDownloadTask{RepoURI: f.DownloadURL(), DestinationPath: poolPath, Checksums: f.Checksums})
+			result = append(result, PackageDownloadTask{File: &p.Files()[idx]})
 		}
 	}
 
-	return result, nil*/
-	panic("NEEDS REWORK")
+	return result, nil
 }
 
 // VerifyFiles verifies that all package files have neen correctly downloaded
