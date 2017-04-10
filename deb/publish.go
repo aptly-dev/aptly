@@ -473,8 +473,17 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	if err != nil {
 		return err
 	}
-	defer tempDB.Close()
-	defer tempDB.Drop()
+	defer func() {
+		var e error
+		e = tempDB.Close()
+		if e != nil && progress != nil {
+			progress.Printf("failed to close temp DB: %s", err)
+		}
+		e = tempDB.Drop()
+		if e != nil && progress != nil {
+			progress.Printf("failed to drop temp DB: %s", err)
+		}
+	}()
 
 	if progress != nil {
 		progress.Printf("Loading packages...\n")
