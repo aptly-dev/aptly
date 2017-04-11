@@ -94,6 +94,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		return err
 	}
 
+	sameFilesystem, err := utils.SameFilesystem(sourcePath, poolPath)
+	if err != nil {
+		return err
+	}
+
 	var dstStat, srcStat os.FileInfo
 
 	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
@@ -105,15 +110,24 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 			return err
 		}
 
-		srcSys := srcStat.Sys().(*syscall.Stat_t)
-		dstSys := dstStat.Sys().(*syscall.Stat_t)
+		if sameFilesystem {
+			srcSys := srcStat.Sys().(*syscall.Stat_t)
+			dstSys := dstStat.Sys().(*syscall.Stat_t)
 
-		// source and destination inodes match, no need to link
-		if srcSys.Ino == dstSys.Ino {
-			return nil
+			// source and destination inodes match, no need to link
+			if srcSys.Ino == dstSys.Ino {
+				return nil
+			}
+		} else {
+			destMD5, err := utils.MD5ChecksumForFile(filepath.Join(poolPath, baseName))
+
+			// identical destination file already exists, no need to copy
+			if err == nil && sourceMD5 == destMD5 {
+				return nil
+			}
 		}
 
-		// source and destination have different inodes, if !forced, this is fatal error
+		// source and destination differ, if !forced, this is fatal error
 		if !force {
 			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
 		}
@@ -125,8 +139,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	// destination doesn't exist (or forced), create link
-	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	// destination doesn't exist (or forced), create link or copy
+	if sameFilesystem {
+		return os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	}
+	return utils.CopyFile(sourcePath, filepath.Join(poolPath, baseName))
 }
 
 // Filelist returns list of files under prefix
