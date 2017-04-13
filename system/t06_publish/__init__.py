@@ -2,6 +2,7 @@
 Testing publishing snapshots
 """
 
+from .fs_endpoint import *
 from .drop import *
 from .show import *
 from .list import *

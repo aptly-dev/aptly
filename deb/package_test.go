@@ -364,7 +364,7 @@ func (s *PackageSuite) TestPoolDirectory(c *C) {
 
 func (s *PackageSuite) TestLinkFromPool(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
-	publishedStorage := files.NewPublishedStorage(c.MkDir())
+	publishedStorage := files.NewPublishedStorage(c.MkDir(), "", "")
 	p := NewPackageFromControlFile(s.stanza)
 
 	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums)
