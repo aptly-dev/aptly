@@ -90,9 +90,9 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.factory = NewCollectionFactory(s.db)
 
 	s.root = c.MkDir()
-	s.publishedStorage = files.NewPublishedStorage(s.root)
+	s.publishedStorage = files.NewPublishedStorage(s.root, "", "")
 	s.root2 = c.MkDir()
-	s.publishedStorage2 = files.NewPublishedStorage(s.root2)
+	s.publishedStorage2 = files.NewPublishedStorage(s.root2, "", "")
 	s.provider = &FakeStorageProvider{map[string]aptly.PublishedStorage{
 		"":            s.publishedStorage,
 		"files:other": s.publishedStorage2}}
@@ -653,7 +653,7 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.collection.Add(s.repo5)
 
 	s.root = c.MkDir()
-	s.publishedStorage = files.NewPublishedStorage(s.root)
+	s.publishedStorage = files.NewPublishedStorage(s.root, "", "")
 	s.publishedStorage.MkDir("ppa/dists/anaconda")
 	s.publishedStorage.MkDir("ppa/dists/meduza")
 	s.publishedStorage.MkDir("ppa/dists/osminog")
@@ -663,7 +663,7 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.publishedStorage.MkDir("pool/main")
 
 	s.root2 = c.MkDir()
-	s.publishedStorage2 = files.NewPublishedStorage(s.root2)
+	s.publishedStorage2 = files.NewPublishedStorage(s.root2, "", "")
 	s.publishedStorage2.MkDir("ppa/dists/osminog")
 	s.publishedStorage2.MkDir("ppa/pool/contrib")
 

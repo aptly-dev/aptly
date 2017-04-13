@@ -163,7 +163,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("\n%s been successfully published.\n", message)
 
-	if localStorage, ok := context.GetPublishedStorage(storage).(aptly.LocalPublishedStorage); ok {
+	if localStorage, ok := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage); ok {
 		context.Progress().Printf("Please setup your webserver to serve directory '%s' with autoindexing.\n",
 			localStorage.PublicPath())
 	}

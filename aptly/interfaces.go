@@ -42,8 +42,8 @@ type PublishedStorage interface {
 	RenameFile(oldName, newName string) error
 }
 
-// LocalPublishedStorage is published storage on local filesystem
-type LocalPublishedStorage interface {
+// FileSystemPublishedStorage is published storage on filesystem
+type FileSystemPublishedStorage interface {
 	// PublicPath returns root of public part
 	PublicPath() string
 }
