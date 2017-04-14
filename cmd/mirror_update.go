@@ -227,7 +227,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	repo.FinalizeDownload(context.CollectionFactory())
+	repo.FinalizeDownload(context.CollectionFactory(), context.Progress())
 	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
