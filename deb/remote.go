@@ -542,7 +542,6 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipEx
 // FinalizeDownload swaps for final value of package refs
 func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, progress aptly.Progress) error {
 	repo.LastDownloadDate = time.Now()
-	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
 
 	if progress != nil {
 		progress.InitBar(int64(repo.packageList.Len()), true)
@@ -556,8 +555,12 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 		if progress != nil {
 			progress.SetBar(i)
 		}
+		// download process might have udpated checksums
+		p.UpdateFiles(p.Files())
 		return collectionFactory.PackageCollection().Update(p)
 	})
+
+	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
 
 	if progress != nil {
 		progress.ShutdownBar()

@@ -173,6 +173,9 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 				os.Remove(temppath)
 				return "", err
 			}
+		} else {
+			// update checksums if they match, so that they contain exactly expected set
+			*expected = actual
 		}
 	}
 

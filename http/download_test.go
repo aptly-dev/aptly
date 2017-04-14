@@ -98,9 +98,12 @@ func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
 		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "abcdef"}, false, 1),
 		ErrorMatches, ".*sha256 hash mismatch \"b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac\" != \"abcdef\"")
 
-	c.Assert(s.d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), &utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
-		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac"}, false, 1),
+	checksums := utils.ChecksumInfo{Size: 12, MD5: "a1acb0fe91c7db45ec4d775192ec5738",
+		SHA1: "921893bae6ad6fd818401875d6779254ef0ff0ec", SHA256: "b3c92ee1246176ed35f6e8463cd49074f29442f5bbffc3f8591cde1dcc849dac"}
+	c.Assert(s.d.DownloadWithChecksum(s.url+"/test", s.tempfile.Name(), &checksums, false, 1),
 		IsNil)
+	// download backfills missing checksums
+	c.Check(checksums.SHA512, Equals, "bac18bf4e564856369acc2ed57300fecba3a2c1af5ae8304021e4252488678feb18118466382ee4e1210fe1f065080210e453a80cfb37ccb8752af3269df160e")
 }
 
 func (s *DownloaderSuite) TestDownload404(c *C) {

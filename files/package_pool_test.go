@@ -24,7 +24,7 @@ var _ = Suite(&PackagePoolSuite{})
 func (s *PackagePoolSuite) SetUpTest(c *C) {
 	s.pool = NewPackagePool(c.MkDir())
 	s.checksum = utils.ChecksumInfo{
-		MD5: "91b1a1480b90b9e269ca44d897b12575",
+		MD5: "0035d7822b2f8f0ec4013f270fd650c2",
 	}
 	_, _File, _, _ := runtime.Caller(0)
 	s.debFile = filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
@@ -33,7 +33,7 @@ func (s *PackagePoolSuite) SetUpTest(c *C) {
 func (s *PackagePoolSuite) TestLegacyPath(c *C) {
 	path, err := s.pool.LegacyPath("a/b/package.deb", &s.checksum)
 	c.Assert(err, IsNil)
-	c.Assert(path, Equals, "91/b1/package.deb")
+	c.Assert(path, Equals, "00/35/package.deb")
 
 	_, err = s.pool.LegacyPath("/", &s.checksum)
 	c.Assert(err, ErrorMatches, ".*is invalid")
@@ -91,7 +91,9 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 func (s *PackagePoolSuite) TestImportOk(c *C) {
 	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "91/b1/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	// SHA256 should be automatically calculated
+	c.Check(s.checksum.SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
@@ -101,12 +103,12 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	// import as different name
 	path, err = s.pool.Import(s.debFile, "some.deb", &s.checksum, false)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "91/b1/some.deb")
+	c.Check(path, Equals, "00/35/some.deb")
 
 	// double import, should be ok
 	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "91/b1/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
 }
 
 func (s *PackagePoolSuite) TestImportMove(c *C) {
@@ -127,7 +129,7 @@ func (s *PackagePoolSuite) TestImportMove(c *C) {
 
 	path, err := s.pool.Import(tmpPath, filepath.Base(tmpPath), &s.checksum, true)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "91/b1/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
@@ -141,8 +143,8 @@ func (s *PackagePoolSuite) TestImportNotExist(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "91", "b1"), 0755)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "91", "b1", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
+	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
+	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
 
 	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
 	c.Check(err, ErrorMatches, "unable to import into pool.*")

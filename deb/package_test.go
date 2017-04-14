@@ -423,6 +423,7 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 
 	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false)
 
+	p.Files()[0].Checksums.Size = 100
 	result, err := p.VerifyFiles(packagePool)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)

@@ -142,6 +142,14 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		return "", err
 	}
 
+	if checksums.MD5 == "" || checksums.SHA256 == "" || checksums.Size != sourceInfo.Size() {
+		// need to update checksums, MD5 and SHA256 should be always defined
+		*checksums, err = utils.ChecksumsForFile(srcPath)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	// build target path
 	// TODO: replace with new build scheme
 	poolPath, err := pool.LegacyPath(basename, checksums)

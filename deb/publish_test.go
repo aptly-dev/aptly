@@ -98,6 +98,19 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 		"files:other": s.publishedStorage2}}
 	s.packagePool = files.NewPackagePool(s.root)
 
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
+
+	var err error
+	s.p1.Files()[0].PoolPath, err = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false)
+	c.Assert(err, IsNil)
+
+	s.p1.UpdateFiles(s.p1.Files())
+	s.p2.UpdateFiles(s.p1.Files())
+	s.p3.UpdateFiles(s.p1.Files())
+
+	s.reflist = NewPackageRefListFromPackageList(s.list)
+
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	repo.packageRefs = s.reflist
 	s.factory.RemoteRepoCollection().Add(repo)
@@ -131,11 +144,6 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.repo5, _ = NewPublishedRepo("files:other", "ppa", "maverick", []string{"source"}, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 	s.repo5.SkipContents = true
-
-	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
-
-	s.p1.Files()[0].PoolPath, _ = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false)
 }
 
 func (s *PublishedRepoSuite) TearDownTest(c *C) {
