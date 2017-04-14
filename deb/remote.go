@@ -555,7 +555,7 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 		if progress != nil {
 			progress.SetBar(i)
 		}
-		// download process might have udpated checksums
+		// download process might have updated checksums
 		p.UpdateFiles(p.Files())
 		return collectionFactory.PackageCollection().Update(p)
 	})
