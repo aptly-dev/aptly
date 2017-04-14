@@ -1,0 +1,32 @@
+
+[[dependencies]]
+  name = "github.com/gin-gonic/gin"
+  revision = "b1758d3bfa09e61ddbc1c9a627e936eec6a170de"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/mkrautz/goar"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/smira/go-uuid"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/smira/go-xz"
+
+[[dependencies]]
+  name = "github.com/ugorji/go"
+  revision = "71c2886f5a673a35f909803f38ece5810165097b"
+
+[[dependencies]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[dependencies]]
+  branch = "master"
+  name = "golang.org/x/sys"
+
+[[dependencies]]
+  branch = "v1"
+  name = "gopkg.in/check.v1"
