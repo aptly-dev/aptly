@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -20,6 +21,7 @@ type indexFiles struct {
 	tempDir          string
 	suffix           string
 	indexes          map[string]*indexFile
+	accessByHash     bool
 }
 
 type indexFile struct {
@@ -28,6 +30,7 @@ type indexFile struct {
 	compressable bool
 	onlyGzip     bool
 	signable     bool
+	accessByHash bool
 	relativePath string
 	tempFilename string
 	tempFile     *os.File
@@ -91,9 +94,22 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		file.parent.generatedFiles[file.relativePath+ext] = checksumInfo
 	}
 
-	err = file.parent.publishedStorage.MkDir(filepath.Dir(filepath.Join(file.parent.basePath, file.relativePath)))
+	filedir := filepath.Dir(filepath.Join(file.parent.basePath, file.relativePath))
+
+	err = file.parent.publishedStorage.MkDir(filedir)
 	if err != nil {
 		return fmt.Errorf("unable to create dir: %s", err)
+	}
+
+	hashs := []string{}
+	if file.accessByHash {
+		hashs = append(hashs, "MD5", "SHA1", "SHA256", "SHA512")
+		for _, hash := range hashs {
+			err = file.parent.publishedStorage.MkDir(filepath.Join(filedir, "by-hash", hash))
+			if err != nil {
+				return fmt.Errorf("unable to create dir: %s", err)
+			}
+		}
 	}
 
 	for _, ext := range exts {
@@ -106,6 +122,29 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		if file.parent.suffix != "" {
 			file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+ext)] =
 				filepath.Join(file.parent.basePath, file.relativePath+ext)
+		}
+
+		if file.accessByHash {
+			sums := file.parent.generatedFiles[file.relativePath+ext]
+			storage := file.parent.publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
+			src := filepath.Join(storage, file.parent.basePath, file.relativePath)
+
+			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA512", sums.SHA512)
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
+			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA256", sums.SHA256)
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
+			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA1", sums.SHA1)
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
+			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "MD5", sums.MD5)
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
 		}
 	}
 
@@ -143,7 +182,35 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	return nil
 }
 
-func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string) *indexFiles {
+func packageIndexByHash(src string, suffix string, ext string, storage string, filedir string, hash string, sum string) error {
+	indexfile := path.Base(src + ext)
+	src = src + suffix + ext
+	dst := filepath.Join(storage, filedir, "by-hash", hash)
+
+	if _, err := os.Stat(filepath.Join(dst, sum)); err == nil {
+		return nil
+	}
+	err := os.Link(src, filepath.Join(dst, sum))
+	if err != nil {
+		return fmt.Errorf("Access-By-Hash: error creating hardlink %s", filepath.Join(dst, sum))
+	}
+
+	if _, err := os.Stat(filepath.Join(dst, indexfile)); err == nil {
+		if _, err := os.Stat(filepath.Join(dst, indexfile+".old")); err == nil {
+			link, _ := os.Readlink(filepath.Join(dst, indexfile+".old"))
+			os.Remove(filepath.Join(dst, link))
+			os.Remove(filepath.Join(dst, indexfile+".old"))
+		}
+		os.Rename(filepath.Join(dst, indexfile), filepath.Join(dst, indexfile+".old"))
+	}
+	err = os.Symlink(sum, filepath.Join(dst, indexfile))
+	if err != nil {
+		return fmt.Errorf("Access-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
+	}
+	return nil
+}
+
+func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, accessByHash bool) *indexFiles {
 	return &indexFiles{
 		publishedStorage: publishedStorage,
 		basePath:         basePath,
@@ -152,6 +219,7 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 		tempDir:          tempDir,
 		suffix:           suffix,
 		indexes:          make(map[string]*indexFile),
+		accessByHash:     accessByHash,
 	}
 }
 
@@ -179,6 +247,7 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 			discardable:  false,
 			compressable: true,
 			signable:     false,
+			accessByHash: files.accessByHash,
 			relativePath: relativePath,
 		}
 
@@ -212,6 +281,7 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 			discardable:  udeb,
 			compressable: false,
 			signable:     false,
+			accessByHash: files.accessByHash,
 			relativePath: relativePath,
 		}
 
@@ -242,6 +312,7 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 			compressable: true,
 			onlyGzip:     true,
 			signable:     false,
+			accessByHash: files.accessByHash,
 			relativePath: relativePath,
 		}
 
