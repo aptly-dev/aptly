@@ -126,22 +126,20 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 
 		if file.accessByHash {
 			sums := file.parent.generatedFiles[file.relativePath+ext]
-			storage := file.parent.publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
-			src := filepath.Join(storage, file.parent.basePath, file.relativePath)
 
-			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA512", sums.SHA512)
+			err = packageIndexByHash(file, ext, "SHA512", sums.SHA512)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
-			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA256", sums.SHA256)
+			err = packageIndexByHash(file, ext, "SHA256", sums.SHA256)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
-			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "SHA1", sums.SHA1)
+			err = packageIndexByHash(file, ext, "SHA1", sums.SHA1)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
-			err = packageIndexByHash(src, file.parent.suffix, ext, storage, filedir, "MD5", sums.MD5)
+			err = packageIndexByHash(file, ext, "MD5", sums.MD5)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
@@ -182,28 +180,38 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	return nil
 }
 
-func packageIndexByHash(src string, suffix string, ext string, storage string, filedir string, hash string, sum string) error {
+func packageIndexByHash(file *indexFile, ext string, hash string, sum string) error {
+	src := filepath.Join(file.parent.basePath, file.relativePath)
 	indexfile := path.Base(src + ext)
-	src = src + suffix + ext
-	dst := filepath.Join(storage, filedir, "by-hash", hash)
+	src = src + file.parent.suffix + ext
+	filedir := filepath.Dir(filepath.Join(file.parent.basePath, file.relativePath))
+	dst := filepath.Join(filedir, "by-hash", hash)
 
-	if _, err := os.Stat(filepath.Join(dst, sum)); err == nil {
+	// link already exists? do nothing
+	if file.parent.publishedStorage.FileExists(filepath.Join(dst, sum)) {
 		return nil
 	}
-	err := os.Link(src, filepath.Join(dst, sum))
+
+	// create the link
+	err := file.parent.publishedStorage.HardLink(src, filepath.Join(dst, sum))
 	if err != nil {
-		return fmt.Errorf("Access-By-Hash: error creating hardlink %s", filepath.Join(dst, sum))
+		return fmt.Errorf("Access-By-Hash: error creating hardlink %s: %s", filepath.Join(dst, sum), err)
 	}
 
-	if _, err := os.Stat(filepath.Join(dst, indexfile)); err == nil {
-		if _, err := os.Stat(filepath.Join(dst, indexfile+".old")); err == nil {
-			link, _ := os.Readlink(filepath.Join(dst, indexfile+".old"))
-			os.Remove(filepath.Join(dst, link))
-			os.Remove(filepath.Join(dst, indexfile+".old"))
+	// if exists, backup symlink
+	if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)) {
+		// if exists, remove old symlink
+		if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")) {
+			link, _ := file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
+			file.parent.publishedStorage.Remove(filepath.Join(dst, link))
+			file.parent.publishedStorage.Remove(filepath.Join(dst, indexfile+".old"))
 		}
-		os.Rename(filepath.Join(dst, indexfile), filepath.Join(dst, indexfile+".old"))
+		file.parent.publishedStorage.RenameFile(filepath.Join(dst, indexfile),
+			filepath.Join(dst, indexfile+".old"))
 	}
-	err = os.Symlink(sum, filepath.Join(dst, indexfile))
+
+	// create symlink
+	err = file.parent.publishedStorage.SymLink(sum, filepath.Join(dst, indexfile))
 	if err != nil {
 		return fmt.Errorf("Access-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
 	}
