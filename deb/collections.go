@@ -15,6 +15,7 @@ type CollectionFactory struct {
 	snapshots      *SnapshotCollection
 	localRepos     *LocalRepoCollection
 	publishedRepos *PublishedRepoCollection
+	checksums      *ChecksumCollection
 }
 
 // NewCollectionFactory creates new factory
@@ -89,6 +90,18 @@ func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollec
 	return factory.publishedRepos
 }
 
+// ChecksumCollection returns (or creates) new ChecksumCollection
+func (factory *CollectionFactory) ChecksumCollection() *ChecksumCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
+	if factory.checksums == nil {
+		factory.checksums = NewChecksumCollection(factory.db)
+	}
+
+	return factory.checksums
+}
+
 // Flush removes all references to collections, so that memory could be reclaimed
 func (factory *CollectionFactory) Flush() {
 	factory.Lock()
@@ -99,4 +112,5 @@ func (factory *CollectionFactory) Flush() {
 	factory.remoteRepos = nil
 	factory.publishedRepos = nil
 	factory.packages = nil
+	factory.checksums = nil
 }
