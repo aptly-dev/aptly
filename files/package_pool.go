@@ -121,13 +121,93 @@ func (pool *PackagePool) Remove(path string) (size int64, err error) {
 	return info.Size(), err
 }
 
+func (pool *PackagePool) ensureChecksums(poolPath, fullPoolPath string, checksumStorage aptly.ChecksumStorage) (targetChecksums *utils.ChecksumInfo, err error) {
+	targetChecksums, err = checksumStorage.Get(poolPath)
+	if err != nil {
+		return
+	}
+
+	if targetChecksums == nil {
+		// we don't have checksums stored yet for this file
+		targetChecksums = &utils.ChecksumInfo{}
+		*targetChecksums, err = utils.ChecksumsForFile(fullPoolPath)
+		if err != nil {
+			return
+		}
+
+		err = checksumStorage.Update(poolPath, targetChecksums)
+	}
+
+	return
+}
+
+// Verify checks whether file exists in the pool and fills back checksum info
+//
+// if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
+// in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
+func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (bool, error) {
+	possiblePoolPaths := []string{}
+
+	if poolPath != "" {
+		possiblePoolPaths = append(possiblePoolPaths, poolPath)
+	} else {
+		// try to guess
+		// TODO: fixme add SHA256 generation here
+		if checksums.MD5 != "" {
+			legacyPath, err := pool.LegacyPath(basename, checksums)
+			if err != nil {
+				return false, err
+			}
+			possiblePoolPaths = append(possiblePoolPaths, legacyPath)
+		}
+	}
+
+	for _, path := range possiblePoolPaths {
+		fullPoolPath := filepath.Join(pool.rootPath, path)
+
+		targetInfo, err := os.Stat(fullPoolPath)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				// unable to stat target location?
+				return false, err
+			}
+			// doesn't exist, skip it
+			continue
+		}
+
+		if targetInfo.Size() != checksums.Size {
+			// oops, wrong file?
+			continue
+		}
+
+		var targetChecksums *utils.ChecksumInfo
+		targetChecksums, err = pool.ensureChecksums(path, fullPoolPath, checksumStorage)
+
+		if err != nil {
+			return false, err
+		}
+
+		if checksums.MD5 != "" && targetChecksums.MD5 != checksums.MD5 ||
+			checksums.SHA256 != "" && targetChecksums.SHA256 != checksums.SHA256 {
+			// wrong file?
+			return false, nil
+		}
+
+		// fill back checksums
+		*checksums = *targetChecksums
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // Import copies file into package pool
 //
 // - srcPath is full path to source file as it is now
 // - basename is desired human-readable name (canonical filename)
 // - checksums are used to calculate file placement
 // - move indicates whether srcPath can be removed
-func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool) (string, error) {
+func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, checksumStorage aptly.ChecksumStorage) (string, error) {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -168,6 +248,14 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	} else {
 		// target already exists and same size
 		if targetInfo.Size() == sourceInfo.Size() {
+			var targetChecksums *utils.ChecksumInfo
+
+			targetChecksums, err = pool.ensureChecksums(poolPath, fullPoolPath, checksumStorage)
+			if err != nil {
+				return "", err
+			}
+
+			*checksums = *targetChecksums
 			return poolPath, nil
 		}
 
@@ -197,6 +285,14 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 			// legacy file exists
 			if legacyTargetInfo.Size() == sourceInfo.Size() {
 				// file exists at legacy path and it's same size, consider it's already in the pool
+				var targetChecksums *utils.ChecksumInfo
+
+				targetChecksums, err = pool.ensureChecksums(legacyPath, legacyFullPath, checksumStorage)
+				if err != nil {
+					return "", err
+				}
+
+				*checksums = *targetChecksums
 				return legacyPath, nil
 			}
 
@@ -242,6 +338,18 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 
 	if err == nil && move {
 		err = os.Remove(srcPath)
+	}
+
+	if err == nil {
+		if !checksums.Complete() {
+			// need full checksums here
+			*checksums, err = utils.ChecksumsForFile(srcPath)
+			if err != nil {
+				return "", err
+			}
+		}
+
+		err = checksumStorage.Update(poolPath, checksums)
 	}
 
 	return poolPath, err

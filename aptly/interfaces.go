@@ -19,13 +19,18 @@ type ReadSeekerCloser interface {
 //
 // PackagePool stores all the package files, deduplicating them.
 type PackagePool interface {
+	// Verify checks whether file exists in the pool and fills back checksum info
+	//
+	// if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
+	// in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
+	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (bool, error)
 	// Import copies file into package pool
 	//
 	// - srcPath is full path to source file as it is now
 	// - basename is desired human-readable name (canonical filename)
 	// - checksums are used to calculate file placement
 	// - move indicates whether srcPath can be removed
-	Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool) (path string, err error)
+	Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage ChecksumStorage) (path string, err error)
 	// LegacyPath returns legacy (pre 1.1) path to package file (relative to root)
 	LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error)
 	// Stat returns Unix stat(2) info
@@ -114,4 +119,12 @@ type Downloader interface {
 	DownloadWithChecksum(url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
+}
+
+// ChecksumStorage is stores checksums in some (persistent) storage
+type ChecksumStorage interface {
+	// Get finds checksums in DB by path
+	Get(path string) (*utils.ChecksumInfo, error)
+	// Update adds or updates information about checksum in DB
+	Update(path string, c *utils.ChecksumInfo) error
 }

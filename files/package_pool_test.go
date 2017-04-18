@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
@@ -17,6 +18,7 @@ type PackagePoolSuite struct {
 	pool     *PackagePool
 	checksum utils.ChecksumInfo
 	debFile  string
+	cs       aptly.ChecksumStorage
 }
 
 var _ = Suite(&PackagePoolSuite{})
@@ -28,6 +30,7 @@ func (s *PackagePoolSuite) SetUpTest(c *C) {
 	}
 	_, _File, _, _ := runtime.Caller(0)
 	s.debFile = filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
+	s.cs = NewMockChecksumtorage()
 }
 
 func (s *PackagePoolSuite) TestLegacyPath(c *C) {
@@ -89,11 +92,13 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOk(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
 	// SHA256 should be automatically calculated
 	c.Check(s.checksum.SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
+	// checksum storage is filled with new checksum
+	c.Check(s.cs.(*mockChecksumStorage).store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
@@ -101,14 +106,104 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 1, Equals, true)
 
 	// import as different name
-	path, err = s.pool.Import(s.debFile, "some.deb", &s.checksum, false)
+	path, err = s.pool.Import(s.debFile, "some.deb", &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "00/35/some.deb")
+	// checksum storage is filled with new checksum
+	c.Check(s.cs.(*mockChecksumStorage).store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
 	// double import, should be ok
-	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	s.checksum.SHA512 = "" // clear checksum
+	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	// checksum is filled back based on checksum storage
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// clear checksum storage, and do double-import
+	delete(s.cs.(*mockChecksumStorage).store, path)
+	s.checksum.SHA512 = "" // clear checksum
+	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	// checksum is filled back based on re-calculation of file in the pool
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// import under new name, but with checksums already filled in
+	s.checksum.SHA512 = "" // clear checksum
+	path, err = s.pool.Import(s.debFile, "other.deb", &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+	c.Check(path, Equals, "00/35/other.deb")
+	// checksum is filled back based on re-calculation of source file
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+}
+
+func (s *PackagePoolSuite) TestVerify(c *C) {
+	// file doesn't exist yet
+	exists, err := s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+
+	// import file
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+	// check existance
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// check existance with fixed path
+	exists, err = s.pool.Verify(path, filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// check existence, but with missing checksum
+	s.checksum.SHA512 = ""
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+	// checksum is filled back based on checksum storage
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// check existence, with missing checksum info but correct path and size available
+	ck := utils.ChecksumInfo{
+		Size: s.checksum.Size,
+	}
+	exists, err = s.pool.Verify(path, filepath.Base(s.debFile), &ck, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+	// checksum is filled back based on checksum storage
+	c.Check(ck.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// check existence, with wrong checksum info but correct path and size available
+	ck.SHA256 = "abc"
+	exists, err = s.pool.Verify(path, filepath.Base(s.debFile), &ck, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+
+	// check existence, with missing checksum and no info in checksum storage
+	delete(s.cs.(*mockChecksumStorage).store, path)
+	s.checksum.SHA512 = ""
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+	// checksum is filled back based on re-calculation
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+
+	// check existence, with wrong size
+	s.checksum.Size = 13455
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+
+	// check existence, with empty checksum info
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &utils.ChecksumInfo{}, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
 }
 
 func (s *PackagePoolSuite) TestImportMove(c *C) {
@@ -127,7 +222,7 @@ func (s *PackagePoolSuite) TestImportMove(c *C) {
 	c.Assert(dst.Close(), IsNil)
 	c.Assert(src.Close(), IsNil)
 
-	path, err := s.pool.Import(tmpPath, filepath.Base(tmpPath), &s.checksum, true)
+	path, err := s.pool.Import(tmpPath, filepath.Base(tmpPath), &s.checksum, true, s.cs)
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
 
@@ -138,7 +233,7 @@ func (s *PackagePoolSuite) TestImportMove(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportNotExist(c *C) {
-	_, err := s.pool.Import("no-such-file", "a.deb", &s.checksum, false)
+	_, err := s.pool.Import("no-such-file", "a.deb", &s.checksum, false, s.cs)
 	c.Check(err, ErrorMatches, ".*no such file or directory")
 }
 
@@ -146,12 +241,12 @@ func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
 	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
 	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
 
-	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, ErrorMatches, "unable to import into pool.*")
 }
 
 func (s *PackagePoolSuite) TestStat(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 
 	info, err := s.pool.Stat(path)
@@ -163,7 +258,7 @@ func (s *PackagePoolSuite) TestStat(c *C) {
 }
 
 func (s *PackagePoolSuite) TestOpen(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 
 	f, err := s.pool.Open(path)
@@ -178,7 +273,7 @@ func (s *PackagePoolSuite) TestOpen(c *C) {
 }
 
 func (s *PackagePoolSuite) TestLink(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 
 	tmpDir := c.MkDir()
@@ -192,7 +287,7 @@ func (s *PackagePoolSuite) TestLink(c *C) {
 }
 
 func (s *PackagePoolSuite) TestSymlink(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false)
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
 
 	tmpDir := c.MkDir()

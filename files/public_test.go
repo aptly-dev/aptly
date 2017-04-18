@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
@@ -17,6 +18,7 @@ type PublishedStorageSuite struct {
 	storageSymlink  *PublishedStorage
 	storageCopy     *PublishedStorage
 	storageCopySize *PublishedStorage
+	cs              aptly.ChecksumStorage
 }
 
 var _ = Suite(&PublishedStorageSuite{})
@@ -27,6 +29,7 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.storageSymlink = NewPublishedStorage(filepath.Join(s.root, "public_symlink"), "symlink", "")
 	s.storageCopy = NewPublishedStorage(filepath.Join(s.root, "public_copy"), "copy", "")
 	s.storageCopySize = NewPublishedStorage(filepath.Join(s.root, "public_copysize"), "copy", "size")
+	s.cs = NewMockChecksumtorage()
 }
 
 func (s *PublishedStorageSuite) TestLinkMethodField(c *C) {
@@ -178,7 +181,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
 		c.Assert(err, IsNil)
 
-		srcPoolPath, err := pool.Import(tmpPath, t.sourcePath, &utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}, false)
+		srcPoolPath, err := pool.Import(tmpPath, t.sourcePath, &utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}, false, s.cs)
 		c.Assert(err, IsNil)
 
 		// Test using hardlinks
@@ -231,7 +234,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
 	c.Assert(err, IsNil)
 
-	srcPoolPath, err := pool.Import(tmpPath, "mars-invaders_1.03.deb", &utils.ChecksumInfo{MD5: "02bcda7a1ce305a3b60af9d5733ac1d"}, true)
+	srcPoolPath, err := pool.Import(tmpPath, "mars-invaders_1.03.deb", &utils.ChecksumInfo{MD5: "02bcda7a1ce305a3b60af9d5733ac1d"}, true, s.cs)
 	c.Assert(err, IsNil)
 
 	st, err := pool.Stat(srcPoolPath)
