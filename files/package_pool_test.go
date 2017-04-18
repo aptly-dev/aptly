@@ -149,13 +149,13 @@ func (s *PackagePoolSuite) TestVerify(c *C) {
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
 
-	// check existance
+	// check existence
 	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
 	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
 	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
 
-	// check existance with fixed path
+	// check existence with fixed path
 	exists, err = s.pool.Verify(path, filepath.Base(s.debFile), &s.checksum, s.cs)
 	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
