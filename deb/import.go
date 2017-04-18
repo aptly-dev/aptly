@@ -60,7 +60,8 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 
 // ImportPackageFiles imports files into local repository
 func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier utils.Verifier,
-	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery) (processedFiles []string, failedFiles []string, err error) {
+	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery,
+	checksumStorage aptly.ChecksumStorage) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
 	}
@@ -133,7 +134,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			Checksums: checksums,
 		}
 
-		mainPackageFile.PoolPath, err = pool.Import(file, mainPackageFile.Filename, &mainPackageFile.Checksums, false)
+		mainPackageFile.PoolPath, err = pool.Import(file, mainPackageFile.Filename, &mainPackageFile.Checksums, false, checksumStorage)
 		if err != nil {
 			reporter.Warning("Unable to import file %s into pool: %s", file, err)
 			failedFiles = append(failedFiles, file)
@@ -145,7 +146,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		// go over all the other files
 		for _, f := range files {
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			f.PoolPath, err = pool.Import(sourceFile, f.Filename, &f.Checksums, false)
+			f.PoolPath, err = pool.Import(sourceFile, f.Filename, &f.Checksums, false, checksumStorage)
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)

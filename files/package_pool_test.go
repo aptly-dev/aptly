@@ -30,7 +30,7 @@ func (s *PackagePoolSuite) SetUpTest(c *C) {
 	}
 	_, _File, _, _ := runtime.Caller(0)
 	s.debFile = filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
-	s.cs = NewMockChecksumtorage()
+	s.cs = NewMockChecksumStorage()
 }
 
 func (s *PackagePoolSuite) TestLegacyPath(c *C) {

@@ -29,7 +29,7 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.storageSymlink = NewPublishedStorage(filepath.Join(s.root, "public_symlink"), "symlink", "")
 	s.storageCopy = NewPublishedStorage(filepath.Join(s.root, "public_copy"), "copy", "")
 	s.storageCopySize = NewPublishedStorage(filepath.Join(s.root, "public_copysize"), "copy", "size")
-	s.cs = NewMockChecksumtorage()
+	s.cs = NewMockChecksumStorage()
 }
 
 func (s *PublishedStorageSuite) TestLinkMethodField(c *C) {

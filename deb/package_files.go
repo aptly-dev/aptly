@@ -26,20 +26,8 @@ type PackageFile struct {
 }
 
 // Verify that package file is present and correct
-func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
-	poolPath, err := f.GetPoolPath(packagePool)
-	if err != nil {
-		return false, err
-	}
-
-	st, err := packagePool.Stat(poolPath)
-	if err != nil {
-		return false, nil
-	}
-
-	// verify size
-	// TODO: verify checksum if configured
-	return st.Size() == f.Checksums.Size, nil
+func (f *PackageFile) Verify(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage) (bool, error) {
+	return packagePool.Verify(f.PoolPath, f.Filename, &f.Checksums, checksumStorage)
 }
 
 // GetPoolPath returns path to the file in the pool

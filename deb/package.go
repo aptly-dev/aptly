@@ -611,11 +611,11 @@ type PackageDownloadTask struct {
 
 // DownloadList returns list of missing package files for download in format
 // [[srcpath, dstpath]]
-func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageDownloadTask, err error) {
+func (p *Package) DownloadList(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage) (result []PackageDownloadTask, err error) {
 	result = make([]PackageDownloadTask, 0, 1)
 
 	for idx, f := range p.Files() {
-		verified, err := f.Verify(packagePool)
+		verified, err := f.Verify(packagePool, checksumStorage)
 		if err != nil {
 			return nil, err
 		}
@@ -629,11 +629,11 @@ func (p *Package) DownloadList(packagePool aptly.PackagePool) (result []PackageD
 }
 
 // VerifyFiles verifies that all package files have neen correctly downloaded
-func (p *Package) VerifyFiles(packagePool aptly.PackagePool) (result bool, err error) {
+func (p *Package) VerifyFiles(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage) (result bool, err error) {
 	result = true
 
 	for _, f := range p.Files() {
-		result, err = f.Verify(packagePool)
+		result, err = f.Verify(packagePool, checksumStorage)
 		if err != nil || !result {
 			return
 		}

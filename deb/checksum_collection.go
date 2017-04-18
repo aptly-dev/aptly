@@ -3,6 +3,7 @@ package deb
 import (
 	"bytes"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/utils"
 	"github.com/ugorji/go/codec"
@@ -59,3 +60,8 @@ func (collection *ChecksumCollection) Update(path string, c *utils.ChecksumInfo)
 
 	return collection.db.Put(collection.dbKey(path), encodeBuffer.Bytes())
 }
+
+// Check interface
+var (
+	_ aptly.ChecksumStorage = &ChecksumCollection{}
+)

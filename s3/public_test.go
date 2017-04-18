@@ -217,6 +217,7 @@ func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	root := c.MkDir()
 	pool := files.NewPackagePool(root)
+	cs := files.NewMockChecksumStorage()
 
 	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
 	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
@@ -228,9 +229,9 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
 
-	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true)
+	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
 	c.Assert(err, IsNil)
-	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true)
+	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true, cs)
 	c.Assert(err, IsNil)
 
 	// first link from pool

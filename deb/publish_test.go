@@ -74,6 +74,7 @@ type PublishedRepoSuite struct {
 	provider                            *FakeStorageProvider
 	publishedStorage, publishedStorage2 *files.PublishedStorage
 	packagePool                         aptly.PackagePool
+	cs                                  aptly.ChecksumStorage
 	localRepo                           *LocalRepo
 	snapshot, snapshot2                 *Snapshot
 	db                                  database.Storage
@@ -97,12 +98,13 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 		"":            s.publishedStorage,
 		"files:other": s.publishedStorage2}}
 	s.packagePool = files.NewPackagePool(s.root)
+	s.cs = files.NewMockChecksumStorage()
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
 	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
 
 	var err error
-	s.p1.Files()[0].PoolPath, err = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false)
+	s.p1.Files()[0].PoolPath, err = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false, s.cs)
 	c.Assert(err, IsNil)
 
 	s.p1.UpdateFiles(s.p1.Files())

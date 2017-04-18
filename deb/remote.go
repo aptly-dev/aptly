@@ -501,7 +501,7 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
 	seen := make(map[string]int, repo.packageList.Len())
 
@@ -512,7 +512,7 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipEx
 		}
 
 		if download {
-			list, err2 := p.DownloadList(packagePool)
+			list, err2 := p.DownloadList(packagePool, checksumStorage)
 			if err2 != nil {
 				return err2
 			}

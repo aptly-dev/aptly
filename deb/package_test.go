@@ -363,13 +363,14 @@ func (s *PackageSuite) TestPoolDirectory(c *C) {
 
 func (s *PackageSuite) TestLinkFromPool(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
+	cs := files.NewMockChecksumStorage()
 	publishedStorage := files.NewPublishedStorage(c.MkDir(), "", "")
 	p := NewPackageFromControlFile(s.stanza)
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
 	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
 
-	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false)
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
 	err := p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
 	c.Check(err, IsNil)
@@ -393,10 +394,11 @@ func (s *PackageSuite) TestFilepathList(c *C) {
 
 func (s *PackageSuite) TestDownloadList(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
+	cs := files.NewMockChecksumStorage()
 	p := NewPackageFromControlFile(s.stanza)
 	p.Files()[0].Checksums.Size = 5
 
-	list, err := p.DownloadList(packagePool)
+	list, err := p.DownloadList(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{
 		{
@@ -406,9 +408,9 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
 	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
-	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false)
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
-	list, err = p.DownloadList(packagePool)
+	list, err = p.DownloadList(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{})
 }
@@ -417,20 +419,21 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
 	packagePool := files.NewPackagePool(c.MkDir())
+	cs := files.NewMockChecksumStorage()
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
 	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
-	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false)
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
 	p.Files()[0].Checksums.Size = 100
-	result, err := p.VerifyFiles(packagePool)
+	result, err := p.VerifyFiles(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
 	p.Files()[0].Checksums.Size = 5
 
-	result, err = p.VerifyFiles(packagePool)
+	result, err = p.VerifyFiles(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }

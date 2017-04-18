@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/utils"
 
@@ -12,11 +13,13 @@ import (
 
 type PackageFilesSuite struct {
 	files PackageFiles
+	cs    aptly.ChecksumStorage
 }
 
 var _ = Suite(&PackageFilesSuite{})
 
 func (s *PackageFilesSuite) SetUpTest(c *C) {
+	s.cs = files.NewMockChecksumStorage()
 	s.files = PackageFiles{PackageFile{
 		Filename:     "alien-arena-common_7.40-2_i386.deb",
 		downloadPath: "pool/contrib/a/alien-arena",
@@ -31,22 +34,22 @@ func (s *PackageFilesSuite) SetUpTest(c *C) {
 func (s *PackageFilesSuite) TestVerify(c *C) {
 	packagePool := files.NewPackagePool(c.MkDir())
 
-	result, err := s.files[0].Verify(packagePool)
+	result, err := s.files[0].Verify(packagePool, s.cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
 	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
-	s.files[0].PoolPath, _ = packagePool.Import(tmpFilepath, s.files[0].Filename, &s.files[0].Checksums, false)
+	s.files[0].PoolPath, _ = packagePool.Import(tmpFilepath, s.files[0].Filename, &s.files[0].Checksums, false, s.cs)
 
 	s.files[0].Checksums.Size = 187518
-	result, err = s.files[0].Verify(packagePool)
+	result, err = s.files[0].Verify(packagePool, s.cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
 	s.files[0].Checksums.Size = 5
-	result, err = s.files[0].Verify(packagePool)
+	result, err = s.files[0].Verify(packagePool, s.cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }

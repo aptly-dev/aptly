@@ -81,6 +81,7 @@ type RemoteRepoSuite struct {
 	db                database.Storage
 	collectionFactory *CollectionFactory
 	packagePool       aptly.PackagePool
+	cs                aptly.ChecksumStorage
 }
 
 var _ = Suite(&RemoteRepoSuite{})
@@ -93,6 +94,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir())
+	s.cs = files.NewMockChecksumStorage()
 	s.SetUpPackages()
 	s.progress.Start()
 }
@@ -266,7 +268,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -293,7 +295,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, true)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -314,7 +316,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -342,7 +344,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -386,7 +388,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, true)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -411,7 +413,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -435,7 +437,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -463,7 +465,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, true)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -485,7 +487,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -516,7 +518,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -562,7 +564,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, true)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -588,7 +590,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)

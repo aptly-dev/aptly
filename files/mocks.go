@@ -9,8 +9,8 @@ type mockChecksumStorage struct {
 	store map[string]utils.ChecksumInfo
 }
 
-// NewMockChecksumtorage creates aptly.ChecksumStorage for tests
-func NewMockChecksumtorage() aptly.ChecksumStorage {
+// NewMockChecksumStorage creates aptly.ChecksumStorage for tests
+func NewMockChecksumStorage() aptly.ChecksumStorage {
 	return &mockChecksumStorage{
 		store: make(map[string]utils.ChecksumInfo),
 	}
