@@ -336,10 +336,6 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		}
 	}
 
-	if err == nil && move {
-		err = os.Remove(srcPath)
-	}
-
 	if err == nil {
 		if !checksums.Complete() {
 			// need full checksums here
@@ -350,6 +346,10 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		}
 
 		err = checksumStorage.Update(poolPath, checksums)
+	}
+
+	if err == nil && move {
+		err = os.Remove(srcPath)
 	}
 
 	return poolPath, err
