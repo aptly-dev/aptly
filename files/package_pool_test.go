@@ -94,7 +94,7 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 func (s *PackagePoolSuite) TestImportOk(c *C) {
 	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb")
 	// SHA256 should be automatically calculated
 	c.Check(s.checksum.SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 	// checksum storage is filled with new checksum
@@ -108,7 +108,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	// import as different name
 	path, err = s.pool.Import(s.debFile, "some.deb", &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/some.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_some.deb")
 	// checksum storage is filled with new checksum
 	c.Check(s.cs.(*mockChecksumStorage).store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
@@ -116,7 +116,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	s.checksum.SHA512 = "" // clear checksum
 	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb")
 	// checksum is filled back based on checksum storage
 	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
 
@@ -125,7 +125,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	s.checksum.SHA512 = "" // clear checksum
 	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb")
 	// checksum is filled back based on re-calculation of file in the pool
 	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
 
@@ -133,8 +133,40 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	s.checksum.SHA512 = "" // clear checksum
 	path, err = s.pool.Import(s.debFile, "other.deb", &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/other.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_other.deb")
 	// checksum is filled back based on re-calculation of source file
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+}
+
+func (s *PackagePoolSuite) TestImportLegacy(c *C) {
+	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
+	err := utils.CopyFile(s.debFile, filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"))
+	c.Assert(err, IsNil)
+
+	s.checksum.Size = 2738
+	var path string
+	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	// checksum is filled back based on checksum storage
+	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
+}
+
+func (s *PackagePoolSuite) TestVerifyLegacy(c *C) {
+	s.checksum.Size = 2738
+	// file doesn't exist yet
+	exists, err := s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+
+	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
+	err = utils.CopyFile(s.debFile, filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"))
+	c.Assert(err, IsNil)
+
+	// check existence (and fills back checksum)
+	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
 	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
 }
 
@@ -147,7 +179,7 @@ func (s *PackagePoolSuite) TestVerify(c *C) {
 	// import file
 	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb")
 
 	// check existence
 	exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
@@ -224,7 +256,7 @@ func (s *PackagePoolSuite) TestImportMove(c *C) {
 
 	path, err := s.pool.Import(tmpPath, filepath.Base(tmpPath), &s.checksum, true, s.cs)
 	c.Check(err, IsNil)
-	c.Check(path, Equals, "00/35/libboost-program-options-dev_1.49.0.1_i386.deb")
+	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb")
 
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
@@ -238,8 +270,8 @@ func (s *PackagePoolSuite) TestImportNotExist(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
+	os.MkdirAll(filepath.Join(s.pool.rootPath, "c7", "6b"), 0755)
+	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "c7", "6b", "4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
 
 	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, ErrorMatches, "unable to import into pool.*")

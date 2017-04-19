@@ -59,6 +59,23 @@ func (pool *PackagePool) LegacyPath(filename string, checksums *utils.ChecksumIn
 	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
 }
 
+// buildPoolPath generates pool path based on file checksum
+func (pool *PackagePool) buildPoolPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+	filename = filepath.Base(filename)
+	if filename == "." || filename == "/" {
+		return "", fmt.Errorf("filename %s is invalid", filename)
+	}
+
+	hash := checksums.SHA256
+
+	if len(hash) < 4 {
+		// this should never happen in real life
+		return "", fmt.Errorf("unable to compute pool location for filename %v, SHA256 is missing", filename)
+	}
+
+	return filepath.Join(hash[0:2], hash[2:4], hash[4:32]+"_"+filename), nil
+}
+
 // FilepathList returns file paths of all the files in the pool
 func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
 	pool.Lock()
@@ -152,8 +169,15 @@ func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.Chec
 		possiblePoolPaths = append(possiblePoolPaths, poolPath)
 	} else {
 		// try to guess
-		// TODO: fixme add SHA256 generation here
-		if checksums.MD5 != "" {
+		if checksums.SHA256 != "" {
+			modernPath, err := pool.buildPoolPath(basename, checksums)
+			if err != nil {
+				return false, err
+			}
+			possiblePoolPaths = append(possiblePoolPaths, modernPath)
+		}
+
+		if pool.supportLegacyPaths && checksums.MD5 != "" {
 			legacyPath, err := pool.LegacyPath(basename, checksums)
 			if err != nil {
 				return false, err
@@ -231,8 +255,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	}
 
 	// build target path
-	// TODO: replace with new build scheme
-	poolPath, err := pool.LegacyPath(basename, checksums)
+	poolPath, err := pool.buildPoolPath(basename, checksums)
 	if err != nil {
 		return "", err
 	}
