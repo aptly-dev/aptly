@@ -86,7 +86,9 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	skipExistingPackages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
 
 	context.Progress().Printf("Building download queue...\n")
-	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), context.CollectionFactory().ChecksumCollection(), skipExistingPackages)
+	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), context.CollectionFactory().PackageCollection(),
+		context.CollectionFactory().ChecksumCollection(), skipExistingPackages)
+
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}

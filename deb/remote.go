@@ -501,35 +501,43 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
 	seen := make(map[string]int, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
-		download := true
 		if repo.packageRefs != nil && skipExistingPackages {
-			download = !repo.packageRefs.Has(p)
-		}
-
-		if download {
-			list, err2 := p.DownloadList(packagePool, checksumStorage)
-			if err2 != nil {
-				return err2
-			}
-
-			for _, task := range list {
-				key := task.File.DownloadURL()
-				idx, found := seen[key]
-				if !found {
-					queue = append(queue, task)
-					downloadSize += task.File.Checksums.Size
-					seen[key] = len(queue) - 1
-				} else {
-					// hook up the task to duplicate entry already on the list
-					queue[idx].Additional = append(queue[idx].Additional, task)
+			if repo.packageRefs.Has(p) {
+				// skip this package, but load checksums/files from package in DB
+				var prevP *Package
+				prevP, err = packageCollection.ByKey(p.Key(""))
+				if err != nil {
+					return err
 				}
+
+				p.UpdateFiles(prevP.Files())
+				return nil
 			}
 		}
+
+		list, err2 := p.DownloadList(packagePool, checksumStorage)
+		if err2 != nil {
+			return err2
+		}
+
+		for _, task := range list {
+			key := task.File.DownloadURL()
+			idx, found := seen[key]
+			if !found {
+				queue = append(queue, task)
+				downloadSize += task.File.Checksums.Size
+				seen[key] = len(queue) - 1
+			} else {
+				// hook up the task to duplicate entry already on the list
+				queue[idx].Additional = append(queue[idx].Additional, task)
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
