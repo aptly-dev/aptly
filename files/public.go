@@ -117,10 +117,9 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // sourcePath is a relative path to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	baseName := filepath.Base(sourcePath)
 	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
 	err := os.MkdirAll(poolPath, 0777)
