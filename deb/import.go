@@ -144,9 +144,9 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		candidateProcessedFiles = append(candidateProcessedFiles, file)
 
 		// go over all the other files
-		for _, f := range files {
-			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			f.PoolPath, err = pool.Import(sourceFile, f.Filename, &f.Checksums, false, checksumStorage)
+		for i := range files {
+			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(files[i].Filename))
+			files[i].PoolPath, err = pool.Import(sourceFile, files[i].Filename, &files[i].Checksums, false, checksumStorage)
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)
