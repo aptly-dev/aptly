@@ -1,5 +1,5 @@
 Loading packages...
-[!] Unable to import file /pyspi_0.6.1.orig.tar.gz into pool: unable to import into pool: file ${HOME}/.aptly/pool/de/f3/pyspi_0.6.1.orig.tar.gz already exists
+[!] Unable to import file /pyspi_0.6.1.orig.tar.gz into pool: unable to import into pool: file ${HOME}/.aptly/pool/64/06/9ee828c50b1c597d10a3fefbba27_pyspi_0.6.1.orig.tar.gz already exists
 [!] Some files were skipped due to errors:
   /pyspi_0.6.1-1.3.dsc
 ERROR: some files failed to be added
