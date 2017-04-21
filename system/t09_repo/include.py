@@ -25,9 +25,9 @@ class IncludeRepo1Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages unstable", "repo_show")
 
         # check pool
-        self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-        self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-        self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+        self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+        self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+        self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
 
 class IncludeRepo2Test(BaseTest):
@@ -46,9 +46,9 @@ class IncludeRepo2Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages my-unstable", "repo_show")
 
         # check pool
-        self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-        self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-        self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+        self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+        self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+        self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
 
 class IncludeRepo3Test(BaseTest):
@@ -101,9 +101,9 @@ class IncludeRepo5Test(BaseTest):
             self.check_cmd_output("aptly repo show -with-packages unstable", "repo_show")
 
             # check pool
-            self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-            self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-            self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+            self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+            self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+            self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
             for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1.tar.gz", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
                 path = os.path.join(self.tempSrcDir, "01", path)
