@@ -1,6 +1,6 @@
 Name: mirror14
-Archive Root URL: http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/
-Distribution: ./
+Archive Root URL: https://cloud.r-project.org/bin/linux/debian/
+Distribution: ./jessie-cran3/
 Components: 
 Architectures: 
 Download Sources: no
@@ -8,11 +8,10 @@ Download .udebs: no
 Last update: never
 
 Information from release file:
-Architectures: i386 amd64
-Archive: Debian_7.0
-Codename: Debian_7.0
-Date: Fri Apr 25 04:32:23 2014
-Description:  monkeyiq's Home Project (Debian_7.0)
-
-Label: home:monkeyiq
-Origin: obs://build.opensuse.org/home:monkeyiq/Debian_7.0
+Architectures: i386 amd64 armel all
+Codename: jessie-cran3
+Components: main
+Date: Sun, 12 Mar 2017 23:23:14 UTC
+Label: CRAN Backports
+Origin: CRAN
+Suite: jessie-cran3
