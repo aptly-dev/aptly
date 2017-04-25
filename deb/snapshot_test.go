@@ -37,11 +37,17 @@ func (s *SnapshotSuite) TestNewSnapshotFromRepository(c *C) {
 func (s *SnapshotSuite) TestNewSnapshotFromLocalRepo(c *C) {
 	localRepo := NewLocalRepo("lala", "hoorah!")
 
-	_, err := NewSnapshotFromLocalRepo("snap2", localRepo)
-	c.Check(err, ErrorMatches, "local repo doesn't have packages")
+	snapshot, err := NewSnapshotFromLocalRepo("snap2", localRepo)
+	c.Assert(err, IsNil)
+	c.Check(snapshot.Name, Equals, "snap2")
+	c.Check(snapshot.NumPackages(), Equals, 0)
+	c.Check(snapshot.RefList().Len(), Equals, 0)
+	c.Check(snapshot.SourceKind, Equals, "local")
+	c.Check(snapshot.SourceIDs, DeepEquals, []string{localRepo.UUID})
 
 	localRepo.UpdateRefList(s.reflist)
-	snapshot, _ := NewSnapshotFromLocalRepo("snap1", localRepo)
+	snapshot, err = NewSnapshotFromLocalRepo("snap1", localRepo)
+	c.Assert(err, IsNil)
 	c.Check(snapshot.Name, Equals, "snap1")
 	c.Check(snapshot.NumPackages(), Equals, 3)
 	c.Check(snapshot.RefList().Len(), Equals, 3)

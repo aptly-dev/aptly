@@ -53,11 +53,7 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 
 // NewSnapshotFromLocalRepo creates snapshot from current state of local repository
 func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
-	if repo.packageRefs == nil {
-		return nil, errors.New("local repo doesn't have packages")
-	}
-
-	return &Snapshot{
+	snap := &Snapshot{
 		UUID:        uuid.New(),
 		Name:        name,
 		CreatedAt:   time.Now(),
@@ -65,7 +61,13 @@ func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from local repo %s", repo),
 		packageRefs: repo.packageRefs,
-	}, nil
+	}
+
+	if snap.packageRefs == nil {
+		snap.packageRefs = NewPackageRefList()
+	}
+
+	return snap, nil
 }
 
 // NewSnapshotFromPackageList creates snapshot from PackageList
