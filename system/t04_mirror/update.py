@@ -201,3 +201,22 @@ class UpdateMirror14Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror15Test(BaseTest):
+    """
+    update mirrors: update for mirror without MD5 checksums
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures bintray"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def check(self):
+        super(UpdateMirror15Test, self).check()
+        # check pool
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
