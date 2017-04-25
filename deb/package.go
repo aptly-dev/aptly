@@ -605,8 +605,9 @@ func (p *Package) PoolDirectory() (string, error) {
 
 // PackageDownloadTask is a element of download queue for the package
 type PackageDownloadTask struct {
-	File       *PackageFile
-	Additional []PackageDownloadTask
+	File         *PackageFile
+	Additional   []PackageDownloadTask
+	TempDownPath string
 }
 
 // DownloadList returns list of missing package files for download in format
