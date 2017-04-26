@@ -97,7 +97,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.provider = &FakeStorageProvider{map[string]aptly.PublishedStorage{
 		"":            s.publishedStorage,
 		"files:other": s.publishedStorage2}}
-	s.packagePool = files.NewPackagePool(s.root)
+	s.packagePool = files.NewPackagePool(s.root, false)
 	s.cs = files.NewMockChecksumStorage()
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")

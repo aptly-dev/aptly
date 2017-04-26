@@ -32,7 +32,7 @@ func (s *PackageFilesSuite) SetUpTest(c *C) {
 }
 
 func (s *PackageFilesSuite) TestVerify(c *C) {
-	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir(), false)
 
 	result, err := s.files[0].Verify(packagePool, s.cs)
 	c.Check(err, IsNil)

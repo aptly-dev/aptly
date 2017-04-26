@@ -30,7 +30,7 @@ var (
 )
 
 // NewPackagePool creates new instance of PackagePool which specified root
-func NewPackagePool(root string) *PackagePool {
+func NewPackagePool(root string, supportLegacyPaths bool) *PackagePool {
 	rootPath := filepath.Join(root, "pool")
 	rootPath, err := filepath.Abs(rootPath)
 	if err != nil {
@@ -39,7 +39,7 @@ func NewPackagePool(root string) *PackagePool {
 
 	return &PackagePool{
 		rootPath:           rootPath,
-		supportLegacyPaths: true,
+		supportLegacyPaths: supportLegacyPaths,
 	}
 }
 

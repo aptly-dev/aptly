@@ -101,6 +101,9 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
+
+				// as this is fresh aptly installation, we don't need to support legacy pool locations
+				utils.Config.SkipLegacyPool = true
 				utils.SaveConfig(configLocations[0], &utils.Config)
 			}
 		}
@@ -302,7 +305,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.config().RootDir)
+		context.packagePool = files.NewPackagePool(context.config().RootDir, !context.config().SkipLegacyPool)
 	}
 
 	return context.packagePool

@@ -24,7 +24,7 @@ type PackagePoolSuite struct {
 var _ = Suite(&PackagePoolSuite{})
 
 func (s *PackagePoolSuite) SetUpTest(c *C) {
-	s.pool = NewPackagePool(c.MkDir())
+	s.pool = NewPackagePool(c.MkDir(), true)
 	s.checksum = utils.ChecksumInfo{
 		MD5: "0035d7822b2f8f0ec4013f270fd650c2",
 	}

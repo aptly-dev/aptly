@@ -20,6 +20,7 @@ type ConfigStructure struct {
 	GpgDisableSign         bool                             `json:"gpgDisableSign"`
 	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
 	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
+	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
 	PpaCodename            string                           `json:"ppaCodename"`
 	SkipContentsPublishing bool                             `json:"skipContentsPublishing"`
@@ -81,6 +82,7 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
+	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},

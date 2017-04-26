@@ -93,7 +93,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.progress = console.NewProgress()
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
-	s.packagePool = files.NewPackagePool(c.MkDir())
+	s.packagePool = files.NewPackagePool(c.MkDir(), false)
 	s.cs = files.NewMockChecksumStorage()
 	s.SetUpPackages()
 	s.progress.Start()

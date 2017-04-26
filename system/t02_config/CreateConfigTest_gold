@@ -1,5 +1,5 @@
 {
-  "rootDir": "${HOME}/.aptly",
+  "rootDir": "/Users/smira/.aptly",
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "architectures": [],
@@ -11,6 +11,7 @@
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
   "downloadSourcePackages": false,
+  "skipLegacyPool": true,
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
   "skipContentsPublishing": false,

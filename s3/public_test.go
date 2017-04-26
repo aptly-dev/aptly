@@ -216,7 +216,7 @@ func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 
 func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	root := c.MkDir()
-	pool := files.NewPackagePool(root)
+	pool := files.NewPackagePool(root, false)
 	cs := files.NewMockChecksumStorage()
 
 	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")

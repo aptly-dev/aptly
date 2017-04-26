@@ -171,7 +171,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		},
 	}
 
-	pool := NewPackagePool(s.root)
+	pool := NewPackagePool(s.root, false)
 
 	for _, t := range tests {
 		tmpPath := filepath.Join(c.MkDir(), t.sourcePath)
