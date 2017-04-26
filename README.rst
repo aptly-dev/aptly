@@ -73,6 +73,11 @@ If you have Go environment set up, you can build aptly from source by running (g
 
 Binary would be installed to ```$GOPATH/bin/aptly``.
 
+Contributing
+------------
+
+Please follow detailed documentation in `CONTRIBUTING.md <CONTRIBUTING.md>`_.
+
 Integrations
 ------------
 
