@@ -1,5 +1,5 @@
 {
-  "rootDir": "/Users/smira/.aptly",
+  "rootDir": "${HOME}/.aptly",
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "architectures": [],
