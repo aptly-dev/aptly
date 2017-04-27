@@ -567,7 +567,9 @@ class PublishRepo23Test(BaseTest):
     ]
     runCmd = "aptly publish repo -component=main,contrib repo1"
     expectedCode = 2
-    outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+
+    def outputMatchPrepare(_, s):
+        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
 
 
 class PublishRepo24Test(BaseTest):
@@ -616,7 +618,9 @@ class PublishRepo26Test(BaseTest):
     ]
     runCmd = "aptly publish repo -keyring=${files}/aptly_passphrase.pub -secret-keyring=${files}/aptly_passphrase.sec -passphrase=verysecret -distribution=maverick local-repo"
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda _, s: s.replace("gpg: gpg-agent is not available in this session\n", "")
+
+    def outputMatchPrepare(_, s):
+        return s.replace("gpg: gpg-agent is not available in this session\n", "")
 
     def check(self):
         super(PublishRepo26Test, self).check()

@@ -31,10 +31,10 @@ class GraphAPITest(APITest):
 
         horizontal = self.get("/api/graph.svg?layout=horizontal").content
         vertical = self.get("/api/graph.svg?layout=vertical").content
-        horizontalWidth = int(ET.fromstring(horizontal).get('width').replace("pt",""))
-        horizontalHeight = int(ET.fromstring(horizontal).get('height').replace("pt",""))
-        verticalWidth = int(ET.fromstring(vertical).get('width').replace("pt",""))
-        verticalHeight = int(ET.fromstring(vertical).get('height').replace("pt",""))
+        horizontalWidth = int(ET.fromstring(horizontal).get('width').replace("pt", ""))
+        horizontalHeight = int(ET.fromstring(horizontal).get('height').replace("pt", ""))
+        verticalWidth = int(ET.fromstring(vertical).get('width').replace("pt", ""))
+        verticalHeight = int(ET.fromstring(vertical).get('height').replace("pt", ""))
 
         self.check_gt(horizontalWidth, verticalWidth)
         self.check_gt(verticalHeight, horizontalHeight)

@@ -61,4 +61,3 @@ class RemoveRepo4Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
-

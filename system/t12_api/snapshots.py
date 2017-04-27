@@ -101,7 +101,6 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal([],
                          self.get("/api/snapshots/" + snapshot_name + "/packages", params={"format": "details"}).json())
 
-
         snapshot_name = self.random_name()
         d = self.random_name()
         self.check_equal(self.upload("/api/files/" + d,

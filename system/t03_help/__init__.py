@@ -13,7 +13,8 @@ class MainTest(BaseTest):
     expectedCode = 2
     runCmd = "aptly"
 
-    outputMatchPrepare = lambda _, s: re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
+    def outputMatchPrepare(_, s):
+        return re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
 
 
 class MirrorTest(BaseTest):
@@ -38,7 +39,8 @@ class MainHelpTest(BaseTest):
     """
     runCmd = "aptly help"
 
-    outputMatchPrepare = lambda _, s: re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
+    def outputMatchPrepare(_, s):
+        return re.sub(r'  -(cpuprofile|memprofile|memstats|meminterval)=.*\n', '', s, flags=re.MULTILINE)
 
 
 class MirrorHelpTest(BaseTest):

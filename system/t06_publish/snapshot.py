@@ -833,7 +833,9 @@ class PublishSnapshot32Test(BaseTest):
     ]
     runCmd = "aptly publish snapshot -component=main,contrib snap32.1"
     expectedCode = 2
-    outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+
+    def outputMatchPrepare(_, s):
+        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
 
 
 class PublishSnapshot33Test(BaseTest):

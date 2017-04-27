@@ -34,3 +34,5 @@ man/aptly.1.html
 man/aptly.1.ronn
 
 .goxc.local.json
+
+system/env/

@@ -6,6 +6,10 @@ import inspect
 from lib import BaseTest
 
 
+def filterOutSignature(_, s):
+    return re.sub(r'Signature made .* using', '', s)
+
+
 class UpdateMirror1Test(BaseTest):
     """
     update mirrors: regular update
@@ -96,7 +100,7 @@ class UpdateMirror7Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -112,7 +116,7 @@ class UpdateMirror8Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg gnuplot-maverick-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
 
 class UpdateMirror9Test(BaseTest):
@@ -124,7 +128,7 @@ class UpdateMirror9Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -139,7 +143,7 @@ class UpdateMirror10Test(BaseTest):
         "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -154,7 +158,7 @@ class UpdateMirror11Test(BaseTest):
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
     ]
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
 
     def output_processor(self, output):
@@ -171,7 +175,7 @@ class UpdateMirror12Test(BaseTest):
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
