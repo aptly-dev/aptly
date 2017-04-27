@@ -9,5 +9,6 @@
         "misspell",
         "gosimple",
         "ineffassign"
-    ]
+    ],
+    "Deadline": "5m"
 }
