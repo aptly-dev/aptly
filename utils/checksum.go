@@ -37,6 +37,11 @@ type ChecksumInfo struct {
 	SHA512 string
 }
 
+// Complete checks if all the checksums are present
+func (cksum *ChecksumInfo) Complete() bool {
+	return cksum.MD5 != "" && cksum.SHA1 != "" && cksum.SHA256 != "" && cksum.SHA512 != ""
+}
+
 // ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for given file
 func ChecksumsForFile(path string) (ChecksumInfo, error) {
 	file, err := os.Open(path)

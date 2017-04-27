@@ -477,11 +477,6 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 					return err
 				}
 			}
-
-			err = collectionFactory.PackageCollection().Update(p)
-			if err != nil {
-				return err
-			}
 		}
 
 		progress.ShutdownBar()
@@ -506,50 +501,82 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
-	seen := make(map[string]struct{}, repo.packageList.Len())
+	seen := make(map[string]int, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
-		download := true
 		if repo.packageRefs != nil && skipExistingPackages {
-			download = !repo.packageRefs.Has(p)
-		}
-
-		if download {
-			list, err2 := p.DownloadList(packagePool)
-			if err2 != nil {
-				return err2
-			}
-			p.files = nil
-
-			for _, task := range list {
-				key := task.RepoURI + "-" + task.DestinationPath
-				_, found := seen[key]
-				if !found {
-					queue = append(queue, task)
-					downloadSize += task.Checksums.Size
-					seen[key] = struct{}{}
+			if repo.packageRefs.Has(p) {
+				// skip this package, but load checksums/files from package in DB
+				var prevP *Package
+				prevP, err = packageCollection.ByKey(p.Key(""))
+				if err != nil {
+					return err
 				}
+
+				p.UpdateFiles(prevP.Files())
+				return nil
 			}
 		}
+
+		list, err2 := p.DownloadList(packagePool, checksumStorage)
+		if err2 != nil {
+			return err2
+		}
+
+		for _, task := range list {
+			key := task.File.DownloadURL()
+			idx, found := seen[key]
+			if !found {
+				queue = append(queue, task)
+				downloadSize += task.File.Checksums.Size
+				seen[key] = len(queue) - 1
+			} else {
+				// hook up the task to duplicate entry already on the list
+				queue[idx].Additional = append(queue[idx].Additional, task)
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
 		return
 	}
 
-	repo.tempPackageRefs = NewPackageRefListFromPackageList(repo.packageList)
-	// free up package list, we don't need it after this point
-	repo.packageList = nil
-
 	return
 }
 
 // FinalizeDownload swaps for final value of package refs
-func (repo *RemoteRepo) FinalizeDownload() {
+func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, progress aptly.Progress) error {
 	repo.LastDownloadDate = time.Now()
-	repo.packageRefs = repo.tempPackageRefs
+
+	if progress != nil {
+		progress.InitBar(int64(repo.packageList.Len()), true)
+	}
+
+	var i int
+
+	// update all the packages in collection
+	err := repo.packageList.ForEach(func(p *Package) error {
+		i++
+		if progress != nil {
+			progress.SetBar(i)
+		}
+		// download process might have updated checksums
+		p.UpdateFiles(p.Files())
+		return collectionFactory.PackageCollection().Update(p)
+	})
+
+	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+
+	if progress != nil {
+		progress.ShutdownBar()
+	}
+
+	repo.packageList = nil
+
+	return err
 }
 
 // Encode does msgpack encoding of RemoteRepo

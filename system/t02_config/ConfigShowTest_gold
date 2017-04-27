@@ -11,6 +11,7 @@
     "gpgDisableSign": false,
     "gpgDisableVerify": false,
     "downloadSourcePackages": false,
+    "skipLegacyPool": false,
     "ppaDistributorID": "ubuntu",
     "ppaCodename": "",
     "skipContentsPublishing": false,

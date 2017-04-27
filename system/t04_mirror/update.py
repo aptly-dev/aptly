@@ -1,5 +1,8 @@
 import string
 import re
+import os
+import shutil
+import inspect
 from lib import BaseTest
 
 
@@ -201,3 +204,106 @@ class UpdateMirror14Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror15Test(BaseTest):
+    """
+    update mirrors: update for mirror without MD5 checksums
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures bintray"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def check(self):
+        super(UpdateMirror15Test, self).check()
+        # check pool
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror16Test(BaseTest):
+    """
+    update mirrors: update for mirror without MD5 checksums but with file in pool on legacy MD5 location
+
+    as mirror lacks MD5 checksum, file would be downloaded but not re-imported
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures bintray"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror16Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror16Test, self).check()
+        # check pool
+        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror17Test(BaseTest):
+    """
+    update mirrors: update for mirror but with file in pool on legacy MD5 location
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+    ]
+    runCmd = "aptly mirror update -ignore-signatures wheezy"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror17Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror17Test, self).check()
+        # check pool
+        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror18Test(BaseTest):
+    """
+    update mirrors: update for mirror but with file in pool on legacy MD5 location and disabled legacy path support
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+    ]
+    runCmd = "aptly mirror update -ignore-signatures wheezy"
+    configOverride = {'skipLegacyPool': True}
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror18Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror18Test, self).check()
+        # check pool
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')

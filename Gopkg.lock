@@ -1,4 +1,4 @@
-memo = "4c0fec0262b9b442de718ea62c0caa79c04721ff5434072bf8d9e5e73e660a2c"
+memo = "b793b143db9dc49ef630454bb15d4d259e88d411827adac1838ec9fd6727f229"
 
 [[projects]]
   name = "github.com/AlekSi/pointer"
@@ -100,6 +100,12 @@ memo = "4c0fec0262b9b442de718ea62c0caa79c04721ff5434072bf8d9e5e73e660a2c"
   name = "github.com/ncw/swift"
   packages = [".","swifttest"]
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   branch = "master"

@@ -12,7 +12,9 @@ import (
 
 	"github.com/h2non/filetype/matchers"
 	"github.com/mkrautz/goar"
+	"github.com/pkg/errors"
 
+	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-xz"
 	"github.com/smira/lzma"
@@ -105,13 +107,7 @@ func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, err
 }
 
 // GetContentsFromDeb returns list of files installed by .deb package
-func GetContentsFromDeb(packageFile string) ([]string, error) {
-	file, err := os.Open(packageFile)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
+func GetContentsFromDeb(file aptly.ReadSeekerCloser, packageFile string) ([]string, error) {
 	library := ar.NewReader(file)
 	for {
 		header, err := library.Next()
@@ -119,7 +115,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 			return nil, fmt.Errorf("unable to find data.tar.* part in %s", packageFile)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("unable to read .deb archive from %s: %s", packageFile, err)
+			return nil, errors.Wrapf(err, "unable to read .deb archive from %s", packageFile)
 		}
 
 		if strings.HasPrefix(header.Name, "data.tar") {
@@ -142,7 +138,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 				} else {
 					ungzip, err := gzip.NewReader(bufReader)
 					if err != nil {
-						return nil, fmt.Errorf("unable to ungzip data.tar.gz from %s: %s", packageFile, err)
+						return nil, errors.Wrapf(err, "unable to ungzip data.tar.gz from %s", packageFile)
 					}
 					defer ungzip.Close()
 					tarInput = ungzip
@@ -152,7 +148,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 			case "data.tar.xz":
 				unxz, err := xz.NewReader(bufReader)
 				if err != nil {
-					return nil, fmt.Errorf("unable to unxz data.tar.xz from %s: %s", packageFile, err)
+					return nil, errors.Wrapf(err, "unable to unxz data.tar.xz from %s", packageFile)
 				}
 				defer unxz.Close()
 				tarInput = unxz
@@ -172,7 +168,7 @@ func GetContentsFromDeb(packageFile string) ([]string, error) {
 					return results, nil
 				}
 				if err != nil {
-					return nil, fmt.Errorf("unable to read .tar archive from %s: %s", packageFile, err)
+					return nil, errors.Wrapf(err, "unable to read .tar archive from %s", packageFile)
 				}
 
 				if tarHeader.Typeflag == tar.TypeDir {

@@ -114,15 +114,12 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
-// sourcePath is filepath to package file in package pool
+// sourcePath is a relative path to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
-	// verify that package pool is local pool is filesystem pool
-	_ = sourcePool.(*PackagePool)
 
-	baseName := filepath.Base(sourcePath)
 	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
 	err := os.MkdirAll(poolPath, 0777)
@@ -135,7 +132,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
 	if err == nil {
 		// already exists, check source file
-		srcStat, err = os.Stat(sourcePath)
+		srcStat, err = sourcePool.Stat(sourcePath)
 		if err != nil {
 			// source file doesn't exist? problem!
 			return err
@@ -184,13 +181,39 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	// destination doesn't exist (or forced), create link
+	// destination doesn't exist (or forced), create link or copy
 	if storage.linkMethod == LinkMethodCopy {
-		err = utils.CopyFile(sourcePath, filepath.Join(poolPath, baseName))
+		var r aptly.ReadSeekerCloser
+		r, err = sourcePool.Open(sourcePath)
+		if err != nil {
+			return err
+		}
+
+		var dst *os.File
+		dst, err = os.Create(filepath.Join(poolPath, baseName))
+		if err != nil {
+			r.Close()
+			return err
+		}
+
+		_, err = io.Copy(dst, r)
+		if err != nil {
+			r.Close()
+			dst.Close()
+			return err
+		}
+
+		err = r.Close()
+		if err != nil {
+			dst.Close()
+			return err
+		}
+
+		err = dst.Close()
 	} else if storage.linkMethod == LinkMethodSymLink {
-		err = os.Symlink(sourcePath, filepath.Join(poolPath, baseName))
+		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName))
 	} else {
-		err = os.Link(sourcePath, filepath.Join(poolPath, baseName))
+		err = sourcePool.(aptly.LocalPackagePool).Link(sourcePath, filepath.Join(poolPath, baseName))
 	}
 
 	return err

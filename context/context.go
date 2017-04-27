@@ -101,6 +101,9 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
+
+				// as this is fresh aptly installation, we don't need to support legacy pool locations
+				utils.Config.SkipLegacyPool = true
 				utils.SaveConfig(configLocations[0], &utils.Config)
 			}
 		}
@@ -204,8 +207,7 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 		if downloadLimit == 0 {
 			downloadLimit = context.config().DownloadLimit
 		}
-		context.downloader = http.NewDownloader(context.config().DownloadConcurrency,
-			downloadLimit*1024, context._progress())
+		context.downloader = http.NewDownloader(downloadLimit*1024, context._progress())
 	}
 
 	return context.downloader
@@ -303,7 +305,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.config().RootDir)
+		context.packagePool = files.NewPackagePool(context.config().RootDir, !context.config().SkipLegacyPool)
 	}
 
 	return context.packagePool
@@ -416,7 +418,6 @@ func (context *AptlyContext) Shutdown() {
 		context.database = nil
 	}
 	if context.downloader != nil {
-		context.downloader.Abort()
 		context.downloader = nil
 	}
 	if context.progress != nil {
@@ -431,7 +432,6 @@ func (context *AptlyContext) Cleanup() {
 	defer context.Unlock()
 
 	if context.downloader != nil {
-		context.downloader.Shutdown()
 		context.downloader = nil
 	}
 	if context.progress != nil {
