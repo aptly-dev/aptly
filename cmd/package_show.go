@@ -55,11 +55,8 @@ func printReferencesTo(p *deb.Package) (err error) {
 		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func aptlyPackageShow(cmd *commander.Command, args []string) error {

@@ -175,9 +175,7 @@ func GetContentsFromDeb(file aptly.ReadSeekerCloser, packageFile string) ([]stri
 					continue
 				}
 
-				if strings.HasPrefix(tarHeader.Name, "./") {
-					tarHeader.Name = tarHeader.Name[2:]
-				}
+				tarHeader.Name = strings.TrimPrefix(tarHeader.Name[2:], "./")
 				results = append(results, tarHeader.Name)
 			}
 		}

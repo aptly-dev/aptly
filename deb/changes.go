@@ -103,11 +103,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	c.Architectures = strings.Fields(c.Stanza["Architecture"])
 
 	c.Files, err = c.Files.ParseSumFields(c.Stanza)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Prepare creates temporary directory, copies file there and verifies checksums
@@ -181,8 +177,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 	if len(c.Binary) > 0 {
 		binaryQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Binary[0]}
 		// matching debug ddeb packages, they're not present in the Binary field
-		var ddebQuery PackageQuery
-		ddebQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", c.Binary[0])}
+		var ddebQuery PackageQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", c.Binary[0])}
 
 		for _, binary := range c.Binary[1:] {
 			binaryQuery = &OrQuery{

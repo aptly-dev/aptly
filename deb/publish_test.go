@@ -505,6 +505,7 @@ func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) 
 	c.Assert(r.String(), Equals, s.repo1.String())
 
 	r, err = s.collection.ByStoragePrefixDistribution("files:other", "ppa", "precise")
+	c.Assert(err, IsNil)
 	c.Check(r.String(), Equals, s.repo5.String())
 }
 

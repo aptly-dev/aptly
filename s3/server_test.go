@@ -646,7 +646,7 @@ func (objr objectResource) put(a *action) interface{} {
 		fatalError(400, "TODO", "read error")
 	}
 	gotHash := sum.Sum(nil)
-	if expectHash != nil && bytes.Compare(gotHash, expectHash) != 0 {
+	if expectHash != nil && !bytes.Equal(gotHash, expectHash) {
 		fatalError(400, "BadDigest", "The Content-MD5 you specified did not match what we received")
 	}
 	if a.req.ContentLength >= 0 && int64(len(data)) != a.req.ContentLength {

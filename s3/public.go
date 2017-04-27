@@ -165,7 +165,7 @@ func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker) erro
 		return err
 	}
 
-	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
+	if storage.plusWorkaround && strings.Contains(path, "+") {
 		_, err = source.Seek(0, 0)
 		if err != nil {
 			return err
@@ -187,7 +187,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
-	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
+	if storage.plusWorkaround && strings.Contains(path, "+") {
 		// try to remove workaround version, but don't care about result
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
 	}
@@ -332,7 +332,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 
 	err = storage.s3.ListObjectsPages(params, func(contents *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, key := range contents.Contents {
-			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(*key.Key, " ") != -1 {
+			if storage.plusWorkaround && hidePlusWorkaround && strings.Contains(*key.Key, " ") {
 				// if we use plusWorkaround, we want to hide those duplicates
 				/// from listing
 				continue

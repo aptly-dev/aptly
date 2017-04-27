@@ -324,16 +324,12 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 func (g *GpgVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
 	scanner := bufio.NewScanner(clearsigned)
 	for scanner.Scan() {
-		if strings.Index(scanner.Text(), "BEGIN PGP SIGN") != -1 {
+		if strings.Contains(scanner.Text(), "BEGIN PGP SIGN") {
 			return true, nil
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return false, err
-	}
-
-	return false, nil
+	return false, scanner.Err()
 }
 
 // VerifyClearsigned verifies clearsigned file using gpgv

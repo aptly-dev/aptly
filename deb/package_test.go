@@ -299,7 +299,7 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 	// ~
 	c.Check(
 		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
-			Regexp: regexp.MustCompile("7\\.40-.*")}), Equals, true)
+			Regexp: regexp.MustCompile(`7\.40-.*`)}), Equals, true)
 	c.Check(
 		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
 			Regexp: regexp.MustCompile("40")}), Equals, true)
