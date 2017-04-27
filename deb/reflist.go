@@ -92,7 +92,7 @@ func (l *PackageRefList) Has(p *Package) bool {
 	key := p.Key("")
 
 	i := sort.Search(len(l.Refs), func(j int) bool { return bytes.Compare(l.Refs[j], key) >= 0 })
-	return i < len(l.Refs) && bytes.Compare(l.Refs[i], key) == 0
+	return i < len(l.Refs) && bytes.Equal(l.Refs[i], key)
 }
 
 // Strings builds list of strings with package keys

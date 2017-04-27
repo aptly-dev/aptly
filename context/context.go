@@ -273,7 +273,7 @@ func (context *AptlyContext) ReOpenDatabase() error {
 
 	for try := 0; try < MaxTries; try++ {
 		err := context.database.ReOpen()
-		if err == nil || strings.Index(err.Error(), "resource temporarily unavailable") == -1 {
+		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
 			return err
 		}
 		context._progress().Printf("Unable to reopen database, sleeping %s\n", Delay)

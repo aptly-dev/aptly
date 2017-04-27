@@ -226,12 +226,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 
 	// clean & verify prefix
 	prefix = filepath.Clean(prefix)
-	if strings.HasPrefix(prefix, "/") {
-		prefix = prefix[1:]
-	}
-	if strings.HasSuffix(prefix, "/") {
-		prefix = prefix[:len(prefix)-1]
-	}
+	prefix = strings.TrimPrefix(strings.TrimSuffix(prefix, "/"), "/")
 	prefix = filepath.Clean(prefix)
 
 	for _, part := range strings.Split(prefix, "/") {
@@ -252,7 +247,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		}
 	}
 
-	if strings.Index(distribution, "/") != -1 {
+	if strings.Contains(distribution, "/") {
 		return nil, fmt.Errorf("invalid distribution %s, '/' is not allowed", distribution)
 	}
 
@@ -474,8 +469,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 	defer func() {
-		var e error
-		e = tempDB.Close()
+		e := tempDB.Close()
 		if e != nil && progress != nil {
 			progress.Printf("failed to close temp DB: %s", err)
 		}
@@ -730,12 +724,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
-	err = indexes.RenameFiles()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return indexes.RenameFiles()
 }
 
 // RemoveFiles removes files that were created by Publish

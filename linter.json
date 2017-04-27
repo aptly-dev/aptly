@@ -1,4 +1,14 @@
 {
     "DisableAll": true,
-    "Enable": ["vet", "golint", "gofmt", "deadcode", "goimports", "misspell"]
+    "Enable": [
+        "vet",
+        "golint",
+        "gofmt",
+        "deadcode",
+        "goimports",
+        "misspell",
+        "gosimple",
+        "ineffassign"
+    ],
+    "Deadline": "5m"
 }

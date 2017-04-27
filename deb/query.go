@@ -204,7 +204,7 @@ func (q *FieldQuery) Fast(list PackageCatalog) bool {
 // String interface
 func (q *FieldQuery) String() string {
 	escape := func(val string) string {
-		if strings.IndexAny(val, "()|,!{} \t\n") != -1 {
+		if strings.ContainsAny(val, "()|,!{} \t\n") {
 			return "'" + strings.Replace(strings.Replace(val, "\\", "\\\\", -1), "'", "\\'", -1) + "'"
 		}
 		return val

@@ -331,9 +331,7 @@ ok:
 		if strings.Contains(repo.Distribution, "/") {
 			distributionLast := path.Base(repo.Distribution) + "/"
 			for i := range components {
-				if strings.HasPrefix(components[i], distributionLast) {
-					components[i] = components[i][len(distributionLast):]
-				}
+				components[i] = strings.TrimPrefix(components[i], distributionLast)
 			}
 		}
 		if len(repo.Components) == 0 {

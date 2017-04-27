@@ -344,7 +344,7 @@ func (p *Package) GetDependencies(options int) (dependencies []string) {
 		if source == "" {
 			source = p.Name
 		}
-		if strings.Index(source, ")") != -1 {
+		if strings.Contains(source, ")") {
 			dependencies = append(dependencies, fmt.Sprintf("%s {source}", source))
 		} else {
 			dependencies = append(dependencies, fmt.Sprintf("%s (= %s) {source}", source, p.Version))
