@@ -1,13 +1,14 @@
 import os
 from lib import BaseTest
 
+
 class FileSystemEndpointTest(BaseTest):
     """
     BaseTest + support for filesystem endpoints
     """
 
     def prepare(self):
-        self.configOverride = { "FileSystemPublishEndpoints": {
+        self.configOverride = {"FileSystemPublishEndpoints": {
             "symlink": {
                 "rootDir": os.path.join(os.environ["HOME"], ".aptly", "public_symlink"),
                 "linkMethod": "symlink"
@@ -29,7 +30,6 @@ class FileSystemEndpointTest(BaseTest):
         }}
         super(FileSystemEndpointTest, self).prepare()
 
-
     def check_is_regular(self, path):
         if not os.path.isfile(os.path.join(os.environ["HOME"], ".aptly", path)):
             raise Exception("path %s is not a regular file" % (path, ))
@@ -44,5 +44,5 @@ class FileSystemEndpointTest(BaseTest):
 
     def check_is_copy(self, path):
         fullpath = os.path.join(os.environ["HOME"], ".aptly", path)
-        if not ( os.path.isfile(fullpath) and not self.check_is_hardlink(path) ):
+        if not (os.path.isfile(fullpath) and not self.check_is_hardlink(path)):
             raise Exception("path %s is not a copy" % (path, ))

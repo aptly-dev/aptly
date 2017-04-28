@@ -106,7 +106,6 @@ class FSEndpointPublishSnapshot3Test(FileSystemEndpointTest):
         self.check_is_copy('public_copy/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
 
-
 class FSEndpointPublishSnapshot4Test(FileSystemEndpointTest):
     """
     publish snapshot: using copy, symlink and hardlink variants
@@ -566,4 +565,3 @@ class FSEndpointPublishSnapshot18Test(FileSystemEndpointTest):
     ]
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap2 filesystem:copysize:"
     gold_processor = FileSystemEndpointTest.expand_environ
-

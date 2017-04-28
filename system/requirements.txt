@@ -1,0 +1,5 @@
+boto
+requests
+requests-unixsocket
+python-swiftclient
+flake8

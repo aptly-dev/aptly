@@ -369,7 +369,9 @@ class PublishSwitch9Test(BaseTest):
     ]
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,b maverick snap2"
     expectedCode = 2
-    outputMatchPrepare = lambda _, s: "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+
+    def outputMatchPrepare(_, s):
+        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
 
 
 class PublishSwitch10Test(BaseTest):

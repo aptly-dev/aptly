@@ -24,7 +24,9 @@ class ShowMirror3Test(BaseTest):
     """
     fixtureDB = True
     runCmd = "aptly mirror show --with-packages wheezy-contrib"
-    outputMatchPrepare = lambda _, s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s)
 
 
 class ShowMirror4Test(BaseTest):
@@ -35,4 +37,6 @@ class ShowMirror4Test(BaseTest):
         "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://security.debian.org/ wheezy/updates main"
     ]
     runCmd = "aptly mirror show mirror4"
-    outputMatchPrepare = lambda _, s: re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)

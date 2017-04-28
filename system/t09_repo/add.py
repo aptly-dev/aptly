@@ -80,15 +80,15 @@ class AddRepo4Test(BaseTest):
         os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
-            os.path.join(self.tempSrcDir, "01"))
+                    os.path.join(self.tempSrcDir, "01"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1.orig.tar.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.diff.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.diff.gz"),
-            os.path.join(self.tempSrcDir, "02", "03", "other.file"))
+                    os.path.join(self.tempSrcDir, "02", "03", "other.file"))
 
         self.runCmd += self.tempSrcDir
 
@@ -124,8 +124,10 @@ class AddRepo5Test(BaseTest):
         "aptly repo create -comment=Repo5 -distribution=squeeze repo5",
     ]
     runCmd = "aptly repo add repo5 "
-    outputMatchPrepare = lambda self, s: s.replace(self.tempSrcDir, "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(self.tempSrcDir, "")
 
     def prepare(self):
         super(AddRepo5Test, self).prepare()
@@ -134,9 +136,9 @@ class AddRepo5Test(BaseTest):
         os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1.orig.tar.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
 
         self.runCmd += self.tempSrcDir
 
@@ -175,8 +177,11 @@ class AddRepo8Test(BaseTest):
         "aptly repo add repo8 ${files}/pyspi_0.6.1-1.3.dsc",
     ]
     runCmd = "aptly repo add repo8 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def check(self):
         self.check_output()
@@ -192,8 +197,11 @@ class AddRepo9Test(BaseTest):
     ]
     runCmd = "aptly repo add repo9 ${files}/pyspi_0.6.1-1.3.dsc"
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def prepare(self):
         super(AddRepo9Test, self).prepare()
@@ -227,7 +235,10 @@ class AddRepo11Test(BaseTest):
         "aptly repo add repo11 ${files}/pyspi_0.6.1-1.3.dsc",
     ]
     runCmd = "aptly repo add -force-replace repo11 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def check(self):
         self.check_output()
@@ -294,5 +305,8 @@ class AddRepo15Test(BaseTest):
         "aptly repo create -comment=Repo15 -distribution=squeeze repo15",
     ]
     runCmd = "aptly repo add repo15 ${testfiles}"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
