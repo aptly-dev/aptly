@@ -585,7 +585,14 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						return err
 					}
 
-					err = pkg.Stanza().WriteTo(bufWriter, pkg.IsSource, false)
+					stanza := pkg.Stanza()
+
+					value, ok := stanza["Depends"]
+					if ok && strings.TrimSpace(value) == "" {
+						delete(stanza, "Depends")
+					}
+
+					err = stanza.WriteTo(bufWriter, pkg.IsSource, false)
 					if err != nil {
 						return err
 					}
