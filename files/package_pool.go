@@ -56,7 +56,7 @@ func (pool *PackagePool) LegacyPath(filename string, checksums *utils.ChecksumIn
 		return "", fmt.Errorf("unable to compute pool location for filename %v, MD5 is missing", filename)
 	}
 
-	return filepath.Join(hashMD5[0:2], hashMD5[2:4], filename), nil
+	return filepath.Join(hashMD5[0:2], hashMD5[2:4], hashMD5[4:6], hashMD5[6:8], hashMD5[8:10], filename), nil
 }
 
 // buildPoolPath generates pool path based on file checksum
