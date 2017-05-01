@@ -1,0 +1,18 @@
+# Defaults for aptly initscript
+# sourced by /etc/init.d/aptly
+# installed at /etc/default/aptly by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+RUN_DAEMON="yes" # either "yes" or "no"
+
+HTTP_PROXY=""
+
+CONFIG=/etc/aptly/aptlyd.conf
+
+DAEMON_OPTS="-config=${CONFIG} -listen=127.0.0.1:8080"
+
+VERBOSE="yes" # either "yes" or "no"

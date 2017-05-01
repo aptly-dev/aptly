@@ -1,0 +1,72 @@
+aptly (0.8-3+264) unstable; urgency=low
+
+  * Add Github #264 feature
+
+ -- Pierre Edouard Fabre <dev@fabrepe.com>  Thu, 01 Oct 2015 13:15:57 +0200
+
+aptly (0.8-3) unstable; urgency=medium
+
+  * Correct Vcs-Browser entry (Closes: #764622)
+  * Correct dependency from "gpg" to "gnupg" (Closes: #764619)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 09 Oct 2014 18:41:38 +0200
+
+aptly (0.8-2) unstable; urgency=medium
+
+  * Add missing dependencies on bzip2, gpg and gpgv
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 09 Oct 2014 11:15:21 +0200
+
+aptly (0.8-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.8
+  * Document new copyrights and licenses
+  * Add bash completion snippet
+  * Reference full paths in debian/copyright, and remove unused
+    references, so lintian does not complain
+
+ -- Sebastien Delafond <seb@debian.org>  Sat, 04 Oct 2014 17:46:24 +0200
+
+aptly (0.7.1-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.7.1
+  * Add copyright information for new libraries
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 10 Sep 2014 10:03:27 +0200
+
+aptly (0.5-5) unstable; urgency=medium
+
+  * Turn off verbose mode
+  * Correct Vcs-* information
+  * gocov is licensed MIT, not BSD-3
+  * Add missing MIT license text
+
+ -- Sebastien Delafond <seb@debian.org>  Tue, 09 Sep 2014 09:20:40 +0200
+
+aptly (0.5-4) unstable; urgency=medium
+
+  * Collect licenses by going over files one by one
+  * Use packaged golang-go.tools
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 10 Jul 2014 00:49:09 +0200
+
+aptly (0.5-3) unstable; urgency=low
+
+  * Licensing:
+    - goleveldb is BSD-2, not BSD-3
+    - _vendor/src/code.google.com/p/gographviz/scanner/scanner is BSD-3,
+      copyright 2009 The Go Authors
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 28 May 2014 10:04:01 +0200
+
+aptly (0.5-2) unstable; urgency=low
+
+  * Go interpreter not needed at runtime
+
+ -- Sebastien Delafond <seb@debian.org>  Fri, 02 May 2014 12:04:02 +0200
+
+aptly (0.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #746343)
+
+ -- Sebastien Delafond <seb@debian.org>  Tue, 29 Apr 2014 15:47:31 +0200

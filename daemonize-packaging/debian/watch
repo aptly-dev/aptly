@@ -1,0 +1,2 @@
+version=3
+https://github.com/smira/aptly/tags .*/v(\d[\d\.]*)\.tar\.gz debian uupdate

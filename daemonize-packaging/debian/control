@@ -1,0 +1,26 @@
+Source: aptly
+Section: utils
+Priority: extra
+Maintainer: Sebastien Delafond <seb@debian.org>
+Build-Depends: debhelper (>= 9.0.0), golang (>= 1.1), golang-go.tools, bash-completion
+Standards-Version: 3.9.5
+Homepage: http://www.aptly.info
+Vcs-Git: git://anonscm.debian.org/collab-maint/aptly.git
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/aptly.git
+
+Package: aptly
+Architecture: any
+Depends: bzip2, gnupg, gpgv, lsb-base (>= 3.2-14), ${shlibs:Depends}, ${misc:Depends}
+Description: Swiss army knife for Debian repository management
+ It offers several features making it easy to manage Debian package
+ repositories:
+ .
+  - make mirrors of remote Debian/Ubuntu repositories, limiting by
+    components/architectures
+  - take snapshots of mirrors at any point in time, fixing state of
+    repository at some moment of time
+  - publish snapshot as Debian repository, ready to be consumed by apt
+  - controlled update of one or more packages in snapshot from upstream
+    mirror, tracking dependencies
+  - merge two or more snapshots into one
+
