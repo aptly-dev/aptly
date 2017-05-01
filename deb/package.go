@@ -470,15 +470,33 @@ func (p *Package) Stanza() (result Stanza) {
 	if p.IsSource {
 		md5, sha1, sha256, sha512 := []string{}, []string{}, []string{}, []string{}
 
+		var md5_firstline = true;
+		var sha1_firstline = true;
+		var sha256_firstline = true;
 		for _, f := range p.Files() {
 			if f.Checksums.MD5 != "" {
-				md5 = append(md5, fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename))
+				if md5_firstline == true{
+					md5 = append(md5, fmt.Sprintf("\n %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename))
+					md5_firstline = false;
+				}else{
+					md5 = append(md5, fmt.Sprintf(" %s %d %s\n", f.Checksums.MD5, f.Checksums.Size, f.Filename))
+				}
 			}
 			if f.Checksums.SHA1 != "" {
-				sha1 = append(sha1, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename))
+				if sha1_firstline == true{
+					sha1 = append(sha1, fmt.Sprintf("\n %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename))
+					sha1_firstline = false;
+				}else{
+					sha1 = append(sha1, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA1, f.Checksums.Size, f.Filename))
+				}
 			}
 			if f.Checksums.SHA256 != "" {
-				sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename))
+				if sha256_firstline == true{
+					sha256 = append(sha256, fmt.Sprintf("\n %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename))
+					sha256_firstline = false;
+				}else{
+					sha256 = append(sha256, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA256, f.Checksums.Size, f.Filename))
+				}
 			}
 			if f.Checksums.SHA512 != "" {
 				sha512 = append(sha512, fmt.Sprintf(" %s %d %s\n", f.Checksums.SHA512, f.Checksums.Size, f.Filename))
