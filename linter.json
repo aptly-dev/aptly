@@ -10,5 +10,5 @@
         "gosimple",
         "ineffassign"
     ],
-    "Deadline": "5m"
+    "Deadline": "15m"
 }
