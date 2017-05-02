@@ -618,14 +618,14 @@ func (s *RemoteRepoCollectionSuite) TearDownTest(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
-	r, err := s.collection.ByName("yandex")
+	_, err := s.collection.ByName("yandex")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
 
-	r, err = s.collection.ByName("yandex")
+	r, err := s.collection.ByName("yandex")
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 
@@ -636,13 +636,13 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
-	r, err := s.collection.ByUUID("some-uuid")
+	_, err := s.collection.ByUUID("some-uuid")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 
-	r, err = s.collection.ByUUID(repo.UUID)
+	r, err := s.collection.ByUUID(repo.UUID)
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 }

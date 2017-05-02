@@ -8,7 +8,11 @@
         "goimports",
         "misspell",
         "gosimple",
-        "ineffassign"
+        "ineffassign",
+        "staticcheck",
+        "varcheck",
+        "structcheck",
+        "aligncheck"
     ],
     "Deadline": "15m"
 }

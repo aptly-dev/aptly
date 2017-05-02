@@ -45,10 +45,6 @@ type RemoteRepo struct {
 	Components []string
 	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures []string
-	// Should we download sources?
-	DownloadSources bool
-	// Should we download .udebs?
-	DownloadUdebs bool
 	// Meta-information about repository
 	Meta Stanza
 	// Last update date
@@ -57,20 +53,22 @@ type RemoteRepo struct {
 	ReleaseFiles map[string]utils.ChecksumInfo
 	// Filter for packages
 	Filter string
+	// Status marks state of repository (being updated, no action)
+	Status int
+	// WorkerPID is PID of the process modifying the mirror (if any)
+	WorkerPID int
 	// FilterWithDeps to include dependencies from filter query
 	FilterWithDeps bool
 	// SkipComponentCheck skips component list verification
 	SkipComponentCheck bool
 	// SkipArchitectureCheck skips architecture list verification
 	SkipArchitectureCheck bool
-	// Status marks state of repository (being updated, no action)
-	Status int
-	// WorkerPID is PID of the process modifying the mirror (if any)
-	WorkerPID int
+	// Should we download sources?
+	DownloadSources bool
+	// Should we download .udebs?
+	DownloadUdebs bool
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
-	// Temporary list of package refs
-	tempPackageRefs *PackageRefList
 	// Parsed archived root
 	archiveRootURL *url.URL
 	// Current list of packages (filled while updating mirror)

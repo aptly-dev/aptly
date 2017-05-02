@@ -28,7 +28,6 @@ type printTask struct {
 // Progress is a progress displaying subroutine, it allows to show download and other operations progress
 // mixed with progress bar
 type Progress struct {
-	stop     chan bool
 	stopped  chan bool
 	queue    chan printTask
 	bar      *pb.ProgressBar

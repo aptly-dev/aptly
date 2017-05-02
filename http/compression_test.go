@@ -84,7 +84,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &Error{Code: 404})
 	d.ExpectResponse("http://example.com/file.gz", "x")
-	_, file, err = DownloadTryCompression(d, "http://example.com/file", nil, true, 1)
+	_, _, err = DownloadTryCompression(d, "http://example.com/file", nil, true, 1)
 	c.Assert(err, ErrorMatches, "unexpected EOF")
 	c.Assert(d.Empty(), Equals, true)
 }

@@ -52,7 +52,10 @@ func NewPublishedStorageRaw(
 		storageClass = ""
 	}
 
-	sess := session.New(config)
+	sess, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &PublishedStorage{
 		s3:               s3.New(sess),

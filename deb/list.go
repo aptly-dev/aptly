@@ -34,8 +34,6 @@ const (
 type PackageList struct {
 	// Straight list of packages as map
 	packages map[string]*Package
-	// Has index been prepared?
-	indexed bool
 	// Indexed list of packages, sorted by name internally
 	packagesIndex []*Package
 	// Map of packages for each virtual package (provides)
@@ -44,6 +42,8 @@ type PackageList struct {
 	keyFunc func(p *Package) string
 	// Allow duplicates?
 	duplicatesAllowed bool
+	// Has index been prepared?
+	indexed bool
 }
 
 // PackageConflictError means that package can't be added to the list due to error
