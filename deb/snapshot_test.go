@@ -138,7 +138,7 @@ func (s *SnapshotCollectionSuite) TearDownTest(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
-	snapshot, err := s.collection.ByName("snap1")
+	_, err := s.collection.ByName("snap1")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	c.Assert(s.collection.Add(s.snapshot1), IsNil)
@@ -146,7 +146,7 @@ func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
 
 	c.Assert(s.collection.Add(s.snapshot2), IsNil)
 
-	snapshot, err = s.collection.ByName("snap1")
+	snapshot, err := s.collection.ByName("snap1")
 	c.Assert(err, IsNil)
 	c.Assert(snapshot.String(), Equals, s.snapshot1.String())
 

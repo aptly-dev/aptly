@@ -277,7 +277,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 	c.Check(repo.Distribution, Equals, "squeeze")
 	c.Check(repo.Components(), DeepEquals, []string{"main"})
 
-	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{"main"}, []interface{}{s.localRepo}, s.factory)
+	_, err = NewPublishedRepo("", "ppa", "", nil, []string{"main"}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, ErrorMatches, "unable to guess distribution name, please specify explicitly")
 
 	s.localRepo.DefaultDistribution = "precise"
@@ -301,7 +301,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 	c.Check(repo.Distribution, Equals, "squeeze")
 	c.Check(repo.Components(), DeepEquals, []string{"contrib", "main"})
 
-	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{"", ""}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
+	_, err = NewPublishedRepo("", "ppa", "", nil, []string{"", ""}, []interface{}{s.snapshot, s.snapshot2}, s.factory)
 	c.Check(err, ErrorMatches, "duplicate component name: main")
 }
 
@@ -477,7 +477,7 @@ func (s *PublishedRepoCollectionSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) {
-	r, err := s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
+	_, err := s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	c.Assert(s.collection.Add(s.repo1), IsNil)
@@ -489,7 +489,7 @@ func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) 
 	c.Assert(s.collection.Add(s.repo4), IsNil)
 	c.Assert(s.collection.Add(s.repo5), IsNil)
 
-	r, err = s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
+	r, err := s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
 	c.Assert(err, IsNil)
 
 	err = s.collection.LoadComplete(r, s.factory)
@@ -510,12 +510,12 @@ func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) 
 }
 
 func (s *PublishedRepoCollectionSuite) TestByUUID(c *C) {
-	r, err := s.collection.ByUUID(s.repo1.UUID)
+	_, err := s.collection.ByUUID(s.repo1.UUID)
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	c.Assert(s.collection.Add(s.repo1), IsNil)
 
-	r, err = s.collection.ByUUID(s.repo1.UUID)
+	r, err := s.collection.ByUUID(s.repo1.UUID)
 	c.Assert(err, IsNil)
 
 	err = s.collection.LoadComplete(r, s.factory)

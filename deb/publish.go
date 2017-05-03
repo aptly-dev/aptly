@@ -45,8 +45,6 @@ type PublishedRepo struct {
 	Architectures []string
 	// SourceKind is "local"/"repo"
 	SourceKind string
-	// Skip contents generation
-	SkipContents bool
 
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
@@ -55,9 +53,11 @@ type PublishedRepo struct {
 	Component string
 	// SourceUUID is UUID of either snapshot or local repo
 	SourceUUID string `codec:"SnapshotUUID"`
-
 	// Map of component to source items
 	sourceItems map[string]repoSourceItem
+
+	// Skip contents generation
+	SkipContents bool
 
 	// True if repo is being re-published
 	rePublishing bool
@@ -166,23 +166,19 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		component               string
 		snapshot                *Snapshot
 		localRepo               *LocalRepo
-		ok                      bool
 	)
 
 	// get first source
 	source = sources[0]
 
 	// figure out source kind
-	snapshot, ok = source.(*Snapshot)
-	if ok {
+	switch source.(type) {
+	case *Snapshot:
 		result.SourceKind = "snapshot"
-	} else {
-		localRepo, ok = source.(*LocalRepo)
-		if ok {
-			result.SourceKind = "local"
-		} else {
-			panic("unknown source kind")
-		}
+	case *LocalRepo:
+		result.SourceKind = "local"
+	default:
+		panic("unknown source kind")
 	}
 
 	for i := range sources {

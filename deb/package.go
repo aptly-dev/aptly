@@ -24,12 +24,12 @@ type Package struct {
 	Source string
 	// List of virtual packages this package provides
 	Provides []string
+	// Hash of files section
+	FilesHash uint64
 	// Is this source package
 	IsSource bool
 	// Is this udeb package
 	IsUdeb bool
-	// Hash of files section
-	FilesHash uint64
 	// Is this >= 0.6 package?
 	V06Plus bool
 	// Offload fields
