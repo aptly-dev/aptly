@@ -36,7 +36,11 @@ coverage: coverage.out
 	rm -f coverage.out
 
 check: system/env
-	gometalinter --vendor --vendored-linters --config=linter.json ./...
+	if [ -x travis_wait ]; then \
+		travis_wait gometalinter --config=linter.json ./...; \
+	else \
+		gometalinter --config=linter.json ./...; \
+	fi
 	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=env/ system/
 
 install:

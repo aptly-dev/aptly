@@ -14,5 +14,8 @@
         "structcheck",
         "aligncheck"
     ],
-    "Deadline": "15m"
+    "Deadline": "20m",
+    "Vendor": true,
+    "VendoredLinters": true,
+    "Concurrency": 1
 }
