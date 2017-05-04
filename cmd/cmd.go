@@ -22,26 +22,22 @@ func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
 		return
 	}
 
-	err = reflist.ForEach(func(key []byte) error {
-		p, err2 := context.CollectionFactory().PackageCollection().ByKey(key)
-		if err2 != nil {
-			return err2
-		}
-		fmt.Printf("  %s\n", p)
-		return nil
-	})
+	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
 
-	return
+	return PrintPackageList(list, "", "  ")
+
 }
 
 // PrintPackageList shows package list with specified format or default representation
-func PrintPackageList(result *deb.PackageList, format string) error {
+func PrintPackageList(result *deb.PackageList, format, prefix string) error {
+	result.PrepareIndex()
+
 	if format == "" {
-		return result.ForEach(func(p *deb.Package) error {
-			context.Progress().Printf("%s\n", p)
+		return result.ForEachIndexed(func(p *deb.Package) error {
+			context.Progress().Printf(prefix+"%s\n", p)
 			return nil
 		})
 	}
@@ -51,13 +47,13 @@ func PrintPackageList(result *deb.PackageList, format string) error {
 		return fmt.Errorf("error parsing -format template: %s", err)
 	}
 
-	return result.ForEach(func(p *deb.Package) error {
+	return result.ForEachIndexed(func(p *deb.Package) error {
 		b := &bytes.Buffer{}
 		err = formatTemplate.Execute(b, p.ExtendedStanza())
 		if err != nil {
 			return fmt.Errorf("error applying template: %s", err)
 		}
-		context.Progress().Printf("%s\n", b.String())
+		context.Progress().Printf(prefix+"%s\n", b.String())
 		return nil
 	})
 

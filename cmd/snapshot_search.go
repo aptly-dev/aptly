@@ -113,7 +113,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 	}
 
 	format := context.Flags().Lookup("format").Value.String()
-	PrintPackageList(result, format)
+	PrintPackageList(result, format, "")
 
 	return err
 }

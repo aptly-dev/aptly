@@ -19,21 +19,63 @@ Origin: Debian
 Suite: stable
 Version: 7.5
 Packages:
+  alien-arena_7.53+dfsg-3_amd64
+  alien-arena_7.53+dfsg-3_i386
+  alien-arena-server_7.53+dfsg-3_amd64
+  alien-arena-server_7.53+dfsg-3_i386
+  alsa-firmware-loaders_1.0.25-2_amd64
+  alsa-firmware-loaders_1.0.25-2_i386
+  amoeba_1.1-26_amd64
+  amoeba_1.1-26_i386
+  assaultcube_1.1.0.4+dfsg2-1_amd64
+  assaultcube_1.1.0.4+dfsg2-1_i386
+  atari800_2.2.1-2_amd64
+  atari800_2.2.1-2_i386
+  b43-fwcutter_1:015-14.1_amd64
+  b43-fwcutter_1:015-14.1_i386
+  basilisk2_0.9.20120331-2_amd64
+  basilisk2_0.9.20120331-2_i386
   bgoffice-dict-downloader_0.09_all
   biomaj-watcher_1.2.1-1_all
+  boinc-nvidia-cuda_7.0.27+dfsg-5_amd64
+  boinc-nvidia-cuda_7.0.27+dfsg-5_i386
+  cbedic_4.0-3_amd64
+  cbedic_4.0-3_i386
+  chocolate-doom_1.7.0-3+b1_amd64
+  chocolate-doom_1.7.0-3_i386
   cicero_0.7.2-2_all
   cl-sql-oracle_6.2.0-1_all
   cl-umlisp_1:2007ac.2-6_all
   cl-umlisp-orf_3.3.2-3_all
   cltl_1.0.26_all
+  conky-all_1.9.0-2_amd64
+  conky-all_1.9.0-2_i386
+  cpp-doc_5:4_amd64
+  cpp-doc_5:4_i386
   crafty-bitmaps_1.0-1_all
   crafty-books-medium_1.0.debian1-2_all
   crafty-books-medtosmall_1.0.debian1-2_all
   crafty-books-small_1.0.debian1-2_all
+  cytadela_1.0.1-2_amd64
+  cytadela_1.0.1-2_i386
   cytadela-data_1.0.1-2_all
+  cytadela-dbg_1.0.1-2_amd64
+  cytadela-dbg_1.0.1-2_i386
+  dosemu_1.4.0+svn.2080-1_amd64
+  dosemu_1.4.0+svn.2080-1_i386
   dynagen_0.11.0-6_all
   dynare-matlab_4.3.0-2_all
+  e-uae_0.8.29-WIP4-10_amd64
+  e-uae_0.8.29-WIP4-10_i386
+  e-uae-dbg_0.8.29-WIP4-10_amd64
+  e-uae-dbg_0.8.29-WIP4-10_i386
+  easyspice_0.6.8-2_amd64
+  easyspice_0.6.8-2_i386
   esix_1-2_all
+  exult_1.2-15.2_amd64
+  exult_1.2-15.2_i386
+  exult-studio_1.2-15.2_amd64
+  exult-studio_1.2-15.2_i386
   festvox-don_1.4.0-4_all
   festvox-en1_1.95-1_all
   festvox-rablpc16k_1.4.0-2_all
@@ -44,56 +86,206 @@ Packages:
   firmware-b43-installer_1:015-14.1_all
   firmware-b43-lpphy-installer_1:015-14.1_all
   firmware-b43legacy-installer_1:015-14.1_all
+  flashplugin-nonfree_1:3.2_amd64
+  flashplugin-nonfree_1:3.2_i386
+  flashplugin-nonfree-extrasound_0.0.svn2431-3_i386
+  frogatto_1.2+dfsg-1+b1_amd64
+  frogatto_1.2+dfsg-1_i386
   game-data-packager_30_all
+  gcc-doc_5:4_amd64
+  gcc-doc_5:4_i386
+  gcj-doc_5:4_amd64
+  gcj-doc_5:4_i386
   geoip-database-contrib_1.8_all
+  gfortran-doc_5:4_amd64
+  gfortran-doc_5:4_i386
+  glx-alternative-fglrx_0.2.2_amd64
+  glx-alternative-fglrx_0.2.2_i386
+  glx-alternative-mesa_0.2.2_amd64
+  glx-alternative-mesa_0.2.2_i386
+  glx-alternative-nvidia_0.2.2_amd64
+  glx-alternative-nvidia_0.2.2_i386
+  glx-diversions_0.2.2_amd64
+  glx-diversions_0.2.2_i386
+  gnat-doc_5:4_amd64
+  gnat-doc_5:4_i386
+  gnome-speech-dectalk_1:0.4.25-5_i386
+  gnome-speech-ibmtts_1:0.4.25-5_i386
+  gnome-speech-swift_1:0.4.25-5_amd64
+  gnome-speech-swift_1:0.4.25-5_i386
+  gnome-video-arcade_0.8.3-1_amd64
+  gnome-video-arcade_0.8.3-1_i386
   gns3_0.7.4-1_all
+  gnuboy-sdl_1.0.3-6.1_amd64
+  gnuboy-sdl_1.0.3-6.1_i386
+  gnuboy-svga_1.0.3-6.1_amd64
+  gnuboy-svga_1.0.3-6.1_i386
+  gnuboy-x_1.0.3-6.1_amd64
+  gnuboy-x_1.0.3-6.1_i386
+  gnuvd_1.0.11-1_amd64
+  gnuvd_1.0.11-1_i386
   gnuvd-gnome_1.0.11-1_all
+  gobi-loader_0.6-1_amd64
+  gobi-loader_0.6-1_i386
   googleearth-package_0.7.0_all
+  gtktrain_0.9b-13_amd64
+  gtktrain_0.9b-13_i386
+  hannah-foo2zjs_1:1_amd64
+  hannah-foo2zjs_1:1_i386
   horae_071~svn536-1_all
   hts-voice-nitech-jp-atr503-m001_1.04-1_all
   hyperspec_1.30+nmu2_all
+  ifeffit_2:1.2.11d-8_amd64
+  ifeffit_2:1.2.11d-8_i386
   ifeffit-doc_2:1.2.11d-8_all
   imgtex_0.20050123-8_all
+  isdnactivecards_1:3.9.20060704-11_amd64
+  isdnactivecards_1:3.9.20060704-11_i386
+  isight-firmware-tools_1.6-1_amd64
+  isight-firmware-tools_1.6-1_i386
+  iucode-tool_0.8.3-1_amd64
+  iucode-tool_0.8.3-1_i386
+  ivtv-utils_1.4.1-2_amd64
+  ivtv-utils_1.4.1-2_i386
   java-package_0.50+nmu2_all
+  kcemu_0.5.1+dfsg-5_amd64
+  kcemu_0.5.1+dfsg-5_i386
   kcemu-common_0.5.1+dfsg-5_all
+  libcplgasgano20_6.1.1-2_amd64
+  libcplgasgano20_6.1.1-2_i386
+  libdbd-oracle-perl_1.44-1_amd64
+  libdbd-oracle-perl_1.44-1_i386
   libgooglecharts-ruby_1.6.8-2_all
   libgooglecharts-ruby1.8_1.6.8-2_all
+  libifeffit-perl_2:1.2.11d-8_amd64
+  libifeffit-perl_2:1.2.11d-8_i386
   libjlapack-java_0.8~dfsg-1_all
   libmtj-java_0.9.14~dfsg-2_all
   libmtj-java-doc_0.9.14~dfsg-2_all
   libnetlib-java_0.9.3-1_all
+  libpgplot-perl_1:2.21-3_amd64
+  libpgplot-perl_1:2.21-3_i386
+  libsocl-contrib-1.0_1.0.1+dfsg-1_amd64
+  libsocl-contrib-1.0_1.0.1+dfsg-1_i386
+  libstarpu-contrib-1.0_1.0.1+dfsg-1_amd64
+  libstarpu-contrib-1.0_1.0.1+dfsg-1_i386
+  libstarpu-contrib-dev_1.0.1+dfsg-1_amd64
+  libstarpu-contrib-dev_1.0.1+dfsg-1_i386
+  libstarpu-contribfft-1.0_1.0.1+dfsg-1_amd64
+  libstarpu-contribfft-1.0_1.0.1+dfsg-1_i386
+  libstarpu-contribmpi-1.0_1.0.1+dfsg-1_amd64
+  libstarpu-contribmpi-1.0_1.0.1+dfsg-1_i386
+  libsuitesparse-metis-3.1.0_3.1.0-2_amd64
+  libsuitesparse-metis-3.1.0_3.1.0-2_i386
+  libsuitesparse-metis-dbg_3.1.0-2_amd64
+  libsuitesparse-metis-dbg_3.1.0-2_i386
+  libsuitesparse-metis-dev_3.1.0-2_amd64
+  libsuitesparse-metis-dev_3.1.0-2_i386
+  libtrain-bin_0.9b-11_amd64
+  libtrain-bin_0.9b-11_i386
+  libtrain-dev_0.9b-11_amd64
+  libtrain-dev_0.9b-11_i386
+  libtrain1_0.9b-11_amd64
+  libtrain1_0.9b-11_i386
   libviennacl-dev_1.2.0-2_all
   libviennacl-doc_1.2.0-2_all
+  libxnvctrl-dev_304.88-1_amd64
+  libxnvctrl-dev_304.88-1_i386
+  libxnvctrl0_304.88-1_amd64
+  libxnvctrl0_304.88-1_i386
+  libydpdict2_1.0.2-1_amd64
+  libydpdict2_1.0.2-1_i386
+  libydpdict2-dev_1.0.2-1_amd64
+  libydpdict2-dev_1.0.2-1_i386
   linux-wlan-ng-firmware_0.2.9+dfsg-5_all
+  lugaru_0~20110520.1+hge4354+dfsg-3_amd64
+  lugaru_0~20110520.1+hge4354+dfsg-3_i386
   mathematica-fonts_16_all
   matlab-gdf_0.1.2-2_all
   matlab-support_0.0.18_all
   mess-desktop-entries_0.2-2_all
+  microcode.ctl_1.18~0+nmu2_amd64
+  microcode.ctl_1.18~0+nmu2_i386
   netdisco-mibs-installer_1.7.1_all
+  nvidia-installer-cleanup_20120630+3_amd64
+  nvidia-installer-cleanup_20120630+3_i386
+  nvidia-kernel-common_20120630+3_amd64
+  nvidia-kernel-common_20120630+3_i386
+  nvidia-settings_304.88-1_amd64
+  nvidia-settings_304.88-1_i386
+  nvidia-settings-legacy-173xx_173.14.35-2_amd64
+  nvidia-settings-legacy-173xx_173.14.35-2_i386
+  nvidia-support_20120630+3_amd64
+  nvidia-support_20120630+3_i386
+  nvidia-xconfig_304.48-1_amd64
+  nvidia-xconfig_304.48-1_i386
   opendict-plugins-lingvosoft_0.8-2_all
   ora2pg_8.11-1_all
   phoronix-test-suite_3.8.0-1_all
+  pidgin-skype_20110407+svn628+dfsg-1_amd64
+  pidgin-skype_20110407+svn628+dfsg-1_i386
+  pidgin-skype-dbg_20110407+svn628+dfsg-1_amd64
+  pidgin-skype-dbg_20110407+svn628+dfsg-1_i386
   playonlinux_4.1.1-1_all
   premail_0.46-9_all
+  prism2-usb-firmware-installer_0.2.9+dfsg-5_amd64
+  prism2-usb-firmware-installer_0.2.9+dfsg-5_i386
+  pvpgn_1.8.1-2.1+b1_amd64
+  pvpgn_1.8.1-2.1+b1_i386
+  python-ifeffit_2:1.2.11d-8_amd64
+  python-ifeffit_2:1.2.11d-8_i386
   python-ldap-doc_2.3-2.2_all
+  python-pycuda_2012.1-1_amd64
+  python-pycuda_2012.1-1_i386
   python-pycuda-doc_2012.1-1_all
   python-pycuda-headers_2012.1-1_all
+  python-pyopencl_2012.1.dfsg-1_amd64
+  python-pyopencl_2012.1.dfsg-1_i386
   python-pyopencl-doc_2012.1.dfsg-1_all
   python-pyopencl-headers_2012.1.dfsg-1_all
+  python3-pyopencl_2012.1.dfsg-1_amd64
+  python3-pyopencl_2012.1.dfsg-1_i386
+  q-tools_0.4-1_i386
   qmhandle_1.3.2-1_all
   quake_2_all
   quake-server_2_all
   quake3_1.4_all
   quake3-server_1.4_all
+  r-cran-surveillance_1.2-1-3_amd64
+  r-cran-surveillance_1.2-1-3_i386
   raccoon_1.0-1_all
+  redeclipse_1.2-3_amd64
+  redeclipse_1.2-3_i386
+  redeclipse-dbg_1.2-3_amd64
+  redeclipse-dbg_1.2-3_i386
+  redeclipse-server_1.2-3_amd64
+  redeclipse-server_1.2-3_i386
+  redeclipse-server-dbg_1.2-3_amd64
+  redeclipse-server-dbg_1.2-3_i386
+  reminiscence_0.2.1-1_amd64
+  reminiscence_0.2.1-1_i386
+  rocksndiamonds_3.3.0.1+dfsg1-2.2_amd64
+  rocksndiamonds_3.3.0.1+dfsg1-2.2_i386
+  rott_1.1.2-1_amd64
+  rott_1.1.2-1_i386
   ruby-googlecharts_1.6.8-2_all
+  ruby-pgplot_0.1.3-6_amd64
+  ruby-pgplot-dbg_0.1.3-6_amd64
   sabnzbdplus_0.6.15-1_all
   sabnzbdplus-theme-classic_0.6.15-1_all
   sabnzbdplus-theme-iphone_0.6.15-1_all
   sabnzbdplus-theme-mobile_0.6.15-1_all
   sabnzbdplus-theme-plush_0.6.15-1_all
   sabnzbdplus-theme-smpl_0.6.15-1_all
+  sandboxgamemaker_2.7.1+dfsg-2_amd64
+  sandboxgamemaker_2.7.1+dfsg-2_i386
   sapgui-package_0.0.10_all
+  sauerbraten_0.0.20100728.dfsg+repack-3_amd64
+  sauerbraten_0.0.20100728.dfsg+repack-3_i386
+  sauerbraten-dbg_0.0.20100728.dfsg+repack-3_amd64
+  sauerbraten-dbg_0.0.20100728.dfsg+repack-3_i386
+  sauerbraten-server_0.0.20100728.dfsg+repack-3_amd64
+  sauerbraten-server_0.0.20100728.dfsg+repack-3_i386
   sauerbraten-wake6_1.0-1.1_all
   sdic_2.1.3-22_all
   sdic-edict_2.1.3-22_all
@@ -101,7 +293,17 @@ Packages:
   sdic-gene95_2.1.3-22_all
   series60-remote_0.4.0+dfsg.1-1_all
   sixpack_1:0.68-1_all
+  spectemu-common_0.94a-15_amd64
+  spectemu-common_0.94a-15_i386
+  spectemu-svga_0.94a-15_amd64
+  spectemu-svga_0.94a-15_i386
+  spectemu-x11_0.94a-15_amd64
+  spectemu-x11_0.94a-15_i386
   sqldeveloper-package_0.2.4_all
+  starpu-contrib-examples_1.0.1+dfsg-1_amd64
+  starpu-contrib-examples_1.0.1+dfsg-1_i386
+  starpu-contrib-tools_1.0.1+dfsg-1_amd64
+  starpu-contrib-tools_1.0.1+dfsg-1_i386
   sugar-etoys-activity_116-3_all
   susv2_1.1_all
   susv3_6.1_all
@@ -109,238 +311,36 @@ Packages:
   ttf-mathematica4.1_16_all
   ttf-mscorefonts-installer_3.4+nmu1_all
   ttf-root-installer_5.34.00-2_all
+  uae_0.8.29-7_amd64
+  uae_0.8.29-7_i386
+  uae-dbg_0.8.29-7_amd64
+  uae-dbg_0.8.29-7_i386
+  uqm_0.6.2.dfsg-9_amd64
+  uqm_0.6.2.dfsg-9_i386
   uqm-russian_1.0.2-5_all
+  vice_2.3.dfsg-4_amd64
+  vice_2.3.dfsg-4_i386
   vmware-manager_0.2.0-3_all
+  vmware-view-open-client_4.5.0-297975+dfsg-4+b1_amd64
+  vmware-view-open-client_4.5.0-297975+dfsg-4+b1_i386
   vnc-java_3.3.3r2-8_all
+  vor_0.5.5-2_amd64
+  vor_0.5.5-2_i386
   vusb-analyzer_1.1-3_all
+  wdq2wav_0.8.3-2_amd64
+  wdq2wav_0.8.3-2_i386
   winetricks_0.0+20121030+svn918-1_all
   wnn7egg_1.02-8_all
-  x-pgp-sig-el_1.3.5.1-4.1_all
-  alien-arena_7.53+dfsg-3_amd64
-  alien-arena-server_7.53+dfsg-3_amd64
-  alsa-firmware-loaders_1.0.25-2_amd64
-  amoeba_1.1-26_amd64
-  assaultcube_1.1.0.4+dfsg2-1_amd64
-  atari800_2.2.1-2_amd64
-  b43-fwcutter_1:015-14.1_amd64
-  basilisk2_0.9.20120331-2_amd64
-  boinc-nvidia-cuda_7.0.27+dfsg-5_amd64
-  cbedic_4.0-3_amd64
-  chocolate-doom_1.7.0-3+b1_amd64
-  conky-all_1.9.0-2_amd64
-  cpp-doc_5:4_amd64
-  cytadela_1.0.1-2_amd64
-  cytadela-dbg_1.0.1-2_amd64
-  dosemu_1.4.0+svn.2080-1_amd64
-  e-uae_0.8.29-WIP4-10_amd64
-  e-uae-dbg_0.8.29-WIP4-10_amd64
-  easyspice_0.6.8-2_amd64
-  exult_1.2-15.2_amd64
-  exult-studio_1.2-15.2_amd64
-  flashplugin-nonfree_1:3.2_amd64
-  frogatto_1.2+dfsg-1+b1_amd64
-  gcc-doc_5:4_amd64
-  gcj-doc_5:4_amd64
-  gfortran-doc_5:4_amd64
-  glx-alternative-fglrx_0.2.2_amd64
-  glx-alternative-mesa_0.2.2_amd64
-  glx-alternative-nvidia_0.2.2_amd64
-  glx-diversions_0.2.2_amd64
-  gnat-doc_5:4_amd64
-  gnome-speech-swift_1:0.4.25-5_amd64
-  gnome-video-arcade_0.8.3-1_amd64
-  gnuboy-sdl_1.0.3-6.1_amd64
-  gnuboy-svga_1.0.3-6.1_amd64
-  gnuboy-x_1.0.3-6.1_amd64
-  gnuvd_1.0.11-1_amd64
-  gobi-loader_0.6-1_amd64
-  gtktrain_0.9b-13_amd64
-  hannah-foo2zjs_1:1_amd64
-  ifeffit_2:1.2.11d-8_amd64
-  isdnactivecards_1:3.9.20060704-11_amd64
-  isight-firmware-tools_1.6-1_amd64
-  iucode-tool_0.8.3-1_amd64
-  ivtv-utils_1.4.1-2_amd64
-  kcemu_0.5.1+dfsg-5_amd64
-  libcplgasgano20_6.1.1-2_amd64
-  libdbd-oracle-perl_1.44-1_amd64
-  libifeffit-perl_2:1.2.11d-8_amd64
-  libpgplot-perl_1:2.21-3_amd64
-  libsocl-contrib-1.0_1.0.1+dfsg-1_amd64
-  libstarpu-contrib-1.0_1.0.1+dfsg-1_amd64
-  libstarpu-contrib-dev_1.0.1+dfsg-1_amd64
-  libstarpu-contribfft-1.0_1.0.1+dfsg-1_amd64
-  libstarpu-contribmpi-1.0_1.0.1+dfsg-1_amd64
-  libsuitesparse-metis-3.1.0_3.1.0-2_amd64
-  libsuitesparse-metis-dbg_3.1.0-2_amd64
-  libsuitesparse-metis-dev_3.1.0-2_amd64
-  libtrain-bin_0.9b-11_amd64
-  libtrain-dev_0.9b-11_amd64
-  libtrain1_0.9b-11_amd64
-  libxnvctrl-dev_304.88-1_amd64
-  libxnvctrl0_304.88-1_amd64
-  libydpdict2_1.0.2-1_amd64
-  libydpdict2-dev_1.0.2-1_amd64
-  lugaru_0~20110520.1+hge4354+dfsg-3_amd64
-  microcode.ctl_1.18~0+nmu2_amd64
-  nvidia-installer-cleanup_20120630+3_amd64
-  nvidia-kernel-common_20120630+3_amd64
-  nvidia-settings_304.88-1_amd64
-  nvidia-settings-legacy-173xx_173.14.35-2_amd64
-  nvidia-support_20120630+3_amd64
-  nvidia-xconfig_304.48-1_amd64
-  pidgin-skype_20110407+svn628+dfsg-1_amd64
-  pidgin-skype-dbg_20110407+svn628+dfsg-1_amd64
-  prism2-usb-firmware-installer_0.2.9+dfsg-5_amd64
-  pvpgn_1.8.1-2.1+b1_amd64
-  python-ifeffit_2:1.2.11d-8_amd64
-  python-pycuda_2012.1-1_amd64
-  python-pyopencl_2012.1.dfsg-1_amd64
-  python3-pyopencl_2012.1.dfsg-1_amd64
-  r-cran-surveillance_1.2-1-3_amd64
-  redeclipse_1.2-3_amd64
-  redeclipse-dbg_1.2-3_amd64
-  redeclipse-server_1.2-3_amd64
-  redeclipse-server-dbg_1.2-3_amd64
-  reminiscence_0.2.1-1_amd64
-  rocksndiamonds_3.3.0.1+dfsg1-2.2_amd64
-  rott_1.1.2-1_amd64
-  ruby-pgplot_0.1.3-6_amd64
-  ruby-pgplot-dbg_0.1.3-6_amd64
-  sandboxgamemaker_2.7.1+dfsg-2_amd64
-  sauerbraten_0.0.20100728.dfsg+repack-3_amd64
-  sauerbraten-dbg_0.0.20100728.dfsg+repack-3_amd64
-  sauerbraten-server_0.0.20100728.dfsg+repack-3_amd64
-  spectemu-common_0.94a-15_amd64
-  spectemu-svga_0.94a-15_amd64
-  spectemu-x11_0.94a-15_amd64
-  starpu-contrib-examples_1.0.1+dfsg-1_amd64
-  starpu-contrib-tools_1.0.1+dfsg-1_amd64
-  uae_0.8.29-7_amd64
-  uae-dbg_0.8.29-7_amd64
-  uqm_0.6.2.dfsg-9_amd64
-  vice_2.3.dfsg-4_amd64
-  vmware-view-open-client_4.5.0-297975+dfsg-4+b1_amd64
-  vor_0.5.5-2_amd64
-  wdq2wav_0.8.3-2_amd64
   wolf4sdl_1.7+svn262+dfsg1-1_amd64
-  xserver-xorg-video-ivtv_1.1.2-1+b3_amd64
-  xserver-xorg-video-ivtv-dbg_1.1.2-1+b3_amd64
-  xtrs_4.9c-3.4_amd64
-  xvba-va-driver_0.8.0-5_amd64
-  ydpdict_1.0.0-2_amd64
-  alien-arena_7.53+dfsg-3_i386
-  alien-arena-server_7.53+dfsg-3_i386
-  alsa-firmware-loaders_1.0.25-2_i386
-  amoeba_1.1-26_i386
-  assaultcube_1.1.0.4+dfsg2-1_i386
-  atari800_2.2.1-2_i386
-  b43-fwcutter_1:015-14.1_i386
-  basilisk2_0.9.20120331-2_i386
-  boinc-nvidia-cuda_7.0.27+dfsg-5_i386
-  cbedic_4.0-3_i386
-  chocolate-doom_1.7.0-3_i386
-  conky-all_1.9.0-2_i386
-  cpp-doc_5:4_i386
-  cytadela_1.0.1-2_i386
-  cytadela-dbg_1.0.1-2_i386
-  dosemu_1.4.0+svn.2080-1_i386
-  e-uae_0.8.29-WIP4-10_i386
-  e-uae-dbg_0.8.29-WIP4-10_i386
-  easyspice_0.6.8-2_i386
-  exult_1.2-15.2_i386
-  exult-studio_1.2-15.2_i386
-  flashplugin-nonfree_1:3.2_i386
-  flashplugin-nonfree-extrasound_0.0.svn2431-3_i386
-  frogatto_1.2+dfsg-1_i386
-  gcc-doc_5:4_i386
-  gcj-doc_5:4_i386
-  gfortran-doc_5:4_i386
-  glx-alternative-fglrx_0.2.2_i386
-  glx-alternative-mesa_0.2.2_i386
-  glx-alternative-nvidia_0.2.2_i386
-  glx-diversions_0.2.2_i386
-  gnat-doc_5:4_i386
-  gnome-speech-dectalk_1:0.4.25-5_i386
-  gnome-speech-ibmtts_1:0.4.25-5_i386
-  gnome-speech-swift_1:0.4.25-5_i386
-  gnome-video-arcade_0.8.3-1_i386
-  gnuboy-sdl_1.0.3-6.1_i386
-  gnuboy-svga_1.0.3-6.1_i386
-  gnuboy-x_1.0.3-6.1_i386
-  gnuvd_1.0.11-1_i386
-  gobi-loader_0.6-1_i386
-  gtktrain_0.9b-13_i386
-  hannah-foo2zjs_1:1_i386
-  ifeffit_2:1.2.11d-8_i386
-  isdnactivecards_1:3.9.20060704-11_i386
-  isight-firmware-tools_1.6-1_i386
-  iucode-tool_0.8.3-1_i386
-  ivtv-utils_1.4.1-2_i386
-  kcemu_0.5.1+dfsg-5_i386
-  libcplgasgano20_6.1.1-2_i386
-  libdbd-oracle-perl_1.44-1_i386
-  libifeffit-perl_2:1.2.11d-8_i386
-  libpgplot-perl_1:2.21-3_i386
-  libsocl-contrib-1.0_1.0.1+dfsg-1_i386
-  libstarpu-contrib-1.0_1.0.1+dfsg-1_i386
-  libstarpu-contrib-dev_1.0.1+dfsg-1_i386
-  libstarpu-contribfft-1.0_1.0.1+dfsg-1_i386
-  libstarpu-contribmpi-1.0_1.0.1+dfsg-1_i386
-  libsuitesparse-metis-3.1.0_3.1.0-2_i386
-  libsuitesparse-metis-dbg_3.1.0-2_i386
-  libsuitesparse-metis-dev_3.1.0-2_i386
-  libtrain-bin_0.9b-11_i386
-  libtrain-dev_0.9b-11_i386
-  libtrain1_0.9b-11_i386
-  libxnvctrl-dev_304.88-1_i386
-  libxnvctrl0_304.88-1_i386
-  libydpdict2_1.0.2-1_i386
-  libydpdict2-dev_1.0.2-1_i386
-  lugaru_0~20110520.1+hge4354+dfsg-3_i386
-  microcode.ctl_1.18~0+nmu2_i386
-  nvidia-installer-cleanup_20120630+3_i386
-  nvidia-kernel-common_20120630+3_i386
-  nvidia-settings_304.88-1_i386
-  nvidia-settings-legacy-173xx_173.14.35-2_i386
-  nvidia-support_20120630+3_i386
-  nvidia-xconfig_304.48-1_i386
-  pidgin-skype_20110407+svn628+dfsg-1_i386
-  pidgin-skype-dbg_20110407+svn628+dfsg-1_i386
-  prism2-usb-firmware-installer_0.2.9+dfsg-5_i386
-  pvpgn_1.8.1-2.1+b1_i386
-  python-ifeffit_2:1.2.11d-8_i386
-  python-pycuda_2012.1-1_i386
-  python-pyopencl_2012.1.dfsg-1_i386
-  python3-pyopencl_2012.1.dfsg-1_i386
-  q-tools_0.4-1_i386
-  r-cran-surveillance_1.2-1-3_i386
-  redeclipse_1.2-3_i386
-  redeclipse-dbg_1.2-3_i386
-  redeclipse-server_1.2-3_i386
-  redeclipse-server-dbg_1.2-3_i386
-  reminiscence_0.2.1-1_i386
-  rocksndiamonds_3.3.0.1+dfsg1-2.2_i386
-  rott_1.1.2-1_i386
-  sandboxgamemaker_2.7.1+dfsg-2_i386
-  sauerbraten_0.0.20100728.dfsg+repack-3_i386
-  sauerbraten-dbg_0.0.20100728.dfsg+repack-3_i386
-  sauerbraten-server_0.0.20100728.dfsg+repack-3_i386
-  spectemu-common_0.94a-15_i386
-  spectemu-svga_0.94a-15_i386
-  spectemu-x11_0.94a-15_i386
-  starpu-contrib-examples_1.0.1+dfsg-1_i386
-  starpu-contrib-tools_1.0.1+dfsg-1_i386
-  uae_0.8.29-7_i386
-  uae-dbg_0.8.29-7_i386
-  uqm_0.6.2.dfsg-9_i386
-  vice_2.3.dfsg-4_i386
-  vmware-view-open-client_4.5.0-297975+dfsg-4+b1_i386
-  vor_0.5.5-2_i386
-  wdq2wav_0.8.3-2_i386
   wolf4sdl_1.7+svn262+dfsg1-1_i386
+  x-pgp-sig-el_1.3.5.1-4.1_all
+  xserver-xorg-video-ivtv_1.1.2-1+b3_amd64
   xserver-xorg-video-ivtv_1.1.2-1+b3_i386
+  xserver-xorg-video-ivtv-dbg_1.1.2-1+b3_amd64
   xserver-xorg-video-ivtv-dbg_1.1.2-1+b3_i386
+  xtrs_4.9c-3.4_amd64
   xtrs_4.9c-3.4_i386
+  xvba-va-driver_0.8.0-5_amd64
   xvba-va-driver_0.8.0-5_i386
+  ydpdict_1.0.0-2_amd64
   ydpdict_1.0.0-2_i386

@@ -5,12 +5,12 @@ Sources:
   snap1 [snapshot]
 Packages:
   init-system-helpers_1.18~bpo70+1_all
-  libestr0_0.1.9-1~bpo70+1_i386
-  libjson-c2_0.11-3~bpo7+1_i386
-  liblogging-stdlog0_1.0.4-1~bpo70+1_i386
-  rsyslog_7.6.3-2~bpo70+1_i386
   init-system-helpers_1.18~bpo70+1_source
   json-c_0.11-3~bpo7+1_source
   libestr_0.1.9-1~bpo70+1_source
+  libestr0_0.1.9-1~bpo70+1_i386
+  libjson-c2_0.11-3~bpo7+1_i386
   liblogging_1.0.4-1~bpo70+1_source
+  liblogging-stdlog0_1.0.4-1~bpo70+1_i386
+  rsyslog_7.6.3-2~bpo70+1_i386
   rsyslog_7.6.3-2~bpo70+1_source
