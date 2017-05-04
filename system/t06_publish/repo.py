@@ -699,6 +699,7 @@ class PublishRepo28Test(BaseTest):
         self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Release')
         self.check_not_exists('public/dists/maverick/main/Contents-udeb-i386.gz')
 
+
 class PublishRepo29Test(BaseTest):
     """
     publish repo: broken .deb file for contents
@@ -709,6 +710,7 @@ class PublishRepo29Test(BaseTest):
     ]
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo"
     gold_processor = BaseTest.expand_environ
+
 
 class PublishRepo30Test(BaseTest):
     """
@@ -722,20 +724,16 @@ class PublishRepo30Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def prepare_fixture(self):
-        super(PublishRepo29Test, self).prepare_fixture()
+        super(PublishRepo30Test, self).prepare_fixture()
 
         self.write_file(os.path.join('addon', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
 
     def check(self):
-        super(PublishRepo29Test, self).check()
+        super(PublishRepo30Test, self).check()
 
         self.check_exists('public/dists/maverick/main/dep11/README')
 
         self.check_exists('public/dists/maverick/Release')
-
-        readme = self.read_file('public/dists/maverick/main/dep11/README')
-        if readme != 'README test file':
-            raise Exception("README file not copied on publish")
 
         release = self.read_file('public/dists/maverick/Release').split("\n")
         release = [l for l in release if l.startswith(" ")]
