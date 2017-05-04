@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -35,19 +36,22 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 		for _, sourceID := range snapshot.SourceIDs {
 			var name string
 			if snapshot.SourceKind == "snapshot" {
-				source, err := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				var source *deb.Snapshot
+				source, err = context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == "local" {
-				source, err := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				var source *deb.LocalRepo
+				source, err = context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == "repo" {
-				source, err := context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				var source *deb.RemoteRepo
+				source, err = context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}

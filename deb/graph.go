@@ -33,9 +33,9 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	existingNodes := map[string]bool{}
 
 	err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *RemoteRepo) error {
-		err := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 
 		graph.AddNode("aptly", repo.UUID, map[string]string{
@@ -55,9 +55,9 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	}
 
 	err = collectionFactory.LocalRepoCollection().ForEach(func(repo *LocalRepo) error {
-		err := collectionFactory.LocalRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 
 		graph.AddNode("aptly", repo.UUID, map[string]string{
@@ -81,9 +81,9 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	})
 
 	err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
-		err := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return err
+		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		if e != nil {
+			return e
 		}
 
 		description := snapshot.Description

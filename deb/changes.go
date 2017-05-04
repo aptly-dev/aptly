@@ -69,7 +69,8 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		keyInfo, err := verifier.VerifyClearsigned(input, false)
+		var keyInfo *utils.GpgKeyInfo
+		keyInfo, err = verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err
 		}

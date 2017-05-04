@@ -37,9 +37,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
 
-		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 		if repo.RefList() != nil {
 			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
@@ -67,9 +67,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
 
-		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 
 		if repo.RefList() != nil {
@@ -98,9 +98,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", snapshot.Name)
 		}
 
-		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+		if e != nil {
+			return e
 		}
 
 		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false, true)
@@ -128,9 +128,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if published.SourceKind != "local" {
 			return nil
 		}
-		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(published, context.CollectionFactory())
-		if err != nil {
-			return err
+		e := context.CollectionFactory().PublishedRepoCollection().LoadComplete(published, context.CollectionFactory())
+		if e != nil {
+			return e
 		}
 
 		for _, component := range published.Components() {

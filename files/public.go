@@ -146,7 +146,8 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName strin
 				}
 			} else {
 				// if source and destination have the same checksums, no need to copy
-				dstMD5, err := utils.MD5ChecksumForFile(filepath.Join(poolPath, baseName))
+				var dstMD5 string
+				dstMD5, err = utils.MD5ChecksumForFile(filepath.Join(poolPath, baseName))
 
 				if err != nil {
 					return err
