@@ -61,7 +61,7 @@ _aptly()
     options="-architectures= -config= -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve"
 
     db_subcommands="cleanup recover"
-    mirror_subcommands="create drop show list rename search update"
+    mirror_subcommands="create drop edit show list rename search update"
     publish_subcommands="drop list repo snapshot switch update"
     snapshot_subcommands="create diff drop filter list merge pull rename search show verify"
     repo_subcommands="add copy create drop edit import include list move remove rename search show"
