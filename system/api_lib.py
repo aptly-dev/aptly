@@ -42,7 +42,7 @@ class APITest(BaseTest):
     def post(self, uri, *args, **kwargs):
         if "json" in kwargs:
             kwargs["data"] = json.dumps(kwargs.pop("json"))
-            if not "headers" in kwargs:
+            if "headers" not in kwargs:
                 kwargs["headers"] = {}
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.post("http://%s%s" % (self.base_url, uri), *args, **kwargs)
@@ -50,7 +50,7 @@ class APITest(BaseTest):
     def put(self, uri, *args, **kwargs):
         if "json" in kwargs:
             kwargs["data"] = json.dumps(kwargs.pop("json"))
-            if not "headers" in kwargs:
+            if "headers" not in kwargs:
                 kwargs["headers"] = {}
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.put("http://%s%s" % (self.base_url, uri), *args, **kwargs)
@@ -58,7 +58,7 @@ class APITest(BaseTest):
     def delete(self, uri, *args, **kwargs):
         if "json" in kwargs:
             kwargs["data"] = json.dumps(kwargs.pop("json"))
-            if not "headers" in kwargs:
+            if "headers" not in kwargs:
                 kwargs["headers"] = {}
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.delete("http://%s%s" % (self.base_url, uri), *args, **kwargs)

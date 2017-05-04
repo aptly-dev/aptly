@@ -2,6 +2,10 @@ from lib import BaseTest
 import re
 
 
+def sortLines(_, output):
+    return "\n".join(sorted(output.split("\n")))
+
+
 class PullSnapshot1Test(BaseTest):
     """
     pull snapshot: simple conditions
@@ -12,7 +16,7 @@ class PullSnapshot1Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-non-free",
     ]
     runCmd = "aptly snapshot pull snap1 snap2 snap3 mame unrar"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         def remove_created_at(s):
@@ -32,7 +36,7 @@ class PullSnapshot2Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot pull snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         def remove_created_at(s):
@@ -52,7 +56,7 @@ class PullSnapshot3Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot pull -no-deps snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         def remove_created_at(s):
@@ -72,7 +76,7 @@ class PullSnapshot4Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot pull -dry-run snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         self.check_output()
@@ -116,7 +120,7 @@ class PullSnapshot7Test(BaseTest):
     ]
     runCmd = "aptly snapshot pull snap1 snap2 snap1 'rsyslog (>= 7.4.4)'"
     expectedCode = 1
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
 
 class PullSnapshot8Test(BaseTest):
@@ -129,7 +133,7 @@ class PullSnapshot8Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-non-free",
     ]
     runCmd = "aptly snapshot pull snap1 snap2 snap3 lunar-landing 'mars-landing (>= 1.0)'"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         def remove_created_at(s):
@@ -187,7 +191,7 @@ class PullSnapshot11Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-backports",
     ]
     runCmd = "aptly snapshot pull -no-remove snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
-    outputMatchPrepare = lambda _, output: "\n".join(sorted(output.split("\n")))
+    outputMatchPrepare = sortLines
 
     def check(self):
         def remove_created_at(s):
@@ -231,3 +235,16 @@ class PullSnapshot14Test(BaseTest):
         "aptly snapshot create sensu from mirror sensu",
     ]
     runCmd = "aptly snapshot pull -architectures=amd64,i386 -all-matches empty sensu destination 'sensu (>0.12)' 'sensu (<0.9.6)'"
+
+
+class PullSnapshot15Test(BaseTest):
+    """
+    pull snapshot: verbose logs
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-backports",
+    ]
+    runCmd = "aptly snapshot pull -dep-verbose-resolve snap1 snap2 snap3 'rsyslog (>= 7.4.4)'"
+    outputMatchPrepare = sortLines

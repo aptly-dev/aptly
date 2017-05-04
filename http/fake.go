@@ -2,11 +2,12 @@ package http
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 type expectedRequest struct {
@@ -59,7 +60,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int) {
+func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
 	var expectation expectedRequest
 	if len(f.expected) > 0 && f.expected[0].URL == url {
 		expectation, f.expected = f.expected[0], f.expected[1:]
@@ -67,25 +68,21 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 		expectation = f.anyExpected[url]
 		delete(f.anyExpected, url)
 	} else {
-		result <- fmt.Errorf("unexpected request for %s", url)
-		return
+		return fmt.Errorf("unexpected request for %s", url)
 	}
 
 	if expectation.Err != nil {
-		result <- expectation.Err
-		return
+		return expectation.Err
 	}
 
 	err := os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
-		result <- err
-		return
+		return err
 	}
 
 	outfile, err := os.Create(filename)
 	if err != nil {
-		result <- err
-		return
+		return err
 	}
 	defer outfile.Close()
 
@@ -94,45 +91,26 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, resul
 
 	_, err = w.Write([]byte(expectation.Response))
 	if err != nil {
-		result <- err
-		return
+		return err
 	}
 
-	if expected.Size != -1 {
+	if expected != nil {
 		if expected.Size != cks.Sum().Size || expected.MD5 != "" && expected.MD5 != cks.Sum().MD5 ||
 			expected.SHA1 != "" && expected.SHA1 != cks.Sum().SHA1 || expected.SHA256 != "" && expected.SHA256 != cks.Sum().SHA256 {
 			if ignoreMismatch {
 				fmt.Printf("WARNING: checksums don't match: %#v != %#v for %s\n", expected, cks.Sum(), url)
 			} else {
-				result <- fmt.Errorf("checksums don't match: %#v != %#v for %s", expected, cks.Sum(), url)
-				return
+				return fmt.Errorf("checksums don't match: %#v != %#v for %s", expected, cks.Sum(), url)
 			}
 		}
 	}
 
-	result <- nil
-	return
+	return nil
 }
 
 // Download performs fake download by matching against first expectation in the queue
-func (f *FakeDownloader) Download(url string, filename string, result chan<- error) {
-	f.DownloadWithChecksum(url, filename, result, utils.ChecksumInfo{Size: -1}, false, 1)
-}
-
-// Shutdown does nothing
-func (f *FakeDownloader) Shutdown() {
-}
-
-// Abort does nothing
-func (f *FakeDownloader) Abort() {
-}
-
-// Pause does nothing
-func (f *FakeDownloader) Pause() {
-}
-
-// Resume does nothing
-func (f *FakeDownloader) Resume() {
+func (f *FakeDownloader) Download(url string, filename string) error {
+	return f.DownloadWithChecksum(url, filename, nil, false, 1)
 }
 
 // GetProgress returns Progress object

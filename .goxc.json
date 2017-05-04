@@ -10,17 +10,17 @@
 		"bintray"
     ],
     "TaskSettings": {
-        "deb": {
+        "debs": {
             "metadata": {
                 "maintainer": "Andrey Smirnov",
-                "maintainerEmail": "me@smira.ru",
+                "maintainer-email": "me@smira.ru",
                 "description": "Debian repository management tool"
             },
             "metadata-deb": {
                 "License": "MIT",
                 "Homepage": "https://www.aptly.info/",
-                "Recommends": "bzip2, graphviz, xz-utils",
-                "Depends": ""
+                "Depends": "bzip2, xz-utils, gnupg, gpgv",
+				"Suggests": "graphviz"
             },
             "other-mapped-files": {
                 "/": "root/"
@@ -33,8 +33,14 @@
             "downloadspage": "bintray.md"
         }
     },
+	"ResourcesInclude": "README.rst,LICENSE,AUTHORS,man/aptly.1",
 	"Arch": "386 amd64",
 	"Os": "linux darwin freebsd",
-	"MainDirsExclude": "man,vendor",
+	"MainDirsExclude": "_man,vendor",
+	"BuildSettings": {
+		"LdFlagsXVars": {
+			"Version": "main.Version"
+		}
+	},
 	"ConfigVersion": "0.9"
 }

@@ -3,6 +3,14 @@ package context
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
@@ -14,13 +22,6 @@ import (
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"path/filepath"
-	"runtime"
-	"runtime/pprof"
-	"strings"
-	"sync"
-	"time"
 )
 
 // AptlyContext is a common context shared by all commands
@@ -100,6 +101,9 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
+
+				// as this is fresh aptly installation, we don't need to support legacy pool locations
+				utils.Config.SkipLegacyPool = true
 				utils.SaveConfig(configLocations[0], &utils.Config)
 			}
 		}
@@ -147,6 +151,9 @@ func (context *AptlyContext) DependencyOptions() int {
 		}
 		if context.lookupOption(context.config().DepFollowSource, "dep-follow-source") {
 			context.dependencyOptions |= deb.DepFollowSource
+		}
+		if context.lookupOption(context.config().DepVerboseResolve, "dep-verbose-resolve") {
+			context.dependencyOptions |= deb.DepVerboseResolve
 		}
 	}
 
@@ -200,8 +207,7 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 		if downloadLimit == 0 {
 			downloadLimit = context.config().DownloadLimit
 		}
-		context.downloader = http.NewDownloader(context.config().DownloadConcurrency,
-			downloadLimit*1024, context._progress())
+		context.downloader = http.NewDownloader(downloadLimit*1024, context._progress())
 	}
 
 	return context.downloader
@@ -267,7 +273,7 @@ func (context *AptlyContext) ReOpenDatabase() error {
 
 	for try := 0; try < MaxTries; try++ {
 		err := context.database.ReOpen()
-		if err == nil || strings.Index(err.Error(), "resource temporarily unavailable") == -1 {
+		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
 			return err
 		}
 		context._progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
@@ -299,7 +305,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.config().RootDir)
+		context.packagePool = files.NewPackagePool(context.config().RootDir, !context.config().SkipLegacyPool)
 	}
 
 	return context.packagePool
@@ -313,7 +319,14 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
 		if name == "" {
-			publishedStorage = files.NewPublishedStorage(context.config().RootDir)
+			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().RootDir, "public"), "hardlink", "")
+		} else if strings.HasPrefix(name, "filesystem:") {
+			params, ok := context.config().FileSystemPublishRoots[name[11:]]
+			if !ok {
+				Fatal(fmt.Errorf("published local storage %v not configured", name[6:]))
+			}
+
+			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
 			params, ok := context.config().S3PublishRoots[name[3:]]
 			if !ok {
@@ -410,7 +423,6 @@ func (context *AptlyContext) Shutdown() {
 		context.database = nil
 	}
 	if context.downloader != nil {
-		context.downloader.Abort()
 		context.downloader = nil
 	}
 	if context.progress != nil {
@@ -425,7 +437,6 @@ func (context *AptlyContext) Cleanup() {
 	defer context.Unlock()
 
 	if context.downloader != nil {
-		context.downloader.Shutdown()
 		context.downloader = nil
 	}
 	if context.progress != nil {

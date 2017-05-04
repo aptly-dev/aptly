@@ -96,6 +96,9 @@ func (s *VersionSuite) TestCompareVersions(c *C) {
 
 	c.Check(CompareVersions("1.0~beta1~svn1245", "1.0~beta1"), Equals, -1)
 	c.Check(CompareVersions("1.0~beta1", "1.0"), Equals, -1)
+
+	c.Check(CompareVersions("1.0-133-avc", "1.1"), Equals, -1)
+	c.Check(CompareVersions("1.0-133-avc", "1.0"), Equals, 1)
 }
 
 func (s *VersionSuite) TestParseDependency(c *C) {

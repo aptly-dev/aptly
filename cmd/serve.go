@@ -2,16 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
-	"github.com/smira/flag"
 	"net"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
+	"github.com/smira/flag"
 )
 
 func aptlyServe(cmd *commander.Command, args []string) error {
@@ -20,6 +21,17 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
+	}
+
+	// There are only two working options for aptly's rootDir:
+	//   1. rootDir does not exist, then we'll create it
+	//   2. rootDir exists and is writable
+	// anything else must fail.
+	// E.g.: Running the service under a different user may lead to a rootDir
+	// that exists but is not usable due to access permissions.
+	err = utils.DirIsAccessible(context.Config().RootDir)
+	if err != nil {
+		return err
 	}
 
 	if context.CollectionFactory().PublishedRepoCollection().Len() == 0 {
@@ -84,7 +96,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	publicPath := context.GetPublishedStorage("").(aptly.LocalPublishedStorage).PublicPath()
+	publicPath := context.GetPublishedStorage("").(aptly.FileSystemPublishedStorage).PublicPath()
 	ShutdownContext()
 
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)

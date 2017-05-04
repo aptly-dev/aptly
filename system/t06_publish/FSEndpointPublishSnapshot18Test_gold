@@ -1,0 +1,14 @@
+Loading packages...
+Generating metadata files and linking package files...
+[!] Failed to generate package contents:  unable to read .tar archive from libboost-broken-program-options-dev_1.49.0.1_i386.deb: unexpected EOF
+Finalizing metadata files...
+Signing file 'Release' with gpg, please enter your passphrase when prompted:
+Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
+
+Snapshot snap2 has been successfully published.
+Please setup your webserver to serve directory '${HOME}/.aptly/public_copysize' with autoindexing.
+Now you can add following line to apt sources:
+  deb http://your-server/ squeeze main
+Don't forget to add your GPG key to apt with apt-key.
+
+You can also use `aptly serve` to publish your repositories over HTTP quickly.

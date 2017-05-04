@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
-	"strings"
 )
 
 func aptlyPublishShow(cmd *commander.Command, args []string) error {

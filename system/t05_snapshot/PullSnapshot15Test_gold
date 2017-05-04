@@ -1,0 +1,33 @@
+
+
+    [snap1]: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
+    [snap2]: Snapshot from mirror [wheezy-backports]: http://mirror.yandex.ru/debian/ wheezy-backports
+Building indexes...
+Dependencies would be pulled into snapshot:
+Injecting package: init-system-helpers_1.18~bpo70+1_all
+Injecting package: libestr0_0.1.9-1~bpo70+1_amd64
+Injecting package: libestr0_0.1.9-1~bpo70+1_i386
+Injecting package: libjson-c2_0.11-3~bpo7+1_amd64
+Injecting package: libjson-c2_0.11-3~bpo7+1_i386
+Injecting package: liblogging-stdlog0_1.0.4-1~bpo70+1_amd64
+Injecting package: liblogging-stdlog0_1.0.4-1~bpo70+1_i386
+Loading packages (60863)...
+Missing dependencies: 
+Missing dependencies: libestr0 (>= 0.1.4) [amd64], libjson-c2 (>= 0.10) [amd64], liblogging-stdlog0 (>= 1.0.1) [amd64], init-system-helpers (>= 1.18~) [amd64], libestr0 (>= 0.1.4) [i386], libjson-c2 (>= 0.10) [i386], liblogging-stdlog0 (>= 1.0.1) [i386], init-system-helpers (>= 1.18~) [i386]
+Snapshot snap3 successfully created.
+You can run 'aptly publish snapshot snap3' to publish snapshot as Debian repository.
+[+] init-system-helpers_1.18~bpo70+1_all added
+[+] libestr0_0.1.9-1~bpo70+1_amd64 added
+[+] libestr0_0.1.9-1~bpo70+1_i386 added
+[+] libjson-c2_0.11-3~bpo7+1_amd64 added
+[+] libjson-c2_0.11-3~bpo7+1_i386 added
+[+] liblogging-stdlog0_1.0.4-1~bpo70+1_amd64 added
+[+] liblogging-stdlog0_1.0.4-1~bpo70+1_i386 added
+[+] rsyslog_7.6.3-2~bpo70+1_amd64 added
+[+] rsyslog_7.6.3-2~bpo70+1_i386 added
+[-] libestr0_0.1.1-2_amd64 removed
+[-] libestr0_0.1.1-2_i386 removed
+[-] rsyslog_5.8.11-3_amd64 removed
+[-] rsyslog_5.8.11-3_i386 removed
+and result would be saved as new snapshot snap3.
+from snapshot:

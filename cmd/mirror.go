@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"strings"
 )
 
 func getVerifier(flags *flag.FlagSet) (utils.Verifier, error) {

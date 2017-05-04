@@ -2,13 +2,14 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
-	"os"
-	"path/filepath"
 )
 
 // GET /api/repos
@@ -324,7 +325,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	}
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		context.CollectionFactory().PackageCollection(), reporter, nil)
+		context.CollectionFactory().PackageCollection(), reporter, nil, context.CollectionFactory().ChecksumCollection())
 	failedFiles = append(failedFiles, failedFiles2...)
 
 	if err != nil {

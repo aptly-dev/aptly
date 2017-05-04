@@ -3,15 +3,16 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
+	"text/template"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"path/filepath"
-	"text/template"
 )
 
 func aptlyRepoInclude(cmd *commander.Command, args []string) error {
@@ -150,7 +151,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		var processedFiles2, failedFiles2 []string
 
 		processedFiles2, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			context.CollectionFactory().PackageCollection(), reporter, restriction)
+			context.CollectionFactory().PackageCollection(), reporter, restriction, context.CollectionFactory().ChecksumCollection())
 
 		if err != nil {
 			return fmt.Errorf("unable to import package files: %s", err)

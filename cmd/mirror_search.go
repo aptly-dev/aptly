@@ -8,10 +8,12 @@ import (
 func makeCmdMirrorSearch() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotMirrorRepoSearch,
-		UsageLine: "search <name> <package-query>",
+		UsageLine: "search <name> [<package-query>]",
 		Short:     "search mirror for packages matching query",
 		Long: `
 Command search displays list of packages in mirror that match package query
+
+If query is not specified, all the packages are displayed.
 
 Example:
 

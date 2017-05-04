@@ -3,18 +3,21 @@ package swift
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ncw/swift"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ncw/swift"
+	"github.com/pkg/errors"
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)
 type PublishedStorage struct {
-	conn              swift.Connection
+	conn              *swift.Connection
 	container         string
 	prefix            string
 	supportBulkDelete bool
@@ -51,7 +54,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 	if tenantID == "" {
 		tenantID = os.Getenv("OS_TENANT_ID")
 	}
-  if domain == "" {
+	if domain == "" {
 		domain = os.Getenv("OS_USER_DOMAIN_NAME")
 	}
 	if domainID == "" {
@@ -64,7 +67,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 		tenantDomainID = os.Getenv("OS_PROJECT_DOMAIN_ID")
 	}
 
-	ct := swift.Connection{
+	ct := &swift.Connection{
 		UserName:       username,
 		ApiKey:         password,
 		AuthUrl:        authURL,
@@ -106,7 +109,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 
 // String
 func (storage *PublishedStorage) String() string {
-	return fmt.Sprintf("Swift: %s:%s/%s", storage.conn.StorageUrl, storage.container, storage.prefix)
+	return fmt.Sprintf("Swift: %s/%s/%s", storage.conn.StorageUrl, storage.container, storage.prefix)
 }
 
 // MkDir creates directory recursively under public path
@@ -127,12 +130,18 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
-	_, err = storage.conn.ObjectPut(storage.container, filepath.Join(storage.prefix, path), source, false, "", "", nil)
-
+	err = storage.putFile(path, source)
 	if err != nil {
-		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
 	}
-	return nil
+
+	return err
+}
+
+func (storage *PublishedStorage) putFile(path string, source io.Reader) error {
+	_, err := storage.conn.ObjectPut(storage.container, filepath.Join(storage.prefix, path), source, false, "", "", nil)
+
+	return err
 }
 
 // Remove removes single file under public path
@@ -184,12 +193,9 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
-	// verify that package pool is local pool in filesystem
-	_ = sourcePool.(*files.PackagePool)
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName string, sourcePool aptly.PackagePool,
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	baseName := filepath.Base(sourcePath)
 	relPath := filepath.Join(publishedDirectory, baseName)
 	poolPath := filepath.Join(storage.prefix, relPath)
 
@@ -204,13 +210,28 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 			return fmt.Errorf("error getting information about %s from %s: %s", poolPath, storage, err)
 		}
 	} else {
-		if !force && info.Hash != sourceMD5 {
+		if sourceChecksums.MD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
+		if !force && info.Hash != sourceChecksums.MD5 {
 			return fmt.Errorf("error putting file to %s: file already exists and is different: %s", poolPath, storage)
 
 		}
 	}
 
-	return storage.PutFile(relPath, sourcePath)
+	source, err := sourcePool.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	err = storage.putFile(relPath, source)
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
+	}
+
+	return err
 }
 
 // Filelist returns list of files under prefix

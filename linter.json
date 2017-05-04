@@ -1,0 +1,21 @@
+{
+    "DisableAll": true,
+    "Enable": [
+        "vet",
+        "golint",
+        "gofmt",
+        "deadcode",
+        "goimports",
+        "misspell",
+        "gosimple",
+        "ineffassign",
+        "staticcheck",
+        "varcheck",
+        "structcheck",
+        "aligncheck"
+    ],
+    "Deadline": "20m",
+    "Vendor": true,
+    "VendoredLinters": true,
+    "Concurrency": 1
+}

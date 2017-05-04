@@ -9,7 +9,9 @@ class ShowSnapshot1Test(BaseTest):
     fixtureDB = True
     fixtureCmds = ["aptly snapshot create snap1 from mirror wheezy-non-free"]
     runCmd = "aptly snapshot show --with-packages snap1"
-    outputMatchPrepare = lambda _, s: re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
 
 
 class ShowSnapshot2Test(BaseTest):
@@ -28,4 +30,6 @@ class ShowSnapshot3Test(BaseTest):
     fixtureDB = True
     fixtureCmds = ["aptly snapshot create snap1 from mirror wheezy-non-free"]
     runCmd = "aptly snapshot show snap1"
-    outputMatchPrepare = lambda _, s: re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r"Created At: [0-9:A-Za-z -]+\n", "", s)

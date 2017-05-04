@@ -2,10 +2,11 @@ package deb
 
 import (
 	"fmt"
-	"github.com/smira/aptly/utils"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/smira/aptly/utils"
 )
 
 var ppaRegexp = regexp.MustCompile("^ppa:([^/]+)/(.+)$")

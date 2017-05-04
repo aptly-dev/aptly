@@ -1,6 +1,13 @@
 import string
 import re
+import os
+import shutil
+import inspect
 from lib import BaseTest
+
+
+def filterOutSignature(_, s):
+    return re.sub(r'Signature made .* using', '', s)
 
 
 class UpdateMirror1Test(BaseTest):
@@ -90,10 +97,10 @@ class UpdateMirror7Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg flat http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -109,7 +116,7 @@ class UpdateMirror8Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg gnuplot-maverick-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
 
 class UpdateMirror9Test(BaseTest):
@@ -118,10 +125,10 @@ class UpdateMirror9Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -133,10 +140,10 @@ class UpdateMirror10Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% libferris*)), !($$PackageType (source))' flat-src http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -151,7 +158,7 @@ class UpdateMirror11Test(BaseTest):
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
     ]
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
 
     def output_processor(self, output):
@@ -168,7 +175,139 @@ class UpdateMirror12Test(BaseTest):
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+    outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror13Test(BaseTest):
+    """
+    update mirrors: regular update with --skip-existing-packages option
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror14Test(BaseTest):
+    """
+    update mirrors: regular update with --skip-existing-packages option
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+    ]
+    runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror15Test(BaseTest):
+    """
+    update mirrors: update for mirror without MD5 checksums
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures bintray"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def check(self):
+        super(UpdateMirror15Test, self).check()
+        # check pool
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror16Test(BaseTest):
+    """
+    update mirrors: update for mirror without MD5 checksums but with file in pool on legacy MD5 location
+
+    as mirror lacks MD5 checksum, file would be downloaded but not re-imported
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures bintray"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror16Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror16Test, self).check()
+        # check pool
+        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror17Test(BaseTest):
+    """
+    update mirrors: update for mirror but with file in pool on legacy MD5 location
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+    ]
+    runCmd = "aptly mirror update -ignore-signatures wheezy"
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror17Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror17Test, self).check()
+        # check pool
+        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror18Test(BaseTest):
+    """
+    update mirrors: update for mirror but with file in pool on legacy MD5 location and disabled legacy path support
+    """
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+    ]
+    runCmd = "aptly mirror update -ignore-signatures wheezy"
+    configOverride = {'skipLegacyPool': True}
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+    def prepare(self):
+        super(UpdateMirror18Test, self).prepare()
+
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+
+    def check(self):
+        super(UpdateMirror18Test, self).check()
+        # check pool
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')

@@ -3,12 +3,6 @@ package deb
 import (
 	"bytes"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/http"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"log"
 	"net/url"
 	"os"
@@ -20,6 +14,13 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 // RemoteRepo statuses
@@ -44,10 +45,6 @@ type RemoteRepo struct {
 	Components []string
 	// List of architectures to fetch, if empty, then fetch all architectures
 	Architectures []string
-	// Should we download sources?
-	DownloadSources bool
-	// Should we download .udebs?
-	DownloadUdebs bool
 	// Meta-information about repository
 	Meta Stanza
 	// Last update date
@@ -56,20 +53,22 @@ type RemoteRepo struct {
 	ReleaseFiles map[string]utils.ChecksumInfo
 	// Filter for packages
 	Filter string
+	// Status marks state of repository (being updated, no action)
+	Status int
+	// WorkerPID is PID of the process modifying the mirror (if any)
+	WorkerPID int
 	// FilterWithDeps to include dependencies from filter query
 	FilterWithDeps bool
 	// SkipComponentCheck skips component list verification
 	SkipComponentCheck bool
 	// SkipArchitectureCheck skips architecture list verification
 	SkipArchitectureCheck bool
-	// Status marks state of repository (being updated, no action)
-	Status int
-	// WorkerPID is PID of the process modifying the mirror (if any)
-	WorkerPID int
+	// Should we download sources?
+	DownloadSources bool
+	// Should we download .udebs?
+	DownloadUdebs bool
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
-	// Temporary list of package refs
-	tempPackageRefs *PackageRefList
 	// Parsed archived root
 	archiveRootURL *url.URL
 	// Current list of packages (filled while updating mirror)
@@ -330,9 +329,7 @@ ok:
 		if strings.Contains(repo.Distribution, "/") {
 			distributionLast := path.Base(repo.Distribution) + "/"
 			for i := range components {
-				if strings.HasPrefix(components[i], distributionLast) {
-					components[i] = components[i][len(distributionLast):]
-				}
+				components[i] = strings.TrimPrefix(components[i], distributionLast)
 			}
 		}
 		if len(repo.Components) == 0 {
@@ -476,11 +473,6 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 					return err
 				}
 			}
-
-			err = collectionFactory.PackageCollection().Update(p)
-			if err != nil {
-				return err
-			}
 		}
 
 		progress.ShutdownBar()
@@ -490,14 +482,14 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 }
 
 // ApplyFilter applies filtering to already built PackageList
-func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery) (oldLen, newLen int, err error) {
+func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery, progress aptly.Progress) (oldLen, newLen int, err error) {
 	repo.packageList.PrepareIndex()
 
 	emptyList := NewPackageList()
 	emptyList.PrepareIndex()
 
 	oldLen = repo.packageList.Len()
-	repo.packageList, err = repo.packageList.Filter([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures)
+	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures, progress)
 	if repo.packageList != nil {
 		newLen = repo.packageList.Len()
 	}
@@ -505,24 +497,40 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
-	seen := make(map[string]struct{}, repo.packageList.Len())
+	seen := make(map[string]int, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
-		list, err2 := p.DownloadList(packagePool)
+		if repo.packageRefs != nil && skipExistingPackages {
+			if repo.packageRefs.Has(p) {
+				// skip this package, but load checksums/files from package in DB
+				var prevP *Package
+				prevP, err = packageCollection.ByKey(p.Key(""))
+				if err != nil {
+					return err
+				}
+
+				p.UpdateFiles(prevP.Files())
+				return nil
+			}
+		}
+
+		list, err2 := p.DownloadList(packagePool, checksumStorage)
 		if err2 != nil {
 			return err2
 		}
-		p.files = nil
 
 		for _, task := range list {
-			key := task.RepoURI + "-" + task.DestinationPath
-			_, found := seen[key]
+			key := task.File.DownloadURL()
+			idx, found := seen[key]
 			if !found {
 				queue = append(queue, task)
-				downloadSize += task.Checksums.Size
-				seen[key] = struct{}{}
+				downloadSize += task.File.Checksums.Size
+				seen[key] = len(queue) - 1
+			} else {
+				// hook up the task to duplicate entry already on the list
+				queue[idx].Additional = append(queue[idx].Additional, task)
 			}
 		}
 
@@ -532,17 +540,39 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool) (queue
 		return
 	}
 
-	repo.tempPackageRefs = NewPackageRefListFromPackageList(repo.packageList)
-	// free up package list, we don't need it after this point
-	repo.packageList = nil
-
 	return
 }
 
 // FinalizeDownload swaps for final value of package refs
-func (repo *RemoteRepo) FinalizeDownload() {
+func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, progress aptly.Progress) error {
 	repo.LastDownloadDate = time.Now()
-	repo.packageRefs = repo.tempPackageRefs
+
+	if progress != nil {
+		progress.InitBar(int64(repo.packageList.Len()), true)
+	}
+
+	var i int
+
+	// update all the packages in collection
+	err := repo.packageList.ForEach(func(p *Package) error {
+		i++
+		if progress != nil {
+			progress.SetBar(i)
+		}
+		// download process might have updated checksums
+		p.UpdateFiles(p.Files())
+		return collectionFactory.PackageCollection().Update(p)
+	})
+
+	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+
+	if progress != nil {
+		progress.ShutdownBar()
+	}
+
+	repo.packageList = nil
+
+	return err
 }
 
 // Encode does msgpack encoding of RemoteRepo

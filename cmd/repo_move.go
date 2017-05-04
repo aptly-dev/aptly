@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"sort"
 )
 
 func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
@@ -114,7 +115,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	toProcess, err := srcList.Filter(queries, withDeps, dstList, context.DependencyOptions(), architecturesList)
+	toProcess, err := srcList.FilterWithProgress(queries, withDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}

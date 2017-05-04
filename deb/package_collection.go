@@ -3,10 +3,11 @@ package deb
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/ugorji/go/codec"
-	"path/filepath"
 )
 
 // PackageCollection does management of packages in DB
@@ -162,7 +163,7 @@ func (collection *PackageCollection) loadFiles(p *Package) *PackageFiles {
 }
 
 // loadContents loads or calculates and saves package contents
-func (collection *PackageCollection) loadContents(p *Package, packagePool aptly.PackagePool) []string {
+func (collection *PackageCollection) loadContents(p *Package, packagePool aptly.PackagePool, progress aptly.Progress) []string {
 	encoded, err := collection.db.Get(p.Key("xC"))
 	if err == nil {
 		contents := []string{}
@@ -180,7 +181,11 @@ func (collection *PackageCollection) loadContents(p *Package, packagePool aptly.
 		panic("unable to load contents")
 	}
 
-	contents := p.CalculateContents(packagePool)
+	contents, err := p.CalculateContents(packagePool, progress)
+	if err != nil {
+		// failed to acquire contents, don't persist it
+		return contents
+	}
 
 	var buf bytes.Buffer
 	err = codec.NewEncoder(&buf, collection.codecHandle).Encode(contents)

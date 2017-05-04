@@ -5,7 +5,6 @@ prepare:
 	gem specific_install -l smira/ronn
 
 generate:
-	cd .. && gom build  -o man/gen man/gen.go
-	./gen
+	go run ../_man/gen.go
 
 .PHONY: prepare generate

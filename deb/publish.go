@@ -45,19 +45,19 @@ type PublishedRepo struct {
 	Architectures []string
 	// SourceKind is "local"/"repo"
 	SourceKind string
-	// Skip contents generation
-	SkipContents bool
 
 	// Map of sources by each component: component name -> source UUID
 	Sources map[string]string
 
-	// Legacy fields for compatibily with old published repositories (< 0.6)
+	// Legacy fields for compatibility with old published repositories (< 0.6)
 	Component string
 	// SourceUUID is UUID of either snapshot or local repo
 	SourceUUID string `codec:"SnapshotUUID"`
-
 	// Map of component to source items
 	sourceItems map[string]repoSourceItem
+
+	// Skip contents generation
+	SkipContents bool
 
 	// True if repo is being re-published
 	rePublishing bool
@@ -166,23 +166,19 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		component               string
 		snapshot                *Snapshot
 		localRepo               *LocalRepo
-		ok                      bool
 	)
 
 	// get first source
 	source = sources[0]
 
 	// figure out source kind
-	snapshot, ok = source.(*Snapshot)
-	if ok {
+	switch source.(type) {
+	case *Snapshot:
 		result.SourceKind = "snapshot"
-	} else {
-		localRepo, ok = source.(*LocalRepo)
-		if ok {
-			result.SourceKind = "local"
-		} else {
-			panic("unknown source kind")
-		}
+	case *LocalRepo:
+		result.SourceKind = "local"
+	default:
+		panic("unknown source kind")
 	}
 
 	for i := range sources {
@@ -226,12 +222,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 
 	// clean & verify prefix
 	prefix = filepath.Clean(prefix)
-	if strings.HasPrefix(prefix, "/") {
-		prefix = prefix[1:]
-	}
-	if strings.HasSuffix(prefix, "/") {
-		prefix = prefix[:len(prefix)-1]
-	}
+	prefix = strings.TrimPrefix(strings.TrimSuffix(prefix, "/"), "/")
 	prefix = filepath.Clean(prefix)
 
 	for _, part := range strings.Split(prefix, "/") {
@@ -252,7 +243,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		}
 	}
 
-	if strings.Index(distribution, "/") != -1 {
+	if strings.Contains(distribution, "/") {
 		return nil, fmt.Errorf("invalid distribution %s, '/' is not allowed", distribution)
 	}
 
@@ -504,6 +495,21 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
+	tempDB, err := collectionFactory.TemporaryDB()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		e := tempDB.Close()
+		if e != nil && progress != nil {
+			progress.Printf("failed to close temp DB: %s", err)
+		}
+		e = tempDB.Drop()
+		if e != nil && progress != nil {
+			progress.Printf("failed to drop temp DB: %s", err)
+		}
+	}()
+
 	if progress != nil {
 		progress.Printf("Loading packages...\n")
 	}
@@ -598,11 +604,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						contentIndex := contentIndexes[key]
 
 						if contentIndex == nil {
-							contentIndex = NewContentsIndex()
+							contentIndex = NewContentsIndex(tempDB)
 							contentIndexes[key] = contentIndex
 						}
 
-						contentIndex.Push(pkg, packagePool)
+						contentIndex.Push(pkg, packagePool, progress)
 					}
 
 					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb).BufWriter()
@@ -773,12 +779,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
-	err = indexes.RenameFiles()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return indexes.RenameFiles()
 }
 
 // RemoveFiles removes files that were created by Publish
@@ -973,7 +974,7 @@ func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, 
 
 // BySnapshot looks up repository by snapshot source
 func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*PublishedRepo {
-	result := make([]*PublishedRepo, 0)
+	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == "snapshot" {
 			if r.SourceUUID == snapshot.UUID {
@@ -993,7 +994,7 @@ func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*Pub
 
 // ByLocalRepo looks up repository by local repo source
 func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*PublishedRepo {
-	result := make([]*PublishedRepo, 0)
+	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == "local" {
 			if r.SourceUUID == repo.UUID {

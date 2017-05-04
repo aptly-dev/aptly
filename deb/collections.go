@@ -1,8 +1,9 @@
 package deb
 
 import (
-	"github.com/smira/aptly/database"
 	"sync"
+
+	"github.com/smira/aptly/database"
 )
 
 // CollectionFactory is a single place to generate all desired collections
@@ -14,11 +15,19 @@ type CollectionFactory struct {
 	snapshots      *SnapshotCollection
 	localRepos     *LocalRepoCollection
 	publishedRepos *PublishedRepoCollection
+	checksums      *ChecksumCollection
 }
 
 // NewCollectionFactory creates new factory
 func NewCollectionFactory(db database.Storage) *CollectionFactory {
 	return &CollectionFactory{Mutex: &sync.Mutex{}, db: db}
+}
+
+// TemporaryDB creates new temporary DB
+//
+// DB should be closed/droped after being used
+func (factory *CollectionFactory) TemporaryDB() (database.Storage, error) {
+	return factory.db.CreateTemporary()
 }
 
 // PackageCollection returns (or creates) new PackageCollection
@@ -81,6 +90,18 @@ func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollec
 	return factory.publishedRepos
 }
 
+// ChecksumCollection returns (or creates) new ChecksumCollection
+func (factory *CollectionFactory) ChecksumCollection() *ChecksumCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
+	if factory.checksums == nil {
+		factory.checksums = NewChecksumCollection(factory.db)
+	}
+
+	return factory.checksums
+}
+
 // Flush removes all references to collections, so that memory could be reclaimed
 func (factory *CollectionFactory) Flush() {
 	factory.Lock()
@@ -91,4 +112,5 @@ func (factory *CollectionFactory) Flush() {
 	factory.remoteRepos = nil
 	factory.publishedRepos = nil
 	factory.packages = nil
+	factory.checksums = nil
 }

@@ -1,12 +1,13 @@
 package deb
 
 import (
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files
@@ -59,7 +60,8 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 
 // ImportPackageFiles imports files into local repository
 func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier utils.Verifier,
-	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery) (processedFiles []string, failedFiles []string, err error) {
+	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery,
+	checksumStorage aptly.ChecksumStorage) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
 	}
@@ -115,19 +117,24 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
+		var files PackageFiles
+
+		if isSourcePackage {
+			files = p.Files()
+		}
+
 		var checksums utils.ChecksumInfo
 		checksums, err = utils.ChecksumsForFile(file)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		if isSourcePackage {
-			p.UpdateFiles(append(p.Files(), PackageFile{Filename: filepath.Base(file), Checksums: checksums}))
-		} else {
-			p.UpdateFiles([]PackageFile{{Filename: filepath.Base(file), Checksums: checksums}})
+		mainPackageFile := PackageFile{
+			Filename:  filepath.Base(file),
+			Checksums: checksums,
 		}
 
-		err = pool.Import(file, checksums.MD5)
+		mainPackageFile.PoolPath, err = pool.Import(file, mainPackageFile.Filename, &mainPackageFile.Checksums, false, checksumStorage)
 		if err != nil {
 			reporter.Warning("Unable to import file %s into pool: %s", file, err)
 			failedFiles = append(failedFiles, file)
@@ -136,13 +143,10 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 		candidateProcessedFiles = append(candidateProcessedFiles, file)
 
-		// go over all files, except for the last one (.dsc/.deb itself)
-		for _, f := range p.Files() {
-			if filepath.Base(f.Filename) == filepath.Base(file) {
-				continue
-			}
-			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(f.Filename))
-			err = pool.Import(sourceFile, f.Checksums.MD5)
+		// go over all the other files
+		for i := range files {
+			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(files[i].Filename))
+			files[i].PoolPath, err = pool.Import(sourceFile, files[i].Filename, &files[i].Checksums, false, checksumStorage)
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)
@@ -155,6 +159,8 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			// some files haven't been imported
 			continue
 		}
+
+		p.UpdateFiles(append(files, mainPackageFile))
 
 		if restriction != nil && !restriction.Matches(p) {
 			reporter.Warning("%s has been ignored as it doesn't match restriction", p)

@@ -1,4 +1,5 @@
 from api_lib import APITest
+import os
 
 
 class VersionAPITest(APITest):
@@ -7,4 +8,4 @@ class VersionAPITest(APITest):
     """
 
     def check(self):
-        self.check_equal(self.get("/api/version").json(), {'Version': '0.9.8~dev'})
+        self.check_equal(self.get("/api/version").json(), {'Version': os.environ['APTLY_VERSION']})

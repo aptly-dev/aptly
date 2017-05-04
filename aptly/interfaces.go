@@ -3,24 +3,58 @@
 package aptly
 
 import (
-	"github.com/smira/aptly/utils"
 	"io"
+	"os"
+
+	"github.com/smira/aptly/utils"
 )
+
+// ReadSeekerCloser = ReadSeeker + Closer
+type ReadSeekerCloser interface {
+	io.ReadSeeker
+	io.Closer
+}
 
 // PackagePool is asbtraction of package pool storage.
 //
 // PackagePool stores all the package files, deduplicating them.
 type PackagePool interface {
-	// Path returns full path to package file in pool given any name and hash of file contents
-	Path(filename string, hashMD5 string) (string, error)
-	// RelativePath returns path relative to pool's root for package files given MD5 and original filename
-	RelativePath(filename string, hashMD5 string) (string, error)
+	// Verify checks whether file exists in the pool and fills back checksum info
+	//
+	// if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
+	// in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
+	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (bool, error)
+	// Import copies file into package pool
+	//
+	// - srcPath is full path to source file as it is now
+	// - basename is desired human-readable name (canonical filename)
+	// - checksums are used to calculate file placement
+	// - move indicates whether srcPath can be removed
+	Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage ChecksumStorage) (path string, err error)
+	// LegacyPath returns legacy (pre 1.1) path to package file (relative to root)
+	LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error)
+	// Stat returns Unix stat(2) info
+	Stat(path string) (os.FileInfo, error)
+	// Open returns ReadSeekerCloser to access the file
+	Open(path string) (ReadSeekerCloser, error)
 	// FilepathList returns file paths of all the files in the pool
 	FilepathList(progress Progress) ([]string, error)
 	// Remove deletes file in package pool returns its size
 	Remove(path string) (size int64, err error)
-	// Import copies file into package pool
-	Import(path string, hashMD5 string) error
+}
+
+// LocalPackagePool is implemented by PackagePools residing on the same filesystem
+type LocalPackagePool interface {
+	// GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)
+	GenerateTempPath(filename string) (string, error)
+	// Link generates hardlink to destination path
+	Link(path, dstPath string) error
+	// Symlink generates symlink to destination path
+	Symlink(path, dstPath string) error
+	// FullPath generates full path to the file in pool
+	//
+	// Please use with care: it's not supposed to be used to access files
+	FullPath(path string) string
 }
 
 // PublishedStorage is abstraction of filesystem storing all published repositories
@@ -34,15 +68,15 @@ type PublishedStorage interface {
 	// Remove removes single file under public path
 	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location
-	LinkFromPool(publishedDirectory string, sourcePool PackagePool, sourcePath, sourceMD5 string, force bool) error
+	LinkFromPool(publishedDirectory, baseName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
 	// Filelist returns list of files under prefix
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file
 	RenameFile(oldName, newName string) error
 }
 
-// LocalPublishedStorage is published storage on local filesystem
-type LocalPublishedStorage interface {
+// FileSystemPublishedStorage is published storage on filesystem
+type FileSystemPublishedStorage interface {
 	// PublicPath returns root of public part
 	PublicPath() string
 }
@@ -80,18 +114,17 @@ type Progress interface {
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	// Download starts new download task
-	Download(url string, destination string, result chan<- error)
+	Download(url string, destination string) error
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(url string, destination string, result chan<- error, expected utils.ChecksumInfo, ignoreMismatch bool, maxTries int)
-	// Pause pauses task processing
-	Pause()
-	// Resume resumes task processing
-	Resume()
-	// Shutdown stops downloader after current tasks are finished,
-	// but doesn't process rest of queue
-	Shutdown()
-	// Abort stops downloader without waiting for shutdown
-	Abort()
+	DownloadWithChecksum(url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
+}
+
+// ChecksumStorage is stores checksums in some (persistent) storage
+type ChecksumStorage interface {
+	// Get finds checksums in DB by path
+	Get(path string) (*utils.ChecksumInfo, error)
+	// Update adds or updates information about checksum in DB
+	Update(path string, c *utils.ChecksumInfo) error
 }

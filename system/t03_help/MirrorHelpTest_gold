@@ -21,3 +21,4 @@ Options:
   -dep-follow-recommends=false: when processing dependencies, follow Recommends
   -dep-follow-source=false: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests=false: when processing dependencies, follow Suggests
+  -dep-verbose-resolve=false: when processing dependencies, print detailed logs

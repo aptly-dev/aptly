@@ -92,7 +92,8 @@ class FilesAPITestSecurity(APITest):
 
     def check(self):
         self.check_equal(self.delete("/api/files/.").status_code, 400)
-        self.check_equal(self.delete("/api/files").status_code, 404)
+        self.check_equal(self.delete("/api/files").status_code, 405)
+        self.check_equal(self.delete("/api/files/").status_code, 404)
         self.check_equal(self.delete("/api/files/../.").status_code, 400)
         self.check_equal(self.delete("/api/files/./..").status_code, 400)
         self.check_equal(self.delete("/api/files/dir/..").status_code, 400)

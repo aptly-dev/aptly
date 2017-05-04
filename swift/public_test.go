@@ -2,16 +2,17 @@ package swift
 
 import (
 	"fmt"
-	. "gopkg.in/check.v1"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"path/filepath"
 	"time"
+
+	. "gopkg.in/check.v1"
 
 	"github.com/ncw/swift/swifttest"
 
 	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 )
 
 type PublishedStorageSuite struct {
@@ -143,24 +144,26 @@ func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 
 func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	root := c.MkDir()
-	pool := files.NewPackagePool(root)
+	pool := files.NewPackagePool(root, false)
+	cs := files.NewMockChecksumStorage()
 
-	sourcePath := filepath.Join(root, "pool/c1/df/mars-invaders_1.03.deb")
-	err := os.MkdirAll(filepath.Dir(sourcePath), 0755)
+	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
+	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
+	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
-	err = ioutil.WriteFile(sourcePath, []byte("Contents"), 0644)
+	tmpFile2 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
+	err = ioutil.WriteFile(tmpFile2, []byte("Spam"), 0644)
 	c.Assert(err, IsNil)
+	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
 
-	sourcePath2 := filepath.Join(root, "pool/e9/df/mars-invaders_1.03.deb")
-	err = os.MkdirAll(filepath.Dir(sourcePath2), 0755)
+	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
 	c.Assert(err, IsNil)
-
-	err = ioutil.WriteFile(sourcePath2, []byte("Spam"), 0644)
+	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true, cs)
 	c.Assert(err, IsNil)
 
 	// first link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	data, err := s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -168,7 +171,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// duplicate link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath, "c1df1da7a1ce305a3b60af9d5733ac1d", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -176,7 +179,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", false)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -184,7 +187,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict and force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), pool, sourcePath2, "e9dfd31cc505d51fc26975250750deab", true)
+	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")

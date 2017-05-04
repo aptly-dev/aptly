@@ -1,1 +1,3 @@
-ERROR: unable to create snapshot: local repo doesn't have packages
+
+Snapshot snap9 successfully created.
+You can run 'aptly publish snapshot snap9' to publish snapshot as Debian repository.

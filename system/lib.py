@@ -13,7 +13,6 @@ import shutil
 import string
 import threading
 import urllib
-#import time
 import pprint
 import SocketServer
 import SimpleHTTPServer
@@ -118,19 +117,15 @@ class BaseTest(object):
 
     def prepare_fixture(self):
         if self.fixturePool:
-            #start = time.time()
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
             os.symlink(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"))
-            #print "FIXTURE POOL: %.2f" % (time.time()-start)
 
         if self.fixturePoolCopy:
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
             shutil.copytree(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
-            #start = time.time()
             shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
-            #print "FIXTURE DB: %.2f" % (time.time()-start)
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
@@ -172,10 +167,8 @@ class BaseTest(object):
 
     def run_cmd(self, command, expected_code=0):
         try:
-            #start = time.time()
             proc = self._start_process(command, stdout=subprocess.PIPE)
             output, _ = proc.communicate()
-            #print "CMD %s: %.2f" % (" ".join(command), time.time()-start)
             if proc.returncode != expected_code:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
             return output
@@ -286,7 +279,7 @@ class BaseTest(object):
             raise Exception("%s is not greater to %s" % (a, b))
 
     def check_in(self, item, l):
-        if not item in l:
+        if item not in l:
             raise Exception("item %r not in %r", item, l)
 
     def check_subset(self, a, b):
