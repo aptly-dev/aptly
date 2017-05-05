@@ -97,7 +97,8 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 		context.Progress().Printf("Loading repository %s for changes file %s...\n", repoName.String(), changes.ChangesName)
 
-		repo, err := context.CollectionFactory().LocalRepoCollection().ByName(repoName.String())
+		var repo *deb.LocalRepo
+		repo, err = context.CollectionFactory().LocalRepoCollection().ByName(repoName.String())
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
@@ -131,7 +132,8 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load repo: %s", err)
 		}
 
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+		var list *deb.PackageList
+		list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to load packages: %s", err)
 		}
@@ -184,7 +186,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		processedFiles = utils.StrSliceDeduplicate(processedFiles)
 
 		for _, file := range processedFiles {
-			err := os.Remove(file)
+			err = os.Remove(file)
 			if err != nil {
 				return fmt.Errorf("unable to remove file: %s", err)
 			}

@@ -42,14 +42,14 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	for component, sourceID := range repo.Sources {
 		var name string
 		if repo.SourceKind == "snapshot" {
-			source, err := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
-			if err != nil {
+			source, e := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+			if e != nil {
 				continue
 			}
 			name = source.Name
 		} else if repo.SourceKind == "local" {
-			source, err := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
-			if err != nil {
+			source, e := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+			if e != nil {
 				continue
 			}
 			name = source.Name

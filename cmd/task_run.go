@@ -82,7 +82,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 
 	for i, command := range cmdList {
 		if !commandErrored {
-			err := context.ReOpenDatabase()
+			err = context.ReOpenDatabase()
 			if err != nil {
 				return fmt.Errorf("failed to reopen DB: %s", err)
 			}

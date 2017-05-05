@@ -59,11 +59,14 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	if err == nil && listenURL.Scheme == "unix" {
 		file := listenURL.Path
 		os.Remove(file)
-		listener, err := net.Listen("unix", file)
+
+		var listener net.Listener
+		listener, err = net.Listen("unix", file)
 		if err != nil {
 			return fmt.Errorf("failed to listen on: %s\n%s", file, err)
 		}
 		defer listener.Close()
+
 		err = http.Serve(listener, api.Router(context))
 		if err != nil {
 			return fmt.Errorf("unable to serve: %s", err)

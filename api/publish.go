@@ -281,15 +281,15 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 				return
 			}
 
-			snapshot, err := snapshotCollection.ByName(snapshotInfo.Name)
+			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err != nil {
-				c.Fail(404, err)
+				c.Fail(404, err2)
 				return
 			}
 
-			err = snapshotCollection.LoadComplete(snapshot)
-			if err != nil {
-				c.Fail(500, err)
+			err2 = snapshotCollection.LoadComplete(snapshot)
+			if err2 != nil {
+				c.Fail(500, err2)
 				return
 			}
 

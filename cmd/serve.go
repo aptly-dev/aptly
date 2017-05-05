@@ -60,9 +60,9 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 	published := make(map[string]*deb.PublishedRepo, context.CollectionFactory().PublishedRepoCollection().Len())
 
 	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
-		err := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
-		if err != nil {
-			return err
+		e := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+		if e != nil {
+			return e
 		}
 
 		sources = append(sources, repo.String())

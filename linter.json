@@ -12,7 +12,8 @@
         "staticcheck",
         "varcheck",
         "structcheck",
-        "aligncheck"
+        "aligncheck",
+        "vetshadow"
     ],
     "Deadline": "20m",
     "Vendor": true,

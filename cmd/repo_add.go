@@ -66,7 +66,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		processedFiles = utils.StrSliceDeduplicate(processedFiles)
 
 		for _, file := range processedFiles {
-			err := os.Remove(file)
+			err = os.Remove(file)
 			if err != nil {
 				return fmt.Errorf("unable to remove file: %s", err)
 			}

@@ -611,7 +611,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 					continue
 				}
 
-				bufWriter, err := indexes.ContentsIndex(component, arch, udeb).BufWriter()
+				var bufWriter *bufio.Writer
+				bufWriter, err = indexes.ContentsIndex(component, arch, udeb).BufWriter()
 				if err != nil {
 					return fmt.Errorf("unable to generate contents index: %v", err)
 				}

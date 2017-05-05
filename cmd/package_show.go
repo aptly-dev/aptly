@@ -14,9 +14,9 @@ import (
 
 func printReferencesTo(p *deb.Package) (err error) {
 	err = context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
-		err := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 		if repo.RefList() != nil {
 			if repo.RefList().Has(p) {
@@ -30,9 +30,9 @@ func printReferencesTo(p *deb.Package) (err error) {
 	}
 
 	err = context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-		err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 		if repo.RefList() != nil {
 			if repo.RefList().Has(p) {
@@ -46,9 +46,9 @@ func printReferencesTo(p *deb.Package) (err error) {
 	}
 
 	err = context.CollectionFactory().SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
-		err := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return err
+		e := context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+		if e != nil {
+			return e
 		}
 		if snapshot.RefList().Has(p) {
 			fmt.Printf("  snapshot %s\n", snapshot)
@@ -87,7 +87,8 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 			fmt.Printf("Files in the pool:\n")
 			packagePool := context.PackagePool()
 			for _, f := range p.Files() {
-				path, err := f.GetPoolPath(packagePool)
+				var path string
+				path, err = f.GetPoolPath(packagePool)
 				if err != nil {
 					return err
 				}
