@@ -99,7 +99,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         print "\nFAILURES (%d):" % (len(fails), )
 
         for (test, t, typ, val, tb, testModule) in fails:
-            print "%s:%s %s" % (test, t.__class__.__name__, getattr(testModule, "__doc__", "").strip() + ": " + t.__doc__.strip())
+            print "%s:%s %s" % (test, t.__class__.__name__, testModule.__name__ + ": " + t.__doc__.strip())
             traceback.print_exception(typ, val, tb)
             print "=" * 60
 
