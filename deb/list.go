@@ -238,7 +238,7 @@ func (l *PackageList) Remove(p *Package) {
 func (l *PackageList) Architectures(includeSource bool) (result []string) {
 	result = make([]string, 0, 10)
 	for _, pkg := range l.packages {
-		if pkg.Architecture != "all" && (pkg.Architecture != "source" || includeSource) && !utils.StrSliceHasItem(result, pkg.Architecture) {
+		if pkg.Architecture != ArchitectureAll && (pkg.Architecture != ArchitectureSource || includeSource) && !utils.StrSliceHasItem(result, pkg.Architecture) {
 			result = append(result, pkg.Architecture)
 		}
 	}

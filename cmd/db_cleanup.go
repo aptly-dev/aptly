@@ -125,7 +125,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		if verbose {
 			context.Progress().ColoredPrintf("- @{g}%s:%s/%s{|}", published.Storage, published.Prefix, published.Distribution)
 		}
-		if published.SourceKind != "local" {
+		if published.SourceKind != deb.SourceLocalRepo {
 			return nil
 		}
 		e := context.CollectionFactory().PublishedRepoCollection().LoadComplete(published, context.CollectionFactory())

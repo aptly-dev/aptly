@@ -170,7 +170,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 
 	// if c.Source is empty, this would never match
 	sourceQuery := &AndQuery{
-		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"},
+		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource},
 		R: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Source},
 	}
 
@@ -202,7 +202,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 		}
 
 		binaryQuery = &AndQuery{
-			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"}},
+			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource}},
 			R: binaryQuery}
 	}
 

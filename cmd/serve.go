@@ -90,7 +90,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 		fmt.Printf("# %s\ndeb http://%s:%s/%s %s %s\n",
 			repo, listenHost, listenPort, prefix, repo.Distribution, strings.Join(repo.Components(), " "))
 
-		if utils.StrSliceHasItem(repo.Architectures, "source") {
+		if utils.StrSliceHasItem(repo.Architectures, deb.ArchitectureSource) {
 			fmt.Printf("deb-src http://%s:%s/%s %s %s\n",
 				listenHost, listenPort, prefix, repo.Distribution, strings.Join(repo.Components(), " "))
 		}

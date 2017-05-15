@@ -14,6 +14,12 @@ import (
 	"github.com/smira/flag"
 )
 
+// Various command flags/UI things
+const (
+	Yes = "yes"
+	No  = "no"
+)
+
 // ListPackagesRefList shows list of packages in PackageRefList
 func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
 	fmt.Printf("Packages:\n")

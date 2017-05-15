@@ -314,7 +314,7 @@ ok:
 		architectures := strings.Split(stanza["Architectures"], " ")
 		sort.Strings(architectures)
 		// "source" architecture is never present, despite Release file claims
-		architectures = utils.StrSlicesSubstract(architectures, []string{"source"})
+		architectures = utils.StrSlicesSubstract(architectures, []string{ArchitectureSource})
 		if len(repo.Architectures) == 0 {
 			repo.Architectures = architectures
 		} else if !repo.SkipArchitectureCheck {
@@ -410,20 +410,20 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 	packagesURLs := [][]string{}
 
 	if repo.IsFlat() {
-		packagesURLs = append(packagesURLs, []string{repo.FlatBinaryURL().String(), "binary"})
+		packagesURLs = append(packagesURLs, []string{repo.FlatBinaryURL().String(), PackageTypeBinary})
 		if repo.DownloadSources {
-			packagesURLs = append(packagesURLs, []string{repo.FlatSourcesURL().String(), "source"})
+			packagesURLs = append(packagesURLs, []string{repo.FlatSourcesURL().String(), PackageTypeSource})
 		}
 	} else {
 		for _, component := range repo.Components {
 			for _, architecture := range repo.Architectures {
-				packagesURLs = append(packagesURLs, []string{repo.BinaryURL(component, architecture).String(), "binary"})
+				packagesURLs = append(packagesURLs, []string{repo.BinaryURL(component, architecture).String(), PackageTypeBinary})
 				if repo.DownloadUdebs {
-					packagesURLs = append(packagesURLs, []string{repo.UdebURL(component, architecture).String(), "udeb"})
+					packagesURLs = append(packagesURLs, []string{repo.UdebURL(component, architecture).String(), PackageTypeUdeb})
 				}
 			}
 			if repo.DownloadSources {
-				packagesURLs = append(packagesURLs, []string{repo.SourcesURL(component).String(), "source"})
+				packagesURLs = append(packagesURLs, []string{repo.SourcesURL(component).String(), PackageTypeSource})
 			}
 		}
 	}
@@ -455,11 +455,11 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 			var p *Package
 
-			if kind == "binary" {
+			if kind == PackageTypeBinary {
 				p = NewPackageFromControlFile(stanza)
-			} else if kind == "udeb" {
+			} else if kind == PackageTypeUdeb {
 				p = NewUdebPackageFromControlFile(stanza)
-			} else if kind == "source" {
+			} else if kind == PackageTypeSource {
 				p, err = NewSourcePackageFromControlFile(stanza)
 				if err != nil {
 					return err

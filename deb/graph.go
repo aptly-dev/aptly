@@ -87,7 +87,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 		}
 
 		description := snapshot.Description
-		if snapshot.SourceKind == "repo" {
+		if snapshot.SourceKind == SourceRemoteRepo {
 			description = "Snapshot from repo"
 		}
 
@@ -99,7 +99,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 				snapshot.Name, description, snapshot.NumPackages(), labelEnd),
 		})
 
-		if snapshot.SourceKind == "repo" || snapshot.SourceKind == "local" || snapshot.SourceKind == "snapshot" {
+		if snapshot.SourceKind == SourceRemoteRepo || snapshot.SourceKind == SourceLocalRepo || snapshot.SourceKind == SourceSnapshot {
 			for _, uuid := range snapshot.SourceIDs {
 				_, exists := existingNodes[uuid]
 				if exists {

@@ -13,7 +13,9 @@
         "varcheck",
         "structcheck",
         "aligncheck",
-        "vetshadow"
+        "vetshadow",
+        "goconst",
+        "interfacer"
     ],
     "Deadline": "20m",
     "Vendor": true,

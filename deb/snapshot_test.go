@@ -26,7 +26,7 @@ func (s *SnapshotSuite) TestNewSnapshotFromRepository(c *C) {
 	c.Check(snapshot.Name, Equals, "snap1")
 	c.Check(snapshot.NumPackages(), Equals, 3)
 	c.Check(snapshot.RefList().Len(), Equals, 3)
-	c.Check(snapshot.SourceKind, Equals, "repo")
+	c.Check(snapshot.SourceKind, Equals, SourceRemoteRepo)
 	c.Check(snapshot.SourceIDs, DeepEquals, []string{s.repo.UUID})
 
 	s.repo.packageRefs = nil

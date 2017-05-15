@@ -44,7 +44,7 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 		UUID:        uuid.New(),
 		Name:        name,
 		CreatedAt:   time.Now(),
-		SourceKind:  "repo",
+		SourceKind:  SourceRemoteRepo,
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from mirror %s", repo),
 		packageRefs: repo.packageRefs,
@@ -57,7 +57,7 @@ func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
 		UUID:        uuid.New(),
 		Name:        name,
 		CreatedAt:   time.Now(),
-		SourceKind:  "local",
+		SourceKind:  SourceLocalRepo,
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from local repo %s", repo),
 		packageRefs: repo.packageRefs,
@@ -257,7 +257,7 @@ func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Sn
 	var result []*Snapshot
 
 	for _, s := range collection.list {
-		if s.SourceKind == "repo" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
+		if s.SourceKind == SourceRemoteRepo && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
 			result = append(result, s)
 		}
 	}
@@ -269,7 +269,7 @@ func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snap
 	var result []*Snapshot
 
 	for _, s := range collection.list {
-		if s.SourceKind == "local" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
+		if s.SourceKind == SourceLocalRepo && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
 			result = append(result, s)
 		}
 	}

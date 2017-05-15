@@ -44,7 +44,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	if published.SourceKind != "snapshot" {
+	if published.SourceKind != deb.SourceSnapshot {
 		return fmt.Errorf("unable to update: not a snapshot publish")
 	}
 

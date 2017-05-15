@@ -145,7 +145,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			sources = append(sources, snapshot)
 		}
-	} else if b.SourceKind == "local" {
+	} else if b.SourceKind == deb.SourceLocalRepo {
 		var localRepo *deb.LocalRepo
 
 		localCollection := context.CollectionFactory().LocalRepoCollection()
@@ -264,7 +264,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	var updatedComponents []string
 
-	if published.SourceKind == "local" {
+	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			c.Fail(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return

@@ -26,7 +26,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 
 	var reflist *deb.PackageRefList
 
-	if command == "snapshot" {
+	if command == "snapshot" { // nolint: goconst
 		var snapshot *deb.Snapshot
 		snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(name)
 		if err != nil {
@@ -52,7 +52,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		}
 
 		reflist = repo.RefList()
-	} else if command == "repo" {
+	} else if command == "repo" { // nolint: goconst
 		var repo *deb.LocalRepo
 		repo, err = context.CollectionFactory().LocalRepoCollection().ByName(name)
 		if err != nil {
