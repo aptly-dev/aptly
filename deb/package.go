@@ -41,6 +41,20 @@ type Package struct {
 	collection *PackageCollection
 }
 
+// Package types
+const (
+	PackageTypeBinary = "deb"
+	PackageTypeUdeb   = "udeb"
+	PackageTypeSource = "source"
+)
+
+// Special arhictectures
+const (
+	ArchitectureAll    = "all"
+	ArhictectureAny    = "any"
+	ArchitectureSource = "source"
+)
+
 // Check interface
 var (
 	_ json.Marshaler = &Package{}
@@ -218,12 +232,12 @@ func (p *Package) GetField(name string) string {
 		return p.Architecture
 	case "$PackageType":
 		if p.IsSource {
-			return "source"
+			return PackageTypeSource
 		}
 		if p.IsUdeb {
-			return "udeb"
+			return PackageTypeUdeb
 		}
-		return "deb"
+		return PackageTypeBinary
 	case "Name":
 		return p.Name
 	case "Version":
@@ -256,7 +270,7 @@ func (p *Package) GetField(name string) string {
 
 // MatchesArchitecture checks whether packages matches specified architecture
 func (p *Package) MatchesArchitecture(arch string) bool {
-	if p.Architecture == "all" && arch != "source" {
+	if p.Architecture == ArchitectureAll && arch != ArchitectureSource {
 		return true
 	}
 

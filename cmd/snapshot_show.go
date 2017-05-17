@@ -35,21 +35,21 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 		fmt.Printf("Sources:\n")
 		for _, sourceID := range snapshot.SourceIDs {
 			var name string
-			if snapshot.SourceKind == "snapshot" {
+			if snapshot.SourceKind == deb.SourceSnapshot {
 				var source *deb.Snapshot
 				source, err = context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
-			} else if snapshot.SourceKind == "local" {
+			} else if snapshot.SourceKind == deb.SourceLocalRepo {
 				var source *deb.LocalRepo
 				source, err = context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
-			} else if snapshot.SourceKind == "repo" {
+			} else if snapshot.SourceKind == deb.SourceRemoteRepo {
 				var source *deb.RemoteRepo
 				source, err = context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
 				if err != nil {

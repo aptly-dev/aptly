@@ -10,7 +10,7 @@ import (
 
 func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	var err error
-	if !(len(args) == 1 || (len(args) == 4 && args[1] == "from" && args[2] == "snapshot")) {
+	if !(len(args) == 1 || (len(args) == 4 && args[1] == "from" && args[2] == "snapshot")) { // nolint: goconst
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
