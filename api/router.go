@@ -27,20 +27,23 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		go cacheFlusher(requests, acks)
 
 		router.Use(func(c *gin.Context) {
+			var err error
+
 			requests <- acquiredb
-			err := <-acks
-			if err != nil {
-				c.Fail(500, err)
-				return
-			}
+
 			defer func() {
 				requests <- releasedb
 				err = <-acks
 				if err != nil {
 					c.Fail(500, err)
-					return
 				}
 			}()
+
+			err = <-acks
+			if err != nil {
+				c.Fail(500, err)
+				return
+			}
 			c.Next()
 		})
 
