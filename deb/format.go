@@ -131,7 +131,11 @@ func writeField(w *bufio.Writer, field, value string, isRelease bool) (err error
 			value = value + "\n"
 		}
 
-		if field != "Description" {
+		if field == "Description" {
+			if !strings.HasPrefix(value, " ") {
+				value = " " + value
+			}
+		} else {
 			value = "\n" + value
 		}
 		_, err = w.WriteString(field + ":" + value)
