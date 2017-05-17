@@ -55,6 +55,10 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 			"the same package pool.\n")
 	}
 
+	if context.Flags().IsSet("backports") {
+		published.Backports = context.Flags().Lookup("backports").Value.Get().(bool)
+	}
+
 	if context.Flags().IsSet("skip-contents") {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
@@ -109,6 +113,7 @@ Example:
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("backports", false, "change the backports status of this repository")
 
 	return cmd
 }

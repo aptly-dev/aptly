@@ -91,6 +91,10 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 			"the same package pool.\n")
 	}
 
+	if context.Flags().IsSet("backports") {
+		published.Backports = context.Flags().Lookup("backports").Value.Get().(bool)
+	}
+
 	if context.Flags().IsSet("skip-contents") {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
@@ -151,6 +155,7 @@ This command would switch published repository (with one component) named ppa/wh
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("backports", false, "change the backports status of this repository")
 
 	return cmd
 }

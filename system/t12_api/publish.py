@@ -42,6 +42,7 @@ class PublishAPITestRepo(APITest):
             'Origin': '',
             'Prefix': prefix,
             'SkipContents': False,
+            'Backports': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -76,6 +77,7 @@ class PublishAPITestRepo(APITest):
             'Origin': '',
             'Prefix': ".",
             'SkipContents': False,
+            'Backports': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -129,6 +131,7 @@ class PublishSnapshotAPITest(APITest):
             'Origin': '',
             'Prefix': prefix,
             'SkipContents': False,
+            'Backports': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
             'Storage': ''})
@@ -190,6 +193,7 @@ class PublishUpdateAPITestRepo(APITest):
             'Origin': '',
             'Prefix': prefix,
             'SkipContents': False,
+            'Backports': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': ''}
@@ -242,6 +246,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Origin': '',
             'Prefix': prefix,
             'SkipContents': False,
+            'Backports': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': ''}
@@ -274,6 +279,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Origin': '',
             'Prefix': prefix,
             'SkipContents': True,
+            'Backports': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
             'Storage': ''}

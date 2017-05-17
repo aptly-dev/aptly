@@ -22,6 +22,8 @@ var (
 		"Version",
 		"Codename",
 		"Date",
+		"NotAutomatic",
+		"ButAutomaticUpgrades",
 		"Architectures",
 		"Architecture",
 		"Components",

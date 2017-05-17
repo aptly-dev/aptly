@@ -119,6 +119,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	}
 	published.Origin = context.Flags().Lookup("origin").Value.String()
 	published.Label = context.Flags().Lookup("label").Value.String()
+	published.Backports = context.Flags().Lookup("backports").Value.Get().(bool)
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 
@@ -214,6 +215,7 @@ Example:
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("backports", false, "change the backports status of this repository")
 
 	return cmd
 }
