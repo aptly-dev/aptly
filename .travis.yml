@@ -20,14 +20,14 @@ env:
     - secure: "V7OjWrfQ8UbktgT036jYQPb/7GJT3Ol9LObDr8FYlzsQ+F1uj2wLac6ePuxcOS4FwWOJinWGM1h+JiFkbxbyFqfRNJ0jj0O2p93QyDojxFVOn1mXqqvV66KFqAWR2Vzkny/gDvj8LTvdB1cgAIm2FNOkQc6E1BFnyWS2sN9ea5E="
     - secure: "OxiVNmre2JzUszwPNNilKDgIqtfX2gnRSsVz6nuySB1uO2yQsOQmKWJ9cVYgH2IB5H8eWXKOhexcSE28kz6TPLRuEcU9fnqKY3uEkdwm7rJfz9lf+7C4bJEUdA1OIzJppjnWUiXxD7CEPL1DlnMZM24eDQYqa/4WKACAgkK53gE="
 before_install:
+  - mkdir -p $GOPATH/src/github.com/smira
+  - mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/smira || true
+  - cd $GOPATH/src/github.com/smira/aptly
   - virtualenv system/env
   - . system/env/bin/activate
   - pip install six packaging appdirs
   - pip install -U pip setuptools
   - pip install -r system/requirements.txt
-  - mkdir -p $GOPATH/src/github.com/smira
-  - ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/smira || true
-  - cd $GOPATH/src/github.com/smira/aptly
   - make version
 install:
   - make prepare
