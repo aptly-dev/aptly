@@ -204,6 +204,9 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 		binaryQuery = &AndQuery{
 			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource}},
 			R: binaryQuery}
+		binaryQuery = &OrQuery{
+			L: &FieldQuery{Field: "Name", Relation: VersionPatternMatch, Value: "*-dbgsym"},
+			R: binaryQuery}
 	}
 
 	var nameQuery PackageQuery
