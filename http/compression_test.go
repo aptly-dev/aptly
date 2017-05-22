@@ -89,6 +89,27 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	c.Assert(d.Empty(), Equals, true)
 }
 
+func (s *CompressionSuite) TestDownloadTryCompressionLongestSuffix(c *C) {
+	var buf []byte
+
+	expectedChecksums := map[string]utils.ChecksumInfo{
+		"file.bz2":          {Size: 1},
+		"subdir/file.bz2":   {Size: int64(len(bzipData))},
+		"otherdir/file.bz2": {Size: 1},
+	}
+
+	// longest suffix should be picked up
+	buf = make([]byte, 4)
+	d := NewFakeDownloader()
+	d.ExpectResponse("http://example.com/subdir/file.bz2", bzipData)
+	r, file, err := DownloadTryCompression(d, "http://example.com/subdir/file", expectedChecksums, false, 1)
+	c.Assert(err, IsNil)
+	defer file.Close()
+	io.ReadFull(r, buf)
+	c.Assert(string(buf), Equals, rawData)
+	c.Assert(d.Empty(), Equals, true)
+}
+
 func (s *CompressionSuite) TestDownloadTryCompressionErrors(c *C) {
 	d := NewFakeDownloader()
 	_, _, err := DownloadTryCompression(d, "http://example.com/file", nil, true, 1)

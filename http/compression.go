@@ -47,15 +47,21 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 		tryURL := url + method.extenstion
 		foundChecksum := false
 
-		for suffix, expected := range expectedChecksums {
+		bestSuffix := ""
+
+		for suffix := range expectedChecksums {
 			if strings.HasSuffix(tryURL, suffix) {
-				file, err = DownloadTempWithChecksum(downloader, tryURL, &expected, ignoreMismatch, maxTries)
 				foundChecksum = true
-				break
+				if len(suffix) > len(bestSuffix) {
+					bestSuffix = suffix
+				}
 			}
 		}
 
-		if !foundChecksum {
+		if foundChecksum {
+			expected := expectedChecksums[bestSuffix]
+			file, err = DownloadTempWithChecksum(downloader, tryURL, &expected, ignoreMismatch, maxTries)
+		} else {
 			if !ignoreMismatch {
 				continue
 			}
