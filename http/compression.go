@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 
@@ -38,19 +39,19 @@ var compressionMethods = []struct {
 
 // DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
 // it finds existing file.
-func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (io.Reader, *os.File, error) {
+func DownloadTryCompression(downloader aptly.Downloader, baseURL *url.URL, path string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (io.Reader, *os.File, error) {
 	var err error
 
 	for _, method := range compressionMethods {
 		var file *os.File
 
-		tryURL := url + method.extenstion
+		tryPath := path + method.extenstion
 		foundChecksum := false
 
 		bestSuffix := ""
 
 		for suffix := range expectedChecksums {
-			if strings.HasSuffix(tryURL, suffix) {
+			if strings.HasSuffix(tryPath, suffix) {
 				foundChecksum = true
 				if len(suffix) > len(bestSuffix) {
 					bestSuffix = suffix
@@ -58,15 +59,17 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 			}
 		}
 
+		tryURL := baseURL.ResolveReference(&url.URL{Path: tryPath})
+
 		if foundChecksum {
 			expected := expectedChecksums[bestSuffix]
-			file, err = DownloadTempWithChecksum(downloader, tryURL, &expected, ignoreMismatch, maxTries)
+			file, err = DownloadTempWithChecksum(downloader, tryURL.String(), &expected, ignoreMismatch, maxTries)
 		} else {
 			if !ignoreMismatch {
 				continue
 			}
 
-			file, err = DownloadTemp(downloader, tryURL)
+			file, err = DownloadTemp(downloader, tryURL.String())
 		}
 
 		if err != nil {
@@ -86,7 +89,7 @@ func DownloadTryCompression(downloader aptly.Downloader, url string, expectedChe
 	}
 
 	if err == nil {
-		err = fmt.Errorf("no candidates for %s found", url)
+		err = fmt.Errorf("no candidates for %s found", baseURL.ResolveReference(&url.URL{Path: path}))
 	}
 	return nil, nil, err
 }
