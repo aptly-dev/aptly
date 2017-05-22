@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -112,39 +115,43 @@ func apiReposShow(c *gin.Context) {
 // DELETE /api/repos/:name
 func apiReposDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
+	name := c.Params.ByName("name")
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 	snapshotCollection := collectionFactory.SnapshotCollection()
 	publishedCollection := collectionFactory.PublishedRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	repo, err := collection.ByName(name)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
 	}
 
-	published := publishedCollection.ByLocalRepo(repo)
-	if len(published) > 0 {
-		c.AbortWithError(409, fmt.Errorf("unable to drop, local repo is published"))
-		return
-	}
-
-	if !force {
-		snapshots := snapshotCollection.ByLocalRepoSource(repo)
-		if len(snapshots) > 0 {
-			c.AbortWithError(409, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override"))
-			return
+	resources := []string{string(repo.Key())}
+	taskName := fmt.Sprintf("Delete repo %s", name)
+	task, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+		published := publishedCollection.ByLocalRepo(repo)
+		if len(published) > 0 {
+			return fmt.Errorf("unable to drop, local repo is published")
 		}
-	}
 
-	err = collection.Drop(repo)
-	if err != nil {
-		c.AbortWithError(500, err)
+		if !force {
+			snapshots := snapshotCollection.ByLocalRepoSource(repo)
+			if len(snapshots) > 0 {
+				return fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
+			}
+		}
+
+		return collection.Drop(repo)
+	})
+
+	if conflictErr != nil {
+		c.AbortWithError(409, conflictErr)
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(202, task)
 }
 
 // GET /api/repos/:name/packages
@@ -168,7 +175,7 @@ func apiReposPackagesShow(c *gin.Context) {
 }
 
 // Handler for both add and delete
-func apiReposPackagesAddDelete(c *gin.Context, cb func(list *deb.PackageList, p *deb.Package) error) {
+func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(list *deb.PackageList, p *deb.Package, out *task.Output) error) {
 	var b struct {
 		PackageRefs []string
 	}
@@ -192,54 +199,57 @@ func apiReposPackagesAddDelete(c *gin.Context, cb func(list *deb.PackageList, p 
 		return
 	}
 
-	list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
-
-	// verify package refs and build package list
-	for _, ref := range b.PackageRefs {
-		var p *deb.Package
-
-		p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
+	resources := []string{string(repo.Key())}
+	currTask, conflictErr := runTaskInBackground(taskNamePrefix+repo.Name, resources, func(out *task.Output, detail *task.Detail) error {
+		out.Print("Loading packages...\n")
+		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
-			if err == database.ErrNotFound {
-				c.AbortWithError(404, fmt.Errorf("package %s: %s", ref, err))
-			} else {
-				c.AbortWithError(500, err)
+			return err
+		}
+
+		// verify package refs and build package list
+		for _, ref := range b.PackageRefs {
+			var p *deb.Package
+
+			p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
+			if err != nil {
+				if err == database.ErrNotFound {
+					return fmt.Errorf("packages %s: %s", ref, err)
+				}
+
+				return err
 			}
-			return
+			err = cb(list, p, out)
+			if err != nil {
+				return err
+			}
 		}
-		err = cb(list, p)
-		if err != nil {
-			c.AbortWithError(400, err)
-			return
-		}
-	}
 
-	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-	err = collectionFactory.LocalRepoCollection().Update(repo)
-	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to save: %s", err))
+		return collectionFactory.LocalRepoCollection().Update(repo)
+	})
+
+	if conflictErr != nil {
+		c.AbortWithError(409, conflictErr)
 		return
 	}
 
-	c.JSON(200, repo)
-
+	c.JSON(202, currTask)
 }
 
 // POST /repos/:name/packages
 func apiReposPackagesAdd(c *gin.Context) {
-	apiReposPackagesAddDelete(c, func(list *deb.PackageList, p *deb.Package) error {
+	apiReposPackagesAddDelete(c, "Add packages to repo ", func(list *deb.PackageList, p *deb.Package, out *task.Output) error {
+		out.Printf("Adding package %s\n", p.Name)
 		return list.Add(p)
 	})
 }
 
 // DELETE /repos/:name/packages
 func apiReposPackagesDelete(c *gin.Context) {
-	apiReposPackagesAddDelete(c, func(list *deb.PackageList, p *deb.Package) error {
+	apiReposPackagesAddDelete(c, "Delete packages from repo ", func(list *deb.PackageList, p *deb.Package, out *task.Output) error {
+		out.Printf("Removing package %s\n", p.Name)
 		list.Remove(p)
 		return nil
 	})
@@ -260,6 +270,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
+	dirParam := c.Params.ByName("dir")
 	fileParam := c.Params.ByName("file")
 	if fileParam != "" && !verifyPath(fileParam) {
 		c.AbortWithError(400, fmt.Errorf("wrong file"))
@@ -269,7 +280,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
@@ -281,76 +293,96 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	verifier := context.GetVerifier()
-
-	var (
-		sources                      []string
-		packageFiles, failedFiles    []string
-		otherFiles                   []string
-		processedFiles, failedFiles2 []string
-		reporter                     = &aptly.RecordingResultReporter{
-			Warnings:     []string{},
-			AddedLines:   []string{},
-			RemovedLines: []string{},
-		}
-		list *deb.PackageList
-	)
-
+	var taskName string
+	var sources []string
 	if fileParam == "" {
-		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"))}
+		taskName = fmt.Sprintf("Add packages from dir %s to repo %s", dirParam, name)
+		sources = []string{filepath.Join(context.UploadPath(), dirParam)}
 	} else {
-		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
+		sources = []string{filepath.Join(context.UploadPath(), dirParam, fileParam)}
+		taskName = fmt.Sprintf("Add package %s from dir %s to repo %s", fileParam, dirParam, name)
 	}
 
-	packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
+	resources := []string{string(repo.Key())}
+	resources = append(resources, sources...)
+	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+		verifier := context.GetVerifier()
 
-	list, err = deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
-	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to load packages: %s", err))
-		return
-	}
-
-	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		collectionFactory.PackageCollection(), reporter, nil, collectionFactory.ChecksumCollection)
-	failedFiles = append(failedFiles, failedFiles2...)
-
-	processedFiles = append(processedFiles, otherFiles...)
-
-	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to import package files: %s", err))
-		return
-	}
-
-	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
-
-	err = collectionFactory.LocalRepoCollection().Update(repo)
-	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to save: %s", err))
-		return
-	}
-
-	if !noRemove {
-		processedFiles = utils.StrSliceDeduplicate(processedFiles)
-
-		for _, file := range processedFiles {
-			err := os.Remove(file)
-			if err != nil {
-				reporter.Warning("unable to remove file %s: %s", file, err)
+		var (
+			packageFiles, failedFiles    []string
+			otherFiles                   []string
+			processedFiles, failedFiles2 []string
+			reporter                     = &aptly.RecordingResultReporter{
+				Warnings:     []string{},
+				AddedLines:   []string{},
+				RemovedLines: []string{},
 			}
+			list *deb.PackageList
+		)
+
+		packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
+
+		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
+		if err != nil {
+			return fmt.Errorf("unable to load packages: %s", err)
 		}
 
-		// atempt to remove dir, if it fails, that's fine: probably it's not empty
-		os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
-	}
+		processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
+			collectionFactory.PackageCollection(), reporter, nil, collectionFactory.ChecksumCollection)
+		failedFiles = append(failedFiles, failedFiles2...)
+		processedFiles = append(processedFiles, otherFiles...)
 
-	if failedFiles == nil {
-		failedFiles = []string{}
-	}
+		if err != nil {
+			return fmt.Errorf("unable to import package files: %s", err)
+		}
 
-	c.JSON(200, gin.H{
-		"Report":      reporter,
-		"FailedFiles": failedFiles,
+		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+
+		err = collectionFactory.LocalRepoCollection().Update(repo)
+		if err != nil {
+			return fmt.Errorf("unable to save: %s", err)
+		}
+
+		if !noRemove {
+			processedFiles = utils.StrSliceDeduplicate(processedFiles)
+
+			for _, file := range processedFiles {
+				err := os.Remove(file)
+				if err != nil {
+					reporter.Warning("unable to remove file %s: %s", file, err)
+				}
+			}
+
+			// atempt to remove dir, if it fails, that's fine: probably it's not empty
+			os.Remove(filepath.Join(context.UploadPath(), dirParam))
+		}
+
+		if failedFiles == nil {
+			failedFiles = []string{}
+		}
+
+		if len(reporter.AddedLines) > 0 {
+			out.Printf("Added: %s\n", strings.Join(reporter.AddedLines, ", "))
+		}
+		if len(reporter.RemovedLines) > 0 {
+			out.Printf("Removed: %s\n", strings.Join(reporter.RemovedLines, ", "))
+		}
+		if len(reporter.Warnings) > 0 {
+			out.Printf("Warnings: %s\n", strings.Join(reporter.Warnings, ", "))
+		}
+		if len(failedFiles) > 0 {
+			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
+		}
+
+		return nil
 	})
+
+	if conflictErr != nil {
+		c.AbortWithError(409, conflictErr)
+		return
+	}
+
+	c.JSON(202, currTask)
 }
 
 // POST /repos/:name/include/:dir/:file
@@ -367,59 +399,103 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	ignoreSignature := c.Request.URL.Query().Get("ignoreSignature") == "1"
 
 	repoTemplateString := c.Params.ByName("name")
+	collectionFactory := context.NewCollectionFactory()
 
 	if !verifyDir(c) {
 		return
 	}
 
+	var sources []string
+	var taskName string
+	dirParam := c.Params.ByName("dir")
 	fileParam := c.Params.ByName("file")
 	if fileParam != "" && !verifyPath(fileParam) {
 		c.AbortWithError(400, fmt.Errorf("wrong file"))
 		return
 	}
 
-	var (
-		err                       error
-		verifier                  = context.GetVerifier()
-		sources, changesFiles     []string
-		failedFiles, failedFiles2 []string
-		reporter                  = &aptly.RecordingResultReporter{
-			Warnings:     []string{},
-			AddedLines:   []string{},
-			RemovedLines: []string{},
-		}
-	)
-
 	if fileParam == "" {
-		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"))}
+		taskName = fmt.Sprintf("Include packages from changes files in dir %s to repo matching template %s", dirParam, repoTemplateString)
+		sources = []string{filepath.Join(context.UploadPath(), dirParam)}
 	} else {
-		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
+		taskName = fmt.Sprintf("Include packages from changes file %s from dir %s to repo matching template %s", fileParam, dirParam, repoTemplateString)
+		sources = []string{filepath.Join(context.UploadPath(), dirParam, fileParam)}
 	}
 
-	collectionFactory := context.NewCollectionFactory()
-	changesFiles, failedFiles = deb.CollectChangesFiles(sources, reporter)
-	_, failedFiles2, err = deb.ImportChangesFiles(
-		changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
-		repoTemplateString, context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
-		context.PackagePool(), collectionFactory.ChecksumCollection, nil, query.Parse)
-	failedFiles = append(failedFiles, failedFiles2...)
-
+	repoTemplate, err := template.New("repo").Parse(repoTemplateString)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to import changes files: %s", err))
+		c.AbortWithError(400, fmt.Errorf("error parsing repo template: %s", err))
 		return
 	}
 
-	if !noRemoveFiles {
-		// atempt to remove dir, if it fails, that's fine: probably it's not empty
-		os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
-	}
+	var resources []string
+	if len(repoTemplate.Tree.Root.Nodes) > 1 {
+		resources = append(resources, task.AllLocalReposResourcesKey)
+	} else {
+		// repo template string is simple text so only use resource key of specific repository
+		repo, err := collectionFactory.LocalRepoCollection().ByName(repoTemplateString)
+		if err != nil {
+			c.AbortWithError(404, err)
+			return
+		}
 
-	if failedFiles == nil {
-		failedFiles = []string{}
+		resources = append(resources, string(repo.Key()))
 	}
+	resources = append(resources, sources...)
 
-	c.JSON(200, gin.H{
-		"Report":      reporter,
-		"FailedFiles": failedFiles,
+	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+		var (
+			err                       error
+			verifier                  = context.GetVerifier()
+			changesFiles              []string
+			failedFiles, failedFiles2 []string
+			reporter                  = &aptly.RecordingResultReporter{
+				Warnings:     []string{},
+				AddedLines:   []string{},
+				RemovedLines: []string{},
+			}
+		)
+
+		changesFiles, failedFiles = deb.CollectChangesFiles(sources, reporter)
+		_, failedFiles2, err = deb.ImportChangesFiles(
+			changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
+			repoTemplate, context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
+			context.PackagePool(), collectionFactory.ChecksumCollection, nil, query.Parse)
+		failedFiles = append(failedFiles, failedFiles2...)
+
+		if err != nil {
+			return fmt.Errorf("unable to import changes files: %s", err)
+		}
+
+		if !noRemoveFiles {
+			// atempt to remove dir, if it fails, that's fine: probably it's not empty
+			os.Remove(filepath.Join(context.UploadPath(), dirParam))
+		}
+
+		if failedFiles == nil {
+			failedFiles = []string{}
+		}
+
+		if len(reporter.AddedLines) > 0 {
+			out.Printf("Added: %s\n", strings.Join(reporter.AddedLines, ", "))
+		}
+		if len(reporter.RemovedLines) > 0 {
+			out.Printf("Removed: %s\n", strings.Join(reporter.RemovedLines, ", "))
+		}
+		if len(reporter.Warnings) > 0 {
+			out.Printf("Warnings: %s\n", strings.Join(reporter.Warnings, ", "))
+		}
+		if len(failedFiles) > 0 {
+			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
+		}
+
+		return nil
 	})
+
+	if conflictErr != nil {
+		c.AbortWithError(409, conflictErr)
+		return
+	}
+
+	c.JSON(202, currTask)
 }
