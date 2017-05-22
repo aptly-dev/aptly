@@ -266,7 +266,9 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 
 		if err != nil {
 			if ignoreMismatch {
-				downloader.progress.Printf("WARNING: %s\n", err.Error())
+				if downloader.progress != nil {
+					downloader.progress.Printf("WARNING: %s\n", err.Error())
+				}
 			} else {
 				os.Remove(temppath)
 				return "", err

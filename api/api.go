@@ -8,6 +8,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,12 +35,14 @@ type dbRequest struct {
 	err  chan<- error
 }
 
+var dbRequests chan dbRequest
+
 // Acquire database lock and release it when not needed anymore.
 //
 // Should be run in a goroutine!
-func acquireDatabase(requests <-chan dbRequest) {
+func acquireDatabase() {
 	clients := 0
-	for request := range requests {
+	for request := range dbRequests {
 		var err error
 
 		switch request.kind {
@@ -64,6 +67,46 @@ func acquireDatabase(requests <-chan dbRequest) {
 			request.err <- err
 		}
 	}
+}
+
+// Should be called before database access is needed in any api call.
+// Happens per default for each api call. It is important that you run
+// runTaskInBackground to run a task which accquire database.
+// Important do not forget to defer to releaseDatabaseConnection
+func acquireDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{acquiredb, errCh}
+
+	return <-errCh
+}
+
+// Release database connection when not needed anymore
+func releaseDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{releasedb, errCh}
+	return <-errCh
+}
+
+// runs tasks in background. Acquires database connection first.
+func runTaskInBackground(name string, resources []string, proc task.Process) (task.Task, *task.ResourceConflictError) {
+	return context.TaskList().RunTaskInBackground(name, resources, func(out *task.Output, detail *task.Detail) error {
+		err := acquireDatabaseConnection()
+
+		if err != nil {
+			return err
+		}
+
+		defer releaseDatabaseConnection()
+		return proc(out, detail)
+	})
 }
 
 // Common piece of code to show list of packages,
