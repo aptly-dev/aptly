@@ -850,7 +850,7 @@ type PublishedRepoCollection struct {
 // NewPublishedRepoCollection loads PublishedRepos from DB and makes up collection
 func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
 	result := &PublishedRepoCollection{
-		db:      db,
+		db: db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("U"))

@@ -3,6 +3,7 @@ package deb
 import (
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
@@ -122,7 +123,8 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	processedFiles, failedFiles, err := ImportChangesFiles(
 		append(changesFiles, "testdata/changes/notexistent.changes"),
 		s.Reporter, true, true, false, false, &NullVerifier{},
-		"test", s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, s.checksumStorage,
+		template.Must(template.New("test").Parse("test")), s.progress,
+		s.localRepoCollection, s.packageCollection, s.packagePool, s.checksumStorage,
 		nil, nil)
 	c.Assert(err, IsNil)
 	c.Check(failedFiles, DeepEquals, append(expectedFailedFiles, "testdata/changes/notexistent.changes"))

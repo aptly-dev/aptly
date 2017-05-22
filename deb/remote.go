@@ -667,7 +667,7 @@ type RemoteRepoCollection struct {
 // NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
 func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
 	result := &RemoteRepoCollection{
-		db:      db,
+		db: db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("R"))

@@ -98,7 +98,7 @@ type LocalRepoCollection struct {
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	result := &LocalRepoCollection{
-		db:      db,
+		db: db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("L"))

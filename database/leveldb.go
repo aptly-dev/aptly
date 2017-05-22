@@ -41,8 +41,8 @@ type Storage interface {
 }
 
 type levelDB struct {
-	path  string
-	db    *leveldb.DB
+	path string
+	db   *leveldb.DB
 }
 
 // Check interface

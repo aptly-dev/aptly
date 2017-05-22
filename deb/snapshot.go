@@ -119,6 +119,13 @@ func (s *Snapshot) Key() []byte {
 	return []byte("S" + s.UUID)
 }
 
+// ResourceKey is a unique identifier of the resource
+// this snapshot uses. Instead of uuid it uses name
+// which needs to be unique as well.
+func (s *Snapshot) ResourceKey() []byte {
+	return []byte("S" + s.Name)
+}
+
 // RefKey is a unique id for package reference list
 func (s *Snapshot) RefKey() []byte {
 	return []byte("E" + s.UUID)
@@ -178,7 +185,7 @@ type SnapshotCollection struct {
 // NewSnapshotCollection loads Snapshots from DB and makes up collection
 func NewSnapshotCollection(db database.Storage) *SnapshotCollection {
 	result := &SnapshotCollection{
-		db:      db,
+		db: db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("S"))
