@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -33,6 +34,12 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	repoTemplateString := context.Flags().Lookup("repo").Value.Get().(string)
 	collectionFactory := context.NewCollectionFactory()
 
+	var repoTemplate *template.Template
+	repoTemplate, err = template.New("repo").Parse(repoTemplateString)
+	if err != nil {
+		return fmt.Errorf("error parsing -repo template: %s", err)
+	}
+
 	uploaders := (*deb.Uploaders)(nil)
 	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
 	if uploadersFile != "" {
@@ -55,7 +62,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 	changesFiles, failedFiles = deb.CollectChangesFiles(args, reporter)
 	_, failedFiles2, err = deb.ImportChangesFiles(
-		changesFiles, reporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles, verifier, repoTemplateString,
+		changesFiles, reporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles, verifier, repoTemplate,
 		context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
 		context.PackagePool(), collectionFactory.ChecksumCollection,
 		uploaders, query.Parse)

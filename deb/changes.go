@@ -293,14 +293,9 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 
 // ImportChangesFiles imports referenced files in changes files into local repository
 func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles bool,
-	verifier pgp.Verifier, repoTemplateString string, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
+	verifier pgp.Verifier, repoTemplate *template.Template, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
 	pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
 
-	var repoTemplate *template.Template
-	repoTemplate, err = template.New("repo").Parse(repoTemplateString)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error parsing -repo template: %s", err)
-	}
 	for _, path := range changesFiles {
 		var changes *Changes
 

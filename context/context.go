@@ -24,6 +24,7 @@ import (
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/s3"
 	"github.com/aptly-dev/aptly/swift"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -40,6 +41,7 @@ type AptlyContext struct {
 
 	progress          aptly.Progress
 	downloader        aptly.Downloader
+	taskList          *task.List
 	database          database.Storage
 	packagePool       aptly.PackagePool
 	publishedStorages map[string]aptly.PublishedStorage
@@ -199,32 +201,57 @@ func (context *AptlyContext) _progress() aptly.Progress {
 	return context.progress
 }
 
+// NewDownloader returns instance of new downloader with given progress
+func (context *AptlyContext) NewDownloader(progress aptly.Progress) aptly.Downloader {
+	context.Lock()
+	defer context.Unlock()
+
+	return context.newDownloader(progress)
+}
+
+// NewDownloader returns instance of new downloader with given progress without locking
+// so it can be used for internal usage.
+func (context *AptlyContext) newDownloader(progress aptly.Progress) aptly.Downloader {
+	var downloadLimit int64
+	limitFlag := context.flags.Lookup("download-limit")
+	if limitFlag != nil {
+		downloadLimit = limitFlag.Value.Get().(int64)
+	}
+	if downloadLimit == 0 {
+		downloadLimit = context.config().DownloadLimit
+	}
+	maxTries := context.config().DownloadRetries + 1
+	maxTriesFlag := context.flags.Lookup("max-tries")
+	if maxTriesFlag != nil {
+		maxTriesFlagValue := maxTriesFlag.Value.Get().(int)
+		if maxTriesFlagValue > maxTries {
+			maxTries = maxTriesFlagValue
+		}
+	}
+	return http.NewDownloader(downloadLimit*1024, maxTries, progress)
+}
+
 // Downloader returns instance of current downloader
 func (context *AptlyContext) Downloader() aptly.Downloader {
 	context.Lock()
 	defer context.Unlock()
 
 	if context.downloader == nil {
-		var downloadLimit int64
-		limitFlag := context.flags.Lookup("download-limit")
-		if limitFlag != nil {
-			downloadLimit = limitFlag.Value.Get().(int64)
-		}
-		if downloadLimit == 0 {
-			downloadLimit = context.config().DownloadLimit
-		}
-		maxTries := context.config().DownloadRetries + 1
-		maxTriesFlag := context.flags.Lookup("max-tries")
-		if maxTriesFlag != nil {
-			maxTriesFlagValue := maxTriesFlag.Value.Get().(int)
-			if maxTriesFlagValue > maxTries {
-				maxTries = maxTriesFlagValue
-			}
-		}
-		context.downloader = http.NewDownloader(downloadLimit*1024, maxTries, context._progress())
+		context.downloader = context.newDownloader(context._progress())
 	}
 
 	return context.downloader
+}
+
+// TaskList returns instance of current task list
+func (context *AptlyContext) TaskList() *task.List {
+	context.Lock()
+	defer context.Unlock()
+
+	if context.taskList == nil {
+		context.taskList = task.NewList()
+	}
+	return context.taskList
 }
 
 // DBPath builds path to database
