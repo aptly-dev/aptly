@@ -14,7 +14,7 @@ import (
 	"github.com/mkrautz/goar"
 	"github.com/pkg/errors"
 
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/go-xz"
 	"github.com/smira/lzma"
 )
@@ -76,7 +76,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 }
 
 // GetControlFileFromDsc reads control file from dsc package
-func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, error) {
+func GetControlFileFromDsc(dscFile string, verifier pgp.Verifier) (Stanza, error) {
 	file, err := os.Open(dscFile)
 	if err != nil {
 		return nil, err

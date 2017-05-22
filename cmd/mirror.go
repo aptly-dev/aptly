@@ -3,19 +3,19 @@ package cmd
 import (
 	"strings"
 
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
 
-func getVerifier(flags *flag.FlagSet) (utils.Verifier, error) {
+func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
 	if LookupOption(context.Config().GpgDisableVerify, flags, "ignore-signatures") {
 		return nil, nil
 	}
 
 	keyRings := flags.Lookup("keyring").Value.Get().([]string)
 
-	verifier := &utils.GpgVerifier{}
+	verifier := &pgp.GpgVerifier{}
 	for _, keyRing := range keyRings {
 		verifier.AddKeyring(keyRing)
 	}
