@@ -88,6 +88,10 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	{
+		root.POST("/gpg/key", apiGPGAddKey)
+	}
+
+	{
 		root.GET("/files", apiFilesListDirs)
 		root.POST("/files/:dir", apiFilesUpload)
 		root.GET("/files/:dir", apiFilesListFiles)
