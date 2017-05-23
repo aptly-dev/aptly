@@ -157,24 +157,30 @@ func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
 	c.Assert(s.flat.ReleaseURL("Release").String(), Equals, "http://repos.express42.com/virool/precise/Release")
 }
 
-func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
-	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
+func (s *RemoteRepoSuite) TestIndexesRootURL(c *C) {
+	c.Assert(s.repo.IndexesRootURL().String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/")
+
+	c.Assert(s.flat.IndexesRootURL().String(), Equals, "http://repos.express42.com/virool/precise/")
 }
 
-func (s *RemoteRepoSuite) TestUdebURL(c *C) {
-	c.Assert(s.repo.UdebURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/debian-installer/binary-amd64/Packages")
+func (s *RemoteRepoSuite) TestBinaryPath(c *C) {
+	c.Assert(s.repo.BinaryPath("main", "amd64"), Equals, "main/binary-amd64/Packages")
 }
 
-func (s *RemoteRepoSuite) TestSourcesURL(c *C) {
-	c.Assert(s.repo.SourcesURL("main").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources")
+func (s *RemoteRepoSuite) TestUdebPath(c *C) {
+	c.Assert(s.repo.UdebPath("main", "amd64"), Equals, "main/debian-installer/binary-amd64/Packages")
 }
 
-func (s *RemoteRepoSuite) TestFlatBinaryURL(c *C) {
-	c.Assert(s.flat.FlatBinaryURL().String(), Equals, "http://repos.express42.com/virool/precise/Packages")
+func (s *RemoteRepoSuite) TestSourcesPath(c *C) {
+	c.Assert(s.repo.SourcesPath("main"), Equals, "main/source/Sources")
 }
 
-func (s *RemoteRepoSuite) TestFlatSourcesURL(c *C) {
-	c.Assert(s.flat.FlatSourcesURL().String(), Equals, "http://repos.express42.com/virool/precise/Sources")
+func (s *RemoteRepoSuite) TestFlatBinaryPath(c *C) {
+	c.Assert(s.flat.FlatBinaryPath(), Equals, "Packages")
+}
+
+func (s *RemoteRepoSuite) TestFlatSourcesPath(c *C) {
+	c.Assert(s.flat.FlatSourcesPath(), Equals, "Sources")
 }
 
 func (s *RemoteRepoSuite) TestPackageURL(c *C) {

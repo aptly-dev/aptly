@@ -136,6 +136,7 @@ class BaseTest(object):
                           os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg"),
                           os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "launchpad.key"),
                           os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "flat.key"),
+                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pagerduty.key"),
                           os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "jenkins.key")])
 
         if hasattr(self, "fixtureCmds"):
