@@ -31,6 +31,10 @@ type Snapshot struct {
 	// Description of how snapshot was created
 	Description string
 
+	Origin               string
+	NotAutomatic         string
+	ButAutomaticUpgrades string
+
 	packageRefs *PackageRefList
 }
 
@@ -41,13 +45,16 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 	}
 
 	return &Snapshot{
-		UUID:        uuid.New(),
-		Name:        name,
-		CreatedAt:   time.Now(),
-		SourceKind:  SourceRemoteRepo,
-		SourceIDs:   []string{repo.UUID},
-		Description: fmt.Sprintf("Snapshot from mirror %s", repo),
-		packageRefs: repo.packageRefs,
+		UUID:                 uuid.New(),
+		Name:                 name,
+		CreatedAt:            time.Now(),
+		SourceKind:           SourceRemoteRepo,
+		SourceIDs:            []string{repo.UUID},
+		Description:          fmt.Sprintf("Snapshot from mirror %s", repo),
+		Origin:               repo.Meta["Origin"],
+		NotAutomatic:         repo.Meta["NotAutomatic"],
+		ButAutomaticUpgrades: repo.Meta["ButAutomaticUpgrades"],
+		packageRefs:          repo.packageRefs,
 	}, nil
 }
 

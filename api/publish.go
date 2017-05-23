@@ -95,13 +95,15 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			Component string
 			Name      string `binding:"required"`
 		} `binding:"required"`
-		Distribution   string
-		Label          string
-		Origin         string
-		ForceOverwrite bool
-		SkipContents   *bool
-		Architectures  []string
-		Signing        SigningOptions
+		Distribution         string
+		Label                string
+		Origin               string
+		NotAutomatic         string
+		ButAutomaticUpgrades string
+		ForceOverwrite       bool
+		SkipContents         *bool
+		Architectures        []string
+		Signing              SigningOptions
 	}
 
 	if !c.Bind(&b) {
@@ -183,7 +185,15 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		c.Fail(500, fmt.Errorf("unable to publish: %s", err))
 		return
 	}
-	published.Origin = b.Origin
+	if b.Origin != "" {
+		published.Origin = b.Origin
+	}
+	if b.NotAutomatic != "" {
+		published.NotAutomatic = b.NotAutomatic
+	}
+	if b.ButAutomaticUpgrades != "" {
+		published.ButAutomaticUpgrades = b.ButAutomaticUpgrades
+	}
 	published.Label = b.Label
 
 	published.SkipContents = context.Config().SkipContentsPublishing
