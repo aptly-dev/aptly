@@ -17,6 +17,7 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
@@ -243,7 +244,7 @@ func (repo *RemoteRepo) PackageURL(filename string) *url.URL {
 }
 
 // Fetch updates information about repository
-func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier utils.Verifier) error {
+func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 	var (
 		release, inrelease, releasesig *os.File
 		err                            error

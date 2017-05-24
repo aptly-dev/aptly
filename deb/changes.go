@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -23,7 +24,7 @@ type Changes struct {
 	Binary                []string
 	Architectures         []string
 	Stanza                Stanza
-	SignatureKeys         []utils.GpgKey
+	SignatureKeys         []pgp.Key
 }
 
 // NewChanges moves .changes file into temporary directory and creates Changes structure
@@ -50,7 +51,7 @@ func NewChanges(path string) (*Changes, error) {
 }
 
 // VerifyAndParse does optional signature verification and parses changes files
-func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier utils.Verifier) error {
+func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier pgp.Verifier) error {
 	input, err := os.Open(filepath.Join(c.TempDir, c.ChangesName))
 	if err != nil {
 		return err
@@ -69,7 +70,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		var keyInfo *utils.GpgKeyInfo
+		var keyInfo *pgp.KeyInfo
 		keyInfo, err = verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err

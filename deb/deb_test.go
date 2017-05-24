@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/pgp"
 
 	. "gopkg.in/check.v1"
 )
@@ -39,7 +39,7 @@ func (s *DebSuite) TestGetControlFileFromDeb(c *C) {
 }
 
 func (s *DebSuite) TestGetControlFileFromDsc(c *C) {
-	verifier := &utils.GpgVerifier{}
+	verifier := &pgp.GpgVerifier{}
 
 	_, err := GetControlFileFromDsc("/no/such/file", verifier)
 	c.Check(err, ErrorMatches, ".*no such file or directory")

@@ -12,6 +12,7 @@ import (
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 
 	. "gopkg.in/check.v1"
@@ -31,7 +32,7 @@ func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) e
 	return nil
 }
 
-func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*utils.GpgKeyInfo, error) {
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp.KeyInfo, error) {
 	return nil, nil
 }
 

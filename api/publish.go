@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -20,12 +21,12 @@ type SigningOptions struct {
 	PassphraseFile string
 }
 
-func getSigner(options *SigningOptions) (utils.Signer, error) {
+func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	if options.Skip {
 		return nil, nil
 	}
 
-	signer := &utils.GpgSigner{}
+	signer := &pgp.GpgSigner{}
 	signer.SetKey(options.GpgKey)
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
@@ -28,7 +29,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	}
 
 	if verifier == nil {
-		verifier = &utils.GpgVerifier{}
+		verifier = &pgp.GpgVerifier{}
 	}
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)

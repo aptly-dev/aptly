@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -48,7 +49,7 @@ func (file *indexFile) BufWriter() (*bufio.Writer, error) {
 	return file.w, nil
 }
 
-func (file *indexFile) Finalize(signer utils.Signer) error {
+func (file *indexFile) Finalize(signer pgp.Signer) error {
 	if file.w == nil {
 		if file.discardable {
 			return nil

@@ -19,6 +19,7 @@ import (
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -447,7 +448,7 @@ func (p *PublishedRepo) GetLabel() string {
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer utils.Signer, progress aptly.Progress, forceOverwrite bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
