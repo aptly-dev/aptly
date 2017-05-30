@@ -19,6 +19,7 @@ type ConfigStructure struct { // nolint: aligncheck
 	DepVerboseResolve      bool                             `json:"dependencyVerboseResolve"`
 	GpgDisableSign         bool                             `json:"gpgDisableSign"`
 	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
+	GpgProvider            string                           `json:"gpgProvider"`
 	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
 	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
@@ -79,6 +80,7 @@ var Config = ConfigStructure{
 	DepFollowRecommends:    false,
 	DepFollowAllVariants:   false,
 	DepFollowSource:        false,
+	GpgProvider:            "gpg",
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,

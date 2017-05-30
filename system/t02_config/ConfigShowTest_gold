@@ -10,6 +10,7 @@
     "dependencyVerboseResolve": false,
     "gpgDisableSign": false,
     "gpgDisableVerify": false,
+    "gpgProvider": "gpg",
     "downloadSourcePackages": false,
     "skipLegacyPool": false,
     "ppaDistributorID": "ubuntu",
