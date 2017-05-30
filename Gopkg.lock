@@ -1,4 +1,4 @@
-memo = "b793b143db9dc49ef630454bb15d4d259e88d411827adac1838ec9fd6727f229"
+memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
 
 [[projects]]
   name = "github.com/AlekSi/pointer"
@@ -169,7 +169,7 @@ memo = "b793b143db9dc49ef630454bb15d4d259e88d411827adac1838ec9fd6727f229"
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = ["cast5","openpgp","openpgp/armor","openpgp/clearsign","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k","ssh/terminal"]
   revision = "459e26527287adbc2adcc5d0d49abff9a5f315a7"
 
 [[projects]]
