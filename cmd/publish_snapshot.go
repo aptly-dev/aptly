@@ -35,7 +35,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		message string
 	)
 
-	if cmd.Name() == "snapshot" {
+	if cmd.Name() == "snapshot" { // nolint: goconst
 		var (
 			snapshot     *deb.Snapshot
 			emptyWarning = false
@@ -71,7 +71,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		if emptyWarning {
 			context.Progress().Printf("Warning: publishing from empty source, architectures list should be complete, it can't be changed after publishing (use -architectures flag)\n")
 		}
-	} else if cmd.Name() == "repo" {
+	} else if cmd.Name() == "repo" { // nolint: goconst
 		var (
 			localRepo    *deb.LocalRepo
 			emptyWarning = false
@@ -170,7 +170,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Now you can add following line to apt sources:\n")
 	context.Progress().Printf("  deb http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
-	if utils.StrSliceHasItem(published.Architectures, "source") {
+	if utils.StrSliceHasItem(published.Architectures, deb.ArchitectureSource) {
 		context.Progress().Printf("  deb-src http://your-server/%s %s %s\n", prefix, distribution, repoComponents)
 	}
 	context.Progress().Printf("Don't forget to add your GPG key to apt with apt-key.\n")

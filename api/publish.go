@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -20,12 +21,12 @@ type SigningOptions struct {
 	PassphraseFile string
 }
 
-func getSigner(options *SigningOptions) (utils.Signer, error) {
+func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	if options.Skip {
 		return nil, nil
 	}
 
-	signer := &utils.GpgSigner{}
+	signer := &pgp.GpgSigner{}
 	signer.SetKey(options.GpgKey)
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)
@@ -145,7 +146,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			sources = append(sources, snapshot)
 		}
-	} else if b.SourceKind == "local" {
+	} else if b.SourceKind == deb.SourceLocalRepo {
 		var localRepo *deb.LocalRepo
 
 		localCollection := context.CollectionFactory().LocalRepoCollection()
@@ -264,7 +265,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	var updatedComponents []string
 
-	if published.SourceKind == "local" {
+	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			c.Fail(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
@@ -281,15 +282,15 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 				return
 			}
 
-			snapshot, err := snapshotCollection.ByName(snapshotInfo.Name)
+			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err != nil {
-				c.Fail(404, err)
+				c.Fail(404, err2)
 				return
 			}
 
-			err = snapshotCollection.LoadComplete(snapshot)
-			if err != nil {
-				c.Fail(500, err)
+			err2 = snapshotCollection.LoadComplete(snapshot)
+			if err2 != nil {
+				c.Fail(500, err2)
 				return
 			}
 

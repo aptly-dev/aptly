@@ -311,3 +311,19 @@ class UpdateMirror18Test(BaseTest):
         super(UpdateMirror18Test, self).check()
         # check pool
         self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class UpdateMirror19Test(BaseTest):
+    """
+    update mirrors: correct matching of Release checksums
+    """
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://packages.pagerduty.com/pdagent deb/"
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
+    outputMatchPrepare = filterOutSignature
+
+    def output_processor(self, output):
+        return "\n".join(line for line in output.split("\n") if ".deb" not in line)

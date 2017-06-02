@@ -14,10 +14,16 @@ import (
 	"github.com/mkrautz/goar"
 	"github.com/pkg/errors"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/go-xz"
 	"github.com/smira/lzma"
+)
+
+// Source kinds
+const (
+	SourceSnapshot   = "snapshot"
+	SourceLocalRepo  = "local"
+	SourceRemoteRepo = "repo"
 )
 
 // GetControlFileFromDeb reads control file from deb package
@@ -70,7 +76,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 }
 
 // GetControlFileFromDsc reads control file from dsc package
-func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, error) {
+func GetControlFileFromDsc(dscFile string, verifier pgp.Verifier) (Stanza, error) {
 	file, err := os.Open(dscFile)
 	if err != nil {
 		return nil, err
@@ -107,7 +113,7 @@ func GetControlFileFromDsc(dscFile string, verifier utils.Verifier) (Stanza, err
 }
 
 // GetContentsFromDeb returns list of files installed by .deb package
-func GetContentsFromDeb(file aptly.ReadSeekerCloser, packageFile string) ([]string, error) {
+func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 	library := ar.NewReader(file)
 	for {
 		header, err := library.Next()

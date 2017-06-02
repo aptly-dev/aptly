@@ -562,7 +562,7 @@ func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
 		Prefix:        "ppa",
 		Distribution:  "anaconda",
 		Architectures: []string{"i386"},
-		SourceKind:    "local",
+		SourceKind:    SourceLocalRepo,
 		Component:     "contrib",
 		SourceUUID:    s.localRepo.UUID,
 	}

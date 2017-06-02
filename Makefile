@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 VERSION=$(shell git describe --tags | sed 's@^v@@' | sed 's@-@+@g')
-PACKAGES=context database deb files http query swift s3 utils
+PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python
 TESTS?=
 BINPATH?=$(GOPATH)/bin

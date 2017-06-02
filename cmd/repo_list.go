@@ -23,9 +23,9 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
-			err := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
-			if err != nil {
-				return err
+			e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+			if e != nil {
+				return e
 			}
 
 			repos[i] = fmt.Sprintf(" * %s (packages: %d)", repo.String(), repo.NumPackages())

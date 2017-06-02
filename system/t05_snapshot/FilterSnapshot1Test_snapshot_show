@@ -5,6 +5,6 @@ Sources:
   snap1 [snapshot]
 Packages:
   mame_0.146-5_amd64
-  unrar_1:4.1.4-1_amd64
   mame_0.146-5_i386
+  unrar_1:4.1.4-1_amd64
   unrar_1:4.1.4-1_i386

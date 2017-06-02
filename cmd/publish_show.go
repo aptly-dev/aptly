@@ -41,15 +41,15 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Sources:\n")
 	for component, sourceID := range repo.Sources {
 		var name string
-		if repo.SourceKind == "snapshot" {
-			source, err := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
-			if err != nil {
+		if repo.SourceKind == deb.SourceSnapshot {
+			source, e := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+			if e != nil {
 				continue
 			}
 			name = source.Name
-		} else if repo.SourceKind == "local" {
-			source, err := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
-			if err != nil {
+		} else if repo.SourceKind == deb.SourceLocalRepo {
+			source, e := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+			if e != nil {
 				continue
 			}
 			name = source.Name

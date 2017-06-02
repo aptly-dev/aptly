@@ -33,9 +33,9 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	existingNodes := map[string]bool{}
 
 	err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *RemoteRepo) error {
-		err := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 
 		graph.AddNode("aptly", repo.UUID, map[string]string{
@@ -55,9 +55,9 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	}
 
 	err = collectionFactory.LocalRepoCollection().ForEach(func(repo *LocalRepo) error {
-		err := collectionFactory.LocalRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return err
+		e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
 		}
 
 		graph.AddNode("aptly", repo.UUID, map[string]string{
@@ -81,13 +81,13 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	})
 
 	err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
-		err := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return err
+		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		if e != nil {
+			return e
 		}
 
 		description := snapshot.Description
-		if snapshot.SourceKind == "repo" {
+		if snapshot.SourceKind == SourceRemoteRepo {
 			description = "Snapshot from repo"
 		}
 
@@ -99,7 +99,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 				snapshot.Name, description, snapshot.NumPackages(), labelEnd),
 		})
 
-		if snapshot.SourceKind == "repo" || snapshot.SourceKind == "local" || snapshot.SourceKind == "snapshot" {
+		if snapshot.SourceKind == SourceRemoteRepo || snapshot.SourceKind == SourceLocalRepo || snapshot.SourceKind == SourceSnapshot {
 			for _, uuid := range snapshot.SourceIDs {
 				_, exists := existingNodes[uuid]
 				if exists {

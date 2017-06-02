@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -23,7 +24,7 @@ type Changes struct {
 	Binary                []string
 	Architectures         []string
 	Stanza                Stanza
-	SignatureKeys         []utils.GpgKey
+	SignatureKeys         []pgp.Key
 }
 
 // NewChanges moves .changes file into temporary directory and creates Changes structure
@@ -50,7 +51,7 @@ func NewChanges(path string) (*Changes, error) {
 }
 
 // VerifyAndParse does optional signature verification and parses changes files
-func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier utils.Verifier) error {
+func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier pgp.Verifier) error {
 	input, err := os.Open(filepath.Join(c.TempDir, c.ChangesName))
 	if err != nil {
 		return err
@@ -69,7 +70,8 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		keyInfo, err := verifier.VerifyClearsigned(input, false)
+		var keyInfo *pgp.KeyInfo
+		keyInfo, err = verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err
 		}
@@ -169,7 +171,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 
 	// if c.Source is empty, this would never match
 	sourceQuery := &AndQuery{
-		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"},
+		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource},
 		R: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Source},
 	}
 
@@ -201,7 +203,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 		}
 
 		binaryQuery = &AndQuery{
-			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"}},
+			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource}},
 			R: binaryQuery}
 	}
 

@@ -12,7 +12,10 @@
         "staticcheck",
         "varcheck",
         "structcheck",
-        "aligncheck"
+        "aligncheck",
+        "vetshadow",
+        "goconst",
+        "interfacer"
     ],
     "Deadline": "20m",
     "Vendor": true,

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -59,7 +60,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 }
 
 // ImportPackageFiles imports files into local repository
-func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier utils.Verifier,
+func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier pgp.Verifier,
 	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery,
 	checksumStorage aptly.ChecksumStorage) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
