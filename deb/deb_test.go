@@ -39,7 +39,7 @@ func (s *DebSuite) TestGetControlFileFromDeb(c *C) {
 }
 
 func (s *DebSuite) TestGetControlFileFromDsc(c *C) {
-	verifier := &pgp.GpgVerifier{}
+	verifier := &pgp.GoVerifier{}
 
 	_, err := GetControlFileFromDsc("/no/such/file", verifier)
 	c.Check(err, ErrorMatches, ".*no such file or directory")

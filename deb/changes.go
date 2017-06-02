@@ -2,6 +2,7 @@ package deb
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -80,7 +81,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 		c.SignatureKeys = keyInfo.GoodKeys
 	}
 
-	var text *os.File
+	var text io.ReadCloser
 
 	if isClearSigned {
 		text, err = verifier.ExtractClearsigned(input)

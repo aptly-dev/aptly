@@ -28,7 +28,7 @@ func (n *NullVerifier) InitKeyring() error {
 func (n *NullVerifier) AddKeyring(keyring string) {
 }
 
-func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) error {
+func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, hint bool) error {
 	return nil
 }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 )
 
@@ -297,7 +296,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	verifier := &pgp.GpgVerifier{}
+	verifier := context.GetVerifier()
 
 	var (
 		sources                      []string

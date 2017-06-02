@@ -18,6 +18,7 @@ import (
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/s3"
 	"github.com/smira/aptly/swift"
 	"github.com/smira/aptly/utils"
@@ -371,6 +372,46 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 // UploadPath builds path to upload storage
 func (context *AptlyContext) UploadPath() string {
 	return filepath.Join(context.Config().RootDir, "upload")
+}
+
+func (context *AptlyContext) pgpProvider() string {
+	var provider string
+
+	if context.globalFlags.IsSet("gpg-provider") {
+		provider = context.globalFlags.Lookup("gpg-provider").Value.String()
+	} else {
+		provider = context.config().GpgProvider
+	}
+
+	if !(provider == "gpg" || provider == "internal") {
+		Fatal(fmt.Errorf("unknown gpg provider: %v", provider))
+	}
+
+	return provider
+}
+
+// GetSigner returns Signer with respect to provider
+func (context *AptlyContext) GetSigner() pgp.Signer {
+	context.Lock()
+	defer context.Unlock()
+
+	if context.pgpProvider() == "gpg" {
+		return &pgp.GpgSigner{}
+	}
+
+	return &pgp.GoSigner{}
+}
+
+// GetVerifier returns Verifier with respect to provider
+func (context *AptlyContext) GetVerifier() pgp.Verifier {
+	context.Lock()
+	defer context.Unlock()
+
+	if context.pgpProvider() == "gpg" {
+		return &pgp.GpgVerifier{}
+	}
+
+	return &pgp.GoVerifier{}
 }
 
 // UpdateFlags sets internal copy of flags in the context

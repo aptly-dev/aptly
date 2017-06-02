@@ -90,7 +90,7 @@ func GetControlFileFromDsc(dscFile string, verifier pgp.Verifier) (Stanza, error
 		return nil, err
 	}
 
-	var text *os.File
+	var text io.ReadCloser
 
 	if isClearSigned {
 		text, err = verifier.ExtractClearsigned(file)
