@@ -2,6 +2,7 @@
 package pgp
 
 import (
+	"fmt"
 	"io"
 	"os"
 )
@@ -26,6 +27,11 @@ func (key1 Key) Matches(key2 Key) bool {
 	return false
 }
 
+// KeyFromUint64 converts openpgp uint64 into hex human-readable
+func KeyFromUint64(key uint64) Key {
+	return Key(fmt.Sprintf("%016X", key))
+}
+
 // KeyInfo is response from signature verification
 type KeyInfo struct {
 	GoodKeys    []Key
@@ -47,7 +53,7 @@ type Signer interface {
 type Verifier interface {
 	InitKeyring() error
 	AddKeyring(keyring string)
-	VerifyDetachedSignature(signature, cleartext io.Reader) error
+	VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error
 	IsClearSigned(clearsigned io.Reader) (bool, error)
 	VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (*KeyInfo, error)
 	ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error)
