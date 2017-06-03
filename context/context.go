@@ -383,7 +383,7 @@ func (context *AptlyContext) pgpProvider() string {
 		provider = context.config().GpgProvider
 	}
 
-	if !(provider == "gpg" || provider == "internal") {
+	if !(provider == "gpg" || provider == "internal") { // nolint: goconst
 		Fatal(fmt.Errorf("unknown gpg provider: %v", provider))
 	}
 
@@ -395,7 +395,7 @@ func (context *AptlyContext) GetSigner() pgp.Signer {
 	context.Lock()
 	defer context.Unlock()
 
-	if context.pgpProvider() == "gpg" {
+	if context.pgpProvider() == "gpg" { // nolint: goconst
 		return &pgp.GpgSigner{}
 	}
 
@@ -407,7 +407,7 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	context.Lock()
 	defer context.Unlock()
 
-	if context.pgpProvider() == "gpg" {
+	if context.pgpProvider() == "gpg" { // nolint: goconst
 		return &pgp.GpgVerifier{}
 	}
 
