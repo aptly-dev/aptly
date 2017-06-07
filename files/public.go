@@ -2,27 +2,65 @@ package files
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // PublishedStorage abstract file system with public dirs (published repos)
 type PublishedStorage struct {
-	rootPath string
+	rootPath     string
+	linkMethod   uint
+	verifyMethod uint
 }
 
 // Check interfaces
 var (
-	_ aptly.PublishedStorage      = (*PublishedStorage)(nil)
-	_ aptly.LocalPublishedStorage = (*PublishedStorage)(nil)
+	_ aptly.PublishedStorage           = (*PublishedStorage)(nil)
+	_ aptly.FileSystemPublishedStorage = (*PublishedStorage)(nil)
+)
+
+// Constants defining the type of creating links
+const (
+	LinkMethodHardLink uint = iota
+	LinkMethodSymLink
+	LinkMethodCopy
+)
+
+// Constants defining the type of file verification for LinkMethodCopy
+const (
+	VerificationMethodChecksum uint = iota
+	VerificationMethodFileSize
 )
 
 // NewPublishedStorage creates new instance of PublishedStorage which specified root
-func NewPublishedStorage(root string) *PublishedStorage {
-	return &PublishedStorage{rootPath: filepath.Join(root, "public")}
+func NewPublishedStorage(root string, linkMethod string, verifyMethod string) *PublishedStorage {
+	// Ensure linkMethod is one of 'hardlink', 'symlink', 'copy'
+	var verifiedLinkMethod uint
+
+	if strings.EqualFold(linkMethod, "copy") {
+		verifiedLinkMethod = LinkMethodCopy
+	} else if strings.EqualFold(linkMethod, "symlink") {
+		verifiedLinkMethod = LinkMethodSymLink
+	} else {
+		verifiedLinkMethod = LinkMethodHardLink
+	}
+
+	var verifiedVerifyMethod uint
+
+	if strings.EqualFold(verifyMethod, "size") {
+		verifiedVerifyMethod = VerificationMethodFileSize
+	} else {
+		verifiedVerifyMethod = VerificationMethodChecksum
+	}
+
+	return &PublishedStorage{rootPath: root, linkMethod: verifiedLinkMethod,
+		verifyMethod: verifiedVerifyMethod}
 }
 
 // PublicPath returns root of public part
@@ -76,15 +114,12 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 //
 // publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
-// sourcePath is filepath to package file in package pool
+// sourcePath is a relative path to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
-	// verify that package pool is local pool is filesystem pool
-	_ = sourcePool.(*PackagePool)
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName string, sourcePool aptly.PackagePool,
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	baseName := filepath.Base(sourcePath)
 	poolPath := filepath.Join(storage.rootPath, publishedDirectory)
 
 	err := os.MkdirAll(poolPath, 0777)
@@ -97,18 +132,42 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
 	if err == nil {
 		// already exists, check source file
-		srcStat, err = os.Stat(sourcePath)
+		srcStat, err = sourcePool.Stat(sourcePath)
 		if err != nil {
 			// source file doesn't exist? problem!
 			return err
 		}
 
-		srcSys := srcStat.Sys().(*syscall.Stat_t)
-		dstSys := dstStat.Sys().(*syscall.Stat_t)
+		if storage.linkMethod == LinkMethodCopy {
+			if storage.verifyMethod == VerificationMethodFileSize {
+				// if source and destination have the same size, no need to copy
+				if srcStat.Size() == dstStat.Size() {
+					return nil
+				}
+			} else {
+				// if source and destination have the same checksums, no need to copy
+				var dstMD5 string
+				dstMD5, err = utils.MD5ChecksumForFile(filepath.Join(poolPath, baseName))
 
-		// source and destination inodes match, no need to link
-		if srcSys.Ino == dstSys.Ino {
-			return nil
+				if err != nil {
+					return err
+				}
+
+				if dstMD5 == sourceChecksums.MD5 {
+					return nil
+				}
+			}
+		} else {
+			srcSys := srcStat.Sys().(*syscall.Stat_t)
+			dstSys := dstStat.Sys().(*syscall.Stat_t)
+
+			// if source and destination inodes match, no need to link
+
+			// Symlink can point to different filesystem with identical inodes
+			// so we have to check the device as well.
+			if srcSys.Ino == dstSys.Ino && srcSys.Dev == dstSys.Dev {
+				return nil
+			}
 		}
 
 		// source and destination have different inodes, if !forced, this is fatal error
@@ -123,8 +182,42 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	// destination doesn't exist (or forced), create link
-	return os.Link(sourcePath, filepath.Join(poolPath, baseName))
+	// destination doesn't exist (or forced), create link or copy
+	if storage.linkMethod == LinkMethodCopy {
+		var r aptly.ReadSeekerCloser
+		r, err = sourcePool.Open(sourcePath)
+		if err != nil {
+			return err
+		}
+
+		var dst *os.File
+		dst, err = os.Create(filepath.Join(poolPath, baseName))
+		if err != nil {
+			r.Close()
+			return err
+		}
+
+		_, err = io.Copy(dst, r)
+		if err != nil {
+			r.Close()
+			dst.Close()
+			return err
+		}
+
+		err = r.Close()
+		if err != nil {
+			dst.Close()
+			return err
+		}
+
+		err = dst.Close()
+	} else if storage.linkMethod == LinkMethodSymLink {
+		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName))
+	} else {
+		err = sourcePool.(aptly.LocalPackagePool).Link(sourcePath, filepath.Join(poolPath, baseName))
+	}
+
+	return err
 }
 
 // Filelist returns list of files under prefix

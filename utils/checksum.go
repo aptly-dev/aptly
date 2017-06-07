@@ -11,6 +11,23 @@ import (
 	"os"
 )
 
+// MD5ChecksumForFile computes just the MD5 hash and not all the others
+func MD5ChecksumForFile(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	_, err = io.Copy(hash, file)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
 // ChecksumInfo represents checksums for a single file
 type ChecksumInfo struct {
 	Size   int64
@@ -18,6 +35,11 @@ type ChecksumInfo struct {
 	SHA1   string
 	SHA256 string
 	SHA512 string
+}
+
+// Complete checks if all the checksums are present
+func (cksum *ChecksumInfo) Complete() bool {
+	return cksum.MD5 != "" && cksum.SHA1 != "" && cksum.SHA256 != "" && cksum.SHA512 != ""
 }
 
 // ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for given file

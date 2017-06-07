@@ -106,4 +106,3 @@ class CreateSnapshot9Test(BaseTest):
         "aptly repo create local-repo",
     ]
     runCmd = "aptly snapshot create snap9 from repo local-repo"
-    expectedCode = 1

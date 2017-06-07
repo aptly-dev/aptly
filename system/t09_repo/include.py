@@ -5,9 +5,17 @@ import inspect
 import re
 from lib import BaseTest
 
-gpgRemove = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
-changesRemove = lambda _, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), "")
-tempDirRemove = lambda self, s: s.replace(self.tempSrcDir, "")
+
+def gpgRemove(_, s):
+    return re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
+
+
+def changesRemove(_, s):
+    return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), "")
+
+
+def tempDirRemove(self, s):
+    return s.replace(self.tempSrcDir, "")
 
 
 class IncludeRepo1Test(BaseTest):
@@ -25,9 +33,9 @@ class IncludeRepo1Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages unstable", "repo_show")
 
         # check pool
-        self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-        self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-        self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+        self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+        self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+        self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
 
 class IncludeRepo2Test(BaseTest):
@@ -46,9 +54,9 @@ class IncludeRepo2Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages my-unstable", "repo_show")
 
         # check pool
-        self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-        self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-        self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+        self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+        self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+        self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
 
 class IncludeRepo3Test(BaseTest):
@@ -59,7 +67,9 @@ class IncludeRepo3Test(BaseTest):
     ]
     runCmd = "aptly repo include -no-remove-files -keyring=${files}/aptly.pub -repo=my-{{.Distribution} ${changes}"
     expectedCode = 1
-    outputMatchPrepare = lambda _, s: s.replace('; missing space?', '')
+
+    def outputMatchPrepare(_, s):
+        return s.replace('; missing space?', '')
 
 
 class IncludeRepo4Test(BaseTest):
@@ -101,9 +111,9 @@ class IncludeRepo5Test(BaseTest):
             self.check_cmd_output("aptly repo show -with-packages unstable", "repo_show")
 
             # check pool
-            self.check_exists('pool//20/81/hardlink_0.2.1_amd64.deb')
-            self.check_exists('pool/4e/fc/hardlink_0.2.1.dsc')
-            self.check_exists('pool/8e/2c/hardlink_0.2.1.tar.gz')
+            self.check_exists('pool/66/83/99580590bf1ffcd9eb161b6e5747_hardlink_0.2.1_amd64.deb')
+            self.check_exists('pool/c0/d7/458aa2ca3886cd6885f395a289ef_hardlink_0.2.1.dsc')
+            self.check_exists('pool/4d/f0/adce005526a1f0e1b38171ddb1f0_hardlink_0.2.1.tar.gz')
 
             for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1.tar.gz", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
                 path = os.path.join(self.tempSrcDir, "01", path)
@@ -126,8 +136,10 @@ class IncludeRepo6Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo6Test, self).prepare()
@@ -161,8 +173,10 @@ class IncludeRepo7Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo7Test, self).prepare()
@@ -191,8 +205,10 @@ class IncludeRepo8Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo8Test, self).prepare()
@@ -224,8 +240,10 @@ class IncludeRepo9Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo9Test, self).prepare()
@@ -258,7 +276,9 @@ class IncludeRepo10Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -ignore-signatures "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo10Test, self).prepare()
@@ -290,7 +310,9 @@ class IncludeRepo11Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -accept-unsigned -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo11Test, self).prepare()
@@ -323,8 +345,10 @@ class IncludeRepo12Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -accept-unsigned -keyring=${files}/aptly.pub "
-    outputMatchPrepare = lambda self, s: gpgRemove(self, tempDirRemove(self, s))
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
 
     def prepare(self):
         super(IncludeRepo12Test, self).prepare()
@@ -358,8 +382,10 @@ class IncludeRepo13Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders1.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo14Test(BaseTest):
@@ -370,7 +396,9 @@ class IncludeRepo14Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders2.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo15Test(BaseTest):
@@ -381,8 +409,10 @@ class IncludeRepo15Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders-404.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo16Test(BaseTest):
@@ -393,8 +423,10 @@ class IncludeRepo16Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders3.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo17Test(BaseTest):
@@ -405,8 +437,10 @@ class IncludeRepo17Test(BaseTest):
         "aptly repo create unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders4.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo18Test(BaseTest):
@@ -417,7 +451,9 @@ class IncludeRepo18Test(BaseTest):
         "aptly repo create -uploaders-file=${changes}/uploaders2.json unstable",
     ]
     runCmd = "aptly repo include -uploaders-file=${changes}/uploaders1.json -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))
 
 
 class IncludeRepo19Test(BaseTest):
@@ -428,5 +464,7 @@ class IncludeRepo19Test(BaseTest):
         "aptly repo create -uploaders-file=${changes}/uploaders1.json unstable",
     ]
     runCmd = "aptly repo include -no-remove-files -keyring=${files}/aptly.pub ${changes}"
-    outputMatchPrepare = lambda _, s: changesRemove(_, gpgRemove(_, s))
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return changesRemove(_, gpgRemove(_, s))

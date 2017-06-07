@@ -27,8 +27,12 @@ coverage*.out
 
 *.pyc
 
-_vendor/
+xc-out/
+root/
 
-gen
 man/aptly.1.html
 man/aptly.1.ronn
+
+.goxc.local.json
+
+system/env/

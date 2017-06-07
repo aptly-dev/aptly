@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"sort"
 )
 
 func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
@@ -33,7 +34,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		srcRepo    *deb.LocalRepo
 	)
 
-	if command == "copy" || command == "move" {
+	if command == "copy" || command == "move" { // nolint: goconst
 		srcRepo, err = context.CollectionFactory().LocalRepoCollection().ByName(args[0])
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
@@ -49,7 +50,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 
 		srcRefList = srcRepo.RefList()
-	} else if command == "import" {
+	} else if command == "import" { // nolint: goconst
 		var srcRemoteRepo *deb.RemoteRepo
 
 		srcRemoteRepo, err = context.CollectionFactory().RemoteRepoCollection().ByName(args[0])
@@ -114,18 +115,18 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	toProcess, err := srcList.Filter(queries, withDeps, dstList, context.DependencyOptions(), architecturesList)
+	toProcess, err := srcList.FilterWithProgress(queries, withDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
 
 	var verb string
 
-	if command == "move" {
+	if command == "move" { // nolint: goconst
 		verb = "moved"
-	} else if command == "copy" {
+	} else if command == "copy" { // nolint: goconst
 		verb = "copied"
-	} else if command == "import" {
+	} else if command == "import" { // nolint: goconst
 		verb = "imported"
 	}
 
@@ -135,7 +136,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 			return err
 		}
 
-		if command == "move" {
+		if command == "move" { // nolint: goconst
 			srcList.Remove(p)
 		}
 		context.Progress().ColoredPrintf("@g[o]@| %s %s", p, verb)
@@ -155,7 +156,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to save: %s", err)
 		}
 
-		if command == "move" {
+		if command == "move" { // nolint: goconst
 			srcRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(srcList))
 
 			err = context.CollectionFactory().LocalRepoCollection().Update(srcRepo)

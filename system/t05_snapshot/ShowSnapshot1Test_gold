@@ -1,25 +1,56 @@
 Name: snap1
-Created At: 2014-06-28 03:01:02 MSK
 Description: Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy
 Number of packages: 661
+Sources:
+  wheezy-non-free [repo]
 Packages:
+  3270-common_3.3.10ga4-2+b1_amd64
+  3270-common_3.3.10ga4-2+b1_i386
   abs-guide_6.5-1_all
+  abyss_1.3.4-3_amd64
+  agrep_4.17-9_amd64
   album_4.06-2_all
   album-data_4.05-2_all
   alien-arena-data_7.53-1_all
+  amd-clinfo_1:12-6+point-3_amd64
+  amd-clinfo_1:12-6+point-3_i386
+  amd-libopencl1_1:12-6+point-3_amd64
+  amd-libopencl1_1:12-6+point-3_i386
+  amd-opencl-dev_1:12-6+point-3_amd64
+  amd-opencl-dev_1:12-6+point-3_i386
+  amd-opencl-icd_1:12-6+point-3_amd64
+  amd-opencl-icd_1:12-6+point-3_i386
+  amd64-microcode_1.20120910-2_amd64
+  amd64-microcode_1.20120910-2_i386
+  amiwm_0.20.48-8_amd64
+  amiwm_0.20.48-8_i386
   amoeba-data_1.1-6_all
   assaultcube-data_1.1.0.4+repack1-2.1~deb7u1_all
   asterisk-prompt-es_1.4-1_all
   atmel-firmware_1.3-4_all
   autodocktools_1.5.6~rc3~cvs.20120206-1_all
   automake1.9-doc_1.9.6-1_all
+  axe_6.1.2-15.1_i386
   bison-doc_1:2.5-1_all
+  blimps-examples_3.9-1_amd64
+  blimps-utils_3.9-1_amd64
   bluez-firmware_1.2-3_all
   broadcom-sta-common_5.100.82.112-8_all
   broadcom-sta-dkms_5.100.82.112-8_all
   broadcom-sta-source_5.100.82.112-8_all
+  bsdgames-nonfree_2.17-5_amd64
+  bsdgames-nonfree_2.17-5_i386
+  bugsx_1.08-12_amd64
+  bugsx_1.08-12_i386
+  c3270_3.3.10ga4-2+b1_amd64
+  c3270_3.3.10ga4-2+b1_i386
   cclib-data_1.0.1-3_all
   celestia-common-nonfree_1.6.1-1_all
+  clustalw-mpi_0.15-2_amd64
+  conserver-client_8.1.18-2.2_amd64
+  conserver-client_8.1.18-2.2_i386
+  conserver-server_8.1.18-2.2_amd64
+  conserver-server_8.1.18-2.2_i386
   context-doc-nonfree_2012.06.27-2_all
   context-nonfree_2007.03.22-1_all
   coq-doc_8.3pl4-1_all
@@ -28,9 +59,15 @@ Packages:
   cpp-4.4-doc_4.4.7-3_all
   cpp-4.6-doc_4.6.3-2_all
   cpp-4.7-doc_4.7.2-2_all
+  crafty_23.4-6_amd64
+  crafty_23.4-6_i386
   crash-whitepaper_1.0-1.1_all
+  cufflinks_1.3.0-2_amd64
+  cuneiform_1.1.0+dfsg-4_amd64
+  cuneiform_1.1.0+dfsg-4_i386
   cuneiform-common_1.1.0+dfsg-4_all
   dahdi-firmware-nonfree_2.6.1-1_all
+  dgen_1.23-12_i386
   doc-rfc_20120225-2_all
   doc-rfc-experimental_20120225-2_all
   doc-rfc-fyi-bcp_20120225-2_all
@@ -41,15 +78,37 @@ Packages:
   doc-rfc-std_20120225-2_all
   doc-rfc-std-proposed_20120225-2_all
   doom-wad-shareware_1.9.fixed-2_all
+  drdsl_1.2.0-1_i386
+  dynamips_0.2.7-0.2.8RC2-5.1_amd64
+  dynamips_0.2.7-0.2.8RC2-5.1_i386
+  eagle_5.12.0-3_i386
   eagle-data_5.12.0-3_all
   ebook-dev-alp_200407-1_all
   elmer-doc_2011.09.06-1_all
   emacs23-common-non-dfsg_23.4+1-1_all
   emacs24-common-non-dfsg_24.1+1-1_all
+  embassy-phylip_3.69+20110714-1_amd64
   etoys_4.0.2340-1_all
   etoys-doc_4.0.2340-1_all
+  f2j_0.8.1-2_amd64
+  f2j_0.8.1-2_i386
+  fatrat-unpack_1.1.3-2_amd64
+  fatrat-unpack_1.1.3-2_i386
   festlex-oald_1.4.0-3.1_all
   festvox-ellpc11k_1.4.0-3_all
+  fglrx-atieventsd_1:12-6+point-3_amd64
+  fglrx-atieventsd_1:12-6+point-3_i386
+  fglrx-control_1:12-6+point-3_amd64
+  fglrx-control_1:12-6+point-3_i386
+  fglrx-driver_1:12-6+point-3_amd64
+  fglrx-driver_1:12-6+point-3_i386
+  fglrx-glx_1:12-6+point-3_amd64
+  fglrx-glx_1:12-6+point-3_i386
+  fglrx-glx-ia32_1:12-6+point-3_amd64
+  fglrx-modules-dkms_1:12-6+point-3_amd64
+  fglrx-modules-dkms_1:12-6+point-3_i386
+  fglrx-source_1:12-6+point-3_amd64
+  fglrx-source_1:12-6+point-3_i386
   firmware-atheros_0.36+wheezy.1_all
   firmware-bnx2_0.36+wheezy.1_all
   firmware-bnx2x_0.36+wheezy.1_all
@@ -75,8 +134,11 @@ Packages:
   fonts-mikachan_9.1-8_all
   fonts-moe-standard-kai_20120530-1_all
   fonts-moe-standard-song_20120530-1_all
+  frobtads_1:0.13-2_amd64
   frogatto-data_1.2+dfsg-1_all
   fsl_4.1.9-7_all
+  fsl-4.1_4.1.9-7_amd64
+  fsl-4.1_4.1.9-7_i386
   fsl-doc-4.1_4.1.9-7_all
   gawk-doc_4.0.1+ds-1_all
   gcc-4.4-doc_4.4.7-3_all
@@ -93,6 +155,7 @@ Packages:
   gfortran-4.7-doc_4.7.2-2_all
   glibc-doc-reference_2.13-1_all
   gliese_3.0.95-2_all
+  gmap_2012-06-12-1_amd64
   gmp-doc_5.0.5-1_all
   gnat-4.4-doc_4.4.7-3_all
   gnat-4.6-doc_4.6.3-2_all
@@ -108,29 +171,164 @@ Packages:
   hwb_1:040412-3_all
   icc-profiles_2.0.1-1_all
   igv_2.0.30-1_all
+  intel-microcode_1.20140122.1_amd64
+  intel-microcode_1.20140122.1_i386
+  iozone3_397-2_amd64
+  iozone3_397-2_i386
+  irpas_0.10-4.1_i386
   jhove_1.6+dfsg-1_all
+  kic_2.4a-1.1_amd64
   kstars-data-extra-tycho2_1.1r1-9_all
+  lgrind_3.67-3_i386
+  libapache2-mod-fastcgi_2.4.7~0910052141-1_amd64
+  libapache2-mod-fastcgi_2.4.7~0910052141-1_i386
+  libblimps3_3.9-1_amd64
+  libblimps3-dev_3.9-1_amd64
+  libcamlpdf-ocaml-dev_0.5-1+b2_amd64
+  libcamlpdf-ocaml-dev_0.5-1+b2_i386
+  libcg_3.1.0013-1_amd64
+  libcg_3.1.0013-1_i386
+  libcggl_3.1.0013-1_amd64
+  libcggl_3.1.0013-1_i386
+  libclamunrar6_0.96.4-1_amd64
+  libclamunrar6_0.96.4-1_i386
   libcolt-java_1.2.0~nojar-2_all
   libcolt-java-doc_1.2.0~nojar-2_all
   libcore++-demo_1.7-12_all
+  libcore++-dev_1.7-12_amd64
+  libcore++-dev_1.7-12_i386
   libcore++-doc_1.7-12_all
+  libcore++1c2_1.7-12_amd64
+  libcore++1c2_1.7-12_i386
+  libcublas4_4.2.9-2_amd64
+  libcublas4_4.2.9-2_i386
+  libcuda1_304.117-1_amd64
+  libcuda1_304.117-1_i386
+  libcuda1-ia32_304.117-1_amd64
+  libcudart4_4.2.9-2_amd64
+  libcudart4_4.2.9-2_i386
+  libcufft4_4.2.9-2_amd64
+  libcufft4_4.2.9-2_i386
+  libcuinj4_4.2.9-2_amd64
+  libcuinj4_4.2.9-2_i386
+  libcuneiform-dev_1.1.0+dfsg-4_amd64
+  libcuneiform-dev_1.1.0+dfsg-4_i386
+  libcuneiform0_1.1.0+dfsg-4_amd64
+  libcuneiform0_1.1.0+dfsg-4_i386
+  libcupti-dev_4.2.9-2_amd64
+  libcupti-dev_4.2.9-2_i386
   libcupti-doc_4.2.9-2_all
+  libcupti4_4.2.9-2_amd64
+  libcupti4_4.2.9-2_i386
+  libcurand4_4.2.9-2_amd64
+  libcurand4_4.2.9-2_i386
+  libcusparse4_4.2.9-2_amd64
+  libcusparse4_4.2.9-2_i386
+  libcwd_1.0.4-1_amd64
+  libcwd_1.0.4-1_i386
   libcwd-doc_1.0.4-1_all
   libertas-firmware_9.70.7.p0.0-2_all
   libf2j-java_0.8.1-2_all
+  libfglrx_1:12-6+point-3_amd64
+  libfglrx_1:12-6+point-3_i386
+  libfglrx-amdxvba1_1:12-6+point-3_amd64
+  libfglrx-amdxvba1_1:12-6+point-3_i386
+  libfglrx-ia32_1:12-6+point-3_amd64
   libgeotiff-epsg_1.3.0-1_all
+  libgl1-fglrx-glx_1:12-6+point-3_amd64
+  libgl1-fglrx-glx_1:12-6+point-3_i386
+  libgl1-nvidia-alternatives_304.117-1_amd64
+  libgl1-nvidia-alternatives_304.117-1_i386
+  libgl1-nvidia-alternatives-ia32_304.117-1_amd64
+  libgl1-nvidia-glx_304.117-1_amd64
+  libgl1-nvidia-glx_304.117-1_i386
+  libgl1-nvidia-glx-ia32_304.117-1_amd64
+  libgl1-nvidia-legacy-173xx-glx_173.14.35-4_amd64
+  libgl1-nvidia-legacy-173xx-glx_173.14.35-4_i386
+  libgl1-nvidia-legacy-173xx-glx-ia32_173.14.35-4_amd64
+  libgl1-nvidia-legacy-71xx-glx_71.86.15-3_amd64
+  libgl1-nvidia-legacy-71xx-glx_71.86.15-3_i386
+  libgl1-nvidia-legacy-71xx-glx-ia32_71.86.15-3_amd64
+  libgl1-nvidia-legacy-96xx-glx_96.43.23-3_amd64
+  libgl1-nvidia-legacy-96xx-glx_96.43.23-3_i386
+  libgl1-nvidia-legacy-96xx-glx-ia32_96.43.23-3_amd64
+  libglx-nvidia-alternatives_304.117-1_amd64
+  libglx-nvidia-alternatives_304.117-1_i386
+  libgpcl-dev_2.32-1_i386
+  libgpcl0_2.32-1_i386
   libjabsorb-java_1.3-2_all
+  libjai-core-java_1.1.4-3_amd64
   libjai-core-java-doc_1.1.4-3_all
+  libjai-imageio-core-java_1.2-3_amd64
   libjai-imageio-core-java-doc_1.2-3_all
   libmail-sender-perl_0.8.16-2_all
+  libmath-random-perl_0.71-3+b1_amd64
+  libmath-random-perl_0.71-3+b1_i386
+  libmetis-edf-dev_4.1-2-3_amd64
+  libmetis-edf4.1_4.1-2-3_amd64
+  libmotif-dev_2.3.3-8_amd64
+  libmotif-dev_2.3.3-8_i386
+  libmotif4_2.3.3-8_amd64
+  libmotif4_2.3.3-8_i386
+  libmotif4-dbg_2.3.3-8_amd64
+  libmotif4-dbg_2.3.3-8_i386
+  libnauty-dev_2.4r2-1_amd64
+  libnauty-dev_2.4r2-1_i386
+  libnauty1d_2.4r2-1_amd64
+  libnauty1d_2.4r2-1_i386
+  libnpp4_4.2.9-2_amd64
+  libnpp4_4.2.9-2_i386
+  libnvcuvid1_304.117-1_amd64
+  libnvcuvid1_304.117-1_i386
+  libnvidia-compiler_304.117-1_amd64
+  libnvidia-compiler_304.117-1_i386
+  libnvidia-compiler-ia32_304.117-1_amd64
+  libnvidia-ml1_304.117-1_amd64
+  libnvidia-ml1_304.117-1_i386
+  libparmetis-dev_3.1.1-4_amd64
+  libparmetis-dev_3.1.1-4_i386
+  libparmetis3.1_3.1.1-4_amd64
+  libparmetis3.1_3.1.1-4_i386
   libstar-parser-perl_0.59-3_all
+  libtet1.4_1.4.3-1_amd64
+  libtet1.4_1.4.3-1_i386
+  libtet1.4-dev_1.4.3-1_amd64
+  libtet1.4-dev_1.4.3-1_i386
+  libtriangle-1.6_1.6-2_amd64
+  libtriangle-1.6_1.6-2_i386
+  libtriangle-dev_1.6-2_amd64
+  libtriangle-dev_1.6-2_i386
   libttspico-data_1.0+git20110131-2_all
+  libttspico-dev_1.0+git20110131-2_amd64
+  libttspico-dev_1.0+git20110131-2_i386
+  libttspico-utils_1.0+git20110131-2_amd64
+  libttspico-utils_1.0+git20110131-2_i386
+  libttspico0_1.0+git20110131-2_amd64
+  libttspico0_1.0+git20110131-2_i386
   libvideo-info-perl_0.993-2_all
+  libvmtk-dev_1.0.1-1_amd64
+  libvmtk-dev_1.0.1-1_i386
+  libvmtk1.0_1.0.1-1_amd64
+  libvmtk1.0_1.0.1-1_i386
   libworldwind-java_0.5.0-10_all
+  libxvbaw-dev_1:12-6+point-3_amd64
+  libxvbaw-dev_1:12-6+point-3_i386
+  libxvmcnvidia1_304.117-1_amd64
+  libxvmcnvidia1_304.117-1_i386
   lugaru-data_0~20110520.1+hge4354-1_all
+  madfuload_1.2-4_amd64
+  madfuload_1.2-4_i386
   make-doc_3.81-5.1_all
+  mame_0.146-5_amd64
+  mame_0.146-5_i386
+  mame-tools_0.146-4_amd64
+  mame-tools_0.146-4_i386
   manpages-posix_2.16-1_all
   manpages-posix-dev_2.16-1_all
+  martian-modem_20080625-2_i386
+  martian-modem-source_20080625-2_i386
+  mbrola_3.01h-6_amd64
+  mbrola_3.01h-6_i386
   mbrola-af1_0.0.20040426-2_all
   mbrola-br1_2.021-1_all
   mbrola-br3_2.021-2_all
@@ -164,32 +362,151 @@ Packages:
   mbrola-us2_0.1-2_all
   mbrola-us3_0.1-1_all
   mbrola-vz1_2-1_all
+  mess_0.146-4_amd64
+  mess_0.146-4_i386
   mess-data_0.146-4_all
+  metis-edf_4.1-2-3_amd64
+  mgltools-bhtree_1.5.6~rc3~cvs.20120206-1_amd64
+  mgltools-bhtree_1.5.6~rc3~cvs.20120206-1_i386
   mgltools-cadd_1.5.6~rc3~cvs.20120206-1_all
   mgltools-dejavu_1.5.6~rc3~cvs.20120206-1_all
+  mgltools-geomutils_1.5.6~rc3~cvs.20120601-1_amd64
+  mgltools-geomutils_1.5.6~rc3~cvs.20120601-1_i386
+  mgltools-gle_1.5.6~rc3~cvs.20120601-1_amd64
+  mgltools-gle_1.5.6~rc3~cvs.20120601-1_i386
   mgltools-mglutil_1.5.6~rc3~cvs.20120206-1_all
   mgltools-molkit_1.5.6~rc3~cvs.20120206-1_all
   mgltools-networkeditor_1.5.6~rc3~cvs.20120206-1_all
+  mgltools-opengltk_1.5.6~rc3~cvs.20120601-2_amd64
+  mgltools-opengltk_1.5.6~rc3~cvs.20120601-2_i386
   mgltools-pmv_1.5.6~rc3~cvs.20120206-1_all
   mgltools-pmv-test_1.5.6~rc3~cvs.20120206-1_all
   mgltools-pyautodock_1.5.6~rc3~cvs.20120206-1_all
   mgltools-pybabel_1.5.6~rc3~cvs.20120206-1_all
+  mgltools-pyglf_1.5.6~rc3~cvs.20120601-1_amd64
+  mgltools-pyglf_1.5.6~rc3~cvs.20120601-1_i386
   mgltools-scenario2_1.5.6~rc3~cvs.20120206-1_all
+  mgltools-sff_1.5.6~rc3~cvs.20120206-1_amd64
+  mgltools-sff_1.5.6~rc3~cvs.20120206-1_i386
   mgltools-support_1.5.6~rc3~cvs.20120206-1_all
   mgltools-symserv_1.5.6~rc3~cvs.20120206-1_all
+  mgltools-utpackages_1.5.6~rc3~cvs.20120601-1_amd64
+  mgltools-utpackages_1.5.6~rc3~cvs.20120601-1_i386
   mgltools-viewerframework_1.5.6~rc3~cvs.20120206-2_all
   mgltools-vision_1.5.6~rc3~cvs.20120601-1_all
   mgltools-visionlibraries_1.5.6~rc3~cvs.20120601-1_all
   mgltools-volume_1.5.6~rc3~cvs.20120206-1_all
   mgltools-webservices_1.5.6~rc3~cvs.20120206-1_all
   midisport-firmware_1.2-4_all
+  motif-clients_2.3.3-8_amd64
+  motif-clients_2.3.3-8_i386
   mpi-specs_20040719-2_all
+  mssstest_3.0-3_amd64
+  mssstest_3.0-3_i386
+  nautilus-dropbox_1.4.0-3_amd64
+  nautilus-dropbox_1.4.0-3_i386
+  nauty_2.4r2-1_amd64
+  nauty_2.4r2-1_i386
+  netperf_2.4.4-6.1_amd64
+  netperf_2.4.4-6.1_i386
+  ngspice_24-1_amd64
   ngspice-doc_24-1_all
   nikto_1:2.1.4-2_all
   noshell_4.0.11+notdfsg1-5_all
+  notion_3+2012042300-1_amd64
+  notion_3+2012042300-1_i386
   notion-dev_3+2012042300-1_all
+  nttcp_1.47-13_amd64
+  nvidia-alternative_304.117-1_amd64
+  nvidia-alternative_304.117-1_i386
+  nvidia-alternative-legacy-173xx_173.14.35-4_amd64
+  nvidia-alternative-legacy-173xx_173.14.35-4_i386
+  nvidia-alternative-legacy-71xx_71.86.15-3_amd64
+  nvidia-alternative-legacy-71xx_71.86.15-3_i386
+  nvidia-alternative-legacy-96xx_96.43.23-3_amd64
+  nvidia-alternative-legacy-96xx_96.43.23-3_i386
+  nvidia-cg-dev_3.1.0013-1_amd64
+  nvidia-cg-dev_3.1.0013-1_i386
   nvidia-cg-doc_3.1.0013-1_all
+  nvidia-cg-toolkit_3.1.0013-1_amd64
+  nvidia-cg-toolkit_3.1.0013-1_i386
+  nvidia-cuda-dev_4.2.9-2_amd64
+  nvidia-cuda-dev_4.2.9-2_i386
   nvidia-cuda-doc_4.2.9-2_all
+  nvidia-cuda-gdb_4.2.9-2_amd64
+  nvidia-cuda-gdb_4.2.9-2_i386
+  nvidia-cuda-toolkit_4.2.9-2_amd64
+  nvidia-cuda-toolkit_4.2.9-2_i386
+  nvidia-detect_304.117-1_amd64
+  nvidia-detect_304.117-1_i386
+  nvidia-glx_304.117-1_amd64
+  nvidia-glx_304.117-1_i386
+  nvidia-glx-ia32_304.117-1_amd64
+  nvidia-glx-legacy_71.86.15-3_amd64
+  nvidia-glx-legacy_71.86.15-3_i386
+  nvidia-glx-legacy-173xx_173.14.35-4_amd64
+  nvidia-glx-legacy-173xx_173.14.35-4_i386
+  nvidia-glx-legacy-173xx-ia32_173.14.35-4_amd64
+  nvidia-glx-legacy-71xx_71.86.15-3_amd64
+  nvidia-glx-legacy-71xx_71.86.15-3_i386
+  nvidia-glx-legacy-71xx-dev_71.86.15-3_amd64
+  nvidia-glx-legacy-71xx-dev_71.86.15-3_i386
+  nvidia-glx-legacy-71xx-ia32_71.86.15-3_amd64
+  nvidia-glx-legacy-71xx-unsupported_71.86.15-3_amd64
+  nvidia-glx-legacy-71xx-unsupported_71.86.15-3_i386
+  nvidia-glx-legacy-96xx_96.43.23-3_amd64
+  nvidia-glx-legacy-96xx_96.43.23-3_i386
+  nvidia-glx-legacy-96xx-ia32_96.43.23-3_amd64
+  nvidia-glx-legacy-dev_71.86.15-3_amd64
+  nvidia-glx-legacy-dev_71.86.15-3_i386
+  nvidia-glx-legacy-ia32_71.86.15-3_amd64
+  nvidia-kernel-2.6-486_304.117+3.2.0+1_i386
+  nvidia-kernel-2.6-686-pae_304.117+3.2.0+1_i386
+  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_amd64
+  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_i386
+  nvidia-kernel-3.2.0-4-486_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-3.2.0-4-686-pae_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_amd64
+  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_i386
+  nvidia-kernel-486_304.117+3.2.0+1_i386
+  nvidia-kernel-686-pae_304.117+3.2.0+1_i386
+  nvidia-kernel-amd64_304.117+3.2.0+1_amd64
+  nvidia-kernel-amd64_304.117+3.2.0+1_i386
+  nvidia-kernel-dkms_304.117-1_amd64
+  nvidia-kernel-dkms_304.117-1_i386
+  nvidia-kernel-legacy-173xx-dkms_173.14.35-4_amd64
+  nvidia-kernel-legacy-173xx-dkms_173.14.35-4_i386
+  nvidia-kernel-legacy-173xx-source_173.14.35-4_amd64
+  nvidia-kernel-legacy-173xx-source_173.14.35-4_i386
+  nvidia-kernel-legacy-71xx-dkms_71.86.15-3_amd64
+  nvidia-kernel-legacy-71xx-dkms_71.86.15-3_i386
+  nvidia-kernel-legacy-71xx-source_71.86.15-3_amd64
+  nvidia-kernel-legacy-71xx-source_71.86.15-3_i386
+  nvidia-kernel-legacy-96xx-dkms_96.43.23-3_amd64
+  nvidia-kernel-legacy-96xx-dkms_96.43.23-3_i386
+  nvidia-kernel-legacy-96xx-source_96.43.23-3_amd64
+  nvidia-kernel-legacy-96xx-source_96.43.23-3_i386
+  nvidia-kernel-legacy-source_71.86.15-3_amd64
+  nvidia-kernel-legacy-source_71.86.15-3_i386
+  nvidia-kernel-source_304.117-1_amd64
+  nvidia-kernel-source_304.117-1_i386
+  nvidia-libopencl1_304.117-1_amd64
+  nvidia-libopencl1_304.117-1_i386
+  nvidia-libopencl1-ia32_304.117-1_amd64
+  nvidia-opencl-common_304.117-1_amd64
+  nvidia-opencl-common_304.117-1_i386
+  nvidia-opencl-dev_4.2.9-2_amd64
+  nvidia-opencl-dev_4.2.9-2_i386
+  nvidia-opencl-icd_304.117-1_amd64
+  nvidia-opencl-icd_304.117-1_i386
+  nvidia-opencl-icd-ia32_304.117-1_amd64
+  nvidia-smi_304.117-1_amd64
+  nvidia-smi_304.117-1_i386
+  nvidia-vdpau-driver_304.117-1_amd64
+  nvidia-vdpau-driver_304.117-1_i386
+  nvidia-vdpau-driver-ia32_304.117-1_amd64
+  nvidia-visual-profiler_4.2.9-2_amd64
+  nvidia-visual-profiler_4.2.9-2_i386
   ocaml-book-en_1.0-5_all
   ocaml-book-fr_1.0-5_all
   ocaml-doc_3.12-2_all
@@ -198,9 +515,18 @@ Packages:
   os8_2.1-4_all
   othman_0.2.7-1_all
   out-of-order_1.0-2_all
+  p7zip-rar_9.20.1~ds.1-3_amd64
+  p7zip-rar_9.20.1~ds.1-3_i386
+  paml_4.5-1_amd64
   paml-doc_4.5-1_all
   parmetis-doc_3.1.1-4_all
+  parmetis-test_3.1.1-4_amd64
+  parmetis-test_3.1.1-4_i386
+  pgplot5_5.2.2-19_amd64
+  pgplot5_5.2.2-19_i386
   phy-spread_1.0.3-1_all
+  phylip_1:3.69-1_amd64
+  phylip_1:3.69-1_i386
   phylip-doc_1:3.69-1_all
   picon-domains_2012.05.09-1_all
   picon-misc_2010.01.02-1_all
@@ -209,32 +535,80 @@ Packages:
   picon-usenix_1995.04.13-8_all
   picon-users_2012.05.14-1_all
   picon-weather_2010.01.02-1_all
+  powder_117-1_amd64
+  pptview_8.0-7_amd64
+  pptview_8.0-7_i386
+  pr3287_3.3.10ga4-2+b1_amd64
+  pr3287_3.3.10ga4-2+b1_i386
   ptex-jtex_1.7+1-13_all
   python-hijra_0.2.1-1_all
   python-okasha_0.2.4-1_all
   python-okasha-examples_0.2.4-1_all
   python-othman_0.2.7-1_all
+  python-vmtk_1.0.1-1_amd64
+  python-vmtk_1.0.1-1_i386
+  r-cran-maptools_1:0.7-38-1_amd64
+  r-cran-maptools_1:0.7-38-1_i386
+  rar_2:4.0.b3-1_amd64
+  rar_2:4.0.b3-1_i386
   redeclipse-data_1.2-1_all
   rubybook_0.2.1-1_all
+  s3270_3.3.10ga4-2+b1_amd64
+  s3270_3.3.10ga4-2+b1_i386
   sauerbraten-data_0.0.20100728+repack-1_all
   scribus-doc_1.4.0+r17300-1_all
   scribus-ng-doc_1.4.0+r17300-1_all
+  sdlmame_0.146-5_amd64
+  sdlmame_0.146-5_i386
+  sdlmame-tools_0.146-4_amd64
+  sdlmame-tools_0.146-4_i386
+  seaview_1:4.3.3-3_amd64
+  seaview_1:4.3.3-3_i386
   selfhtml_8.1.2-1_all
+  seq-gen_1.3.3-1_amd64
+  seq-gen_1.3.3-1_i386
+  sgb_1:20090810-1_amd64
+  sgb_1:20090810-1_i386
   sgb-doc_1:20090810-1_all
   shapetools-tutorial_1.3-3.1_all
+  sift_4.0.3b-3_amd64
   sisu-markup-samples_3.0.1-1_all
+  sl-modem-daemon_2.9.11~20110321-8+deb7u1_amd64
+  sl-modem-daemon_2.9.11~20110321-8+deb7u1_i386
+  sl-modem-dkms_2.9.11~20110321-8+deb7u1_amd64
+  sl-modem-dkms_2.9.11~20110321-8+deb7u1_i386
   sl-modem-source_2.9.11~20110321-8+deb7u1_all
   snmp-mibs-downloader_1.1_all
+  sparse_0.4.3+20110419-1_amd64
+  sparse_0.4.3+20110419-1_i386
   spectrum-roms_20081224-3_all
+  spellcast_1.0-21_i386
   spellcast-doc_1.5_all
   stardict-english-czech_20120601-1_all
   stardict-german-czech_20120201-1_all
   t1-xfree86-nonfree_4.2.1-3.1_all
+  tads2-dev_1:0.13-2_amd64
   tads3-common_1:0.13-2_all
+  tads3-dev_1:0.13-2_amd64
   tangerine-icon-theme_0.26.debian-3_all
   tar-doc_1.26-2_all
+  tclspice_24-1_amd64
+  teamspeak-client_2.0.32-3.1_amd64
+  teamspeak-client_2.0.32-3.1_i386
+  teamspeak-server_2.0.24.1+debian-1.1_i386
+  tetgen_1.4.3-1_amd64
+  tetgen_1.4.3-1_i386
   texinfo-doc-nonfree_4.13a-1_all
   thawab_3.0.13-1_all
+  titantools_4.0.11+notdfsg1-5_amd64
+  titantools_4.0.11+notdfsg1-5_i386
+  tome_2.3.5-2_amd64
+  tome_2.3.5-2_i386
+  triangle-bin_1.6-2_amd64
+  triangle-bin_1.6-2_i386
+  trn_3.6-23_i386
+  trn4_4.0-test77-6_amd64
+  trn4_4.0-test77-6_i386
   ttf-ipafont-jisx0208_00103-19_all
   ttf-ipafont-uigothic_00203-21_all
   ttf-kochi-gothic-naga10_20030809-14_all
@@ -246,6 +620,10 @@ Packages:
   ttf-xfree86-nonfree_4.2.1-3.1_all
   ttf-xfree86-nonfree-syriac_4.2.1-3.1_all
   ttytter_2.1.0-1~deb7u1_all
+  unace-nonfree_2.5-7_amd64
+  unace-nonfree_2.5-7_i386
+  unrar_1:4.1.4-1_amd64
+  unrar_1:4.1.4-1_i386
   uqm-content_0.6.0+deb1-6_all
   uqm-music_0.6.0+deb1-6_all
   uqm-voice_0.6.0+deb1-6_all
@@ -253,414 +631,37 @@ Packages:
   virtualbox-guest-additions-iso_4.1.18-1_all
   vmtk_1.0.1-1_all
   w3-recs_20110107-1_all
+  wap-wml-tools_0.0.4-6_amd64
+  wap-wml-tools_0.0.4-6_i386
   worldwind_0.5.0-10_all
   worldwind-doc_0.5.0-10_all
+  x3270_3.3.10ga4-2+b1_amd64
+  x3270_3.3.10ga4-2+b1_i386
   xfonts-naga10_1.1-13.1_all
   xfonts-x3270-misc_3.3.10ga4-2_all
+  xfractint_20.4.10-2_amd64
+  xfractint_20.4.10-2_i386
   xmame-sdl_0.146-5_all
+  xmame-svga_0.146-5_i386
   xmame-tools_0.146-4_all
   xmame-x_0.146-5_all
   xmess-sdl_0.146-4_all
   xmess-x_0.146-4_all
   xml2rfc_1.36-5_all
+  xserver-xorg-video-nvidia_304.117-1_amd64
+  xserver-xorg-video-nvidia_304.117-1_i386
+  xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_amd64
+  xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_i386
+  xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_amd64
+  xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_i386
+  xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_amd64
+  xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_i386
+  xsnow_1:1.42-9_amd64
   xtide-data-nonfree_20100529-1_all
   yale_5.0.95-2_all
+  zangband_1:2.7.5pre1-8_amd64
+  zangband_1:2.7.5pre1-8_i386
   zangband-data_1:2.7.5pre1-8_all
   zd1211-firmware_2.21.0.0-1_all
   zekr_1.0.0+repack-7_all
   zeroc-ice-manual_3.4.2-1_all
-  3270-common_3.3.10ga4-2+b1_amd64
-  abyss_1.3.4-3_amd64
-  agrep_4.17-9_amd64
-  amd-clinfo_1:12-6+point-3_amd64
-  amd-libopencl1_1:12-6+point-3_amd64
-  amd-opencl-dev_1:12-6+point-3_amd64
-  amd-opencl-icd_1:12-6+point-3_amd64
-  amd64-microcode_1.20120910-2_amd64
-  amiwm_0.20.48-8_amd64
-  blimps-examples_3.9-1_amd64
-  blimps-utils_3.9-1_amd64
-  bsdgames-nonfree_2.17-5_amd64
-  bugsx_1.08-12_amd64
-  c3270_3.3.10ga4-2+b1_amd64
-  clustalw-mpi_0.15-2_amd64
-  conserver-client_8.1.18-2.2_amd64
-  conserver-server_8.1.18-2.2_amd64
-  crafty_23.4-6_amd64
-  cufflinks_1.3.0-2_amd64
-  cuneiform_1.1.0+dfsg-4_amd64
-  dynamips_0.2.7-0.2.8RC2-5.1_amd64
-  embassy-phylip_3.69+20110714-1_amd64
-  f2j_0.8.1-2_amd64
-  fatrat-unpack_1.1.3-2_amd64
-  fglrx-atieventsd_1:12-6+point-3_amd64
-  fglrx-control_1:12-6+point-3_amd64
-  fglrx-driver_1:12-6+point-3_amd64
-  fglrx-glx_1:12-6+point-3_amd64
-  fglrx-glx-ia32_1:12-6+point-3_amd64
-  fglrx-modules-dkms_1:12-6+point-3_amd64
-  fglrx-source_1:12-6+point-3_amd64
-  frobtads_1:0.13-2_amd64
-  fsl-4.1_4.1.9-7_amd64
-  gmap_2012-06-12-1_amd64
-  intel-microcode_1.20140122.1_amd64
-  iozone3_397-2_amd64
-  kic_2.4a-1.1_amd64
-  libapache2-mod-fastcgi_2.4.7~0910052141-1_amd64
-  libblimps3_3.9-1_amd64
-  libblimps3-dev_3.9-1_amd64
-  libcamlpdf-ocaml-dev_0.5-1+b2_amd64
-  libcg_3.1.0013-1_amd64
-  libcggl_3.1.0013-1_amd64
-  libclamunrar6_0.96.4-1_amd64
-  libcore++-dev_1.7-12_amd64
-  libcore++1c2_1.7-12_amd64
-  libcublas4_4.2.9-2_amd64
-  libcuda1_304.117-1_amd64
-  libcuda1-ia32_304.117-1_amd64
-  libcudart4_4.2.9-2_amd64
-  libcufft4_4.2.9-2_amd64
-  libcuinj4_4.2.9-2_amd64
-  libcuneiform-dev_1.1.0+dfsg-4_amd64
-  libcuneiform0_1.1.0+dfsg-4_amd64
-  libcupti-dev_4.2.9-2_amd64
-  libcupti4_4.2.9-2_amd64
-  libcurand4_4.2.9-2_amd64
-  libcusparse4_4.2.9-2_amd64
-  libcwd_1.0.4-1_amd64
-  libfglrx_1:12-6+point-3_amd64
-  libfglrx-amdxvba1_1:12-6+point-3_amd64
-  libfglrx-ia32_1:12-6+point-3_amd64
-  libgl1-fglrx-glx_1:12-6+point-3_amd64
-  libgl1-nvidia-alternatives_304.117-1_amd64
-  libgl1-nvidia-alternatives-ia32_304.117-1_amd64
-  libgl1-nvidia-glx_304.117-1_amd64
-  libgl1-nvidia-glx-ia32_304.117-1_amd64
-  libgl1-nvidia-legacy-173xx-glx_173.14.35-4_amd64
-  libgl1-nvidia-legacy-173xx-glx-ia32_173.14.35-4_amd64
-  libgl1-nvidia-legacy-71xx-glx_71.86.15-3_amd64
-  libgl1-nvidia-legacy-71xx-glx-ia32_71.86.15-3_amd64
-  libgl1-nvidia-legacy-96xx-glx_96.43.23-3_amd64
-  libgl1-nvidia-legacy-96xx-glx-ia32_96.43.23-3_amd64
-  libglx-nvidia-alternatives_304.117-1_amd64
-  libjai-core-java_1.1.4-3_amd64
-  libjai-imageio-core-java_1.2-3_amd64
-  libmath-random-perl_0.71-3+b1_amd64
-  libmetis-edf-dev_4.1-2-3_amd64
-  libmetis-edf4.1_4.1-2-3_amd64
-  libmotif-dev_2.3.3-8_amd64
-  libmotif4_2.3.3-8_amd64
-  libmotif4-dbg_2.3.3-8_amd64
-  libnauty-dev_2.4r2-1_amd64
-  libnauty1d_2.4r2-1_amd64
-  libnpp4_4.2.9-2_amd64
-  libnvcuvid1_304.117-1_amd64
-  libnvidia-compiler_304.117-1_amd64
-  libnvidia-compiler-ia32_304.117-1_amd64
-  libnvidia-ml1_304.117-1_amd64
-  libparmetis-dev_3.1.1-4_amd64
-  libparmetis3.1_3.1.1-4_amd64
-  libtet1.4_1.4.3-1_amd64
-  libtet1.4-dev_1.4.3-1_amd64
-  libtriangle-1.6_1.6-2_amd64
-  libtriangle-dev_1.6-2_amd64
-  libttspico-dev_1.0+git20110131-2_amd64
-  libttspico-utils_1.0+git20110131-2_amd64
-  libttspico0_1.0+git20110131-2_amd64
-  libvmtk-dev_1.0.1-1_amd64
-  libvmtk1.0_1.0.1-1_amd64
-  libxvbaw-dev_1:12-6+point-3_amd64
-  libxvmcnvidia1_304.117-1_amd64
-  madfuload_1.2-4_amd64
-  mame_0.146-5_amd64
-  mame-tools_0.146-4_amd64
-  mbrola_3.01h-6_amd64
-  mess_0.146-4_amd64
-  metis-edf_4.1-2-3_amd64
-  mgltools-bhtree_1.5.6~rc3~cvs.20120206-1_amd64
-  mgltools-geomutils_1.5.6~rc3~cvs.20120601-1_amd64
-  mgltools-gle_1.5.6~rc3~cvs.20120601-1_amd64
-  mgltools-opengltk_1.5.6~rc3~cvs.20120601-2_amd64
-  mgltools-pyglf_1.5.6~rc3~cvs.20120601-1_amd64
-  mgltools-sff_1.5.6~rc3~cvs.20120206-1_amd64
-  mgltools-utpackages_1.5.6~rc3~cvs.20120601-1_amd64
-  motif-clients_2.3.3-8_amd64
-  mssstest_3.0-3_amd64
-  nautilus-dropbox_1.4.0-3_amd64
-  nauty_2.4r2-1_amd64
-  netperf_2.4.4-6.1_amd64
-  ngspice_24-1_amd64
-  notion_3+2012042300-1_amd64
-  nttcp_1.47-13_amd64
-  nvidia-alternative_304.117-1_amd64
-  nvidia-alternative-legacy-173xx_173.14.35-4_amd64
-  nvidia-alternative-legacy-71xx_71.86.15-3_amd64
-  nvidia-alternative-legacy-96xx_96.43.23-3_amd64
-  nvidia-cg-dev_3.1.0013-1_amd64
-  nvidia-cg-toolkit_3.1.0013-1_amd64
-  nvidia-cuda-dev_4.2.9-2_amd64
-  nvidia-cuda-gdb_4.2.9-2_amd64
-  nvidia-cuda-toolkit_4.2.9-2_amd64
-  nvidia-detect_304.117-1_amd64
-  nvidia-glx_304.117-1_amd64
-  nvidia-glx-ia32_304.117-1_amd64
-  nvidia-glx-legacy_71.86.15-3_amd64
-  nvidia-glx-legacy-173xx_173.14.35-4_amd64
-  nvidia-glx-legacy-173xx-ia32_173.14.35-4_amd64
-  nvidia-glx-legacy-71xx_71.86.15-3_amd64
-  nvidia-glx-legacy-71xx-dev_71.86.15-3_amd64
-  nvidia-glx-legacy-71xx-ia32_71.86.15-3_amd64
-  nvidia-glx-legacy-71xx-unsupported_71.86.15-3_amd64
-  nvidia-glx-legacy-96xx_96.43.23-3_amd64
-  nvidia-glx-legacy-96xx-ia32_96.43.23-3_amd64
-  nvidia-glx-legacy-dev_71.86.15-3_amd64
-  nvidia-glx-legacy-ia32_71.86.15-3_amd64
-  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_amd64
-  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_amd64
-  nvidia-kernel-amd64_304.117+3.2.0+1_amd64
-  nvidia-kernel-dkms_304.117-1_amd64
-  nvidia-kernel-legacy-173xx-dkms_173.14.35-4_amd64
-  nvidia-kernel-legacy-173xx-source_173.14.35-4_amd64
-  nvidia-kernel-legacy-71xx-dkms_71.86.15-3_amd64
-  nvidia-kernel-legacy-71xx-source_71.86.15-3_amd64
-  nvidia-kernel-legacy-96xx-dkms_96.43.23-3_amd64
-  nvidia-kernel-legacy-96xx-source_96.43.23-3_amd64
-  nvidia-kernel-legacy-source_71.86.15-3_amd64
-  nvidia-kernel-source_304.117-1_amd64
-  nvidia-libopencl1_304.117-1_amd64
-  nvidia-libopencl1-ia32_304.117-1_amd64
-  nvidia-opencl-common_304.117-1_amd64
-  nvidia-opencl-dev_4.2.9-2_amd64
-  nvidia-opencl-icd_304.117-1_amd64
-  nvidia-opencl-icd-ia32_304.117-1_amd64
-  nvidia-smi_304.117-1_amd64
-  nvidia-vdpau-driver_304.117-1_amd64
-  nvidia-vdpau-driver-ia32_304.117-1_amd64
-  nvidia-visual-profiler_4.2.9-2_amd64
-  p7zip-rar_9.20.1~ds.1-3_amd64
-  paml_4.5-1_amd64
-  parmetis-test_3.1.1-4_amd64
-  pgplot5_5.2.2-19_amd64
-  phylip_1:3.69-1_amd64
-  powder_117-1_amd64
-  pptview_8.0-7_amd64
-  pr3287_3.3.10ga4-2+b1_amd64
-  python-vmtk_1.0.1-1_amd64
-  r-cran-maptools_1:0.7-38-1_amd64
-  rar_2:4.0.b3-1_amd64
-  s3270_3.3.10ga4-2+b1_amd64
-  sdlmame_0.146-5_amd64
-  sdlmame-tools_0.146-4_amd64
-  seaview_1:4.3.3-3_amd64
-  seq-gen_1.3.3-1_amd64
-  sgb_1:20090810-1_amd64
-  sift_4.0.3b-3_amd64
-  sl-modem-daemon_2.9.11~20110321-8+deb7u1_amd64
-  sl-modem-dkms_2.9.11~20110321-8+deb7u1_amd64
-  sparse_0.4.3+20110419-1_amd64
-  tads2-dev_1:0.13-2_amd64
-  tads3-dev_1:0.13-2_amd64
-  tclspice_24-1_amd64
-  teamspeak-client_2.0.32-3.1_amd64
-  tetgen_1.4.3-1_amd64
-  titantools_4.0.11+notdfsg1-5_amd64
-  tome_2.3.5-2_amd64
-  triangle-bin_1.6-2_amd64
-  trn4_4.0-test77-6_amd64
-  unace-nonfree_2.5-7_amd64
-  unrar_1:4.1.4-1_amd64
-  wap-wml-tools_0.0.4-6_amd64
-  x3270_3.3.10ga4-2+b1_amd64
-  xfractint_20.4.10-2_amd64
-  xserver-xorg-video-nvidia_304.117-1_amd64
-  xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_amd64
-  xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_amd64
-  xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_amd64
-  xsnow_1:1.42-9_amd64
-  zangband_1:2.7.5pre1-8_amd64
-  3270-common_3.3.10ga4-2+b1_i386
-  amd-clinfo_1:12-6+point-3_i386
-  amd-libopencl1_1:12-6+point-3_i386
-  amd-opencl-dev_1:12-6+point-3_i386
-  amd-opencl-icd_1:12-6+point-3_i386
-  amd64-microcode_1.20120910-2_i386
-  amiwm_0.20.48-8_i386
-  axe_6.1.2-15.1_i386
-  bsdgames-nonfree_2.17-5_i386
-  bugsx_1.08-12_i386
-  c3270_3.3.10ga4-2+b1_i386
-  conserver-client_8.1.18-2.2_i386
-  conserver-server_8.1.18-2.2_i386
-  crafty_23.4-6_i386
-  cuneiform_1.1.0+dfsg-4_i386
-  dgen_1.23-12_i386
-  drdsl_1.2.0-1_i386
-  dynamips_0.2.7-0.2.8RC2-5.1_i386
-  eagle_5.12.0-3_i386
-  f2j_0.8.1-2_i386
-  fatrat-unpack_1.1.3-2_i386
-  fglrx-atieventsd_1:12-6+point-3_i386
-  fglrx-control_1:12-6+point-3_i386
-  fglrx-driver_1:12-6+point-3_i386
-  fglrx-glx_1:12-6+point-3_i386
-  fglrx-modules-dkms_1:12-6+point-3_i386
-  fglrx-source_1:12-6+point-3_i386
-  fsl-4.1_4.1.9-7_i386
-  intel-microcode_1.20140122.1_i386
-  iozone3_397-2_i386
-  irpas_0.10-4.1_i386
-  lgrind_3.67-3_i386
-  libapache2-mod-fastcgi_2.4.7~0910052141-1_i386
-  libcamlpdf-ocaml-dev_0.5-1+b2_i386
-  libcg_3.1.0013-1_i386
-  libcggl_3.1.0013-1_i386
-  libclamunrar6_0.96.4-1_i386
-  libcore++-dev_1.7-12_i386
-  libcore++1c2_1.7-12_i386
-  libcublas4_4.2.9-2_i386
-  libcuda1_304.117-1_i386
-  libcudart4_4.2.9-2_i386
-  libcufft4_4.2.9-2_i386
-  libcuinj4_4.2.9-2_i386
-  libcuneiform-dev_1.1.0+dfsg-4_i386
-  libcuneiform0_1.1.0+dfsg-4_i386
-  libcupti-dev_4.2.9-2_i386
-  libcupti4_4.2.9-2_i386
-  libcurand4_4.2.9-2_i386
-  libcusparse4_4.2.9-2_i386
-  libcwd_1.0.4-1_i386
-  libfglrx_1:12-6+point-3_i386
-  libfglrx-amdxvba1_1:12-6+point-3_i386
-  libgl1-fglrx-glx_1:12-6+point-3_i386
-  libgl1-nvidia-alternatives_304.117-1_i386
-  libgl1-nvidia-glx_304.117-1_i386
-  libgl1-nvidia-legacy-173xx-glx_173.14.35-4_i386
-  libgl1-nvidia-legacy-71xx-glx_71.86.15-3_i386
-  libgl1-nvidia-legacy-96xx-glx_96.43.23-3_i386
-  libglx-nvidia-alternatives_304.117-1_i386
-  libgpcl-dev_2.32-1_i386
-  libgpcl0_2.32-1_i386
-  libmath-random-perl_0.71-3+b1_i386
-  libmotif-dev_2.3.3-8_i386
-  libmotif4_2.3.3-8_i386
-  libmotif4-dbg_2.3.3-8_i386
-  libnauty-dev_2.4r2-1_i386
-  libnauty1d_2.4r2-1_i386
-  libnpp4_4.2.9-2_i386
-  libnvcuvid1_304.117-1_i386
-  libnvidia-compiler_304.117-1_i386
-  libnvidia-ml1_304.117-1_i386
-  libparmetis-dev_3.1.1-4_i386
-  libparmetis3.1_3.1.1-4_i386
-  libtet1.4_1.4.3-1_i386
-  libtet1.4-dev_1.4.3-1_i386
-  libtriangle-1.6_1.6-2_i386
-  libtriangle-dev_1.6-2_i386
-  libttspico-dev_1.0+git20110131-2_i386
-  libttspico-utils_1.0+git20110131-2_i386
-  libttspico0_1.0+git20110131-2_i386
-  libvmtk-dev_1.0.1-1_i386
-  libvmtk1.0_1.0.1-1_i386
-  libxvbaw-dev_1:12-6+point-3_i386
-  libxvmcnvidia1_304.117-1_i386
-  madfuload_1.2-4_i386
-  mame_0.146-5_i386
-  mame-tools_0.146-4_i386
-  martian-modem_20080625-2_i386
-  martian-modem-source_20080625-2_i386
-  mbrola_3.01h-6_i386
-  mess_0.146-4_i386
-  mgltools-bhtree_1.5.6~rc3~cvs.20120206-1_i386
-  mgltools-geomutils_1.5.6~rc3~cvs.20120601-1_i386
-  mgltools-gle_1.5.6~rc3~cvs.20120601-1_i386
-  mgltools-opengltk_1.5.6~rc3~cvs.20120601-2_i386
-  mgltools-pyglf_1.5.6~rc3~cvs.20120601-1_i386
-  mgltools-sff_1.5.6~rc3~cvs.20120206-1_i386
-  mgltools-utpackages_1.5.6~rc3~cvs.20120601-1_i386
-  motif-clients_2.3.3-8_i386
-  mssstest_3.0-3_i386
-  nautilus-dropbox_1.4.0-3_i386
-  nauty_2.4r2-1_i386
-  netperf_2.4.4-6.1_i386
-  notion_3+2012042300-1_i386
-  nvidia-alternative_304.117-1_i386
-  nvidia-alternative-legacy-173xx_173.14.35-4_i386
-  nvidia-alternative-legacy-71xx_71.86.15-3_i386
-  nvidia-alternative-legacy-96xx_96.43.23-3_i386
-  nvidia-cg-dev_3.1.0013-1_i386
-  nvidia-cg-toolkit_3.1.0013-1_i386
-  nvidia-cuda-dev_4.2.9-2_i386
-  nvidia-cuda-gdb_4.2.9-2_i386
-  nvidia-cuda-toolkit_4.2.9-2_i386
-  nvidia-detect_304.117-1_i386
-  nvidia-glx_304.117-1_i386
-  nvidia-glx-legacy_71.86.15-3_i386
-  nvidia-glx-legacy-173xx_173.14.35-4_i386
-  nvidia-glx-legacy-71xx_71.86.15-3_i386
-  nvidia-glx-legacy-71xx-dev_71.86.15-3_i386
-  nvidia-glx-legacy-71xx-unsupported_71.86.15-3_i386
-  nvidia-glx-legacy-96xx_96.43.23-3_i386
-  nvidia-glx-legacy-dev_71.86.15-3_i386
-  nvidia-kernel-2.6-486_304.117+3.2.0+1_i386
-  nvidia-kernel-2.6-686-pae_304.117+3.2.0+1_i386
-  nvidia-kernel-2.6-amd64_304.117+3.2.0+1_i386
-  nvidia-kernel-3.2.0-4-486_304.117+1+1+3.2.54-2_i386
-  nvidia-kernel-3.2.0-4-686-pae_304.117+1+1+3.2.54-2_i386
-  nvidia-kernel-3.2.0-4-amd64_304.117+1+1+3.2.54-2_i386
-  nvidia-kernel-486_304.117+3.2.0+1_i386
-  nvidia-kernel-686-pae_304.117+3.2.0+1_i386
-  nvidia-kernel-amd64_304.117+3.2.0+1_i386
-  nvidia-kernel-dkms_304.117-1_i386
-  nvidia-kernel-legacy-173xx-dkms_173.14.35-4_i386
-  nvidia-kernel-legacy-173xx-source_173.14.35-4_i386
-  nvidia-kernel-legacy-71xx-dkms_71.86.15-3_i386
-  nvidia-kernel-legacy-71xx-source_71.86.15-3_i386
-  nvidia-kernel-legacy-96xx-dkms_96.43.23-3_i386
-  nvidia-kernel-legacy-96xx-source_96.43.23-3_i386
-  nvidia-kernel-legacy-source_71.86.15-3_i386
-  nvidia-kernel-source_304.117-1_i386
-  nvidia-libopencl1_304.117-1_i386
-  nvidia-opencl-common_304.117-1_i386
-  nvidia-opencl-dev_4.2.9-2_i386
-  nvidia-opencl-icd_304.117-1_i386
-  nvidia-smi_304.117-1_i386
-  nvidia-vdpau-driver_304.117-1_i386
-  nvidia-visual-profiler_4.2.9-2_i386
-  p7zip-rar_9.20.1~ds.1-3_i386
-  parmetis-test_3.1.1-4_i386
-  pgplot5_5.2.2-19_i386
-  phylip_1:3.69-1_i386
-  pptview_8.0-7_i386
-  pr3287_3.3.10ga4-2+b1_i386
-  python-vmtk_1.0.1-1_i386
-  r-cran-maptools_1:0.7-38-1_i386
-  rar_2:4.0.b3-1_i386
-  s3270_3.3.10ga4-2+b1_i386
-  sdlmame_0.146-5_i386
-  sdlmame-tools_0.146-4_i386
-  seaview_1:4.3.3-3_i386
-  seq-gen_1.3.3-1_i386
-  sgb_1:20090810-1_i386
-  sl-modem-daemon_2.9.11~20110321-8+deb7u1_i386
-  sl-modem-dkms_2.9.11~20110321-8+deb7u1_i386
-  sparse_0.4.3+20110419-1_i386
-  spellcast_1.0-21_i386
-  teamspeak-client_2.0.32-3.1_i386
-  teamspeak-server_2.0.24.1+debian-1.1_i386
-  tetgen_1.4.3-1_i386
-  titantools_4.0.11+notdfsg1-5_i386
-  tome_2.3.5-2_i386
-  triangle-bin_1.6-2_i386
-  trn_3.6-23_i386
-  trn4_4.0-test77-6_i386
-  unace-nonfree_2.5-7_i386
-  unrar_1:4.1.4-1_i386
-  wap-wml-tools_0.0.4-6_i386
-  x3270_3.3.10ga4-2+b1_i386
-  xfractint_20.4.10-2_i386
-  xmame-svga_0.146-5_i386
-  xserver-xorg-video-nvidia_304.117-1_i386
-  xserver-xorg-video-nvidia-legacy-173xx_173.14.35-4_i386
-  xserver-xorg-video-nvidia-legacy-71xx_71.86.15-3_i386
-  xserver-xorg-video-nvidia-legacy-96xx_96.43.23-3_i386
-  zangband_1:2.7.5pre1-8_i386

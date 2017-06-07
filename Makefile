@@ -1,83 +1,85 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-PACKAGES=context database deb files http query swift s3 utils
-ALL_PACKAGES=api aptly context cmd console database deb files http query swift s3 utils
-BINPATH=$(abspath ./_vendor/bin)
-GOM_ENVIRONMENT=-test
+VERSION=$(shell git describe --tags | sed 's@^v@@' | sed 's@-@+@g')
+PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python
+TESTS?=
+BINPATH?=$(GOPATH)/bin
 
 ifeq ($(GOVERSION), devel)
 TRAVIS_TARGET=coveralls
-GOM_ENVIRONMENT+=-development
 else
 TRAVIS_TARGET=test
-endif
-
-ifeq ($(TRAVIS), true)
-GOM=$(HOME)/gopath/bin/gom
-else
-GOM=gom
 endif
 
 all: test check system-test
 
 prepare:
-	go get -u github.com/mattn/gom
-	$(GOM) $(GOM_ENVIRONMENT) install
+	go get -u github.com/mattn/goveralls
+	go get -u github.com/axw/gocov/gocov
+	go get -u golang.org/x/tools/cmd/cover
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
+
+dev:
+	go get -u github.com/golang/dep/...
+	go get -u github.com/laher/goxc
 
 coverage.out:
 	rm -f coverage.*.out
-	for i in $(PACKAGES); do $(GOM) test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
+	for i in $(PACKAGES); do go test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
 	echo "mode: count" > coverage.out
 	grep -v -h "mode: count" coverage.*.out >> coverage.out
 	rm -f coverage.*.out
 
 coverage: coverage.out
-	$(GOM) exec go tool cover -html=coverage.out
+	go tool cover -html=coverage.out
 	rm -f coverage.out
 
-check:
-	$(GOM) exec go tool vet -all=true $(ALL_PACKAGES:%=./%)
-	$(GOM) exec golint $(ALL_PACKAGES:%=./%)
+check: system/env
+	if [ -x travis_wait ]; then \
+		travis_wait gometalinter --config=linter.json ./...; \
+	else \
+		gometalinter --config=linter.json ./...; \
+	fi
+	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=env/ system/
 
 install:
-	$(GOM) build -o $(BINPATH)/aptly
+	go install -v -ldflags "-X main.Version=$(VERSION)"
 
-system-test: install
+system/env: system/requirements.txt
+	rm -rf system/env
+	virtualenv system/env
+	system/env/bin/pip install -r system/requirements.txt
+
+system-test: install system/env
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long
+	. system/env/bin/activate && APTLY_VERSION=$(VERSION) PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
 
-travis: $(TRAVIS_TARGET) system-test
+travis: $(TRAVIS_TARGET) check system-test
 
 test:
-	$(GOM) test -v `go list ./... | grep -v vendor/` -gocheck.v=true
+	go test -v `go list ./... | grep -v vendor/` -gocheck.v=true
 
 coveralls: coverage.out
-	$(GOM) exec $(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken=$(COVERALLS_TOKEN)
+	$(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken=$(COVERALLS_TOKEN)
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp
 	open mem.png
 
-src-package:
-	rm -rf aptly-$(VERSION)
-	mkdir -p aptly-$(VERSION)/src/github.com/smira/aptly/
-	cd aptly-$(VERSION)/src/github.com/smira/ && git clone https://github.com/smira/aptly && cd aptly && git checkout v$(VERSION)
-	cd aptly-$(VERSION)/src/github.com/smira/aptly && gom -production install
-	cd aptly-$(VERSION)/src/github.com/smira/aptly && find . \( -name .git -o -name .bzr -o -name .hg \) -print | xargs rm -rf
-	rm -rf aptly-$(VERSION)/src/github.com/smira/aptly/_vendor/{pkg,bin}
-	mkdir -p aptly-$(VERSION)/bash_completion.d
-	(cd aptly-$(VERSION)/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/$(VERSION)/aptly)
-	tar cyf aptly-$(VERSION)-src.tar.bz2 aptly-$(VERSION)
-	rm -rf aptly-$(VERSION)
-	curl -T aptly-$(VERSION)-src.tar.bz2 -usmira:$(BINTRAY_KEY) https://api.bintray.com/content/smira/aptly/aptly/$(VERSION)/$(VERSION)/aptly-$(VERSION)-src.tar.bz2
-
 goxc:
 	rm -rf root/
 	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d
 	cp man/aptly.1 root/usr/share/man/man1
-	(cd root/etc/bash_completion.d && wget https://raw.github.com/aptly-dev/aptly-bash-completion/master/aptly)
+	cp bash_completion.d/aptly root/etc/bash_completion.d
 	gzip root/usr/share/man/man1/aptly.1
-	gom exec goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
+	goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-.PHONY: coverage.out
+man:
+	make -C man
+
+version:
+	@echo $(VERSION)
+
+.PHONY: coverage.out man version

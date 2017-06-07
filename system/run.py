@@ -13,12 +13,23 @@ from lib import BaseTest
 from s3_lib import S3Test
 from swift_lib import SwiftTest
 from api_lib import APITest
+from fs_endpoint_lib import FileSystemEndpointTest
 
 try:
     from termcolor import colored
 except ImportError:
     def colored(s, **kwargs):
         return s
+
+
+def walk_modules(package):
+    yield importlib.import_module(package)
+    for name in glob.glob(package + "/*.py"):
+        name = os.path.splitext(os.path.basename(name))[0]
+        if name == "__init__":
+            continue
+
+        yield importlib.import_module(package + "." + name)
 
 
 def run(include_long_tests=False, capture_results=False, tests=None, filters=None):
@@ -32,54 +43,52 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     lastBase = None
 
     for test in tests:
+        for testModule in walk_modules(test):
+            for name in dir(testModule):
+                o = getattr(testModule, name)
 
-        testModule = importlib.import_module(test)
-
-        for name in dir(testModule):
-            o = getattr(testModule, name)
-
-            if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
-                    o is not SwiftTest and o is not S3Test and o is not APITest):
-                continue
-
-            newBase = o.__bases__[0]
-            if lastBase is not None and lastBase is not newBase:
-                lastBase.shutdown_class()
-
-            lastBase = newBase
-
-            if filters:
-                matches = False
-
-                for filt in filters:
-                    if fnmatch.fnmatch(o.__name__, filt):
-                        matches = True
-                        break
-
-                if not matches:
+                if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
+                        o is not SwiftTest and o is not S3Test and o is not APITest and o is not FileSystemEndpointTest):
                     continue
 
-            t = o()
-            if t.longTest and not include_long_tests or not t.fixture_available():
-                numSkipped += 1
-                continue
+                newBase = o.__bases__[0]
+                if lastBase is not None and lastBase is not newBase:
+                    lastBase.shutdown_class()
 
-            numTests += 1
+                lastBase = newBase
 
-            sys.stdout.write("%s:%s... " % (test, o.__name__))
+                if filters:
+                    matches = False
 
-            try:
-                t.captureResults = capture_results
-                t.test()
-            except BaseException:
-                numFailed += 1
-                typ, val, tb = sys.exc_info()
-                fails.append((test, t, typ, val, tb, testModule))
-                sys.stdout.write(colored("FAIL\n", color="red"))
-            else:
-                sys.stdout.write(colored("OK\n", color="green"))
+                    for filt in filters:
+                        if fnmatch.fnmatch(o.__name__, filt):
+                            matches = True
+                            break
 
-            t.shutdown()
+                    if not matches:
+                        continue
+
+                t = o()
+                if t.longTest and not include_long_tests or not t.fixture_available():
+                    numSkipped += 1
+                    continue
+
+                numTests += 1
+
+                sys.stdout.write("%s:%s... " % (test, o.__name__))
+
+                try:
+                    t.captureResults = capture_results
+                    t.test()
+                except BaseException:
+                    numFailed += 1
+                    typ, val, tb = sys.exc_info()
+                    fails.append((test, t, typ, val, tb, testModule))
+                    sys.stdout.write(colored("FAIL\n", color="red"))
+                else:
+                    sys.stdout.write(colored("OK\n", color="green"))
+
+                t.shutdown()
 
     if lastBase is not None:
         lastBase.shutdown_class()
@@ -90,14 +99,20 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         print "\nFAILURES (%d):" % (len(fails), )
 
         for (test, t, typ, val, tb, testModule) in fails:
-            print "%s:%s %s" % (test, t.__class__.__name__, testModule.__doc__.strip() + ": " + t.__doc__.strip())
-            #print "ERROR: %s" % (val, )
+            print "%s:%s %s" % (test, t.__class__.__name__, testModule.__name__ + ": " + t.__doc__.strip())
             traceback.print_exception(typ, val, tb)
             print "=" * 60
 
         sys.exit(1)
 
+
 if __name__ == "__main__":
+    if 'APTLY_VERSION' not in os.environ:
+        try:
+            os.environ['APTLY_VERSION'] = os.popen("make version").read().strip()
+        except BaseException, e:
+            print "Failed to capture current version: ", e
+
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     random.seed()
     include_long_tests = False

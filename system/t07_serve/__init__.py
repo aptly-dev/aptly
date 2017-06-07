@@ -12,6 +12,21 @@ import time
 from lib import BaseTest
 
 
+class RootDirInaccessible(BaseTest):
+    """
+    serve command aborts if rootDir is inaccessible
+    """
+    fixtureDB = False
+    fixturePool = False
+
+    configOverride = {
+        "rootDir": "/root"  # any directory that exists but is not writable
+    }
+
+    runCmd = "aptly serve -listen=127.0.0.1:8765"
+    expectedCode = 1
+
+
 class Serve1Test(BaseTest):
     """
     serve public: two publishes, verify HTTP

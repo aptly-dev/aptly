@@ -1,9 +1,11 @@
 package deb
 
 import (
-	"github.com/smira/aptly/utils"
+	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/smira/aptly/pgp"
 
 	. "gopkg.in/check.v1"
 )
@@ -37,7 +39,7 @@ func (s *DebSuite) TestGetControlFileFromDeb(c *C) {
 }
 
 func (s *DebSuite) TestGetControlFileFromDsc(c *C) {
-	verifier := &utils.GpgVerifier{}
+	verifier := &pgp.GpgVerifier{}
 
 	_, err := GetControlFileFromDsc("/no/such/file", verifier)
 	c.Check(err, ErrorMatches, ".*no such file or directory")
@@ -58,13 +60,19 @@ func (s *DebSuite) TestGetControlFileFromDsc(c *C) {
 }
 
 func (s *DebSuite) TestGetContentsFromDeb(c *C) {
-	contents, err := GetContentsFromDeb(s.debFile)
+	f, err := os.Open(s.debFile)
+	c.Assert(err, IsNil)
+	contents, err := GetContentsFromDeb(f, s.debFile)
 	c.Check(err, IsNil)
 	c.Check(contents, DeepEquals, []string{"usr/share/doc/libboost-program-options-dev/changelog.gz",
 		"usr/share/doc/libboost-program-options-dev/copyright"})
+	c.Assert(f.Close(), IsNil)
 
-	contents, err = GetContentsFromDeb(s.debFile2)
+	f, err = os.Open(s.debFile2)
+	c.Assert(err, IsNil)
+	contents, err = GetContentsFromDeb(f, s.debFile2)
 	c.Check(err, IsNil)
 	c.Check(contents, DeepEquals, []string{"usr/bin/hardlink", "usr/share/man/man1/hardlink.1.gz",
 		"usr/share/doc/hardlink/changelog.gz", "usr/share/doc/hardlink/copyright", "usr/share/doc/hardlink/NEWS.Debian.gz"})
+	c.Assert(f.Close(), IsNil)
 }

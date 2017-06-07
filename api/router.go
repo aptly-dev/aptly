@@ -1,9 +1,10 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	ctx "github.com/smira/aptly/context"
-	"net/http"
 )
 
 var context *ctx.AptlyContext
@@ -26,20 +27,23 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		go cacheFlusher(requests, acks)
 
 		router.Use(func(c *gin.Context) {
-			requests <- ACQUIREDB
-			err := <-acks
+			var err error
+
+			requests <- acquiredb
+
+			defer func() {
+				requests <- releasedb
+				err = <-acks
+				if err != nil {
+					c.Fail(500, err)
+				}
+			}()
+
+			err = <-acks
 			if err != nil {
 				c.Fail(500, err)
 				return
 			}
-			defer func() {
-				requests <- RELEASEDB
-				err = <-acks
-				if err != nil {
-					c.Fail(500, err)
-					return
-				}
-			}()
 			c.Next()
 		})
 

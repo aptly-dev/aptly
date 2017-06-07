@@ -3,14 +3,14 @@ package deb
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"hash/fnv"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/utils"
 )
 
 // PackageFile is a single file entry in package
@@ -19,25 +19,28 @@ type PackageFile struct {
 	Filename string
 	// Hashes for the file
 	Checksums utils.ChecksumInfo
+	// PoolPath persists relative path to file in the package pool
+	PoolPath string
 	// Temporary field used while downloading, stored relative path on the mirror
 	downloadPath string
 }
 
 // Verify that package file is present and correct
-func (f *PackageFile) Verify(packagePool aptly.PackagePool) (bool, error) {
-	poolPath, err := packagePool.Path(f.Filename, f.Checksums.MD5)
-	if err != nil {
-		return false, err
+func (f *PackageFile) Verify(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage) (bool, error) {
+	return packagePool.Verify(f.PoolPath, f.Filename, &f.Checksums, checksumStorage)
+}
+
+// GetPoolPath returns path to the file in the pool
+//
+// For legacy packages which do not have PoolPath field set, that calculates LegacyPath via pool
+func (f *PackageFile) GetPoolPath(packagePool aptly.PackagePool) (string, error) {
+	var err error
+
+	if f.PoolPath == "" {
+		f.PoolPath, err = packagePool.LegacyPath(f.Filename, &f.Checksums)
 	}
 
-	st, err := os.Stat(poolPath)
-	if err != nil {
-		return false, nil
-	}
-
-	// verify size
-	// TODO: verify checksum if configured
-	return st.Size() == f.Checksums.Size, nil
+	return f.PoolPath, err
 }
 
 // DownloadURL return relative URL to package download location

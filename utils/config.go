@@ -7,23 +7,33 @@ import (
 )
 
 // ConfigStructure is structure of main configuration
-type ConfigStructure struct {
-	RootDir                string                      `json:"rootDir"`
-	DownloadConcurrency    int                         `json:"downloadConcurrency"`
-	DownloadLimit          int64                       `json:"downloadSpeedLimit"`
-	Architectures          []string                    `json:"architectures"`
-	DepFollowSuggests      bool                        `json:"dependencyFollowSuggests"`
-	DepFollowRecommends    bool                        `json:"dependencyFollowRecommends"`
-	DepFollowAllVariants   bool                        `json:"dependencyFollowAllVariants"`
-	DepFollowSource        bool                        `json:"dependencyFollowSource"`
-	GpgDisableSign         bool                        `json:"gpgDisableSign"`
-	GpgDisableVerify       bool                        `json:"gpgDisableVerify"`
-	DownloadSourcePackages bool                        `json:"downloadSourcePackages"`
-	PpaDistributorID       string                      `json:"ppaDistributorID"`
-	PpaCodename            string                      `json:"ppaCodename"`
-	SkipContentsPublishing bool                        `json:"skipContentsPublishing"`
-	S3PublishRoots         map[string]S3PublishRoot    `json:"S3PublishEndpoints"`
-	SwiftPublishRoots      map[string]SwiftPublishRoot `json:"SwiftPublishEndpoints"`
+type ConfigStructure struct { // nolint: aligncheck
+	RootDir                string                           `json:"rootDir"`
+	DownloadConcurrency    int                              `json:"downloadConcurrency"`
+	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
+	Architectures          []string                         `json:"architectures"`
+	DepFollowSuggests      bool                             `json:"dependencyFollowSuggests"`
+	DepFollowRecommends    bool                             `json:"dependencyFollowRecommends"`
+	DepFollowAllVariants   bool                             `json:"dependencyFollowAllVariants"`
+	DepFollowSource        bool                             `json:"dependencyFollowSource"`
+	DepVerboseResolve      bool                             `json:"dependencyVerboseResolve"`
+	GpgDisableSign         bool                             `json:"gpgDisableSign"`
+	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
+	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
+	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
+	PpaDistributorID       string                           `json:"ppaDistributorID"`
+	PpaCodename            string                           `json:"ppaCodename"`
+	SkipContentsPublishing bool                             `json:"skipContentsPublishing"`
+	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
+	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
+	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
+}
+
+// FileSystemPublishRoot describes single filesystem publishing entry point
+type FileSystemPublishRoot struct {
+	RootDir      string `json:"rootDir"`
+	LinkMethod   string `json:"linkMethod"`
+	VerifyMethod string `json:"verifyMethod"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
@@ -46,13 +56,17 @@ type S3PublishRoot struct {
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
 type SwiftPublishRoot struct {
-	UserName  string `json:"osname"`
-	Password  string `json:"password"`
-	AuthURL   string `json:"authurl"`
-	Tenant    string `json:"tenant"`
-	TenantID  string `json:"tenantid"`
-	Prefix    string `json:"prefix"`
-	Container string `json:"container"`
+	UserName       string `json:"osname"`
+	Password       string `json:"password"`
+	AuthURL        string `json:"authurl"`
+	Tenant         string `json:"tenant"`
+	TenantID       string `json:"tenantid"`
+	Domain         string `json:"domain"`
+	DomainID       string `json:"domainid"`
+	TenantDomain   string `json:"tenantdomain"`
+	TenantDomainID string `json:"tenantdomainid"`
+	Prefix         string `json:"prefix"`
+	Container      string `json:"container"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -68,8 +82,10 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
+	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
+	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 }

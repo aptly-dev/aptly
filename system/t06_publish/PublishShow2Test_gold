@@ -1,0 +1,5 @@
+Prefix: ppa/smira
+Distribution: maverick
+Architectures: amd64 i386
+Sources:
+  main: snap1 [snapshot]

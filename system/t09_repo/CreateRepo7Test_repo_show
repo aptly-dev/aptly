@@ -1,0 +1,9 @@
+Name: repo2
+Comment: 
+Default Distribution: 
+Default Component: main
+Number of packages: 3
+Packages:
+  libboost-program-options-dev_1.49.0.1_i386
+  pyspi_0.6.1-1.4_source
+  pyspi_0.6.1-1.3_source

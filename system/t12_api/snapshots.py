@@ -97,8 +97,11 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
 
         resp = self.post("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
-        self.check_equal(resp.status_code, 400)
+        self.check_equal(resp.status_code, 201)
+        self.check_equal([],
+                         self.get("/api/snapshots/" + snapshot_name + "/packages", params={"format": "details"}).json())
 
+        snapshot_name = self.random_name()
         d = self.random_name()
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)

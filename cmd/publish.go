@@ -1,17 +1,17 @@
 package cmd
 
 import (
-	"github.com/smira/aptly/utils"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
 
-func getSigner(flags *flag.FlagSet) (utils.Signer, error) {
+func getSigner(flags *flag.FlagSet) (pgp.Signer, error) {
 	if LookupOption(context.Config().GpgDisableSign, flags, "skip-signing") {
 		return nil, nil
 	}
 
-	signer := &utils.GpgSigner{}
+	signer := &pgp.GpgSigner{}
 	signer.SetKey(flags.Lookup("gpg-key").Value.String())
 	signer.SetKeyRing(flags.Lookup("keyring").Value.String(), flags.Lookup("secret-keyring").Value.String())
 	signer.SetPassphrase(flags.Lookup("passphrase").Value.String(), flags.Lookup("passphrase-file").Value.String())
@@ -37,6 +37,7 @@ func makeCmdPublish() *commander.Command {
 			makeCmdPublishSnapshot(),
 			makeCmdPublishSwitch(),
 			makeCmdPublishUpdate(),
+			makeCmdPublishShow(),
 		},
 	}
 }

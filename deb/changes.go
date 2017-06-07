@@ -2,13 +2,15 @@ package deb
 
 import (
 	"fmt"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/smira/aptly/aptly"
+	"github.com/smira/aptly/pgp"
+	"github.com/smira/aptly/utils"
 )
 
 // Changes is a result of .changes file parsing
@@ -22,7 +24,7 @@ type Changes struct {
 	Binary                []string
 	Architectures         []string
 	Stanza                Stanza
-	SignatureKeys         []utils.GpgKey
+	SignatureKeys         []pgp.Key
 }
 
 // NewChanges moves .changes file into temporary directory and creates Changes structure
@@ -49,7 +51,7 @@ func NewChanges(path string) (*Changes, error) {
 }
 
 // VerifyAndParse does optional signature verification and parses changes files
-func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier utils.Verifier) error {
+func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier pgp.Verifier) error {
 	input, err := os.Open(filepath.Join(c.TempDir, c.ChangesName))
 	if err != nil {
 		return err
@@ -68,7 +70,8 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	}
 
 	if isClearSigned && !ignoreSignature {
-		keyInfo, err := verifier.VerifyClearsigned(input, false)
+		var keyInfo *pgp.KeyInfo
+		keyInfo, err = verifier.VerifyClearsigned(input, false)
 		if err != nil {
 			return err
 		}
@@ -102,11 +105,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	c.Architectures = strings.Fields(c.Stanza["Architecture"])
 
 	c.Files, err = c.Files.ParseSumFields(c.Stanza)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Prepare creates temporary directory, copies file there and verifies checksums
@@ -172,22 +171,39 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 
 	// if c.Source is empty, this would never match
 	sourceQuery := &AndQuery{
-		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"},
+		L: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource},
 		R: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Source},
 	}
 
 	var binaryQuery PackageQuery
 	if len(c.Binary) > 0 {
 		binaryQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: c.Binary[0]}
+		// matching debug ddeb packages, they're not present in the Binary field
+		var ddebQuery PackageQuery = &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", c.Binary[0])}
+
 		for _, binary := range c.Binary[1:] {
 			binaryQuery = &OrQuery{
 				L: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: binary},
 				R: binaryQuery,
 			}
+			ddebQuery = &OrQuery{
+				L: &FieldQuery{Field: "Name", Relation: VersionEqual, Value: fmt.Sprintf("%s-dbgsym", binary)},
+				R: ddebQuery,
+			}
+		}
+
+		ddebQuery = &AndQuery{
+			L: &FieldQuery{Field: "Source", Relation: VersionEqual, Value: c.Source},
+			R: ddebQuery,
+		}
+
+		binaryQuery = &OrQuery{
+			L: binaryQuery,
+			R: ddebQuery,
 		}
 
 		binaryQuery = &AndQuery{
-			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: "source"}},
+			L: &NotQuery{Q: &FieldQuery{Field: "$PackageType", Relation: VersionEqual, Value: ArchitectureSource}},
 			R: binaryQuery}
 	}
 

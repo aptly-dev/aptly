@@ -3,15 +3,17 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
+	"text/template"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"os"
-	"path/filepath"
-	"text/template"
 )
 
 func aptlyRepoInclude(cmd *commander.Command, args []string) error {
@@ -27,7 +29,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	}
 
 	if verifier == nil {
-		verifier = &utils.GpgVerifier{}
+		verifier = &pgp.GpgVerifier{}
 	}
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
@@ -96,7 +98,8 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 		context.Progress().Printf("Loading repository %s for changes file %s...\n", repoName.String(), changes.ChangesName)
 
-		repo, err := context.CollectionFactory().LocalRepoCollection().ByName(repoName.String())
+		var repo *deb.LocalRepo
+		repo, err = context.CollectionFactory().LocalRepoCollection().ByName(repoName.String())
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
@@ -130,7 +133,8 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load repo: %s", err)
 		}
 
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+		var list *deb.PackageList
+		list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to load packages: %s", err)
 		}
@@ -150,7 +154,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		var processedFiles2, failedFiles2 []string
 
 		processedFiles2, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			context.CollectionFactory().PackageCollection(), reporter, restriction)
+			context.CollectionFactory().PackageCollection(), reporter, restriction, context.CollectionFactory().ChecksumCollection())
 
 		if err != nil {
 			return fmt.Errorf("unable to import package files: %s", err)
@@ -183,7 +187,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		processedFiles = utils.StrSliceDeduplicate(processedFiles)
 
 		for _, file := range processedFiles {
-			err := os.Remove(file)
+			err = os.Remove(file)
 			if err != nil {
 				return fmt.Errorf("unable to remove file: %s", err)
 			}

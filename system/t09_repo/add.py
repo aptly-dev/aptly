@@ -19,7 +19,7 @@ class AddRepo1Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo_show")
 
         # check pool
-        self.check_exists('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class AddRepo2Test(BaseTest):
@@ -36,10 +36,10 @@ class AddRepo2Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo2", "repo_show")
 
         # check pool
-        self.check_exists('pool/22/ff/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('pool/de/f3/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('pool/2f/5b/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('pool/2e/77/0b28df948f3197ed0b679bdea99f_pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('pool/d4/94/aaf526f1ec6b02f14c2f81e060a5_pyspi_0.6.1-1.3.dsc')
+        self.check_exists('pool/64/06/9ee828c50b1c597d10a3fefbba27_pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('pool/28/9d/3aefa970876e9c43686ce2b02f47_pyspi-0.6.1-1.3.stripped.dsc')
 
 
 class AddRepo3Test(BaseTest):
@@ -56,11 +56,11 @@ class AddRepo3Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo3", "repo_show")
 
         # check pool
-        self.check_exists('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
-        self.check_exists('pool/22/ff/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('pool/de/f3/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('pool/2f/5b/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists('pool/2e/77/0b28df948f3197ed0b679bdea99f_pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('pool/d4/94/aaf526f1ec6b02f14c2f81e060a5_pyspi_0.6.1-1.3.dsc')
+        self.check_exists('pool/64/06/9ee828c50b1c597d10a3fefbba27_pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('pool/28/9d/3aefa970876e9c43686ce2b02f47_pyspi-0.6.1-1.3.stripped.dsc')
 
 
 class AddRepo4Test(BaseTest):
@@ -80,15 +80,15 @@ class AddRepo4Test(BaseTest):
         os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
-            os.path.join(self.tempSrcDir, "01"))
+                    os.path.join(self.tempSrcDir, "01"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1.orig.tar.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.diff.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.diff.gz"),
-            os.path.join(self.tempSrcDir, "02", "03", "other.file"))
+                    os.path.join(self.tempSrcDir, "02", "03", "other.file"))
 
         self.runCmd += self.tempSrcDir
 
@@ -97,10 +97,10 @@ class AddRepo4Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo4", "repo_show")
 
         # check pool
-        self.check_exists('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
-        self.check_exists('pool/22/ff/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('pool/de/f3/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists('pool/2e/77/0b28df948f3197ed0b679bdea99f_pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists('pool/d4/94/aaf526f1ec6b02f14c2f81e060a5_pyspi_0.6.1-1.3.dsc')
+        self.check_exists('pool/64/06/9ee828c50b1c597d10a3fefbba27_pyspi_0.6.1.orig.tar.gz')
 
         path = os.path.join(self.tempSrcDir, "01", "libboost-program-options-dev_1.49.0.1_i386.deb")
         if os.path.exists(path):
@@ -124,8 +124,10 @@ class AddRepo5Test(BaseTest):
         "aptly repo create -comment=Repo5 -distribution=squeeze repo5",
     ]
     runCmd = "aptly repo add repo5 "
-    outputMatchPrepare = lambda self, s: s.replace(self.tempSrcDir, "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(self.tempSrcDir, "")
 
     def prepare(self):
         super(AddRepo5Test, self).prepare()
@@ -134,9 +136,9 @@ class AddRepo5Test(BaseTest):
         os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1.orig.tar.gz"),
-            os.path.join(self.tempSrcDir, "02", "03"))
+                    os.path.join(self.tempSrcDir, "02", "03"))
 
         self.runCmd += self.tempSrcDir
 
@@ -175,8 +177,11 @@ class AddRepo8Test(BaseTest):
         "aptly repo add repo8 ${files}/pyspi_0.6.1-1.3.dsc",
     ]
     runCmd = "aptly repo add repo8 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def check(self):
         self.check_output()
@@ -192,14 +197,17 @@ class AddRepo9Test(BaseTest):
     ]
     runCmd = "aptly repo add repo9 ${files}/pyspi_0.6.1-1.3.dsc"
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def prepare(self):
         super(AddRepo9Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool/de/f3/"))
-        with open(os.path.join(os.environ["HOME"], ".aptly", "pool/de/f3/pyspi_0.6.1.orig.tar.gz"), "w") as f:
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool/64/06/"))
+        with open(os.path.join(os.environ["HOME"], ".aptly", "pool/64/06/9ee828c50b1c597d10a3fefbba27_pyspi_0.6.1.orig.tar.gz"), "w") as f:
             f.write("abcd")
 
 
@@ -227,7 +235,10 @@ class AddRepo11Test(BaseTest):
         "aptly repo add repo11 ${files}/pyspi_0.6.1-1.3.dsc",
     ]
     runCmd = "aptly repo add -force-replace repo11 ${testfiles}/pyspi_0.6.1-1.3.conflict.dsc"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
 
     def check(self):
         self.check_output()
@@ -248,7 +259,7 @@ class AddRepo12Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo12", "repo_show")
 
         # check pool
-        self.check_exists('pool/72/16/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+        self.check_exists('pool/ef/ae/69921b97494e40437712053b60a5_dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
 
 
 class AddRepo13Test(BaseTest):
@@ -265,8 +276,8 @@ class AddRepo13Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo13", "repo_show")
 
         # check pool
-        self.check_exists('pool/72/16/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
-        self.check_exists('pool/b7/2c/pyspi_0.6.1-1.3.dsc')
+        self.check_exists('pool/ef/ae/69921b97494e40437712053b60a5_dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+        self.check_exists('pool/d4/94/aaf526f1ec6b02f14c2f81e060a5_pyspi_0.6.1-1.3.dsc')
 
 
 class AddRepo14Test(BaseTest):
@@ -275,14 +286,15 @@ class AddRepo14Test(BaseTest):
     """
     fixtureCmds = [
         "aptly repo create -comment=Repo14 -distribution=squeeze repo14",
-        "aptly repo add repo14 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb"
+        "aptly repo add repo14 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb",
+        "aptly publish repo -distribution=test1 -skip-signing repo14"
     ]
-    runCmd = "aptly repo add repo14 $aptlyroot/pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb"
+    runCmd = "aptly repo add repo14 $aptlyroot/public/pool/"
 
     def check(self):
         super(AddRepo14Test, self).check()
         # check pool
-        self.check_file_not_empty('pool/00/35/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class AddRepo15Test(BaseTest):
@@ -293,5 +305,8 @@ class AddRepo15Test(BaseTest):
         "aptly repo create -comment=Repo15 -distribution=squeeze repo15",
     ]
     runCmd = "aptly repo add repo15 ${testfiles}"
-    outputMatchPrepare = lambda self, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), "").replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
     expectedCode = 1
+
+    def outputMatchPrepare(self, s):
+        return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
+                         replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")

@@ -2,11 +2,11 @@ package deb
 
 import (
 	"bytes"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/utils"
-	"os"
+	"io/ioutil"
 	"path/filepath"
 	"regexp"
+
+	"github.com/smira/aptly/files"
 
 	. "gopkg.in/check.v1"
 )
@@ -299,7 +299,7 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 	// ~
 	c.Check(
 		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
-			Regexp: regexp.MustCompile("7\\.40-.*")}), Equals, true)
+			Regexp: regexp.MustCompile(`7\.40-.*`)}), Equals, true)
 	c.Check(
 		p.MatchesDependency(Dependency{Pkg: "alien-arena-common", Architecture: "i386", Relation: VersionRegexp, Version: "7\\.40-.*",
 			Regexp: regexp.MustCompile("40")}), Equals, true)
@@ -362,19 +362,17 @@ func (s *PackageSuite) TestPoolDirectory(c *C) {
 }
 
 func (s *PackageSuite) TestLinkFromPool(c *C) {
-	packagePool := files.NewPackagePool(c.MkDir())
-	publishedStorage := files.NewPublishedStorage(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir(), false)
+	cs := files.NewMockChecksumStorage()
+	publishedStorage := files.NewPublishedStorage(c.MkDir(), "", "")
 	p := NewPackageFromControlFile(s.stanza)
 
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
-	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
-	c.Assert(err, IsNil)
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
 
-	file, err := os.Create(poolPath)
-	c.Assert(err, IsNil)
-	file.Close()
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
-	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
+	err := p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
 	c.Check(err, IsNil)
 	c.Check(p.Files()[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Files()[0].downloadPath, Equals, "pool/non-free/a/alien-arena")
@@ -386,7 +384,7 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 }
 
 func (s *PackageSuite) TestFilepathList(c *C) {
-	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir(), true)
 	p := NewPackageFromControlFile(s.stanza)
 
 	list, err := p.FilepathList(packagePool)
@@ -395,31 +393,24 @@ func (s *PackageSuite) TestFilepathList(c *C) {
 }
 
 func (s *PackageSuite) TestDownloadList(c *C) {
-	packagePool := files.NewPackagePool(c.MkDir())
+	packagePool := files.NewPackagePool(c.MkDir(), false)
+	cs := files.NewMockChecksumStorage()
 	p := NewPackageFromControlFile(s.stanza)
 	p.Files()[0].Checksums.Size = 5
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
 
-	list, err := p.DownloadList(packagePool)
+	list, err := p.DownloadList(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{
 		{
-			RepoURI:         "pool/contrib/a/alien-arena/alien-arena-common_7.40-2_i386.deb",
-			DestinationPath: poolPath,
-			Checksums: utils.ChecksumInfo{Size: 5,
-				MD5:    "1e8cba92c41420aa7baa8a5718d67122",
-				SHA1:   "46955e48cad27410a83740a21d766ce362364024",
-				SHA256: "eb4afb9885cba6dc70cccd05b910b2dbccc02c5900578be5e99f0d3dbf9d76a5"}}})
+			File: &p.Files()[0],
+		},
+	})
 
-	err = os.MkdirAll(filepath.Dir(poolPath), 0755)
-	c.Assert(err, IsNil)
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
-	file, err := os.Create(poolPath)
-	c.Assert(err, IsNil)
-	file.WriteString("abcde")
-	file.Close()
-
-	list, err = p.DownloadList(packagePool)
+	list, err = p.DownloadList(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []PackageDownloadTask{})
 }
@@ -427,24 +418,22 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 func (s *PackageSuite) TestVerifyFiles(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
-	packagePool := files.NewPackagePool(c.MkDir())
-	poolPath, _ := packagePool.Path(p.Files()[0].Filename, p.Files()[0].Checksums.MD5)
+	packagePool := files.NewPackagePool(c.MkDir(), false)
+	cs := files.NewMockChecksumStorage()
 
-	err := os.MkdirAll(filepath.Dir(poolPath), 0755)
-	c.Assert(err, IsNil)
+	tmpFilepath := filepath.Join(c.MkDir(), "file")
+	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
-	file, err := os.Create(poolPath)
-	c.Assert(err, IsNil)
-	file.WriteString("abcde")
-	file.Close()
+	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
-	result, err := p.VerifyFiles(packagePool)
+	p.Files()[0].Checksums.Size = 100
+	result, err := p.VerifyFiles(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, false)
 
 	p.Files()[0].Checksums.Size = 5
 
-	result, err = p.VerifyFiles(packagePool)
+	result, err = p.VerifyFiles(packagePool, cs)
 	c.Check(err, IsNil)
 	c.Check(result, Equals, true)
 }

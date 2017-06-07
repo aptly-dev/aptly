@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
-	"github.com/ugorji/go/codec"
 	"log"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smira/aptly/database"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/go-uuid/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 // Snapshot is immutable state of repository: list of packages
@@ -43,7 +44,7 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 		UUID:        uuid.New(),
 		Name:        name,
 		CreatedAt:   time.Now(),
-		SourceKind:  "repo",
+		SourceKind:  SourceRemoteRepo,
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from mirror %s", repo),
 		packageRefs: repo.packageRefs,
@@ -52,19 +53,21 @@ func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error)
 
 // NewSnapshotFromLocalRepo creates snapshot from current state of local repository
 func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
-	if repo.packageRefs == nil {
-		return nil, errors.New("local repo doesn't have packages")
-	}
-
-	return &Snapshot{
+	snap := &Snapshot{
 		UUID:        uuid.New(),
 		Name:        name,
 		CreatedAt:   time.Now(),
-		SourceKind:  "local",
+		SourceKind:  SourceLocalRepo,
 		SourceIDs:   []string{repo.UUID},
 		Description: fmt.Sprintf("Snapshot from local repo %s", repo),
 		packageRefs: repo.packageRefs,
-	}, nil
+	}
+
+	if snap.packageRefs == nil {
+		snap.packageRefs = NewPackageRefList()
+	}
+
+	return snap, nil
 }
 
 // NewSnapshotFromPackageList creates snapshot from PackageList
@@ -251,10 +254,10 @@ func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
 
 // ByRemoteRepoSource looks up snapshots that have specified RemoteRepo as a source
 func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
-		if s.SourceKind == "repo" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
+		if s.SourceKind == SourceRemoteRepo && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
 			result = append(result, s)
 		}
 	}
@@ -263,10 +266,10 @@ func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Sn
 
 // ByLocalRepoSource looks up snapshots that have specified LocalRepo as a source
 func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
-		if s.SourceKind == "local" && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
+		if s.SourceKind == SourceLocalRepo && utils.StrSliceHasItem(s.SourceIDs, repo.UUID) {
 			result = append(result, s)
 		}
 	}
@@ -275,7 +278,7 @@ func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snap
 
 // BySnapshotSource looks up snapshots that have specified snapshot as a source
 func (collection *SnapshotCollection) BySnapshotSource(snapshot *Snapshot) []*Snapshot {
-	result := make([]*Snapshot, 0)
+	var result []*Snapshot
 
 	for _, s := range collection.list {
 		if s.SourceKind == "snapshot" && utils.StrSliceHasItem(s.SourceIDs, snapshot.UUID) {

@@ -3,7 +3,8 @@ import inspect
 from lib import BaseTest
 
 
-changesRemove = lambda _, s: s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), "")
+def changesRemove(_, s):
+    return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), "")
 
 
 class EditRepo1Test(BaseTest):

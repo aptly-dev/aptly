@@ -3,9 +3,11 @@ package deb
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DisposaBoy/JsonConfigReader"
-	"github.com/smira/aptly/utils"
 	"os"
+
+	"github.com/DisposaBoy/JsonConfigReader"
+	"github.com/smira/aptly/pgp"
+	"github.com/smira/aptly/utils"
 )
 
 // UploadersRule is single rule of format: what packages can group or key upload
@@ -84,7 +86,7 @@ func (u *Uploaders) IsAllowed(changes *Changes) error {
 			deny := u.ExpandGroups(rule.Deny)
 			for _, key := range changes.SignatureKeys {
 				for _, item := range deny {
-					if item == "*" || key.Matches(utils.GpgKey(item)) {
+					if item == "*" || key.Matches(pgp.Key(item)) {
 						return fmt.Errorf("denied according to rule: %s", rule)
 					}
 				}
@@ -93,7 +95,7 @@ func (u *Uploaders) IsAllowed(changes *Changes) error {
 			allow := u.ExpandGroups(rule.Allow)
 			for _, key := range changes.SignatureKeys {
 				for _, item := range allow {
-					if item == "*" || key.Matches(utils.GpgKey(item)) {
+					if item == "*" || key.Matches(pgp.Key(item)) {
 						return nil
 					}
 				}

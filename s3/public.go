@@ -2,18 +2,21 @@ package s3
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/pkg/errors"
 	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
+	"github.com/smira/aptly/utils"
 	"github.com/smira/go-aws-auth"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
@@ -49,7 +52,10 @@ func NewPublishedStorageRaw(
 		storageClass = ""
 	}
 
-	sess := session.New(config)
+	sess, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &PublishedStorage{
 		s3:               s3.New(sess),
@@ -133,6 +139,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
+	err = storage.putFile(path, source)
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
+	}
+
+	return err
+}
+
+// putFile uploads file-like object to
+func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker) error {
+
 	params := &s3.PutObjectInput{
 		Bucket: aws.String(storage.bucket),
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
@@ -146,13 +163,18 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
 	}
 
-	_, err = storage.s3.PutObject(params)
+	_, err := storage.s3.PutObject(params)
 	if err != nil {
-		return fmt.Errorf("error uploading %s to %s: %s", sourceFilename, storage, err)
+		return err
 	}
 
-	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
-		return storage.PutFile(strings.Replace(path, "+", " ", -1), sourceFilename)
+	if storage.plusWorkaround && strings.Contains(path, "+") {
+		_, err = source.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+
+		return storage.putFile(strings.Replace(path, "+", " ", -1), source)
 	}
 	return nil
 }
@@ -165,10 +187,10 @@ func (storage *PublishedStorage) Remove(path string) error {
 	}
 	_, err := storage.s3.DeleteObject(params)
 	if err != nil {
-		return fmt.Errorf("error deleting %s from %s: %s", path, storage, err)
+		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
-	if storage.plusWorkaround && strings.Index(path, "+") != -1 {
+	if storage.plusWorkaround && strings.Contains(path, "+") {
 		// try to remove workaround version, but don't care about result
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
 	}
@@ -238,23 +260,16 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourcePool aptly.PackagePool,
-	sourcePath, sourceMD5 string, force bool) error {
-	// verify that package pool is local pool in filesystem
-	_ = sourcePool.(*files.PackagePool)
+func (storage *PublishedStorage) LinkFromPool(publishedDirectory, baseName string, sourcePool aptly.PackagePool,
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	baseName := filepath.Base(sourcePath)
 	relPath := filepath.Join(publishedDirectory, baseName)
 	poolPath := filepath.Join(storage.prefix, relPath)
-
-	var (
-		err error
-	)
 
 	if storage.pathCache == nil {
 		paths, md5s, err := storage.internalFilelist(storage.prefix, true)
 		if err != nil {
-			return fmt.Errorf("error caching paths under prefix: %s", err)
+			return errors.Wrap(err, "error caching paths under prefix")
 		}
 
 		storage.pathCache = make(map[string]string, len(paths))
@@ -265,8 +280,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 	}
 
 	destinationMD5, exists := storage.pathCache[relPath]
+	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
+		if sourceMD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
 		if destinationMD5 == sourceMD5 {
 			return nil
 		}
@@ -277,9 +297,17 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory string, sourceP
 		}
 	}
 
-	err = storage.PutFile(relPath, sourcePath)
+	source, err := sourcePool.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	err = storage.putFile(relPath, source)
 	if err == nil {
 		storage.pathCache[relPath] = sourceMD5
+	} else {
+		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
 	}
 
 	return err
@@ -307,7 +335,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 
 	err = storage.s3.ListObjectsPages(params, func(contents *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, key := range contents.Contents {
-			if storage.plusWorkaround && hidePlusWorkaround && strings.Index(*key.Key, " ") != -1 {
+			if storage.plusWorkaround && hidePlusWorkaround && strings.Contains(*key.Key, " ") {
 				// if we use plusWorkaround, we want to hide those duplicates
 				/// from listing
 				continue

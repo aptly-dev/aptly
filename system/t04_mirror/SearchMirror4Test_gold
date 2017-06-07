@@ -1,4 +1,3 @@
-
 coreutils_8.13-3.5_amd64
 coreutils_8.13-3.5_i386
 debconf_1.5.49_all
@@ -8,8 +7,8 @@ fontconfig-config_2.9.0-7.1_all
 fonts-freefont-ttf_20120503-1_all
 gcc-4.7-base_4.7.2-5_amd64
 gcc-4.7-base_4.7.2-5_i386
-gsfonts-x11_0.22_all
 gsfonts_1:8.11+urwcyr1.0.7~pre44-4.2_all
+gsfonts-x11_0.22_all
 libacl1_2.2.51-8_amd64
 libacl1_2.2.51-8_i386
 libattr1_1:2.4.46-8_amd64
@@ -74,12 +73,12 @@ libxslt1.1_1.1.26-14.1_i386
 lsb-base_4.1+Debian8+deb7u1_all
 multiarch-support_2.13-38+deb7u1_amd64
 multiarch-support_2.13-38+deb7u1_i386
+nginx_1.2.1-2.2+wheezy2_all
 nginx-common_1.2.1-2.2+wheezy2_all
 nginx-full_1.2.1-2.2+wheezy2_amd64
 nginx-full_1.2.1-2.2+wheezy2_i386
 nginx-light_1.2.1-2.2+wheezy2_amd64
 nginx-light_1.2.1-2.2+wheezy2_i386
-nginx_1.2.1-2.2+wheezy2_all
 perl-base_5.14.2-21+deb7u1_amd64
 perl-base_5.14.2-21+deb7u1_i386
 tar_1.26+dfsg-0.1_amd64

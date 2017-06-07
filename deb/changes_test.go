@@ -1,9 +1,10 @@
 package deb
 
 import (
-	. "gopkg.in/check.v1"
 	"os"
 	"path/filepath"
+
+	. "gopkg.in/check.v1"
 )
 
 type ChangesSuite struct {
@@ -54,7 +55,7 @@ func (s *ChangesSuite) TestPackageQuery(c *C) {
 	c.Check(err, IsNil)
 
 	c.Check(q.String(), Equals,
-		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), ((Name (= calamares-dbg)) | (Name (= calamares)))))")
+		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), (((Name (= calamares-dbg)) | (Name (= calamares))) | ((Source (= calamares)), ((Name (= calamares-dbg-dbgsym)) | (Name (= calamares-dbgsym)))))))")
 }
 
 var changesFile = `Format: 1.8

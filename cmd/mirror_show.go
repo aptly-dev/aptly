@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"strings"
 )
 
 func aptlyMirrorShow(cmd *commander.Command, args []string) error {
@@ -36,21 +37,21 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, ", "))
-	downloadSources := "no"
+	downloadSources := No
 	if repo.DownloadSources {
-		downloadSources = "yes"
+		downloadSources = Yes
 	}
 	fmt.Printf("Download Sources: %s\n", downloadSources)
-	downloadUdebs := "no"
+	downloadUdebs := No
 	if repo.DownloadUdebs {
-		downloadUdebs = "yes"
+		downloadUdebs = Yes
 	}
 	fmt.Printf("Download .udebs: %s\n", downloadUdebs)
 	if repo.Filter != "" {
 		fmt.Printf("Filter: %s\n", repo.Filter)
-		filterWithDeps := "no"
+		filterWithDeps := No
 		if repo.FilterWithDeps {
-			filterWithDeps = "yes"
+			filterWithDeps = Yes
 		}
 		fmt.Printf("Filter With Deps: %s\n", filterWithDeps)
 	}

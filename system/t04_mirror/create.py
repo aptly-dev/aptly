@@ -92,7 +92,9 @@ class CreateMirror9Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
 
     def check(self):
         def removeDates(s):
@@ -109,8 +111,10 @@ class CreateMirror10Test(BaseTest):
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
 
 
 class CreateMirror11Test(BaseTest):
@@ -119,7 +123,9 @@ class CreateMirror11Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     def check(self):
         self.check_output()
@@ -133,8 +139,10 @@ class CreateMirror12Test(BaseTest):
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ wheezy"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using|gpgv: keyblock resource .*$|gpgv: Can\'t check signature: .*$', '', s, flags=re.MULTILINE)
 
 
 class CreateMirror13Test(BaseTest):
@@ -153,20 +161,25 @@ class CreateMirror14Test(BaseTest):
     """
     create mirror: flat repository
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian jessie-cran3/"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror14", "mirror_show")
+        self.check_cmd_output("aptly mirror show mirror14", "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror15Test(BaseTest):
     """
     create mirror: flat repository + components
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14 http://download.opensuse.org/repositories/home:/monkeyiq/Debian_7.0/ ./ main"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian jessie-cran3/ main"
     expectedCode = 1
 
 
@@ -195,14 +208,15 @@ class CreateMirror18Test(BaseTest):
     create mirror: mirror with ppa URL
     """
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
-
     configOverride = {
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "maverick",
     }
 
     runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror18 ppa:gladky-anton/gnuplot"
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     def check(self):
         self.check_output()
@@ -214,9 +228,11 @@ class CreateMirror19Test(BaseTest):
     create mirror: mirror with / in distribution
     """
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
 
     runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://security.debian.org/ wheezy/updates main"
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     def check(self):
         def removeDates(s):
@@ -231,11 +247,13 @@ class CreateMirror20Test(BaseTest):
     create mirror: using failing HTTP_PROXY
     """
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: s.replace('getsockopt: ', '')
 
     runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://security.debian.org/ wheezy/updates main"
     environmentOverride = {"HTTP_PROXY": "127.0.0.1:3137"}
     expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return s.replace('getsockopt: ', '').replace('proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137')
 
 
 class CreateMirror21Test(BaseTest):
@@ -244,7 +262,9 @@ class CreateMirror21Test(BaseTest):
     """
     runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror21 http://pkg.jenkins-ci.org/debian-stable binary/"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     def check(self):
         def removeSHA512(s):
@@ -285,7 +305,9 @@ class CreateMirror24Test(BaseTest):
     """
     runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://security.debian.org/ wheezy/updates main"
     fixtureGpg = True
-    outputMatchPrepare = lambda _, s: re.sub(r'Signature made .* using', '', s)
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
 
     configOverride = {
         "gpgDisableVerify": True

@@ -2,13 +2,15 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gin-gonic/gin"
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
-	"os"
-	"path/filepath"
 )
 
 // GET /api/repos
@@ -60,9 +62,9 @@ func apiReposCreate(c *gin.Context) {
 // PUT /api/repos/:name
 func apiReposEdit(c *gin.Context) {
 	var b struct {
-		Comment             string
-		DefaultDistribution string
-		DefaultComponent    string
+		Comment             *string
+		DefaultDistribution *string
+		DefaultComponent    *string
 	}
 
 	if !c.Bind(&b) {
@@ -79,14 +81,14 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
-	if b.Comment != "" {
-		repo.Comment = b.Comment
+	if b.Comment != nil {
+		repo.Comment = *b.Comment
 	}
-	if b.DefaultDistribution != "" {
-		repo.DefaultDistribution = b.DefaultDistribution
+	if b.DefaultDistribution != nil {
+		repo.DefaultDistribution = *b.DefaultDistribution
 	}
-	if b.DefaultComponent != "" {
-		repo.DefaultComponent = b.DefaultComponent
+	if b.DefaultComponent != nil {
+		repo.DefaultComponent = *b.DefaultComponent
 	}
 
 	err = collection.Update(repo)
@@ -295,7 +297,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	verifier := &utils.GpgVerifier{}
+	verifier := &pgp.GpgVerifier{}
 
 	var (
 		sources                      []string
@@ -324,7 +326,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	}
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		context.CollectionFactory().PackageCollection(), reporter, nil)
+		context.CollectionFactory().PackageCollection(), reporter, nil, context.CollectionFactory().ChecksumCollection())
 	failedFiles = append(failedFiles, failedFiles2...)
 
 	if err != nil {

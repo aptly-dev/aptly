@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
-	"strings"
 )
 
 func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
@@ -43,7 +44,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	if published.SourceKind != "snapshot" {
+	if published.SourceKind != deb.SourceSnapshot {
 		return fmt.Errorf("unable to update: not a snapshot publish")
 	}
 

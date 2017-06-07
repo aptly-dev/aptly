@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/smira/aptly/deb"
 	"github.com/smira/commander"
 )
@@ -12,7 +13,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		snapshot *deb.Snapshot
 	)
 
-	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" {
+	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" { // nolint: goconst
 		// aptly snapshot create snap from mirror mirror
 		var repo *deb.RemoteRepo
 
@@ -37,7 +38,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
-	} else if len(args) == 4 && args[1] == "from" && args[2] == "repo" {
+	} else if len(args) == 4 && args[1] == "from" && args[2] == "repo" { // nolint: goconst
 		// aptly snapshot create snap from repo repo
 		var repo *deb.LocalRepo
 

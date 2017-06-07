@@ -2,11 +2,12 @@ package query
 
 import (
 	"fmt"
-	"github.com/smira/aptly/deb"
 	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/smira/aptly/deb"
 )
 
 type parser struct {

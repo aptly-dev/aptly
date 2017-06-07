@@ -3,9 +3,10 @@ package deb
 import (
 	"bytes"
 	"encoding/json"
+	"sort"
+
 	"github.com/AlekSi/pointer"
 	"github.com/ugorji/go/codec"
-	"sort"
 )
 
 // PackageRefList is a list of keys of packages, this is basis for snapshot
@@ -91,7 +92,7 @@ func (l *PackageRefList) Has(p *Package) bool {
 	key := p.Key("")
 
 	i := sort.Search(len(l.Refs), func(j int) bool { return bytes.Compare(l.Refs[j], key) >= 0 })
-	return i < len(l.Refs) && bytes.Compare(l.Refs[i], key) == 0
+	return i < len(l.Refs) && bytes.Equal(l.Refs[i], key)
 }
 
 // Strings builds list of strings with package keys
@@ -109,8 +110,8 @@ func (l *PackageRefList) Strings() []string {
 	return result
 }
 
-// Substract returns all packages in l that are not in r
-func (l *PackageRefList) Substract(r *PackageRefList) *PackageRefList {
+// Subtract returns all packages in l that are not in r
+func (l *PackageRefList) Subtract(r *PackageRefList) *PackageRefList {
 	result := &PackageRefList{Refs: make([][]byte, 0, 128)}
 
 	// pointer to left and right reflists
@@ -270,7 +271,7 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 
 // Merge merges reflist r into current reflist. If overrideMatching, merge
 // replaces matching packages (by architecture/name) with reference from r.
-// If ignoreConflicting is set, all packages are preserved, otherwise conflciting
+// If ignoreConflicting is set, all packages are preserved, otherwise conflicting
 // packages are overwritten with packages from "right" snapshot.
 func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConflicting bool) (result *PackageRefList) {
 	var overriddenArch, overridenName []byte
@@ -327,7 +328,7 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConfli
 
 			if overrideMatching {
 				if bytes.Equal(archL, overriddenArch) && bytes.Equal(nameL, overridenName) {
-					// this package has already been overriden on the right
+					// this package has already been overridden on the right
 					il++
 					continue
 				}
@@ -389,7 +390,7 @@ func (l *PackageRefList) FilterLatestRefs() {
 			}
 
 			// Compensate for the reduced set
-			i -= 1
+			i--
 		}
 
 		lastArch, lastName, lastVer = arch, name, ver

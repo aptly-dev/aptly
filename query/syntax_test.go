@@ -1,8 +1,9 @@
 package query
 
 import (
-	"github.com/smira/aptly/deb"
 	"regexp"
+
+	"github.com/smira/aptly/deb"
 
 	. "gopkg.in/check.v1"
 )
@@ -48,7 +49,7 @@ func (s *SyntaxSuite) TestParsing(c *C) {
 
 	c.Assert(err, IsNil)
 	c.Check(q, DeepEquals, &deb.DependencyQuery{Dep: deb.Dependency{Pkg: "package", Relation: deb.VersionRegexp, Version: "5\\.3.*~dev",
-		Regexp: regexp.MustCompile("5\\.3.*~dev")}})
+		Regexp: regexp.MustCompile(`5\.3.*~dev`)}})
 
 	l, _ = lex("query", "alien-data_1.3.4~dev_i386")
 	q, err = parse(l)

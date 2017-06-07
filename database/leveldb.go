@@ -4,6 +4,9 @@ package database
 import (
 	"bytes"
 	"errors"
+	"io/ioutil"
+	"os"
+
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -16,11 +19,17 @@ var (
 	ErrNotFound = errors.New("key not found")
 )
 
+// StorageProcessor is a function to process one single storage entry
+type StorageProcessor func(key []byte, value []byte) error
+
 // Storage is an interface to KV storage
 type Storage interface {
+	CreateTemporary() (Storage, error)
 	Get(key []byte) ([]byte, error)
 	Put(key []byte, value []byte) error
 	Delete(key []byte) error
+	HasPrefix(prefix []byte) bool
+	ProcessByPrefix(prefix []byte, proc StorageProcessor) error
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
 	Close() error
@@ -28,6 +37,7 @@ type Storage interface {
 	StartBatch()
 	FinishBatch() error
 	CompactDB() error
+	Drop() error
 }
 
 type levelDB struct {
@@ -41,10 +51,16 @@ var (
 	_ Storage = &levelDB{}
 )
 
-func internalOpen(path string) (*leveldb.DB, error) {
+func internalOpen(path string, throttleCompaction bool) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter:                 filter.NewBloomFilter(10),
 		OpenFilesCacheCapacity: 256,
+	}
+
+	if throttleCompaction {
+		o.CompactionL0Trigger = 32
+		o.WriteL0PauseTrigger = 96
+		o.WriteL0SlowdownTrigger = 64
 	}
 
 	return leveldb.OpenFile(path, o)
@@ -52,7 +68,7 @@ func internalOpen(path string) (*leveldb.DB, error) {
 
 // OpenDB opens (creates) LevelDB database
 func OpenDB(path string) (Storage, error) {
-	db, err := internalOpen(path)
+	db, err := internalOpen(path, false)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +91,20 @@ func RecoverDB(path string) error {
 	stor.Close()
 
 	return nil
+}
+
+// CreateTemporary creates new DB of the same type in temp dir
+func (l *levelDB) CreateTemporary() (Storage, error) {
+	tempdir, err := ioutil.TempDir("", "aptly")
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := internalOpen(tempdir, true)
+	if err != nil {
+		return nil, err
+	}
+	return &levelDB{db: db, path: tempdir}, nil
 }
 
 // Get key value from database
@@ -152,6 +182,29 @@ func (l *levelDB) FetchByPrefix(prefix []byte) [][]byte {
 	return result
 }
 
+// HasPrefix checks whether it can find any key with given prefix and returns true if one exists
+func (l *levelDB) HasPrefix(prefix []byte) bool {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+	return iterator.Seek(prefix) && bytes.HasPrefix(iterator.Key(), prefix)
+}
+
+// ProcessByPrefix iterates through all entries where key starts with prefix and calls
+// StorageProcessor on key value pair
+func (l *levelDB) ProcessByPrefix(prefix []byte, proc StorageProcessor) error {
+	iterator := l.db.NewIterator(nil, nil)
+	defer iterator.Release()
+
+	for ok := iterator.Seek(prefix); ok && bytes.HasPrefix(iterator.Key(), prefix); ok = iterator.Next() {
+		err := proc(iterator.Key(), iterator.Value())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Close finishes DB work
 func (l *levelDB) Close() error {
 	if l.db == nil {
@@ -169,7 +222,7 @@ func (l *levelDB) ReOpen() error {
 	}
 
 	var err error
-	l.db, err = internalOpen(l.path)
+	l.db, err = internalOpen(l.path, false)
 	return err
 }
 
@@ -196,4 +249,13 @@ func (l *levelDB) FinishBatch() error {
 // CompactDB compacts database by merging layers
 func (l *levelDB) CompactDB() error {
 	return l.db.CompactRange(util.Range{})
+}
+
+// Drop removes all the DB files (DANGEROUS!)
+func (l *levelDB) Drop() error {
+	if l.db != nil {
+		return errors.New("DB is still open")
+	}
+
+	return os.RemoveAll(l.path)
 }

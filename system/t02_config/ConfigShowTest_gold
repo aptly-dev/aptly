@@ -7,12 +7,15 @@
     "dependencyFollowRecommends": false,
     "dependencyFollowAllVariants": false,
     "dependencyFollowSource": false,
+    "dependencyVerboseResolve": false,
     "gpgDisableSign": false,
     "gpgDisableVerify": false,
     "downloadSourcePackages": false,
+    "skipLegacyPool": false,
     "ppaDistributorID": "ubuntu",
     "ppaCodename": "",
     "skipContentsPublishing": false,
+    "FileSystemPublishEndpoints": {},
     "S3PublishEndpoints": {},
     "SwiftPublishEndpoints": {}
 }

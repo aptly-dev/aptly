@@ -1,1 +1,1 @@
-aptly version: 0.9.8~dev
+aptly version: ${APTLY_VERSION}

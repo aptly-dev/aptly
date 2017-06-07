@@ -30,15 +30,13 @@ func (s *CompressSuite) TestCompress(c *C) {
 	err := CompressFile(s.tempfile, false)
 	c.Assert(err, IsNil)
 
-	buf := make([]byte, len(testString))
-
 	file, err := os.Open(s.tempfile.Name() + ".gz")
 	c.Assert(err, IsNil)
 
 	gzReader, err := gzip.NewReader(file)
 	c.Assert(err, IsNil)
 
-	_, err = gzReader.Read(buf)
+	buf, err := ioutil.ReadAll(gzReader)
 	c.Assert(err, IsNil)
 
 	gzReader.Close()

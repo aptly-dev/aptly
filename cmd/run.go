@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	ctx "github.com/smira/aptly/context"
 	"github.com/smira/commander"
-	"os"
 )
 
 // Run runs single command starting from root cmd with args, optionally initializing context

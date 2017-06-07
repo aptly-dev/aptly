@@ -3,14 +3,18 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/utils"
-	"github.com/smira/commander"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
+	"time"
+
+	"github.com/smira/aptly/deb"
+	"github.com/smira/aptly/utils"
+	"github.com/smira/commander"
 )
 
 func aptlyGraph(cmd *commander.Command, args []string) error {
@@ -21,8 +25,11 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
+	layout := context.Flags().Lookup("layout").Value.String()
+
 	fmt.Printf("Generating graph...\n")
-	graph, err := deb.BuildGraph(context.CollectionFactory())
+	graph, err := deb.BuildGraph(context.CollectionFactory(), layout)
+
 	if err != nil {
 		return err
 	}
@@ -73,21 +80,49 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	defer func() {
+		_ = os.Remove(tempfilename)
+	}()
+
 	if output != "" {
 		err = utils.CopyFile(tempfilename, output)
 		if err != nil {
 			return fmt.Errorf("unable to copy %s -> %s: %s", tempfilename, output, err)
 		}
-		_ = os.Remove(tempfilename)
 
 		fmt.Printf("Output saved to %s\n", output)
 	} else {
-		fmt.Printf("Rendered to %s file: %s, trying to open it...\n", format, tempfilename)
+		command := getOpenCommand()
+		fmt.Printf("Rendered to %s file: %s, trying to open it with: %s %s...\n", format, tempfilename, command, tempfilename)
 
-		_ = exec.Command("open", tempfilename).Run()
+		args := strings.Split(command, " ")
+
+		viewer := exec.Command(args[0], append(args[1:], tempfilename)...)
+		viewer.Stderr = os.Stderr
+		if err = viewer.Start(); err == nil {
+			// Wait for a second so that the visualizer has a chance to
+			// open the input file. This needs to be done even if we're
+			// waiting for the visualizer as it can be just a wrapper that
+			// spawns a browser tab and returns right away.
+			defer func(t <-chan time.Time) {
+				<-t
+			}(time.After(time.Second))
+		}
 	}
 
 	return err
+}
+
+// getOpenCommand tries to guess command to open image for OS
+func getOpenCommand() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "/usr/bin/open"
+	case "windows":
+		return "cmd /c start"
+	default:
+		return "xdg-open"
+	}
 }
 
 func makeCmdGraph() *commander.Command {
@@ -108,6 +143,7 @@ Example:
 
 	cmd.Flag.String("format", "png", "render graph to specified format (png, svg, pdf, etc.)")
 	cmd.Flag.String("output", "", "specify output filename, default is to open result in viewer")
+	cmd.Flag.String("layout", "horizontal", "create a more 'vertical' or a more 'horizontal' graph layout")
 
 	return cmd
 }

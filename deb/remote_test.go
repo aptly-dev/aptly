@@ -2,16 +2,18 @@ package deb
 
 import (
 	"errors"
+	"io"
+	"io/ioutil"
+	"os"
+	"sort"
+
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/console"
 	"github.com/smira/aptly/database"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
-	"io"
-	"io/ioutil"
-	"os"
-	"sort"
 
 	. "gopkg.in/check.v1"
 )
@@ -30,7 +32,7 @@ func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) e
 	return nil
 }
 
-func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*utils.GpgKeyInfo, error) {
+func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp.KeyInfo, error) {
 	return nil, nil
 }
 
@@ -80,6 +82,7 @@ type RemoteRepoSuite struct {
 	db                database.Storage
 	collectionFactory *CollectionFactory
 	packagePool       aptly.PackagePool
+	cs                aptly.ChecksumStorage
 }
 
 var _ = Suite(&RemoteRepoSuite{})
@@ -91,7 +94,8 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.progress = console.NewProgress()
 	s.db, _ = database.OpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
-	s.packagePool = files.NewPackagePool(c.MkDir())
+	s.packagePool = files.NewPackagePool(c.MkDir(), false)
+	s.cs = files.NewMockChecksumStorage()
 	s.SetUpPackages()
 	s.progress.Start()
 }
@@ -154,24 +158,30 @@ func (s *RemoteRepoSuite) TestReleaseURL(c *C) {
 	c.Assert(s.flat.ReleaseURL("Release").String(), Equals, "http://repos.express42.com/virool/precise/Release")
 }
 
-func (s *RemoteRepoSuite) TestBinaryURL(c *C) {
-	c.Assert(s.repo.BinaryURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/binary-amd64/Packages")
+func (s *RemoteRepoSuite) TestIndexesRootURL(c *C) {
+	c.Assert(s.repo.IndexesRootURL().String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/")
+
+	c.Assert(s.flat.IndexesRootURL().String(), Equals, "http://repos.express42.com/virool/precise/")
 }
 
-func (s *RemoteRepoSuite) TestUdebURL(c *C) {
-	c.Assert(s.repo.UdebURL("main", "amd64").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/debian-installer/binary-amd64/Packages")
+func (s *RemoteRepoSuite) TestBinaryPath(c *C) {
+	c.Assert(s.repo.BinaryPath("main", "amd64"), Equals, "main/binary-amd64/Packages")
 }
 
-func (s *RemoteRepoSuite) TestSourcesURL(c *C) {
-	c.Assert(s.repo.SourcesURL("main").String(), Equals, "http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources")
+func (s *RemoteRepoSuite) TestUdebPath(c *C) {
+	c.Assert(s.repo.UdebPath("main", "amd64"), Equals, "main/debian-installer/binary-amd64/Packages")
 }
 
-func (s *RemoteRepoSuite) TestFlatBinaryURL(c *C) {
-	c.Assert(s.flat.FlatBinaryURL().String(), Equals, "http://repos.express42.com/virool/precise/Packages")
+func (s *RemoteRepoSuite) TestSourcesPath(c *C) {
+	c.Assert(s.repo.SourcesPath("main"), Equals, "main/source/Sources")
 }
 
-func (s *RemoteRepoSuite) TestFlatSourcesURL(c *C) {
-	c.Assert(s.flat.FlatSourcesURL().String(), Equals, "http://repos.express42.com/virool/precise/Sources")
+func (s *RemoteRepoSuite) TestFlatBinaryPath(c *C) {
+	c.Assert(s.flat.FlatBinaryPath(), Equals, "Packages")
+}
+
+func (s *RemoteRepoSuite) TestFlatSourcesPath(c *C) {
+	c.Assert(s.flat.FlatSourcesPath(), Equals, "Sources")
 }
 
 func (s *RemoteRepoSuite) TestPackageURL(c *C) {
@@ -197,7 +207,7 @@ func (s *RemoteRepoSuite) TestFetch(c *C) {
 
 func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
 	downloader := http.NewFakeDownloader()
-	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
 
@@ -257,26 +267,70 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
+
+	// Next call must return an empty download list with option "skip-existing-packages"
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	err = s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(0))
+	c.Check(queue, HasLen, 0)
+
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.repo.packageRefs, NotNil)
+
+	// Next call must return the download list without option "skip-existing-packages"
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+	err = s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(3))
+	c.Check(queue, HasLen, 1)
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.repo.packageRefs, NotNil)
 }
 
 func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
@@ -286,24 +340,25 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, IsNil)
 
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.HTTPError{Code: 404})
-	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.HTTPError{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
 	q := make([]string, 4)
 	for i := range q {
-		q[i] = queue[i].RepoURI
+		q[i] = queue[i].File.DownloadURL()
 	}
 	sort.Strings(q)
 	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
@@ -311,7 +366,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.repo.FinalizeDownload()
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -322,34 +377,131 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
 	c.Assert(err, IsNil)
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
+
+	// Next call must return an empty download list with option "skip-existing-packages"
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+
+	err = s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
+
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(0))
+	c.Check(queue, HasLen, 0)
+
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.repo.packageRefs, NotNil)
+
+	// Next call must return the download list without option "skip-existing-packages"
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
+
+	err = s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
+
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(15))
+	c.Check(queue, HasLen, 4)
+
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.repo.packageRefs, NotNil)
 }
 
 func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
 
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
-	c.Check(queue[0].RepoURI, Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
+
+	// Next call must return an empty download list with option "skip-existing-packages"
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+
+	err = s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(0))
+	c.Check(queue, HasLen, 0)
+
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.flat.packageRefs, NotNil)
+
+	// Next call must return the download list without option "skip-existing-packages"
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+
+	err = s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(3))
+	c.Check(queue, HasLen, 1)
+	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.flat.packageRefs, NotNil)
 }
 
 func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
@@ -357,27 +509,30 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.HTTPError{Code: 404})
-	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.HTTPError{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.Error{Code: 404})
 	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
 
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
 	q := make([]string, 4)
 	for i := range q {
-		q[i] = queue[i].RepoURI
+		q[i] = queue[i].File.DownloadURL()
 	}
 	sort.Strings(q)
 	c.Check(q[3], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
@@ -385,7 +540,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.flat.FinalizeDownload()
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -397,6 +552,58 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
+
+	// Next call must return an empty download list with option "skip-existing-packages"
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
+
+	err = s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(0))
+	c.Check(queue, HasLen, 0)
+
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.flat.packageRefs, NotNil)
+
+	// Next call must return the download list without option "skip-existing-packages"
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", examplePackagesFile)
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://repos.express42.com/virool/precise/Sources.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://repos.express42.com/virool/precise/Sources", exampleSourcesFile)
+
+	err = s.flat.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
+
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	c.Assert(err, IsNil)
+	c.Assert(downloader.Empty(), Equals, true)
+
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(15))
+	c.Check(queue, HasLen, 4)
+
+	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.flat.packageRefs, NotNil)
 }
 
 type RemoteRepoCollectionSuite struct {
@@ -418,14 +625,14 @@ func (s *RemoteRepoCollectionSuite) TearDownTest(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
-	r, err := s.collection.ByName("yandex")
+	_, err := s.collection.ByName("yandex")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
 
-	r, err = s.collection.ByName("yandex")
+	r, err := s.collection.ByName("yandex")
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 
@@ -436,13 +643,13 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
-	r, err := s.collection.ByUUID("some-uuid")
+	_, err := s.collection.ByUUID("some-uuid")
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 
-	r, err = s.collection.ByUUID(repo.UUID)
+	r, err := s.collection.ByUUID(repo.UUID)
 	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 }

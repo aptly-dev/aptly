@@ -11,15 +11,15 @@ aptly
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/gojp/goreportcard
-    :target: http://goreportcard.com/report/gojp/goreportcard
+.. image:: http://goreportcard.com/badge/smira/aptly
+    :target: http://goreportcard.com/report/smira/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
 .. image:: http://www.aptly.info/img/aptly_logo.png
     :target: http://www.aptly.info/
 
-Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support use
+Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support please use
 mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
 
 Aptly features: ("+" means planned features)
@@ -42,7 +42,7 @@ Current limitations:
 Download
 --------
 
-To install aptly on Debian/Ubuntu, add new repository to /etc/apt/sources.list::
+To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list``::
 
     deb http://repo.aptly.info/ squeeze main
 
@@ -64,19 +64,14 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.4+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.6+ required)::
 
-    go get -u github.com/mattn/gom
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
     cd $GOPATH/src/github.com/smira/aptly
-    gom -production install
-    gom build -o $GOPATH/bin/aptly
+    make install
 
-Aptly is using `gom <https://github.com/mattn/gom>`_ to fix external dependencies, so regular ``go get github.com/smira/aptly``
-should work as well, but might fail or produce different result (if external libraries got updated).
-
-If you don't have Go installed (or older version), you can easily install Go using `gvm <https://github.com/moovweb/gvm/>`_.
+Binary would be installed to ```$GOPATH/bin/aptly``.
 
 Integrations
 ------------
@@ -107,6 +102,7 @@ With configuration management systems:
 CLI for aptly API:
 
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
+-   `Python aptly CLI (good for CI) <https://github.com/TimSusa/aptly_api_cli>`_ by Tim Susa
 
 Scala sbt:
 
