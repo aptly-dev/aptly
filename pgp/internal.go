@@ -6,15 +6,17 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
+	"golang.org/x/crypto/openpgp/packet"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // Test interface
@@ -25,10 +27,15 @@ var (
 
 // GoSigner is implementation of Signer interface using Go internal OpenPGP library
 type GoSigner struct {
-	keyRef                     string
-	keyring, secretKeyring     string
-	passphrase, passphraseFile string
-	batch                      bool
+	keyRef                         string
+	keyringFile, secretKeyringFile string
+	passphrase, passphraseFile     string
+	batch                          bool
+
+	publicKeyring openpgp.EntityList
+	secretKeyring openpgp.EntityList
+	signer        *openpgp.Entity
+	signerConfig  *packet.Config
 }
 
 // SetBatch controls whether we allowed to interact with user
@@ -43,7 +50,7 @@ func (g *GoSigner) SetKey(keyRef string) {
 
 // SetKeyRing allows to set custom keyring and secretkeyring
 func (g *GoSigner) SetKeyRing(keyring, secretKeyring string) {
-	g.keyring, g.secretKeyring = keyring, secretKeyring
+	g.keyringFile, g.secretKeyringFile = keyring, secretKeyring
 }
 
 // SetPassphrase sets passhprase params
@@ -53,28 +60,142 @@ func (g *GoSigner) SetPassphrase(passphrase, passphraseFile string) {
 
 // Init verifies availability of gpg & presence of keys
 func (g *GoSigner) Init() error {
-	output, err := exec.Command("gpg", "--list-keys", "--dry-run", "--no-auto-check-trustdb").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("unable to execute gpg: %s (is gpg installed?): %s", err, string(output))
+	g.signerConfig = &packet.Config{
+		DefaultCompressionAlgo: packet.CompressionZLIB,
+		CompressionConfig: &packet.CompressionConfig{
+			Level: 9,
+		},
 	}
 
-	if g.keyring == "" && g.secretKeyring == "" && len(output) == 0 {
+	if g.passphraseFile != "" {
+		passF, err := os.Open(g.passphraseFile)
+		if err != nil {
+			return errors.Wrap(err, "error opening passphrase file")
+		}
+		defer passF.Close()
+
+		contents, err := ioutil.ReadAll(passF)
+		if err != nil {
+			return errors.Wrap(err, "error reading passphrase file")
+		}
+
+		g.passphrase = strings.TrimSpace(string(contents))
+	}
+
+	if g.keyringFile == "" {
+		g.keyringFile = "pubring.gpg"
+	}
+
+	if g.secretKeyringFile == "" {
+		g.secretKeyringFile = "secring.gpg"
+	}
+
+	var err error
+
+	g.publicKeyring, err = loadKeyRing(g.keyringFile, false)
+	if err != nil {
+		return errors.Wrap(err, "error loading public keyring")
+	}
+
+	g.secretKeyring, err = loadKeyRing(g.secretKeyringFile, false)
+	if err != nil {
+		return errors.Wrap(err, "error load secret keyring")
+	}
+
+	if len(g.secretKeyring) == 0 {
 		return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
 	}
 
-	return err
+	// TODO: pick key by id
+	g.signer = g.secretKeyring[0]
+
+	if g.signer.PrivateKey.Encrypted {
+		if g.passphrase == "" {
+			i := 0
+			for name := range g.signer.Identities {
+				if i == 0 {
+					fmt.Printf("openpgp: Passphrase is required to unlock private key \"%s\"\n", name)
+				} else {
+					fmt.Printf("                         				          aka \"%s\"\n", name)
+				}
+				i++
+			}
+
+			fmt.Print("\nEnter passphrase: ")
+			var bytePassphrase []byte
+			bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return errors.Wrap(err, "error reading passphare")
+			}
+
+			g.passphrase = string(bytePassphrase)
+		}
+
+		err = g.signer.PrivateKey.Decrypt([]byte(g.passphrase))
+		if err != nil {
+			return errors.Wrap(err, "error unlocking private key")
+		}
+	}
+
+	return nil
 }
 
 // DetachedSign signs file with detached signature in ASCII format
 func (g *GoSigner) DetachedSign(source string, destination string) error {
-	fmt.Printf("Signing file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
+	fmt.Printf("openpgp: signing file '%s'...\n", filepath.Base(source))
+
+	message, err := os.Open(source)
+	if err != nil {
+		return errors.Wrap(err, "error opening source file")
+	}
+	defer message.Close()
+
+	signature, err := os.Create(destination)
+	if err != nil {
+		return errors.Wrap(err, "error creating signature file")
+	}
+	defer signature.Close()
+
+	err = openpgp.ArmoredDetachSign(signature, g.signer, message, g.signerConfig)
+	if err != nil {
+		return errors.Wrap(err, "error creating detached signature")
+	}
 
 	return nil
 }
 
 // ClearSign clear-signs the file
 func (g *GoSigner) ClearSign(source string, destination string) error {
-	fmt.Printf("Clearsigning file '%s' with gpg, please enter your passphrase when prompted:\n", filepath.Base(source))
+	fmt.Printf("openpgp: clearsigning file '%s'...\n", filepath.Base(source))
+
+	message, err := os.Open(source)
+	if err != nil {
+		return errors.Wrap(err, "error opening source file")
+	}
+	defer message.Close()
+
+	clearsigned, err := os.Create(destination)
+	if err != nil {
+		return errors.Wrap(err, "error creating clearsigned file")
+	}
+	defer clearsigned.Close()
+
+	stream, err := clearsign.Encode(clearsigned, g.signer.PrivateKey, g.signerConfig)
+	if err != nil {
+		return errors.Wrap(err, "error initializing clear signer")
+	}
+
+	_, err = io.Copy(stream, message)
+	if err != nil {
+		stream.Close()
+		return errors.Wrap(err, "error generating clearsigned signature")
+	}
+
+	err = stream.Close()
+	if err != nil {
+		return errors.Wrap(err, "error generating clearsigned signature")
+	}
+
 	return nil
 }
 
@@ -275,7 +396,10 @@ func loadKeyRing(name string, ignoreMissing bool) (openpgp.EntityList, error) {
 
 	f, err := os.Open(name)
 	if err != nil {
-		if ignoreMissing && os.IsNotExist(err) {
+		if os.IsNotExist(err) {
+			if !ignoreMissing {
+				fmt.Printf("opengpg: failure opening keyring '%s': %s", name, err)
+			}
 			return nil, nil
 		}
 
