@@ -32,8 +32,8 @@ type Storage interface {
 	ProcessByPrefix(prefix []byte, proc StorageProcessor) error
 	KeysByPrefix(prefix []byte) [][]byte
 	FetchByPrefix(prefix []byte) [][]byte
+	Open() error
 	Close() error
-	ReOpen() error
 	StartBatch()
 	FinishBatch() error
 	CompactDB() error
@@ -66,13 +66,19 @@ func internalOpen(path string, throttleCompaction bool) (*leveldb.DB, error) {
 	return leveldb.OpenFile(path, o)
 }
 
-// OpenDB opens (creates) LevelDB database
-func OpenDB(path string) (Storage, error) {
-	db, err := internalOpen(path, false)
+// NewDB creates new instance of DB, but doesn't open it (yet)
+func NewDB(path string) (Storage, error) {
+	return &levelDB{path: path}, nil
+}
+
+// NewOpenDB creates new instance of DB and opens it
+func NewOpenDB(path string) (Storage, error) {
+	db, err := NewDB(path)
 	if err != nil {
 		return nil, err
 	}
-	return &levelDB{db: db, path: path}, nil
+
+	return db, db.Open()
 }
 
 // RecoverDB recovers LevelDB database from corruption
@@ -215,8 +221,8 @@ func (l *levelDB) Close() error {
 	return err
 }
 
-// Reopen tries to re-open the database
-func (l *levelDB) ReOpen() error {
+// Reopen tries to open (re-open) the database
+func (l *levelDB) Open() error {
 	if l.db != nil {
 		return nil
 	}

@@ -112,7 +112,7 @@ type SnapshotCollectionSuite struct {
 var _ = Suite(&SnapshotCollectionSuite{})
 
 func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.OpenDB(c.MkDir())
+	s.db, _ = database.NewOpenDB(c.MkDir())
 	s.collection = NewSnapshotCollection(s.db)
 	s.SetUpPackages()
 

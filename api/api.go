@@ -23,10 +23,17 @@ func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
 }
 
+type dbRequestKind int
+
 const (
-	acquiredb = iota
+	acquiredb dbRequestKind = iota
 	releasedb
 )
+
+type dbRequest struct {
+	kind dbRequestKind
+	err  chan<- error
+}
 
 // Flushes all collections which cache in-memory objects
 func flushColections() {
@@ -52,50 +59,48 @@ func flushColections() {
 }
 
 // Periodically flushes CollectionFactory to free up memory used by
-// collections, flushing caches. If the two channels are provided,
-// they are used to acquire and release the database.
+// collections, flushing caches.
 //
 // Should be run in goroutine!
-func cacheFlusher(requests chan int, acks chan error) {
+func cacheFlusher() {
 	ticker := time.Tick(15 * time.Minute)
 
 	for {
 		<-ticker
 
-		// if aptly API runs in -no-lock mode,
-		// caches are flushed when DB is closed anyway, no need
-		// to flush them here
-		if requests == nil {
-			flushColections()
-		}
+		flushColections()
 	}
 }
 
-// Acquire database lock and release it when not needed anymore. Two
-// channels must be provided. The first one is to receive requests to
-// acquire/release the database and the second one is to send acks.
+// Acquire database lock and release it when not needed anymore.
 //
 // Should be run in a goroutine!
-func acquireDatabase(requests chan int, acks chan error) {
+func acquireDatabase(requests <-chan dbRequest) {
 	clients := 0
-	for {
-		request := <-requests
-		switch request {
+	for request := range requests {
+		var err error
+
+		switch request.kind {
 		case acquiredb:
 			if clients == 0 {
-				acks <- context.ReOpenDatabase()
-			} else {
-				acks <- nil
+				err = context.ReOpenDatabase()
 			}
-			clients++
+
+			request.err <- err
+
+			if err == nil {
+				clients++
+			}
 		case releasedb:
 			clients--
 			if clients == 0 {
 				flushColections()
-				acks <- context.CloseDatabase()
+				err = context.CloseDatabase()
 			} else {
-				acks <- nil
+				err = nil
 			}
+
+			request.err <- err
 		}
 	}
 }

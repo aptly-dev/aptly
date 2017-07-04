@@ -17,7 +17,7 @@ var _ = Suite(&PackageCollectionSuite{})
 
 func (s *PackageCollectionSuite) SetUpTest(c *C) {
 	s.p = NewPackageFromControlFile(packageStanza.Copy())
-	s.db, _ = database.OpenDB(c.MkDir())
+	s.db, _ = database.NewOpenDB(c.MkDir())
 	s.collection = NewPackageCollection(s.db)
 }
 
