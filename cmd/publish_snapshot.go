@@ -117,6 +117,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
+	published.Suite = context.Flags().Lookup("suite").Value.String()
+	published.Codename = context.Flags().Lookup("codename").Value.String()
+	published.Description = context.Flags().Lookup("description").Value.String()
+	published.ComponentPrefix = context.Flags().Lookup("component-prefix").Value.String()
 	published.Origin = context.Flags().Lookup("origin").Value.String()
 	published.Label = context.Flags().Lookup("label").Value.String()
 
@@ -203,6 +207,7 @@ Example:
 	}
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish (for multi-component publishing, separate components with commas)")
+	cmd.Flag.String("component-prefix", "", "prefix components with this string in Release file (e.g. 'updates/')")
 	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
@@ -213,6 +218,9 @@ Example:
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("label", "", "label to publish")
+	cmd.Flag.String("suite", "", "suite to publish")
+	cmd.Flag.String("codename", "", "codename to publish")
+	cmd.Flag.String("description", "", "description to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 
 	return cmd
