@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "April 2017" "" ""
+.TH "APTLY" "1" "July 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -390,6 +390,10 @@ list of architectures to consider during (comma\-separated), default to all avai
 .TP
 \-\fBconfig\fR=
 location of configuration file (default locations are /etc/aptly\.conf, ~/\.aptly\.conf)
+.
+.TP
+\-\fBdb\-open\-attempts\fR=10
+number of attempts to open DB if it\(cqs locked by other instance
 .
 .TP
 \-\fBdep\-follow\-all\-variants\fR=false

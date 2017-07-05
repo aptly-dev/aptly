@@ -3,6 +3,7 @@ package context
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -238,13 +239,34 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		context.database, err = database.OpenDB(context.dbPath())
+		context.database, err = database.NewDB(context.dbPath())
 		if err != nil {
-			return nil, fmt.Errorf("can't open database: %s", err)
+			return nil, fmt.Errorf("can't instanciate database: %s", err)
 		}
 	}
 
-	return context.database, nil
+	tries := context.flags.Lookup("db-open-attempts").Value.Get().(int)
+	const BaseDelay = 10 * time.Second
+	const Jitter = 1 * time.Second
+
+	for ; tries >= 0; tries-- {
+		err := context.database.Open()
+		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
+			return context.database, err
+		}
+
+		if tries > 0 {
+			delay := time.Duration(rand.NormFloat64()*float64(Jitter) + float64(BaseDelay))
+			if delay < 0 {
+				delay = time.Second
+			}
+
+			context._progress().Printf("Unable to open database, sleeping %s, attempts left %d...\n", delay, tries)
+			time.Sleep(delay)
+		}
+	}
+
+	return nil, fmt.Errorf("unable to reopen the DB, maximum number of retries reached")
 }
 
 // CloseDatabase closes the db temporarily
@@ -261,26 +283,9 @@ func (context *AptlyContext) CloseDatabase() error {
 
 // ReOpenDatabase reopens the db after close
 func (context *AptlyContext) ReOpenDatabase() error {
-	context.Lock()
-	defer context.Unlock()
+	_, err := context.Database()
 
-	if context.database == nil {
-		return nil
-	}
-
-	const MaxTries = 10
-	const Delay = 10 * time.Second
-
-	for try := 0; try < MaxTries; try++ {
-		err := context.database.ReOpen()
-		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
-			return err
-		}
-		context._progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
-		<-time.After(Delay)
-	}
-
-	return fmt.Errorf("unable to reopen the DB, maximum number of retries reached")
+	return err
 }
 
 // CollectionFactory builds factory producing all kinds of collections

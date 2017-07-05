@@ -198,7 +198,7 @@ func (repo *RemoteRepo) IndexesRootURL() *url.URL {
 	if !repo.IsFlat() {
 		path = &url.URL{Path: fmt.Sprintf("dists/%s/", repo.Distribution)}
 	} else {
-		path = &url.URL{Path: fmt.Sprintf("%s", repo.Distribution)}
+		path = &url.URL{Path: repo.Distribution}
 	}
 
 	return repo.archiveRootURL.ResolveReference(path)

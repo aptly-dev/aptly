@@ -87,7 +87,7 @@ var _ = Suite(&PublishedRepoSuite{})
 func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.SetUpPackages()
 
-	s.db, _ = database.OpenDB(c.MkDir())
+	s.db, _ = database.NewOpenDB(c.MkDir())
 	s.factory = NewCollectionFactory(s.db)
 
 	s.root = c.MkDir()
@@ -449,7 +449,7 @@ type PublishedRepoCollectionSuite struct {
 var _ = Suite(&PublishedRepoCollectionSuite{})
 
 func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.OpenDB(c.MkDir())
+	s.db, _ = database.NewOpenDB(c.MkDir())
 	s.factory = NewCollectionFactory(s.db)
 
 	s.snapshotCollection = s.factory.SnapshotCollection()
@@ -640,7 +640,7 @@ type PublishedRepoRemoveSuite struct {
 var _ = Suite(&PublishedRepoRemoveSuite{})
 
 func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
-	s.db, _ = database.OpenDB(c.MkDir())
+	s.db, _ = database.NewOpenDB(c.MkDir())
 	s.factory = NewCollectionFactory(s.db)
 
 	s.snapshotCollection = s.factory.SnapshotCollection()

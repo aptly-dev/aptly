@@ -1,10 +1,6 @@
 package query
 
-import (
-	"fmt"
-
-	. "gopkg.in/check.v1"
-)
+import . "gopkg.in/check.v1"
 
 type LexerSuite struct {
 }
@@ -46,13 +42,13 @@ func (s *LexerSuite) TestConsume(c *C) {
 func (s *LexerSuite) TestString(c *C) {
 	l, _ := lex("query", "package (<< 1.3)")
 
-	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "\"package\"")
+	c.Check(l.Current().String(), Equals, "\"package\"")
 	l.Consume()
-	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "(")
+	c.Check(l.Current().String(), Equals, "(")
 }
 
 func (s *LexerSuite) TestError(c *C) {
 	l, _ := lex("query", "'package")
 
-	c.Check(fmt.Sprintf("%s", l.Current()), Equals, "error: unexpected eof in quoted string")
+	c.Check(l.Current().String(), Equals, "error: unexpected eof in quoted string")
 }
