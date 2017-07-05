@@ -608,14 +608,14 @@ class PublishSnapshot23Test(BaseTest):
 
 class PublishSnapshot24Test(BaseTest):
     """
-    publish snapshot: custom origin
+    publish snapshot: custom origin, notautomatic and butautomaticupgrades
     """
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap24 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 snap24"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 -notautomatic=yes -butautomaticupgrades=yes snap24"
     gold_processor = BaseTest.expand_environ
 
     def check(self):

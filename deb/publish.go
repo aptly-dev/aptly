@@ -37,11 +37,13 @@ type PublishedRepo struct {
 	// Internal unique ID
 	UUID string
 	// Storage & Prefix & distribution should be unique across all published repositories
-	Storage      string
-	Prefix       string
-	Distribution string
-	Origin       string
-	Label        string
+	Storage              string
+	Prefix               string
+	Distribution         string
+	Origin               string
+	NotAutomatic         string
+	ButAutomaticUpgrades string
+	Label                string
 	// Architectures is a list of all architectures published
 	Architectures []string
 	// SourceKind is "local"/"repo"
@@ -167,6 +169,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 		component               string
 		snapshot                *Snapshot
 		localRepo               *LocalRepo
+		fields                  = make(map[string][]string)
 	)
 
 	// get first source
@@ -214,6 +217,16 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 			snapshot = source.(*Snapshot)
 			result.Sources[component] = snapshot.UUID
 			result.sourceItems[component] = repoSourceItem{snapshot: snapshot}
+
+			if !utils.StrSliceHasItem(fields["Origin"], snapshot.Origin) {
+				fields["Origin"] = append(fields["Origin"], snapshot.Origin)
+			}
+			if !utils.StrSliceHasItem(fields["NotAutomatic"], snapshot.NotAutomatic) {
+				fields["NotAutomatic"] = append(fields["NotAutomatic"], snapshot.NotAutomatic)
+			}
+			if !utils.StrSliceHasItem(fields["ButAutomaticUpgrades"], snapshot.ButAutomaticUpgrades) {
+				fields["ButAutomaticUpgrades"] = append(fields["ButAutomaticUpgrades"], snapshot.ButAutomaticUpgrades)
+			}
 		} else if result.SourceKind == SourceLocalRepo {
 			localRepo = source.(*LocalRepo)
 			result.Sources[component] = localRepo.UUID
@@ -250,6 +263,17 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 
 	result.Distribution = distribution
 
+	// only fields which are unique by all given snapshots are set on published
+	if len(fields["Origin"]) == 1 {
+		result.Origin = fields["Origin"][0]
+	}
+	if len(fields["NotAutomatic"]) == 1 {
+		result.NotAutomatic = fields["NotAutomatic"][0]
+	}
+	if len(fields["ButAutomaticUpgrades"]) == 1 {
+		result.ButAutomaticUpgrades = fields["ButAutomaticUpgrades"][0]
+	}
+
 	return result, nil
 }
 
@@ -276,15 +300,17 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(map[string]interface{}{
-		"Architectures": p.Architectures,
-		"Distribution":  p.Distribution,
-		"Label":         p.Label,
-		"Origin":        p.Origin,
-		"Prefix":        p.Prefix,
-		"SourceKind":    p.SourceKind,
-		"Sources":       sources,
-		"Storage":       p.Storage,
-		"SkipContents":  p.SkipContents,
+		"Architectures":        p.Architectures,
+		"Distribution":         p.Distribution,
+		"Label":                p.Label,
+		"Origin":               p.Origin,
+		"NotAutomatic":         p.NotAutomatic,
+		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
+		"Prefix":               p.Prefix,
+		"SourceKind":           p.SourceKind,
+		"Sources":              sources,
+		"Storage":              p.Storage,
+		"SkipContents":         p.SkipContents,
 	})
 }
 
@@ -307,18 +333,26 @@ func (p *PublishedRepo) String() string {
 		sources = append(sources, fmt.Sprintf("{%s: %s}", component, source))
 	}
 
+	var extras []string
 	var extra string
 
 	if p.Origin != "" {
-		extra += fmt.Sprintf("origin: %s", p.Origin)
+		extras = append(extras, fmt.Sprintf("origin: %s", p.Origin))
+	}
+
+	if p.NotAutomatic != "" {
+		extras = append(extras, fmt.Sprintf("notautomatic: %s", p.NotAutomatic))
+	}
+
+	if p.ButAutomaticUpgrades != "" {
+		extras = append(extras, fmt.Sprintf("butautomaticupgrades: %s", p.ButAutomaticUpgrades))
 	}
 
 	if p.Label != "" {
-		if extra != "" {
-			extra += ", "
-		}
-		extra += fmt.Sprintf("label: %s", p.Label)
+		extras = append(extras, fmt.Sprintf("label: %s", p.Label))
 	}
+
+	extra = strings.Join(extras, ", ")
 
 	if extra != "" {
 		extra = " (" + extra + ")"
@@ -674,6 +708,12 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 	release := make(Stanza)
 	release["Origin"] = p.GetOrigin()
+	if p.NotAutomatic != "" {
+		release["NotAutomatic"] = p.NotAutomatic
+	}
+	if p.ButAutomaticUpgrades != "" {
+		release["ButAutomaticUpgrades"] = p.ButAutomaticUpgrades
+	}
 	release["Label"] = p.GetLabel()
 	release["Suite"] = p.Distribution
 	release["Codename"] = p.Distribution

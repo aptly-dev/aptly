@@ -1,11 +1,11 @@
 Serving published repositories, recommended apt sources list:
 
-# ./maverick [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
+# ./maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
 deb http://127.0.0.1:8765/ maverick main
-# debian/maverick [amd64, i386, source] publishes {main: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}
+# debian/maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386, source] publishes {main: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}
 deb http://127.0.0.1:8765/debian/ maverick main
 deb-src http://127.0.0.1:8765/debian/ maverick main
-# multi/maverick [amd64, i386, source] publishes {contrib: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}, {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
+# multi/maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386, source] publishes {contrib: [snap2]: Snapshot from mirror [gnuplot-maverick-src]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick [src]}, {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
 deb http://127.0.0.1:8765/multi/ maverick contrib main
 deb-src http://127.0.0.1:8765/multi/ maverick contrib main
 

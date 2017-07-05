@@ -43,6 +43,8 @@ Example:
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("origin", "", "origin name to publish")
+	cmd.Flag.String("notautomatic", "", "set value for NotAutomatic field")
+	cmd.Flag.String("butautomaticupgrades", "", "set  value for ButAutomaticUpgrades field")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 
