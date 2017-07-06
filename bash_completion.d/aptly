@@ -58,7 +58,7 @@ _aptly()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     commands="api config db graph mirror package publish repo serve snapshot task version"
-    options="-architectures= -config= -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve"
+    options="-architectures= -config= -db-open-attempts= -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve"
 
     db_subcommands="cleanup recover"
     mirror_subcommands="create drop edit show list rename search update"
