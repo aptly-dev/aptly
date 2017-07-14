@@ -242,7 +242,7 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 
 		context.database, err = database.NewDB(context.dbPath())
 		if err != nil {
-			return nil, fmt.Errorf("can't instanciate database: %s", err)
+			return nil, fmt.Errorf("can't instantiate database: %s", err)
 		}
 	}
 

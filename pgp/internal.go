@@ -121,6 +121,7 @@ func (g *GoSigner) Init() error {
 				i++
 			}
 
+			// TODO: retry passphrase entry
 			fmt.Print("\nEnter passphrase: ")
 			var bytePassphrase []byte
 			bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
