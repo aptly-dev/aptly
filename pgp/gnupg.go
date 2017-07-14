@@ -72,7 +72,7 @@ func (g *GpgSigner) gpgArgs() []string {
 	}
 
 	if g.batch {
-		args = append(args, "--no-tty")
+		args = append(args, "--no-tty", "--batch")
 	}
 
 	return args
