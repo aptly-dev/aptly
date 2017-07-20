@@ -15,6 +15,7 @@ import (
 
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
+	openpgp_errors "golang.org/x/crypto/openpgp/errors"
 	"golang.org/x/crypto/openpgp/packet"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -23,6 +24,11 @@ import (
 var (
 	_ Signer   = &GoSigner{}
 	_ Verifier = &GoVerifier{}
+)
+
+// Internal errors
+var (
+	errWrongPasshprase = errors.New("unable to decrypt the key, passphrase is wrong")
 )
 
 // GoSigner is implementation of Signer interface using Go internal OpenPGP library
@@ -106,39 +112,90 @@ func (g *GoSigner) Init() error {
 		return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
 	}
 
-	// TODO: pick key by id
-	g.signer = g.secretKeyring[0]
+	if g.keyRef == "" {
+		// no key reference, pick the first key
+		g.signer = g.secretKeyring[0]
+	} else {
+	pickKeyLoop:
+		for _, signer := range g.secretKeyring {
+			key := KeyFromUint64(signer.PrimaryKey.KeyId)
+			if key.Matches(Key(g.keyRef)) {
+				g.signer = signer
+				break
+			}
 
-	if g.signer.PrivateKey.Encrypted {
-		if g.passphrase == "" {
-			i := 0
-			for name := range g.signer.Identities {
-				if i == 0 {
-					fmt.Printf("openpgp: Passphrase is required to unlock private key \"%s\"\n", name)
-				} else {
-					fmt.Printf("                         				          aka \"%s\"\n", name)
+			for name := range signer.Identities {
+				if strings.Contains(name, g.keyRef) {
+					g.signer = signer
+					break pickKeyLoop
 				}
-				i++
 			}
-
-			// TODO: retry passphrase entry
-			fmt.Print("\nEnter passphrase: ")
-			var bytePassphrase []byte
-			bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
-			if err != nil {
-				return errors.Wrap(err, "error reading passphare")
-			}
-
-			g.passphrase = string(bytePassphrase)
 		}
 
-		err = g.signer.PrivateKey.Decrypt([]byte(g.passphrase))
+		if g.signer == nil {
+			return errors.Errorf("couldn't find key for key reference %v", g.keyRef)
+		}
+	}
+
+	if g.signer.PrivateKey.Encrypted {
+		i := 0
+		for name := range g.signer.Identities {
+			if i == 0 {
+				fmt.Printf("openpgp: Passphrase is required to unlock private key \"%s\"\n", name)
+			} else {
+				fmt.Printf("                         				          aka \"%s\"\n", name)
+			}
+			i++
+		}
+
+		if g.passphrase == "" {
+			if g.batch {
+				return errors.New("key is locked with passphrase, but no passphrase was given in batch mode")
+			}
+
+			for attempt := 0; attempt < 3; attempt++ {
+				fmt.Print("\nEnter passphrase: ")
+				var bytePassphrase []byte
+				bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+				if err != nil {
+					return errors.Wrap(err, "error reading passphare")
+				}
+
+				g.passphrase = string(bytePassphrase)
+
+				err = g.decryptKey()
+				if err == nil || err != errWrongPasshprase {
+					break
+				}
+
+				fmt.Print("\nWrong passphrase, please try again.\n")
+			}
+		} else {
+			err = g.decryptKey()
+		}
+
 		if err != nil {
-			return errors.Wrap(err, "error unlocking private key")
+			return err
 		}
 	}
 
 	return nil
+}
+
+func (g *GoSigner) decryptKey() error {
+	err := g.signer.PrivateKey.Decrypt([]byte(g.passphrase))
+
+	if err == nil {
+		return nil
+	}
+
+	if e, ok := err.(openpgp_errors.StructuralError); ok {
+		if string(e) == "private key checksum failure" {
+			return errWrongPasshprase
+		}
+	}
+
+	return errors.Wrap(err, "error unlocking private key")
 }
 
 // DetachedSign signs file with detached signature in ASCII format

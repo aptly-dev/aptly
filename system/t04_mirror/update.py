@@ -327,3 +327,19 @@ class UpdateMirror19Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+
+
+class UpdateMirror20Test(BaseTest):
+    """
+    update mirrors: flat repository (internal GPG implementation)
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+    ]
+    configOverride = {"gpgProvider": "internal"}
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
+    outputMatchPrepare = filterOutSignature
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
