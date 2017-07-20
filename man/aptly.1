@@ -235,6 +235,14 @@ bucket name
 \fBdisableMultiDel\fR
 (optional) for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
 .
+.TP
+\fBforceSigV2\fR
+(optional) disable Signature V4 support, useful with non\-AWS S3\-compatible object stores which do not support SigV4, shouldn\(cqt be enabled for AWS
+.
+.TP
+\fBdebug\fR
+(optional) enables detailed request/response dump for each S3 operation
+.
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
 .

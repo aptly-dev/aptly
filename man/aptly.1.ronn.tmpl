@@ -222,6 +222,11 @@ and associated settings:
    * `disableMultiDel`:
      (optional) for S3-compatible cloud storages which do not support `MultiDel` S3 API,
      enable this setting (file deletion would be slower with this setting enabled)
+   * `forceSigV2`:
+     (optional) disable Signature V4 support, useful with non-AWS S3-compatible object stores
+     which do not support SigV4, shouldn't be enabled for AWS
+   * `debug`:
+     (optional) enables detailed request/response dump for each S3 operation
 
 In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
 publishing prefix on the command line, e.g.:
