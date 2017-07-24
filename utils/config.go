@@ -28,7 +28,7 @@ type ConfigStructure struct { // nolint: aligncheck
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
-	APIHookCmd             string                      `json:"APIHookCmd"`
+	APIHookCmd             string                           `json:"APIHookCmd"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point

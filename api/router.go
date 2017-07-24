@@ -1,39 +1,41 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	ctx "github.com/smira/aptly/context"
-	"net/http"
-	"strconv"
-	"os/exec"
+
 	"encoding/json"
+	"os/exec"
+	"strconv"
 )
 
 var context *ctx.AptlyContext
 
-// middleware to track API calls and call a hook script
-func ApiHooks(cmd string, conf string) gin.HandlerFunc {
+// Hooks middleware to track API calls and call a hook script
+func Hooks(cmd string, conf string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		params , _ := json.Marshal(c.Params)
-		query, _   := json.Marshal(c.Request.URL.Query())
+		params, _ := json.Marshal(c.Params)
+		query, _ := json.Marshal(c.Request.URL.Query())
 
 		env := []string{
-			("APTLY_METHOD="      + c.Request.Method),
-			("APTLY_REQ_URL="     + c.Request.URL.String()),
+			("APTLY_METHOD=" + c.Request.Method),
+			("APTLY_REQ_URL=" + c.Request.URL.String()),
 			("APTLY_REMOTE_ADDR=" + c.Request.RemoteAddr),
-			("APTLY_STATUS="      + strconv.Itoa(c.Writer.Status())),
-			("APTLY_CONFIG="      + conf),
-			("APTLY_PARAMS="      + string(params)),
-			("APTLY_QUERY="       + string(query)),
+			("APTLY_STATUS=" + strconv.Itoa(c.Writer.Status())),
+			("APTLY_CONFIG=" + conf),
+			("APTLY_PARAMS=" + string(params)),
+			("APTLY_QUERY=" + string(query)),
 		}
 
 		cmd := exec.Command(cmd)
 		cmd.Env = env
 
 		// fire and forget
-		go func(){
+		go func() {
 			cmd.Run()
 		}()
 	}
@@ -47,10 +49,10 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	router.Use(gin.ErrorLogger())
 
 	conf := context.Config()
-	api_hook_cmd := conf.APIHookCmd
-	if api_hook_cmd != "" {
-		conf_str, _ := json.Marshal(conf)
-		router.Use(ApiHooks(api_hook_cmd, string(conf_str)))
+	apiHookCmd := conf.APIHookCmd
+	if apiHookCmd != "" {
+		confStr, _ := json.Marshal(conf)
+		router.Use(Hooks(apiHookCmd, string(confStr)))
 	}
 
 	if context.Flags().Lookup("no-lock").Value.Get().(bool) {

@@ -18,5 +18,6 @@
   "skipContentsPublishing": false,
   "FileSystemPublishEndpoints": {},
   "S3PublishEndpoints": {},
-  "SwiftPublishEndpoints": {}
+  "SwiftPublishEndpoints": {},
+  "APIHookCmd": ""
 }
