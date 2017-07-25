@@ -710,3 +710,49 @@ class PublishRepo29Test(BaseTest):
     ]
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo"
     gold_processor = BaseTest.expand_environ
+
+
+class PublishRepo30Test(BaseTest):
+    """
+    publish repo: default (internal PGP implementation)
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo"
+    gold_processor = BaseTest.expand_environ
+    configOverride = {"gpgProvider": "internal"}
+
+    def check(self):
+        super(PublishRepo30Test, self).check()
+
+        # verify signatures
+        self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg", "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+
+class PublishRepo31Test(BaseTest):
+    """
+    publish repo: sign with passphrase (internal PGP implementation)
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly_passphrase.pub -secret-keyring=${files}/aptly_passphrase.sec -passphrase=verysecret -distribution=maverick local-repo"
+    gold_processor = BaseTest.expand_environ
+    configOverride = {"gpgProvider": "internal"}
+
+    def check(self):
+        super(PublishRepo31Test, self).check()
+
+        # verify signatures
+        self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
+        self.run_cmd(["gpg", "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
+                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
