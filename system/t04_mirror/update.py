@@ -343,3 +343,20 @@ class UpdateMirror20Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror21Test(BaseTest):
+    """
+    update mirrors: correct matching of Release checksums (internal pgp implementation)
+    """
+    longTest = False
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://packages.pagerduty.com/pdagent deb/"
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
+    outputMatchPrepare = filterOutSignature
+
+    def output_processor(self, output):
+        return "\n".join(line for line in output.split("\n") if ".deb" not in line)
