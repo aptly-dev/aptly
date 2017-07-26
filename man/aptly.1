@@ -46,6 +46,7 @@ Configuration file is stored in JSON format (default values shown below):
   "dependencyVerboseResolve": false,
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
+  "gpgProvider": "gpg",
   "downloadSourcePackages": false,
   "skipLegacyPool": true,
   "ppaDistributorID": "ubuntu",
@@ -146,6 +147,10 @@ don\(cqt sign published repositories with gpg(1), also can be disabled on per\-r
 .TP
 \fBgpgDisableVerify\fR
 don\(cqt verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
+.
+.TP
+\fBgpgProvider\fR
+implementation of PGP signing/validation \- \fBgpg\fR for external \fBgpg\fR utility or \fBinternal\fR to use Go internal implementation
 .
 .TP
 \fBdownloadSourcePackages\fR
@@ -426,6 +431,10 @@ when processing dependencies, follow Suggests
 .TP
 \-\fBdep\-verbose\-resolve\fR=false
 when processing dependencies, print detailed logs
+.
+.TP
+\-\fBgpg\-provider\fR=
+PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
 .
 .SH "CREATE NEW MIRROR"
 \fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \|\.\|\.\|\.]
@@ -1984,4 +1993,3 @@ Clemens Rabe (https://github\.com/seeraven)
 TJ Merritt (https://github\.com/tjmerritt)
 .
 .IP "" 0
-

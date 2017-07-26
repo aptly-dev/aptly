@@ -290,7 +290,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 			return err
 		}
 
-		err = verifier.VerifyDetachedSignature(releasesig, release)
+		err = verifier.VerifyDetachedSignature(releasesig, release, true)
 		if err != nil {
 			return err
 		}

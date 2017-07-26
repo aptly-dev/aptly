@@ -23,3 +23,4 @@ Options:
   -dep-follow-source=false: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests=false: when processing dependencies, follow Suggests
   -dep-verbose-resolve=false: when processing dependencies, print detailed logs
+  -gpg-provider="": PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)

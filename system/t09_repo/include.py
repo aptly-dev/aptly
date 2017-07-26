@@ -468,3 +468,51 @@ class IncludeRepo19Test(BaseTest):
 
     def outputMatchPrepare(_, s):
         return changesRemove(_, gpgRemove(_, s))
+
+
+class IncludeRepo20Test(BaseTest):
+    """
+    include packages to local repo: .changes file from directory (internal PGP implementation)
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -no-remove-files -keyring=${files}/aptly.pub ${changes}"
+    outputMatchPrepare = gpgRemove
+    configOverride = {"gpgProvider": "internal"}
+
+
+class IncludeRepo21Test(BaseTest):
+    """
+    include packages to local repo: wrong signature (internal PGP implementation)
+    """
+    fixtureCmds = [
+        "aptly repo create unstable",
+    ]
+    runCmd = "aptly repo include -keyring=${files}/aptly.pub "
+    expectedCode = 1
+    configOverride = {"gpgProvider": "internal"}
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
+
+    def prepare(self):
+        super(IncludeRepo21Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+
+        shutil.copytree(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"), os.path.join(self.tempSrcDir, "01"))
+
+        with open(os.path.join(self.tempSrcDir, "01", "hardlink_0.2.1_amd64.changes"), "r+") as f:
+            contents = f.read()
+            f.seek(0, 0)
+            f.write(contents.replace('Julian', 'Andrey'))
+            f.truncate()
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo21Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)

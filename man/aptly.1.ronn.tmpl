@@ -38,6 +38,7 @@ Configuration file is stored in JSON format (default values shown below):
       "dependencyVerboseResolve": false,
       "gpgDisableSign": false,
       "gpgDisableVerify": false,
+      "gpgProvider": "gpg",
       "downloadSourcePackages": false,
       "skipLegacyPool": true,
       "ppaDistributorID": "ubuntu",
@@ -126,6 +127,10 @@ Options:
   * `gpgDisableVerify`:
     don't verify remote mirrors with gpg(1), also can be disabled on
     per-mirror basis using `-ignore-signatures` flag when creating and updating mirrors
+
+  * `gpgProvider`:
+    implementation of PGP signing/validation - `gpg` for external `gpg` utility or
+    `internal` to use Go internal implementation
 
   * `downloadSourcePackages`:
     if enabled, all mirrors created would have flag set to download source packages;

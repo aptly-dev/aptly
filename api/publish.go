@@ -26,7 +26,7 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 		return nil, nil
 	}
 
-	signer := &pgp.GpgSigner{}
+	signer := context.GetSigner()
 	signer.SetKey(options.GpgKey)
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)

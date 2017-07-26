@@ -16,6 +16,7 @@ Options:
   -filter-with-deps=false: when filtering, include dependencies of matching packages as well
   -force-architectures=false: (only with architecture list) skip check that requested architectures are listed in Release file
   -force-components=false: (only with component list) skip check that requested components are listed in Release file
+  -gpg-provider="": PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
   -ignore-signatures=false: disable verification of Release file signatures
   -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
   -with-sources=false: download source packages in addition to binary packages

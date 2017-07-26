@@ -72,7 +72,7 @@ func (g *GpgSigner) gpgArgs() []string {
 	}
 
 	if g.batch {
-		args = append(args, "--no-tty")
+		args = append(args, "--no-tty", "--batch")
 	}
 
 	return args
@@ -241,7 +241,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 }
 
 // VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
-func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) error {
+func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error {
 	args := g.argsKeyrings()
 
 	sigf, err := ioutil.TempFile("", "aptly-gpg")
@@ -269,7 +269,7 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader) er
 	}
 
 	args = append(args, sigf.Name(), clearf.Name())
-	_, err = g.runGpgv(args, "detached signature", true)
+	_, err = g.runGpgv(args, "detached signature", showKeyTip)
 	return err
 }
 

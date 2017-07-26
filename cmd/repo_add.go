@@ -6,7 +6,6 @@ import (
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -21,7 +20,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	verifier := &pgp.GpgVerifier{}
+	verifier := context.GetVerifier()
 
 	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {

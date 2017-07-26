@@ -1,0 +1,31 @@
+Architectures: all
+Codename: deb
+Components: contrib
+Date: Thu, 30 Mar 2017 19:55:24 UTC
+Label: PagerDuty, Inc.
+Origin: PagerDuty, Inc.
+Suite: stable
+MD5Sum:
+ 582e25878889dfecf25c00d459f4bdd7            13861 Packages
+ 49b1c5a52954278c4f06164bcfe95e50             2877 Packages.gz
+ db77040214a23ab564e3c3a09768dfea             2446 deb/Packages
+ 5799d88860e10251afb6737995811b3d              973 deb/Packages.gz
+ 20ba00172df962f951c70828c9fa8123              944 deb/Release
+SHA1:
+ 80e58103a3234f0f3b0920d1dd16d97f4ffc11a6            13861 Packages
+ 7e8916c13357363b0464cd5fc8fd469042ad6e23             2877 Packages.gz
+ 5a0cb9e0246a7c130a7be271fddd25cbba851a65             2446 deb/Packages
+ b661dbb9991d9ccf7c181426e86713dcfc70c609              973 deb/Packages.gz
+ f6f96166c00229f0c463b2c654ebd0a499bb084a              944 deb/Release
+SHA256:
+ a6c561644cdaa4dd1562698147f19e2cf3f6cd0efef172a68c1d164f1acb5095            13861 Packages
+ ba6abb2016c2e667affd07c80659acd1ddbdce3f36cd87e8dcff9824a62d65e1             2877 Packages.gz
+ 2b9133de7bd0ac7ac4dc9fa95a81c9cb9a3ccd9cdb6a945e4a3b05af110cf7f4             2446 deb/Packages
+ a4245f236c5fc3a6a53b25dff144433e9c648a08cca4ae86edd5e46aa14236da              973 deb/Packages.gz
+ 1ee2657183dd48cdbd30b87f373cf2ae9951c3970e7a4a5ef1e5a1a07b777427              944 deb/Release
+SHA512:
+ af258ba087feb8a9782075678d57d3706c9390a765fe8d34afee4143b5da83c16fdd8ea6f99f0b9979a9d77dc4db088c2aa7037576f0c5e29f1da3e9cd20bd05            13861 Packages
+ b3473ec7e4a1dced6daec0f6f477ec31c4eb8b7a174e068d259c21358728f2b9c5711f2c716055f524d478a057cbf78a710453fc0ba800d86fa1505a141fdf6b             2877 Packages.gz
+ 6e8f55f55489560094a5a98fc65ca2930c942e76f6e9ad924fe877c075ba08297d9e43163a0069224f6e8f5304943aac89c1ed45f34c9533b2b76d3c0a79ab27             2446 deb/Packages
+ e4e0a8440fd2198e358037c4b674ffcb245cbcf93a4f1bcd6158489b62d545a2078e9498e59180c27cbd2465c7941255275a8187f1bf119e80f8b227ce028d5f              973 deb/Packages.gz
+ b119366fef79f31f5e33876527dcec1d76037ebdcfc5c2380ba512e90b59db00bdd9fbceda977744be87a211df5f1c1fd5c41dafccef345d752a460f7fa54b3a              944 deb/Release
