@@ -3,6 +3,9 @@ package pgp
 import (
 	"bytes"
 	"crypto"
+	"crypto/dsa"
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"hash"
 	"io"
 	"strconv"
@@ -190,4 +193,51 @@ func pubkeyAlgorithmName(algorithm packet.PublicKeyAlgorithm) string {
 	}
 
 	return "unknown"
+}
+
+func keyBits(key interface{}) string {
+	switch k := key.(type) {
+	case *rsa.PublicKey:
+		return strconv.Itoa(k.N.BitLen())
+	case *dsa.PublicKey:
+		return strconv.Itoa(k.P.BitLen())
+	case *ecdsa.PublicKey:
+		return strconv.Itoa(k.Curve.Params().BitSize)
+	default:
+		return "?"
+	}
+}
+
+func validEntity(entity *openpgp.Entity) bool {
+	var selfSig *packet.Signature
+	for _, ident := range entity.Identities {
+		if selfSig == nil {
+			selfSig = ident.SelfSignature
+		} else if ident.SelfSignature.IsPrimaryId != nil && *ident.SelfSignature.IsPrimaryId {
+			selfSig = ident.SelfSignature
+			break
+		}
+	}
+
+	if selfSig == nil {
+		return false
+	}
+
+	if len(entity.Revocations) > 0 {
+		return false
+	}
+
+	if selfSig.RevocationReason != nil {
+		return false
+	}
+
+	if !selfSig.FlagsValid {
+		return false
+	}
+
+	if selfSig.KeyLifetimeSecs != nil && selfSig.CreationTime.Add(time.Duration(*selfSig.KeyLifetimeSecs)*time.Second).Before(time.Now()) {
+		return false
+	}
+
+	return true
 }
