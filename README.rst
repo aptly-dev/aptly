@@ -2,11 +2,11 @@
 aptly
 =====
 
-.. image:: https://travis-ci.org/smira/aptly.png?branch=master
+.. image:: https://api.travis-ci.org/smira/aptly.svg?branch=master
     :target: https://travis-ci.org/smira/aptly
 
-.. image:: https://coveralls.io/repos/smira/aptly/badge.png?branch=HEAD
-    :target: https://coveralls.io/r/smira/aptly?branch=HEAD
+.. image:: https://coveralls.io/repos/smira/aptly/badge.svg?branch=master
+    :target: https://coveralls.io/r/smira/aptly?branch=master
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
