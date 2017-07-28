@@ -1,6 +1,7 @@
 import os
 import hashlib
 import inspect
+import re
 import zlib
 from lib import BaseTest
 
@@ -746,6 +747,9 @@ class PublishRepo31Test(BaseTest):
     runCmd = "aptly publish repo -keyring=${files}/aptly_passphrase.pub -secret-keyring=${files}/aptly_passphrase.sec -passphrase=verysecret -distribution=maverick local-repo"
     gold_processor = BaseTest.expand_environ
     configOverride = {"gpgProvider": "internal"}
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r' \d{4}-\d{2}-\d{2}', '', s)
 
     def check(self):
         super(PublishRepo31Test, self).check()
