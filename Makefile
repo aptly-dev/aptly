@@ -41,7 +41,7 @@ check: system/env
 	else \
 		gometalinter --config=linter.json ./...; \
 	fi
-	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=env/ system/
+	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=system/env/ system/
 
 install:
 	go install -v -ldflags "-X main.Version=$(VERSION)"
