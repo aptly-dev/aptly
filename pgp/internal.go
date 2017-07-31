@@ -108,13 +108,20 @@ func (g *GoSigner) Init() error {
 		return errors.Wrap(err, "error load secret keyring")
 	}
 
-	if len(g.secretKeyring) == 0 {
-		return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
-	}
-
 	if g.keyRef == "" {
 		// no key reference, pick the first key
-		g.signer = g.secretKeyring[0]
+		for _, signer := range g.secretKeyring {
+			if !validEntity(signer) {
+				continue
+			}
+
+			g.signer = signer
+			break
+		}
+
+		if g.signer == nil {
+			return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
+		}
 	} else {
 	pickKeyLoop:
 		for _, signer := range g.secretKeyring {
@@ -122,6 +129,10 @@ func (g *GoSigner) Init() error {
 			if key.Matches(Key(g.keyRef)) {
 				g.signer = signer
 				break
+			}
+
+			if !validEntity(signer) {
+				continue
 			}
 
 			for name := range signer.Identities {
@@ -147,6 +158,12 @@ func (g *GoSigner) Init() error {
 			}
 			i++
 		}
+
+		fmt.Printf("openpgp: %s-bit %s key, ID %s, created %s\n",
+			keyBits(g.signer.PrimaryKey.PublicKey),
+			pubkeyAlgorithmName(g.signer.PrimaryKey.PubKeyAlgo),
+			KeyFromUint64(g.signer.PrimaryKey.KeyId),
+			g.signer.PrimaryKey.CreationTime.Format("2006-01-02"))
 
 		if g.passphrase == "" {
 			if g.batch {
@@ -456,7 +473,7 @@ func loadKeyRing(name string, ignoreMissing bool) (openpgp.EntityList, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			if !ignoreMissing {
-				fmt.Printf("opengpg: failure opening keyring '%s': %s", name, err)
+				fmt.Printf("opengpg: failure opening keyring '%s': %s\n", name, err)
 			}
 			return nil, nil
 		}
