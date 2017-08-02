@@ -499,12 +499,12 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 }
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
-func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
-	return l.FilterWithProgress(queries, withDependencies, source, dependencyOptions, architecturesList, nil)
+func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source, extraDeps *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+	return l.FilterWithProgress(queries, withDependencies, source, extraDeps, dependencyOptions, architecturesList, nil)
 }
 
 // FilterWithProgress filters package index by specified queries (ORed together), possibly pulling dependencies and displays progress
-func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
+func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, source, extraDeps *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
 	if !l.indexed {
 		panic("list not indexed, can't filter")
 	}
@@ -520,18 +520,43 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 		result.PrepareIndex()
 
 		dependencySource := NewPackageList()
+		validationSet := NewPackageList()
 		if source != nil {
 			dependencySource.Append(source)
 		}
+		if extraDeps != nil {
+			added += extraDeps.Len()
+			dependencySource.Append(extraDeps)
+			validationSet.Append(extraDeps)
+			if dependencyOptions&DepFollowAllVariants > 0 {
+				// keep all packages that are also present in extraDeps
+				// --> they are updates
+				extraDeps.ForEachIndexed(func(p *Package) error {
+					var err error
+					searchResults := l.Search(Dependency{Pkg: p.Name, Relation: VersionDontCare}, true)
+					if searchResults != nil {
+						for _, p := range searchResults {
+							if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+								progress.ColoredPrintf("@{g}Include package as update@|: %s", p)
+							}
+							result.Add(p)
+							added++
+						}
+					}
+					return err
+				})
+			}
+		}
 		dependencySource.Append(result)
+		validationSet.Append(result)
 		dependencySource.PrepareIndex()
+		validationSet.PrepareIndex()
 
 		// while some new dependencies were discovered
 		for added > 0 {
 			added = 0
 
-			// find missing dependencies
-			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
+			missing, err := validationSet.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
 			if err != nil {
 				return nil, err
 			}
@@ -564,6 +589,7 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 						}
 						result.Add(p)
 						dependencySource.Add(p)
+						validationSet.Add(p)
 						added++
 						if dependencyOptions&DepFollowAllVariants == 0 {
 							break
@@ -573,7 +599,27 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
 						progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
 					}
+				}
 
+				if extraDeps == nil {
+					continue
+				}
+				// the missing dependency might come from the extraDeps package list
+				// if we can fulfil the dependency from extraDeps, include these packages
+				// within the validationSet -> we want to satisfy their dependencies as well
+				extraSearchResults := extraDeps.Search(dep, true)
+				if extraSearchResults != nil {
+					for _, p := range extraSearchResults {
+						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+							progress.ColoredPrintf("@{g}Injecting extra package@|: %s", p)
+						}
+						dependencySource.Add(p)
+						validationSet.Add(p)
+						added++
+						if dependencyOptions&DepFollowAllVariants == 0 {
+							break
+						}
+					}
 				}
 			}
 		}
