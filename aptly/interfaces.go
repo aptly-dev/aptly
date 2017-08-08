@@ -109,6 +109,8 @@ type Progress interface {
 	Printf(msg string, a ...interface{})
 	// ColoredPrintf does printf in colored way + newline
 	ColoredPrintf(msg string, a ...interface{})
+	// PrintfStdErr does printf but in safe manner to stderr
+	PrintfStdErr(msg string, a ...interface{})
 }
 
 // Downloader is parallel HTTP fetcher
