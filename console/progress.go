@@ -2,6 +2,7 @@ package console
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/cheggaaa/pb"
@@ -11,6 +12,7 @@ import (
 
 const (
 	codePrint = iota
+	codePrintStdErr
 	codeProgress
 	codeHideProgress
 	codeStop
@@ -127,6 +129,11 @@ func (p *Progress) Printf(msg string, a ...interface{}) {
 	p.queue <- printTask{code: codePrint, message: fmt.Sprintf(msg, a...)}
 }
 
+// PrintfStdErr does printf but in safe manner to stderr
+func (p *Progress) PrintfStdErr(msg string, a ...interface{}) {
+	p.queue <- printTask{code: codePrintStdErr, message: fmt.Sprintf(msg, a...)}
+}
+
 // ColoredPrintf does printf in colored way + newline
 func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
 	if RunningOnTerminal() {
@@ -182,6 +189,12 @@ func (p *Progress) worker() {
 				p.barShown = false
 			}
 			fmt.Print(task.message)
+		case codePrintStdErr:
+			if p.barShown {
+				fmt.Print("\r\033[2K")
+				p.barShown = false
+			}
+			fmt.Fprint(os.Stderr, task.message)
 		case codeProgress:
 			if hasBar {
 				fmt.Print("\r" + task.message)

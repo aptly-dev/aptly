@@ -262,7 +262,7 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 				delay = time.Second
 			}
 
-			context._progress().Printf("Unable to open database, sleeping %s, attempts left %d...\n", delay, tries)
+			context._progress().PrintfStdErr("Unable to open database, sleeping %s, attempts left %d...\n", delay, tries)
 			time.Sleep(delay)
 		}
 	}
