@@ -78,6 +78,7 @@ func ParsePrefix(param string) (storage, prefix string) {
 	} else {
 		prefix = param
 	}
+	prefix = strings.TrimPrefix(strings.TrimSuffix(prefix, "/"), "/")
 	return
 }
 

@@ -122,3 +122,24 @@ class PublishDrop6Test(BaseTest):
     """
     runCmd = "aptly publish drop sq1"
     expectedCode = 1
+
+
+class PublishDrop7Test(BaseTest):
+    """
+    publish drop: under prefix with trailing & leading slashes
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1 ppa/smira/",
+    ]
+    runCmd = "aptly publish drop maverick /ppa/smira/"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishDrop7Test, self).check()
+
+        self.check_not_exists('public/ppa/smira/dists/')
+        self.check_not_exists('public/ppa/smira/pool/')
+        self.check_exists('public/ppa/smira/')
