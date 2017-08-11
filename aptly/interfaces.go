@@ -23,7 +23,7 @@ type PackagePool interface {
 	//
 	// if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
 	// in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
-	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (bool, error)
+	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (string, bool, error)
 	// Import copies file into package pool
 	//
 	// - srcPath is full path to source file as it is now
