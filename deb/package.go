@@ -629,14 +629,15 @@ type PackageDownloadTask struct {
 func (p *Package) DownloadList(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage) (result []PackageDownloadTask, err error) {
 	result = make([]PackageDownloadTask, 0, 1)
 
-	for idx, f := range p.Files() {
-		verified, err := f.Verify(packagePool, checksumStorage)
+	files := p.Files()
+	for idx := range files {
+		verified, err := files[idx].Verify(packagePool, checksumStorage)
 		if err != nil {
 			return nil, err
 		}
 
 		if !verified {
-			result = append(result, PackageDownloadTask{File: &p.Files()[idx]})
+			result = append(result, PackageDownloadTask{File: &files[idx]})
 		}
 	}
 
