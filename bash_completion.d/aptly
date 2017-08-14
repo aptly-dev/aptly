@@ -524,7 +524,7 @@ _aptly()
           "update")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-batch -force-overwrite -gpg-key= -keyring= -passphrase= -passphrase-file= -secret-keyring= -skip-contents -skip-signing" -- ${cur}))
+                COMPREPLY=($(compgen -W "-batch -force-overwrite -gpg-key= -keyring= -passphrase= -passphrase-file= -secret-keyring= -skip-cleanup -skip-contents -skip-signing" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_published_distributions)" -- ${cur}))
               fi
@@ -539,7 +539,7 @@ _aptly()
           "switch")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-batch -force-overwrite -component= -gpg-key= -keyring= -passphrase= -passphrase-file= -secret-keyring= -skip-contents -skip-signing" -- ${cur}))
+                COMPREPLY=($(compgen -W "-batch -force-overwrite -component= -gpg-key= -keyring= -passphrase= -passphrase-file= -secret-keyring= -skip-cleanup -skip-contents -skip-signing" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_published_distributions)" -- ${cur}))
               fi
@@ -559,7 +559,7 @@ _aptly()
           "drop")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-force-drop" -- ${cur}))
+                COMPREPLY=($(compgen -W "-force-drop -skip-cleanup" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_published_distributions)" -- ${cur}))
               fi

@@ -1097,7 +1097,7 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 // Remove removes published repository, cleaning up directories, files
 func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly.PublishedStorageProvider,
 	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
-	force bool) error {
+	force, skipCleanup bool) error {
 	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return err
@@ -1134,7 +1134,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
-	if len(cleanComponents) > 0 {
+	if !skipCleanup && len(cleanComponents) > 0 {
 		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents,
 			publishedStorageProvider.GetPublishedStorage(storage), collectionFactory, progress)
 		if err != nil {
