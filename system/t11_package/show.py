@@ -78,3 +78,17 @@ class ShowPackage7Test(BaseTest):
     ]
     outputMatchPrepare = sortLines
     runCmd = "aptly package show -with-references \"pyspi (0.6.1-1.3)\""
+
+
+class ShowPackage8Test(BaseTest):
+    """
+    show package: with duplicates and direct reference
+    """
+    fixtureCmds = [
+        "aptly repo create a",
+        "aptly repo create b",
+        "aptly repo add a ${files}",
+        "aptly repo add b ${testfiles}"
+    ]
+    outputMatchPrepare = sortLines
+    runCmd = "aptly package show -with-references pyspi_0.6.1-1.3_source"
