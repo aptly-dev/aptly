@@ -257,4 +257,19 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Spam"))
+
+	// for prefixed storage:
+	// first link from pool
+	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// 2nd link from pool, providing wrong path for source file
+	//
+	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
+	s.prefixedStorage.pathCache = nil
+	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
+	c.Check(err, IsNil)
+
+	c.Check(s.GetFile(c, "lala/pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
+
 }
