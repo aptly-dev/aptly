@@ -1,0 +1,57 @@
+
+
+
+
+
+  local repo [a]
+  local repo [b]
+ 22ff26db69b73d3438fdde21ab5ba2f1 3456 pyspi_0.6.1-1.3.diff.gz
+ 2e770b28df948f3197ed0b679bdea99f3f2bf745e9ddb440c677df9c3aeaee3c 3456 pyspi_0.6.1-1.3.diff.gz
+ 33dc6feab9ff1cf863b27f4d622985fe0114252d157a744dcc3d575bf7cfaad8 458 pyspi_0.6.1-1.3.conflict.dsc
+ 384b5e94b4113262e41bda1a2563f4f439cb8c97f43e2caefe16d7626718c21b36d3145b915eed24053eaa7fe3b6186494a87a3fcf9627f6e653b54bb3caa897 3456 pyspi_0.6.1-1.3.diff.gz
+ 4d94f5e09bc745af159ddf9ce7a13a84ac3434d0 458 pyspi_0.6.1-1.3.conflict.dsc
+ 56c8a9b1f4ab636052be8966690998cbe865cd6c 1782 pyspi_0.6.1-1.3.dsc
+ 64069ee828c50b1c597d10a3fefbba279f093a4723965388cdd0ac02f029bfb9 29063 pyspi_0.6.1.orig.tar.gz
+ 95a2468e4bbce730ba286f2211fa41861b9f1d90 3456 pyspi_0.6.1-1.3.diff.gz
+ 9694b80acc171c0a5bc99f707933864edfce555e 29063 pyspi_0.6.1.orig.tar.gz
+ b72cb94699298a117b7c82641c68b6fd 1782 pyspi_0.6.1-1.3.dsc
+ c278f52953203292bcc828bcf05aee456b160f91716f51ec1a1dbbcdb8b08fc29183d0a1135629fc0ebe86a3e84cedc685c3aa1714b70cc5db8877d40e754d7f 29063 pyspi_0.6.1.orig.tar.gz
+ cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e 0 pyspi_0.6.1.orig.tar.gz
+ d41d8cd98f00b204e9800998ecf8427e 0 pyspi_0.6.1.orig.tar.gz
+ d494aaf526f1ec6b02f14c2f81e060a5722d6532ddc760ec16972e45c2625989 1782 pyspi_0.6.1-1.3.dsc
+ d95c4fb8bf5066968b524e04f35c6d34 458 pyspi_0.6.1-1.3.conflict.dsc
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 pyspi_0.6.1.orig.tar.gz
+ def336bd566ea688a06ec03db7ccf1f4 29063 pyspi_0.6.1.orig.tar.gz
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 pyspi_0.6.1.orig.tar.gz
+ ec9b3ea45d9a14f341c947bfd4b4d70ee508f9ffe9374ff2eceaa5df45ee48e3103f67d0af57d62308fee62957dae2b60c4ff5649543ea6dbfef1bccf151b27e 458 pyspi_0.6.1-1.3.conflict.dsc
+ fde06b7dc5762a04986d0669420822f6a1e82b195322ae9cbd2dae40bda557c57ad77fe3546007ea645f801c4cd30ef4eb0e96efb2dee6b71c4c9a187d643683 1782 pyspi_0.6.1-1.3.dsc
+Architecture: any
+Architecture: any
+Binary: python-at-spi
+Binary: python-at-spi
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Build-Depends: debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev
+Checksums-Sha1:
+Checksums-Sha1:
+Checksums-Sha256:
+Checksums-Sha256:
+Checksums-Sha512:
+Checksums-Sha512:
+Files:
+Files:
+Format: 1.0
+Format: 1.0
+Homepage: http://people.redhat.com/zcerza/dogtail
+Homepage: http://people.redhat.com/zcerza/dogtail
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Maintainer: Jose Carlos Garcia Sogo <jsogo@debian.org>
+Package: pyspi
+Package: pyspi
+References to package:
+References to package:
+Standards-Version: 3.7.3
+Standards-Version: 3.7.3
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Vcs-Svn: svn://svn.tribulaciones.org/srv/svn/pyspi/trunk
+Version: 0.6.1-1.3
+Version: 0.6.1-1.3
