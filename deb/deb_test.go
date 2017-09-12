@@ -11,7 +11,7 @@ import (
 )
 
 type DebSuite struct {
-	debFile, debFile2, dscFile, dscFileNoSign string
+	debFile, debFile2, debFile3, dscFile, dscFileNoSign string
 }
 
 var _ = Suite(&DebSuite{})
@@ -20,6 +20,7 @@ func (s *DebSuite) SetUpSuite(c *C) {
 	_, _File, _, _ := runtime.Caller(0)
 	s.debFile = filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
 	s.debFile2 = filepath.Join(filepath.Dir(_File), "../system/changes/hardlink_0.2.1_amd64.deb")
+	s.debFile3 = filepath.Join(filepath.Dir(_File), "../system/files/test_tar_control.deb")
 	s.dscFile = filepath.Join(filepath.Dir(_File), "../system/files/pyspi_0.6.1-1.3.dsc")
 	s.dscFileNoSign = filepath.Join(filepath.Dir(_File), "../system/files/pyspi-0.6.1-1.3.stripped.dsc")
 }
@@ -36,6 +37,12 @@ func (s *DebSuite) TestGetControlFileFromDeb(c *C) {
 	c.Check(err, IsNil)
 	c.Check(st["Version"], Equals, "1.49.0.1")
 	c.Check(st["Package"], Equals, "libboost-program-options-dev")
+
+	st, err = GetControlFileFromDeb(s.debFile3)
+	c.Check(err, IsNil)
+	c.Check(st["Version"], Equals, "1.2.3")
+	c.Check(st["Package"], Equals, "test")
+
 }
 
 func (s *DebSuite) TestGetControlFileFromDsc(c *C) {

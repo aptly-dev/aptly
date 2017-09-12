@@ -44,14 +44,20 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 			return nil, fmt.Errorf("unable to read .deb archive %s: %s", packageFile, err)
 		}
 
-		if header.Name == "control.tar.gz" {
-			ungzip, err := gzip.NewReader(library)
-			if err != nil {
-				return nil, fmt.Errorf("unable to ungzip control file from %s. Error: %s", packageFile, err)
+		if strings.HasPrefix(header.Name, "control.tar") {
+			var src io.Reader
+			if strings.HasSuffix(header.Name, ".gz") {
+				ungzip, err := gzip.NewReader(library)
+				if err != nil {
+					return nil, fmt.Errorf("unable to ungzip control file from %s. Error: %s", packageFile, err)
+				}
+				defer ungzip.Close()
+				src = ungzip
+			} else {
+				src = library
 			}
-			defer ungzip.Close()
 
-			untar := tar.NewReader(ungzip)
+			untar := tar.NewReader(src)
 			for {
 				tarHeader, err := untar.Next()
 				if err == io.EOF {
