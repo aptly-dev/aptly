@@ -518,7 +518,7 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 				}
 
 				searchResults := l.Search(dep, true)
-				if searchResults != nil {
+				if len(searchResults) > 0 {
 					for _, p := range searchResults {
 						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
 							progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
