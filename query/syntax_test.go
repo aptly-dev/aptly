@@ -57,6 +57,18 @@ func (s *SyntaxSuite) TestParsing(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(q, DeepEquals, &deb.PkgQuery{Pkg: "alien-data", Version: "1.3.4~dev", Arch: "i386"})
 
+	l, _ = lex("query", "Alien-data_1.3.4~dev_i386")
+	q, err = parse(l)
+
+	c.Assert(err, IsNil)
+	c.Check(q, DeepEquals, &deb.PkgQuery{Pkg: "Alien-data", Version: "1.3.4~dev", Arch: "i386"})
+
+	l, _ = lex("query", "Name")
+	q, err = parse(l)
+
+	c.Assert(err, IsNil)
+	c.Check(q, DeepEquals, &deb.FieldQuery{Field: "Name"})
+
 	l, _ = lex("query", "package (> 5.3.7) {amd64}")
 	q, err = parse(l)
 
