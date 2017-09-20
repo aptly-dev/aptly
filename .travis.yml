@@ -4,9 +4,9 @@ sudo: required
 language: go
 
 go:
-  - 1.6.x
   - 1.7.x
   - 1.8.x
+  - 1.9.x
   - master
 
 go_import_path: github.com/smira/aptly

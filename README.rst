@@ -64,7 +64,7 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.6+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.7+ required)::
 
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
