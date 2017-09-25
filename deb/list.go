@@ -441,18 +441,6 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 		panic("list not indexed, can't search")
 	}
 
-	if dep.Relation == VersionDontCare {
-		for _, p := range l.providesIndex[dep.Pkg] {
-			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
-				searchResults = append(searchResults, p)
-
-				if !allMatches {
-					break
-				}
-			}
-		}
-	}
-
 	i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= dep.Pkg })
 
 	for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
@@ -466,6 +454,18 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 		}
 
 		i++
+	}
+
+	if dep.Relation == VersionDontCare {
+		for _, p := range l.providesIndex[dep.Pkg] {
+			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
+				searchResults = append(searchResults, p)
+
+				if !allMatches {
+					break
+				}
+			}
+		}
 	}
 
 	return
