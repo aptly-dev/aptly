@@ -105,10 +105,13 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-		context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
-	if err != nil {
-		return fmt.Errorf("unable to update: %s", err)
+	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
+	if !skipCleanup {
+		err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
+			context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
+		if err != nil {
+			return fmt.Errorf("unable to update: %s", err)
+		}
 	}
 
 	context.Progress().Printf("\nPublish for snapshot %s has been successfully switched to new snapshot.\n", published.String())
@@ -151,6 +154,7 @@ This command would switch published repository (with one component) named ppa/wh
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("skip-cleanup", false, "don't remove unreferenced files in prefix/component")
 
 	return cmd
 }

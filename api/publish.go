@@ -233,6 +233,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		ForceOverwrite bool
 		Signing        SigningOptions
 		SkipContents   *bool
+		SkipCleanup    *bool
 		Snapshots      []struct {
 			Component string `binding:"required"`
 			Name      string `binding:"required"`
@@ -328,11 +329,13 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
-	err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
-		context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
-	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to update: %s", err))
-		return
+	if b.SkipCleanup == nil || !*b.SkipCleanup {
+		err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
+			context.GetPublishedStorage(storage), context.CollectionFactory(), nil)
+		if err != nil {
+			c.Fail(500, fmt.Errorf("unable to update: %s", err))
+			return
+		}
 	}
 
 	c.JSON(200, published)
@@ -341,6 +344,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // DELETE /publish/:prefix/:distribution
 func apiPublishDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
+	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"
 
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -356,7 +360,7 @@ func apiPublishDrop(c *gin.Context) {
 	defer collection.Unlock()
 
 	err := collection.Remove(context, storage, prefix, distribution,
-		context.CollectionFactory(), context.Progress(), force)
+		context.CollectionFactory(), context.Progress(), force, skipCleanup)
 	if err != nil {
 		c.Fail(500, fmt.Errorf("unable to drop: %s", err))
 		return
