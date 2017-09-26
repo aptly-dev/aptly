@@ -29,3 +29,8 @@ func InitContext(flags *flag.FlagSet) error {
 
 	return err
 }
+
+// GetContext gives access to the context
+func GetContext() *ctx.AptlyContext {
+	return context
+}

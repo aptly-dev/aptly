@@ -164,6 +164,20 @@ func (s *VersionSuite) TestParseDependency(c *C) {
 	c.Check(d.Version, Equals, "1.6")
 	c.Check(d.Architecture, Equals, "i386")
 
+	d, e = ParseDependency("python:any (>= 2.7~)")
+	c.Check(e, IsNil)
+	c.Check(d.Pkg, Equals, "python")
+	c.Check(d.Relation, Equals, VersionGreaterOrEqual)
+	c.Check(d.Version, Equals, "2.7~")
+	c.Check(d.Architecture, Equals, "")
+
+	d, e = ParseDependency("python:amd64 (>= 2.7~)")
+	c.Check(e, IsNil)
+	c.Check(d.Pkg, Equals, "python")
+	c.Check(d.Relation, Equals, VersionGreaterOrEqual)
+	c.Check(d.Version, Equals, "2.7~")
+	c.Check(d.Architecture, Equals, "amd64")
+
 	d, e = ParseDependency("dpkg{i386}")
 	c.Check(e, IsNil)
 	c.Check(d.Pkg, Equals, "dpkg")

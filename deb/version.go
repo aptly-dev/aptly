@@ -262,6 +262,13 @@ func ParseDependency(dep string) (d Dependency, err error) {
 	}
 
 	d.Pkg = strings.TrimSpace(dep[0:i])
+	if strings.ContainsRune(d.Pkg, ':') {
+		parts := strings.SplitN(d.Pkg, ":", 2)
+		d.Pkg, d.Architecture = parts[0], parts[1]
+		if d.Architecture == "any" {
+			d.Architecture = ""
+		}
+	}
 
 	rel := ""
 	if dep[i+1] == '>' || dep[i+1] == '<' || dep[i+1] == '=' {

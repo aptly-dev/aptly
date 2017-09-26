@@ -16,7 +16,7 @@ class UpdateMirror1Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures varnish"
 
@@ -187,7 +187,7 @@ class UpdateMirror13Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
 
@@ -201,7 +201,7 @@ class UpdateMirror14Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
         "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"

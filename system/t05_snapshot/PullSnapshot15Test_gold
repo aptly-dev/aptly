@@ -2,6 +2,7 @@
 
     [snap1]: Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy
     [snap2]: Snapshot from mirror [wheezy-backports]: http://mirror.yandex.ru/debian/ wheezy-backports
+Already satisfied dependency: init-system-helpers (>= 1.18~) [i386] with [init-system-helpers_1.18~bpo70+1_all]
 Building indexes...
 Dependencies would be pulled into snapshot:
 Injecting package: init-system-helpers_1.18~bpo70+1_all
