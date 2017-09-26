@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/smira/aptly/query"
 	"github.com/smira/commander"
@@ -35,6 +36,20 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			repo.DownloadSources = flag.Value.Get().(bool)
 		case "with-udebs":
 			repo.DownloadUdebs = flag.Value.Get().(bool)
+		case "deps-from-repos":
+			repoNames := flag.Value.String()
+			if repoNames != "" {
+				repo.DepsFromRepos = strings.Split(repoNames, ",")
+			} else {
+				repo.DepsFromRepos = make([]string, 0)
+			}
+		case "deps-from-mirrors":
+			mirrorNames := flag.Value.String()
+			if mirrorNames != "" {
+				repo.DepsFromMirrors = strings.Split(mirrorNames, ",")
+			} else {
+				repo.DepsFromMirrors = make([]string, 0)
+			}
 		}
 	})
 
@@ -87,6 +102,8 @@ Example:
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
+	cmd.Flag.String("deps-from-mirrors", "", "list of mirrors thats packages's dependencies should be fulfilled (comma-separated), default to none")
+	cmd.Flag.String("deps-from-repos", "", "list of repositories thats packages's dependencies should be fulfilled (comma-separated), default to none")
 
 	return cmd
 }

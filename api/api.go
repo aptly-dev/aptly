@@ -145,7 +145,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
 		list.PrepareIndex()
 
 		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
-			nil, context.DependencyOptions(), architecturesList)
+			nil, nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.Fail(500, fmt.Errorf("unable to search: %s", err))
 			return
