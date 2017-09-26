@@ -117,7 +117,7 @@ memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
   branch = "master"
   name = "github.com/smira/flag"
   packages = ["."]
-  revision = "357ed3e599ffcbd4aeaa828e1d10da2df3ea5107"
+  revision = "695ea5e84e76dea7c8656e43c384e54b32aa1b2a"
 
 [[projects]]
   branch = "master"
