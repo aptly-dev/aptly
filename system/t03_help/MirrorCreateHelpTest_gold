@@ -16,18 +16,18 @@ Options:
   -architectures="": list of architectures to consider during (comma-separated), default to all available
   -config="": location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)
   -db-open-attempts=10: number of attempts to open DB if it's locked by other instance
-  -dep-follow-all-variants=false: when processing dependencies, follow a & b if dependency is 'a|b'
-  -dep-follow-recommends=false: when processing dependencies, follow Recommends
-  -dep-follow-source=false: when processing dependencies, follow from binary to Source packages
-  -dep-follow-suggests=false: when processing dependencies, follow Suggests
-  -dep-verbose-resolve=false: when processing dependencies, print detailed logs
+  -dep-follow-all-variants: when processing dependencies, follow a & b if dependency is 'a|b'
+  -dep-follow-recommends: when processing dependencies, follow Recommends
+  -dep-follow-source: when processing dependencies, follow from binary to Source packages
+  -dep-follow-suggests: when processing dependencies, follow Suggests
+  -dep-verbose-resolve: when processing dependencies, print detailed logs
   -filter="": filter packages in mirror
-  -filter-with-deps=false: when filtering, include dependencies of matching packages as well
-  -force-architectures=false: (only with architecture list) skip check that requested architectures are listed in Release file
-  -force-components=false: (only with component list) skip check that requested components are listed in Release file
+  -filter-with-deps: when filtering, include dependencies of matching packages as well
+  -force-architectures: (only with architecture list) skip check that requested architectures are listed in Release file
+  -force-components: (only with component list) skip check that requested components are listed in Release file
   -gpg-provider="": PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
-  -ignore-signatures=false: disable verification of Release file signatures
+  -ignore-signatures: disable verification of Release file signatures
   -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
-  -with-sources=false: download source packages in addition to binary packages
-  -with-udebs=false: download .udeb packages (Debian installer support)
+  -with-sources: download source packages in addition to binary packages
+  -with-udebs: download .udeb packages (Debian installer support)
 

@@ -440,7 +440,7 @@ Options:
 {{/* options layout */}}
 {{define "options"}}
 {{range allFlags .Flag}}
-  * -`{{.Name}}`={{.DefValue}}:
+  * -`{{.Name}}`{{if ne .DefValue "false"}}={{.DefValue}}{{end}}:
     {{.Usage}}
 {{end}}
 {{end}}
