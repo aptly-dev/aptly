@@ -1,4 +1,4 @@
-memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
+memo = "57879f27cc9f82276b92ed638fbc04122c3793ed4a16bea668c9fbfda280c280"
 
 [[projects]]
   name = "github.com/AlekSi/pointer"
@@ -31,15 +31,28 @@ memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
   version = "v1.0.10"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/gin-contrib/sse"
+  packages = ["."]
+  revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
+
+[[projects]]
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","render"]
-  revision = "b1758d3bfa09e61ddbc1c9a627e936eec6a170de"
+  revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
   revision = "1730955e3146956d6a087861380f9b4667ed5071"
   version = "v1.26.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
 
 [[projects]]
   branch = "master"
@@ -66,10 +79,10 @@ memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
   version = "0.2.2"
 
 [[projects]]
-  name = "github.com/julienschmidt/httprouter"
+  name = "github.com/mattn/go-isatty"
   packages = ["."]
-  revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
-  version = "v1.1"
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/mattn/go-runewidth"
@@ -185,7 +198,19 @@ memo = "becdf010a814559719c990c1bd645c737cee332ad52004c440605c13de100d45"
   revision = "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec"
 
 [[projects]]
+  name = "gopkg.in/go-playground/validator.v8"
+  packages = ["."]
+  revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
+  version = "v8.18.2"
+
+[[projects]]
   name = "gopkg.in/h2non/filetype.v1"
   packages = ["types"]
   revision = "3093b8ebec6efb56ac813238b8beab4ed4eaac6a"
   version = "v1.0.1"
+
+[[projects]]
+  branch = "v2"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"

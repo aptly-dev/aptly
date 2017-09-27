@@ -53,25 +53,25 @@ func apiGraph(c *gin.Context) {
 
 	stdin, err := command.StdinPipe()
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
 	_, err = io.Copy(stdin, buf)
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
 	err = stdin.Close()
 	if err != nil {
-		c.Fail(500, err)
+		c.AbortWithError(500, err)
 		return
 	}
 
 	output, err = command.Output()
 	if err != nil {
-		c.Fail(500, fmt.Errorf("unable to execute dot: %s (is graphviz package installed?)", err))
+		c.AbortWithError(500, fmt.Errorf("unable to execute dot: %s (is graphviz package installed?)", err))
 		return
 	}
 
