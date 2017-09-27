@@ -205,7 +205,7 @@ class ReposAPITestShowQuery(APITest):
 
         resp = self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi)"})
         self.check_equal(resp.status_code, 400)
-        self.check_equal(resp.json()[0]["error"], u'parsing failed: unexpected token ): expecting end of query')
+        self.check_equal(resp.json()["error"], u'parsing failed: unexpected token ): expecting end of query')
 
 
 class ReposAPITestAddMultiple(APITest):

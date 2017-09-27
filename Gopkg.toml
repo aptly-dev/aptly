@@ -1,9 +1,5 @@
 
 [[dependencies]]
-  name = "github.com/gin-gonic/gin"
-  revision = "b1758d3bfa09e61ddbc1c9a627e936eec6a170de"
-
-[[dependencies]]
   branch = "master"
   name = "github.com/mkrautz/goar"
 

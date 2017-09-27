@@ -32,7 +32,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 			err = <-errCh
 			if err != nil {
-				c.Fail(500, err)
+				c.AbortWithError(500, err)
 				return
 			}
 
@@ -40,7 +40,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 				requests <- dbRequest{releasedb, errCh}
 				err = <-errCh
 				if err != nil {
-					c.Fail(500, err)
+					c.AbortWithError(500, err)
 				}
 			}()
 
