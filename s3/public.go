@@ -370,6 +370,13 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 		ACL:        aws.String(storage.acl),
 	}
 
+	if storage.storageClass != "" {
+		params.StorageClass = aws.String(storage.storageClass)
+	}
+	if storage.encryptionMethod != "" {
+		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
+	}
+
 	_, err := storage.s3.CopyObject(params)
 	if err != nil {
 		return fmt.Errorf("error copying %s -> %s in %s: %s", oldName, newName, storage, err)
