@@ -310,3 +310,37 @@ class AddRepo15Test(BaseTest):
     def outputMatchPrepare(self, s):
         return s.replace(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__), ""). \
                          replace(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files"), "")
+
+
+class AddRepo16Test(BaseTest):
+    """
+    add package to local repo: some source files missing, but already in the pool
+    """
+    fixtureCmds = [
+        "aptly repo create repo1",
+        "aptly repo create repo2",
+        "aptly repo add repo1 ${files}"
+    ]
+    runCmd = "aptly repo add repo2 "
+
+    def outputMatchPrepare(self, s):
+        return s.replace(self.tempSrcDir, "")
+
+    def prepare(self):
+        super(AddRepo16Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
+
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
+                    os.path.join(self.tempSrcDir, "02", "03"))
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1.orig.tar.gz"),
+                    os.path.join(self.tempSrcDir, "02", "03"))
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show repo2", "repo_show")
+
+        shutil.rmtree(self.tempSrcDir)

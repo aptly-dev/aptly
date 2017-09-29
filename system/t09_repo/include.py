@@ -516,3 +516,44 @@ class IncludeRepo21Test(BaseTest):
             super(IncludeRepo21Test, self).check()
         finally:
             shutil.rmtree(self.tempSrcDir)
+
+
+class IncludeRepo22Test(BaseTest):
+    """
+    include packages to local repo: missing files, but files aready in the pool
+    """
+    fixtureCmds = [
+        "aptly repo create stable",
+        "aptly repo create unstable",
+        "aptly repo add stable ${changes}"
+    ]
+    runCmd = "aptly repo include -ignore-signatures -keyring=${files}/aptly.pub "
+
+    def outputMatchPrepare(self, s):
+        return gpgRemove(self, tempDirRemove(self, s))
+
+    def prepare(self):
+        super(IncludeRepo22Test, self).prepare()
+
+        self.tempSrcDir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0755)
+
+        for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1_amd64.deb"]:
+            shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes", path),
+                        os.path.join(self.tempSrcDir, "01", path))
+
+        path = "hardlink_0.2.1_amd64.changes"
+        with open(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes", path), "r") as source:
+            with open(os.path.join(self.tempSrcDir, "01", path), "w") as dest:
+                content = source.readlines()
+                # remove reference to .tar.gz file
+                content = [line for line in content if "hardlink_0.2.1.tar.gz" not in line]
+                dest.write("".join(content))
+
+        self.runCmd += self.tempSrcDir
+
+    def check(self):
+        try:
+            super(IncludeRepo22Test, self).check()
+        finally:
+            shutil.rmtree(self.tempSrcDir)
