@@ -385,26 +385,65 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 	return storage.Remove(oldName)
 }
 
-// SymLink creates a symbolic link, which can be read with ReadLink
+// SymLink creates a copy of src file and adds link information as meta data
 func (storage *PublishedStorage) SymLink(src string, dst string) error {
-	// TODO: create a file containing dst
-	return fmt.Errorf("s3: symlinks not implemented")
+
+	params := &s3.CopyObjectInput{
+		Bucket:     aws.String(storage.bucket),
+		CopySource: aws.String(src),
+		Key:        aws.String(filepath.Join(storage.prefix, dst)),
+		ACL:        aws.String(storage.acl),
+		Metadata:   map[string]*string{
+			"SymLink": aws.String(src),
+		},
+		MetadataDirective: aws.String("REPLACE"),
+	}
+
+	if storage.storageClass != "" {
+		params.StorageClass = aws.String(storage.storageClass)
+	}
+	if storage.encryptionMethod != "" {
+		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
+	}
+
+	_, err := storage.s3.CopyObject(params)
+	if err != nil {
+		return fmt.Errorf("error symlinking %s -> %s in %s: %s", src, dst, storage, err)
+	}
+
+	return err
 }
 
-// HardLink creates a hardlink of a file
+// HardLink using symlink functionality as hard links do not exist
 func (storage *PublishedStorage) HardLink(src string, dst string) error {
-	// TODO: create a copy of the file
-	return fmt.Errorf("s3: hardlinks not implemented")
+	return storage.SymLink(src, dst)
 }
 
 // FileExists returns true if path exists
 func (storage *PublishedStorage) FileExists(path string) bool {
-	// TODO: implement
-	return false
+	params := &s3.HeadObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+	}
+	_, err := storage.s3.HeadObject(params)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
-// ReadLink returns the symbolic link pointed to by path
+// ReadLink returns the symbolic link pointed to by path.
+// This simply reads text file created with SymLink
 func (storage *PublishedStorage) ReadLink(path string) (string, error) {
-	// TODO: read the path and return the content of the file
-	return "", fmt.Errorf("s3: ReadLink not implemented")
+	params := &s3.HeadObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+	}
+	output, err := storage.s3.HeadObject(params)
+	if err != nil {
+		return "", err
+	}
+
+	return aws.StringValue(output.Metadata["SymLink"]), nil
 }

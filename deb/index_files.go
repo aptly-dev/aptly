@@ -186,24 +186,27 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	src = src + file.parent.suffix + ext
 	filedir := filepath.Dir(filepath.Join(file.parent.basePath, file.relativePath))
 	dst := filepath.Join(filedir, "by-hash", hash)
+	sumfilePath := filepath.Join(dst, sum)
 
 	// link already exists? do nothing
-	if file.parent.publishedStorage.FileExists(filepath.Join(dst, sum)) {
+	if file.parent.publishedStorage.FileExists(sumfilePath) {
 		return nil
 	}
 
 	// create the link
-	err := file.parent.publishedStorage.HardLink(src, filepath.Join(dst, sum))
+	err := file.parent.publishedStorage.HardLink(src, sumfilePath)
 	if err != nil {
-		return fmt.Errorf("Access-By-Hash: error creating hardlink %s: %s", filepath.Join(dst, sum), err)
+		return fmt.Errorf("Access-By-Hash: error creating hardlink %s: %s", sumfilePath, err)
 	}
 
-	// if exists, backup symlink
+	// if a previous index file already exists exists, backup symlink
 	if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)) {
 		// if exists, remove old symlink
 		if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")) {
-			link, _ := file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
-			file.parent.publishedStorage.Remove(filepath.Join(dst, link))
+			link, err := file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
+			if err != nil {
+				file.parent.publishedStorage.Remove(link)
+			}
 			file.parent.publishedStorage.Remove(filepath.Join(dst, indexfile+".old"))
 		}
 		file.parent.publishedStorage.RenameFile(filepath.Join(dst, indexfile),
