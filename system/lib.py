@@ -194,7 +194,7 @@ class BaseTest(object):
     def check_output(self):
         try:
             self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if self.outputMatchPrepare is not None:
                     self.output = self.outputMatchPrepare(self.output)
@@ -207,7 +207,7 @@ class BaseTest(object):
         output = self.run_cmd(command, expected_code=expected_code)
         try:
             self.verify_match(self.get_gold(gold_name), output, match_prepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if match_prepare is not None:
                     output = match_prepare(output)
@@ -228,7 +228,7 @@ class BaseTest(object):
         try:
 
             self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if match_prepare is not None:
                     contents = match_prepare(contents)
@@ -241,7 +241,7 @@ class BaseTest(object):
         contents = open(self.checkedFile, "r").read()
         try:
             self.verify_match(self.get_gold(), contents)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 with open(self.get_gold_filename(), "w") as f:
                     f.write(contents)
