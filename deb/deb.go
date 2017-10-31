@@ -37,21 +37,46 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 	library := ar.NewReader(file)
 	for {
 		header, err := library.Next()
+
 		if err == io.EOF {
-			return nil, fmt.Errorf("unable to find control.tar.gz part in package %s", packageFile)
+			return nil, fmt.Errorf("unable to find control.tar.* part in package %s", packageFile)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unable to read .deb archive %s: %s", packageFile, err)
 		}
 
-		if header.Name == "control.tar.gz" {
-			ungzip, err := gzip.NewReader(library)
-			if err != nil {
-				return nil, fmt.Errorf("unable to ungzip control file from %s. Error: %s", packageFile, err)
-			}
-			defer ungzip.Close()
+		// As per deb(5) version 1.19.0.4 the control file may be:
+		// - control.tar (since 1.17.6)
+		// - control.tar.gz
+		// - control.tar.xz (since 1.17.6)
+		// Look for all of the above and uncompress as necessary.
+		if strings.HasPrefix(header.Name, "control.tar") {
+			bufReader := bufio.NewReader(library)
 
-			untar := tar.NewReader(ungzip)
+			var tarInput io.Reader
+
+			switch header.Name {
+			case "control.tar":
+				tarInput = bufReader
+			case "control.tar.gz":
+				ungzip, err := gzip.NewReader(bufReader)
+				if err != nil {
+					return nil, errors.Wrapf(err, "unable to ungzip %s from %s", header.Name, packageFile)
+				}
+				defer ungzip.Close()
+				tarInput = ungzip
+			case "control.tar.xz":
+				unxz, err := xz.NewReader(bufReader)
+				if err != nil {
+					return nil, errors.Wrapf(err, "unable to unxz %s from %s", header.Name, packageFile)
+				}
+				defer unxz.Close()
+				tarInput = unxz
+			default:
+				return nil, fmt.Errorf("unsupported tar compression in %s: %s", packageFile, header.Name)
+			}
+
+			untar := tar.NewReader(tarInput)
 			for {
 				tarHeader, err := untar.Next()
 				if err == io.EOF {
