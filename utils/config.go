@@ -7,7 +7,7 @@ import (
 )
 
 // ConfigStructure is structure of main configuration
-type ConfigStructure struct { // nolint: aligncheck
+type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
