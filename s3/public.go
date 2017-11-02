@@ -393,7 +393,7 @@ func (storage *PublishedStorage) SymLink(src string, dst string) error {
 		CopySource: aws.String(src),
 		Key:        aws.String(filepath.Join(storage.prefix, dst)),
 		ACL:        aws.String(storage.acl),
-		Metadata:   map[string]*string{
+		Metadata: map[string]*string{
 			"SymLink": aws.String(src),
 		},
 		MetadataDirective: aws.String("REPLACE"),
@@ -426,11 +426,7 @@ func (storage *PublishedStorage) FileExists(path string) bool {
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
 	}
 	_, err := storage.s3.HeadObject(params)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 // ReadLink returns the symbolic link pointed to by path.

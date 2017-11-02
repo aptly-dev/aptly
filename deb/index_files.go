@@ -203,7 +203,8 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)) {
 		// if exists, remove old symlink
 		if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")) {
-			link, err := file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
+			var link string
+			link, err = file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
 			if err != nil {
 				file.parent.publishedStorage.Remove(link)
 			}
