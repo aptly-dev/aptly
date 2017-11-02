@@ -21,20 +21,20 @@ type indexFiles struct {
 	tempDir          string
 	suffix           string
 	indexes          map[string]*indexFile
-	accessByHash     bool
+	acquireByHash    bool
 }
 
 type indexFile struct {
-	parent       *indexFiles
-	discardable  bool
-	compressable bool
-	onlyGzip     bool
-	signable     bool
-	accessByHash bool
-	relativePath string
-	tempFilename string
-	tempFile     *os.File
-	w            *bufio.Writer
+	parent        *indexFiles
+	discardable   bool
+	compressable  bool
+	onlyGzip      bool
+	signable      bool
+	acquireByHash bool
+	relativePath  string
+	tempFilename  string
+	tempFile      *os.File
+	w             *bufio.Writer
 }
 
 func (file *indexFile) BufWriter() (*bufio.Writer, error) {
@@ -102,8 +102,8 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	}
 
 	hashs := []string{}
-	if file.accessByHash {
-		hashs = append(hashs, "MD5", "SHA1", "SHA256", "SHA512")
+	if file.acquireByHash {
+		hashs = append(hashs, "MD5Sum", "SHA1", "SHA256", "SHA512")
 		for _, hash := range hashs {
 			err = file.parent.publishedStorage.MkDir(filepath.Join(filedir, "by-hash", hash))
 			if err != nil {
@@ -124,7 +124,7 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 				filepath.Join(file.parent.basePath, file.relativePath+ext)
 		}
 
-		if file.accessByHash {
+		if file.acquireByHash {
 			sums := file.parent.generatedFiles[file.relativePath+ext]
 
 			err = packageIndexByHash(file, ext, "SHA512", sums.SHA512)
@@ -139,7 +139,7 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
-			err = packageIndexByHash(file, ext, "MD5", sums.MD5)
+			err = packageIndexByHash(file, ext, "MD5Sum", sums.MD5)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 			}
@@ -196,7 +196,7 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	// create the link
 	err := file.parent.publishedStorage.HardLink(src, sumfilePath)
 	if err != nil {
-		return fmt.Errorf("Access-By-Hash: error creating hardlink %s: %s", sumfilePath, err)
+		return fmt.Errorf("Acquire-By-Hash: error creating hardlink %s: %s", sumfilePath, err)
 	}
 
 	// if a previous index file already exists exists, backup symlink
@@ -216,12 +216,12 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	// create symlink
 	err = file.parent.publishedStorage.SymLink(sum, filepath.Join(dst, indexfile))
 	if err != nil {
-		return fmt.Errorf("Access-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
+		return fmt.Errorf("Acquire-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
 	}
 	return nil
 }
 
-func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, accessByHash bool) *indexFiles {
+func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, acquireByHash bool) *indexFiles {
 	return &indexFiles{
 		publishedStorage: publishedStorage,
 		basePath:         basePath,
@@ -230,7 +230,7 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 		tempDir:          tempDir,
 		suffix:           suffix,
 		indexes:          make(map[string]*indexFile),
-		accessByHash:     accessByHash,
+		acquireByHash:    acquireByHash,
 	}
 }
 
@@ -254,12 +254,12 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 		}
 
 		file = &indexFile{
-			parent:       files,
-			discardable:  false,
-			compressable: true,
-			signable:     false,
-			accessByHash: files.accessByHash,
-			relativePath: relativePath,
+			parent:        files,
+			discardable:   false,
+			compressable:  true,
+			signable:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
 		}
 
 		files.indexes[key] = file
@@ -288,12 +288,12 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 		}
 
 		file = &indexFile{
-			parent:       files,
-			discardable:  udeb,
-			compressable: false,
-			signable:     false,
-			accessByHash: files.accessByHash,
-			relativePath: relativePath,
+			parent:        files,
+			discardable:   udeb,
+			compressable:  false,
+			signable:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
 		}
 
 		files.indexes[key] = file
@@ -318,13 +318,13 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 		}
 
 		file = &indexFile{
-			parent:       files,
-			discardable:  true,
-			compressable: true,
-			onlyGzip:     true,
-			signable:     false,
-			accessByHash: files.accessByHash,
-			relativePath: relativePath,
+			parent:        files,
+			discardable:   true,
+			compressable:  true,
+			onlyGzip:      true,
+			signable:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
 		}
 
 		files.indexes[key] = file

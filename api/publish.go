@@ -238,7 +238,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			Component string `binding:"required"`
 			Name      string `binding:"required"`
 		}
-		AccessByHash *bool
+		AcquireByHash *bool
 	}
 
 	if c.Bind(&b) != nil {
@@ -318,8 +318,8 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.SkipContents = *b.SkipContents
 	}
 
-	if b.AccessByHash != nil {
-		published.AccessByHash = *b.AccessByHash
+	if b.AcquireByHash != nil {
+		published.AcquireByHash = *b.AcquireByHash
 	}
 
 	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, nil, b.ForceOverwrite)
