@@ -219,7 +219,7 @@ class PublishSnapshot5Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap5 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
+    runCmd = "aptly publish snapshot -acquire-by-hash -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
 
     gold_processor = BaseTest.expand_environ
 
@@ -231,13 +231,21 @@ class PublishSnapshot5Test(BaseTest):
         self.check_exists('public/ppa/smira/dists/squeeze/Release.gpg')
 
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/by-hash/MD5Sum/e98cd30fc76fbe7fa3ea25717efa1c92')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages.gz')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/by-hash/MD5Sum/f08c2a876384aea2f74422d9f58f927e')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages.bz2')
-        self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-i386.gz')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/by-hash/MD5Sum/a2c1024fbc65b6381b730a1c4144f80d')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/by-hash/MD5Sum/ab073d1f73bed52e7356c91161e8667e')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages.gz')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/by-hash/MD5Sum/6fc332f313c8799fe09578da24340366')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/by-hash/MD5Sum/ac6be6306c80c01eb7a79a65ec36760d')
+
+        self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-i386.gz')
         self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-amd64.gz')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/by-hash/MD5Sum/eea7fb266562e355ba069116c1fddfcc')
 
         self.check_exists('public/ppa/smira/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
 
