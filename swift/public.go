@@ -265,26 +265,39 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 	return nil
 }
 
-// SymLink creates a symbolic link, which can be read with ReadLink
+// SymLink creates a copy of src file and adds link information as meta data
 func (storage *PublishedStorage) SymLink(src string, dst string) error {
-	// TODO: create a file containing dst
-	return fmt.Errorf("SWIFT: symlinks not implemented")
+	srcObjectName := filepath.Join(storage.prefix, src)
+	dstObjectName := filepath.Join(storage.prefix, dst)
+
+	headers := map[string]string{
+		"SymLink": srcObjectName,
+	}
+	_, err := storage.conn.ObjectCopy(storage.container, srcObjectName, storage.container, dstObjectName, headers)
+	if err != nil {
+		return fmt.Errorf("error symlinking %s -> %s in %s: %s", srcObjectName, dstObjectName, storage, err)
+	}
+	return err
 }
 
-// HardLink creates a hardlink of a file
+// HardLink using symlink functionality as hard links do not exist
 func (storage *PublishedStorage) HardLink(src string, dst string) error {
-	// TODO: create a copy of the file
-	return fmt.Errorf("SWIFT: hardlinks not implemented")
+	return storage.SymLink(src, dst)
 }
 
 // FileExists returns true if path exists
 func (storage *PublishedStorage) FileExists(path string) bool {
-	// TODO: implement
-	return false
+	_, _, err := storage.conn.Object(storage.container, filepath.Join(storage.prefix, path))
+	return err == nil
 }
 
 // ReadLink returns the symbolic link pointed to by path
 func (storage *PublishedStorage) ReadLink(path string) (string, error) {
-	// TODO: read the path and return the content of the file
-	return "", fmt.Errorf("SWIFT: ReadLink not implemented")
+	srcObjectName := filepath.Join(storage.prefix, path)
+	_, headers, err := storage.conn.Object(storage.container, srcObjectName)
+	if err != nil {
+		return "", fmt.Errorf("error reading symlink %s in %s: %s", srcObjectName, storage, err)
+	}
+
+	return headers["SymLink"], nil
 }
