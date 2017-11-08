@@ -82,6 +82,12 @@ class BaseTest(object):
 
     fixtureDBDir = os.path.join(os.environ["HOME"], "aptly-fixture-db")
     fixturePoolDir = os.path.join(os.environ["HOME"], "aptly-fixture-pool")
+    fixtureGpgKeys = ["debian-archive-keyring.gpg",
+                      "launchpad.key",
+                      "flat.key",
+                      "pagerduty.key",
+                      "nvidia.key",
+                      "jenkins.key"]
 
     outputMatchPrepare = None
 
@@ -132,12 +138,8 @@ class BaseTest(object):
                                                      self.fixtureWebServer))
 
         if self.fixtureGpg:
-            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import",
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "launchpad.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "flat.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pagerduty.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "jenkins.key")])
+            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
+                         [os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", key) for key in self.fixtureGpgKeys])
 
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:

@@ -391,7 +391,10 @@ ok:
 		return err
 	}
 
-	delete(stanza, "SHA512")
+	err = parseSums("SHA512", func(sum *utils.ChecksumInfo, data string) { sum.SHA512 = data })
+	if err != nil {
+		return err
+	}
 
 	repo.Meta = stanza
 

@@ -360,3 +360,16 @@ class UpdateMirror21Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+
+
+class UpdateMirror22Test(BaseTest):
+    """
+    update mirrors: SHA512 checksums only
+    """
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 ./"
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
+    outputMatchPrepare = filterOutSignature
