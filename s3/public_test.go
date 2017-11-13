@@ -160,6 +160,13 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	c.Check(err, IsNil)
 
 	s.AssertNoFile(c, "a/b")
+
+	s.PutFile(c, "lala/xyz", []byte("test"))
+
+	errp := s.prefixedStorage.Remove("xyz")
+	c.Check(errp, IsNil)
+
+	s.AssertNoFile(c, "lala/xyz")
 }
 
 func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
