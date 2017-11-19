@@ -183,12 +183,12 @@ func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker) erro
 func (storage *PublishedStorage) Remove(path string) error {
 	params := &s3.DeleteObjectInput{
 		Bucket: aws.String(storage.bucket),
-		Key:    aws.String(filepath.Join(storage.prefix,path)),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
 	}
 	_, err := storage.s3.DeleteObject(params)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
-		}
+	}
 
 	if storage.plusWorkaround && strings.Contains(path, "+") {
 		// try to remove workaround version, but don't care about result
