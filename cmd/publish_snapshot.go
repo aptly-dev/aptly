@@ -137,6 +137,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
 
+	if context.Flags().IsSet("access-by-hash") {
+		published.AccessByHash = context.Flags().Lookup("access-by-hash").Value.Get().(bool)
+	}
+
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
 		context.CollectionFactory().PublishedRepoCollection().LoadComplete(duplicate, context.CollectionFactory())

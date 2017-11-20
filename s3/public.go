@@ -384,3 +384,27 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 
 	return storage.Remove(oldName)
 }
+
+// SymLink creates a symbolic link, which can be read with ReadLink
+func (storage *PublishedStorage) SymLink(src string, dst string) error {
+	// TODO: create a file containing dst
+	return fmt.Errorf("s3: symlinks not implemented")
+}
+
+// HardLink creates a hardlink of a file
+func (storage *PublishedStorage) HardLink(src string, dst string) error {
+	// TODO: create a copy of the file
+	return fmt.Errorf("s3: hardlinks not implemented")
+}
+
+// FileExists returns true if path exists
+func (storage *PublishedStorage) FileExists(path string) bool {
+	// TODO: implement
+	return false
+}
+
+// ReadLink returns the symbolic link pointed to by path
+func (storage *PublishedStorage) ReadLink(path string) (string, error) {
+	// TODO: read the path and return the content of the file
+	return "", fmt.Errorf("s3: ReadLink not implemented")
+}
