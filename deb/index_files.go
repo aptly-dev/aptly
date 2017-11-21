@@ -202,7 +202,7 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	}
 
 	// create symlink
-	err = file.parent.publishedStorage.SymLink(sum, filepath.Join(dst, indexfile))
+	err = file.parent.publishedStorage.SymLink(filepath.Join(dst, sum), filepath.Join(dst, indexfile))
 	if err != nil {
 		return fmt.Errorf("Acquire-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
 	}
