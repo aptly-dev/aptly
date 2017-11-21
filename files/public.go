@@ -259,12 +259,12 @@ func (storage *PublishedStorage) HardLink(src string, dst string) error {
 }
 
 // FileExists returns true if path exists
-func (storage *PublishedStorage) FileExists(path string) bool {
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	if _, err := os.Lstat(filepath.Join(storage.rootPath, path)); os.IsNotExist(err) {
-		return false
+		return false, nil
 	}
 
-	return true
+	return true, nil
 }
 
 // ReadLink returns the symbolic link pointed to by path

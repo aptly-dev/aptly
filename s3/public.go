@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -420,13 +421,22 @@ func (storage *PublishedStorage) HardLink(src string, dst string) error {
 }
 
 // FileExists returns true if path exists
-func (storage *PublishedStorage) FileExists(path string) bool {
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	params := &s3.HeadObjectInput{
 		Bucket: aws.String(storage.bucket),
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
 	}
 	_, err := storage.s3.HeadObject(params)
-	return err == nil
+	if err != nil {
+		aerr, ok := err.(awserr.Error)
+		if ok && aerr.Code() == s3.ErrCodeNoSuchKey {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 // ReadLink returns the symbolic link pointed to by path.

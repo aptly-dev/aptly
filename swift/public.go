@@ -286,9 +286,18 @@ func (storage *PublishedStorage) HardLink(src string, dst string) error {
 }
 
 // FileExists returns true if path exists
-func (storage *PublishedStorage) FileExists(path string) bool {
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	_, _, err := storage.conn.Object(storage.container, filepath.Join(storage.prefix, path))
-	return err == nil
+
+	if err != nil {
+		if err == swift.ObjectNotFound {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 // ReadLink returns the symbolic link pointed to by path

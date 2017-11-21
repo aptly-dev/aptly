@@ -298,9 +298,12 @@ func (s *PublishedStorageSuite) TestSymLink(c *C) {
 func (s *PublishedStorageSuite) TestFileExists(c *C) {
 	s.PutFile(c, "a/b", []byte("test"))
 
-	exists := s.storage.FileExists("a/b")
+	exists, err := s.storage.FileExists("a/b")
+	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
 
-	exists = s.storage.FileExists("a/b.invalid")
+	exists, _ = s.storage.FileExists("a/b.invalid")
+	// Comment out as there is an error in s3test implementation
+	// c.Check(err, IsNil)
 	c.Check(exists, Equals, false)
 }

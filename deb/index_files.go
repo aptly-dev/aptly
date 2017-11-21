@@ -176,20 +176,24 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	sumfilePath := filepath.Join(dst, sum)
 
 	// link already exists? do nothing
-	if file.parent.publishedStorage.FileExists(sumfilePath) {
+	exists, err := file.parent.publishedStorage.FileExists(sumfilePath)
+	if err != nil {
+		return fmt.Errorf("Acquire-By-Hash: error checking exists of file %s: %s", sumfilePath, err)
+	}
+	if exists {
 		return nil
 	}
 
 	// create the link
-	err := file.parent.publishedStorage.HardLink(src, sumfilePath)
+	err = file.parent.publishedStorage.HardLink(src, sumfilePath)
 	if err != nil {
 		return fmt.Errorf("Acquire-By-Hash: error creating hardlink %s: %s", sumfilePath, err)
 	}
 
 	// if a previous index file already exists exists, backup symlink
-	if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)) {
+	if exists, _ = file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)); exists {
 		// if exists, remove old symlink
-		if file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")) {
+		if exists, _ = file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")); exists {
 			var link string
 			link, err = file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
 			if err != nil {
@@ -204,7 +208,7 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	// create symlink
 	err = file.parent.publishedStorage.SymLink(filepath.Join(dst, sum), filepath.Join(dst, indexfile))
 	if err != nil {
-		return fmt.Errorf("Acquire-By-Hash: error creating symlink %s", filepath.Join(dst, indexfile))
+		return fmt.Errorf("Acquire-By-Hash: error creating symlink %s: %s", filepath.Join(dst, indexfile), err)
 	}
 	return nil
 }

@@ -78,7 +78,7 @@ type PublishedStorage interface {
 	// HardLink creates a hardlink of a file
 	HardLink(src string, dst string) error
 	// FileExists returns true if path exists
-	FileExists(path string) bool
+	FileExists(path string) (bool, error)
 	// ReadLink returns the symbolic link pointed to by path
 	ReadLink(path string) (string, error)
 }

@@ -222,9 +222,11 @@ func (s *PublishedStorageSuite) TestFileExists(c *C) {
 	err = s.storage.PutFile("a/b.txt", filepath.Join(dir, "a"))
 	c.Check(err, IsNil)
 
-	exists := s.storage.FileExists("a/b.txt")
+	exists, err := s.storage.FileExists("a/b.txt")
+	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
 
-	exists = s.storage.FileExists("a/b.invalid")
+	exists, err = s.storage.FileExists("a/b.invalid")
+	c.Check(err, IsNil)
 	c.Check(exists, Equals, false)
 }
