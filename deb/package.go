@@ -622,6 +622,7 @@ type PackageDownloadTask struct {
 	File         *PackageFile
 	Additional   []PackageDownloadTask
 	TempDownPath string
+	Finished     bool
 }
 
 // DownloadList returns list of missing package files for download in format
