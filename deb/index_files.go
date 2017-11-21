@@ -101,10 +101,8 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		return fmt.Errorf("unable to create dir: %s", err)
 	}
 
-	hashs := []string{}
 	if file.acquireByHash {
-		hashs = append(hashs, "MD5Sum", "SHA1", "SHA256", "SHA512")
-		for _, hash := range hashs {
+		for _, hash := range []string{"MD5Sum", "SHA1", "SHA256", "SHA512"} {
 			err = file.parent.publishedStorage.MkDir(filepath.Join(filedir, "by-hash", hash))
 			if err != nil {
 				return fmt.Errorf("unable to create dir: %s", err)
@@ -126,22 +124,11 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 
 		if file.acquireByHash {
 			sums := file.parent.generatedFiles[file.relativePath+ext]
-
-			err = packageIndexByHash(file, ext, "SHA512", sums.SHA512)
-			if err != nil {
-				fmt.Printf("%s\n", err)
-			}
-			err = packageIndexByHash(file, ext, "SHA256", sums.SHA256)
-			if err != nil {
-				fmt.Printf("%s\n", err)
-			}
-			err = packageIndexByHash(file, ext, "SHA1", sums.SHA1)
-			if err != nil {
-				fmt.Printf("%s\n", err)
-			}
-			err = packageIndexByHash(file, ext, "MD5Sum", sums.MD5)
-			if err != nil {
-				fmt.Printf("%s\n", err)
+			for hash, sum := range map[string]string{"SHA512": sums.SHA512, "SHA256": sums.SHA256, "SHA1": sums.SHA1, "MD5Sum": sums.MD5} {
+				err = packageIndexByHash(file, ext, hash, sum)
+				if err != nil {
+					return fmt.Errorf("unable to build hash file: %s", err)
+				}
 			}
 		}
 	}
