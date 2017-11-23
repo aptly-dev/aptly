@@ -17,7 +17,7 @@ var _ = Suite(&SnapshotSuite{})
 
 func (s *SnapshotSuite) SetUpTest(c *C) {
 	s.SetUpPackages()
-	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.repo.packageRefs = s.reflist
 }
 
@@ -116,11 +116,11 @@ func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
 	s.collection = NewSnapshotCollection(s.db)
 	s.SetUpPackages()
 
-	s.repo1, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	s.repo1, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.repo1.packageRefs = s.reflist
 	s.snapshot1, _ = NewSnapshotFromRepository("snap1", s.repo1)
 
-	s.repo2, _ = NewRemoteRepo("android", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{}, false, false)
+	s.repo2, _ = NewRemoteRepo("android", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{}, false, false, false)
 	s.repo2.packageRefs = s.reflist
 	s.snapshot2, _ = NewSnapshotFromRepository("snap2", s.repo2)
 
@@ -200,7 +200,7 @@ func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
 	c.Check(s.collection.ByRemoteRepoSource(s.repo1), DeepEquals, []*Snapshot{s.snapshot1})
 	c.Check(s.collection.ByRemoteRepoSource(s.repo2), DeepEquals, []*Snapshot{s.snapshot2})
 
-	repo3, _ := NewRemoteRepo("other", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{}, false, false)
+	repo3, _ := NewRemoteRepo("other", "http://mirror.yandex.ru/debian/", "lenny", []string{"main"}, []string{}, false, false, false)
 
 	c.Check(s.collection.ByRemoteRepoSource(repo3), DeepEquals, []*Snapshot(nil))
 }

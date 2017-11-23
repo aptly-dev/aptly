@@ -15,6 +15,10 @@ type ControlFileSuite struct {
 
 var _ = Suite(&ControlFileSuite{})
 
+const installerFile = `dab96042d8e25e0f6bbb8d7c5bd78543afb5eb31a4a8b122ece68ab197228028  ./udeb.list
+9d8bb14044dee520f4706ab197dfff10e9e39ecb3c1a402331712154e8284b2e  ./MANIFEST.udebs
+`
+
 const controlFile = `Package: bti
 Binary: bti
 Version: 032-1
@@ -83,15 +87,15 @@ func (s *ControlFileSuite) SetUpTest(c *C) {
 }
 
 func (s *ControlFileSuite) TestReadStanza(c *C) {
-	r := NewControlFileReader(s.reader)
+	r := NewControlFileReader(s.reader, false, false)
 
-	stanza1, err := r.ReadStanza(false)
+	stanza1, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 
-	stanza2, err := r.ReadStanza(false)
+	stanza2, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 
-	stanza3, err := r.ReadStanza(false)
+	stanza3, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 	c.Assert(stanza3, IsNil)
 
@@ -103,25 +107,45 @@ func (s *ControlFileSuite) TestReadStanza(c *C) {
 }
 
 func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
-	r := NewControlFileReader(s.reader)
-	stanza, err := r.ReadStanza(false)
+	r := NewControlFileReader(s.reader, false, false)
+	stanza, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 
 	buf := &bytes.Buffer{}
 	w := bufio.NewWriter(buf)
-	err = stanza.Copy().WriteTo(w, true, false)
+	err = stanza.Copy().WriteTo(w, true, false, false)
 	c.Assert(err, IsNil)
 	err = w.Flush()
 	c.Assert(err, IsNil)
 
 	str := buf.String()
 
-	r = NewControlFileReader(buf)
-	stanza2, err := r.ReadStanza(false)
+	r = NewControlFileReader(buf, false, false)
+	stanza2, err := r.ReadStanza()
 	c.Assert(err, IsNil)
 
 	c.Assert(stanza2, DeepEquals, stanza)
 	c.Assert(strings.HasPrefix(str, "Package: "), Equals, true)
+}
+
+func (s *ControlFileSuite) TestReadWriteInstallerStanza(c *C) {
+	s.reader = bytes.NewBufferString(installerFile)
+	r := NewControlFileReader(s.reader, false, true)
+	stanza, err := r.ReadStanza()
+	c.Assert(err, IsNil)
+
+	buf := &bytes.Buffer{}
+	w := bufio.NewWriter(buf)
+	err = stanza.Copy().WriteTo(w, false, false, true)
+	c.Assert(err, IsNil)
+	err = w.Flush()
+	c.Assert(err, IsNil)
+
+	r = NewControlFileReader(buf, false, true)
+	stanza2, err := r.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Assert(stanza2, DeepEquals, stanza)
 }
 
 func (s *ControlFileSuite) TestCanonicalCase(c *C) {
@@ -141,8 +165,8 @@ func (s *ControlFileSuite) TestLongFields(c *C) {
 	c.Assert(err, IsNil)
 	defer f.Close()
 
-	r := NewControlFileReader(f)
-	stanza, e := r.ReadStanza(false)
+	r := NewControlFileReader(f, false, false)
+	stanza, e := r.ReadStanza()
 	c.Assert(e, IsNil)
 	c.Assert(len(stanza["Provides"]), Equals, 586929)
 }
@@ -150,9 +174,9 @@ func (s *ControlFileSuite) TestLongFields(c *C) {
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
 	for i := 0; i < c.N; i++ {
 		reader := bytes.NewBufferString(controlFile)
-		r := NewControlFileReader(reader)
+		r := NewControlFileReader(reader, false, false)
 		for {
-			s, e := r.ReadStanza(false)
+			s, e := r.ReadStanza()
 			if s == nil && e == nil {
 				break
 			}

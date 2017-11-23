@@ -88,8 +88,8 @@ type RemoteRepoSuite struct {
 var _ = Suite(&RemoteRepoSuite{})
 
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
-	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false, false)
-	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false)
+	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false, false, false)
+	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
 	s.db, _ = database.NewOpenDB(c.MkDir())
@@ -106,7 +106,7 @@ func (s *RemoteRepoSuite) TearDownTest(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
-	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{}, false, false)
+	_, err := NewRemoteRepo("s", "http://lolo%2", "squeeze", []string{"main"}, []string{}, false, false, false)
 	c.Assert(err, ErrorMatches, ".*(hexadecimal escape in host|percent-encoded characters in host|invalid URL escape).*")
 }
 
@@ -116,11 +116,11 @@ func (s *RemoteRepoSuite) TestFlatCreation(c *C) {
 	c.Check(s.flat.Architectures, IsNil)
 	c.Check(s.flat.Components, IsNil)
 
-	flat2, _ := NewRemoteRepo("flat2", "http://pkg.jenkins-ci.org/debian-stable", "binary/", []string{}, []string{}, false, false)
+	flat2, _ := NewRemoteRepo("flat2", "http://pkg.jenkins-ci.org/debian-stable", "binary/", []string{}, []string{}, false, false, false)
 	c.Check(flat2.IsFlat(), Equals, true)
 	c.Check(flat2.Distribution, Equals, "./binary/")
 
-	_, err := NewRemoteRepo("fl", "http://some.repo/", "./", []string{"main"}, []string{}, false, false)
+	_, err := NewRemoteRepo("fl", "http://some.repo/", "./", []string{"main"}, []string{}, false, false, false)
 	c.Check(err, ErrorMatches, "components aren't supported for flat repos")
 }
 
@@ -130,8 +130,9 @@ func (s *RemoteRepoSuite) TestString(c *C) {
 
 	s.repo.DownloadSources = true
 	s.repo.DownloadUdebs = true
+	s.repo.DownloadInstaller = true
 	s.flat.DownloadSources = true
-	c.Check(s.repo.String(), Equals, "[yandex]: http://mirror.yandex.ru/debian/ squeeze [src] [udeb]")
+	c.Check(s.repo.String(), Equals, "[yandex]: http://mirror.yandex.ru/debian/ squeeze [src] [udeb] [installer]")
 	c.Check(s.flat.String(), Equals, "[exp42]: http://repos.express42.com/virool/precise/ ./ [src]")
 }
 
@@ -174,6 +175,10 @@ func (s *RemoteRepoSuite) TestUdebPath(c *C) {
 
 func (s *RemoteRepoSuite) TestSourcesPath(c *C) {
 	c.Assert(s.repo.SourcesPath("main"), Equals, "main/source/Sources")
+}
+
+func (s *RemoteRepoSuite) TestInstallerPath(c *C) {
+	c.Assert(s.repo.InstallerPath("main", "amd64"), Equals, "main/installer-amd64/current/images/SHA256SUMS")
 }
 
 func (s *RemoteRepoSuite) TestFlatBinaryPath(c *C) {
@@ -230,13 +235,13 @@ func (s *RemoteRepoSuite) TestFetchNullVerifier2(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
-	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{"xyz"}, false, false)
+	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{"xyz"}, false, false, false)
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, ErrorMatches, "architecture xyz not available in repo.*")
 }
 
 func (s *RemoteRepoSuite) TestFetchWrongComponent(c *C) {
-	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"}, false, false)
+	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"}, false, false, false)
 	err := s.repo.Fetch(s.downloader, nil)
 	c.Assert(err, ErrorMatches, "component xyz not available in repo.*")
 }
@@ -271,7 +276,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -298,7 +303,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -319,7 +324,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -347,7 +352,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -391,7 +396,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -416,7 +421,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -440,7 +445,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -468,7 +473,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -490,7 +495,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -521,7 +526,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -567,7 +572,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -593,7 +598,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -628,7 +633,7 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 	_, err := s.collection.ByName("yandex")
 	c.Assert(err, ErrorMatches, "*.not found")
 
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
 
@@ -646,7 +651,7 @@ func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
 	_, err := s.collection.ByUUID("some-uuid")
 	c.Assert(err, ErrorMatches, "*.not found")
 
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	c.Assert(s.collection.Add(repo), IsNil)
 
 	r, err := s.collection.ByUUID(repo.UUID)
@@ -655,7 +660,7 @@ func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	c.Assert(s.collection.Update(repo), IsNil)
 
 	collection := NewRemoteRepoCollection(s.db)
@@ -676,7 +681,7 @@ func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.collection.Add(repo)
 
 	count := 0
@@ -698,10 +703,10 @@ func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
-	repo1, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo1, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.collection.Add(repo1)
 
-	repo2, _ := NewRemoteRepo("tyndex", "http://mirror.yandex.ru/debian/", "wheezy", []string{"main"}, []string{}, false, false)
+	repo2, _ := NewRemoteRepo("tyndex", "http://mirror.yandex.ru/debian/", "wheezy", []string{"main"}, []string{}, false, false, false)
 	s.collection.Add(repo2)
 
 	r1, _ := s.collection.ByUUID(repo1.UUID)

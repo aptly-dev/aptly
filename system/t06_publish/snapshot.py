@@ -1021,3 +1021,25 @@ class PublishSnapshot37Test(BaseTest):
     ]
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
     gold_processor = BaseTest.expand_environ
+
+
+class PublishSnapshot38Test(BaseTest):
+    """
+    publish snapshot: mirror with installer
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://mirror.yandex.ru/debian/ wheezy main",
+        "aptly mirror update -keyring=aptlytest.gpg wheezy",
+        "aptly snapshot create wheezy from mirror wheezy",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot38Test, self).check()
+        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS')
+        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/generic/debian.exec')
+        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/MANIFEST')
+
+        self.check_file_contents('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS', "installer_s390x", match_prepare=sorted_processor)

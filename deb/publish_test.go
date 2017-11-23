@@ -113,7 +113,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	s.reflist = NewPackageRefListFromPackageList(s.list)
 
-	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false)
+	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	repo.packageRefs = s.reflist
 	s.factory.RemoteRepoCollection().Add(repo)
 
@@ -314,8 +314,8 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	rf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"))
 	c.Assert(err, IsNil)
 
-	cfr := NewControlFileReader(rf)
-	st, err := cfr.ReadStanza(true)
+	cfr := NewControlFileReader(rf, true, false)
+	st, err := cfr.ReadStanza()
 	c.Assert(err, IsNil)
 
 	c.Check(st["Origin"], Equals, "ppa squeeze")
@@ -325,24 +325,24 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 	pf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Packages"))
 	c.Assert(err, IsNil)
 
-	cfr = NewControlFileReader(pf)
+	cfr = NewControlFileReader(pf, false, false)
 
 	for i := 0; i < 3; i++ {
-		st, err = cfr.ReadStanza(false)
+		st, err = cfr.ReadStanza()
 		c.Assert(err, IsNil)
 
 		c.Check(st["Filename"], Equals, "pool/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
 	}
 
-	st, err = cfr.ReadStanza(false)
+	st, err = cfr.ReadStanza()
 	c.Assert(err, IsNil)
 	c.Assert(st, IsNil)
 
 	drf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"))
 	c.Assert(err, IsNil)
 
-	cfr = NewControlFileReader(drf)
-	st, err = cfr.ReadStanza(true)
+	cfr = NewControlFileReader(drf, true, false)
+	st, err = cfr.ReadStanza()
 	c.Assert(err, IsNil)
 
 	c.Check(st["Archive"], Equals, "squeeze")

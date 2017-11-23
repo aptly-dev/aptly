@@ -230,11 +230,11 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 	}
 }
 
-func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexFile {
+func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bool) *indexFile {
 	if arch == ArchitectureSource {
 		udeb = false
 	}
-	key := fmt.Sprintf("pi-%s-%s-%v", component, arch, udeb)
+	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string
@@ -244,6 +244,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 		} else {
 			if udeb {
 				relativePath = filepath.Join(component, "debian-installer", fmt.Sprintf("binary-%s", arch), "Packages")
+			} else if installer {
+				relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "images", "SHA256SUMS")
 			} else {
 				relativePath = filepath.Join(component, fmt.Sprintf("binary-%s", arch), "Packages")
 			}
@@ -252,7 +254,7 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool) *indexF
 		file = &indexFile{
 			parent:        files,
 			discardable:   false,
-			compressable:  true,
+			compressable:  !installer,
 			signable:      false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,

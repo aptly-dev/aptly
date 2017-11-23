@@ -95,8 +95,8 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 		text = input
 	}
 
-	reader := NewControlFileReader(text)
-	c.Stanza, err = reader.ReadStanza(false)
+	reader := NewControlFileReader(text, false, false)
+	c.Stanza, err = reader.ReadStanza()
 	if err != nil {
 		return err
 	}

@@ -64,6 +64,29 @@ func (downloader *downloaderImpl) GetProgress() aptly.Progress {
 	return downloader.progress
 }
 
+// GetLength of given url
+func (downloader *downloaderImpl) GetLength(ctx context.Context, url string) (int64, error) {
+	req, err := downloader.newRequest(ctx, "HEAD", url)
+	if err != nil {
+		return -1, err
+	}
+
+	resp, err := downloader.client.Do(req)
+	if err != nil {
+		return -1, errors.Wrap(err, url)
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return -1, &Error{Code: resp.StatusCode, URL: url}
+	}
+
+	if resp.ContentLength < 0 {
+		return -1, fmt.Errorf("Could not determine length of %s", url)
+	}
+
+	return resp.ContentLength, nil
+}
+
 // Download starts new download task
 func (downloader *downloaderImpl) Download(ctx context.Context, url string, destination string) error {
 	return downloader.DownloadWithChecksum(ctx, url, destination, nil, false, 1)
@@ -81,15 +104,10 @@ func retryableError(err error) bool {
 	return false
 }
 
-// DownloadWithChecksum starts new download task with checksum verification
-func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url string, destination string,
-	expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
-
-	downloader.progress.Printf("Downloading %s...\n", url)
-
-	req, err := http.NewRequest("GET", url, nil)
+func (downloader *downloaderImpl) newRequest(ctx context.Context, method, url string) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return errors.Wrap(err, url)
+		return nil, errors.Wrap(err, url)
 	}
 	req.Close = true
 	req = req.WithContext(ctx)
@@ -99,6 +117,18 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 		req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
 		req.URL.RawQuery = ""
 	}
+
+	return req, nil
+}
+
+// DownloadWithChecksum starts new download task with checksum verification
+func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url string, destination string,
+	expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+
+	if downloader.progress != nil {
+		downloader.progress.Printf("Downloading %s...\n", url)
+	}
+	req, err := downloader.newRequest(ctx, "GET", url)
 
 	var temppath string
 	for maxTries > 0 {

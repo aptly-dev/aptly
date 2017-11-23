@@ -1,6 +1,7 @@
 package deb
 
 import (
+	gocontext "context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -26,6 +27,8 @@ type Package struct {
 	Provides []string
 	// Hash of files section
 	FilesHash uint64
+	// Is this package a dummy installer package
+	IsInstaller bool
 	// Is this source package
 	IsSource bool
 	// Is this udeb package
@@ -43,9 +46,10 @@ type Package struct {
 
 // Package types
 const (
-	PackageTypeBinary = "deb"
-	PackageTypeUdeb   = "udeb"
-	PackageTypeSource = "source"
+	PackageTypeBinary    = "deb"
+	PackageTypeUdeb      = "udeb"
+	PackageTypeSource    = "source"
+	PackageTypeInstaller = "installer"
 )
 
 // Special arhictectures
@@ -166,6 +170,41 @@ func NewUdebPackageFromControlFile(input Stanza) *Package {
 	p.IsUdeb = true
 
 	return p
+}
+
+// NewInstallerPackageFromControlFile creates a dummy installer Package from parsed hash sum file
+func NewInstallerPackageFromControlFile(input Stanza, repo *RemoteRepo, component, architecture string, d aptly.Downloader) (*Package, error) {
+	p := &Package{
+		Name:         "installer",
+		Architecture: architecture,
+		IsInstaller:  true,
+		V06Plus:      true,
+		extra:        &Stanza{},
+		deps:         &PackageDependencies{},
+	}
+
+	files := make(PackageFiles, 0)
+	files, err := files.ParseSumField(input[""], func(sum *utils.ChecksumInfo, data string) { sum.SHA256 = data }, false, false)
+	if err != nil {
+		return nil, err
+	}
+
+	relPath := filepath.Join("dists", repo.Distribution, component, fmt.Sprintf("%s-%s", p.Name, architecture), "current", "images")
+	for i := range files {
+		files[i].downloadPath = relPath
+
+		url := repo.PackageURL(files[i].DownloadURL()).String()
+		var size int64
+		size, err = d.GetLength(gocontext.TODO(), url)
+		if err != nil {
+			return nil, err
+		}
+
+		files[i].Checksums.Size = size
+	}
+
+	p.UpdateFiles(files)
+	return p, nil
 }
 
 // Key returns unique key identifying package
@@ -509,6 +548,12 @@ func (p *Package) Stanza() (result Stanza) {
 		if len(sha512) > 0 {
 			result["Checksums-Sha512"] = strings.Join(sha512, "")
 		}
+	} else if p.IsInstaller {
+		sha256 := []string{}
+		for _, f := range p.Files() {
+			sha256 = append(sha256, fmt.Sprintf("%s  %s", f.Checksums.SHA256, f.Filename))
+		}
+		result[""] = strings.Join(sha256, "\n")
 	} else {
 		f := p.Files()[0]
 		result["Filename"] = f.DownloadURL()
@@ -563,7 +608,7 @@ func (p *Package) Equals(p2 *Package) bool {
 
 // LinkFromPool links package file from pool to dist's pool location
 func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packagePool aptly.PackagePool,
-	prefix, component string, force bool) error {
+	prefix, distribution, component, architecture string, force bool) error {
 	poolDir, err := p.PoolDirectory()
 	if err != nil {
 		return err
@@ -576,6 +621,9 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 		}
 
 		relPath := filepath.Join("pool", component, poolDir)
+		if p.IsInstaller {
+			relPath = filepath.Join("dists", distribution, component, fmt.Sprintf("%s-%s", p.Name, architecture), "current", "images")
+		}
 		publishedDirectory := filepath.Join(prefix, relPath)
 
 		err = publishedStorage.LinkFromPool(publishedDirectory, f.Filename, packagePool, sourcePoolPath, f.Checksums, force)
