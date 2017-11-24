@@ -41,9 +41,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 
-	var packageFiles, failedFiles []string
+	var packageFiles, otherFiles, failedFiles []string
 
-	packageFiles, failedFiles = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
+	packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
 
 	var processedFiles, failedFiles2 []string
 
@@ -54,6 +54,8 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to import package files: %s", err)
 	}
+
+	processedFiles = append(processedFiles, otherFiles...)
 
 	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 

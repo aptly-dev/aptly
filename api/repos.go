@@ -301,6 +301,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	var (
 		sources                      []string
 		packageFiles, failedFiles    []string
+		otherFiles                   []string
 		processedFiles, failedFiles2 []string
 		reporter                     = &aptly.RecordingResultReporter{
 			Warnings:     []string{},
@@ -316,7 +317,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
 	}
 
-	packageFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
+	packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
 
 	list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), nil)
 	if err != nil {
@@ -327,6 +328,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
 		context.CollectionFactory().PackageCollection(), reporter, nil, context.CollectionFactory().ChecksumCollection())
 	failedFiles = append(failedFiles, failedFiles2...)
+
+	processedFiles = append(processedFiles, otherFiles...)
 
 	if err != nil {
 		c.AbortWithError(500, fmt.Errorf("unable to import package files: %s", err))
