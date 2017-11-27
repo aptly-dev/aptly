@@ -33,6 +33,8 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			repo.Filter = flag.Value.String()
 		case "filter-with-deps":
 			repo.FilterWithDeps = flag.Value.Get().(bool)
+		case "with-installer":
+			repo.DownloadInstaller = flag.Value.Get().(bool)
 		case "with-sources":
 			repo.DownloadSources = flag.Value.Get().(bool)
 		case "with-udebs":
@@ -101,6 +103,7 @@ Example:
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
+	cmd.Flag.Bool("with-installer", false, "download additional not packaged installer files")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")

@@ -164,7 +164,7 @@ _aptly()
           "edit")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-archive-url= -filter= -filter-with-deps -ignore-signatures -keyring= -with-sources -with-udebs" -- ${cur}))
+                COMPREPLY=($(compgen -W "-archive-url= -filter= -filter-with-deps -ignore-signatures -keyring= -with-installer -with-sources -with-udebs" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_mirror_list)" -- ${cur}))
               fi
