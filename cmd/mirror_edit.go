@@ -38,7 +38,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		case "with-udebs":
 			repo.DownloadUdebs = flag.Value.Get().(bool)
 		case "archive-url":
-			repo.ArchiveRoot = flag.Value.String()
+			repo.SetArchiveRoot(flag.Value.String())
 			fetchMirror = true
 		}
 	})

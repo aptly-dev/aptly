@@ -112,6 +112,12 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 	return result, nil
 }
 
+// SetArchiveRoot of remote repo
+func (repo *RemoteRepo) SetArchiveRoot(archiveRoot string) {
+	repo.ArchiveRoot = archiveRoot
+	repo.prepare()
+}
+
 func (repo *RemoteRepo) prepare() error {
 	var err error
 
