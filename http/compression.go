@@ -3,6 +3,7 @@ package http
 import (
 	"compress/bzip2"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -39,7 +40,7 @@ var compressionMethods = []struct {
 
 // DownloadTryCompression tries to download from URL .bz2, .gz and raw extension until
 // it finds existing file.
-func DownloadTryCompression(downloader aptly.Downloader, baseURL *url.URL, path string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (io.Reader, *os.File, error) {
+func DownloadTryCompression(ctx context.Context, downloader aptly.Downloader, baseURL *url.URL, path string, expectedChecksums map[string]utils.ChecksumInfo, ignoreMismatch bool, maxTries int) (io.Reader, *os.File, error) {
 	var err error
 
 	for _, method := range compressionMethods {
@@ -63,13 +64,13 @@ func DownloadTryCompression(downloader aptly.Downloader, baseURL *url.URL, path 
 
 		if foundChecksum {
 			expected := expectedChecksums[bestSuffix]
-			file, err = DownloadTempWithChecksum(downloader, tryURL.String(), &expected, ignoreMismatch, maxTries)
+			file, err = DownloadTempWithChecksum(ctx, downloader, tryURL.String(), &expected, ignoreMismatch, maxTries)
 		} else {
 			if !ignoreMismatch {
 				continue
 			}
 
-			file, err = DownloadTemp(downloader, tryURL.String())
+			file, err = DownloadTemp(ctx, downloader, tryURL.String())
 		}
 
 		if err != nil {

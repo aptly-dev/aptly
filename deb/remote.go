@@ -2,6 +2,7 @@ package deb
 
 import (
 	"bytes"
+	gocontext "context"
 	"fmt"
 	"log"
 	"net/url"
@@ -258,13 +259,13 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 
 	if verifier == nil {
 		// 0. Just download release file to temporary URL
-		release, err = http.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		release, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("Release").String())
 		if err != nil {
 			return err
 		}
 	} else {
 		// 1. try InRelease file
-		inrelease, err = http.DownloadTemp(d, repo.ReleaseURL("InRelease").String())
+		inrelease, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("InRelease").String())
 		if err != nil {
 			goto splitsignature
 		}
@@ -286,12 +287,12 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier) error {
 
 	splitsignature:
 		// 2. try Release + Release.gpg
-		release, err = http.DownloadTemp(d, repo.ReleaseURL("Release").String())
+		release, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("Release").String())
 		if err != nil {
 			return err
 		}
 
-		releasesig, err = http.DownloadTemp(d, repo.ReleaseURL("Release.gpg").String())
+		releasesig, err = http.DownloadTemp(gocontext.TODO(), d, repo.ReleaseURL("Release.gpg").String())
 		if err != nil {
 			return err
 		}
@@ -439,7 +440,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 	for _, info := range packagesPaths {
 		path, kind := info[0], info[1]
-		packagesReader, packagesFile, err := http.DownloadTryCompression(d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch, maxTries)
+		packagesReader, packagesFile, err := http.DownloadTryCompression(gocontext.TODO(), d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch, maxTries)
 		if err != nil {
 			return err
 		}

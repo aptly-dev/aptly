@@ -3,6 +3,7 @@
 package aptly
 
 import (
+	"context"
 	"io"
 	"os"
 
@@ -116,9 +117,9 @@ type Progress interface {
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	// Download starts new download task
-	Download(url string, destination string) error
+	Download(ctx context.Context, url string, destination string) error
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
+	DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
 }

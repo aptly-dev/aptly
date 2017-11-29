@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -60,7 +61,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
 	var expectation expectedRequest
 	if len(f.expected) > 0 && f.expected[0].URL == url {
 		expectation, f.expected = f.expected[0], f.expected[1:]
@@ -109,8 +110,8 @@ func (f *FakeDownloader) DownloadWithChecksum(url string, filename string, expec
 }
 
 // Download performs fake download by matching against first expectation in the queue
-func (f *FakeDownloader) Download(url string, filename string) error {
-	return f.DownloadWithChecksum(url, filename, nil, false, 1)
+func (f *FakeDownloader) Download(ctx context.Context, url string, filename string) error {
+	return f.DownloadWithChecksum(ctx, url, filename, nil, false, 1)
 }
 
 // GetProgress returns Progress object
