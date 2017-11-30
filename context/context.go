@@ -32,7 +32,7 @@ import (
 type AptlyContext struct {
 	sync.Mutex
 
-	ctx gocontext.Context
+	gocontext.Context
 
 	flags, globalFlags *flag.FlagSet
 	configLoaded       bool
@@ -442,14 +442,6 @@ func (context *AptlyContext) GlobalFlags() *flag.FlagSet {
 	return context.globalFlags
 }
 
-// GoContext returns instance of Go context.Context for the current session
-func (context *AptlyContext) GoContext() gocontext.Context {
-	context.Lock()
-	defer context.Unlock()
-
-	return context.ctx
-}
-
 // GoContextHandleSignals upgrades context to handle ^C by aborting context
 func (context *AptlyContext) GoContextHandleSignals() {
 	context.Lock()
@@ -461,7 +453,7 @@ func (context *AptlyContext) GoContextHandleSignals() {
 
 	var cancel gocontext.CancelFunc
 
-	context.ctx, cancel = gocontext.WithCancel(context.ctx)
+	context.Context, cancel = gocontext.WithCancel(context.Context)
 
 	go func() {
 		<-sigch
@@ -527,7 +519,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 		flags:             flags,
 		globalFlags:       flags,
 		dependencyOptions: -1,
-		ctx:               gocontext.TODO(),
+		Context:           gocontext.TODO(),
 		publishedStorages: map[string]aptly.PublishedStorage{},
 	}
 

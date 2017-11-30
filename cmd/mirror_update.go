@@ -136,7 +136,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		for idx := range queue {
 			select {
 			case downloadQueue <- idx:
-			case <-context.GoContext().Done():
+			case <-context.Done():
 				return
 			}
 		}
@@ -169,7 +169,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 					// download file...
 					e = context.Downloader().DownloadWithChecksum(
-						context.GoContext(),
+						context,
 						repo.PackageURL(task.File.DownloadURL()).String(),
 						task.TempDownPath,
 						&task.File.Checksums,
@@ -181,7 +181,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 					}
 
 					task.Done = true
-				case <-context.GoContext().Done():
+				case <-context.Done():
 					return
 				}
 			}
@@ -227,7 +227,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	context.Progress().ShutdownBar()
 
 	select {
-	case <-context.GoContext().Done():
+	case <-context.Done():
 		return fmt.Errorf("unable to update: interrupted")
 	default:
 	}
