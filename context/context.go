@@ -2,9 +2,11 @@
 package context
 
 import (
+	gocontext "context"
 	"fmt"
 	"math/rand"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
@@ -29,6 +31,8 @@ import (
 // AptlyContext is a common context shared by all commands
 type AptlyContext struct {
 	sync.Mutex
+
+	gocontext.Context
 
 	flags, globalFlags *flag.FlagSet
 	configLoaded       bool
@@ -438,6 +442,27 @@ func (context *AptlyContext) GlobalFlags() *flag.FlagSet {
 	return context.globalFlags
 }
 
+// GoContextHandleSignals upgrades context to handle ^C by aborting context
+func (context *AptlyContext) GoContextHandleSignals() {
+	context.Lock()
+	defer context.Unlock()
+
+	// Catch ^C
+	sigch := make(chan os.Signal)
+	signal.Notify(sigch, os.Interrupt)
+
+	var cancel gocontext.CancelFunc
+
+	context.Context, cancel = gocontext.WithCancel(context.Context)
+
+	go func() {
+		<-sigch
+		signal.Stop(sigch)
+		context.Progress().PrintfStdErr("Aborting... press ^C once again to abort immediately\n")
+		cancel()
+	}()
+}
+
 // Shutdown shuts context down
 func (context *AptlyContext) Shutdown() {
 	context.Lock()
@@ -494,6 +519,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 		flags:             flags,
 		globalFlags:       flags,
 		dependencyOptions: -1,
+		Context:           gocontext.TODO(),
 		publishedStorages: map[string]aptly.PublishedStorage{},
 	}
 
