@@ -103,6 +103,48 @@ func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *PublishedStorageSuite) TestFileExists(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	exists, _ := s.storage.FileExists("ppa/dists/squeeze/Release")
+	c.Check(exists, Equals, false)
+
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
+	c.Assert(err, IsNil)
+
+	exists, _ = s.storage.FileExists("ppa/dists/squeeze/Release")
+	c.Check(exists, Equals, true)
+}
+
+func (s *PublishedStorageSuite) TestSymLink(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
+	c.Assert(err, IsNil)
+
+	err = s.storage.SymLink("ppa/dists/squeeze/Release", "ppa/dists/squeeze/InRelease")
+	c.Assert(err, IsNil)
+
+	exists, _ := s.storage.FileExists("ppa/dists/squeeze/InRelease")
+	c.Check(exists, Equals, true)
+}
+
+func (s *PublishedStorageSuite) TestHardLink(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
+	c.Assert(err, IsNil)
+
+	err = s.storage.HardLink("ppa/dists/squeeze/Release", "ppa/dists/squeeze/InRelease")
+	c.Assert(err, IsNil)
+
+	exists, _ := s.storage.FileExists("ppa/dists/squeeze/InRelease")
+	c.Check(exists, Equals, true)
+}
+
 func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)

@@ -194,3 +194,39 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(err, IsNil)
 	c.Check(data, DeepEquals, []byte("Spam"))
 }
+
+func (s *PublishedStorageSuite) TestSymLink(c *C) {
+	dir := c.MkDir()
+	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("welcome to swift!"), 0644)
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("a/b.txt", filepath.Join(dir, "a"))
+	c.Check(err, IsNil)
+
+	err = s.storage.SymLink("a/b.txt", "a/b.txt.link")
+	c.Check(err, IsNil)
+
+	var link string
+	link, err = s.storage.ReadLink("a/b.txt.link")
+	c.Check(err, IsNil)
+	c.Check(link, Equals, "a/b")
+
+	c.Skip("copy not availbale in s3test")
+}
+
+func (s *PublishedStorageSuite) TestFileExists(c *C) {
+	dir := c.MkDir()
+	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("welcome to swift!"), 0644)
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("a/b.txt", filepath.Join(dir, "a"))
+	c.Check(err, IsNil)
+
+	exists, err := s.storage.FileExists("a/b.txt")
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+
+	exists, err = s.storage.FileExists("a/b.invalid")
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+}

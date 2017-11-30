@@ -73,6 +73,14 @@ type PublishedStorage interface {
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file
 	RenameFile(oldName, newName string) error
+	// SymLink creates a symbolic link, which can be read with ReadLink
+	SymLink(src string, dst string) error
+	// HardLink creates a hardlink of a file
+	HardLink(src string, dst string) error
+	// FileExists returns true if path exists
+	FileExists(path string) (bool, error)
+	// ReadLink returns the symbolic link pointed to by path
+	ReadLink(path string) (string, error)
 }
 
 // FileSystemPublishedStorage is published storage on filesystem

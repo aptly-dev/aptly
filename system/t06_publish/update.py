@@ -95,7 +95,7 @@ class PublishUpdate2Test(BaseTest):
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}/libboost-program-options-dev_1.49.0.1_i386.deb ${files}/pyspi_0.6.1-1.3.dsc",
-        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
+        "aptly publish repo -acquire-by-hash -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
         "aptly repo add local-repo ${files}/pyspi-0.6.1-1.3.stripped.dsc"
     ]
     runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
@@ -113,8 +113,14 @@ class PublishUpdate2Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources.old')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources.gz')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources.gz.old')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources.bz2')
+        self.check_exists('public/dists/maverick/main/source/by-hash/MD5Sum/Sources.bz2.old')
 
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')

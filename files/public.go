@@ -247,3 +247,27 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 	return os.Rename(filepath.Join(storage.rootPath, oldName), filepath.Join(storage.rootPath, newName))
 }
+
+// SymLink creates a symbolic link, which can be read with ReadLink
+func (storage *PublishedStorage) SymLink(src string, dst string) error {
+	return os.Symlink(filepath.Join(storage.rootPath, src), filepath.Join(storage.rootPath, dst))
+}
+
+// HardLink creates a hardlink of a file
+func (storage *PublishedStorage) HardLink(src string, dst string) error {
+	return os.Link(filepath.Join(storage.rootPath, src), filepath.Join(storage.rootPath, dst))
+}
+
+// FileExists returns true if path exists
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
+	if _, err := os.Lstat(filepath.Join(storage.rootPath, path)); os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// ReadLink returns the symbolic link pointed to by path
+func (storage *PublishedStorage) ReadLink(path string) (string, error) {
+	return os.Readlink(path)
+}

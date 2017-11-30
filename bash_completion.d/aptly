@@ -499,7 +499,7 @@ _aptly()
           "snapshot"|"repo")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-batch -force-overwrite -distribution= -component= -gpg-key= -keyring= -label= -origin= -notautomatic= -butautomaticupgrades= -passphrase= -passphrase-file= -secret-keyring= -skip-contents -skip-signing" -- ${cur}))
+                COMPREPLY=($(compgen -W "-acquire-by-hash -batch -butautomaticupgrades= -component= -distribution= -force-overwrite -gpg-key= -keyring= -label= -notautomatic= -origin= -passphrase= -passphrase-file= -secret-keyring= -skip-contents -skip-signing" -- ${cur}))
               else
                 if [[ "$subcmd" == "snapshot" ]]; then
                   COMPREPLY=($(compgen -W "$(__aptly_snapshot_list)" -- ${cur}))

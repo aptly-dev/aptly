@@ -280,3 +280,30 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(s.GetFile(c, "lala/pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 }
+
+func (s *PublishedStorageSuite) TestSymLink(c *C) {
+	s.PutFile(c, "a/b", []byte("test"))
+
+	err := s.storage.SymLink("a/b", "a/b.link")
+	c.Check(err, IsNil)
+
+	var link string
+	link, err = s.storage.ReadLink("a/b.link")
+	c.Check(err, IsNil)
+	c.Check(link, Equals, "a/b")
+
+	c.Skip("copy not available in s3test")
+}
+
+func (s *PublishedStorageSuite) TestFileExists(c *C) {
+	s.PutFile(c, "a/b", []byte("test"))
+
+	exists, err := s.storage.FileExists("a/b")
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+
+	exists, _ = s.storage.FileExists("a/b.invalid")
+	// Comment out as there is an error in s3test implementation
+	// c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
+}

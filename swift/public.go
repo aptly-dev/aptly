@@ -264,3 +264,49 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 
 	return nil
 }
+
+// SymLink creates a copy of src file and adds link information as meta data
+func (storage *PublishedStorage) SymLink(src string, dst string) error {
+	srcObjectName := filepath.Join(storage.prefix, src)
+	dstObjectName := filepath.Join(storage.prefix, dst)
+
+	headers := map[string]string{
+		"SymLink": srcObjectName,
+	}
+	_, err := storage.conn.ObjectCopy(storage.container, srcObjectName, storage.container, dstObjectName, headers)
+	if err != nil {
+		return fmt.Errorf("error symlinking %s -> %s in %s: %s", srcObjectName, dstObjectName, storage, err)
+	}
+	return err
+}
+
+// HardLink using symlink functionality as hard links do not exist
+func (storage *PublishedStorage) HardLink(src string, dst string) error {
+	return storage.SymLink(src, dst)
+}
+
+// FileExists returns true if path exists
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
+	_, _, err := storage.conn.Object(storage.container, filepath.Join(storage.prefix, path))
+
+	if err != nil {
+		if err == swift.ObjectNotFound {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// ReadLink returns the symbolic link pointed to by path
+func (storage *PublishedStorage) ReadLink(path string) (string, error) {
+	srcObjectName := filepath.Join(storage.prefix, path)
+	_, headers, err := storage.conn.Object(storage.container, srcObjectName)
+	if err != nil {
+		return "", fmt.Errorf("error reading symlink %s in %s: %s", srcObjectName, storage, err)
+	}
+
+	return headers["SymLink"], nil
+}

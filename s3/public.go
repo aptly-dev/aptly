@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -383,4 +384,72 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 	}
 
 	return storage.Remove(oldName)
+}
+
+// SymLink creates a copy of src file and adds link information as meta data
+func (storage *PublishedStorage) SymLink(src string, dst string) error {
+
+	params := &s3.CopyObjectInput{
+		Bucket:     aws.String(storage.bucket),
+		CopySource: aws.String(filepath.Join(storage.prefix, src)),
+		Key:        aws.String(filepath.Join(storage.prefix, dst)),
+		ACL:        aws.String(storage.acl),
+		Metadata: map[string]*string{
+			"SymLink": aws.String(src),
+		},
+		MetadataDirective: aws.String("REPLACE"),
+	}
+
+	if storage.storageClass != "" {
+		params.StorageClass = aws.String(storage.storageClass)
+	}
+	if storage.encryptionMethod != "" {
+		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
+	}
+
+	_, err := storage.s3.CopyObject(params)
+	if err != nil {
+		return fmt.Errorf("error symlinking %s -> %s in %s: %s", src, dst, storage, err)
+	}
+
+	return err
+}
+
+// HardLink using symlink functionality as hard links do not exist
+func (storage *PublishedStorage) HardLink(src string, dst string) error {
+	return storage.SymLink(src, dst)
+}
+
+// FileExists returns true if path exists
+func (storage *PublishedStorage) FileExists(path string) (bool, error) {
+	params := &s3.HeadObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+	}
+	_, err := storage.s3.HeadObject(params)
+	if err != nil {
+		aerr, ok := err.(awserr.Error)
+		if ok && aerr.Code() == s3.ErrCodeNoSuchKey {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// ReadLink returns the symbolic link pointed to by path.
+// This simply reads text file created with SymLink
+func (storage *PublishedStorage) ReadLink(path string) (string, error) {
+	params := &s3.HeadObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+	}
+	output, err := storage.s3.HeadObject(params)
+	if err != nil {
+		return "", err
+	}
+
+	return aws.StringValue(output.Metadata["SymLink"]), nil
 }
