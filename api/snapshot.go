@@ -47,8 +47,8 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	}
 
 	collection := context.CollectionFactory().RemoteRepoCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
 	snapshotCollection.Lock()
@@ -186,8 +186,8 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	}
 
 	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	snapshotCollection := context.CollectionFactory().SnapshotCollection()
 	snapshotCollection.Lock()
@@ -276,8 +276,8 @@ func apiSnapshotsUpdate(c *gin.Context) {
 // GET /api/snapshots/:name
 func apiSnapshotsShow(c *gin.Context) {
 	collection := context.CollectionFactory().SnapshotCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -342,8 +342,8 @@ func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 
 	collection := context.CollectionFactory().SnapshotCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	snapshotA, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -392,8 +392,8 @@ func apiSnapshotsDiff(c *gin.Context) {
 // GET /api/snapshots/:name/packages
 func apiSnapshotsSearchPackages(c *gin.Context) {
 	collection := context.CollectionFactory().SnapshotCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {

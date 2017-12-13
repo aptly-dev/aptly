@@ -162,8 +162,8 @@ func apiReposDrop(c *gin.Context) {
 // GET /api/repos/:name/packages
 func apiReposPackagesShow(c *gin.Context) {
 	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collection.Lock()
+	defer collection.Unlock()
 
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
