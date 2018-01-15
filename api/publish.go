@@ -104,6 +104,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		SkipContents         *bool
 		Architectures        []string
 		Signing              SigningOptions
+		AcquireByHash        *bool
 	}
 
 	if c.Bind(&b) != nil {
@@ -199,6 +200,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	published.SkipContents = context.Config().SkipContentsPublishing
 	if b.SkipContents != nil {
 		published.SkipContents = *b.SkipContents
+	}
+
+	if b.AcquireByHash != nil {
+		published.AcquireByHash = *b.AcquireByHash
 	}
 
 	duplicate := collection.CheckDuplicate(published)

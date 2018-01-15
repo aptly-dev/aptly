@@ -36,6 +36,7 @@ class PublishAPITestRepo(APITest):
                              "Signing": DefaultSigningOptions,
                          })
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -72,6 +73,7 @@ class PublishAPITestRepo(APITest):
                              "Architectures": ["i386", "amd64"],
                          })
         repo2_expected = {
+            'AcquireByHash': False,
             'Architectures': ['amd64', 'i386'],
             'Distribution': distribution,
             'Label': '',
@@ -120,6 +122,7 @@ class PublishSnapshotAPITest(APITest):
         prefix = self.random_name()
         resp = self.post("/api/publish/" + prefix,
                          json={
+                             "AcquireByHash": True,
                              "SourceKind": "snapshot",
                              "Sources": [{"Name": snapshot_name}],
                              "Signing": DefaultSigningOptions,
@@ -129,6 +132,7 @@ class PublishSnapshotAPITest(APITest):
                          })
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), {
+            'AcquireByHash': True,
             'Architectures': ['i386'],
             'Distribution': 'squeeze',
             'Label': '',
@@ -142,6 +146,7 @@ class PublishSnapshotAPITest(APITest):
             'Storage': ''})
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
+        self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/by-hash")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/binary-i386/Packages")
         self.check_exists("public/" + prefix + "/dists/squeeze/main/Contents-i386.gz")
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
@@ -187,11 +192,14 @@ class PublishUpdateAPITestRepo(APITest):
         self.check_equal(self.delete("/api/repos/" + repo_name + "/packages/",
                          json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).status_code, 200)
 
+        # Update and switch AcquireByHash on.
         resp = self.put("/api/publish/" + prefix + "/wheezy",
                         json={
+                            "AcquireByHash": True,
                             "Signing": DefaultSigningOptions,
                         })
         repo_expected = {
+            'AcquireByHash': True,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -206,6 +214,8 @@ class PublishUpdateAPITestRepo(APITest):
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
+
+        self.check_exists("public/" + prefix + "/dists/wheezy/main/binary-i386/by-hash")
 
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
         self.check_not_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
@@ -273,6 +283,7 @@ class PublishUpdateSkipCleanupAPITestRepo(APITest):
                             "SkipCleanup": True,
                         })
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -328,6 +339,7 @@ class PublishSwitchAPITestRepo(APITest):
 
         self.check_equal(resp.status_code, 201)
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -362,6 +374,7 @@ class PublishSwitchAPITestRepo(APITest):
                             "SkipContents": True,
                         })
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -416,6 +429,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
 
         self.check_equal(resp.status_code, 201)
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
@@ -445,6 +459,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
 
         self.check_equal(resp.status_code, 201)
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'otherdist',
             'Label': '',
@@ -477,6 +492,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
                             "SkipContents": True,
                         })
         repo_expected = {
+            'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
             'Distribution': 'wheezy',
             'Label': '',
