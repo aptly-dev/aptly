@@ -393,7 +393,7 @@ func (storage *PublishedStorage) SymLink(src string, dst string) error {
 
 	params := &s3.CopyObjectInput{
 		Bucket:     aws.String(storage.bucket),
-		CopySource: aws.String(filepath.Join(storage.prefix, src)),
+		CopySource: aws.String(filepath.Join(storage.bucket, storage.prefix, src)),
 		Key:        aws.String(filepath.Join(storage.prefix, dst)),
 		ACL:        aws.String(storage.acl),
 		Metadata: map[string]*string{
