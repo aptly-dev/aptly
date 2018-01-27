@@ -315,6 +315,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Sources":              sources,
 		"Storage":              p.Storage,
 		"SkipContents":         p.SkipContents,
+		"AcquireByHash":        p.AcquireByHash,
 	})
 }
 
