@@ -191,18 +191,19 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	}
 
 	// if a previous index file already exists exists, backup symlink
-	if exists, _ = file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile)); exists {
+	indexPath := filepath.Join(dst, indexfile)
+	oldIndexPath := filepath.Join(dst, indexfile+".old")
+	if exists, _ = file.parent.publishedStorage.FileExists(indexPath); exists {
 		// if exists, remove old symlink
-		if exists, _ = file.parent.publishedStorage.FileExists(filepath.Join(dst, indexfile+".old")); exists {
-			var link string
-			link, err = file.parent.publishedStorage.ReadLink(filepath.Join(dst, indexfile+".old"))
+		if exists, _ = file.parent.publishedStorage.FileExists(oldIndexPath); exists {
+			var linkTarget string
+			linkTarget, err = file.parent.publishedStorage.ReadLink(oldIndexPath)
 			if err != nil {
-				file.parent.publishedStorage.Remove(link)
+				file.parent.publishedStorage.Remove(linkTarget)
 			}
-			file.parent.publishedStorage.Remove(filepath.Join(dst, indexfile+".old"))
+			file.parent.publishedStorage.Remove(oldIndexPath)
 		}
-		file.parent.publishedStorage.RenameFile(filepath.Join(dst, indexfile),
-			filepath.Join(dst, indexfile+".old"))
+		file.parent.publishedStorage.RenameFile(indexPath, oldIndexPath)
 	}
 
 	// create symlink
