@@ -267,7 +267,12 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	return true, nil
 }
 
-// ReadLink returns the symbolic link pointed to by path
+// ReadLink returns the symbolic link pointed to by path (relative to storage
+// root)
 func (storage *PublishedStorage) ReadLink(path string) (string, error) {
-	return os.Readlink(path)
+	absPath, err := os.Readlink(filepath.Join(storage.rootPath, path))
+	if err != nil {
+		return absPath, err
+	}
+	return filepath.Rel(storage.rootPath, absPath)
 }

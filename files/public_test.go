@@ -129,6 +129,10 @@ func (s *PublishedStorageSuite) TestSymLink(c *C) {
 
 	exists, _ := s.storage.FileExists("ppa/dists/squeeze/InRelease")
 	c.Check(exists, Equals, true)
+
+	linkTarget, err := s.storage.ReadLink("ppa/dists/squeeze/InRelease")
+	c.Assert(err, IsNil)
+	c.Assert(linkTarget, Equals, "ppa/dists/squeeze/Release")
 }
 
 func (s *PublishedStorageSuite) TestHardLink(c *C) {
