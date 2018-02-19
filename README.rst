@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsmira%2Faptly.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsmira%2Faptly?ref=badge_shield)
+
 =====
 aptly
 =====
@@ -112,3 +114,7 @@ CLI for aptly API:
 Scala sbt:
 
 -   `sbt aptly plugin <https://github.com/amalakar/sbt-aptly>`_ by Arup Malakar
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsmira%2Faptly.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsmira%2Faptly?ref=badge_large)
