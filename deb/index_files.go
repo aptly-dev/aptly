@@ -198,7 +198,10 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 		if exists, _ = file.parent.publishedStorage.FileExists(oldIndexPath); exists {
 			var linkTarget string
 			linkTarget, err = file.parent.publishedStorage.ReadLink(oldIndexPath)
-			if err != nil {
+			if err == nil {
+				// If we managed to resolve the link target: delete it. This is the
+				// oldest physical index file we no longer need. Once we drop our
+				// old symlink we'll essentially forget about it existing at all.
 				file.parent.publishedStorage.Remove(linkTarget)
 			}
 			file.parent.publishedStorage.Remove(oldIndexPath)
