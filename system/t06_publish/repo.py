@@ -774,12 +774,12 @@ class PublishRepo32Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def prepare_fixture(self):
-        super(PublishRepo30Test, self).prepare_fixture()
+        super(PublishRepo32Test, self).prepare_fixture()
 
         self.write_file(os.path.join('addon', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
 
     def check(self):
-        super(PublishRepo30Test, self).check()
+        super(PublishRepo32Test, self).check()
 
         self.check_exists('public/dists/maverick/main/dep11/README')
 
