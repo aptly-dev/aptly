@@ -320,3 +320,19 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	err = s.storageCopySize.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
 	c.Check(err, IsNil)
 }
+
+func (s *PublishedStorageSuite) TestRootRemove(c *C) {
+	// Prevent deletion of the root directory by passing empty subpaths.
+
+	pwd := c.MkDir()
+
+	// Symlink
+	linkedDir := filepath.Join(pwd, "linkedDir")
+	os.Symlink(s.root, linkedDir)
+	linkStorage := NewPublishedStorage(linkedDir, "", "")
+	c.Assert(func() { linkStorage.Remove("") }, PanicMatches, "trying to remove empty path")
+
+	// Actual dir
+	dirStorage := NewPublishedStorage(pwd, "", "")
+	c.Assert(func() { dirStorage.RemoveDirs("", nil) }, PanicMatches, "trying to remove the root directory")
+}

@@ -97,12 +97,18 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 
 // Remove removes single file under public path
 func (storage *PublishedStorage) Remove(path string) error {
+	if len(path) <= 0 {
+		panic("trying to remove empty path")
+	}
 	filepath := filepath.Join(storage.rootPath, path)
 	return os.Remove(filepath)
 }
 
 // RemoveDirs removes directory structure under public path
 func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
+	if len(path) <= 0 {
+		panic("trying to remove the root directory")
+	}
 	filepath := filepath.Join(storage.rootPath, path)
 	if progress != nil {
 		progress.Printf("Removing %s...\n", filepath)
