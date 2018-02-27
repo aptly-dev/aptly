@@ -735,6 +735,7 @@ class PublishRepo30Test(BaseTest):
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
+
 class PublishRepo31Test(BaseTest):
     """
     publish repo: sign with passphrase (internal PGP implementation)
@@ -759,6 +760,7 @@ class PublishRepo31Test(BaseTest):
         self.run_cmd(["gpg", "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
 
 class PublishRepo32Test(BaseTest):
     """
