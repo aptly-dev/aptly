@@ -12,7 +12,7 @@
         "staticcheck",
         "varcheck",
         "structcheck",
-        "aligncheck",
+        "maligned",
         "vetshadow",
         "goconst",
         "interfacer"

@@ -1,0 +1,16 @@
+openpgp: Passphrase is required to unlock private key "Aptly Tester (don't use it) <test@aptly.info>"
+openpgp: 1024-bit DSA key, ID F30E8CB9CDDE2AF8, created
+Loading packages...
+Generating metadata files and linking package files...
+Finalizing metadata files...
+openpgp: signing file 'Release'...
+openpgp: clearsigning file 'Release'...
+
+Local repo local-repo has been successfully published.
+Please setup your webserver to serve directory '${HOME}/.aptly/public' with autoindexing.
+Now you can add following line to apt sources:
+  deb http://your-server/ maverick main
+  deb-src http://your-server/ maverick main
+Don't forget to add your GPG key to apt with apt-key.
+
+You can also use `aptly serve` to publish your repositories over HTTP quickly.

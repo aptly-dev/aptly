@@ -1,5 +1,5 @@
 Loading packages...
-[!] Unable to import file /02/03/pyspi_0.6.1-1.3.diff.gz into pool: open /02/03/pyspi_0.6.1-1.3.diff.gz: no such file or directory
+[!] Unable to import file /02/03/pyspi_0.6.1-1.3.diff.gz into pool: stat /02/03/pyspi_0.6.1-1.3.diff.gz: no such file or directory
 [!] Some files were skipped due to errors:
   /02/03/pyspi_0.6.1-1.3.dsc
 ERROR: some files failed to be added

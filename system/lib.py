@@ -82,6 +82,12 @@ class BaseTest(object):
 
     fixtureDBDir = os.path.join(os.environ["HOME"], "aptly-fixture-db")
     fixturePoolDir = os.path.join(os.environ["HOME"], "aptly-fixture-pool")
+    fixtureGpgKeys = ["debian-archive-keyring.gpg",
+                      "launchpad.key",
+                      "flat.key",
+                      "pagerduty.key",
+                      "nvidia.key",
+                      "jenkins.key"]
 
     outputMatchPrepare = None
 
@@ -132,12 +138,8 @@ class BaseTest(object):
                                                      self.fixtureWebServer))
 
         if self.fixtureGpg:
-            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import",
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "debian-archive-keyring.gpg"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "launchpad.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "flat.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pagerduty.key"),
-                          os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "jenkins.key")])
+            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
+                         [os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", key) for key in self.fixtureGpgKeys])
 
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:
@@ -194,7 +196,7 @@ class BaseTest(object):
     def check_output(self):
         try:
             self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if self.outputMatchPrepare is not None:
                     self.output = self.outputMatchPrepare(self.output)
@@ -207,7 +209,7 @@ class BaseTest(object):
         output = self.run_cmd(command, expected_code=expected_code)
         try:
             self.verify_match(self.get_gold(gold_name), output, match_prepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if match_prepare is not None:
                     output = match_prepare(output)
@@ -235,7 +237,7 @@ class BaseTest(object):
         try:
 
             self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 if match_prepare is not None:
                     contents = match_prepare(contents)
@@ -248,7 +250,7 @@ class BaseTest(object):
         contents = open(self.checkedFile, "r").read()
         try:
             self.verify_match(self.get_gold(), contents)
-        except:
+        except:  # noqa: E722
             if self.captureResults:
                 with open(self.get_gold_filename(), "w") as f:
                     f.write(contents)

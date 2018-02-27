@@ -1,4 +1,4 @@
 Snapshot `snap1` is published currently:
- * filesystem:hardlink:./maverick [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
- * filesystem:symlink:./maverick [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
+ * filesystem:hardlink:./maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
+ * filesystem:symlink:./maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386] publishes {main: [snap1]: Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick}
 ERROR: unable to drop: snapshot is published

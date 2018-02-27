@@ -1,0 +1,10 @@
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/InRelease...
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release...
+Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release.gpg...
+openpgp:  RSA key ID 8B48AD6246925553
+openpgp: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
+openpgp:  RSA key ID 7638D0442B90D010
+openpgp: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
+
+Mirror [mirror11]: http://mirror.yandex.ru/debian/ wheezy successfully added.
+You can run 'aptly mirror update mirror11' to download repository contents.

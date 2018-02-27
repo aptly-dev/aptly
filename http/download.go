@@ -1,12 +1,15 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/mxk/go-flowrate/flowrate"
@@ -62,12 +65,24 @@ func (downloader *downloaderImpl) GetProgress() aptly.Progress {
 }
 
 // Download starts new download task
-func (downloader *downloaderImpl) Download(url string, destination string) error {
-	return downloader.DownloadWithChecksum(url, destination, nil, false, 1)
+func (downloader *downloaderImpl) Download(ctx context.Context, url string, destination string) error {
+	return downloader.DownloadWithChecksum(ctx, url, destination, nil, false, 1)
+}
+
+func retryableError(err error) bool {
+	switch err.(type) {
+	case net.Error:
+		return true
+	case *net.OpError:
+		return true
+	case syscall.Errno:
+		return true
+	}
+	return false
 }
 
 // DownloadWithChecksum starts new download task with checksum verification
-func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination string,
+func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url string, destination string,
 	expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
 
 	downloader.progress.Printf("Downloading %s...\n", url)
@@ -77,6 +92,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination s
 		return errors.Wrap(err, url)
 	}
 	req.Close = true
+	req = req.WithContext(ctx)
 
 	proxyURL, _ := downloader.client.Transport.(*http.Transport).Proxy(req)
 	if proxyURL == nil && (req.URL.Scheme == "http" || req.URL.Scheme == "https") {
@@ -88,10 +104,10 @@ func (downloader *downloaderImpl) DownloadWithChecksum(url string, destination s
 	for maxTries > 0 {
 		temppath, err = downloader.download(req, url, destination, expected, ignoreMismatch)
 
-		if err != nil {
+		if err != nil && retryableError(err) {
 			maxTries--
 		} else {
-			// successful download
+			// get out of the loop
 			break
 		}
 	}

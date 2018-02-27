@@ -12,7 +12,7 @@ import (
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files
-func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, failedFiles []string) {
+func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, otherFiles, failedFiles []string) {
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
@@ -32,6 +32,8 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 				if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
 					strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 					packageFiles = append(packageFiles, path)
+				} else if strings.HasSuffix(info.Name(), ".buildinfo") {
+					otherFiles = append(otherFiles, path)
 				}
 
 				return nil
@@ -46,6 +48,8 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
 				strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 				packageFiles = append(packageFiles, location)
+			} else if strings.HasSuffix(info.Name(), ".buildinfo") {
+				otherFiles = append(otherFiles, location)
 			} else {
 				reporter.Warning("Unknown file extension: %s", location)
 				failedFiles = append(failedFiles, location)
@@ -147,14 +151,34 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		// go over all the other files
 		for i := range files {
 			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(files[i].Filename))
-			files[i].PoolPath, err = pool.Import(sourceFile, files[i].Filename, &files[i].Checksums, false, checksumStorage)
+
+			_, err = os.Stat(sourceFile)
+			if err == nil {
+				files[i].PoolPath, err = pool.Import(sourceFile, files[i].Filename, &files[i].Checksums, false, checksumStorage)
+				if err == nil {
+					candidateProcessedFiles = append(candidateProcessedFiles, sourceFile)
+				}
+			} else if os.IsNotExist(err) {
+				// if file is not present, try to find it in the pool
+				var (
+					err2  error
+					found bool
+				)
+
+				files[i].PoolPath, found, err2 = pool.Verify("", files[i].Filename, &files[i].Checksums, checksumStorage)
+				if err2 != nil {
+					err = err2
+				} else if found {
+					// clear error, file is already in the package pool
+					err = nil
+				}
+			}
+
 			if err != nil {
 				reporter.Warning("Unable to import file %s into pool: %s", sourceFile, err)
 				failedFiles = append(failedFiles, file)
 				break
 			}
-
-			candidateProcessedFiles = append(candidateProcessedFiles, sourceFile)
 		}
 		if err != nil {
 			// some files haven't been imported

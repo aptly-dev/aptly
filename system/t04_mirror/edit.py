@@ -65,7 +65,7 @@ class EditMirror6Test(BaseTest):
     edit mirror: change architectures
     """
     fixtureDB = True
-    runCmd = "aptly mirror edit -architectures=amd64,s390 wheezy-main"
+    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,s390 wheezy-main"
 
     def check(self):
         self.check_output()
@@ -77,7 +77,7 @@ class EditMirror7Test(BaseTest):
     edit mirror: change architectures to missing archs
     """
     fixtureDB = True
-    runCmd = "aptly mirror edit -architectures=amd64,x56 wheezy-main"
+    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 wheezy-main"
     expectedCode = 1
 
 
@@ -101,3 +101,11 @@ class EditMirror9Test(BaseTest):
     fixtureGpg = True
     runCmd = "aptly mirror edit -with-udebs mirror9"
     expectedCode = 1
+
+
+class EditMirror10Test(BaseTest):
+    """
+    edit mirror: change archive url
+    """
+    fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian wheezy main"]
+    runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"

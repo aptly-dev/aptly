@@ -22,7 +22,7 @@ func (s *LevelDBSuite) SetUpTest(c *C) {
 	var err error
 
 	s.path = c.MkDir()
-	s.db, err = OpenDB(s.path)
+	s.db, err = NewOpenDB(s.path)
 	c.Assert(err, IsNil)
 }
 
@@ -46,7 +46,7 @@ func (s *LevelDBSuite) TestRecoverDB(c *C) {
 	err = RecoverDB(s.path)
 	c.Check(err, IsNil)
 
-	s.db, err = OpenDB(s.path)
+	s.db, err = NewOpenDB(s.path)
 	c.Check(err, IsNil)
 
 	result, err := s.db.Get(key)
@@ -223,7 +223,7 @@ func (s *LevelDBSuite) TestReOpen(c *C) {
 	err = s.db.Close()
 	c.Assert(err, IsNil)
 
-	err = s.db.ReOpen()
+	err = s.db.Open()
 	c.Assert(err, IsNil)
 
 	result, err := s.db.Get(key)

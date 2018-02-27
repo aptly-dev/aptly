@@ -11,10 +11,10 @@ Information from release file:
 Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 Codename: wheezy
 Components: main contrib non-free
-Date: Sat, 04 Jun 2016 11:47:54 UTC
+Date: Sat, 17 Jun 2017 08:55:32 UTC
 Description:  Debian 7.11 Released 04 June 2016
 
 Label: Debian
 Origin: Debian
-Suite: oldstable
+Suite: oldoldstable
 Version: 7.11

@@ -357,3 +357,41 @@ class CreateMirror28Test(BaseTest):
 
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror28", "mirror_show", match_prepare=removeDates)
+
+
+class CreateMirror29Test(BaseTest):
+    """
+    create mirror: repo with InRelease verification (internal GPG implementation)
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
+
+
+class CreateMirror30Test(BaseTest):
+    """
+    create mirror: repo with InRelease verification, failure  (internal GPG implementation)
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
+    configOverride = {"gpgProvider": "internal"}
+    gold_processor = BaseTest.expand_environ
+    fixtureGpg = False
+    expectedCode = 1
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)
+
+
+class CreateMirror31Test(BaseTest):
+    """
+    create mirror: repo with Release + Release.gpg verification (internal GPG implementation)
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using', '', s)

@@ -111,6 +111,7 @@ package environment to new version.`,
 		},
 	}
 
+	cmd.Flag.Int("db-open-attempts", 10, "number of attempts to open DB if it's locked by other instance")
 	cmd.Flag.Bool("dep-follow-suggests", false, "when processing dependencies, follow Suggests")
 	cmd.Flag.Bool("dep-follow-source", false, "when processing dependencies, follow from binary to Source packages")
 	cmd.Flag.Bool("dep-follow-recommends", false, "when processing dependencies, follow Recommends")
@@ -118,6 +119,7 @@ package environment to new version.`,
 	cmd.Flag.Bool("dep-verbose-resolve", false, "when processing dependencies, print detailed logs")
 	cmd.Flag.String("architectures", "", "list of architectures to consider during (comma-separated), default to all available")
 	cmd.Flag.String("config", "", "location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)")
+	cmd.Flag.String("gpg-provider", "", "PGP implementation (\"gpg\" for external gpg or \"internal\" for Go internal implementation)")
 
 	if aptly.EnableDebug {
 		cmd.Flag.String("cpuprofile", "", "write cpu profile to file")

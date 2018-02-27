@@ -45,8 +45,12 @@ func init() {
 	protocol.RandReader = &awstesting.ZeroReader{}
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService1ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService1ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService1ProtocolTest struct {
 	*client.Client
 }
@@ -104,19 +108,18 @@ const opInputService1TestCaseOperation1 = "OperationName"
 
 // InputService1TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService1TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService1TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService1TestCaseOperation1 method directly
-// instead.
+// See InputService1TestCaseOperation1 for more information on using the InputService1TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService1TestCaseOperation1Request method.
 //    req, resp := client.InputService1TestCaseOperation1Request(params)
@@ -125,7 +128,7 @@ const opInputService1TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input *InputService1TestShapeInputShape) (req *request.Request, output *InputService1TestShapeInputService1TestCaseOperation1Output) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input *InputService1TestShapeInputService1TestCaseOperation2Input) (req *request.Request, output *InputService1TestShapeInputService1TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService1TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -133,7 +136,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input
 	}
 
 	if input == nil {
-		input = &InputService1TestShapeInputShape{}
+		input = &InputService1TestShapeInputService1TestCaseOperation2Input{}
 	}
 
 	output = &InputService1TestShapeInputService1TestCaseOperation1Output{}
@@ -151,7 +154,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input
 //
 // See the AWS API reference guide for 's
 // API operation InputService1TestCaseOperation1 for usage and error information.
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation1(input *InputService1TestShapeInputShape) (*InputService1TestShapeInputService1TestCaseOperation1Output, error) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation1(input *InputService1TestShapeInputService1TestCaseOperation2Input) (*InputService1TestShapeInputService1TestCaseOperation1Output, error) {
 	req, out := c.InputService1TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -165,7 +168,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation1(input *Input
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation1WithContext(ctx aws.Context, input *InputService1TestShapeInputShape, opts ...request.Option) (*InputService1TestShapeInputService1TestCaseOperation1Output, error) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation1WithContext(ctx aws.Context, input *InputService1TestShapeInputService1TestCaseOperation2Input, opts ...request.Option) (*InputService1TestShapeInputService1TestCaseOperation1Output, error) {
 	req, out := c.InputService1TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -176,19 +179,18 @@ const opInputService1TestCaseOperation2 = "OperationName"
 
 // InputService1TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService1TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService1TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService1TestCaseOperation2 method directly
-// instead.
+// See InputService1TestCaseOperation2 for more information on using the InputService1TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService1TestCaseOperation2Request method.
 //    req, resp := client.InputService1TestCaseOperation2Request(params)
@@ -197,7 +199,7 @@ const opInputService1TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation2Request(input *InputService1TestShapeInputShape) (req *request.Request, output *InputService1TestShapeInputService1TestCaseOperation2Output) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation2Request(input *InputService1TestShapeInputService1TestCaseOperation2Input) (req *request.Request, output *InputService1TestShapeInputService1TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService1TestCaseOperation2,
 		HTTPMethod: "PUT",
@@ -205,7 +207,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation2Request(input
 	}
 
 	if input == nil {
-		input = &InputService1TestShapeInputShape{}
+		input = &InputService1TestShapeInputService1TestCaseOperation2Input{}
 	}
 
 	output = &InputService1TestShapeInputService1TestCaseOperation2Output{}
@@ -223,7 +225,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation2Request(input
 //
 // See the AWS API reference guide for 's
 // API operation InputService1TestCaseOperation2 for usage and error information.
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation2(input *InputService1TestShapeInputShape) (*InputService1TestShapeInputService1TestCaseOperation2Output, error) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation2(input *InputService1TestShapeInputService1TestCaseOperation2Input) (*InputService1TestShapeInputService1TestCaseOperation2Output, error) {
 	req, out := c.InputService1TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -237,7 +239,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation2(input *Input
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService1ProtocolTest) InputService1TestCaseOperation2WithContext(ctx aws.Context, input *InputService1TestShapeInputShape, opts ...request.Option) (*InputService1TestShapeInputService1TestCaseOperation2Output, error) {
+func (c *InputService1ProtocolTest) InputService1TestCaseOperation2WithContext(ctx aws.Context, input *InputService1TestShapeInputService1TestCaseOperation2Input, opts ...request.Option) (*InputService1TestShapeInputService1TestCaseOperation2Output, error) {
 	req, out := c.InputService1TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -248,19 +250,18 @@ const opInputService1TestCaseOperation3 = "OperationName"
 
 // InputService1TestCaseOperation3Request generates a "aws/request.Request" representing the
 // client's request for the InputService1TestCaseOperation3 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService1TestCaseOperation3 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService1TestCaseOperation3 method directly
-// instead.
+// See InputService1TestCaseOperation3 for more information on using the InputService1TestCaseOperation3
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService1TestCaseOperation3Request method.
 //    req, resp := client.InputService1TestCaseOperation3Request(params)
@@ -320,6 +321,26 @@ type InputService1TestShapeInputService1TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
+type InputService1TestShapeInputService1TestCaseOperation2Input struct {
+	_ struct{} `locationName:"OperationRequest" type:"structure" xmlURI:"https://foo/"`
+
+	Description *string `type:"string"`
+
+	Name *string `type:"string"`
+}
+
+// SetDescription sets the Description field's value.
+func (s *InputService1TestShapeInputService1TestCaseOperation2Input) SetDescription(v string) *InputService1TestShapeInputService1TestCaseOperation2Input {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *InputService1TestShapeInputService1TestCaseOperation2Input) SetName(v string) *InputService1TestShapeInputService1TestCaseOperation2Input {
+	s.Name = &v
+	return s
+}
+
 type InputService1TestShapeInputService1TestCaseOperation2Output struct {
 	_ struct{} `type:"structure"`
 }
@@ -332,28 +353,12 @@ type InputService1TestShapeInputService1TestCaseOperation3Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService1TestShapeInputShape struct {
-	_ struct{} `locationName:"OperationRequest" type:"structure" xmlURI:"https://foo/"`
-
-	Description *string `type:"string"`
-
-	Name *string `type:"string"`
-}
-
-// SetDescription sets the Description field's value.
-func (s *InputService1TestShapeInputShape) SetDescription(v string) *InputService1TestShapeInputShape {
-	s.Description = &v
-	return s
-}
-
-// SetName sets the Name field's value.
-func (s *InputService1TestShapeInputShape) SetName(v string) *InputService1TestShapeInputShape {
-	s.Name = &v
-	return s
-}
-
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService2ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService2ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService2ProtocolTest struct {
 	*client.Client
 }
@@ -411,19 +416,18 @@ const opInputService2TestCaseOperation1 = "OperationName"
 
 // InputService2TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService2TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService2TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService2TestCaseOperation1 method directly
-// instead.
+// See InputService2TestCaseOperation1 for more information on using the InputService2TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService2TestCaseOperation1Request method.
 //    req, resp := client.InputService2TestCaseOperation1Request(params)
@@ -519,8 +523,12 @@ type InputService2TestShapeInputService2TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService3ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService3ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService3ProtocolTest struct {
 	*client.Client
 }
@@ -578,19 +586,18 @@ const opInputService3TestCaseOperation1 = "OperationName"
 
 // InputService3TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService3TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService3TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService3TestCaseOperation1 method directly
-// instead.
+// See InputService3TestCaseOperation1 for more information on using the InputService3TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService3TestCaseOperation1Request method.
 //    req, resp := client.InputService3TestCaseOperation1Request(params)
@@ -599,7 +606,7 @@ const opInputService3TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation1Output) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input *InputService3TestShapeInputService3TestCaseOperation2Input) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService3TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -607,7 +614,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input
 	}
 
 	if input == nil {
-		input = &InputService3TestShapeInputShape{}
+		input = &InputService3TestShapeInputService3TestCaseOperation2Input{}
 	}
 
 	output = &InputService3TestShapeInputService3TestCaseOperation1Output{}
@@ -625,7 +632,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input
 //
 // See the AWS API reference guide for 's
 // API operation InputService3TestCaseOperation1 for usage and error information.
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation1(input *InputService3TestShapeInputShape) (*InputService3TestShapeInputService3TestCaseOperation1Output, error) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation1(input *InputService3TestShapeInputService3TestCaseOperation2Input) (*InputService3TestShapeInputService3TestCaseOperation1Output, error) {
 	req, out := c.InputService3TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -639,7 +646,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation1(input *Input
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation1WithContext(ctx aws.Context, input *InputService3TestShapeInputShape, opts ...request.Option) (*InputService3TestShapeInputService3TestCaseOperation1Output, error) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation1WithContext(ctx aws.Context, input *InputService3TestShapeInputService3TestCaseOperation2Input, opts ...request.Option) (*InputService3TestShapeInputService3TestCaseOperation1Output, error) {
 	req, out := c.InputService3TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -650,19 +657,18 @@ const opInputService3TestCaseOperation2 = "OperationName"
 
 // InputService3TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService3TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService3TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService3TestCaseOperation2 method directly
-// instead.
+// See InputService3TestCaseOperation2 for more information on using the InputService3TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService3TestCaseOperation2Request method.
 //    req, resp := client.InputService3TestCaseOperation2Request(params)
@@ -671,7 +677,7 @@ const opInputService3TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation2Output) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input *InputService3TestShapeInputService3TestCaseOperation2Input) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService3TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -679,7 +685,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input
 	}
 
 	if input == nil {
-		input = &InputService3TestShapeInputShape{}
+		input = &InputService3TestShapeInputService3TestCaseOperation2Input{}
 	}
 
 	output = &InputService3TestShapeInputService3TestCaseOperation2Output{}
@@ -697,7 +703,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input
 //
 // See the AWS API reference guide for 's
 // API operation InputService3TestCaseOperation2 for usage and error information.
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation2(input *InputService3TestShapeInputShape) (*InputService3TestShapeInputService3TestCaseOperation2Output, error) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation2(input *InputService3TestShapeInputService3TestCaseOperation2Input) (*InputService3TestShapeInputService3TestCaseOperation2Output, error) {
 	req, out := c.InputService3TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -711,7 +717,7 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation2(input *Input
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService3ProtocolTest) InputService3TestCaseOperation2WithContext(ctx aws.Context, input *InputService3TestShapeInputShape, opts ...request.Option) (*InputService3TestShapeInputService3TestCaseOperation2Output, error) {
+func (c *InputService3ProtocolTest) InputService3TestCaseOperation2WithContext(ctx aws.Context, input *InputService3TestShapeInputService3TestCaseOperation2Input, opts ...request.Option) (*InputService3TestShapeInputService3TestCaseOperation2Output, error) {
 	req, out := c.InputService3TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -722,11 +728,7 @@ type InputService3TestShapeInputService3TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService3TestShapeInputService3TestCaseOperation2Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService3TestShapeInputShape struct {
+type InputService3TestShapeInputService3TestCaseOperation2Input struct {
 	_ struct{} `locationName:"OperationRequest" type:"structure" xmlURI:"https://foo/"`
 
 	Description *string `type:"string"`
@@ -735,15 +737,19 @@ type InputService3TestShapeInputShape struct {
 }
 
 // SetDescription sets the Description field's value.
-func (s *InputService3TestShapeInputShape) SetDescription(v string) *InputService3TestShapeInputShape {
+func (s *InputService3TestShapeInputService3TestCaseOperation2Input) SetDescription(v string) *InputService3TestShapeInputService3TestCaseOperation2Input {
 	s.Description = &v
 	return s
 }
 
 // SetSubStructure sets the SubStructure field's value.
-func (s *InputService3TestShapeInputShape) SetSubStructure(v *InputService3TestShapeSubStructure) *InputService3TestShapeInputShape {
+func (s *InputService3TestShapeInputService3TestCaseOperation2Input) SetSubStructure(v *InputService3TestShapeSubStructure) *InputService3TestShapeInputService3TestCaseOperation2Input {
 	s.SubStructure = v
 	return s
+}
+
+type InputService3TestShapeInputService3TestCaseOperation2Output struct {
+	_ struct{} `type:"structure"`
 }
 
 type InputService3TestShapeSubStructure struct {
@@ -766,8 +772,12 @@ func (s *InputService3TestShapeSubStructure) SetFoo(v string) *InputService3Test
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService4ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService4ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService4ProtocolTest struct {
 	*client.Client
 }
@@ -825,19 +835,18 @@ const opInputService4TestCaseOperation1 = "OperationName"
 
 // InputService4TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService4TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService4TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService4TestCaseOperation1 method directly
-// instead.
+// See InputService4TestCaseOperation1 for more information on using the InputService4TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService4TestCaseOperation1Request method.
 //    req, resp := client.InputService4TestCaseOperation1Request(params)
@@ -937,8 +946,12 @@ func (s *InputService4TestShapeSubStructure) SetFoo(v string) *InputService4Test
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService5ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService5ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService5ProtocolTest struct {
 	*client.Client
 }
@@ -996,19 +1009,18 @@ const opInputService5TestCaseOperation1 = "OperationName"
 
 // InputService5TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService5TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService5TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService5TestCaseOperation1 method directly
-// instead.
+// See InputService5TestCaseOperation1 for more information on using the InputService5TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService5TestCaseOperation1Request method.
 //    req, resp := client.InputService5TestCaseOperation1Request(params)
@@ -1080,8 +1092,12 @@ type InputService5TestShapeInputService5TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService6ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService6ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService6ProtocolTest struct {
 	*client.Client
 }
@@ -1139,19 +1155,18 @@ const opInputService6TestCaseOperation1 = "OperationName"
 
 // InputService6TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService6TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService6TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService6TestCaseOperation1 method directly
-// instead.
+// See InputService6TestCaseOperation1 for more information on using the InputService6TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService6TestCaseOperation1Request method.
 //    req, resp := client.InputService6TestCaseOperation1Request(params)
@@ -1223,8 +1238,12 @@ type InputService6TestShapeInputService6TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService7ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService7ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService7ProtocolTest struct {
 	*client.Client
 }
@@ -1282,19 +1301,18 @@ const opInputService7TestCaseOperation1 = "OperationName"
 
 // InputService7TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService7TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService7TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService7TestCaseOperation1 method directly
-// instead.
+// See InputService7TestCaseOperation1 for more information on using the InputService7TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService7TestCaseOperation1Request method.
 //    req, resp := client.InputService7TestCaseOperation1Request(params)
@@ -1366,8 +1384,12 @@ type InputService7TestShapeInputService7TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService8ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService8ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService8ProtocolTest struct {
 	*client.Client
 }
@@ -1425,19 +1447,18 @@ const opInputService8TestCaseOperation1 = "OperationName"
 
 // InputService8TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService8TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService8TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService8TestCaseOperation1 method directly
-// instead.
+// See InputService8TestCaseOperation1 for more information on using the InputService8TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService8TestCaseOperation1Request method.
 //    req, resp := client.InputService8TestCaseOperation1Request(params)
@@ -1509,8 +1530,12 @@ type InputService8TestShapeInputService8TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService9ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService9ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService9ProtocolTest struct {
 	*client.Client
 }
@@ -1568,19 +1593,18 @@ const opInputService9TestCaseOperation1 = "OperationName"
 
 // InputService9TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService9TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService9TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService9TestCaseOperation1 method directly
-// instead.
+// See InputService9TestCaseOperation1 for more information on using the InputService9TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService9TestCaseOperation1Request method.
 //    req, resp := client.InputService9TestCaseOperation1Request(params)
@@ -1664,8 +1688,12 @@ func (s *InputService9TestShapeSingleFieldStruct) SetElement(v string) *InputSer
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService10ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService10ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService10ProtocolTest struct {
 	*client.Client
 }
@@ -1723,19 +1751,18 @@ const opInputService10TestCaseOperation1 = "OperationName"
 
 // InputService10TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService10TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService10TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService10TestCaseOperation1 method directly
-// instead.
+// See InputService10TestCaseOperation1 for more information on using the InputService10TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService10TestCaseOperation1Request method.
 //    req, resp := client.InputService10TestCaseOperation1Request(params)
@@ -1828,8 +1855,12 @@ func (s *InputService10TestShapeStructureShape) SetT(v time.Time) *InputService1
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService11ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService11ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService11ProtocolTest struct {
 	*client.Client
 }
@@ -1887,19 +1918,18 @@ const opInputService11TestCaseOperation1 = "OperationName"
 
 // InputService11TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService11TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService11TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService11TestCaseOperation1 method directly
-// instead.
+// See InputService11TestCaseOperation1 for more information on using the InputService11TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService11TestCaseOperation1Request method.
 //    req, resp := client.InputService11TestCaseOperation1Request(params)
@@ -1971,8 +2001,12 @@ type InputService11TestShapeInputService11TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService12ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService12ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService12ProtocolTest struct {
 	*client.Client
 }
@@ -2030,19 +2064,18 @@ const opInputService12TestCaseOperation1 = "OperationName"
 
 // InputService12TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService12TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService12TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService12TestCaseOperation1 method directly
-// instead.
+// See InputService12TestCaseOperation1 for more information on using the InputService12TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService12TestCaseOperation1Request method.
 //    req, resp := client.InputService12TestCaseOperation1Request(params)
@@ -2114,8 +2147,12 @@ type InputService12TestShapeInputService12TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService13ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService13ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService13ProtocolTest struct {
 	*client.Client
 }
@@ -2173,19 +2210,18 @@ const opInputService13TestCaseOperation1 = "OperationName"
 
 // InputService13TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService13TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService13TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService13TestCaseOperation1 method directly
-// instead.
+// See InputService13TestCaseOperation1 for more information on using the InputService13TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService13TestCaseOperation1Request method.
 //    req, resp := client.InputService13TestCaseOperation1Request(params)
@@ -2265,8 +2301,12 @@ type InputService13TestShapeInputService13TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService14ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService14ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService14ProtocolTest struct {
 	*client.Client
 }
@@ -2324,19 +2364,18 @@ const opInputService14TestCaseOperation1 = "OperationName"
 
 // InputService14TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService14TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService14TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService14TestCaseOperation1 method directly
-// instead.
+// See InputService14TestCaseOperation1 for more information on using the InputService14TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService14TestCaseOperation1Request method.
 //    req, resp := client.InputService14TestCaseOperation1Request(params)
@@ -2416,8 +2455,12 @@ type InputService14TestShapeInputService14TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService15ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService15ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService15ProtocolTest struct {
 	*client.Client
 }
@@ -2475,19 +2518,18 @@ const opInputService15TestCaseOperation1 = "OperationName"
 
 // InputService15TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService15TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService15TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService15TestCaseOperation1 method directly
-// instead.
+// See InputService15TestCaseOperation1 for more information on using the InputService15TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService15TestCaseOperation1Request method.
 //    req, resp := client.InputService15TestCaseOperation1Request(params)
@@ -2496,7 +2538,7 @@ const opInputService15TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation1Request(input *InputService15TestShapeInputShape) (req *request.Request, output *InputService15TestShapeInputService15TestCaseOperation1Output) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation1Request(input *InputService15TestShapeInputService15TestCaseOperation2Input) (req *request.Request, output *InputService15TestShapeInputService15TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService15TestCaseOperation1,
 		HTTPMethod: "GET",
@@ -2504,7 +2546,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService15TestShapeInputShape{}
+		input = &InputService15TestShapeInputService15TestCaseOperation2Input{}
 	}
 
 	output = &InputService15TestShapeInputService15TestCaseOperation1Output{}
@@ -2522,7 +2564,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService15TestCaseOperation1 for usage and error information.
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation1(input *InputService15TestShapeInputShape) (*InputService15TestShapeInputService15TestCaseOperation1Output, error) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation1(input *InputService15TestShapeInputService15TestCaseOperation2Input) (*InputService15TestShapeInputService15TestCaseOperation1Output, error) {
 	req, out := c.InputService15TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -2536,7 +2578,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation1WithContext(ctx aws.Context, input *InputService15TestShapeInputShape, opts ...request.Option) (*InputService15TestShapeInputService15TestCaseOperation1Output, error) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation1WithContext(ctx aws.Context, input *InputService15TestShapeInputService15TestCaseOperation2Input, opts ...request.Option) (*InputService15TestShapeInputService15TestCaseOperation1Output, error) {
 	req, out := c.InputService15TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -2547,19 +2589,18 @@ const opInputService15TestCaseOperation2 = "OperationName"
 
 // InputService15TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService15TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService15TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService15TestCaseOperation2 method directly
-// instead.
+// See InputService15TestCaseOperation2 for more information on using the InputService15TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService15TestCaseOperation2Request method.
 //    req, resp := client.InputService15TestCaseOperation2Request(params)
@@ -2568,7 +2609,7 @@ const opInputService15TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation2Request(input *InputService15TestShapeInputShape) (req *request.Request, output *InputService15TestShapeInputService15TestCaseOperation2Output) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation2Request(input *InputService15TestShapeInputService15TestCaseOperation2Input) (req *request.Request, output *InputService15TestShapeInputService15TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService15TestCaseOperation2,
 		HTTPMethod: "GET",
@@ -2576,7 +2617,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService15TestShapeInputShape{}
+		input = &InputService15TestShapeInputService15TestCaseOperation2Input{}
 	}
 
 	output = &InputService15TestShapeInputService15TestCaseOperation2Output{}
@@ -2594,7 +2635,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService15TestCaseOperation2 for usage and error information.
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation2(input *InputService15TestShapeInputShape) (*InputService15TestShapeInputService15TestCaseOperation2Output, error) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation2(input *InputService15TestShapeInputService15TestCaseOperation2Input) (*InputService15TestShapeInputService15TestCaseOperation2Output, error) {
 	req, out := c.InputService15TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -2608,7 +2649,7 @@ func (c *InputService15ProtocolTest) InputService15TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService15ProtocolTest) InputService15TestCaseOperation2WithContext(ctx aws.Context, input *InputService15TestShapeInputShape, opts ...request.Option) (*InputService15TestShapeInputService15TestCaseOperation2Output, error) {
+func (c *InputService15ProtocolTest) InputService15TestCaseOperation2WithContext(ctx aws.Context, input *InputService15TestShapeInputService15TestCaseOperation2Input, opts ...request.Option) (*InputService15TestShapeInputService15TestCaseOperation2Output, error) {
 	req, out := c.InputService15TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -2619,24 +2660,28 @@ type InputService15TestShapeInputService15TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService15TestShapeInputService15TestCaseOperation2Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService15TestShapeInputShape struct {
+type InputService15TestShapeInputService15TestCaseOperation2Input struct {
 	_ struct{} `type:"structure"`
 
 	BoolQuery *bool `location:"querystring" locationName:"bool-query" type:"boolean"`
 }
 
 // SetBoolQuery sets the BoolQuery field's value.
-func (s *InputService15TestShapeInputShape) SetBoolQuery(v bool) *InputService15TestShapeInputShape {
+func (s *InputService15TestShapeInputService15TestCaseOperation2Input) SetBoolQuery(v bool) *InputService15TestShapeInputService15TestCaseOperation2Input {
 	s.BoolQuery = &v
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+type InputService15TestShapeInputService15TestCaseOperation2Output struct {
+	_ struct{} `type:"structure"`
+}
+
+// InputService16ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService16ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService16ProtocolTest struct {
 	*client.Client
 }
@@ -2694,19 +2739,18 @@ const opInputService16TestCaseOperation1 = "OperationName"
 
 // InputService16TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService16TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService16TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService16TestCaseOperation1 method directly
-// instead.
+// See InputService16TestCaseOperation1 for more information on using the InputService16TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService16TestCaseOperation1Request method.
 //    req, resp := client.InputService16TestCaseOperation1Request(params)
@@ -2778,8 +2822,12 @@ type InputService16TestShapeInputService16TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService17ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService17ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService17ProtocolTest struct {
 	*client.Client
 }
@@ -2837,19 +2885,18 @@ const opInputService17TestCaseOperation1 = "OperationName"
 
 // InputService17TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService17TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService17TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService17TestCaseOperation1 method directly
-// instead.
+// See InputService17TestCaseOperation1 for more information on using the InputService17TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService17TestCaseOperation1Request method.
 //    req, resp := client.InputService17TestCaseOperation1Request(params)
@@ -2858,7 +2905,7 @@ const opInputService17TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation1Request(input *InputService17TestShapeInputShape) (req *request.Request, output *InputService17TestShapeInputService17TestCaseOperation1Output) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation1Request(input *InputService17TestShapeInputService17TestCaseOperation2Input) (req *request.Request, output *InputService17TestShapeInputService17TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService17TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -2866,7 +2913,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService17TestShapeInputShape{}
+		input = &InputService17TestShapeInputService17TestCaseOperation2Input{}
 	}
 
 	output = &InputService17TestShapeInputService17TestCaseOperation1Output{}
@@ -2884,7 +2931,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService17TestCaseOperation1 for usage and error information.
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation1(input *InputService17TestShapeInputShape) (*InputService17TestShapeInputService17TestCaseOperation1Output, error) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation1(input *InputService17TestShapeInputService17TestCaseOperation2Input) (*InputService17TestShapeInputService17TestCaseOperation1Output, error) {
 	req, out := c.InputService17TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -2898,7 +2945,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation1WithContext(ctx aws.Context, input *InputService17TestShapeInputShape, opts ...request.Option) (*InputService17TestShapeInputService17TestCaseOperation1Output, error) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation1WithContext(ctx aws.Context, input *InputService17TestShapeInputService17TestCaseOperation2Input, opts ...request.Option) (*InputService17TestShapeInputService17TestCaseOperation1Output, error) {
 	req, out := c.InputService17TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -2909,19 +2956,18 @@ const opInputService17TestCaseOperation2 = "OperationName"
 
 // InputService17TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService17TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService17TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService17TestCaseOperation2 method directly
-// instead.
+// See InputService17TestCaseOperation2 for more information on using the InputService17TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService17TestCaseOperation2Request method.
 //    req, resp := client.InputService17TestCaseOperation2Request(params)
@@ -2930,7 +2976,7 @@ const opInputService17TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation2Request(input *InputService17TestShapeInputShape) (req *request.Request, output *InputService17TestShapeInputService17TestCaseOperation2Output) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation2Request(input *InputService17TestShapeInputService17TestCaseOperation2Input) (req *request.Request, output *InputService17TestShapeInputService17TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService17TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -2938,7 +2984,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService17TestShapeInputShape{}
+		input = &InputService17TestShapeInputService17TestCaseOperation2Input{}
 	}
 
 	output = &InputService17TestShapeInputService17TestCaseOperation2Output{}
@@ -2956,7 +3002,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService17TestCaseOperation2 for usage and error information.
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation2(input *InputService17TestShapeInputShape) (*InputService17TestShapeInputService17TestCaseOperation2Output, error) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation2(input *InputService17TestShapeInputService17TestCaseOperation2Input) (*InputService17TestShapeInputService17TestCaseOperation2Output, error) {
 	req, out := c.InputService17TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -2970,7 +3016,7 @@ func (c *InputService17ProtocolTest) InputService17TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService17ProtocolTest) InputService17TestCaseOperation2WithContext(ctx aws.Context, input *InputService17TestShapeInputShape, opts ...request.Option) (*InputService17TestShapeInputService17TestCaseOperation2Output, error) {
+func (c *InputService17ProtocolTest) InputService17TestCaseOperation2WithContext(ctx aws.Context, input *InputService17TestShapeInputService17TestCaseOperation2Input, opts ...request.Option) (*InputService17TestShapeInputService17TestCaseOperation2Output, error) {
 	req, out := c.InputService17TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -2981,24 +3027,28 @@ type InputService17TestShapeInputService17TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService17TestShapeInputService17TestCaseOperation2Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService17TestShapeInputShape struct {
+type InputService17TestShapeInputService17TestCaseOperation2Input struct {
 	_ struct{} `type:"structure" payload:"Foo"`
 
 	Foo []byte `locationName:"foo" type:"blob"`
 }
 
 // SetFoo sets the Foo field's value.
-func (s *InputService17TestShapeInputShape) SetFoo(v []byte) *InputService17TestShapeInputShape {
+func (s *InputService17TestShapeInputService17TestCaseOperation2Input) SetFoo(v []byte) *InputService17TestShapeInputService17TestCaseOperation2Input {
 	s.Foo = v
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+type InputService17TestShapeInputService17TestCaseOperation2Output struct {
+	_ struct{} `type:"structure"`
+}
+
+// InputService18ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService18ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService18ProtocolTest struct {
 	*client.Client
 }
@@ -3056,19 +3106,18 @@ const opInputService18TestCaseOperation1 = "OperationName"
 
 // InputService18TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService18TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService18TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService18TestCaseOperation1 method directly
-// instead.
+// See InputService18TestCaseOperation1 for more information on using the InputService18TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService18TestCaseOperation1Request method.
 //    req, resp := client.InputService18TestCaseOperation1Request(params)
@@ -3077,7 +3126,7 @@ const opInputService18TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation1Request(input *InputService18TestShapeInputShape) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation1Output) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation1Request(input *InputService18TestShapeInputService18TestCaseOperation4Input) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService18TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -3085,7 +3134,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService18TestShapeInputShape{}
+		input = &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	}
 
 	output = &InputService18TestShapeInputService18TestCaseOperation1Output{}
@@ -3103,7 +3152,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService18TestCaseOperation1 for usage and error information.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation1(input *InputService18TestShapeInputShape) (*InputService18TestShapeInputService18TestCaseOperation1Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation1(input *InputService18TestShapeInputService18TestCaseOperation4Input) (*InputService18TestShapeInputService18TestCaseOperation1Output, error) {
 	req, out := c.InputService18TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -3117,7 +3166,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation1WithContext(ctx aws.Context, input *InputService18TestShapeInputShape, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation1Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation1WithContext(ctx aws.Context, input *InputService18TestShapeInputService18TestCaseOperation4Input, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation1Output, error) {
 	req, out := c.InputService18TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3128,19 +3177,18 @@ const opInputService18TestCaseOperation2 = "OperationName"
 
 // InputService18TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService18TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService18TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService18TestCaseOperation2 method directly
-// instead.
+// See InputService18TestCaseOperation2 for more information on using the InputService18TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService18TestCaseOperation2Request method.
 //    req, resp := client.InputService18TestCaseOperation2Request(params)
@@ -3149,7 +3197,7 @@ const opInputService18TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation2Request(input *InputService18TestShapeInputShape) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation2Output) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation2Request(input *InputService18TestShapeInputService18TestCaseOperation4Input) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService18TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -3157,7 +3205,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService18TestShapeInputShape{}
+		input = &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	}
 
 	output = &InputService18TestShapeInputService18TestCaseOperation2Output{}
@@ -3175,7 +3223,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService18TestCaseOperation2 for usage and error information.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation2(input *InputService18TestShapeInputShape) (*InputService18TestShapeInputService18TestCaseOperation2Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation2(input *InputService18TestShapeInputService18TestCaseOperation4Input) (*InputService18TestShapeInputService18TestCaseOperation2Output, error) {
 	req, out := c.InputService18TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -3189,7 +3237,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation2WithContext(ctx aws.Context, input *InputService18TestShapeInputShape, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation2Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation2WithContext(ctx aws.Context, input *InputService18TestShapeInputService18TestCaseOperation4Input, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation2Output, error) {
 	req, out := c.InputService18TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3200,19 +3248,18 @@ const opInputService18TestCaseOperation3 = "OperationName"
 
 // InputService18TestCaseOperation3Request generates a "aws/request.Request" representing the
 // client's request for the InputService18TestCaseOperation3 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService18TestCaseOperation3 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService18TestCaseOperation3 method directly
-// instead.
+// See InputService18TestCaseOperation3 for more information on using the InputService18TestCaseOperation3
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService18TestCaseOperation3Request method.
 //    req, resp := client.InputService18TestCaseOperation3Request(params)
@@ -3221,7 +3268,7 @@ const opInputService18TestCaseOperation3 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation3Request(input *InputService18TestShapeInputShape) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation3Output) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation3Request(input *InputService18TestShapeInputService18TestCaseOperation4Input) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation3Output) {
 	op := &request.Operation{
 		Name:       opInputService18TestCaseOperation3,
 		HTTPMethod: "POST",
@@ -3229,7 +3276,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation3Request(inp
 	}
 
 	if input == nil {
-		input = &InputService18TestShapeInputShape{}
+		input = &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	}
 
 	output = &InputService18TestShapeInputService18TestCaseOperation3Output{}
@@ -3247,7 +3294,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation3Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService18TestCaseOperation3 for usage and error information.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation3(input *InputService18TestShapeInputShape) (*InputService18TestShapeInputService18TestCaseOperation3Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation3(input *InputService18TestShapeInputService18TestCaseOperation4Input) (*InputService18TestShapeInputService18TestCaseOperation3Output, error) {
 	req, out := c.InputService18TestCaseOperation3Request(input)
 	return out, req.Send()
 }
@@ -3261,7 +3308,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation3(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation3WithContext(ctx aws.Context, input *InputService18TestShapeInputShape, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation3Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation3WithContext(ctx aws.Context, input *InputService18TestShapeInputService18TestCaseOperation4Input, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation3Output, error) {
 	req, out := c.InputService18TestCaseOperation3Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3272,19 +3319,18 @@ const opInputService18TestCaseOperation4 = "OperationName"
 
 // InputService18TestCaseOperation4Request generates a "aws/request.Request" representing the
 // client's request for the InputService18TestCaseOperation4 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService18TestCaseOperation4 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService18TestCaseOperation4 method directly
-// instead.
+// See InputService18TestCaseOperation4 for more information on using the InputService18TestCaseOperation4
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService18TestCaseOperation4Request method.
 //    req, resp := client.InputService18TestCaseOperation4Request(params)
@@ -3293,7 +3339,7 @@ const opInputService18TestCaseOperation4 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation4Request(input *InputService18TestShapeInputShape) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation4Output) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation4Request(input *InputService18TestShapeInputService18TestCaseOperation4Input) (req *request.Request, output *InputService18TestShapeInputService18TestCaseOperation4Output) {
 	op := &request.Operation{
 		Name:       opInputService18TestCaseOperation4,
 		HTTPMethod: "POST",
@@ -3301,7 +3347,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation4Request(inp
 	}
 
 	if input == nil {
-		input = &InputService18TestShapeInputShape{}
+		input = &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	}
 
 	output = &InputService18TestShapeInputService18TestCaseOperation4Output{}
@@ -3319,7 +3365,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation4Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService18TestCaseOperation4 for usage and error information.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation4(input *InputService18TestShapeInputShape) (*InputService18TestShapeInputService18TestCaseOperation4Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation4(input *InputService18TestShapeInputService18TestCaseOperation4Input) (*InputService18TestShapeInputService18TestCaseOperation4Output, error) {
 	req, out := c.InputService18TestCaseOperation4Request(input)
 	return out, req.Send()
 }
@@ -3333,7 +3379,7 @@ func (c *InputService18ProtocolTest) InputService18TestCaseOperation4(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService18ProtocolTest) InputService18TestCaseOperation4WithContext(ctx aws.Context, input *InputService18TestShapeInputShape, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation4Output, error) {
+func (c *InputService18ProtocolTest) InputService18TestCaseOperation4WithContext(ctx aws.Context, input *InputService18TestShapeInputService18TestCaseOperation4Input, opts ...request.Option) (*InputService18TestShapeInputService18TestCaseOperation4Output, error) {
 	req, out := c.InputService18TestCaseOperation4Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3364,24 +3410,28 @@ type InputService18TestShapeInputService18TestCaseOperation3Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService18TestShapeInputService18TestCaseOperation4Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService18TestShapeInputShape struct {
+type InputService18TestShapeInputService18TestCaseOperation4Input struct {
 	_ struct{} `type:"structure" payload:"Foo"`
 
 	Foo *InputService18TestShapeFooShape `locationName:"foo" type:"structure"`
 }
 
 // SetFoo sets the Foo field's value.
-func (s *InputService18TestShapeInputShape) SetFoo(v *InputService18TestShapeFooShape) *InputService18TestShapeInputShape {
+func (s *InputService18TestShapeInputService18TestCaseOperation4Input) SetFoo(v *InputService18TestShapeFooShape) *InputService18TestShapeInputService18TestCaseOperation4Input {
 	s.Foo = v
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+type InputService18TestShapeInputService18TestCaseOperation4Output struct {
+	_ struct{} `type:"structure"`
+}
+
+// InputService19ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService19ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService19ProtocolTest struct {
 	*client.Client
 }
@@ -3439,19 +3489,18 @@ const opInputService19TestCaseOperation1 = "OperationName"
 
 // InputService19TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService19TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService19TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService19TestCaseOperation1 method directly
-// instead.
+// See InputService19TestCaseOperation1 for more information on using the InputService19TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService19TestCaseOperation1Request method.
 //    req, resp := client.InputService19TestCaseOperation1Request(params)
@@ -3510,7 +3559,7 @@ func (c *InputService19ProtocolTest) InputService19TestCaseOperation1WithContext
 type InputService19TestShapeGrant struct {
 	_ struct{} `locationName:"Grant" type:"structure"`
 
-	Grantee *InputService19TestShapeGrantee `type:"structure"`
+	Grantee *InputService19TestShapeGrantee `type:"structure" xmlPrefix:"xsi" xmlURI:"http://www.w3.org/2001/XMLSchema-instance"`
 }
 
 // SetGrantee sets the Grantee field's value.
@@ -3555,8 +3604,12 @@ type InputService19TestShapeInputService19TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService20ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService20ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService20ProtocolTest struct {
 	*client.Client
 }
@@ -3614,19 +3667,18 @@ const opInputService20TestCaseOperation1 = "OperationName"
 
 // InputService20TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService20TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService20TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService20TestCaseOperation1 method directly
-// instead.
+// See InputService20TestCaseOperation1 for more information on using the InputService20TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService20TestCaseOperation1Request method.
 //    req, resp := client.InputService20TestCaseOperation1Request(params)
@@ -3706,8 +3758,12 @@ type InputService20TestShapeInputService20TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService21ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService21ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService21ProtocolTest struct {
 	*client.Client
 }
@@ -3765,19 +3821,18 @@ const opInputService21TestCaseOperation1 = "OperationName"
 
 // InputService21TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService21TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService21TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService21TestCaseOperation1 method directly
-// instead.
+// See InputService21TestCaseOperation1 for more information on using the InputService21TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService21TestCaseOperation1Request method.
 //    req, resp := client.InputService21TestCaseOperation1Request(params)
@@ -3786,7 +3841,7 @@ const opInputService21TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation1Request(input *InputService21TestShapeInputShape) (req *request.Request, output *InputService21TestShapeInputService21TestCaseOperation1Output) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation1Request(input *InputService21TestShapeInputService21TestCaseOperation2Input) (req *request.Request, output *InputService21TestShapeInputService21TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService21TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -3794,7 +3849,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService21TestShapeInputShape{}
+		input = &InputService21TestShapeInputService21TestCaseOperation2Input{}
 	}
 
 	output = &InputService21TestShapeInputService21TestCaseOperation1Output{}
@@ -3812,7 +3867,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService21TestCaseOperation1 for usage and error information.
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation1(input *InputService21TestShapeInputShape) (*InputService21TestShapeInputService21TestCaseOperation1Output, error) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation1(input *InputService21TestShapeInputService21TestCaseOperation2Input) (*InputService21TestShapeInputService21TestCaseOperation1Output, error) {
 	req, out := c.InputService21TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -3826,7 +3881,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation1WithContext(ctx aws.Context, input *InputService21TestShapeInputShape, opts ...request.Option) (*InputService21TestShapeInputService21TestCaseOperation1Output, error) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation1WithContext(ctx aws.Context, input *InputService21TestShapeInputService21TestCaseOperation2Input, opts ...request.Option) (*InputService21TestShapeInputService21TestCaseOperation1Output, error) {
 	req, out := c.InputService21TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3837,19 +3892,18 @@ const opInputService21TestCaseOperation2 = "OperationName"
 
 // InputService21TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService21TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService21TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService21TestCaseOperation2 method directly
-// instead.
+// See InputService21TestCaseOperation2 for more information on using the InputService21TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService21TestCaseOperation2Request method.
 //    req, resp := client.InputService21TestCaseOperation2Request(params)
@@ -3858,7 +3912,7 @@ const opInputService21TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation2Request(input *InputService21TestShapeInputShape) (req *request.Request, output *InputService21TestShapeInputService21TestCaseOperation2Output) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation2Request(input *InputService21TestShapeInputService21TestCaseOperation2Input) (req *request.Request, output *InputService21TestShapeInputService21TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService21TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -3866,7 +3920,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService21TestShapeInputShape{}
+		input = &InputService21TestShapeInputService21TestCaseOperation2Input{}
 	}
 
 	output = &InputService21TestShapeInputService21TestCaseOperation2Output{}
@@ -3884,7 +3938,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService21TestCaseOperation2 for usage and error information.
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation2(input *InputService21TestShapeInputShape) (*InputService21TestShapeInputService21TestCaseOperation2Output, error) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation2(input *InputService21TestShapeInputService21TestCaseOperation2Input) (*InputService21TestShapeInputService21TestCaseOperation2Output, error) {
 	req, out := c.InputService21TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -3898,7 +3952,7 @@ func (c *InputService21ProtocolTest) InputService21TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService21ProtocolTest) InputService21TestCaseOperation2WithContext(ctx aws.Context, input *InputService21TestShapeInputShape, opts ...request.Option) (*InputService21TestShapeInputService21TestCaseOperation2Output, error) {
+func (c *InputService21ProtocolTest) InputService21TestCaseOperation2WithContext(ctx aws.Context, input *InputService21TestShapeInputService21TestCaseOperation2Input, opts ...request.Option) (*InputService21TestShapeInputService21TestCaseOperation2Output, error) {
 	req, out := c.InputService21TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -3909,24 +3963,28 @@ type InputService21TestShapeInputService21TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService21TestShapeInputService21TestCaseOperation2Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService21TestShapeInputShape struct {
+type InputService21TestShapeInputService21TestCaseOperation2Input struct {
 	_ struct{} `type:"structure"`
 
 	Foo *string `location:"querystring" locationName:"param-name" type:"string"`
 }
 
 // SetFoo sets the Foo field's value.
-func (s *InputService21TestShapeInputShape) SetFoo(v string) *InputService21TestShapeInputShape {
+func (s *InputService21TestShapeInputService21TestCaseOperation2Input) SetFoo(v string) *InputService21TestShapeInputService21TestCaseOperation2Input {
 	s.Foo = &v
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+type InputService21TestShapeInputService21TestCaseOperation2Output struct {
+	_ struct{} `type:"structure"`
+}
+
+// InputService22ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService22ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService22ProtocolTest struct {
 	*client.Client
 }
@@ -3984,19 +4042,18 @@ const opInputService22TestCaseOperation1 = "OperationName"
 
 // InputService22TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation1 method directly
-// instead.
+// See InputService22TestCaseOperation1 for more information on using the InputService22TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation1Request method.
 //    req, resp := client.InputService22TestCaseOperation1Request(params)
@@ -4005,7 +4062,7 @@ const opInputService22TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation1Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation1Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation1Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -4013,7 +4070,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation1Output{}
@@ -4031,7 +4088,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation1 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation1(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation1Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation1(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation1Output, error) {
 	req, out := c.InputService22TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -4045,7 +4102,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation1WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation1Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation1WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation1Output, error) {
 	req, out := c.InputService22TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4056,19 +4113,18 @@ const opInputService22TestCaseOperation2 = "OperationName"
 
 // InputService22TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation2 method directly
-// instead.
+// See InputService22TestCaseOperation2 for more information on using the InputService22TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation2Request method.
 //    req, resp := client.InputService22TestCaseOperation2Request(params)
@@ -4077,7 +4133,7 @@ const opInputService22TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation2Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation2Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation2Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -4085,7 +4141,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation2Output{}
@@ -4103,7 +4159,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation2 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation2(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation2Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation2(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation2Output, error) {
 	req, out := c.InputService22TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -4117,7 +4173,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation2WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation2Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation2WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation2Output, error) {
 	req, out := c.InputService22TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4128,19 +4184,18 @@ const opInputService22TestCaseOperation3 = "OperationName"
 
 // InputService22TestCaseOperation3Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation3 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation3 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation3 method directly
-// instead.
+// See InputService22TestCaseOperation3 for more information on using the InputService22TestCaseOperation3
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation3Request method.
 //    req, resp := client.InputService22TestCaseOperation3Request(params)
@@ -4149,7 +4204,7 @@ const opInputService22TestCaseOperation3 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation3Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation3Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation3Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation3Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation3,
 		HTTPMethod: "POST",
@@ -4157,7 +4212,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation3Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation3Output{}
@@ -4175,7 +4230,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation3Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation3 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation3(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation3Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation3(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation3Output, error) {
 	req, out := c.InputService22TestCaseOperation3Request(input)
 	return out, req.Send()
 }
@@ -4189,7 +4244,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation3(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation3WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation3Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation3WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation3Output, error) {
 	req, out := c.InputService22TestCaseOperation3Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4200,19 +4255,18 @@ const opInputService22TestCaseOperation4 = "OperationName"
 
 // InputService22TestCaseOperation4Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation4 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation4 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation4 method directly
-// instead.
+// See InputService22TestCaseOperation4 for more information on using the InputService22TestCaseOperation4
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation4Request method.
 //    req, resp := client.InputService22TestCaseOperation4Request(params)
@@ -4221,7 +4275,7 @@ const opInputService22TestCaseOperation4 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation4Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation4Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation4Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation4Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation4,
 		HTTPMethod: "POST",
@@ -4229,7 +4283,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation4Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation4Output{}
@@ -4247,7 +4301,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation4Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation4 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation4(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation4Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation4(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation4Output, error) {
 	req, out := c.InputService22TestCaseOperation4Request(input)
 	return out, req.Send()
 }
@@ -4261,7 +4315,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation4(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation4WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation4Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation4WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation4Output, error) {
 	req, out := c.InputService22TestCaseOperation4Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4272,19 +4326,18 @@ const opInputService22TestCaseOperation5 = "OperationName"
 
 // InputService22TestCaseOperation5Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation5 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation5 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation5 method directly
-// instead.
+// See InputService22TestCaseOperation5 for more information on using the InputService22TestCaseOperation5
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation5Request method.
 //    req, resp := client.InputService22TestCaseOperation5Request(params)
@@ -4293,7 +4346,7 @@ const opInputService22TestCaseOperation5 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation5Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation5Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation5Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation5Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation5,
 		HTTPMethod: "POST",
@@ -4301,7 +4354,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation5Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation5Output{}
@@ -4319,7 +4372,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation5Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation5 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation5(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation5Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation5(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation5Output, error) {
 	req, out := c.InputService22TestCaseOperation5Request(input)
 	return out, req.Send()
 }
@@ -4333,7 +4386,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation5(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation5WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation5Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation5WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation5Output, error) {
 	req, out := c.InputService22TestCaseOperation5Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4344,19 +4397,18 @@ const opInputService22TestCaseOperation6 = "OperationName"
 
 // InputService22TestCaseOperation6Request generates a "aws/request.Request" representing the
 // client's request for the InputService22TestCaseOperation6 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService22TestCaseOperation6 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService22TestCaseOperation6 method directly
-// instead.
+// See InputService22TestCaseOperation6 for more information on using the InputService22TestCaseOperation6
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService22TestCaseOperation6Request method.
 //    req, resp := client.InputService22TestCaseOperation6Request(params)
@@ -4365,7 +4417,7 @@ const opInputService22TestCaseOperation6 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation6Request(input *InputService22TestShapeInputShape) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation6Output) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation6Request(input *InputService22TestShapeInputService22TestCaseOperation6Input) (req *request.Request, output *InputService22TestShapeInputService22TestCaseOperation6Output) {
 	op := &request.Operation{
 		Name:       opInputService22TestCaseOperation6,
 		HTTPMethod: "POST",
@@ -4373,7 +4425,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation6Request(inp
 	}
 
 	if input == nil {
-		input = &InputService22TestShapeInputShape{}
+		input = &InputService22TestShapeInputService22TestCaseOperation6Input{}
 	}
 
 	output = &InputService22TestShapeInputService22TestCaseOperation6Output{}
@@ -4391,7 +4443,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation6Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService22TestCaseOperation6 for usage and error information.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation6(input *InputService22TestShapeInputShape) (*InputService22TestShapeInputService22TestCaseOperation6Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation6(input *InputService22TestShapeInputService22TestCaseOperation6Input) (*InputService22TestShapeInputService22TestCaseOperation6Output, error) {
 	req, out := c.InputService22TestCaseOperation6Request(input)
 	return out, req.Send()
 }
@@ -4405,7 +4457,7 @@ func (c *InputService22ProtocolTest) InputService22TestCaseOperation6(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService22ProtocolTest) InputService22TestCaseOperation6WithContext(ctx aws.Context, input *InputService22TestShapeInputShape, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation6Output, error) {
+func (c *InputService22ProtocolTest) InputService22TestCaseOperation6WithContext(ctx aws.Context, input *InputService22TestShapeInputService22TestCaseOperation6Input, opts ...request.Option) (*InputService22TestShapeInputService22TestCaseOperation6Output, error) {
 	req, out := c.InputService22TestCaseOperation6Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4432,20 +4484,20 @@ type InputService22TestShapeInputService22TestCaseOperation5Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService22TestShapeInputService22TestCaseOperation6Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService22TestShapeInputShape struct {
+type InputService22TestShapeInputService22TestCaseOperation6Input struct {
 	_ struct{} `locationName:"OperationRequest" type:"structure" xmlURI:"https://foo/"`
 
 	RecursiveStruct *InputService22TestShapeRecursiveStructType `type:"structure"`
 }
 
 // SetRecursiveStruct sets the RecursiveStruct field's value.
-func (s *InputService22TestShapeInputShape) SetRecursiveStruct(v *InputService22TestShapeRecursiveStructType) *InputService22TestShapeInputShape {
+func (s *InputService22TestShapeInputService22TestCaseOperation6Input) SetRecursiveStruct(v *InputService22TestShapeRecursiveStructType) *InputService22TestShapeInputService22TestCaseOperation6Input {
 	s.RecursiveStruct = v
 	return s
+}
+
+type InputService22TestShapeInputService22TestCaseOperation6Output struct {
+	_ struct{} `type:"structure"`
 }
 
 type InputService22TestShapeRecursiveStructType struct {
@@ -4484,8 +4536,12 @@ func (s *InputService22TestShapeRecursiveStructType) SetRecursiveStruct(v *Input
 	return s
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService23ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService23ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService23ProtocolTest struct {
 	*client.Client
 }
@@ -4543,19 +4599,18 @@ const opInputService23TestCaseOperation1 = "OperationName"
 
 // InputService23TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService23TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService23TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService23TestCaseOperation1 method directly
-// instead.
+// See InputService23TestCaseOperation1 for more information on using the InputService23TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService23TestCaseOperation1Request method.
 //    req, resp := client.InputService23TestCaseOperation1Request(params)
@@ -4627,8 +4682,12 @@ type InputService23TestShapeInputService23TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-// The service client's operations are safe to be used concurrently.
-// It is not safe to mutate any of the client's properties though.
+// InputService24ProtocolTest provides the API operation methods for making requests to
+// . See this package's package overview docs
+// for details on the service.
+//
+// InputService24ProtocolTest methods are safe to use concurrently. It is not safe to
+// modify mutate any of the struct's properties though.
 type InputService24ProtocolTest struct {
 	*client.Client
 }
@@ -4686,19 +4745,18 @@ const opInputService24TestCaseOperation1 = "OperationName"
 
 // InputService24TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the InputService24TestCaseOperation1 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService24TestCaseOperation1 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService24TestCaseOperation1 method directly
-// instead.
+// See InputService24TestCaseOperation1 for more information on using the InputService24TestCaseOperation1
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService24TestCaseOperation1Request method.
 //    req, resp := client.InputService24TestCaseOperation1Request(params)
@@ -4707,7 +4765,7 @@ const opInputService24TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation1Request(input *InputService24TestShapeInputShape) (req *request.Request, output *InputService24TestShapeInputService24TestCaseOperation1Output) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation1Request(input *InputService24TestShapeInputService24TestCaseOperation2Input) (req *request.Request, output *InputService24TestShapeInputService24TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService24TestCaseOperation1,
 		HTTPMethod: "POST",
@@ -4715,7 +4773,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation1Request(inp
 	}
 
 	if input == nil {
-		input = &InputService24TestShapeInputShape{}
+		input = &InputService24TestShapeInputService24TestCaseOperation2Input{}
 	}
 
 	output = &InputService24TestShapeInputService24TestCaseOperation1Output{}
@@ -4733,7 +4791,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation1Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService24TestCaseOperation1 for usage and error information.
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation1(input *InputService24TestShapeInputShape) (*InputService24TestShapeInputService24TestCaseOperation1Output, error) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation1(input *InputService24TestShapeInputService24TestCaseOperation2Input) (*InputService24TestShapeInputService24TestCaseOperation1Output, error) {
 	req, out := c.InputService24TestCaseOperation1Request(input)
 	return out, req.Send()
 }
@@ -4747,7 +4805,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation1(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation1WithContext(ctx aws.Context, input *InputService24TestShapeInputShape, opts ...request.Option) (*InputService24TestShapeInputService24TestCaseOperation1Output, error) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation1WithContext(ctx aws.Context, input *InputService24TestShapeInputService24TestCaseOperation2Input, opts ...request.Option) (*InputService24TestShapeInputService24TestCaseOperation1Output, error) {
 	req, out := c.InputService24TestCaseOperation1Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4758,19 +4816,18 @@ const opInputService24TestCaseOperation2 = "OperationName"
 
 // InputService24TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the InputService24TestCaseOperation2 operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See InputService24TestCaseOperation2 for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the InputService24TestCaseOperation2 method directly
-// instead.
+// See InputService24TestCaseOperation2 for more information on using the InputService24TestCaseOperation2
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the InputService24TestCaseOperation2Request method.
 //    req, resp := client.InputService24TestCaseOperation2Request(params)
@@ -4779,7 +4836,7 @@ const opInputService24TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation2Request(input *InputService24TestShapeInputShape) (req *request.Request, output *InputService24TestShapeInputService24TestCaseOperation2Output) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation2Request(input *InputService24TestShapeInputService24TestCaseOperation2Input) (req *request.Request, output *InputService24TestShapeInputService24TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService24TestCaseOperation2,
 		HTTPMethod: "POST",
@@ -4787,7 +4844,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation2Request(inp
 	}
 
 	if input == nil {
-		input = &InputService24TestShapeInputShape{}
+		input = &InputService24TestShapeInputService24TestCaseOperation2Input{}
 	}
 
 	output = &InputService24TestShapeInputService24TestCaseOperation2Output{}
@@ -4805,7 +4862,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation2Request(inp
 //
 // See the AWS API reference guide for 's
 // API operation InputService24TestCaseOperation2 for usage and error information.
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation2(input *InputService24TestShapeInputShape) (*InputService24TestShapeInputService24TestCaseOperation2Output, error) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation2(input *InputService24TestShapeInputService24TestCaseOperation2Input) (*InputService24TestShapeInputService24TestCaseOperation2Output, error) {
 	req, out := c.InputService24TestCaseOperation2Request(input)
 	return out, req.Send()
 }
@@ -4819,7 +4876,7 @@ func (c *InputService24ProtocolTest) InputService24TestCaseOperation2(input *Inp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
-func (c *InputService24ProtocolTest) InputService24TestCaseOperation2WithContext(ctx aws.Context, input *InputService24TestShapeInputShape, opts ...request.Option) (*InputService24TestShapeInputService24TestCaseOperation2Output, error) {
+func (c *InputService24ProtocolTest) InputService24TestCaseOperation2WithContext(ctx aws.Context, input *InputService24TestShapeInputService24TestCaseOperation2Input, opts ...request.Option) (*InputService24TestShapeInputService24TestCaseOperation2Output, error) {
 	req, out := c.InputService24TestCaseOperation2Request(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
@@ -4830,20 +4887,20 @@ type InputService24TestShapeInputService24TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-type InputService24TestShapeInputService24TestCaseOperation2Output struct {
-	_ struct{} `type:"structure"`
-}
-
-type InputService24TestShapeInputShape struct {
+type InputService24TestShapeInputService24TestCaseOperation2Input struct {
 	_ struct{} `type:"structure"`
 
 	Token *string `type:"string" idempotencyToken:"true"`
 }
 
 // SetToken sets the Token field's value.
-func (s *InputService24TestShapeInputShape) SetToken(v string) *InputService24TestShapeInputShape {
+func (s *InputService24TestShapeInputService24TestCaseOperation2Input) SetToken(v string) *InputService24TestShapeInputService24TestCaseOperation2Input {
 	s.Token = &v
 	return s
+}
+
+type InputService24TestShapeInputService24TestCaseOperation2Output struct {
+	_ struct{} `type:"structure"`
 }
 
 //
@@ -4852,7 +4909,7 @@ func (s *InputService24TestShapeInputShape) SetToken(v string) *InputService24Te
 
 func TestInputService1ProtocolTestBasicXMLSerializationCase1(t *testing.T) {
 	svc := NewInputService1ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService1TestShapeInputShape{
+	input := &InputService1TestShapeInputService1TestCaseOperation2Input{
 		Description: aws.String("bar"),
 		Name:        aws.String("foo"),
 	}
@@ -4866,7 +4923,7 @@ func TestInputService1ProtocolTestBasicXMLSerializationCase1(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">bar</Description><Name xmlns="https://foo/">foo</Name></OperationRequest>`, util.Trim(string(body)), InputService1TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">bar</Description><Name xmlns="https://foo/">foo</Name></OperationRequest>`, util.Trim(string(body)), InputService1TestShapeInputService1TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/2014-01-01/hostedzone", r.URL.String())
@@ -4877,7 +4934,7 @@ func TestInputService1ProtocolTestBasicXMLSerializationCase1(t *testing.T) {
 
 func TestInputService1ProtocolTestBasicXMLSerializationCase2(t *testing.T) {
 	svc := NewInputService1ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService1TestShapeInputShape{
+	input := &InputService1TestShapeInputService1TestCaseOperation2Input{
 		Description: aws.String("bar"),
 		Name:        aws.String("foo"),
 	}
@@ -4891,7 +4948,7 @@ func TestInputService1ProtocolTestBasicXMLSerializationCase2(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">bar</Description><Name xmlns="https://foo/">foo</Name></OperationRequest>`, util.Trim(string(body)), InputService1TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">bar</Description><Name xmlns="https://foo/">foo</Name></OperationRequest>`, util.Trim(string(body)), InputService1TestShapeInputService1TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/2014-01-01/hostedzone", r.URL.String())
@@ -4946,7 +5003,7 @@ func TestInputService2ProtocolTestSerializeOtherScalarTypesCase1(t *testing.T) {
 
 func TestInputService3ProtocolTestNestedStructuresCase1(t *testing.T) {
 	svc := NewInputService3ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService3TestShapeInputShape{
+	input := &InputService3TestShapeInputService3TestCaseOperation2Input{
 		Description: aws.String("baz"),
 		SubStructure: &InputService3TestShapeSubStructure{
 			Bar: aws.String("b"),
@@ -4963,7 +5020,7 @@ func TestInputService3ProtocolTestNestedStructuresCase1(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">baz</Description><SubStructure xmlns="https://foo/"><Bar xmlns="https://foo/">b</Bar><Foo xmlns="https://foo/">a</Foo></SubStructure></OperationRequest>`, util.Trim(string(body)), InputService3TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">baz</Description><SubStructure xmlns="https://foo/"><Bar xmlns="https://foo/">b</Bar><Foo xmlns="https://foo/">a</Foo></SubStructure></OperationRequest>`, util.Trim(string(body)), InputService3TestShapeInputService3TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/2014-01-01/hostedzone", r.URL.String())
@@ -4974,7 +5031,7 @@ func TestInputService3ProtocolTestNestedStructuresCase1(t *testing.T) {
 
 func TestInputService3ProtocolTestNestedStructuresCase2(t *testing.T) {
 	svc := NewInputService3ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService3TestShapeInputShape{
+	input := &InputService3TestShapeInputService3TestCaseOperation2Input{
 		Description: aws.String("baz"),
 		SubStructure: &InputService3TestShapeSubStructure{
 			Foo: aws.String("a"),
@@ -4990,7 +5047,7 @@ func TestInputService3ProtocolTestNestedStructuresCase2(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">baz</Description><SubStructure xmlns="https://foo/"><Foo xmlns="https://foo/">a</Foo></SubStructure></OperationRequest>`, util.Trim(string(body)), InputService3TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Description xmlns="https://foo/">baz</Description><SubStructure xmlns="https://foo/"><Foo xmlns="https://foo/">a</Foo></SubStructure></OperationRequest>`, util.Trim(string(body)), InputService3TestShapeInputService3TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/2014-01-01/hostedzone", r.URL.String())
@@ -5297,7 +5354,7 @@ func TestInputService14ProtocolTestStringToStringListMapsInQuerystringCase1(t *t
 
 func TestInputService15ProtocolTestBooleanInQuerystringCase1(t *testing.T) {
 	svc := NewInputService15ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService15TestShapeInputShape{
+	input := &InputService15TestShapeInputService15TestCaseOperation2Input{
 		BoolQuery: aws.Bool(true),
 	}
 	req, _ := svc.InputService15TestCaseOperation1Request(input)
@@ -5316,7 +5373,7 @@ func TestInputService15ProtocolTestBooleanInQuerystringCase1(t *testing.T) {
 
 func TestInputService15ProtocolTestBooleanInQuerystringCase2(t *testing.T) {
 	svc := NewInputService15ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService15TestShapeInputShape{
+	input := &InputService15TestShapeInputService15TestCaseOperation2Input{
 		BoolQuery: aws.Bool(false),
 	}
 	req, _ := svc.InputService15TestCaseOperation2Request(input)
@@ -5359,7 +5416,7 @@ func TestInputService16ProtocolTestStringPayloadCase1(t *testing.T) {
 
 func TestInputService17ProtocolTestBlobPayloadCase1(t *testing.T) {
 	svc := NewInputService17ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService17TestShapeInputShape{
+	input := &InputService17TestShapeInputService17TestCaseOperation2Input{
 		Foo: []byte("bar"),
 	}
 	req, _ := svc.InputService17TestCaseOperation1Request(input)
@@ -5383,7 +5440,7 @@ func TestInputService17ProtocolTestBlobPayloadCase1(t *testing.T) {
 
 func TestInputService17ProtocolTestBlobPayloadCase2(t *testing.T) {
 	svc := NewInputService17ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService17TestShapeInputShape{}
+	input := &InputService17TestShapeInputService17TestCaseOperation2Input{}
 	req, _ := svc.InputService17TestCaseOperation2Request(input)
 	r := req.HTTPRequest
 
@@ -5400,7 +5457,7 @@ func TestInputService17ProtocolTestBlobPayloadCase2(t *testing.T) {
 
 func TestInputService18ProtocolTestStructurePayloadCase1(t *testing.T) {
 	svc := NewInputService18ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService18TestShapeInputShape{
+	input := &InputService18TestShapeInputService18TestCaseOperation4Input{
 		Foo: &InputService18TestShapeFooShape{
 			Baz: aws.String("bar"),
 		},
@@ -5415,7 +5472,7 @@ func TestInputService18ProtocolTestStructurePayloadCase1(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<foo><baz>bar</baz></foo>`, util.Trim(string(body)), InputService18TestShapeInputShape{})
+	awstesting.AssertXML(t, `<foo><baz>bar</baz></foo>`, util.Trim(string(body)), InputService18TestShapeInputService18TestCaseOperation4Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/", r.URL.String())
@@ -5426,7 +5483,7 @@ func TestInputService18ProtocolTestStructurePayloadCase1(t *testing.T) {
 
 func TestInputService18ProtocolTestStructurePayloadCase2(t *testing.T) {
 	svc := NewInputService18ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService18TestShapeInputShape{}
+	input := &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	req, _ := svc.InputService18TestCaseOperation2Request(input)
 	r := req.HTTPRequest
 
@@ -5443,7 +5500,7 @@ func TestInputService18ProtocolTestStructurePayloadCase2(t *testing.T) {
 
 func TestInputService18ProtocolTestStructurePayloadCase3(t *testing.T) {
 	svc := NewInputService18ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService18TestShapeInputShape{
+	input := &InputService18TestShapeInputService18TestCaseOperation4Input{
 		Foo: &InputService18TestShapeFooShape{},
 	}
 	req, _ := svc.InputService18TestCaseOperation3Request(input)
@@ -5456,7 +5513,7 @@ func TestInputService18ProtocolTestStructurePayloadCase3(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<foo></foo>`, util.Trim(string(body)), InputService18TestShapeInputShape{})
+	awstesting.AssertXML(t, `<foo></foo>`, util.Trim(string(body)), InputService18TestShapeInputService18TestCaseOperation4Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/", r.URL.String())
@@ -5467,7 +5524,7 @@ func TestInputService18ProtocolTestStructurePayloadCase3(t *testing.T) {
 
 func TestInputService18ProtocolTestStructurePayloadCase4(t *testing.T) {
 	svc := NewInputService18ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService18TestShapeInputShape{}
+	input := &InputService18TestShapeInputService18TestCaseOperation4Input{}
 	req, _ := svc.InputService18TestCaseOperation4Request(input)
 	r := req.HTTPRequest
 
@@ -5533,7 +5590,7 @@ func TestInputService20ProtocolTestGreedyKeysCase1(t *testing.T) {
 
 func TestInputService21ProtocolTestOmitsNullQueryParamsButSerializesEmptyStringsCase1(t *testing.T) {
 	svc := NewInputService21ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService21TestShapeInputShape{}
+	input := &InputService21TestShapeInputService21TestCaseOperation2Input{}
 	req, _ := svc.InputService21TestCaseOperation1Request(input)
 	r := req.HTTPRequest
 
@@ -5550,7 +5607,7 @@ func TestInputService21ProtocolTestOmitsNullQueryParamsButSerializesEmptyStrings
 
 func TestInputService21ProtocolTestOmitsNullQueryParamsButSerializesEmptyStringsCase2(t *testing.T) {
 	svc := NewInputService21ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService21TestShapeInputShape{
+	input := &InputService21TestShapeInputService21TestCaseOperation2Input{
 		Foo: aws.String(""),
 	}
 	req, _ := svc.InputService21TestCaseOperation2Request(input)
@@ -5569,7 +5626,7 @@ func TestInputService21ProtocolTestOmitsNullQueryParamsButSerializesEmptyStrings
 
 func TestInputService22ProtocolTestRecursiveShapesCase1(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			NoRecurse: aws.String("foo"),
 		},
@@ -5584,7 +5641,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase1(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5595,7 +5652,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase1(t *testing.T) {
 
 func TestInputService22ProtocolTestRecursiveShapesCase2(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 				NoRecurse: aws.String("foo"),
@@ -5612,7 +5669,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase2(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5623,7 +5680,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase2(t *testing.T) {
 
 func TestInputService22ProtocolTestRecursiveShapesCase3(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 				RecursiveStruct: &InputService22TestShapeRecursiveStructType{
@@ -5644,7 +5701,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase3(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></RecursiveStruct></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></RecursiveStruct></RecursiveStruct></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5655,7 +5712,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase3(t *testing.T) {
 
 func TestInputService22ProtocolTestRecursiveShapesCase4(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			RecursiveList: []*InputService22TestShapeRecursiveStructType{
 				{
@@ -5677,7 +5734,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase4(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveList xmlns="https://foo/"><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></member><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveList xmlns="https://foo/"><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></member><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5688,7 +5745,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase4(t *testing.T) {
 
 func TestInputService22ProtocolTestRecursiveShapesCase5(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			RecursiveList: []*InputService22TestShapeRecursiveStructType{
 				{
@@ -5712,7 +5769,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase5(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveList xmlns="https://foo/"><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></member><member xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></RecursiveStruct></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveList xmlns="https://foo/"><member xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></member><member xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></RecursiveStruct></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5723,7 +5780,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase5(t *testing.T) {
 
 func TestInputService22ProtocolTestRecursiveShapesCase6(t *testing.T) {
 	svc := NewInputService22ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService22TestShapeInputShape{
+	input := &InputService22TestShapeInputService22TestCaseOperation6Input{
 		RecursiveStruct: &InputService22TestShapeRecursiveStructType{
 			RecursiveMap: map[string]*InputService22TestShapeRecursiveStructType{
 				"bar": {
@@ -5745,7 +5802,7 @@ func TestInputService22ProtocolTestRecursiveShapesCase6(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveMap xmlns="https://foo/"><entry xmlns="https://foo/"><key xmlns="https://foo/">foo</key><value xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></value></entry><entry xmlns="https://foo/"><key xmlns="https://foo/">bar</key><value xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></value></entry></RecursiveMap></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputShape{})
+	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct xmlns="https://foo/"><RecursiveMap xmlns="https://foo/"><entry xmlns="https://foo/"><key xmlns="https://foo/">foo</key><value xmlns="https://foo/"><NoRecurse xmlns="https://foo/">foo</NoRecurse></value></entry><entry xmlns="https://foo/"><key xmlns="https://foo/">bar</key><value xmlns="https://foo/"><NoRecurse xmlns="https://foo/">bar</NoRecurse></value></entry></RecursiveMap></RecursiveStruct></OperationRequest>`, util.Trim(string(body)), InputService22TestShapeInputService22TestCaseOperation6Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5776,7 +5833,7 @@ func TestInputService23ProtocolTestTimestampInHeaderCase1(t *testing.T) {
 
 func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 	svc := NewInputService24ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService24TestShapeInputShape{
+	input := &InputService24TestShapeInputService24TestCaseOperation2Input{
 		Token: aws.String("abc123"),
 	}
 	req, _ := svc.InputService24TestCaseOperation1Request(input)
@@ -5789,7 +5846,7 @@ func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<InputShape><Token>abc123</Token></InputShape>`, util.Trim(string(body)), InputService24TestShapeInputShape{})
+	awstesting.AssertXML(t, `<InputShape><Token>abc123</Token></InputShape>`, util.Trim(string(body)), InputService24TestShapeInputService24TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())
@@ -5800,7 +5857,7 @@ func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 
 func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase2(t *testing.T) {
 	svc := NewInputService24ProtocolTest(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
-	input := &InputService24TestShapeInputShape{}
+	input := &InputService24TestShapeInputService24TestCaseOperation2Input{}
 	req, _ := svc.InputService24TestCaseOperation2Request(input)
 	r := req.HTTPRequest
 
@@ -5811,7 +5868,7 @@ func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase2(t *testing.T) {
 	// assert body
 	assert.NotNil(t, r.Body)
 	body := util.SortXML(r.Body)
-	awstesting.AssertXML(t, `<InputShape><Token>00000000-0000-4000-8000-000000000000</Token></InputShape>`, util.Trim(string(body)), InputService24TestShapeInputShape{})
+	awstesting.AssertXML(t, `<InputShape><Token>00000000-0000-4000-8000-000000000000</Token></InputShape>`, util.Trim(string(body)), InputService24TestShapeInputService24TestCaseOperation2Input{})
 
 	// assert URL
 	awstesting.AssertURL(t, "https://test/path", r.URL.String())

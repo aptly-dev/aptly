@@ -124,6 +124,14 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 	return result, nil
 }
 
+// Has checks whether package is already in the list
+func (l *PackageList) Has(p *Package) bool {
+	key := l.keyFunc(p)
+	_, ok := l.packages[key]
+
+	return ok
+}
+
 // Add appends package to package list, additionally checking for uniqueness
 func (l *PackageList) Add(p *Package) error {
 	key := l.keyFunc(p)
@@ -441,18 +449,6 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 		panic("list not indexed, can't search")
 	}
 
-	if dep.Relation == VersionDontCare {
-		for _, p := range l.providesIndex[dep.Pkg] {
-			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
-				searchResults = append(searchResults, p)
-
-				if !allMatches {
-					break
-				}
-			}
-		}
-	}
-
 	i := sort.Search(len(l.packagesIndex), func(j int) bool { return l.packagesIndex[j].Name >= dep.Pkg })
 
 	for i < len(l.packagesIndex) && l.packagesIndex[i].Name == dep.Pkg {
@@ -466,6 +462,18 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 		}
 
 		i++
+	}
+
+	if dep.Relation == VersionDontCare {
+		for _, p := range l.providesIndex[dep.Pkg] {
+			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
+				searchResults = append(searchResults, p)
+
+				if !allMatches {
+					break
+				}
+			}
+		}
 	}
 
 	return
@@ -511,15 +519,27 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 
 			// try to satisfy dependencies
 			for _, dep := range missing {
-				// dependency might have already been satisfied
-				// with packages already been added
-				if result.Search(dep, false) != nil {
-					continue
+				if dependencyOptions&DepFollowAllVariants == 0 {
+					// dependency might have already been satisfied
+					// with packages already been added
+					//
+					// when follow-all-variants is enabled, we need to try to expand anyway,
+					// as even if dependency is satisfied now, there might be other ways to satisfy dependency
+					if result.Search(dep, false) != nil {
+						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true))
+						}
+						continue
+					}
 				}
 
 				searchResults := l.Search(dep, true)
-				if searchResults != nil {
+				if len(searchResults) > 0 {
 					for _, p := range searchResults {
+						if result.Has(p) {
+							continue
+						}
+
 						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
 							progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
 						}

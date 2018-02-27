@@ -315,7 +315,7 @@ func (collection *PackageCollection) SearchSupported() bool {
 
 // SearchByKey finds package by exact key
 func (collection *PackageCollection) SearchByKey(arch, name, version string) (result *PackageList) {
-	result = NewPackageList()
+	result = NewPackageListWithDuplicates(true, 0)
 
 	for _, key := range collection.db.KeysByPrefix([]byte(fmt.Sprintf("P%s %s %s", arch, name, version))) {
 		pkg, err := collection.ByKey(key)

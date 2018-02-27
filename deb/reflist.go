@@ -395,6 +395,4 @@ func (l *PackageRefList) FilterLatestRefs() {
 
 		lastArch, lastName, lastVer = arch, name, ver
 	}
-
-	return
 }

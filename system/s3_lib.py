@@ -18,6 +18,8 @@ class S3Test(BaseTest):
     BaseTest + support for S3
     """
 
+    s3Overrides = {}
+
     def fixture_available(self):
         return super(S3Test, self).fixture_available() and s3_conn is not None
 
@@ -30,6 +32,8 @@ class S3Test(BaseTest):
                 "bucket": self.bucket_name,
             }
         }}
+
+        self.configOverride["S3PublishEndpoints"]["test1"].update(**self.s3Overrides)
 
         super(S3Test, self).prepare()
 

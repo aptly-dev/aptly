@@ -3,6 +3,7 @@
 package aptly
 
 import (
+	"context"
 	"io"
 	"os"
 
@@ -23,7 +24,7 @@ type PackagePool interface {
 	//
 	// if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
 	// in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
-	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (bool, error)
+	Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage ChecksumStorage) (string, bool, error)
 	// Import copies file into package pool
 	//
 	// - srcPath is full path to source file as it is now
@@ -73,6 +74,14 @@ type PublishedStorage interface {
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file
 	RenameFile(oldName, newName string) error
+	// SymLink creates a symbolic link, which can be read with ReadLink
+	SymLink(src string, dst string) error
+	// HardLink creates a hardlink of a file
+	HardLink(src string, dst string) error
+	// FileExists returns true if path exists
+	FileExists(path string) (bool, error)
+	// ReadLink returns the symbolic link pointed to by path
+	ReadLink(path string) (string, error)
 }
 
 // FileSystemPublishedStorage is published storage on filesystem
@@ -109,14 +118,16 @@ type Progress interface {
 	Printf(msg string, a ...interface{})
 	// ColoredPrintf does printf in colored way + newline
 	ColoredPrintf(msg string, a ...interface{})
+	// PrintfStdErr does printf but in safe manner to stderr
+	PrintfStdErr(msg string, a ...interface{})
 }
 
 // Downloader is parallel HTTP fetcher
 type Downloader interface {
 	// Download starts new download task
-	Download(url string, destination string) error
+	Download(ctx context.Context, url string, destination string) error
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
+	DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
 }

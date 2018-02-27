@@ -17,5 +17,5 @@ Description:  Long Term Support for Debian 7
 
 Label: Debian-Security
 Origin: Debian
-Suite: oldstable
+Suite: oldoldstable
 Version: 7.0

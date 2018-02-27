@@ -11,7 +11,7 @@ func getSigner(flags *flag.FlagSet) (pgp.Signer, error) {
 		return nil, nil
 	}
 
-	signer := &pgp.GpgSigner{}
+	signer := context.GetSigner()
 	signer.SetKey(flags.Lookup("gpg-key").Value.String())
 	signer.SetKeyRing(flags.Lookup("keyring").Value.String(), flags.Lookup("secret-keyring").Value.String())
 	signer.SetPassphrase(flags.Lookup("passphrase").Value.String(), flags.Lookup("passphrase-file").Value.String())

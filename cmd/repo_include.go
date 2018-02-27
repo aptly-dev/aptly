@@ -9,7 +9,6 @@ import (
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/query"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
@@ -29,7 +28,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	}
 
 	if verifier == nil {
-		verifier = &pgp.GpgVerifier{}
+		verifier = context.GetVerifier()
 	}
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
@@ -139,7 +138,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load packages: %s", err)
 		}
 
-		packageFiles, _ := deb.CollectPackageFiles([]string{changes.TempDir}, reporter)
+		packageFiles, otherFiles, _ := deb.CollectPackageFiles([]string{changes.TempDir}, reporter)
 
 		var restriction deb.PackageQuery
 
@@ -177,6 +176,10 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 		}
 
 		for _, file := range processedFiles2 {
+			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
+		}
+
+		for _, file := range otherFiles {
 			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
 		}
 

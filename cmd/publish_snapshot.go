@@ -112,18 +112,33 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	}
 
 	distribution := context.Flags().Lookup("distribution").Value.String()
+	origin := context.Flags().Lookup("origin").Value.String()
+	notAutomatic := context.Flags().Lookup("notautomatic").Value.String()
+	butAutomaticUpgrades := context.Flags().Lookup("butautomaticupgrades").Value.String()
 
 	published, err := deb.NewPublishedRepo(storage, prefix, distribution, context.ArchitecturesList(), components, sources, context.CollectionFactory())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
-	published.Origin = context.Flags().Lookup("origin").Value.String()
+	if origin != "" {
+		published.Origin = origin
+	}
+	if notAutomatic != "" {
+		published.NotAutomatic = notAutomatic
+	}
+	if butAutomaticUpgrades != "" {
+		published.ButAutomaticUpgrades = butAutomaticUpgrades
+	}
 	published.Label = context.Flags().Lookup("label").Value.String()
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 
 	if context.Flags().IsSet("skip-contents") {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
+	}
+
+	if context.Flags().IsSet("acquire-by-hash") {
+		published.AcquireByHash = context.Flags().Lookup("acquire-by-hash").Value.Get().(bool)
 	}
 
 	duplicate := context.CollectionFactory().PublishedRepoCollection().CheckDuplicate(published)
@@ -211,9 +226,12 @@ Example:
 	cmd.Flag.Bool("batch", false, "run GPG with detached tty")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
-	cmd.Flag.String("origin", "", "origin name to publish")
+	cmd.Flag.String("origin", "", "overwrite origin name to publish")
+	cmd.Flag.String("notautomatic", "", "overwrite value for NotAutomatic field")
+	cmd.Flag.String("butautomaticupgrades", "", "overwrite value for ButAutomaticUpgrades field")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.Bool("acquire-by-hash", false, "provide index files by hash")
 
 	return cmd
 }

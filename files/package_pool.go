@@ -162,7 +162,7 @@ func (pool *PackagePool) ensureChecksums(poolPath, fullPoolPath string, checksum
 //
 // if poolPath is empty, poolPath is generated automatically based on checksum info (if available)
 // in any case, if function returns true, it also fills back checksums with complete information about the file in the pool
-func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (bool, error) {
+func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) {
 	possiblePoolPaths := []string{}
 
 	if poolPath != "" {
@@ -172,7 +172,7 @@ func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.Chec
 		if checksums.SHA256 != "" {
 			modernPath, err := pool.buildPoolPath(basename, checksums)
 			if err != nil {
-				return false, err
+				return "", false, err
 			}
 			possiblePoolPaths = append(possiblePoolPaths, modernPath)
 		}
@@ -180,7 +180,7 @@ func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.Chec
 		if pool.supportLegacyPaths && checksums.MD5 != "" {
 			legacyPath, err := pool.LegacyPath(basename, checksums)
 			if err != nil {
-				return false, err
+				return "", false, err
 			}
 			possiblePoolPaths = append(possiblePoolPaths, legacyPath)
 		}
@@ -193,7 +193,7 @@ func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.Chec
 		if err != nil {
 			if !os.IsNotExist(err) {
 				// unable to stat target location?
-				return false, err
+				return "", false, err
 			}
 			// doesn't exist, skip it
 			continue
@@ -208,21 +208,21 @@ func (pool *PackagePool) Verify(poolPath, basename string, checksums *utils.Chec
 		targetChecksums, err = pool.ensureChecksums(path, fullPoolPath, checksumStorage)
 
 		if err != nil {
-			return false, err
+			return "", false, err
 		}
 
 		if checksums.MD5 != "" && targetChecksums.MD5 != checksums.MD5 ||
 			checksums.SHA256 != "" && targetChecksums.SHA256 != checksums.SHA256 {
 			// wrong file?
-			return false, nil
+			return "", false, nil
 		}
 
 		// fill back checksums
 		*checksums = *targetChecksums
-		return true, nil
+		return path, true, nil
 	}
 
-	return false, nil
+	return "", false, nil
 }
 
 // Import copies file into package pool

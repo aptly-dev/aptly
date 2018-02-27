@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "April 2017" "" ""
+.TH "APTLY" "1" "November 2017" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -46,6 +46,7 @@ Configuration file is stored in JSON format (default values shown below):
   "dependencyVerboseResolve": false,
   "gpgDisableSign": false,
   "gpgDisableVerify": false,
+  "gpgProvider": "gpg",
   "downloadSourcePackages": false,
   "skipLegacyPool": true,
   "ppaDistributorID": "ubuntu",
@@ -148,6 +149,10 @@ don\(cqt sign published repositories with gpg(1), also can be disabled on per\-r
 don\(cqt verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
 .
 .TP
+\fBgpgProvider\fR
+implementation of PGP signing/validation \- \fBgpg\fR for external \fBgpg\fR utility or \fBinternal\fR to use Go internal implementation
+.
+.TP
 \fBdownloadSourcePackages\fR
 if enabled, all mirrors created would have flag set to download source packages; this setting could be controlled on per\-mirror basis with \fB\-with\-sources\fR flag
 .
@@ -158,6 +163,10 @@ in aptly up to version 1\.0\.0, package files were stored in internal package po
 .TP
 \fBppaDistributorID\fR, \fBppaCodename\fR
 specifies paramaters for short PPA url expansion, if left blank they default to output of \fBlsb_release\fR command
+.
+.TP
+\fBFileSystemPublishEndpoints\fR
+configuration of local filesystem publishing endpoints (see below)
 .
 .TP
 \fBS3PublishEndpoints\fR
@@ -230,6 +239,14 @@ bucket name
 .TP
 \fBdisableMultiDel\fR
 (optional) for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
+.
+.TP
+\fBforceSigV2\fR
+(optional) disable Signature V4 support, useful with non\-AWS S3\-compatible object stores which do not support SigV4, shouldn\(cqt be enabled for AWS
+.
+.TP
+\fBdebug\fR
+(optional) enables detailed request/response dump for each S3 operation
 .
 .P
 In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
@@ -392,24 +409,32 @@ list of architectures to consider during (comma\-separated), default to all avai
 location of configuration file (default locations are /etc/aptly\.conf, ~/\.aptly\.conf)
 .
 .TP
-\-\fBdep\-follow\-all\-variants\fR=false
+\-\fBdb\-open\-attempts\fR=10
+number of attempts to open DB if it\(cqs locked by other instance
+.
+.TP
+\-\fBdep\-follow\-all\-variants\fR
 when processing dependencies, follow a & b if dependency is \(cqa|b\(cq
 .
 .TP
-\-\fBdep\-follow\-recommends\fR=false
+\-\fBdep\-follow\-recommends\fR
 when processing dependencies, follow Recommends
 .
 .TP
-\-\fBdep\-follow\-source\fR=false
+\-\fBdep\-follow\-source\fR
 when processing dependencies, follow from binary to Source packages
 .
 .TP
-\-\fBdep\-follow\-suggests\fR=false
+\-\fBdep\-follow\-suggests\fR
 when processing dependencies, follow Suggests
 .
 .TP
-\-\fBdep\-verbose\-resolve\fR=false
+\-\fBdep\-verbose\-resolve\fR
 when processing dependencies, print detailed logs
+.
+.TP
+\-\fBgpg\-provider\fR=
+PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
 .
 .SH "CREATE NEW MIRROR"
 \fBaptly\fR \fBmirror\fR \fBcreate\fR \fIname\fR \fIarchive url\fR \fIdistribution\fR [\fIcomponent1\fR \|\.\|\.\|\.]
@@ -437,19 +462,19 @@ Options:
 filter packages in mirror
 .
 .TP
-\-\fBfilter\-with\-deps\fR=false
+\-\fBfilter\-with\-deps\fR
 when filtering, include dependencies of matching packages as well
 .
 .TP
-\-\fBforce\-architectures\fR=false
+\-\fBforce\-architectures\fR
 (only with architecture list) skip check that requested architectures are listed in Release file
 .
 .TP
-\-\fBforce\-components\fR=false
+\-\fBforce\-components\fR
 (only with component list) skip check that requested components are listed in Release file
 .
 .TP
-\-\fBignore\-signatures\fR=false
+\-\fBignore\-signatures\fR
 disable verification of Release file signatures
 .
 .TP
@@ -457,11 +482,11 @@ disable verification of Release file signatures
 gpg keyring to use when verifying Release file (could be specified multiple times)
 .
 .TP
-\-\fBwith\-sources\fR=false
+\-\fBwith\-sources\fR
 download source packages in addition to binary packages
 .
 .TP
-\-\fBwith\-udebs\fR=false
+\-\fBwith\-udebs\fR
 download \.udeb packages (Debian installer support)
 .
 .SH "LIST MIRRORS"
@@ -480,7 +505,7 @@ $ aptly mirror list
 Options:
 .
 .TP
-\-\fBraw\fR=false
+\-\fBraw\fR
 display list in machine\-readable format
 .
 .SH "SHOW DETAILS ABOUT MIRROR"
@@ -499,7 +524,7 @@ $ aptly mirror show wheezy\-main
 Options:
 .
 .TP
-\-\fBwith\-packages\fR=false
+\-\fBwith\-packages\fR
 show detailed list of packages and versions stored in the mirror
 .
 .SH "DELETE MIRROR"
@@ -518,7 +543,7 @@ $ aptly mirror drop wheezy\-main
 Options:
 .
 .TP
-\-\fBforce\fR=false
+\-\fBforce\fR
 force mirror deletion even if used by snapshots
 .
 .SH "UPDATE MIRROR"
@@ -541,15 +566,15 @@ Options:
 limit download speed (kbytes/sec)
 .
 .TP
-\-\fBforce\fR=false
+\-\fBforce\fR
 force update mirror even if it is locked by another process
 .
 .TP
-\-\fBignore\-checksums\fR=false
+\-\fBignore\-checksums\fR
 ignore checksum mismatches while downloading package files and metadata
 .
 .TP
-\-\fBignore\-signatures\fR=false
+\-\fBignore\-signatures\fR
 disable verification of Release file signatures
 .
 .TP
@@ -561,7 +586,7 @@ gpg keyring to use when verifying Release file (could be specified multiple time
 max download tries till process fails with download error
 .
 .TP
-\-\fBskip\-existing\-packages\fR=false
+\-\fBskip\-existing\-packages\fR
 do not check file existence for packages listed in the internal database of the mirror
 .
 .SH "RENAMES MIRROR"
@@ -592,19 +617,31 @@ $ aptly mirror edit \-filter=nginx \-filter\-with\-deps some\-mirror
 Options:
 .
 .TP
+\-\fBarchive\-url\fR=
+archive url is the root of archive
+.
+.TP
 \-\fBfilter\fR=
 filter packages in mirror
 .
 .TP
-\-\fBfilter\-with\-deps\fR=false
+\-\fBfilter\-with\-deps\fR
 when filtering, include dependencies of matching packages as well
 .
 .TP
-\-\fBwith\-sources\fR=false
+\-\fBignore\-signatures\fR
+disable verification of Release file signatures
+.
+.TP
+\-\fBkeyring\fR=
+gpg keyring to use when verifying Release file (could be specified multiple times)
+.
+.TP
+\-\fBwith\-sources\fR
 download source packages in addition to binary packages
 .
 .TP
-\-\fBwith\-udebs\fR=false
+\-\fBwith\-udebs\fR
 download \.udeb packages (Debian installer support)
 .
 .SH "SEARCH MIRROR FOR PACKAGES MATCHING QUERY"
@@ -637,7 +674,7 @@ Options:
 custom format for result printing
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORY"
@@ -656,11 +693,11 @@ $ aptly repo add testing myapp\-0\.1\.2\.deb incoming/
 Options:
 .
 .TP
-\-\fBforce\-replace\fR=false
+\-\fBforce\-replace\fR
 when adding package that conflicts with existing package, remove existing package
 .
 .TP
-\-\fBremove\-files\fR=false
+\-\fBremove\-files\fR
 remove files that have been imported successfully into repository
 .
 .SH "COPY PACKAGES BETWEEN LOCAL REPOSITORIES"
@@ -679,11 +716,11 @@ $ aptly repo copy testing stable \(cqmyapp (=0\.1\.12)\(cq
 Options:
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt copy, just show what would be copied
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 follow dependencies when processing package\-spec
 .
 .SH "CREATE LOCAL REPOSITORY"
@@ -739,7 +776,7 @@ $ aptly repo drop local\-repo
 Options:
 .
 .TP
-\-\fBforce\fR=false
+\-\fBforce\fR
 force local repo deletion even if used by snapshots
 .
 .SH "EDIT PROPERTIES OF LOCAL REPOSITORY"
@@ -789,11 +826,11 @@ $ aptly repo import wheezy\-main testing nginx
 Options:
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt import, just show what would be imported
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 follow dependencies when processing package\-spec
 .
 .SH "LIST LOCAL REPOSITORIES"
@@ -812,7 +849,7 @@ $ aptly repo list
 Options:
 .
 .TP
-\-\fBraw\fR=false
+\-\fBraw\fR
 display list in machine\-readable format
 .
 .SH "MOVE PACKAGES BETWEEN LOCAL REPOSITORIES"
@@ -831,11 +868,11 @@ $ aptly repo move testing stable \(cqmyapp (=0\.1\.12)\(cq
 Options:
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt move, just show what would be moved
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 follow dependencies when processing package\-spec
 .
 .SH "REMOVE PACKAGES FROM LOCAL REPOSITORY"
@@ -854,7 +891,7 @@ $ aptly repo remove testing \(cqmyapp (=0\.1\.12)\(cq
 Options:
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt remove, just show what would be removed
 .
 .SH "SHOW DETAILS ABOUT LOCAL REPOSITORY"
@@ -870,7 +907,7 @@ ex: $ aptly repo show testing
 Options:
 .
 .TP
-\-\fBwith\-packages\fR=false
+\-\fBwith\-packages\fR
 show list of packages
 .
 .SH "RENAMES LOCAL REPOSITORY"
@@ -915,7 +952,7 @@ Options:
 custom format for result printing
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORIES BASED ON \.CHANGES FILES"
@@ -937,15 +974,15 @@ $ aptly repo include \-repo=foo\-release incoming/
 Options:
 .
 .TP
-\-\fBaccept\-unsigned\fR=false
+\-\fBaccept\-unsigned\fR
 accept unsigned \.changes files
 .
 .TP
-\-\fBforce\-replace\fR=false
+\-\fBforce\-replace\fR
 when adding package that conflicts with existing package, remove existing package
 .
 .TP
-\-\fBignore\-signatures\fR=false
+\-\fBignore\-signatures\fR
 disable verification of \.changes file signature
 .
 .TP
@@ -953,7 +990,7 @@ disable verification of \.changes file signature
 gpg keyring to use when verifying Release file (could be specified multiple times)
 .
 .TP
-\-\fBno\-remove\-files\fR=false
+\-\fBno\-remove\-files\fR
 don\(cqt remove files that have been imported successfully into repository
 .
 .TP
@@ -998,7 +1035,7 @@ $ aptly snapshot list
 Options:
 .
 .TP
-\-\fBraw\fR=false
+\-\fBraw\fR
 display list in machine\-readable format
 .
 .TP
@@ -1028,7 +1065,7 @@ $ aptly snapshot show wheezy\-main
 Options:
 .
 .TP
-\-\fBwith\-packages\fR=false
+\-\fBwith\-packages\fR
 show list of packages
 .
 .SH "VERIFY DEPENDENCIES IN SNAPSHOT"
@@ -1073,19 +1110,19 @@ $ aptly snapshot pull wheezy\-main wheezy\-backports wheezy\-new\-xorg xorg\-ser
 Options:
 .
 .TP
-\-\fBall\-matches\fR=false
+\-\fBall\-matches\fR
 pull all the packages that satisfy the dependency version requirements
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt create destination snapshot, just show what would be pulled
 .
 .TP
-\-\fBno\-deps\fR=false
+\-\fBno\-deps\fR
 don\(cqt process dependencies, just pull listed packages
 .
 .TP
-\-\fBno\-remove\fR=false
+\-\fBno\-remove\fR
 don\(cqt remove other package versions when pulling package
 .
 .SH "DIFFERENCE BETWEEN TWO SNAPSHOTS"
@@ -1111,7 +1148,7 @@ $ aptly snapshot diff \-only\-matching wheezy\-main wheezy\-backports
 Options:
 .
 .TP
-\-\fBonly\-matching\fR=false
+\-\fBonly\-matching\fR
 display diff only for matching packages (don\(cqt display missing packages)
 .
 .SH "MERGES SNAPSHOTS"
@@ -1137,11 +1174,11 @@ $ aptly snapshot merge wheezy\-w\-backports wheezy\-main wheezy\-backports
 Options:
 .
 .TP
-\-\fBlatest\fR=false
+\-\fBlatest\fR
 use only the latest version of each package
 .
 .TP
-\-\fBno\-remove\fR=false
+\-\fBno\-remove\fR
 don\(cqt remove duplicate arch/name packages
 .
 .SH "DELETE SNAPSHOT"
@@ -1167,7 +1204,7 @@ $ aptly snapshot drop wheezy\-main
 Options:
 .
 .TP
-\-\fBforce\fR=false
+\-\fBforce\fR
 remove snapshot even if it was used as source for other snapshots
 .
 .SH "RENAMES SNAPSHOT"
@@ -1212,7 +1249,7 @@ Options:
 custom format for result printing
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 include dependencies into search results
 .
 .SH "FILTER PACKAGES IN SNAPSHOT PRODUCING ANOTHER SNAPSHOT"
@@ -1238,7 +1275,7 @@ $ aptly snapshot filter wheezy\-main wheezy\-required \(cqPriorioty (required)\(
 Options:
 .
 .TP
-\-\fBwith\-deps\fR=false
+\-\fBwith\-deps\fR
 include dependent packages as well
 .
 .SH "REMOVE PUBLISHED REPOSITORY"
@@ -1264,8 +1301,12 @@ $ aptly publish drop wheezy
 Options:
 .
 .TP
-\-\fBforce\-drop\fR=false
+\-\fBforce\-drop\fR
 remove published repository even if some files could not be cleaned up
+.
+.TP
+\-\fBskip\-cleanup\fR
+don\(cqt remove unreferenced files in prefix/component
 .
 .SH "LIST OF PUBLISHED REPOSITORIES"
 \fBaptly\fR \fBpublish\fR \fBlist\fR
@@ -1290,7 +1331,7 @@ $ aptly publish list
 Options:
 .
 .TP
-\-\fBraw\fR=false
+\-\fBraw\fR
 display list in machine\-readable format
 .
 .SH "PUBLISH LOCAL REPOSITORY"
@@ -1332,8 +1373,16 @@ $ aptly publish repo testing
 Options:
 .
 .TP
-\-\fBbatch\fR=false
+\-\fBacquire\-by\-hash\fR
+provide index files by hash
+.
+.TP
+\-\fBbatch\fR
 run GPG with detached tty
+.
+.TP
+\-\fBbutautomaticupgrades\fR=
+set value for ButAutomaticUpgrades field
 .
 .TP
 \-\fBcomponent\fR=
@@ -1344,7 +1393,7 @@ component name to publish (for multi\-component publishing, separate components 
 distribution name to publish
 .
 .TP
-\-\fBforce\-overwrite\fR=false
+\-\fBforce\-overwrite\fR
 overwrite files in package pool in case of mismatch
 .
 .TP
@@ -1358,6 +1407,10 @@ GPG keyring to use (instead of default)
 .TP
 \-\fBlabel\fR=
 label to publish
+.
+.TP
+\-\fBnotautomatic\fR=
+set value for NotAutomatic field
 .
 .TP
 \-\fBorigin\fR=
@@ -1376,11 +1429,11 @@ GPG passhprase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
-\-\fBskip\-contents\fR=false
+\-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
 .TP
-\-\fBskip\-signing\fR=false
+\-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
 .SH "PUBLISH SNAPSHOT"
@@ -1419,8 +1472,16 @@ $ aptly publish snapshot wheezy\-main
 Options:
 .
 .TP
-\-\fBbatch\fR=false
+\-\fBacquire\-by\-hash\fR
+provide index files by hash
+.
+.TP
+\-\fBbatch\fR
 run GPG with detached tty
+.
+.TP
+\-\fBbutautomaticupgrades\fR=
+overwrite value for ButAutomaticUpgrades field
 .
 .TP
 \-\fBcomponent\fR=
@@ -1431,7 +1492,7 @@ component name to publish (for multi\-component publishing, separate components 
 distribution name to publish
 .
 .TP
-\-\fBforce\-overwrite\fR=false
+\-\fBforce\-overwrite\fR
 overwrite files in package pool in case of mismatch
 .
 .TP
@@ -1447,8 +1508,12 @@ GPG keyring to use (instead of default)
 label to publish
 .
 .TP
+\-\fBnotautomatic\fR=
+overwrite value for NotAutomatic field
+.
+.TP
 \-\fBorigin\fR=
-origin name to publish
+overwrite origin name to publish
 .
 .TP
 \-\fBpassphrase\fR=
@@ -1463,11 +1528,11 @@ GPG passhprase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
-\-\fBskip\-contents\fR=false
+\-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
 .TP
-\-\fBskip\-signing\fR=false
+\-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
@@ -1509,7 +1574,7 @@ This command would switch published repository (with one component) named ppa/wh
 Options:
 .
 .TP
-\-\fBbatch\fR=false
+\-\fBbatch\fR
 run GPG with detached tty
 .
 .TP
@@ -1517,7 +1582,7 @@ run GPG with detached tty
 component names to update (for multi\-component publishing, separate components with commas)
 .
 .TP
-\-\fBforce\-overwrite\fR=false
+\-\fBforce\-overwrite\fR
 overwrite files in package pool in case of mismatch
 .
 .TP
@@ -1541,11 +1606,15 @@ GPG passhprase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
-\-\fBskip\-contents\fR=false
+\-\fBskip\-cleanup\fR
+don\(cqt remove unreferenced files in prefix/component
+.
+.TP
+\-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
 .TP
-\-\fBskip\-signing\fR=false
+\-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
 .SH "UPDATE PUBLISHED LOCAL REPOSITORY"
@@ -1574,11 +1643,11 @@ $ aptly publish update wheezy ppa
 Options:
 .
 .TP
-\-\fBbatch\fR=false
+\-\fBbatch\fR
 run GPG with detached tty
 .
 .TP
-\-\fBforce\-overwrite\fR=false
+\-\fBforce\-overwrite\fR
 overwrite files in package pool in case of mismatch
 .
 .TP
@@ -1602,11 +1671,15 @@ GPG passhprase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
-\-\fBskip\-contents\fR=false
+\-\fBskip\-cleanup\fR
+don\(cqt remove unreferenced files in prefix/component
+.
+.TP
+\-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
 .TP
-\-\fBskip\-signing\fR=false
+\-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
 .SH "SHOWS DETAILS OF PUBLISHED REPOSITORY"
@@ -1680,11 +1753,11 @@ $ aptly package show \(cqnginx\-light_1\.2\.1\-2\.2+wheezy2_i386\(cq
 Options:
 .
 .TP
-\-\fBwith\-files\fR=false
+\-\fBwith\-files\fR
 display information about files from package pool
 .
 .TP
-\-\fBwith\-references\fR=false
+\-\fBwith\-references\fR
 display information about mirrors, snapshots and local repos referencing this package
 .
 .SH "CLEANUP DB AND PACKAGE POOL"
@@ -1703,11 +1776,11 @@ $ aptly db cleanup
 Options:
 .
 .TP
-\-\fBdry\-run\fR=false
+\-\fBdry\-run\fR
 don\(cqt delete anything
 .
 .TP
-\-\fBverbose\fR=false
+\-\fBverbose\fR
 be verbose when loading objects/removing them
 .
 .SH "RECOVER DB AFTER CRASH"
@@ -1761,7 +1834,7 @@ Options:
 host:port for HTTP listening or unix://path to listen on a Unix domain socket
 .
 .TP
-\-\fBno\-lock\fR=false
+\-\fBno\-lock\fR
 don\(cqt lock the database
 .
 .SH "RENDER GRAPH OF RELATIONSHIPS"
@@ -1950,6 +2023,12 @@ Clemens Rabe (https://github\.com/seeraven)
 .
 .IP "\[ci]" 4
 TJ Merritt (https://github\.com/tjmerritt)
+.
+.IP "\[ci]" 4
+Matt Martyn (https://github\.com/MMartyn)
+.
+.IP "\[ci]" 4
+Ludovico Cavedon (https://github\.com/cavedon)
 .
 .IP "" 0
 

@@ -44,7 +44,7 @@ func (s *PackageRefListSuite) SetUpTest(c *C) {
 }
 
 func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
+	db, _ := database.NewOpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
 	coll.Update(s.p1)
 	coll.Update(s.p3)
@@ -166,7 +166,7 @@ func (s *PackageRefListSuite) TestSubstract(c *C) {
 }
 
 func (s *PackageRefListSuite) TestDiff(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
+	db, _ := database.NewOpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
 
 	packages := []*Package{
@@ -238,7 +238,7 @@ func (s *PackageRefListSuite) TestDiff(c *C) {
 }
 
 func (s *PackageRefListSuite) TestMerge(c *C) {
-	db, _ := database.OpenDB(c.MkDir())
+	db, _ := database.NewOpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
 
 	packages := []*Package{

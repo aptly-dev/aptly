@@ -2,8 +2,11 @@
 package context
 
 import (
+	gocontext "context"
 	"fmt"
+	"math/rand"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
@@ -17,6 +20,7 @@ import (
 	"github.com/smira/aptly/deb"
 	"github.com/smira/aptly/files"
 	"github.com/smira/aptly/http"
+	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/s3"
 	"github.com/smira/aptly/swift"
 	"github.com/smira/aptly/utils"
@@ -27,6 +31,8 @@ import (
 // AptlyContext is a common context shared by all commands
 type AptlyContext struct {
 	sync.Mutex
+
+	gocontext.Context
 
 	flags, globalFlags *flag.FlagSet
 	configLoaded       bool
@@ -238,13 +244,34 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		context.database, err = database.OpenDB(context.dbPath())
+		context.database, err = database.NewDB(context.dbPath())
 		if err != nil {
-			return nil, fmt.Errorf("can't open database: %s", err)
+			return nil, fmt.Errorf("can't instantiate database: %s", err)
 		}
 	}
 
-	return context.database, nil
+	tries := context.flags.Lookup("db-open-attempts").Value.Get().(int)
+	const BaseDelay = 10 * time.Second
+	const Jitter = 1 * time.Second
+
+	for ; tries >= 0; tries-- {
+		err := context.database.Open()
+		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
+			return context.database, err
+		}
+
+		if tries > 0 {
+			delay := time.Duration(rand.NormFloat64()*float64(Jitter) + float64(BaseDelay))
+			if delay < 0 {
+				delay = time.Second
+			}
+
+			context._progress().PrintfStdErr("Unable to open database, sleeping %s, attempts left %d...\n", delay, tries)
+			time.Sleep(delay)
+		}
+	}
+
+	return nil, fmt.Errorf("unable to reopen the DB, maximum number of retries reached")
 }
 
 // CloseDatabase closes the db temporarily
@@ -261,26 +288,9 @@ func (context *AptlyContext) CloseDatabase() error {
 
 // ReOpenDatabase reopens the db after close
 func (context *AptlyContext) ReOpenDatabase() error {
-	context.Lock()
-	defer context.Unlock()
+	_, err := context.Database()
 
-	if context.database == nil {
-		return nil
-	}
-
-	const MaxTries = 10
-	const Delay = 10 * time.Second
-
-	for try := 0; try < MaxTries; try++ {
-		err := context.database.ReOpen()
-		if err == nil || !strings.Contains(err.Error(), "resource temporarily unavailable") {
-			return err
-		}
-		context._progress().Printf("Unable to reopen database, sleeping %s\n", Delay)
-		<-time.After(Delay)
-	}
-
-	return fmt.Errorf("unable to reopen the DB, maximum number of retries reached")
+	return err
 }
 
 // CollectionFactory builds factory producing all kinds of collections
@@ -368,6 +378,46 @@ func (context *AptlyContext) UploadPath() string {
 	return filepath.Join(context.Config().RootDir, "upload")
 }
 
+func (context *AptlyContext) pgpProvider() string {
+	var provider string
+
+	if context.globalFlags.IsSet("gpg-provider") {
+		provider = context.globalFlags.Lookup("gpg-provider").Value.String()
+	} else {
+		provider = context.config().GpgProvider
+	}
+
+	if !(provider == "gpg" || provider == "internal") { // nolint: goconst
+		Fatal(fmt.Errorf("unknown gpg provider: %v", provider))
+	}
+
+	return provider
+}
+
+// GetSigner returns Signer with respect to provider
+func (context *AptlyContext) GetSigner() pgp.Signer {
+	context.Lock()
+	defer context.Unlock()
+
+	if context.pgpProvider() == "gpg" { // nolint: goconst
+		return &pgp.GpgSigner{}
+	}
+
+	return &pgp.GoSigner{}
+}
+
+// GetVerifier returns Verifier with respect to provider
+func (context *AptlyContext) GetVerifier() pgp.Verifier {
+	context.Lock()
+	defer context.Unlock()
+
+	if context.pgpProvider() == "gpg" { // nolint: goconst
+		return &pgp.GpgVerifier{}
+	}
+
+	return &pgp.GoVerifier{}
+}
+
 // AddonPath builds the local addon folder
 func (context *AptlyContext) AddonPath() string {
 	return filepath.Join(context.config().RootDir, "addon")
@@ -395,6 +445,27 @@ func (context *AptlyContext) GlobalFlags() *flag.FlagSet {
 	defer context.Unlock()
 
 	return context.globalFlags
+}
+
+// GoContextHandleSignals upgrades context to handle ^C by aborting context
+func (context *AptlyContext) GoContextHandleSignals() {
+	context.Lock()
+	defer context.Unlock()
+
+	// Catch ^C
+	sigch := make(chan os.Signal)
+	signal.Notify(sigch, os.Interrupt)
+
+	var cancel gocontext.CancelFunc
+
+	context.Context, cancel = gocontext.WithCancel(context.Context)
+
+	go func() {
+		<-sigch
+		signal.Stop(sigch)
+		context.Progress().PrintfStdErr("Aborting... press ^C once again to abort immediately\n")
+		cancel()
+	}()
 }
 
 // Shutdown shuts context down
@@ -453,6 +524,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 		flags:             flags,
 		globalFlags:       flags,
 		dependencyOptions: -1,
+		Context:           gocontext.TODO(),
 		publishedStorages: map[string]aptly.PublishedStorage{},
 	}
 

@@ -219,7 +219,7 @@ class PublishSnapshot5Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap5 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
+    runCmd = "aptly publish snapshot -acquire-by-hash -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
 
     gold_processor = BaseTest.expand_environ
 
@@ -231,12 +231,15 @@ class PublishSnapshot5Test(BaseTest):
         self.check_exists('public/ppa/smira/dists/squeeze/Release.gpg')
 
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/by-hash/MD5Sum/e98cd30fc76fbe7fa3ea25717efa1c92')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages.gz')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-i386/Packages.bz2')
-        self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-i386.gz')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages')
+        self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/by-hash/MD5Sum/ab073d1f73bed52e7356c91161e8667e')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages.gz')
         self.check_exists('public/ppa/smira/dists/squeeze/main/binary-amd64/Packages.bz2')
+
+        self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-i386.gz')
         self.check_exists('public/ppa/smira/dists/squeeze/main/Contents-amd64.gz')
 
         self.check_exists('public/ppa/smira/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
@@ -608,14 +611,14 @@ class PublishSnapshot23Test(BaseTest):
 
 class PublishSnapshot24Test(BaseTest):
     """
-    publish snapshot: custom origin
+    publish snapshot: custom origin, notautomatic and butautomaticupgrades
     """
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
         "aptly snapshot create snap24 from mirror gnuplot-maverick",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 snap24"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 -notautomatic=yes -butautomaticupgrades=yes snap24"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
@@ -1001,3 +1004,18 @@ class PublishSnapshot36Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/binary-amd64/Release')
         self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')
+
+
+class PublishSnapshot37Test(BaseTest):
+    """
+    publish snapshot: mirror with double mirror update
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg wheezy",
+        "aptly mirror update -keyring=aptlytest.gpg wheezy",
+        "aptly snapshot create wheezy from mirror wheezy",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
+    gold_processor = BaseTest.expand_environ

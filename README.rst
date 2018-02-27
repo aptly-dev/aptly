@@ -2,11 +2,11 @@
 aptly
 =====
 
-.. image:: https://travis-ci.org/smira/aptly.png?branch=master
+.. image:: https://api.travis-ci.org/smira/aptly.svg?branch=master
     :target: https://travis-ci.org/smira/aptly
 
-.. image:: https://coveralls.io/repos/smira/aptly/badge.png?branch=HEAD
-    :target: https://coveralls.io/r/smira/aptly?branch=HEAD
+.. image:: https://coveralls.io/repos/smira/aptly/badge.svg?branch=master
+    :target: https://coveralls.io/r/smira/aptly?branch=master
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
@@ -64,7 +64,7 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.6+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.7+ required)::
 
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
@@ -72,6 +72,11 @@ If you have Go environment set up, you can build aptly from source by running (g
     make install
 
 Binary would be installed to ```$GOPATH/bin/aptly``.
+
+Contributing
+------------
+
+Please follow detailed documentation in `CONTRIBUTING.md <CONTRIBUTING.md>`_.
 
 Integrations
 ------------

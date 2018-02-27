@@ -38,6 +38,7 @@ Configuration file is stored in JSON format (default values shown below):
       "dependencyVerboseResolve": false,
       "gpgDisableSign": false,
       "gpgDisableVerify": false,
+      "gpgProvider": "gpg",
       "downloadSourcePackages": false,
       "skipLegacyPool": true,
       "ppaDistributorID": "ubuntu",
@@ -127,6 +128,10 @@ Options:
     don't verify remote mirrors with gpg(1), also can be disabled on
     per-mirror basis using `-ignore-signatures` flag when creating and updating mirrors
 
+  * `gpgProvider`:
+    implementation of PGP signing/validation - `gpg` for external `gpg` utility or
+    `internal` to use Go internal implementation
+
   * `downloadSourcePackages`:
     if enabled, all mirrors created would have flag set to download source packages;
     this setting could be controlled on per-mirror basis with `-with-sources` flag
@@ -141,6 +146,9 @@ Options:
   * `ppaDistributorID`, `ppaCodename`:
     specifies paramaters for short PPA url expansion, if left blank they default
     to output of `lsb_release` command
+
+  * `FileSystemPublishEndpoints`:
+    configuration of local filesystem publishing endpoints (see below)
 
   * `S3PublishEndpoints`:
     configuration of Amazon S3 publishing endpoints (see below)
@@ -219,6 +227,11 @@ and associated settings:
    * `disableMultiDel`:
      (optional) for S3-compatible cloud storages which do not support `MultiDel` S3 API,
      enable this setting (file deletion would be slower with this setting enabled)
+   * `forceSigV2`:
+     (optional) disable Signature V4 support, useful with non-AWS S3-compatible object stores
+     which do not support SigV4, shouldn't be enabled for AWS
+   * `debug`:
+     (optional) enables detailed request/response dump for each S3 operation
 
 In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
 publishing prefix on the command line, e.g.:
@@ -427,7 +440,7 @@ Options:
 {{/* options layout */}}
 {{define "options"}}
 {{range allFlags .Flag}}
-  * -`{{.Name}}`={{.DefValue}}:
+  * -`{{.Name}}`{{if ne .DefValue "false"}}={{.DefValue}}{{end}}:
     {{.Usage}}
 {{end}}
 {{end}}

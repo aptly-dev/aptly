@@ -30,6 +30,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 
 	s.config.RootDir = "/tmp/aptly"
 	s.config.DownloadConcurrency = 5
+	s.config.GpgProvider = "gpg"
 
 	s.config.FileSystemPublishRoots = map[string]FileSystemPublishRoot{"test": {
 		RootDir: "/opt/aptly-publish"}}
@@ -64,6 +65,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"dependencyVerboseResolve\": false,\n"+
 		"  \"gpgDisableSign\": false,\n"+
 		"  \"gpgDisableVerify\": false,\n"+
+		"  \"gpgProvider\": \"gpg\",\n"+
 		"  \"downloadSourcePackages\": false,\n"+
 		"  \"skipLegacyPool\": false,\n"+
 		"  \"ppaDistributorID\": \"\",\n"+

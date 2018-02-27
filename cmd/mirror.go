@@ -15,7 +15,7 @@ func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
 
 	keyRings := flags.Lookup("keyring").Value.Get().([]string)
 
-	verifier := &pgp.GpgVerifier{}
+	verifier := context.GetVerifier()
 	for _, keyRing := range keyRings {
 		verifier.AddKeyring(keyRing)
 	}

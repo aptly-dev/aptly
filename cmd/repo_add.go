@@ -6,7 +6,6 @@ import (
 
 	"github.com/smira/aptly/aptly"
 	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/pgp"
 	"github.com/smira/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -21,7 +20,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	verifier := &pgp.GpgVerifier{}
+	verifier := context.GetVerifier()
 
 	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
@@ -42,9 +41,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 
-	var packageFiles, failedFiles []string
+	var packageFiles, otherFiles, failedFiles []string
 
-	packageFiles, failedFiles = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
+	packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
 
 	var processedFiles, failedFiles2 []string
 
@@ -55,6 +54,8 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to import package files: %s", err)
 	}
+
+	processedFiles = append(processedFiles, otherFiles...)
 
 	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 

@@ -1,0 +1,11 @@
+opengpg: failure opening keyring '${HOME}/.gnupg/aptlytest.gpg': open ${HOME}/.gnupg/aptlytest.gpg: no such file or directory
+
+Looks like your keyring with trusted keys is empty. You might consider importing some keys.
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/InRelease...
+openpgp:  RSA key ID 8B48AD6246925553
+openpgp: Can't check signature: public key not found
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/Release...
+Downloading http://mirror.yandex.ru/debian-backports/dists/squeeze-backports/Release.gpg...
+openpgp:  RSA key ID 8B48AD6246925553
+openpgp: Can't check signature: public key not found
+ERROR: unable to fetch mirror: failed to verify detached signature: openpgp: signature made by unknown entity

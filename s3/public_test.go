@@ -160,6 +160,13 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	c.Check(err, IsNil)
 
 	s.AssertNoFile(c, "a/b")
+
+	s.PutFile(c, "lala/xyz", []byte("test"))
+
+	errp := s.prefixedStorage.Remove("xyz")
+	c.Check(errp, IsNil)
+
+	s.AssertNoFile(c, "lala/xyz")
 }
 
 func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
@@ -257,4 +264,46 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Spam"))
+
+	// for prefixed storage:
+	// first link from pool
+	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// 2nd link from pool, providing wrong path for source file
+	//
+	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
+	s.prefixedStorage.pathCache = nil
+	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
+	c.Check(err, IsNil)
+
+	c.Check(s.GetFile(c, "lala/pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
+
+}
+
+func (s *PublishedStorageSuite) TestSymLink(c *C) {
+	s.PutFile(c, "a/b", []byte("test"))
+
+	err := s.storage.SymLink("a/b", "a/b.link")
+	c.Check(err, IsNil)
+
+	var link string
+	link, err = s.storage.ReadLink("a/b.link")
+	c.Check(err, IsNil)
+	c.Check(link, Equals, "a/b")
+
+	c.Skip("copy not available in s3test")
+}
+
+func (s *PublishedStorageSuite) TestFileExists(c *C) {
+	s.PutFile(c, "a/b", []byte("test"))
+
+	exists, err := s.storage.FileExists("a/b")
+	c.Check(err, IsNil)
+	c.Check(exists, Equals, true)
+
+	exists, _ = s.storage.FileExists("a/b.invalid")
+	// Comment out as there is an error in s3test implementation
+	// c.Check(err, IsNil)
+	c.Check(exists, Equals, false)
 }

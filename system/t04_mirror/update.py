@@ -16,7 +16,7 @@ class UpdateMirror1Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures varnish"
 
@@ -187,7 +187,7 @@ class UpdateMirror13Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
 
@@ -201,7 +201,7 @@ class UpdateMirror14Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.varnish-cache.org/debian/ wheezy varnish-3.0",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
         "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
@@ -327,3 +327,49 @@ class UpdateMirror19Test(BaseTest):
 
     def output_processor(self, output):
         return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+
+
+class UpdateMirror20Test(BaseTest):
+    """
+    update mirrors: flat repository (internal GPG implementation)
+    """
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+    ]
+    configOverride = {"gpgProvider": "internal"}
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
+    outputMatchPrepare = filterOutSignature
+
+    def output_processor(self, output):
+        return "\n".join(sorted(output.split("\n")))
+
+
+class UpdateMirror21Test(BaseTest):
+    """
+    update mirrors: correct matching of Release checksums (internal pgp implementation)
+    """
+    longTest = False
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://packages.pagerduty.com/pdagent deb/"
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
+    outputMatchPrepare = filterOutSignature
+
+    def output_processor(self, output):
+        return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+
+
+class UpdateMirror22Test(BaseTest):
+    """
+    update mirrors: SHA512 checksums only
+    """
+    configOverride = {"gpgProvider": "internal"}
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 ./"
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
+    outputMatchPrepare = filterOutSignature
