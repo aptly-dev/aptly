@@ -206,12 +206,13 @@ template [man/aptly.1.ronn.tmpl](man/aptly.1.ronn.tmpl) is changed or any comman
 final rendered man page [man/aptly.1](man/aptly.1). In the end of the build, new man page is displayed for visual
 verification.
 
-Man page is built with small helper [_man/gen.go](man/gen.go) which pulls in template, command-line help from [cmd/](cmd/) folder
+Man page is built with small helper [\_man/gen.go](man/gen.go) which pulls in template, command-line help from [cmd/](cmd/) folder
 and runs that through [forked copy](https://github.com/smira/ronn) of [ronn](https://github.com/rtomayko/ronn).
 
-### Bash Completion
+### Bash and Zsh Completion
 
-Bash completion for aptly resides in the same repo under in [bash_completion.d/aptly](bash_completion.d/aptly). It's all hand-crafted.
+Bash and Zsh completion for aptly reside in the same repo under in [completion.d/aptly](completion.d/aptly) and
+[completion.d/\_aptly](completion.d/_aptly), respectively. It's all hand-crafted.
 When new option or command is introduced, bash completion should be updated to reflect that change.
 
 When aptly package is being built, it automatically pulls bash completion and man page into the package.

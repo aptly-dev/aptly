@@ -70,9 +70,10 @@ mem.png: mem.dat mem.gp
 
 goxc:
 	rm -rf root/
-	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d
+	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d/ root/usr/share/zsh/vendor-completions/
 	cp man/aptly.1 root/usr/share/man/man1
-	cp bash_completion.d/aptly root/etc/bash_completion.d
+	cp completion.d/aptly root/etc/bash_completion.d/
+	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
 	goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 

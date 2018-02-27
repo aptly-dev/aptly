@@ -639,6 +639,13 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				}
 			}
 
+			// Start a db batch. If we fill contents data we'll need
+			// to push each path of the package into the database.
+			// We'll want this batched so as to avoid an excessive
+			// amount of write() calls.
+			tempDB.StartBatch()
+			defer tempDB.FinishBatch()
+
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
 					var bufWriter *bufio.Writer
