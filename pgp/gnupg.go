@@ -229,7 +229,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 				keys[i] = string(result.MissingKeys[i])
 			}
 
-			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
+			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver pool.sks-keyservers.net --recv-keys %s\n\n",
 				strings.Join(keys, " "))
 
 			fmt.Printf("Sometimes keys are stored in repository root in file named Release.key, to import such key:\n\n")

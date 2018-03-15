@@ -54,7 +54,7 @@ system/env: system/requirements.txt
 system-test: install system/env
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	. system/env/bin/activate && APTLY_VERSION=$(VERSION) PATH=$(BINPATH)/:$(PATH) $(PYTHON) system/run.py --long $(TESTS)
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS)
 
 travis: $(TRAVIS_TARGET) check system-test
 
