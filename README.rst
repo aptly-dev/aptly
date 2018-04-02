@@ -109,6 +109,10 @@ CLI for aptly API:
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
 -   `Python aptly CLI (good for CI) <https://github.com/TimSusa/aptly_api_cli>`_ by Tim Susa
 
+GUI for aptly API:
+
+-   `Python aptly GUI (via pyqt5) <https://github.com/chnyda/python-aptly-gui>`_ by Cedric Hnyda
+
 Scala sbt:
 
 -   `sbt aptly plugin <https://github.com/amalakar/sbt-aptly>`_ by Arup Malakar
