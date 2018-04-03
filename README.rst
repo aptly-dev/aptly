@@ -48,7 +48,7 @@ To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list
 
 And import key that is used to sign the release::
 
-    $ apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
+    $ apt-key adv --keyserver pool.sks-keyservers.net --recv-keys ED75B5A4483DA07C
 
 After that you can install aptly as any other software package::
 
@@ -64,7 +64,7 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.7+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.8+ required)::
 
     mkdir -p $GOPATH/src/github.com/smira/aptly
     git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
@@ -108,6 +108,10 @@ CLI for aptly API:
 
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
 -   `Python aptly CLI (good for CI) <https://github.com/TimSusa/aptly_api_cli>`_ by Tim Susa
+
+GUI for aptly API:
+
+-   `Python aptly GUI (via pyqt5) <https://github.com/chnyda/python-aptly-gui>`_ by Cedric Hnyda
 
 Scala sbt:
 

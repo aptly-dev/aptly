@@ -61,6 +61,7 @@ class BaseTest(object):
     fixtureDB = False
     fixtureGpg = False
     fixtureWebServer = False
+    requiresFTP = False
 
     expectedCode = 0
     configFile = {
@@ -117,6 +118,8 @@ class BaseTest(object):
         if self.fixturePool and not os.path.exists(self.fixturePoolDir):
             return False
         if self.fixtureDB and not os.path.exists(self.fixtureDBDir):
+            return False
+        if self.requiresFTP and os.environ.get('NO_FTP_ACCESS', '') == 'yes':
             return False
 
         return True
