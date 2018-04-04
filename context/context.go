@@ -333,7 +333,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
-				Fatal(fmt.Errorf("published local storage %v not configured", name[6:]))
+				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
