@@ -92,7 +92,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"NotPolicyException"}
       ]
@@ -114,6 +113,7 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
+        {"shape":"InvalidAttachmentException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"LinkNameAlreadyInUseException"},
         {"shape":"IndexedAttributeMissingException"},
@@ -199,7 +199,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryAlreadyExistsException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"}
       ]
     },
@@ -265,7 +264,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"FacetValidationException"},
         {"shape":"LinkNameAlreadyInUseException"},
@@ -456,7 +454,8 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"ResourceNotFoundException"}
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NotNodeException"}
       ]
     },
     "DetachPolicy":{
@@ -476,7 +475,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"NotPolicyException"}
       ]
@@ -541,6 +539,25 @@
         {"shape":"InvalidArnException"}
       ]
     },
+    "GetAppliedSchemaVersion":{
+      "name":"GetAppliedSchemaVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/amazonclouddirectory/2017-01-11/schema/getappliedschema",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAppliedSchemaVersionRequest"},
+      "output":{"shape":"GetAppliedSchemaVersionResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"RetryableConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "GetDirectory":{
       "name":"GetDirectory",
       "http":{
@@ -577,6 +594,27 @@
         {"shape":"AccessDeniedException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"FacetNotFoundException"}
+      ]
+    },
+    "GetObjectAttributes":{
+      "name":"GetObjectAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/amazonclouddirectory/2017-01-11/object/attributes/get",
+        "responseCode":200
+      },
+      "input":{"shape":"GetObjectAttributesRequest"},
+      "output":{"shape":"GetObjectAttributesResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"RetryableConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"DirectoryNotEnabledException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"FacetValidationException"}
       ]
     },
     "GetObjectInformation":{
@@ -795,10 +833,12 @@
         {"shape":"InternalServiceException"},
         {"shape":"InvalidArnException"},
         {"shape":"RetryableConflictException"},
+        {"shape":"FacetValidationException"},
         {"shape":"ValidationException"},
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
+        {"shape":"InvalidNextTokenException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"NotIndexException"}
       ]
@@ -820,7 +860,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"FacetValidationException"}
@@ -843,7 +882,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"NotNodeException"}
@@ -887,7 +925,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"CannotListParentOfRootException"}
@@ -953,7 +990,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"NotPolicyException"}
@@ -1057,7 +1093,6 @@
         {"shape":"LimitExceededException"},
         {"shape":"AccessDeniedException"},
         {"shape":"DirectoryNotEnabledException"},
-        {"shape":"InvalidArnException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"ResourceNotFoundException"}
       ]
@@ -1247,6 +1282,47 @@
         {"shape":"FacetNotFoundException"},
         {"shape":"InvalidRuleException"}
       ]
+    },
+    "UpgradeAppliedSchema":{
+      "name":"UpgradeAppliedSchema",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/amazonclouddirectory/2017-01-11/schema/upgradeapplied",
+        "responseCode":200
+      },
+      "input":{"shape":"UpgradeAppliedSchemaRequest"},
+      "output":{"shape":"UpgradeAppliedSchemaResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"RetryableConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleSchemaException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidAttachmentException"}
+      ]
+    },
+    "UpgradePublishedSchema":{
+      "name":"UpgradePublishedSchema",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/amazonclouddirectory/2017-01-11/schema/upgradepublished",
+        "responseCode":200
+      },
+      "input":{"shape":"UpgradePublishedSchemaRequest"},
+      "output":{"shape":"UpgradePublishedSchemaResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"RetryableConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleSchemaException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidAttachmentException"},
+        {"shape":"LimitExceededException"}
+      ]
     }
   },
   "shapes":{
@@ -1336,6 +1412,7 @@
     "AttachPolicyRequest":{
       "type":"structure",
       "required":[
+        "DirectoryArn",
         "PolicyReference",
         "ObjectReference"
       ],
@@ -1576,10 +1653,7 @@
       "type":"structure",
       "required":[
         "SchemaFacet",
-        "ObjectAttributeList",
-        "ParentReference",
-        "LinkName",
-        "BatchReferenceName"
+        "ObjectAttributeList"
       ],
       "members":{
         "SchemaFacet":{"shape":"SchemaFacetList"},
@@ -1628,8 +1702,7 @@
       "type":"structure",
       "required":[
         "ParentReference",
-        "LinkName",
-        "BatchReferenceName"
+        "LinkName"
       ],
       "members":{
         "ParentReference":{"shape":"ObjectReference"},
@@ -1669,6 +1742,25 @@
     "BatchDetachTypedLinkResponse":{
       "type":"structure",
       "members":{
+      }
+    },
+    "BatchGetObjectAttributes":{
+      "type":"structure",
+      "required":[
+        "ObjectReference",
+        "SchemaFacet",
+        "AttributeNames"
+      ],
+      "members":{
+        "ObjectReference":{"shape":"ObjectReference"},
+        "SchemaFacet":{"shape":"SchemaFacet"},
+        "AttributeNames":{"shape":"AttributeNameList"}
+      }
+    },
+    "BatchGetObjectAttributesResponse":{
+      "type":"structure",
+      "members":{
+        "Attributes":{"shape":"AttributeKeyAndValueList"}
       }
     },
     "BatchGetObjectInformation":{
@@ -1885,6 +1977,7 @@
         "ListAttachedIndices":{"shape":"BatchListAttachedIndices"},
         "ListObjectParentPaths":{"shape":"BatchListObjectParentPaths"},
         "GetObjectInformation":{"shape":"BatchGetObjectInformation"},
+        "GetObjectAttributes":{"shape":"BatchGetObjectAttributes"},
         "ListObjectPolicies":{"shape":"BatchListObjectPolicies"},
         "ListPolicyAttachments":{"shape":"BatchListPolicyAttachments"},
         "LookupPolicy":{"shape":"BatchLookupPolicy"},
@@ -1940,6 +2033,7 @@
         "ListObjectAttributes":{"shape":"BatchListObjectAttributesResponse"},
         "ListObjectChildren":{"shape":"BatchListObjectChildrenResponse"},
         "GetObjectInformation":{"shape":"BatchGetObjectInformationResponse"},
+        "GetObjectAttributes":{"shape":"BatchGetObjectAttributesResponse"},
         "ListAttachedIndices":{"shape":"BatchListAttachedIndicesResponse"},
         "ListObjectParentPaths":{"shape":"BatchListObjectParentPathsResponse"},
         "ListObjectPolicies":{"shape":"BatchListObjectPoliciesResponse"},
@@ -2007,6 +2101,7 @@
         "AccessDeniedException",
         "InvalidAttachmentException",
         "NotIndexException",
+        "NotNodeException",
         "IndexedAttributeMissingException",
         "ObjectAlreadyDetachedException",
         "NotPolicyException",
@@ -2617,6 +2712,19 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "GetAppliedSchemaVersionRequest":{
+      "type":"structure",
+      "required":["SchemaArn"],
+      "members":{
+        "SchemaArn":{"shape":"Arn"}
+      }
+    },
+    "GetAppliedSchemaVersionResponse":{
+      "type":"structure",
+      "members":{
+        "AppliedSchemaArn":{"shape":"Arn"}
+      }
+    },
     "GetDirectoryRequest":{
       "type":"structure",
       "required":["DirectoryArn"],
@@ -2654,6 +2762,36 @@
       "type":"structure",
       "members":{
         "Facet":{"shape":"Facet"}
+      }
+    },
+    "GetObjectAttributesRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryArn",
+        "ObjectReference",
+        "SchemaFacet",
+        "AttributeNames"
+      ],
+      "members":{
+        "DirectoryArn":{
+          "shape":"Arn",
+          "location":"header",
+          "locationName":"x-amz-data-partition"
+        },
+        "ObjectReference":{"shape":"ObjectReference"},
+        "ConsistencyLevel":{
+          "shape":"ConsistencyLevel",
+          "location":"header",
+          "locationName":"x-amz-consistency-level"
+        },
+        "SchemaFacet":{"shape":"SchemaFacet"},
+        "AttributeNames":{"shape":"AttributeNameList"}
+      }
+    },
+    "GetObjectAttributesResponse":{
+      "type":"structure",
+      "members":{
+        "Attributes":{"shape":"AttributeKeyAndValueList"}
       }
     },
     "GetObjectInformationRequest":{
@@ -2721,6 +2859,14 @@
       "members":{
         "IdentityAttributeOrder":{"shape":"AttributeNameList"}
       }
+    },
+    "IncompatibleSchemaException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"}
+      },
+      "error":{"httpStatusCode":400},
+      "exception":true
     },
     "IndexAttachment":{
       "type":"structure",
@@ -2837,6 +2983,7 @@
       "required":["DirectoryArn"],
       "members":{
         "DirectoryArn":{"shape":"Arn"},
+        "SchemaArn":{"shape":"Arn"},
         "NextToken":{"shape":"NextToken"},
         "MaxResults":{"shape":"NumberResults"}
       }
@@ -3208,6 +3355,7 @@
     "ListPublishedSchemaArnsRequest":{
       "type":"structure",
       "members":{
+        "SchemaArn":{"shape":"Arn"},
         "NextToken":{"shape":"NextToken"},
         "MaxResults":{"shape":"NumberResults"}
       }
@@ -3452,6 +3600,7 @@
           "locationName":"x-amz-data-partition"
         },
         "Version":{"shape":"Version"},
+        "MinorVersion":{"shape":"Version"},
         "Name":{"shape":"SchemaName"}
       }
     },
@@ -3892,6 +4041,45 @@
     "UpdateTypedLinkFacetResponse":{
       "type":"structure",
       "members":{
+      }
+    },
+    "UpgradeAppliedSchemaRequest":{
+      "type":"structure",
+      "required":[
+        "PublishedSchemaArn",
+        "DirectoryArn"
+      ],
+      "members":{
+        "PublishedSchemaArn":{"shape":"Arn"},
+        "DirectoryArn":{"shape":"Arn"},
+        "DryRun":{"shape":"Bool"}
+      }
+    },
+    "UpgradeAppliedSchemaResponse":{
+      "type":"structure",
+      "members":{
+        "UpgradedSchemaArn":{"shape":"Arn"},
+        "DirectoryArn":{"shape":"Arn"}
+      }
+    },
+    "UpgradePublishedSchemaRequest":{
+      "type":"structure",
+      "required":[
+        "DevelopmentSchemaArn",
+        "PublishedSchemaArn",
+        "MinorVersion"
+      ],
+      "members":{
+        "DevelopmentSchemaArn":{"shape":"Arn"},
+        "PublishedSchemaArn":{"shape":"Arn"},
+        "MinorVersion":{"shape":"Version"},
+        "DryRun":{"shape":"Bool"}
+      }
+    },
+    "UpgradePublishedSchemaResponse":{
+      "type":"structure",
+      "members":{
+        "UpgradedSchemaArn":{"shape":"Arn"}
       }
     },
     "ValidationException":{

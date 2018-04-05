@@ -27,7 +27,7 @@ func TestMatch(t *testing.T) {
 		}
 
 		if match.Extension != test.ext {
-			t.Fatalf("Invalid image type: %s", match.Extension)
+			t.Fatalf("Invalid image type: %s != %s", match.Extension, test.ext)
 		}
 	}
 }
@@ -48,7 +48,7 @@ func TestMatchFile(t *testing.T) {
 	for _, test := range cases {
 		kind, _ := MatchFile("./fixtures/sample." + test.ext)
 		if kind.Extension != test.ext {
-			t.Fatalf("Invalid image type: %s", kind.Extension)
+			t.Fatalf("Invalid image type: %s != %s", kind.Extension, test.ext)
 		}
 	}
 }

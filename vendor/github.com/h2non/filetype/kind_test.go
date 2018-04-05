@@ -34,7 +34,7 @@ func TestIsKind(t *testing.T) {
 
 	for _, test := range cases {
 		if IsImage(test.buf) != test.match {
-			t.Fatalf("Invalid match: %s", test.match)
+			t.Fatalf("Invalid match: %t", test.match)
 		}
 	}
 }

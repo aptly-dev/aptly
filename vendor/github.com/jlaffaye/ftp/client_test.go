@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/textproto"
+	"strings"
 	"testing"
 	"time"
 )
@@ -67,6 +68,7 @@ func testConn(t *testing.T, disableEPSV bool) {
 		t.Error(err)
 	}
 
+	// Read without deadline
 	r, err := c.Retr("tset")
 	if err != nil {
 		t.Error(err)
@@ -79,8 +81,25 @@ func testConn(t *testing.T, disableEPSV bool) {
 			t.Errorf("'%s'", buf)
 		}
 		r.Close()
+		r.Close() // test we can close two times
 	}
 
+	// Read with deadline
+	r, err = c.Retr("tset")
+	if err != nil {
+		t.Error(err)
+	} else {
+		r.SetDeadline(time.Now())
+		_, err := ioutil.ReadAll(r)
+		if err == nil {
+			t.Error("deadline should have caused error")
+		} else if !strings.HasSuffix(err.Error(), "i/o timeout") {
+			t.Error(err)
+		}
+		r.Close()
+	}
+
+	// Read with offset
 	r, err = c.RetrFrom("tset", 5)
 	if err != nil {
 		t.Error(err)
@@ -248,4 +267,192 @@ func TestWrongLogin(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
+}
+
+func TestDeleteDirRecur(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+	c, err := DialTimeout("localhost:21", 5*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Login("anonymous", "anonymous")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.NoOp()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.ChangeDir("incoming")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.MakeDir("testDir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.ChangeDir("testDir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.MakeDir("anotherDir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	data := bytes.NewBufferString("test text")
+	err = c.Stor("fileTest", data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.ChangeDirToParent()
+	if err != nil {
+		t.Error(err)
+	}
+	err = c.RemoveDirRecur("testDir")
+	if err != nil {
+		t.Error(err)
+	}
+	dir, err := c.CurrentDir()
+	if err != nil {
+		t.Error(err)
+	} else {
+		if dir != "/incoming" {
+			t.Error("Wrong dir: " + dir)
+		}
+	}
+
+	err = c.ChangeDir("testDir")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	err = c.Logout()
+	if err != nil {
+		if protoErr := err.(*textproto.Error); protoErr != nil {
+			if protoErr.Code != StatusNotImplemented {
+				t.Error(err)
+			}
+		} else {
+			t.Error(err)
+		}
+	}
+
+	c.Quit()
+}
+
+func TestFileDeleteDirRecur(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	c, err := DialTimeout("localhost:21", 5*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Login("anonymous", "anonymous")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.ChangeDir("incoming")
+	if err != nil {
+		t.Error(err)
+	}
+
+	data := bytes.NewBufferString(testData)
+	err = c.Stor("testFile", data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.RemoveDirRecur("testFile")
+	if err == nil {
+		t.Fatal("expected error got nill")
+	}
+
+	dir, err := c.CurrentDir()
+	if err != nil {
+		t.Error(err)
+	} else {
+		if dir != "/incoming" {
+			t.Error("Wrong dir: " + dir)
+		}
+	}
+
+	err = c.Delete("testFile")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.Logout()
+	if err != nil {
+		if protoErr := err.(*textproto.Error); protoErr != nil {
+			if protoErr.Code != StatusNotImplemented {
+				t.Error(err)
+			}
+		} else {
+			t.Error(err)
+		}
+	}
+
+	c.Quit()
+}
+
+func TestMissingFolderDeleteDirRecur(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	c, err := DialTimeout("localhost:21", 5*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Login("anonymous", "anonymous")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.ChangeDir("incoming")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = c.RemoveDirRecur("test")
+	if err == nil {
+		t.Fatal("expected error got nill")
+	}
+
+	dir, err := c.CurrentDir()
+	if err != nil {
+		t.Error(err)
+	} else {
+		if dir != "/incoming" {
+			t.Error("Wrong dir: " + dir)
+		}
+	}
+
+	err = c.Logout()
+	if err != nil {
+		if protoErr := err.(*textproto.Error); protoErr != nil {
+			if protoErr.Code != StatusNotImplemented {
+				t.Error(err)
+			}
+		} else {
+			t.Error(err)
+		}
+	}
+
+	c.Quit()
 }
