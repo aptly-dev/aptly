@@ -23,6 +23,8 @@ var (
 	TypeAr     = newType("ar", "application/x-unix-archive")
 	TypeZ      = newType("Z", "application/x-compress")
 	TypeLz     = newType("lz", "application/x-lzip")
+	TypeRpm    = newType("rpm", "application/x-rpm")
+	TypeElf    = newType("elf", "application/x-executable")
 )
 
 var Archive = Map{
@@ -48,6 +50,8 @@ var Archive = Map{
 	TypeAr:     Ar,
 	TypeZ:      Z,
 	TypeLz:     Lz,
+	TypeRpm:    Rpm,
+	TypeElf:    Elf,
 }
 
 func Epub(buf []byte) bool {
@@ -198,4 +202,16 @@ func Lz(buf []byte) bool {
 	return len(buf) > 3 &&
 		buf[0] == 0x4C && buf[1] == 0x5A &&
 		buf[2] == 0x49 && buf[3] == 0x50
+}
+
+func Rpm(buf []byte) bool {
+	return len(buf) > 96 &&
+		buf[0] == 0xED && buf[1] == 0xAB &&
+		buf[2] == 0xEE && buf[3] == 0xDB
+}
+
+func Elf(buf []byte) bool {
+	return len(buf) > 52 &&
+		buf[0] == 0x7F && buf[1] == 0x45 &&
+		buf[2] == 0x4C && buf[3] == 0x46
 }

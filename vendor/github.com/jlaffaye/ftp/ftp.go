@@ -30,6 +30,9 @@ type ServerConn struct {
 	// Do not use EPSV mode
 	DisableEPSV bool
 
+	// Timezone that the server is in
+	Location *time.Location
+
 	conn          *textproto.Conn
 	host          string
 	timeout       time.Duration
@@ -45,10 +48,11 @@ type Entry struct {
 	Time time.Time
 }
 
-// response represent a data-connection
-type response struct {
-	conn net.Conn
-	c    *ServerConn
+// Response represents a data-connection
+type Response struct {
+	conn   net.Conn
+	c      *ServerConn
+	closed bool
 }
 
 // Connect is an alias to Dial, for backward compatibility
@@ -73,19 +77,16 @@ func DialTimeout(addr string, timeout time.Duration) (*ServerConn, error) {
 
 	// Use the resolved IP address in case addr contains a domain name
 	// If we use the domain name, we might not resolve to the same IP.
-	remoteAddr := tconn.RemoteAddr().String()
-	host, _, err := net.SplitHostPort(remoteAddr)
-	if err != nil {
-		return nil, err
-	}
+	remoteAddr := tconn.RemoteAddr().(*net.TCPAddr)
 
 	conn := textproto.NewConn(tconn)
 
 	c := &ServerConn{
 		conn:     conn,
-		host:     host,
+		host:     remoteAddr.IP.String(),
 		timeout:  timeout,
 		features: make(map[string]string),
+		Location: time.UTC,
 	}
 
 	_, _, err = c.conn.ReadResponse(StatusReady)
@@ -134,11 +135,9 @@ func (c *ServerConn) Login(user, password string) error {
 	}
 
 	// Switch to UTF-8
-	if err := c.setUTF8(); err != nil {
-		return err
-	}
+	err = c.setUTF8()
 
-	return nil
+	return err
 }
 
 // feat issues a FEAT FTP command to list the additional commands supported by
@@ -221,7 +220,7 @@ func (c *ServerConn) epsv() (port int, err error) {
 }
 
 // pasv issues a "PASV" command to get a port number for a data connection.
-func (c *ServerConn) pasv() (port int, err error) {
+func (c *ServerConn) pasv() (host string, port int, err error) {
 	_, line, err := c.cmd(StatusPassiveMode, "PASV")
 	if err != nil {
 		return
@@ -231,14 +230,16 @@ func (c *ServerConn) pasv() (port int, err error) {
 	start := strings.Index(line, "(")
 	end := strings.LastIndex(line, ")")
 	if start == -1 || end == -1 {
-		return 0, errors.New("Invalid PASV response format")
+		err = errors.New("Invalid PASV response format")
+		return
 	}
 
 	// We have to split the response string
 	pasvData := strings.Split(line[start+1:end], ",")
 
 	if len(pasvData) < 6 {
-		return 0, errors.New("Invalid PASV response format")
+		err = errors.New("Invalid PASV response format")
+		return
 	}
 
 	// Let's compute the port number
@@ -256,15 +257,18 @@ func (c *ServerConn) pasv() (port int, err error) {
 
 	// Recompose port
 	port = portPart1*256 + portPart2
+
+	// Make the IP address to connect to
+	host = strings.Join(pasvData[0:4], ".")
 	return
 }
 
-// getDataConnPort returns a port for a new data connection
+// getDataConnPort returns a host, port for a new data connection
 // it uses the best available method to do so
-func (c *ServerConn) getDataConnPort() (int, error) {
+func (c *ServerConn) getDataConnPort() (string, int, error) {
 	if !c.DisableEPSV {
 		if port, err := c.epsv(); err == nil {
-			return port, nil
+			return c.host, port, nil
 		}
 
 		// if there is an error, disable EPSV for the next attempts
@@ -276,12 +280,12 @@ func (c *ServerConn) getDataConnPort() (int, error) {
 
 // openDataConn creates a new FTP data connection.
 func (c *ServerConn) openDataConn() (net.Conn, error) {
-	port, err := c.getDataConnPort()
+	host, port, err := c.getDataConnPort()
 	if err != nil {
 		return nil, err
 	}
 
-	return net.DialTimeout("tcp", net.JoinHostPort(c.host, strconv.Itoa(port)), c.timeout)
+	return net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), c.timeout)
 }
 
 // cmd is a helper function to execute a command and check for the expected FTP
@@ -337,7 +341,7 @@ func (c *ServerConn) NameList(path string) (entries []string, err error) {
 		return
 	}
 
-	r := &response{conn, c}
+	r := &Response{conn: conn, c: c}
 	defer r.Close()
 
 	scanner := bufio.NewScanner(r)
@@ -353,14 +357,14 @@ func (c *ServerConn) NameList(path string) (entries []string, err error) {
 // List issues a LIST FTP command.
 func (c *ServerConn) List(path string) (entries []*Entry, err error) {
 	var cmd string
-	var parseFunc func(string) (*Entry, error)
+	var parser parseFunc
 
 	if c.mlstSupported {
 		cmd = "MLSD"
-		parseFunc = parseRFC3659ListLine
+		parser = parseRFC3659ListLine
 	} else {
 		cmd = "LIST"
-		parseFunc = parseListLine
+		parser = parseListLine
 	}
 
 	conn, err := c.cmdDataConnFrom(0, "%s %s", cmd, path)
@@ -368,12 +372,13 @@ func (c *ServerConn) List(path string) (entries []*Entry, err error) {
 		return
 	}
 
-	r := &response{conn, c}
+	r := &Response{conn: conn, c: c}
 	defer r.Close()
 
 	scanner := bufio.NewScanner(r)
+	now := time.Now()
 	for scanner.Scan() {
-		entry, err := parseFunc(scanner.Text())
+		entry, err := parser(scanner.Text(), now, c.Location)
 		if err == nil {
 			entries = append(entries, entry)
 		}
@@ -431,7 +436,7 @@ func (c *ServerConn) FileSize(path string) (int64, error) {
 // FTP server.
 //
 // The returned ReadCloser must be closed to cleanup the FTP data connection.
-func (c *ServerConn) Retr(path string) (io.ReadCloser, error) {
+func (c *ServerConn) Retr(path string) (*Response, error) {
 	return c.RetrFrom(path, 0)
 }
 
@@ -439,13 +444,13 @@ func (c *ServerConn) Retr(path string) (io.ReadCloser, error) {
 // FTP server, the server will not send the offset first bytes of the file.
 //
 // The returned ReadCloser must be closed to cleanup the FTP data connection.
-func (c *ServerConn) RetrFrom(path string, offset uint64) (io.ReadCloser, error) {
+func (c *ServerConn) RetrFrom(path string, offset uint64) (*Response, error) {
 	conn, err := c.cmdDataConnFrom(offset, "RETR %s", path)
 	if err != nil {
 		return nil, err
 	}
 
-	return &response{conn, c}, nil
+	return &Response{conn: conn, c: c}, nil
 }
 
 // Stor issues a STOR FTP command to store a file to the remote FTP server.
@@ -495,6 +500,41 @@ func (c *ServerConn) Delete(path string) error {
 	return err
 }
 
+// RemoveDirRecur deletes a non-empty folder recursively using
+// RemoveDir and Delete
+func (c *ServerConn) RemoveDirRecur(path string) error {
+	err := c.ChangeDir(path)
+	if err != nil {
+		return err
+	}
+	currentDir, err := c.CurrentDir()
+	if err != nil {
+		return err
+	}
+	entries, err := c.List(currentDir)
+	for _, entry := range entries {
+		if entry.Name != ".." && entry.Name != "." {
+			if entry.Type == EntryTypeFolder {
+				err = c.RemoveDirRecur(currentDir + "/" + entry.Name)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = c.Delete(entry.Name)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	err = c.ChangeDirToParent()
+	if err != nil {
+		return err
+	}
+	err = c.RemoveDir(currentDir)
+	return err
+}
+
 // MakeDir issues a MKD FTP command to create the specified directory on the
 // remote FTP server.
 func (c *ServerConn) MakeDir(path string) error {
@@ -531,16 +571,26 @@ func (c *ServerConn) Quit() error {
 }
 
 // Read implements the io.Reader interface on a FTP data connection.
-func (r *response) Read(buf []byte) (int, error) {
+func (r *Response) Read(buf []byte) (int, error) {
 	return r.conn.Read(buf)
 }
 
 // Close implements the io.Closer interface on a FTP data connection.
-func (r *response) Close() error {
+// After the first call, Close will do nothing and return nil.
+func (r *Response) Close() error {
+	if r.closed {
+		return nil
+	}
 	err := r.conn.Close()
 	_, _, err2 := r.c.conn.ReadResponse(StatusClosingDataConnection)
 	if err2 != nil {
 		err = err2
 	}
+	r.closed = true
 	return err
+}
+
+// SetDeadline sets the deadlines associated with the connection.
+func (r *Response) SetDeadline(t time.Time) error {
+	return r.conn.SetDeadline(t)
 }
