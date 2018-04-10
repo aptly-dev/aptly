@@ -56,8 +56,8 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "7f68df2a5baf19398d17def23a514a6e617e5937"
-  version = "v1.13.28"
+  revision = "a72204b9bf8d48230ee0fe8995613b394c66f2da"
+  version = "v1.13.31"
 
 [[projects]]
   name = "github.com/cheggaaa/pb"
