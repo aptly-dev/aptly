@@ -329,6 +329,37 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 	return file
 }
 
+func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile {
+	if arch == ArchitectureSource {
+		udeb = false
+	}
+	key := fmt.Sprintf("lci-%s-%v", arch, udeb)
+	file, ok := files.indexes[key]
+	if !ok {
+		var relativePath string
+
+		if udeb {
+			relativePath = fmt.Sprintf("Contents-udeb-%s", arch)
+		} else {
+			relativePath = fmt.Sprintf("Contents-%s", arch)
+		}
+
+		file = &indexFile{
+			parent:        files,
+			discardable:   true,
+			compressable:  true,
+			onlyGzip:      true,
+			signable:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
 func (files *indexFiles) ReleaseFile() *indexFile {
 	return &indexFile{
 		parent:       files,

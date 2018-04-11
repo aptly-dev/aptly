@@ -54,6 +54,7 @@ class PublishRepo1Test(BaseTest):
         self.check_file_contents('public/dists/maverick/main/source/Sources', 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/main/Contents-i386.gz', 'contents_i386', match_prepare=ungzip_if_required)
+        self.check_file_contents('public/dists/maverick/Contents-i386.gz', 'contents_i386_legacy', match_prepare=ungzip_if_required)
 
         # verify signatures
         self.run_cmd(["gpg", "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
@@ -92,7 +93,8 @@ class PublishRepo1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
-                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz']):
+                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz',
+                             'Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -492,7 +494,7 @@ class PublishRepo17Test(BaseTest):
                              'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',
                              'main/source/Release', 'contrib/source/Release',
                              'main/binary-i386/Release', 'contrib/binary-i386/Release',
-                             'main/Contents-i386.gz']):
+                             'main/Contents-i386.gz', 'Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
