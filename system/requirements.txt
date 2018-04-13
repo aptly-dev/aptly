@@ -3,4 +3,3 @@ requests
 requests-unixsocket
 python-swiftclient
 flake8
-google_compute_engine
