@@ -4,19 +4,13 @@ PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python
 TESTS?=
 BINPATH?=$(GOPATH)/bin
+RUN_LONG_TESTS?=yes
 
-ifeq ($(GOVERSION), devel)
-TRAVIS_TARGET=coveralls
-else
-TRAVIS_TARGET=test
-endif
+GO_1_10_AND_HIGHER=$(shell (printf '%s\n' go1.10 $(GOVERSION) | sort -cV >/dev/null 2>&1) && echo "yes")
 
 all: test check system-test
 
 prepare:
-	go get -u github.com/mattn/goveralls
-	go get -u github.com/axw/gocov/gocov
-	go get -u golang.org/x/tools/cmd/cover
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 
@@ -24,45 +18,39 @@ dev:
 	go get -u github.com/golang/dep/...
 	go get -u github.com/laher/goxc
 
-coverage.out:
-	rm -f coverage.*.out
-	for i in $(PACKAGES); do go test -coverprofile=coverage.$$i.out -covermode=count ./$$i; done
-	echo "mode: count" > coverage.out
-	grep -v -h "mode: count" coverage.*.out >> coverage.out
-	rm -f coverage.*.out
-
-coverage: coverage.out
-	go tool cover -html=coverage.out
-	rm -f coverage.out
-
 check: system/env
+ifeq ($(RUN_LONG_TESTS), yes)
 	if [ -x travis_wait ]; then \
 		travis_wait gometalinter --config=linter.json ./...; \
 	else \
 		gometalinter --config=linter.json ./...; \
 	fi
 	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=system/env/ system/
+endif
 
 install:
 	go install -v -ldflags "-X main.Version=$(VERSION)"
 
 system/env: system/requirements.txt
+ifeq ($(RUN_LONG_TESTS), yes)
 	rm -rf system/env
 	virtualenv system/env
 	system/env/bin/pip install -r system/requirements.txt
+endif
 
 system-test: install system/env
+ifeq ($(RUN_LONG_TESTS), yes)
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS)
-
-travis: $(TRAVIS_TARGET) check system-test
+endif
 
 test:
+ifeq ($(GO_1_10_AND_HIGHER), yes)
+	go test -v ./... -gocheck.v=true -race -coverprofile=coverage.txt -covermode=atomic
+else
 	go test -v `go list ./... | grep -v vendor/` -gocheck.v=true
-
-coveralls: coverage.out
-	$(BINPATH)/goveralls -service travis-ci.org -coverprofile=coverage.out -repotoken=$(COVERALLS_TOKEN)
+endif
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp
@@ -83,4 +71,4 @@ man:
 version:
 	@echo $(VERSION)
 
-.PHONY: coverage.out man version
+.PHONY: man version

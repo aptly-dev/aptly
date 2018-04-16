@@ -22,8 +22,7 @@ _testmain.go
 *.exe
 *.test
 
-coverage.html
-coverage*.out
+coverage.txt
 
 *.pyc
 

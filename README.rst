@@ -5,8 +5,8 @@ aptly
 .. image:: https://api.travis-ci.org/smira/aptly.svg?branch=master
     :target: https://travis-ci.org/smira/aptly
 
-.. image:: https://coveralls.io/repos/smira/aptly/badge.svg?branch=master
-    :target: https://coveralls.io/r/smira/aptly?branch=master
+.. image:: https://codecov.io/gh/smira/aptly/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/smira/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
