@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
+	ctx "github.com/aptly-dev/aptly/context"
 	"github.com/gin-gonic/gin"
-	ctx "github.com/smira/aptly/context"
 )
 
 var context *ctx.AptlyContext

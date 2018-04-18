@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/smira/go-uuid/uuid"
 )
 

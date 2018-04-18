@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/DisposaBoy/JsonConfigReader"
-	"github.com/smira/aptly/pgp"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 // UploadersRule is single rule of format: what packages can group or key upload

@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/console"
+	"github.com/aptly-dev/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )

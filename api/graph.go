@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/aptly-dev/aptly/deb"
 	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/deb"
 )
 
 // GET /api/graph.:ext?layout=[vertical|horizontal(default)]

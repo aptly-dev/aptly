@@ -6,10 +6,10 @@ import (
 	"sort"
 	"time"
 
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/query"
 	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/query"
 )
 
 // Lock order acquisition (canonical):

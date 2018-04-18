@@ -77,7 +77,7 @@ func (s *AptlyContextSuite) SetUpTest(c *C) {
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
-	// https://github.com/smira/aptly/issues/711
+	// https://github.com/aptly-dev/aptly/issues/711
 	// This will fail on account of us not having a config, so the
 	// storage never exists.
 	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },

@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/files"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/files"
 	"github.com/ugorji/go/codec"
 
 	. "gopkg.in/check.v1"

@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/smira/aptly/api"
-	"github.com/smira/aptly/systemd/activation"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/api"
+	"github.com/aptly-dev/aptly/systemd/activation"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )

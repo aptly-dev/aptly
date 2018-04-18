@@ -2,17 +2,17 @@
 aptly
 =====
 
-.. image:: https://api.travis-ci.org/smira/aptly.svg?branch=master
-    :target: https://travis-ci.org/smira/aptly
+.. image:: https://api.travis-ci.org/aptly-dev/aptly.svg?branch=master
+    :target: https://travis-ci.org/aptly-dev/aptly
 
-.. image:: https://codecov.io/gh/smira/aptly/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/smira/aptly
+.. image:: https://codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
-    :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+    :target: https://gitter.im/aptly-dev/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/smira/aptly
-    :target: http://goreportcard.com/report/smira/aptly
+.. image:: http://goreportcard.com/badge/aptly-dev/aptly
+    :target: http://goreportcard.com/report/aptly-dev/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
@@ -66,9 +66,9 @@ Binary executables (depends almost only on libc) are available for download from
 
 If you have Go environment set up, you can build aptly from source by running (go 1.8+ required)::
 
-    mkdir -p $GOPATH/src/github.com/smira/aptly
-    git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
-    cd $GOPATH/src/github.com/smira/aptly
+    mkdir -p $GOPATH/src/github.com/aptly-dev/aptly
+    git clone https://github.com/aptly-dev/aptly $GOPATH/src/github.com/aptly-dev/aptly
+    cd $GOPATH/src/github.com/aptly-dev/aptly
     make install
 
 Binary would be installed to ```$GOPATH/bin/aptly``.

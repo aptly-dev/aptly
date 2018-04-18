@@ -15,11 +15,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/http"
-	"github.com/smira/aptly/pgp"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/http"
+	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 )

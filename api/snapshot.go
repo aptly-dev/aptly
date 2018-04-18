@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/deb"
 	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/deb"
 )
 
 // GET /api/snapshots
