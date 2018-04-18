@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/smira/commander"
 )
 

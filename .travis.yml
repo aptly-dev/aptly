@@ -3,7 +3,7 @@ sudo: required
 
 language: go
 
-go_import_path: github.com/smira/aptly
+go_import_path: github.com/aptly-dev/aptly
 
 addons:
   apt:

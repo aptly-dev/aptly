@@ -11,8 +11,8 @@ import (
 
 	"github.com/smira/go-uuid/uuid"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 // PackagePool is deduplicated storage of package files on filesystem

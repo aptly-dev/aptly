@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/ncw/swift"
 	"github.com/pkg/errors"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 )
 
 // PublishedStorage abstract file system with published files (actually hosted on Swift)

@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/utils"
 )
 
 // GET /api/repos

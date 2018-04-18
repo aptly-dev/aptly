@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/query"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )

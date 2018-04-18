@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/smira/aptly/pgp"
+	"github.com/aptly-dev/aptly/pgp"
 
 	. "gopkg.in/check.v1"
 )

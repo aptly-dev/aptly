@@ -4,9 +4,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/files"
+	"github.com/aptly-dev/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )
