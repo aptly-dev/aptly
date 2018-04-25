@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/stretchr/testify/assert"
 	. "gopkg.in/check.v1"
 )
 
@@ -28,8 +27,9 @@ func (s *GnupgSuite) TestGPG1(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	signer := GpgSigner{}
-	assert.NoError(c, signer.Init())
-	assert.Equal(c, "gpg", signer.gpg)
+	err := signer.Init()
+	c.Assert(err, IsNil)
+	c.Assert(signer.gpg, Equals, "gpg")
 }
 
 // gpg(2) + gpg1 installed = pick gpg1
@@ -39,8 +39,9 @@ func (s *GnupgSuite) TestGPG1Not2(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	signer := GpgSigner{}
-	assert.NoError(c, signer.Init())
-	assert.Equal(c, "gpg1", signer.gpg)
+	err := signer.Init()
+	c.Assert(err, IsNil)
+	c.Assert(signer.gpg, Equals, "gpg1")
 }
 
 // If gpg == gpg2 and no gpg1 is available = error
@@ -50,8 +51,9 @@ func (s *GnupgSuite) TestGPGNothing(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	signer := GpgSigner{}
-	assert.Error(c, signer.Init())
-	assert.Equal(c, "", signer.gpg)
+	err := signer.Init()
+	c.Assert(err, NotNil)
+	c.Assert(signer.gpg, Equals, "")
 }
 
 // If gpgv == gpgv1 = pick gpgv
@@ -61,8 +63,9 @@ func (s *GnupgSuite) TestGPGV1(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	verifier := GpgVerifier{}
-	assert.NoError(c, verifier.InitKeyring())
-	assert.Equal(c, "gpgv", verifier.gpgv)
+	err := verifier.InitKeyring()
+	c.Assert(err, IsNil)
+	c.Assert(verifier.gpgv, Equals, "gpgv")
 }
 
 // gpgv(2) + gpgv1 installed = pick gpgv1
@@ -72,8 +75,9 @@ func (s *GnupgSuite) TestGPGV1Not2(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	verifier := GpgVerifier{}
-	assert.NoError(c, verifier.InitKeyring())
-	assert.Equal(c, "gpgv1", verifier.gpgv)
+	err := verifier.InitKeyring()
+	c.Assert(err, IsNil)
+	c.Assert(verifier.gpgv, Equals, "gpgv1")
 }
 
 // If gpgv == gpgv2 and no gpgv1 is available = error
@@ -83,6 +87,7 @@ func (s *GnupgSuite) TestGPGVNothing(c *C) {
 	defer func() { os.Setenv("PATH", origPath) }()
 
 	verifier := GpgVerifier{}
-	assert.Error(c, verifier.InitKeyring())
-	assert.Equal(c, "", verifier.gpgv)
+	err := verifier.InitKeyring()
+	c.Assert(err, NotNil)
+	c.Assert(verifier.gpgv, Equals, "")
 }
