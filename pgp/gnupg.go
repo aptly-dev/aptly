@@ -114,14 +114,17 @@ func findGPGV1() (string, error) {
 	return "", fmt.Errorf("Couldn't find a suitable gpgv executable. Make sure gpgv1 is available as either gpgv or gpgv1 in $PATH")
 }
 
+// NewGpgSigner creates a new gpg signer
+func NewGpgSigner() *GpgSigner {
+	gpg, err := findGPG1()
+	if err != nil {
+		panic(err)
+	}
+	return &GpgSigner{gpg: gpg}
+}
+
 // Init verifies availability of gpg & presence of keys
 func (g *GpgSigner) Init() error {
-	cmd, err := findGPG1()
-	if err != nil {
-		return err
-	}
-	g.gpg = cmd
-
 	output, err := exec.Command(g.gpg, "--list-keys", "--dry-run", "--no-auto-check-trustdb").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("unable to execute gpg: %s (is gpg installed?): %s", err, string(output))
@@ -166,6 +169,21 @@ type GpgVerifier struct {
 	gpg      string
 	gpgv     string
 	keyRings []string
+}
+
+// NewGpgVerifier creates a new gpg signer
+func NewGpgVerifier() *GpgVerifier {
+	gpg, err := findGPG1()
+	if err != nil {
+		panic(err)
+	}
+
+	gpgv, err := findGPGV1()
+	if err != nil {
+		panic(err)
+	}
+
+	return &GpgVerifier{gpg: gpg, gpgv: gpgv}
 }
 
 // InitKeyring verifies that gpg is installed and some keys are trusted

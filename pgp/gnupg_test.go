@@ -26,9 +26,7 @@ func (s *GnupgSuite) TestGPG1(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpg1"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	signer := GpgSigner{}
-	err := signer.Init()
-	c.Assert(err, IsNil)
+	signer := NewGpgSigner()
 	c.Assert(signer.gpg, Equals, "gpg")
 }
 
@@ -38,9 +36,7 @@ func (s *GnupgSuite) TestGPG1Not2(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpg2-and-1"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	signer := GpgSigner{}
-	err := signer.Init()
-	c.Assert(err, IsNil)
+	signer := NewGpgSigner()
 	c.Assert(signer.gpg, Equals, "gpg1")
 }
 
@@ -50,10 +46,7 @@ func (s *GnupgSuite) TestGPGNothing(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpg2-only"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	signer := GpgSigner{}
-	err := signer.Init()
-	c.Assert(err, NotNil)
-	c.Assert(signer.gpg, Equals, "")
+	c.Assert(func() { NewGpgSigner() }, PanicMatches, `Couldn't find a suitable gpg executable.+`)
 }
 
 // If gpgv == gpgv1 = pick gpgv
@@ -62,9 +55,7 @@ func (s *GnupgSuite) TestGPGV1(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpgv1")+":"+filepath.Join(s.bins, "gpg1"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	verifier := GpgVerifier{}
-	err := verifier.InitKeyring()
-	c.Assert(err, IsNil)
+	verifier := NewGpgVerifier()
 	c.Assert(verifier.gpgv, Equals, "gpgv")
 }
 
@@ -74,9 +65,7 @@ func (s *GnupgSuite) TestGPGV1Not2(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-and-1")+":"+filepath.Join(s.bins, "gpg1"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	verifier := GpgVerifier{}
-	err := verifier.InitKeyring()
-	c.Assert(err, IsNil)
+	verifier := NewGpgVerifier()
 	c.Assert(verifier.gpgv, Equals, "gpgv1")
 }
 
@@ -86,8 +75,5 @@ func (s *GnupgSuite) TestGPGVNothing(c *C) {
 	os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-only")+":"+filepath.Join(s.bins, "gpg1"))
 	defer func() { os.Setenv("PATH", origPath) }()
 
-	verifier := GpgVerifier{}
-	err := verifier.InitKeyring()
-	c.Assert(err, NotNil)
-	c.Assert(verifier.gpgv, Equals, "")
+	c.Assert(func() { NewGpgVerifier() }, PanicMatches, `Couldn't find a suitable gpgv executable.+`)
 }
