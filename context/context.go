@@ -400,7 +400,7 @@ func (context *AptlyContext) GetSigner() pgp.Signer {
 	defer context.Unlock()
 
 	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return &pgp.GpgSigner{}
+		return pgp.NewGpgSigner()
 	}
 
 	return &pgp.GoSigner{}
@@ -412,7 +412,7 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	defer context.Unlock()
 
 	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return &pgp.GpgVerifier{}
+		return pgp.NewGpgVerifier()
 	}
 
 	return &pgp.GoVerifier{}
