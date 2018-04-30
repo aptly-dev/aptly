@@ -329,8 +329,8 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 	return file
 }
 
-func (files *indexFiles) AddonIndex(component, path string) *indexFile {
-	key := fmt.Sprintf("ai-%s-%s", component, path)
+func (files *indexFiles) SkelIndex(component, path string) *indexFile {
+	key := fmt.Sprintf("si-%s-%s", component, path)
 	file, ok := files.indexes[key]
 
 	if !ok {

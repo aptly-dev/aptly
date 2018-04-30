@@ -158,7 +158,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 			"the same package pool.\n")
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.AddonPath(), context.Progress(), forceOverwrite)
+	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.SkelPath(), context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
