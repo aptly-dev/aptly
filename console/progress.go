@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/cheggaaa/pb"
-	"github.com/smira/aptly/aptly"
 	"github.com/wsxiaoys/terminal/color"
 )
 

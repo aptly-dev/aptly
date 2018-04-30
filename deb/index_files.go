@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/pgp"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 type indexFiles struct {
@@ -343,6 +343,37 @@ func (files *indexFiles) AddonIndex(component, path string) *indexFile {
 			onlyGzip:     false,
 			signable:     false,
 			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
+func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile {
+	if arch == ArchitectureSource {
+		udeb = false
+	}
+	key := fmt.Sprintf("lci-%s-%v", arch, udeb)
+	file, ok := files.indexes[key]
+	if !ok {
+		var relativePath string
+
+		if udeb {
+			relativePath = fmt.Sprintf("Contents-udeb-%s", arch)
+		} else {
+			relativePath = fmt.Sprintf("Contents-%s", arch)
+		}
+
+		file = &indexFile{
+			parent:        files,
+			discardable:   true,
+			compressable:  true,
+			onlyGzip:      true,
+			signable:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
 		}
 
 		files.indexes[key] = file

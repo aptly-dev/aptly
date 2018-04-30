@@ -2,17 +2,17 @@
 aptly
 =====
 
-.. image:: https://api.travis-ci.org/smira/aptly.svg?branch=master
-    :target: https://travis-ci.org/smira/aptly
+.. image:: https://api.travis-ci.org/aptly-dev/aptly.svg?branch=master
+    :target: https://travis-ci.org/aptly-dev/aptly
 
-.. image:: https://coveralls.io/repos/smira/aptly/badge.svg?branch=master
-    :target: https://coveralls.io/r/smira/aptly?branch=master
+.. image:: https://codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
-    :target: https://gitter.im/smira/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+    :target: https://gitter.im/aptly-dev/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/smira/aptly
-    :target: http://goreportcard.com/report/smira/aptly
+.. image:: http://goreportcard.com/badge/aptly-dev/aptly
+    :target: http://goreportcard.com/report/aptly-dev/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
@@ -48,7 +48,7 @@ To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list
 
 And import key that is used to sign the release::
 
-    $ apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
+    $ apt-key adv --keyserver pool.sks-keyservers.net --recv-keys ED75B5A4483DA07C
 
 After that you can install aptly as any other software package::
 
@@ -64,11 +64,11 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.7+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.8+ required)::
 
-    mkdir -p $GOPATH/src/github.com/smira/aptly
-    git clone https://github.com/smira/aptly $GOPATH/src/github.com/smira/aptly
-    cd $GOPATH/src/github.com/smira/aptly
+    mkdir -p $GOPATH/src/github.com/aptly-dev/aptly
+    git clone https://github.com/aptly-dev/aptly $GOPATH/src/github.com/aptly-dev/aptly
+    cd $GOPATH/src/github.com/aptly-dev/aptly
     make install
 
 Binary would be installed to ```$GOPATH/bin/aptly``.
@@ -108,6 +108,10 @@ CLI for aptly API:
 
 -   `Ruby aptly CLI/library <https://github.com/sepulworld/aptly_cli>`_ by Zane Williamson
 -   `Python aptly CLI (good for CI) <https://github.com/TimSusa/aptly_api_cli>`_ by Tim Susa
+
+GUI for aptly API:
+
+-   `Python aptly GUI (via pyqt5) <https://github.com/chnyda/python-aptly-gui>`_ by Cedric Hnyda
 
 Scala sbt:
 

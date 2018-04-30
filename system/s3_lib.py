@@ -8,8 +8,10 @@ try:
     if 'AWS_SECRET_ACCESS_KEY' in os.environ and 'AWS_ACCESS_KEY_ID' in os.environ:
         s3_conn = boto.connect_s3()
     else:
+        print "S3 tests disabled: AWS creds not found in the environment"
         s3_conn = None
-except ImportError:
+except ImportError, e:
+    print "S3 tests disabled: can't import boto", e
     s3_conn = None
 
 

@@ -155,6 +155,7 @@ class UpdateMirror11Test(BaseTest):
     """
     longTest = False
     fixtureGpg = True
+    requiresFTP = True
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
     ]

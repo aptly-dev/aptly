@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 // ReadSeekerCloser = ReadSeeker + Closer

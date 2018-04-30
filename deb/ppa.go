@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 var ppaRegexp = regexp.MustCompile("^ppa:([^/]+)/(.+)$")

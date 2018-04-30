@@ -3,7 +3,7 @@ package deb
 import (
 	"sync"
 
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 )
 
 // CollectionFactory is a single place to generate all desired collections

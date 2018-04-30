@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/pgp"
-	"github.com/smira/aptly/utils"
 )
 
 // SigningOptions is a shared between publish API GPG options structure

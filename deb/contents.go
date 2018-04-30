@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/smira/go-uuid/uuid"
 )
 
@@ -26,10 +25,7 @@ func NewContentsIndex(db database.Storage) *ContentsIndex {
 }
 
 // Push adds package to contents index, calculating package contents as required
-func (index *ContentsIndex) Push(p *Package, packagePool aptly.PackagePool, progress aptly.Progress) error {
-	contents := p.Contents(packagePool, progress)
-	qualifiedName := []byte(p.QualifiedName())
-
+func (index *ContentsIndex) Push(qualifiedName []byte, contents []string) error {
 	for _, path := range contents {
 		// for performance reasons we only write to leveldb during push.
 		// merging of qualified names per path will be done in WriteTo

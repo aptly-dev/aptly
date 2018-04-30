@@ -10,8 +10,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 	xz "github.com/smira/go-xz"
 )
 

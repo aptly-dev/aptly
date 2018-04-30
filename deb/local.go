@@ -6,7 +6,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/smira/go-uuid/uuid"
 	"github.com/ugorji/go/codec"
 )

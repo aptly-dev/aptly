@@ -14,16 +14,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/console"
-	"github.com/smira/aptly/database"
-	"github.com/smira/aptly/deb"
-	"github.com/smira/aptly/files"
-	"github.com/smira/aptly/http"
-	"github.com/smira/aptly/pgp"
-	"github.com/smira/aptly/s3"
-	"github.com/smira/aptly/swift"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/console"
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/files"
+	"github.com/aptly-dev/aptly/http"
+	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/s3"
+	"github.com/aptly-dev/aptly/swift"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -333,7 +333,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
-				Fatal(fmt.Errorf("published local storage %v not configured", name[6:]))
+				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
@@ -400,7 +400,7 @@ func (context *AptlyContext) GetSigner() pgp.Signer {
 	defer context.Unlock()
 
 	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return &pgp.GpgSigner{}
+		return pgp.NewGpgSigner()
 	}
 
 	return &pgp.GoSigner{}
@@ -412,7 +412,7 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	defer context.Unlock()
 
 	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return &pgp.GpgVerifier{}
+		return pgp.NewGpgVerifier()
 	}
 
 	return &pgp.GoVerifier{}

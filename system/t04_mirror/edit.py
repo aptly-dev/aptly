@@ -107,5 +107,6 @@ class EditMirror10Test(BaseTest):
     """
     edit mirror: change archive url
     """
+    requiresFTP = True
     fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian wheezy main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"

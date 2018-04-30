@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/smira/aptly/cmd"
+	"github.com/aptly-dev/aptly/cmd"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )

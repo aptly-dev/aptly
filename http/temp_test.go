@@ -3,7 +3,7 @@ package http
 import (
 	"os"
 
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/utils"
 
 	. "gopkg.in/check.v1"
 )

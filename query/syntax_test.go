@@ -3,7 +3,7 @@ package query
 import (
 	"regexp"
 
-	"github.com/smira/aptly/deb"
+	"github.com/aptly-dev/aptly/deb"
 
 	. "gopkg.in/check.v1"
 )

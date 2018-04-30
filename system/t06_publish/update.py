@@ -31,6 +31,7 @@ class PublishUpdate1Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
@@ -84,7 +85,8 @@ class PublishUpdate1Test(BaseTest):
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
-                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz']):
+                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz',
+                             'Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -370,6 +372,7 @@ class PublishUpdate12Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
@@ -423,5 +426,6 @@ class PublishUpdate12Test(BaseTest):
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
-                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz']):
+                             'main/binary-i386/Release', 'main/source/Release', 'main/Contents-i386.gz',
+                             'Contents-i386.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))

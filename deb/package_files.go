@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 )
 
 // PackageFile is a single file entry in package

@@ -104,7 +104,7 @@ class PublishSnapshot1Test(BaseTest):
         if pathsSeen != set(['main/binary-amd64/Packages', 'main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
                              'main/binary-amd64/Packages.gz', 'main/binary-amd64/Packages.bz2', 'main/binary-i386/Packages.bz2',
                              'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/Contents-amd64.gz',
-                             'main/Contents-i386.gz']):
+                             'main/Contents-i386.gz', 'Contents-i386.gz', 'Contents-amd64.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -754,7 +754,8 @@ class PublishSnapshot26Test(BaseTest):
                              'contrib/source/Sources', 'contrib/source/Sources.gz', 'contrib/source/Sources.bz2',
                              'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/source/Release',
                              'contrib/binary-amd64/Release', 'contrib/binary-i386/Release', 'contrib/source/Release',
-                             'contrib/Contents-i386.gz', 'main/Contents-i386.gz', 'main/Contents-amd64.gz']):
+                             'contrib/Contents-i386.gz', 'main/Contents-i386.gz', 'main/Contents-amd64.gz',
+                             'Contents-i386.gz', 'Contents-amd64.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
@@ -975,6 +976,7 @@ class PublishSnapshot35Test(BaseTest):
                     pathsExepcted.add("main/%sbinary-%s/Packages%s" % (udeb, arch, ext))
 
                 pathsExepcted.add("main/Contents-%s%s.gz" % ("udeb-" if udeb != "" else "", arch))
+                pathsExepcted.add("Contents-%s%s.gz" % ("udeb-" if udeb != "" else "", arch))
 
                 pathsExepcted.add("main/%sbinary-%s/Release" % (udeb, arch))
 

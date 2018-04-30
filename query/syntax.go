@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/smira/aptly/deb"
+	"github.com/aptly-dev/aptly/deb"
 )
 
 type parser struct {

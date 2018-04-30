@@ -3,7 +3,7 @@ package deb
 import (
 	"errors"
 
-	"github.com/smira/aptly/database"
+	"github.com/aptly-dev/aptly/database"
 
 	. "gopkg.in/check.v1"
 )

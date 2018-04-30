@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
@@ -15,8 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
-	"github.com/smira/aptly/aptly"
-	"github.com/smira/aptly/utils"
 	"github.com/smira/go-aws-auth"
 )
 

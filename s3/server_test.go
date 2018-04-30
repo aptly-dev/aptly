@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
@@ -634,7 +635,7 @@ func (objr objectResource) put(a *action) interface{} {
 	var expectHash []byte
 	if c := a.req.Header.Get("Content-MD5"); c != "" {
 		var err error
-		expectHash, err = hex.DecodeString(c)
+		expectHash, err = base64.StdEncoding.DecodeString(c)
 		if err != nil || len(expectHash) != md5.Size {
 			fatalError(400, "InvalidDigest", "The Content-MD5 you specified was invalid")
 		}

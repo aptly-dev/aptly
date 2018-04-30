@@ -72,7 +72,7 @@ const op{{ .ExportedName }} = "{{ .Name }}"
 
 // {{ .ExportedName }}Request generates a "aws/request.Request" representing the
 // client's request for the {{ .ExportedName }} operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -95,7 +95,7 @@ const op{{ .ExportedName }} = "{{ .Name }}"
 {{ $crosslinkURL := GetCrosslinkURL $.API.BaseCrosslinkURL $.API.Metadata.UID $.ExportedName -}}
 {{ if ne $crosslinkURL "" -}} 
 //
-// Please also see {{ $crosslinkURL }}
+// See also, {{ $crosslinkURL }}
 {{ end -}}
 func (c *{{ .API.StructName }}) {{ .ExportedName }}Request(` +
 	`input {{ .InputRef.GoType }}) (req *request.Request, output {{ .OutputRef.GoType }}) {
@@ -152,7 +152,7 @@ func (c *{{ .API.StructName }}) {{ .ExportedName }}Request(` +
 {{ end -}}
 {{ $crosslinkURL := GetCrosslinkURL $.API.BaseCrosslinkURL $.API.Metadata.UID $.ExportedName -}}
 {{ if ne $crosslinkURL "" -}} 
-// Please also see {{ $crosslinkURL }}
+// See also, {{ $crosslinkURL }}
 {{ end -}}
 func (c *{{ .API.StructName }}) {{ .ExportedName }}(` +
 	`input {{ .InputRef.GoType }}) ({{ .OutputRef.GoType }}, error) {

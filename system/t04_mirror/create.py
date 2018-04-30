@@ -253,7 +253,8 @@ class CreateMirror20Test(BaseTest):
     expectedCode = 1
 
     def outputMatchPrepare(_, s):
-        return s.replace('getsockopt: ', '').replace('proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137')
+        return s.replace('getsockopt: ', '').replace('connect: ', ''). \
+            replace('proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137')
 
 
 class CreateMirror21Test(BaseTest):

@@ -3,13 +3,7 @@ sudo: required
 
 language: go
 
-go:
-  - 1.7.x
-  - 1.8.x
-  - 1.9.x
-  - master
-
-go_import_path: github.com/smira/aptly
+go_import_path: github.com/aptly-dev/aptly
 
 addons:
   apt:
@@ -19,9 +13,26 @@ addons:
 
 env:
   global:
-    - secure: "YSwtFrMqh4oUvdSQTXBXMHHLWeQgyNEL23ChIZwU0nuDGIcQZ65kipu0PzefedtUbK4ieC065YCUi4UDDh6gPotB/Wu1pnYg3dyQ7rFvhaVYAAUEpajAdXZhlx+7+J8a4FZMeC/kqiahxoRgLbthF9019ouIqhGB9zHKI6/yZwc="
-    - secure: "V7OjWrfQ8UbktgT036jYQPb/7GJT3Ol9LObDr8FYlzsQ+F1uj2wLac6ePuxcOS4FwWOJinWGM1h+JiFkbxbyFqfRNJ0jj0O2p93QyDojxFVOn1mXqqvV66KFqAWR2Vzkny/gDvj8LTvdB1cgAIm2FNOkQc6E1BFnyWS2sN9ea5E="
+    - secure: "EcCzJsqQ3HnIkprBPS1YHErsETcb7KQFBYEzVDE7RYDApWeapLq+r/twMtWMd/fkGeLzr3kWSg7nhSadeHMLYeMl9j+U7ncC5CWG5NMBOj/jowlb9cMCCDlmzMoZLAgR6jm1cJyrWCLsWVlv+D0ZiB0fx4xaBZP/gIr9g6nEwC8="
     - secure: "OxiVNmre2JzUszwPNNilKDgIqtfX2gnRSsVz6nuySB1uO2yQsOQmKWJ9cVYgH2IB5H8eWXKOhexcSE28kz6TPLRuEcU9fnqKY3uEkdwm7rJfz9lf+7C4bJEUdA1OIzJppjnWUiXxD7CEPL1DlnMZM24eDQYqa/4WKACAgkK53gE="
+    - NO_FTP_ACCESS: "yes"
+    - BOTO_CONFIG: /dev/null
+
+matrix:
+  allow_failures:
+    - go: master
+      env: RUN_LONG_TESTS=no
+  fast_finish: true
+  include:
+    - go: 1.8.x
+      env: RUN_LONG_TESTS=no
+    - go: 1.9.x
+      env: RUN_LONG_TESTS=yes
+    - go: 1.10.x
+      env: RUN_LONG_TESTS=yes
+    - go: master
+      env: RUN_LONG_TESTS=no
+
 before_install:
   - virtualenv system/env
   - . system/env/bin/activate
@@ -29,14 +40,12 @@ before_install:
   - pip install -U pip setuptools
   - pip install -r system/requirements.txt
   - make version
+
 install:
   - make prepare
 
-script: make travis
-
-matrix:
-    allow_failures:
-        - go: master
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   webhooks:

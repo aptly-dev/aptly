@@ -20,6 +20,7 @@ var (
 
 // GpgSigner is implementation of Signer interface using gpg as external program
 type GpgSigner struct {
+	gpg                        string
 	keyRef                     string
 	keyring, secretKeyring     string
 	passphrase, passphraseFile string
@@ -78,9 +79,53 @@ func (g *GpgSigner) gpgArgs() []string {
 	return args
 }
 
+func cliVersionCheck(cmd string, marker string) bool {
+	output, err := exec.Command(cmd, "--version").CombinedOutput()
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(output), marker)
+}
+
+func findSuitableCLI(cmds []string, versionMarker string) string {
+	for _, cmd := range cmds {
+		if cliVersionCheck(cmd, versionMarker) {
+			return cmd
+		}
+	}
+	return ""
+}
+
+// We only support gpg1 at this time. Make sure we find a suitable binary.
+func findGPG1() (string, error) {
+	cmd := findSuitableCLI([]string{"gpg", "gpg1"}, "gpg (GnuPG) 1.")
+	if cmd != "" {
+		return cmd, nil
+	}
+	return "", fmt.Errorf("Couldn't find a suitable gpg executable. Make sure gnupg1 is available as either gpg or gpg1 in $PATH")
+}
+
+// We only support gpgv1 at this time. Make sure we find a suitable binary.
+func findGPGV1() (string, error) {
+	cmd := findSuitableCLI([]string{"gpgv", "gpgv1"}, "gpgv (GnuPG) 1.")
+	if cmd != "" {
+		return cmd, nil
+	}
+	return "", fmt.Errorf("Couldn't find a suitable gpgv executable. Make sure gpgv1 is available as either gpgv or gpgv1 in $PATH")
+}
+
+// NewGpgSigner creates a new gpg signer
+func NewGpgSigner() *GpgSigner {
+	gpg, err := findGPG1()
+	if err != nil {
+		panic(err)
+	}
+	return &GpgSigner{gpg: gpg}
+}
+
 // Init verifies availability of gpg & presence of keys
 func (g *GpgSigner) Init() error {
-	output, err := exec.Command("gpg", "--list-keys", "--dry-run", "--no-auto-check-trustdb").CombinedOutput()
+	output, err := exec.Command(g.gpg, "--list-keys", "--dry-run", "--no-auto-check-trustdb").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("unable to execute gpg: %s (is gpg installed?): %s", err, string(output))
 	}
@@ -99,7 +144,7 @@ func (g *GpgSigner) DetachedSign(source string, destination string) error {
 	args := []string{"-o", destination, "--digest-algo", "SHA256", "--armor", "--yes"}
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--detach-sign", source)
-	cmd := exec.Command("gpg", args...)
+	cmd := exec.Command(g.gpg, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -112,7 +157,7 @@ func (g *GpgSigner) ClearSign(source string, destination string) error {
 	args := []string{"-o", destination, "--digest-algo", "SHA256", "--yes"}
 	args = append(args, g.gpgArgs()...)
 	args = append(args, "--clearsign", source)
-	cmd := exec.Command("gpg", args...)
+	cmd := exec.Command(g.gpg, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -121,19 +166,43 @@ func (g *GpgSigner) ClearSign(source string, destination string) error {
 
 // GpgVerifier is implementation of Verifier interface using gpgv as external program
 type GpgVerifier struct {
+	gpg      string
+	gpgv     string
 	keyRings []string
+}
+
+// NewGpgVerifier creates a new gpg signer
+func NewGpgVerifier() *GpgVerifier {
+	gpg, err := findGPG1()
+	if err != nil {
+		panic(err)
+	}
+
+	gpgv, err := findGPGV1()
+	if err != nil {
+		panic(err)
+	}
+
+	return &GpgVerifier{gpg: gpg, gpgv: gpgv}
 }
 
 // InitKeyring verifies that gpg is installed and some keys are trusted
 func (g *GpgVerifier) InitKeyring() error {
-	err := exec.Command("gpgv", "--version").Run()
+	cmd, err := findGPG1()
 	if err != nil {
-		return fmt.Errorf("unable to execute gpgv: %s (is gpg installed?)", err)
+		return err
 	}
+	g.gpg = cmd
+
+	cmd, err = findGPGV1()
+	if err != nil {
+		return err
+	}
+	g.gpgv = cmd
 
 	if len(g.keyRings) == 0 {
 		// using default keyring
-		output, err := exec.Command("gpg", "--no-default-keyring", "--no-auto-check-trustdb", "--keyring", "trustedkeys.gpg", "--list-keys").Output()
+		output, err := exec.Command(g.gpg, "--no-default-keyring", "--no-auto-check-trustdb", "--keyring", "trustedkeys.gpg", "--list-keys").Output()
 		if err == nil && len(output) == 0 {
 			fmt.Printf("\nLooks like your keyring with trusted keys is empty. You might consider importing some keys.\n")
 			fmt.Printf("If you're running Debian or Ubuntu, it's a good idea to import current archive keys by running:\n\n")
@@ -164,7 +233,7 @@ func (g *GpgVerifier) argsKeyrings() (args []string) {
 
 func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*KeyInfo, error) {
 	args = append([]string{"--status-fd", "3"}, args...)
-	cmd := exec.Command("gpgv", args...)
+	cmd := exec.Command(g.gpgv, args...)
 
 	tempf, err := ioutil.TempFile("", "aptly-gpg-status")
 	if err != nil {
@@ -229,7 +298,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 				keys[i] = string(result.MissingKeys[i])
 			}
 
-			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys %s\n\n",
+			fmt.Printf("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver pool.sks-keyservers.net --recv-keys %s\n\n",
 				strings.Join(keys, " "))
 
 			fmt.Printf("Sometimes keys are stored in repository root in file named Release.key, to import such key:\n\n")
@@ -327,7 +396,7 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 
 	args := []string{"--no-auto-check-trustdb", "--decrypt", "--batch", "--skip-verify", "--output", "-", clearf.Name()}
 
-	cmd := exec.Command("gpg", args...)
+	cmd := exec.Command(g.gpg, args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
