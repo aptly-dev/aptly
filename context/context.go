@@ -418,6 +418,11 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	return &pgp.GoVerifier{}
 }
 
+// SkelPath builds the local skeleton folder
+func (context *AptlyContext) SkelPath() string {
+	return filepath.Join(context.config().RootDir, "skel")
+}
+
 // UpdateFlags sets internal copy of flags in the context
 func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
 	context.Lock()
