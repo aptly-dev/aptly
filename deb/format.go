@@ -214,7 +214,7 @@ type ControlFileReader struct {
 
 // NewControlFileReader creates ControlFileReader, it wraps with buffering
 func NewControlFileReader(r io.Reader) *ControlFileReader {
-	return &ControlFileReader{scanner: bufio.NewScanner(bufio.NewReaderSize(r, 32768))}
+	return &ControlFileReader{scanner: bufio.NewScanner(bufio.NewReaderSize(r, 10485760))}
 }
 
 // ReadStanza reeads one stanza from control file
@@ -222,7 +222,10 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 	stanza := make(Stanza, 32)
 	lastField := ""
 	lastFieldMultiline := false
-
+	
+	buf := make([]byte, 0, 65536)
+	c.scanner.Buffer(buf, 4194304)
+	
 	for c.scanner.Scan() {
 		line := c.scanner.Text()
 
