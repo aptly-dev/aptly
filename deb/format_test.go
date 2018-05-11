@@ -3,6 +3,7 @@ package deb
 import (
 	"bufio"
 	"bytes"
+	"os"
 	"strings"
 
 	. "gopkg.in/check.v1"
@@ -133,6 +134,17 @@ func (s *ControlFileSuite) TestCanonicalCase(c *C) {
 	c.Check(canonicalCase("Package-List"), Equals, "Package-List")
 	c.Check(canonicalCase("package-list"), Equals, "Package-List")
 	c.Check(canonicalCase("packaGe-lIst"), Equals, "Package-List")
+}
+
+func (s *ControlFileSuite) TestLongFields(c *C) {
+	f, err := os.Open("long.stanza")
+	c.Assert(err, IsNil)
+	defer f.Close()
+
+	r := NewControlFileReader(f)
+	stanza, e := r.ReadStanza(false)
+	c.Assert(e, IsNil)
+	c.Assert(len(stanza["Provides"]), Equals, 586929)
 }
 
 func (s *ControlFileSuite) BenchmarkReadStanza(c *C) {
