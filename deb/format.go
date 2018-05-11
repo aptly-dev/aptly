@@ -226,7 +226,7 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 	stanza := make(Stanza, 32)
 	lastField := ""
 	lastFieldMultiline := false
-	
+
 	for c.scanner.Scan() {
 		line := c.scanner.Text()
 
