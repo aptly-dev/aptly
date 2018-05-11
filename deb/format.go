@@ -217,7 +217,7 @@ func NewControlFileReader(r io.Reader) *ControlFileReader {
 	scnr := bufio.NewScanner(bufio.NewReaderSize(r, 32768))
 	buf := make([]byte, 0, 64*1024)
 	scnr.Buffer(buf, 2*1024*1024)
-	
+
 	return &ControlFileReader{scanner: scnr}
 }
 
