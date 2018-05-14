@@ -29,7 +29,9 @@ matrix:
     - go: 1.9.x
       env: RUN_LONG_TESTS=yes
     - go: 1.10.x
-      env: RUN_LONG_TESTS=yes
+      env:
+        - RUN_LONG_TESTS=yes
+        - DEPLOY_BINARIES=yes
     - go: master
       env: RUN_LONG_TESTS=no
 
@@ -54,3 +56,18 @@ notifications:
     on_success: change  # options: [always|never|change] default: always
     on_failure: always  # options: [always|never|change] default: always
     on_start: false     # default: false
+
+before_deploy:
+  - make build
+  - export FILE_TO_UPLOAD=$(ls build/aptly-*)
+
+deploy:
+  provider: releases
+  api_key:
+    - secure: "MMk5S1Im6RrVudZasjtlCJa/rvRp4oavrR86WI2kQszs1iZIcdGyVhHiOGfWTwMjA/3iPdbAdu/WrjxCwI14GC5ws+rs8ICO6JIZktjtAwlfwlrV+nsrCiYx1EThghq43VEcykgz2UAJoJj/egv+UCEpe8yDTsvJ6we5HiXdTw0="
+  file_glob: true
+  file: "${FILE_TO_UPLOAD}"
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: "$DEPLOY_BINARIES = yes"

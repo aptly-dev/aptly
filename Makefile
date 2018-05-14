@@ -1,5 +1,10 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-VERSION=$(shell git describe --tags | sed 's@^v@@' | sed 's@-@+@g')
+ifdef TRAVIS_TAG
+	TAG=$(TRAVIS_TAG)
+else
+	TAG="$(shell git describe --tags)"
+endif
+VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
 PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python
 TESTS?=
@@ -30,6 +35,11 @@ endif
 
 install:
 	go install -v -ldflags "-X main.Version=$(VERSION)"
+
+build:
+	rm -rf build
+	mkdir -p build
+	go build -v -ldflags "-X main.Version=$(VERSION)" -o "build/aptly-$(VERSION)"
 
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
@@ -71,4 +81,4 @@ man:
 version:
 	@echo $(VERSION)
 
-.PHONY: man version
+.PHONY: man version build
