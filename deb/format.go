@@ -11,6 +11,9 @@ import (
 // Stanza or paragraph of Debian control file
 type Stanza map[string]string
 
+// MaxFieldSize is maximum stanza field size in bytes
+const MaxFieldSize = 2 * 1024 * 1024
+
 // Canonical order of fields in stanza
 // Taken from: http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/vivid/apt/vivid/view/head:/apt-pkg/tagfile.cc#L504
 var (
@@ -214,7 +217,10 @@ type ControlFileReader struct {
 
 // NewControlFileReader creates ControlFileReader, it wraps with buffering
 func NewControlFileReader(r io.Reader) *ControlFileReader {
-	return &ControlFileReader{scanner: bufio.NewScanner(bufio.NewReaderSize(r, 32768))}
+	scnr := bufio.NewScanner(bufio.NewReaderSize(r, 32768))
+	scnr.Buffer(nil, MaxFieldSize)
+
+	return &ControlFileReader{scanner: scnr}
 }
 
 // ReadStanza reeads one stanza from control file
