@@ -35,3 +35,6 @@ man/aptly.1.ronn
 .goxc.local.json
 
 system/env/
+
+# created by make build for release artifacts
+build/
