@@ -372,7 +372,7 @@ func (files *indexFiles) ReleaseFile() *indexFile {
 
 func (files *indexFiles) FinalizeAll(progress aptly.Progress) (err error) {
 	if progress != nil {
-		progress.InitBar(int64(len(files.indexes)), false)
+		progress.InitBar(int64(len(files.indexes)), false, aptly.BarPublishFinalizeIndexes)
 		defer progress.ShutdownBar()
 	}
 

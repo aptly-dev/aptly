@@ -94,7 +94,7 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 	}
 
 	if progress != nil {
-		progress.InitBar(int64(len(dirs)), false)
+		progress.InitBar(int64(len(dirs)), false, aptly.BarGeneralBuildFileList)
 		defer progress.ShutdownBar()
 	}
 
