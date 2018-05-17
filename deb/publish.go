@@ -594,7 +594,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 
 	if progress != nil {
-		progress.InitBar(count, false)
+		progress.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
 	}
 
 	for component, list := range lists {

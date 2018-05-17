@@ -153,6 +153,12 @@ class PublishSnapshotAPITest(APITest):
             }
         )
         self.check_equal(resp.json()['State'], 2)
+
+        _id = resp.json()['ID']
+        resp = self.get("/api/tasks/" + str(_id) + "/detail")
+        self.check_equal(resp.json()['RemainingNumberOfPackages'], 0)
+        self.check_equal(resp.json()['TotalNumberOfPackages'], 1)
+
         repo_expected = {
             'AcquireByHash': True,
             'Architectures': ['i386'],

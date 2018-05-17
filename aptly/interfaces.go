@@ -97,6 +97,36 @@ type PublishedStorageProvider interface {
 	GetPublishedStorage(name string) PublishedStorage
 }
 
+// BarType used to differentiate between different progress bars
+type BarType int
+
+const (
+	// BarGeneralBuildPackageList identifies bar for building package list
+	BarGeneralBuildPackageList BarType = iota
+	// BarGeneralVerifyDependencies identifies bar for verifying dependencies
+	BarGeneralVerifyDependencies
+	// BarGeneralBuildFileList identifies bar for building file list
+	BarGeneralBuildFileList
+	// BarCleanupBuildList identifies bar for building list to cleanup
+	BarCleanupBuildList
+	// BarCleanupDeleteUnreferencedFiles identifies bar for deleting unreferenced files
+	BarCleanupDeleteUnreferencedFiles
+	// BarMirrorUpdateDownloadIndexes identifies bar for downloading index files
+	BarMirrorUpdateDownloadIndexes
+	// BarMirrorUpdateDownloadPackages identifies bar for downloading packages
+	BarMirrorUpdateDownloadPackages
+	// BarMirrorUpdateBuildPackageList identifies bar for building package list of downloaded files
+	BarMirrorUpdateBuildPackageList
+	// BarMirrorUpdateImportFiles identifies bar for importing package files
+	BarMirrorUpdateImportFiles
+	// BarMirrorUpdateFinalizeDownload identifies bar for finalizing downloads
+	BarMirrorUpdateFinalizeDownload
+	// BarPublishGeneratePackageFiles identifies bar for generating package files to publish
+	BarPublishGeneratePackageFiles
+	// BarPublishFinalizeIndexes identifies bar for finalizing index files
+	BarPublishFinalizeIndexes
+)
+
 // Progress is a progress displaying entity, it allows progress bars & simple prints
 type Progress interface {
 	// Writer interface to support progress bar ticking
@@ -108,7 +138,7 @@ type Progress interface {
 	// Flush returns when all queued messages are sent
 	Flush()
 	// InitBar starts progressbar for count bytes or count items
-	InitBar(count int64, isBytes bool)
+	InitBar(count int64, isBytes bool, barType BarType)
 	// ShutdownBar stops progress bar and hides it
 	ShutdownBar()
 	// AddBar increments progress for progress bar

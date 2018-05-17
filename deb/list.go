@@ -99,7 +99,7 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 	result := NewPackageListWithDuplicates(false, reflist.Len())
 
 	if progress != nil {
-		progress.InitBar(int64(reflist.Len()), false)
+		progress.InitBar(int64(reflist.Len()), false, aptly.BarGeneralBuildPackageList)
 	}
 
 	err := reflist.ForEach(func(key []byte) error {
@@ -314,7 +314,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 	missing := make([]Dependency, 0, 128)
 
 	if progress != nil {
-		progress.InitBar(int64(l.Len())*int64(len(architectures)), false)
+		progress.InitBar(int64(l.Len())*int64(len(architectures)), false, aptly.BarGeneralVerifyDependencies)
 	}
 
 	for _, arch := range architectures {

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"sync"
+
+	"github.com/aptly-dev/aptly/aptly"
 )
 
 // Output represents a safe standard output of task
@@ -11,6 +13,13 @@ import (
 type Output struct {
 	mu     *sync.Mutex
 	output *bytes.Buffer
+}
+
+// PublishOutput specific output for publishing api
+type PublishOutput struct {
+	*Output
+	PublishDetail
+	barType *aptly.BarType
 }
 
 // NewOutput creates new output
@@ -54,8 +63,18 @@ func (t *Output) Flush() {
 }
 
 // InitBar is needed for progress compatibility
-func (t *Output) InitBar(count int64, isBytes bool) {
+func (t *Output) InitBar(count int64, isBytes bool, barType aptly.BarType) {
 	// Not implemented
+}
+
+// InitBar publish output specific
+func (t *PublishOutput) InitBar(count int64, isBytes bool, barType aptly.BarType) {
+	t.barType = &barType
+	if barType == aptly.BarPublishGeneratePackageFiles {
+		t.TotalNumberOfPackages = count
+		t.RemainingNumberOfPackages = count
+		t.Store(t)
+	}
 }
 
 // ShutdownBar is needed for progress compatibility
@@ -63,9 +82,22 @@ func (t *Output) ShutdownBar() {
 	// Not implemented
 }
 
+// ShutdownBar publish output specific
+func (t *PublishOutput) ShutdownBar() {
+	t.barType = nil
+}
+
 // AddBar is needed for progress compatibility
 func (t *Output) AddBar(count int) {
 	// Not implemented
+}
+
+// AddBar publish output specific
+func (t *PublishOutput) AddBar(count int) {
+	if t.barType != nil && *t.barType == aptly.BarPublishGeneratePackageFiles {
+		t.RemainingNumberOfPackages--
+		t.Store(t)
+	}
 }
 
 // SetBar sets current position for progress bar
