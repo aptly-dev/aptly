@@ -59,6 +59,7 @@ func apiMirrorsCreate(c *gin.Context) {
 		Keyrings           []string
 		DownloadSources    bool
 		DownloadUdebs      bool
+		DownloadInstaller  bool
 		FilterWithDeps     bool
 		SkipComponentCheck bool
 		IgnoreSignatures   bool
@@ -92,7 +93,7 @@ func apiMirrorsCreate(c *gin.Context) {
 	}
 
 	repo, err := deb.NewRemoteRepo(b.Name, b.ArchiveURL, b.Distribution, b.Components, b.Architectures,
-		b.DownloadSources, b.DownloadUdebs)
+		b.DownloadSources, b.DownloadUdebs, b.DownloadInstaller)
 
 	if err != nil {
 		c.AbortWithError(400, fmt.Errorf("unable to create mirror: %s", err))
@@ -289,7 +290,6 @@ func apiMirrorsUpdate(c *gin.Context) {
 		IgnoreSignatures     bool
 		ForceUpdate          bool
 		SkipExistingPackages bool
-		MaxTries             int
 	}
 
 	collectionFactory := context.NewCollectionFactory()
@@ -364,11 +364,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		if b.MaxTries <= 0 {
-			b.MaxTries = 1
-		}
-
-		err = remote.DownloadPackageIndexes(out, downloader, collectionFactory, b.SkipComponentCheck, b.MaxTries)
+		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.SkipComponentCheck)
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
@@ -388,7 +384,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-			collectionFactory.ChecksumCollection(), b.SkipExistingPackages)
+			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
@@ -490,8 +486,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 							remote.PackageURL(task.File.DownloadURL()).String(),
 							task.TempDownPath,
 							&task.File.Checksums,
-							b.IgnoreChecksums,
-							b.MaxTries)
+							b.IgnoreChecksums)
 						if e != nil {
 							pushError(e)
 							continue
@@ -521,7 +516,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 
 			// and import it back to the pool
-			task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection())
+			task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
 			if err != nil {
 				return fmt.Errorf("unable to import file: %s", err)
 			}

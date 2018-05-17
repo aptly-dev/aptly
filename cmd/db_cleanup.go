@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
@@ -203,7 +204,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	// now, build a list of files that should be present in Repository (package pool)
 	context.Progress().ColoredPrintf("@{w!}Building list of files referenced by packages...@|")
 	referencedFiles := make([]string, 0, existingPackageRefs.Len())
-	context.Progress().InitBar(int64(existingPackageRefs.Len()), false)
+	context.Progress().InitBar(int64(existingPackageRefs.Len()), false, aptly.BarCleanupBuildList)
 
 	err = existingPackageRefs.ForEach(func(key []byte) error {
 		pkg, err2 := collectionFactory.PackageCollection().ByKey(key)
@@ -257,7 +258,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		}
 
 		if !dryRun {
-			context.Progress().InitBar(int64(len(filesToDelete)), false)
+			context.Progress().InitBar(int64(len(filesToDelete)), false, aptly.BarCleanupDeleteUnreferencedFiles)
 
 			var size, totalSize int64
 			for _, file := range filesToDelete {

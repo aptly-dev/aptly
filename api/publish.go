@@ -183,6 +183,14 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	taskName := fmt.Sprintf("Publish %s: %s", b.SourceKind, strings.Join(names, ", "))
 	task, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+		taskDetail := task.PublishDetail{
+			Detail: detail,
+		}
+		publishOutput := &task.PublishOutput{
+			Output:        out,
+			PublishDetail: taskDetail,
+		}
+
 		if b.Origin != "" {
 			published.Origin = b.Origin
 		}
@@ -209,7 +217,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
-		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
+		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite)
 		if err != nil {
 			return fmt.Errorf("unable to publish: %s", err)
 		}

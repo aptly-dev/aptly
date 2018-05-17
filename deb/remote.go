@@ -513,7 +513,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 		if progress != nil {
 			stat, _ := packagesFile.Stat()
-			progress.InitBar(stat.Size(), true)
+			progress.InitBar(stat.Size(), true, aptly.BarMirrorUpdateBuildPackageList)
 		}
 
 		sreader := NewControlFileReader(packagesReader, false, isInstaller)
@@ -642,7 +642,7 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 	repo.LastDownloadDate = time.Now()
 
 	if progress != nil {
-		progress.InitBar(int64(repo.packageList.Len()), false)
+		progress.InitBar(int64(repo.packageList.Len()), true, aptly.BarMirrorUpdateFinalizeDownload)
 	}
 
 	var i int
