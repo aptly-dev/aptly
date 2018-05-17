@@ -12,6 +12,13 @@ type Detail struct {
 	atomic.Value
 }
 
+// PublishDetail represents publish task details
+type PublishDetail struct {
+	*Detail
+	TotalNumberOfPackages     int64
+	RemainingNumberOfPackages int64
+}
+
 // Process is a function implementing the actual task logic
 type Process func(out *Output, detail *Detail) error
 

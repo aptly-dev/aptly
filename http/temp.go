@@ -30,7 +30,7 @@ func DownloadTempWithChecksum(ctx context.Context, downloader aptly.Downloader, 
 	tempfile := filepath.Join(tempdir, "buffer")
 
 	if expected != nil && downloader.GetProgress() != nil {
-		downloader.GetProgress().InitBar(expected.Size, true)
+		downloader.GetProgress().InitBar(expected.Size, true, aptly.BarMirrorUpdateDownloadIndexes)
 		defer downloader.GetProgress().ShutdownBar()
 	}
 
