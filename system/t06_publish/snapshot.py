@@ -1039,6 +1039,7 @@ class PublishSnapshot38Test(BaseTest):
     def check(self):
         super(PublishSnapshot38Test, self).check()
         self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS')
+        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS.gpg')
         self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/generic/debian.exec')
         self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/MANIFEST')
 

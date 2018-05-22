@@ -29,7 +29,8 @@ type indexFile struct {
 	discardable   bool
 	compressable  bool
 	onlyGzip      bool
-	signable      bool
+	clearSign     bool
+	detachedSign  bool
 	acquireByHash bool
 	relativePath  string
 	tempFilename  string
@@ -133,34 +134,42 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		}
 	}
 
-	if file.signable && signer != nil {
-		err = signer.DetachedSign(file.tempFilename, file.tempFilename+".gpg")
-		if err != nil {
-			return fmt.Errorf("unable to detached sign file: %s", err)
+	if signer != nil {
+		if file.detachedSign {
+			err = signer.DetachedSign(file.tempFilename, file.tempFilename+".gpg")
+			if err != nil {
+				return fmt.Errorf("unable to detached sign file: %s", err)
+			}
+
+			if file.parent.suffix != "" {
+				file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg")] =
+					filepath.Join(file.parent.basePath, file.relativePath+".gpg")
+			}
+
+			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg"),
+				file.tempFilename+".gpg")
+			if err != nil {
+				return fmt.Errorf("unable to publish file: %s", err)
+			}
+
 		}
 
-		err = signer.ClearSign(file.tempFilename, filepath.Join(filepath.Dir(file.tempFilename), "In"+filepath.Base(file.tempFilename)))
-		if err != nil {
-			return fmt.Errorf("unable to clearsign file: %s", err)
-		}
+		if file.clearSign {
+			err = signer.ClearSign(file.tempFilename, filepath.Join(filepath.Dir(file.tempFilename), "In"+filepath.Base(file.tempFilename)))
+			if err != nil {
+				return fmt.Errorf("unable to clearsign file: %s", err)
+			}
 
-		if file.parent.suffix != "" {
-			file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg")] =
-				filepath.Join(file.parent.basePath, file.relativePath+".gpg")
-			file.parent.renameMap[filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix)] =
-				filepath.Join(file.parent.basePath, "In"+file.relativePath)
-		}
+			if file.parent.suffix != "" {
+				file.parent.renameMap[filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix)] =
+					filepath.Join(file.parent.basePath, "In"+file.relativePath)
+			}
 
-		err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg"),
-			file.tempFilename+".gpg")
-		if err != nil {
-			return fmt.Errorf("unable to publish file: %s", err)
-		}
-
-		err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix),
-			filepath.Join(filepath.Dir(file.tempFilename), "In"+filepath.Base(file.tempFilename)))
-		if err != nil {
-			return fmt.Errorf("unable to publish file: %s", err)
+			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix),
+				filepath.Join(filepath.Dir(file.tempFilename), "In"+filepath.Base(file.tempFilename)))
+			if err != nil {
+				return fmt.Errorf("unable to publish file: %s", err)
+			}
 		}
 	}
 
@@ -255,7 +264,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 			parent:        files,
 			discardable:   false,
 			compressable:  !installer,
-			signable:      false,
+			detachedSign:  installer,
+			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
 		}
@@ -289,7 +299,8 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 			parent:        files,
 			discardable:   udeb,
 			compressable:  false,
-			signable:      false,
+			detachedSign:  false,
+			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
 		}
@@ -320,7 +331,8 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 			discardable:   true,
 			compressable:  true,
 			onlyGzip:      true,
-			signable:      false,
+			detachedSign:  false,
+			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
 		}
@@ -351,7 +363,8 @@ func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile 
 			discardable:   true,
 			compressable:  true,
 			onlyGzip:      true,
-			signable:      false,
+			detachedSign:  false,
+			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
 		}
@@ -367,19 +380,20 @@ func (files *indexFiles) ReleaseFile() *indexFile {
 		parent:       files,
 		discardable:  false,
 		compressable: false,
-		signable:     true,
+		detachedSign: true,
+		clearSign:    true,
 		relativePath: "Release",
 	}
 }
 
-func (files *indexFiles) FinalizeAll(progress aptly.Progress) (err error) {
+func (files *indexFiles) FinalizeAll(progress aptly.Progress, signer pgp.Signer) (err error) {
 	if progress != nil {
 		progress.InitBar(int64(len(files.indexes)), false)
 		defer progress.ShutdownBar()
 	}
 
 	for _, file := range files.indexes {
-		err = file.Finalize(nil)
+		err = file.Finalize(signer)
 		if err != nil {
 			return
 		}

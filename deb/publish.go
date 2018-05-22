@@ -749,7 +749,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		progress.Printf("Finalizing metadata files...\n")
 	}
 
-	err = indexes.FinalizeAll(progress)
+	err = indexes.FinalizeAll(progress, signer)
 	if err != nil {
 		return err
 	}
