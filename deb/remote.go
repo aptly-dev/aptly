@@ -460,7 +460,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		isInstaller := kind == PackageTypeInstaller
 		if err != nil {
 			if _, ok := err.(*http.NoCandidateFoundError); isInstaller && ok {
-				// checking of gpg file is only needed when checksums matches are required.
+				// checking if gpg file is only needed when checksums matches are required.
 				// otherwise there actually has been no candidate found and we can continue
 				if ignoreMismatch {
 					continue
