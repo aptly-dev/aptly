@@ -608,11 +608,7 @@ func (p *Package) Equals(p2 *Package) bool {
 
 // LinkFromPool links package file from pool to dist's pool location
 func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packagePool aptly.PackagePool,
-	prefix, distribution, component, architecture string, force bool) error {
-	poolDir, err := p.PoolDirectory()
-	if err != nil {
-		return err
-	}
+	prefix, relPath string, force bool) error {
 
 	for i, f := range p.Files() {
 		sourcePoolPath, err := f.GetPoolPath(packagePool)
@@ -620,10 +616,6 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 			return err
 		}
 
-		relPath := filepath.Join("pool", component, poolDir)
-		if p.IsInstaller {
-			relPath = filepath.Join("dists", distribution, component, fmt.Sprintf("%s-%s", p.Name, architecture), "current", "images")
-		}
 		publishedDirectory := filepath.Join(prefix, relPath)
 
 		err = publishedStorage.LinkFromPool(publishedDirectory, f.Filename, packagePool, sourcePoolPath, f.Checksums, force)

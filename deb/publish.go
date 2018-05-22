@@ -588,7 +588,19 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
 					hadUdebs = hadUdebs || pkg.IsUdeb
-					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, p.Distribution, component, arch, forceOverwrite)
+
+					var relPath string
+					if !pkg.IsInstaller {
+						poolDir, err2 := pkg.PoolDirectory()
+						if err2 != nil {
+							return err2
+						}
+						relPath = filepath.Join("pool", component, poolDir)
+					} else {
+						relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
+					}
+
+					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
 					if err != nil {
 						return err
 					}
