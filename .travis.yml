@@ -32,6 +32,8 @@ matrix:
       env:
         - RUN_LONG_TESTS=yes
         - DEPLOY_BINARIES=yes
+        - APTLY_USER=aptly
+        - secure: "ejVss+Ansvk9f237iXVd87KA8N/SkfJkEdr/KCw9WRkVw3M9WyYtFnqpakIUPFT8RsSc7MW+RU4OM90DsbE9dbDIL0oW+t6QH/IfGjNG2HjDiGEWN/tMLeAQTtzPaVqlItJBo0ILMF2K6NrgkYBYU+tZ8gk5w7CuARvAk82d00o="
     - go: master
       env: RUN_LONG_TESTS=no
 
@@ -58,16 +60,33 @@ notifications:
     on_start: false     # default: false
 
 before_deploy:
-  - make build
-  - export FILE_TO_UPLOAD=$(ls build/aptly-*)
+  - make release
 
 deploy:
-  provider: releases
-  api_key:
-    - secure: "MMk5S1Im6RrVudZasjtlCJa/rvRp4oavrR86WI2kQszs1iZIcdGyVhHiOGfWTwMjA/3iPdbAdu/WrjxCwI14GC5ws+rs8ICO6JIZktjtAwlfwlrV+nsrCiYx1EThghq43VEcykgz2UAJoJj/egv+UCEpe8yDTsvJ6we5HiXdTw0="
-  file_glob: true
-  file: "${FILE_TO_UPLOAD}"
-  skip_cleanup: true
-  on:
-    tags: true
-    condition: "$DEPLOY_BINARIES = yes"
+  - provider: releases
+    api_key:
+      - secure: "MMk5S1Im6RrVudZasjtlCJa/rvRp4oavrR86WI2kQszs1iZIcdGyVhHiOGfWTwMjA/3iPdbAdu/WrjxCwI14GC5ws+rs8ICO6JIZktjtAwlfwlrV+nsrCiYx1EThghq43VEcykgz2UAJoJj/egv+UCEpe8yDTsvJ6we5HiXdTw0="
+    file_glob: true
+    file: build/*
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: "$DEPLOY_BINARIES = yes"
+  - provider: s3
+    access_key_id:
+      secure: "I2etn22HHsQjJNhr6zdM/P4VLCYwEA/6HEf2eGvwey93oLeog+KnDCUI7lwGAHYuwzyDGQbZZ6YdoNc3b0kxaRWT0W+ke78TAdJhTZ+xbqGfEWv1er0zklJLOsimYF097rDJw8g3Oh/Gjwt5TTp0GJ5l3IhJ6zepNsKCMuwQpJM="
+    secret_access_key:
+      secure: "inRWX7FuyhkhKzGknSd2/mjZaNFZm/zHMejM99OF6PiGLNtyt/esdA0ToYL8B8Icl0/SISlLlEr/DDa4OGENKueFVeHrKH7OK0jVbWp9Yvw4hCXSlw9VmlkHDMQrC4gybS2Hf7el8N4AFVqyeUE7LqiP3WruHRdbE9XgOnTkLkg="
+    bucket: aptly-nightly
+    skip_cleanup: true
+    acl: public-read
+    local_dir: build
+    on:
+      branch: master
+      condition: "$DEPLOY_BINARIES = yes"
+  - provider: script
+    script: bash upload-artifacts.sh nightly
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: "$DEPLOY_BINARIES = yes"

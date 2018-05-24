@@ -36,11 +36,6 @@ endif
 install:
 	go install -v -ldflags "-X main.Version=$(VERSION)"
 
-build:
-	rm -rf build
-	mkdir -p build
-	go build -v -ldflags "-X main.Version=$(VERSION)" -o "build/aptly-$(VERSION)"
-
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
 	rm -rf system/env
@@ -66,14 +61,20 @@ mem.png: mem.dat mem.gp
 	gnuplot mem.gp
 	open mem.png
 
-goxc:
+goxc: dev
 	rm -rf root/
 	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d/ root/usr/share/zsh/vendor-completions/
 	cp man/aptly.1 root/usr/share/man/man1
 	cp completion.d/aptly root/etc/bash_completion.d/
 	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
-	goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
+	goxc -pv=$(VERSION) -max-processors=2 $(GOXC_OPTS)
+
+release: GOXC_OPTS=-tasks-=bintray,go-vet,go-test,rmbin
+release: goxc
+	rm -rf build/
+	mkdir -p build/
+	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
 
 man:
 	make -C man
@@ -81,4 +82,4 @@ man:
 version:
 	@echo $(VERSION)
 
-.PHONY: man version build
+.PHONY: man version release goxc

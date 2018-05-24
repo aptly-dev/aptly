@@ -6,7 +6,7 @@ Documentation=https://www.aptly.info/doc/api/
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/aptly serve api -no-lock -listen=127.0.0.1:8081
+ExecStart=/usr/bin/aptly api serve -no-lock -listen=127.0.0.1:8081
 
 [Install]
 WantedBy=multi-user.target
