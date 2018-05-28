@@ -338,6 +338,49 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(s.repo.packageRefs, NotNil)
 }
 
+func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
+	s.repo.Architectures = []string{"i386"}
+	s.repo.DownloadInstaller = true
+
+	err := s.repo.Fetch(s.downloader, nil)
+	c.Assert(err, IsNil)
+
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
+	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/SHA256SUMS", exampleInstallerHashSumFile)
+	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/MANIFEST", exampleInstallerManifestFile)
+
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	c.Assert(err, IsNil)
+	c.Assert(s.downloader.Empty(), Equals, true)
+
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(3)+int64(len(exampleInstallerManifestFile)))
+	c.Check(queue, HasLen, 2)
+
+	q := make([]string, 2)
+	for i := range q {
+		q[i] = queue[i].File.DownloadURL()
+	}
+	sort.Strings(q)
+	c.Check(q[0], Equals, "dists/squeeze/main/installer-i386/current/images/MANIFEST")
+	c.Check(q[1], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
+
+	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	c.Assert(s.repo.packageRefs, NotNil)
+
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
+	c.Assert(err, IsNil)
+
+	c.Check(pkg.Name, Equals, "amanda-client")
+
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
+	c.Assert(err, IsNil)
+	c.Check(pkg.Name, Equals, "installer")
+}
+
 func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.repo.Architectures = []string{"i386"}
 	s.repo.DownloadSources = true
@@ -878,5 +921,32 @@ MD5sum: d16fb36f0911f878998c136191af705e
 SHA1: 66b27417d37e024c46526c2f6d358a754fc552f3
 SHA256: 3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282
 `
+
+const exampleInstallerHashSumFile = `82f69d557f0004d2923fb03e4fb47d18187e37768dbfd0c99756f8a6c68a6d3a  ./MANIFEST
+`
+
+const exampleInstallerManifestFile = `cdrom/debian-cd_info.tar.gz     -- isolinux config files for CD
+cdrom/gtk/debian-cd_info.tar.gz -- isolinux help screens for CD (graphical)
+cdrom/gtk/initrd.gz             -- initrd for use with isolinux to build a CD (graphical)
+cdrom/gtk/vmlinuz               -- kernel for use with isolinux to build a CD (graphical)
+cdrom/initrd.gz                 -- initrd for use with isolinux to build a CD
+cdrom/vmlinuz                   -- kernel for use with isolinux to build a CD
+cdrom/xen/debian.cfg            -- example Xen configuration
+cdrom/xen/initrd.gz             -- initrd for installing under Xen
+cdrom/xen/vmlinuz               -- kernel image for installing under Xen
+hd-media/boot.img.gz            -- 1 gb image (compressed) for USB memory stick
+hd-media/gtk/initrd.gz          -- for use on USB memory sticks
+hd-media/gtk/vmlinuz            -- for use on USB memory sticks
+hd-media/initrd.gz              -- for use on USB memory sticks
+hd-media/vmlinuz                -- for use on USB memory sticks
+netboot/debian-installer        -- PXE boot directory for tftp server
+netboot/gtk/debian-installer    -- PXE boot directory for tftp server (graphical installer)
+netboot/gtk/mini.iso            -- not so tiny CD image that boots the graphical netboot installer
+netboot/gtk/netboot.tar.gz      -- tarball of PXE boot directory (graphical installer)
+netboot/mini.iso                -- tiny CD image that boots the netboot installer
+netboot/netboot.tar.gz          -- tarball of PXE boot directory
+netboot/xen/debian.cfg          -- example Xen configuration
+netboot/xen/initrd.gz           -- initrd for installing under Xen
+netboot/xen/vmlinuz             -- kernel image for installing under Xen`
 
 const exampleSourcesFile = sourcePackageMeta
