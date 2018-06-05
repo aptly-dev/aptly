@@ -60,7 +60,7 @@ If you want to update website, please follow steps below:
 We're always looking for new contributions to [FAQ](https://www.aptly.info/doc/faq/), [tutorials](https://www.aptly.info/tutorial/),
 general fixes, clarifications, misspellings, grammar mistakes!
 
-### Your Fist Code Contribution
+### Your First Code Contribution
 
 Please follow [next section](#development-setup) on development process. When change is ready, please submit PR
 following [PR template](.github/PULL_REQUEST_TEMPLATE.md).
