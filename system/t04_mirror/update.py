@@ -373,4 +373,6 @@ class UpdateMirror22Test(BaseTest):
         "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 ./"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
-    outputMatchPrepare = filterOutSignature
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'Signature made .* using|Packages filtered: .* -> 0.', '', s)
