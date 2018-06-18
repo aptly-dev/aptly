@@ -18,6 +18,9 @@ var (
 	_ Verifier = &GpgVerifier{}
 )
 
+// Skip GPG version check for GPG 1.x
+var skipGPGVersionCheck bool
+
 // GpgSigner is implementation of Signer interface using gpg as external program
 type GpgSigner struct {
 	gpg                        string
@@ -84,7 +87,7 @@ func cliVersionCheck(cmd string, marker string) bool {
 	if err != nil {
 		return false
 	}
-	return strings.Contains(string(output), marker)
+	return skipGPGVersionCheck || strings.Contains(string(output), marker)
 }
 
 func findSuitableCLI(cmds []string, versionMarker string) string {
@@ -425,4 +428,12 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 	}
 
 	return
+}
+
+func init() {
+	skipCheck := os.Getenv("APTLY_SKIP_GPG_VERSION_CHECK")
+	switch strings.ToLower(skipCheck) {
+	case "1", "y", "yes", "true":
+		skipGPGVersionCheck = true
+	}
 }
