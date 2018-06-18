@@ -1,16 +1,11 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
-	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
-	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -35,11 +30,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	acceptUnsigned := context.Flags().Lookup("accept-unsigned").Value.Get().(bool)
 	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	noRemoveFiles := context.Flags().Lookup("no-remove-files").Value.Get().(bool)
-
-	repoTemplate, err := template.New("repo").Parse(context.Flags().Lookup("repo").Value.Get().(string))
-	if err != nil {
-		return fmt.Errorf("error parsing -repo template: %s", err)
-	}
+	repoTemplateString := context.Flags().Lookup("repo").Value.Get().(string)
 
 	uploaders := (*deb.Uploaders)(nil)
 	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
@@ -59,143 +50,15 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 	reporter := &aptly.ConsoleResultReporter{Progress: context.Progress()}
 
-	var changesFiles, failedFiles, processedFiles []string
+	var changesFiles, failedFiles, failedFiles2 []string
 
 	changesFiles, failedFiles = deb.CollectChangesFiles(args, reporter)
-
-	for _, path := range changesFiles {
-		var changes *deb.Changes
-
-		changes, err = deb.NewChanges(path)
-		if err != nil {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("unable to process file %s: %s", path, err)
-			continue
-		}
-
-		err = changes.VerifyAndParse(acceptUnsigned, ignoreSignatures, verifier)
-		if err != nil {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
-			continue
-		}
-
-		err = changes.Prepare()
-		if err != nil {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
-			continue
-		}
-
-		repoName := &bytes.Buffer{}
-		err = repoTemplate.Execute(repoName, changes.Stanza)
-		if err != nil {
-			return fmt.Errorf("error applying template to repo: %s", err)
-		}
-
-		context.Progress().Printf("Loading repository %s for changes file %s...\n", repoName.String(), changes.ChangesName)
-
-		var repo *deb.LocalRepo
-		repo, err = context.CollectionFactory().LocalRepoCollection().ByName(repoName.String())
-		if err != nil {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
-			continue
-		}
-
-		currentUploaders := uploaders
-		if repo.Uploaders != nil {
-			currentUploaders = repo.Uploaders
-			for i := range currentUploaders.Rules {
-				currentUploaders.Rules[i].CompiledCondition, err = query.Parse(currentUploaders.Rules[i].Condition)
-				if err != nil {
-					return fmt.Errorf("error parsing query %s: %s", currentUploaders.Rules[i].Condition, err)
-				}
-			}
-		}
-
-		if currentUploaders != nil {
-			if err = currentUploaders.IsAllowed(changes); err != nil {
-				failedFiles = append(failedFiles, path)
-				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
-					changes.ChangesName, changes.SignatureKeys, err)
-				changes.Cleanup()
-				continue
-			}
-		}
-
-		err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
-		if err != nil {
-			return fmt.Errorf("unable to load repo: %s", err)
-		}
-
-		var list *deb.PackageList
-		list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
-		if err != nil {
-			return fmt.Errorf("unable to load packages: %s", err)
-		}
-
-		packageFiles, otherFiles, _ := deb.CollectPackageFiles([]string{changes.TempDir}, reporter)
-
-		var restriction deb.PackageQuery
-
-		restriction, err = changes.PackageQuery()
-		if err != nil {
-			failedFiles = append(failedFiles, path)
-			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
-			continue
-		}
-
-		var processedFiles2, failedFiles2 []string
-
-		processedFiles2, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			context.CollectionFactory().PackageCollection(), reporter, restriction, context.CollectionFactory().ChecksumCollection())
-
-		if err != nil {
-			return fmt.Errorf("unable to import package files: %s", err)
-		}
-
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
-
-		err = context.CollectionFactory().LocalRepoCollection().Update(repo)
-		if err != nil {
-			return fmt.Errorf("unable to save: %s", err)
-		}
-
-		err = changes.Cleanup()
-		if err != nil {
-			return err
-		}
-
-		for _, file := range failedFiles2 {
-			failedFiles = append(failedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
-		}
-
-		for _, file := range processedFiles2 {
-			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
-		}
-
-		for _, file := range otherFiles {
-			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
-		}
-
-		processedFiles = append(processedFiles, path)
-	}
-
-	if !noRemoveFiles {
-		processedFiles = utils.StrSliceDeduplicate(processedFiles)
-
-		for _, file := range processedFiles {
-			err = os.Remove(file)
-			if err != nil {
-				return fmt.Errorf("unable to remove file: %s", err)
-			}
-		}
-	}
+	_, failedFiles2, err = deb.ImportChangesFiles(
+		changesFiles, reporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles, verifier, repoTemplateString,
+		context.Progress(), context.CollectionFactory().LocalRepoCollection(), context.CollectionFactory().PackageCollection(),
+		context.PackagePool(), context.CollectionFactory().ChecksumCollection(),
+		uploaders, query.Parse)
+	failedFiles = append(failedFiles, failedFiles2...)
 
 	if len(failedFiles) > 0 {
 		context.Progress().ColoredPrintf("@y[!]@| @!Some files were skipped due to errors:@|")

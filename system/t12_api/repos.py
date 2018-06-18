@@ -176,6 +176,38 @@ class ReposAPITestAddFile(APITest):
         self.check_not_exists("upload/" + d)
 
 
+class ReposAPITestInclude(APITest):
+    """
+    POST /api/repos/:name/include/:dir, GET /api/repos/:name/packages
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        resp = self.upload("/api/files/" + d, "hardlink_0.2.1_amd64.changes",
+                           "hardlink_0.2.1.dsc", "hardlink_0.2.1.tar.gz",
+                           "hardlink_0.2.1_amd64.deb", directory='changes')
+        self.check_equal(resp.status_code, 200)
+
+        resp = self.post("/api/repos/" + repo_name + "/include/" + d, params={"ignoreSignature": 1})
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), {
+            u'FailedFiles': [],
+            u'Report': {
+                u'Added': [u'hardlink_0.2.1_source added', 'hardlink_0.2.1_amd64 added'],
+                u'Removed': [],
+                u'Warnings': []}})
+
+        self.check_equal(
+            sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
+            [u'Pamd64 hardlink 0.2.1 daf8fcecbf8210ad', u'Psource hardlink 0.2.1 8f72df429d7166e5']
+        )
+
+        self.check_not_exists("upload/" + d)
+
+
 class ReposAPITestShowQuery(APITest):
     """
     GET /api/repos/:name/packages?q=query

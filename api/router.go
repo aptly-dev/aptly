@@ -71,6 +71,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
 		root.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
 
+		root.POST("/repos/:name/include/:dir/:file", apiReposIncludePackageFromFile)
+		root.POST("/repos/:name/include/:dir", apiReposIncludePackageFromDir)
+
 		root.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
 	}
 
