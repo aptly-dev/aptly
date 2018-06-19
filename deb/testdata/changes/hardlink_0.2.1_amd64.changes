@@ -1,0 +1,34 @@
+Format: 1.8
+Date: Sat, 12 May 2014 12:57:02 +0200
+Source: hardlink
+Binary: hardlink
+Architecture: source amd64
+Version: 0.2.1
+Distribution: unstable
+Urgency: low
+Maintainer: Julian Andres Klode <jak@debian.org>
+Changed-By: Aptly Tester (don't use it) <test@aptly.info>
+Description: 
+ hardlink   - Hardlinks multiple copies of the same file
+Changes: 
+ hardlink (0.2.1) unstable; urgency=low
+ .
+   * Update just to try it out :)
+Checksums-Sha1: 
+ d20d6820bfccf5e3a5b120eedabba96e71da60ff 703 hardlink_0.2.1.dsc
+ 6e95b8cba450343ab4dc01902e521f29fbd87ac2 12516 hardlink_0.2.1.tar.gz
+ 1ac0e962854dff46f14fa7943746660d3cad1679 12468 hardlink_0.2.1_amd64.deb
+ 06c38a55e81907e573641d7f979f428583bd3165 4885 hardlink_0.2.1_amd64.buildinfo
+ be2b66e32b29ab654190e7ecb4cc31f48ec061cb 12084 hardlink_0.2.0_i386.deb
+Checksums-Sha256: 
+ 19d08cfadd58aee05fd06aca261a873bafeb55cac58bf4916cc070f5821803e7 703 hardlink_0.2.1.dsc
+ 4df0adce005526a1f0e1b38171ddb1f017faae9205f5b1c6dfb0fb4207767271 12516 hardlink_0.2.1.tar.gz
+ 668399580590bf1ffcd9eb161b6e574751e15f71820c6e08245dac7c5111a0ee 12468 hardlink_0.2.1_amd64.deb
+ 2a4905626b8664868b712a5b3d21f44c2665d17f9a4b67dc2e2bfd03f4ec54ee 4885 hardlink_0.2.1_amd64.buildinfo
+ a9d657d9413029e484c2a8c059c95a3e31eb1b47eca96455c1b9c330352293c9 12084 hardlink_0.2.0_i386.deb
+Files: 
+ b75fe0616f24deb28a3017c1dbae219a 703 utils optional hardlink_0.2.1.dsc
+ 8e2caa4d82f228bac08dc9a38bc6edb3 12516 utils optional hardlink_0.2.1.tar.gz
+ 2081e20b36c47f82811c25841cc0e41b 12468 utils optional hardlink_0.2.1_amd64.deb
+ 9468a19700d038fa6cd10c5e42063083 12084 utils optional hardlink_0.2.0_i386.deb
+ 490174686848eca6da4e5f79d899efe7 4885 utils optional hardlink_0.2.1_amd64.buildinfo

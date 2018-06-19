@@ -1,0 +1,22 @@
+Format: 1.8
+Date: Sat, 12 May 2014 12:57:02 +0200
+Source: hardlink
+Binary: hardlink
+Architecture: source amd64
+Version: 0.2.1
+Distribution: unstable
+Urgency: low
+Maintainer: Julian Andres Klode <jak@debian.org>
+Changed-By: Aptly Tester (don't use it) <test@aptly.info>
+Description: 
+ hardlink   - Hardlinks multiple copies of the same file
+Changes: 
+ hardlink (0.2.1) unstable; urgency=low
+ .
+   * Update just to try it out :)
+Checksums-Sha1: 
+ ff306b8f923653b78e00c45ebbc6c1c734859cdf 949 invalidhardlink_0.2.1.dsc
+Checksums-Sha256: 
+ c0d7458aa2ca3886cd6885f395a289efbc9a396e6765cbbca45f51fde859ea70 949 invalidhardlink_0.2.1.dsc
+Files: 
+ 4efce26825af5842f43961096dd890b3 949 utils optional invalidhardlink_0.2.1.dsc

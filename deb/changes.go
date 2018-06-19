@@ -1,6 +1,7 @@
 package deb
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
@@ -164,7 +166,7 @@ func (c *Changes) Cleanup() error {
 }
 
 // PackageQuery returns query that every package should match to be included
-func (c *Changes) PackageQuery() (PackageQuery, error) {
+func (c *Changes) PackageQuery() PackageQuery {
 	var archQuery PackageQuery = &FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: ""}
 	for _, arch := range c.Architectures {
 		archQuery = &OrQuery{L: &FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: arch}, R: archQuery}
@@ -215,7 +217,7 @@ func (c *Changes) PackageQuery() (PackageQuery, error) {
 		nameQuery = &OrQuery{L: sourceQuery, R: binaryQuery}
 	}
 
-	return &AndQuery{L: archQuery, R: nameQuery}, nil
+	return &AndQuery{L: archQuery, R: nameQuery}
 }
 
 // GetField implements PackageLike interface
@@ -287,4 +289,144 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 	sort.Strings(changesFiles)
 
 	return
+}
+
+// ImportChangesFiles imports referenced files in changes files into local repository
+func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles bool,
+	verifier pgp.Verifier, repoTemplateString string, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
+	pool aptly.PackagePool, checksumStorage aptly.ChecksumStorage, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
+
+	var repoTemplate *template.Template
+	repoTemplate, err = template.New("repo").Parse(repoTemplateString)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error parsing -repo template: %s", err)
+	}
+	for _, path := range changesFiles {
+		var changes *Changes
+
+		changes, err = NewChanges(path)
+		if err != nil {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("unable to process file %s: %s", path, err)
+			continue
+		}
+
+		err = changes.VerifyAndParse(acceptUnsigned, ignoreSignatures, verifier)
+		if err != nil {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
+			changes.Cleanup()
+			continue
+		}
+
+		err = changes.Prepare()
+		if err != nil {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
+			changes.Cleanup()
+			continue
+		}
+
+		repoName := &bytes.Buffer{}
+		err = repoTemplate.Execute(repoName, changes.Stanza)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error applying template to repo: %s", err)
+		}
+
+		if progress != nil {
+			progress.Printf("Loading repository %s for changes file %s...\n", repoName.String(), changes.ChangesName)
+		}
+
+		var repo *LocalRepo
+		repo, err = localRepoCollection.ByName(repoName.String())
+		if err != nil {
+			failedFiles = append(failedFiles, path)
+			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
+			changes.Cleanup()
+			continue
+		}
+
+		currentUploaders := uploaders
+		if repo.Uploaders != nil {
+			currentUploaders = repo.Uploaders
+			for i := range currentUploaders.Rules {
+				currentUploaders.Rules[i].CompiledCondition, err = parseQuery(currentUploaders.Rules[i].Condition)
+				if err != nil {
+					return nil, nil, fmt.Errorf("error parsing query %s: %s", currentUploaders.Rules[i].Condition, err)
+				}
+			}
+		}
+
+		if currentUploaders != nil {
+			if err = currentUploaders.IsAllowed(changes); err != nil {
+				failedFiles = append(failedFiles, path)
+				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
+					changes.ChangesName, changes.SignatureKeys, err)
+				changes.Cleanup()
+				continue
+			}
+		}
+
+		err = localRepoCollection.LoadComplete(repo)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to load repo: %s", err)
+		}
+
+		var list *PackageList
+		list, err = NewPackageListFromRefList(repo.RefList(), packageCollection, progress)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to load packages: %s", err)
+		}
+
+		packageFiles, otherFiles, _ := CollectPackageFiles([]string{changes.TempDir}, reporter)
+
+		restriction := changes.PackageQuery()
+		var processedFiles2, failedFiles2 []string
+
+		processedFiles2, failedFiles2, err = ImportPackageFiles(list, packageFiles, forceReplace, verifier, pool,
+			packageCollection, reporter, restriction, checksumStorage)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to import package files: %s", err)
+		}
+
+		repo.UpdateRefList(NewPackageRefListFromPackageList(list))
+
+		err = localRepoCollection.Update(repo)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to save: %s", err)
+		}
+
+		err = changes.Cleanup()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		for _, file := range failedFiles2 {
+			failedFiles = append(failedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
+		}
+
+		for _, file := range processedFiles2 {
+			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
+		}
+
+		for _, file := range otherFiles {
+			processedFiles = append(processedFiles, filepath.Join(changes.BasePath, filepath.Base(file)))
+		}
+
+		processedFiles = append(processedFiles, path)
+	}
+
+	if !noRemoveFiles {
+		processedFiles = utils.StrSliceDeduplicate(processedFiles)
+
+		for _, file := range processedFiles {
+			err = os.Remove(file)
+			if err != nil {
+				return nil, nil, fmt.Errorf("unable to remove file: %s", err)
+			}
+		}
+	}
+
+	return processedFiles, failedFiles, nil
 }

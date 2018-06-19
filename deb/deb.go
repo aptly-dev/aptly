@@ -26,6 +26,8 @@ const (
 	SourceRemoteRepo = "repo"
 )
 
+type parseQuery func(string) (PackageQuery, error)
+
 // GetControlFileFromDeb reads control file from deb package
 func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 	file, err := os.Open(packageFile)

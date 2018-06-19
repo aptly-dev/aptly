@@ -8,6 +8,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/query"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -354,6 +355,80 @@ func apiReposPackageFromDir(c *gin.Context) {
 			}
 		}
 
+		// atempt to remove dir, if it fails, that's fine: probably it's not empty
+		os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
+	}
+
+	if failedFiles == nil {
+		failedFiles = []string{}
+	}
+
+	c.JSON(200, gin.H{
+		"Report":      reporter,
+		"FailedFiles": failedFiles,
+	})
+}
+
+// POST /repos/:name/include/:dir/:file
+func apiReposIncludePackageFromFile(c *gin.Context) {
+	// redirect all work to dir method
+	apiReposIncludePackageFromDir(c)
+}
+
+// POST /repos/:name/include/:dir
+func apiReposIncludePackageFromDir(c *gin.Context) {
+	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
+	noRemoveFiles := c.Request.URL.Query().Get("noRemoveFiles") == "1"
+	acceptUnsigned := c.Request.URL.Query().Get("acceptUnsigned") == "1"
+	ignoreSignature := c.Request.URL.Query().Get("ignoreSignature") == "1"
+
+	repoTemplateString := c.Params.ByName("name")
+
+	if !verifyDir(c) {
+		return
+	}
+
+	fileParam := c.Params.ByName("file")
+	if fileParam != "" && !verifyPath(fileParam) {
+		c.AbortWithError(400, fmt.Errorf("wrong file"))
+		return
+	}
+
+	var (
+		err                       error
+		verifier                  = context.GetVerifier()
+		sources, changesFiles     []string
+		failedFiles, failedFiles2 []string
+		reporter                  = &aptly.RecordingResultReporter{
+			Warnings:     []string{},
+			AddedLines:   []string{},
+			RemovedLines: []string{},
+		}
+	)
+
+	if fileParam == "" {
+		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"))}
+	} else {
+		sources = []string{filepath.Join(context.UploadPath(), c.Params.ByName("dir"), c.Params.ByName("file"))}
+	}
+
+	localRepoCollection := context.CollectionFactory().LocalRepoCollection()
+	localRepoCollection.Lock()
+	defer localRepoCollection.Unlock()
+
+	changesFiles, failedFiles = deb.CollectChangesFiles(sources, reporter)
+	_, failedFiles2, err = deb.ImportChangesFiles(
+		changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
+		repoTemplateString, context.Progress(), localRepoCollection, context.CollectionFactory().PackageCollection(),
+		context.PackagePool(), context.CollectionFactory().ChecksumCollection(), nil, query.Parse)
+	failedFiles = append(failedFiles, failedFiles2...)
+
+	if err != nil {
+		c.AbortWithError(500, fmt.Errorf("unable to import changes files: %s", err))
+		return
+	}
+
+	if !noRemoveFiles {
 		// atempt to remove dir, if it fails, that's fine: probably it's not empty
 		os.Remove(filepath.Join(context.UploadPath(), c.Params.ByName("dir")))
 	}
