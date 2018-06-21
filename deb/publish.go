@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smira/go-uuid/uuid"
+	"github.com/pborman/uuid"
 	"github.com/ugorji/go/codec"
 
 	"github.com/aptly-dev/aptly/aptly"

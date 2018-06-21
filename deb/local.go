@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/aptly-dev/aptly/database"
-	"github.com/smira/go-uuid/uuid"
+	"github.com/pborman/uuid"
 	"github.com/ugorji/go/codec"
 )
 

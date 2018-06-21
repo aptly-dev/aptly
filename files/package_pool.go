@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/smira/go-uuid/uuid"
+	"github.com/pborman/uuid"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"

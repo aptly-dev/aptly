@@ -20,7 +20,7 @@ import (
 	"github.com/aptly-dev/aptly/http"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
-	"github.com/smira/go-uuid/uuid"
+	"github.com/pborman/uuid"
 	"github.com/ugorji/go/codec"
 )
 
