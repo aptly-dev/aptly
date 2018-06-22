@@ -15,8 +15,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/aptly-dev/aptly/pgp"
+	"github.com/kjk/lzma"
 	"github.com/smira/go-xz"
-	"github.com/smira/lzma"
 )
 
 // Source kinds
