@@ -199,9 +199,9 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/smira/lzma"
+  name = "github.com/kjk/lzma"
   packages = ["."]
-  revision = "7f0af6269940baa2c938fabe73e0d7ba41205683"
+  revision = "3fd93898850d5252457e48c1b3d5e1510597280b"
 
 [[projects]]
   branch = "master"
