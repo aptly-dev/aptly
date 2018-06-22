@@ -156,6 +156,12 @@
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  revision = "c65b2f87fee37d1c7854c9164a450713c28d50cd"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -184,12 +190,6 @@
   name = "github.com/smira/go-ftp-protocol"
   packages = ["protocol"]
   revision = "066b75c2b70dca7ae10b1b88b47534a3c31ccfaa"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/smira/go-uuid"
-  packages = ["uuid"]
-  revision = "ed3ca8a15a931b141440a7e98e4f716eec255f7d"
 
 [[projects]]
   branch = "master"
@@ -285,6 +285,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5ab2b384766e62be84d3941971a1d8e99c637f80a2cb1482b3d9704c668b549f"
+  inputs-digest = "3ae43715f5d857c1686ad4b4310a5537afc8d0ab50dc658d11db7c2b36f17fee"
   solver-name = "gps-cdcl"
   solver-version = 1

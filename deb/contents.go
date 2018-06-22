@@ -7,7 +7,7 @@ import (
 	"io"
 
 	"github.com/aptly-dev/aptly/database"
-	"github.com/smira/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 // ContentsIndex calculates mapping from files to packages, with sorting and aggregation
