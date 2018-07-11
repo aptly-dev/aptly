@@ -174,7 +174,7 @@ type GpgVerifier struct {
 	keyRings []string
 }
 
-// NewGpgVerifier creates a new gpg signer
+// NewGpgVerifier creates a new gpg verifier
 func NewGpgVerifier() *GpgVerifier {
 	gpg, err := findGPG1()
 	if err != nil {
@@ -191,18 +191,6 @@ func NewGpgVerifier() *GpgVerifier {
 
 // InitKeyring verifies that gpg is installed and some keys are trusted
 func (g *GpgVerifier) InitKeyring() error {
-	cmd, err := findGPG1()
-	if err != nil {
-		return err
-	}
-	g.gpg = cmd
-
-	cmd, err = findGPGV1()
-	if err != nil {
-		return err
-	}
-	g.gpgv = cmd
-
 	if len(g.keyRings) == 0 {
 		// using default keyring
 		output, err := exec.Command(g.gpg, "--no-default-keyring", "--no-auto-check-trustdb", "--keyring", "trustedkeys.gpg", "--list-keys").Output()

@@ -77,3 +77,35 @@ func (s *GnupgSuite) TestGPGVNothing(c *C) {
 
 	c.Assert(func() { NewGpgVerifier() }, PanicMatches, `Couldn't find a suitable gpgv executable.+`)
 }
+
+type Gnupg1VerifierSuite struct {
+	VerifierSuite
+}
+
+var _ = Suite(&Gnupg1VerifierSuite{})
+
+func (s *Gnupg1VerifierSuite) SetUpTest(c *C) {
+	s.verifier = NewGpgVerifier()
+	s.verifier.AddKeyring("./trusted.gpg")
+
+	c.Assert(s.verifier.InitKeyring(), IsNil)
+}
+
+type Gnupg1SignerSuite struct {
+	SignerSuite
+}
+
+var _ = Suite(&Gnupg1SignerSuite{})
+
+func (s *Gnupg1SignerSuite) SetUpTest(c *C) {
+	s.signer = NewGpgSigner()
+	s.signer.SetBatch(true)
+
+	s.verifier = &GoVerifier{}
+	s.verifier.AddKeyring("./keyrings/aptly.pub")
+	s.verifier.AddKeyring("./keyrings/aptly_passphrase.pub")
+
+	c.Assert(s.verifier.InitKeyring(), IsNil)
+
+	s.SignerSuite.SetUpTest(c)
+}
