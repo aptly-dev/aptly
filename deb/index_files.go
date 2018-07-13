@@ -77,14 +77,17 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	file.tempFile.Close()
 
 	exts := []string{""}
+	cksumExts := exts
 	if file.compressable {
 		exts = append(exts, ".gz", ".bz2")
+		cksumExts = exts
 		if file.onlyGzip {
 			exts = []string{".gz"}
+			cksumExts = []string{"", ".gz"}
 		}
 	}
 
-	for _, ext := range exts {
+	for _, ext := range cksumExts {
 		var checksumInfo utils.ChecksumInfo
 
 		checksumInfo, err = utils.ChecksumsForFile(file.tempFilename + ext)
