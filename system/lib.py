@@ -142,7 +142,16 @@ class BaseTest(object):
                                                      self.fixtureWebServer))
 
         if self.fixtureGpg:
-            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
+            # try to find gpg1 as that's what aptly prefers by default to build trusted keys in DB
+            # in lowest supported format
+            gpg = "gpg1"
+            try:
+                subprocess.check_output(["gpg1", "--version"])
+            except Exception:
+                gpg = "gpg"
+
+            # TODO: fixme
+            self.run_cmd([gpg, "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
                          [os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", key) for key in self.fixtureGpgKeys])
 
         if hasattr(self, "fixtureCmds"):

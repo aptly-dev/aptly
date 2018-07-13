@@ -20,6 +20,12 @@ type SignerSuite struct {
 	cleartext []byte
 
 	passwordFile string
+
+	keyringNoPassphrase [2]string
+	keyringPassphrase   [2]string
+
+	noPassphraseKey Key
+	passphraseKey   Key
 }
 
 func (s *SignerSuite) SetUpTest(c *C) {
@@ -70,20 +76,23 @@ func (s *SignerSuite) testSignDetached(c *C) {
 }
 
 func (s *SignerSuite) TestSignDetachedNoPassphrase(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly.pub", "keyrings/aptly.sec")
+	s.signer.SetKey(string(s.noPassphraseKey))
+	s.signer.SetKeyRing(s.keyringNoPassphrase[0], s.keyringNoPassphrase[1])
 
 	s.testSignDetached(c)
 }
 
 func (s *SignerSuite) TestSignDetachedPassphrase(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec")
+	s.signer.SetKey(string(s.passphraseKey))
+	s.signer.SetKeyRing(s.keyringPassphrase[0], s.keyringPassphrase[1])
 	s.signer.SetPassphrase("verysecret", "")
 
 	s.testSignDetached(c)
 }
 
 func (s *SignerSuite) TestSignDetachedPassphraseFile(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec")
+	s.signer.SetKey(string(s.passphraseKey))
+	s.signer.SetKeyRing(s.keyringPassphrase[0], s.keyringPassphrase[1])
 	s.signer.SetPassphrase("", s.passwordFile)
 
 	s.testSignDetached(c)
@@ -114,21 +123,24 @@ func (s *SignerSuite) testClearSign(c *C, expectedKey Key) {
 }
 
 func (s *SignerSuite) TestClearSignNoPassphrase(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly.pub", "keyrings/aptly.sec")
+	s.signer.SetKey(string(s.noPassphraseKey))
+	s.signer.SetKeyRing(s.keyringNoPassphrase[0], s.keyringNoPassphrase[1])
 
-	s.testClearSign(c, "21DBB89C16DB3E6D")
+	s.testClearSign(c, s.noPassphraseKey)
 }
 
 func (s *SignerSuite) TestClearSignPassphrase(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec")
+	s.signer.SetKey(string(s.passphraseKey))
+	s.signer.SetKeyRing(s.keyringPassphrase[0], s.keyringPassphrase[1])
 	s.signer.SetPassphrase("verysecret", "")
 
-	s.testClearSign(c, "F30E8CB9CDDE2AF8")
+	s.testClearSign(c, s.passphraseKey)
 }
 
 func (s *SignerSuite) TestClearSignPassphraseFile(c *C) {
-	s.signer.SetKeyRing("keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec")
+	s.signer.SetKey(string(s.passphraseKey))
+	s.signer.SetKeyRing(s.keyringPassphrase[0], s.keyringPassphrase[1])
 	s.signer.SetPassphrase("", s.passwordFile)
 
-	s.testClearSign(c, "F30E8CB9CDDE2AF8")
+	s.testClearSign(c, s.passphraseKey)
 }

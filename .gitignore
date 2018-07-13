@@ -38,3 +38,6 @@ system/env/
 
 # created by make build for release artifacts
 build/
+
+pgp/keyrings/aptly2*.gpg
+pgp/keyrings/aptly2*.gpg~

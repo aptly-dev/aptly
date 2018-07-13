@@ -130,7 +130,9 @@ Options:
 
   * `gpgProvider`:
     implementation of PGP signing/validation - `gpg` for external `gpg` utility or
-    `internal` to use Go internal implementation
+    `internal` to use Go internal implementation; `gpg1` might be used to force use
+    of GnuPG 1.x, `gpg2` enables GnuPG 2.x only; default is to use GnuPG 1.x if
+    available and GnuPG 2.x otherwise
 
   * `downloadSourcePackages`:
     if enabled, all mirrors created would have flag set to download source packages;
