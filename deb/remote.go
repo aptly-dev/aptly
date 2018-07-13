@@ -68,6 +68,8 @@ type RemoteRepo struct {
 	DownloadSources bool
 	// Should we download .udebs?
 	DownloadUdebs bool
+	// Should we download .debs?
+	DownloadDebs bool
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -78,7 +80,7 @@ type RemoteRepo struct {
 
 // NewRemoteRepo creates new instance of Debian remote repository with specified params
 func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string,
-	architectures []string, downloadSources bool, downloadUdebs bool) (*RemoteRepo, error) {
+	architectures []string, downloadSources bool, downloadUdebs bool, downloadDebs bool) (*RemoteRepo, error) {
 	result := &RemoteRepo{
 		UUID:            uuid.New(),
 		Name:            name,
@@ -88,6 +90,7 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		Architectures:   architectures,
 		DownloadSources: downloadSources,
 		DownloadUdebs:   downloadUdebs,
+		DownloadDebs:    downloadDebs,
 	}
 
 	err := result.prepare()
@@ -139,6 +142,9 @@ func (repo *RemoteRepo) String() string {
 	}
 	if repo.DownloadUdebs {
 		srcFlag += " [udeb]"
+	}
+	if repo.DownloadDebs {
+		srcFlag += " [deb]"
 	}
 	distribution := repo.Distribution
 	if distribution == "" {
@@ -426,10 +432,12 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		}
 	} else {
 		for _, component := range repo.Components {
-			for _, architecture := range repo.Architectures {
-				packagesPaths = append(packagesPaths, []string{repo.BinaryPath(component, architecture), PackageTypeBinary})
-				if repo.DownloadUdebs {
-					packagesPaths = append(packagesPaths, []string{repo.UdebPath(component, architecture), PackageTypeUdeb})
+			if repo.DownloadDebs {
+				for _, architecture := range repo.Architectures {
+					packagesPaths = append(packagesPaths, []string{repo.BinaryPath(component, architecture), PackageTypeBinary})
+					if repo.DownloadUdebs {
+						packagesPaths = append(packagesPaths, []string{repo.UdebPath(component, architecture), PackageTypeUdeb})
+					}
 				}
 			}
 			if repo.DownloadSources {

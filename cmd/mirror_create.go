@@ -18,6 +18,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	}
 
 	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.Flags(), "with-sources")
+	downloadDebs := LookupOption(context.Config().DownloadBinPackages, context.Flags(), "with-binaries")
 	downloadUdebs := context.Flags().Lookup("with-udebs").Value.Get().(bool)
 
 	var (
@@ -36,7 +37,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	}
 
 	repo, err := deb.NewRemoteRepo(mirrorName, archiveURL, distribution, components, context.ArchitecturesList(),
-		downloadSources, downloadUdebs)
+		downloadSources, downloadUdebs, downloadDebs)
 	if err != nil {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
@@ -94,7 +95,8 @@ Example:
 	}
 
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
-	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
+	cmd.Flag.Bool("with-sources", false, "download source packages")
+	cmd.Flag.Bool("with-binaries", true, "download binary packages")
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
