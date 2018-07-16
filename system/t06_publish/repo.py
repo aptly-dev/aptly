@@ -69,6 +69,10 @@ class PublishRepo1Test(BaseTest):
         pathsSeen = set()
         for l in release:
             fileHash, fileSize, path = l.split()
+            if "Contents" in path and not path.endswith(".gz"):
+                # "Contents" are present in index, but not really written to disk
+                continue
+
             pathsSeen.add(path)
 
             fileSize = int(fileSize)
@@ -464,6 +468,10 @@ class PublishRepo17Test(BaseTest):
         pathsSeen = set()
         for l in release:
             fileHash, fileSize, path = l.split()
+            if "Contents" in path and not path.endswith(".gz"):
+                # "Contents" are present in index, but not really written to disk
+                continue
+
             pathsSeen.add(path)
 
             fileSize = int(fileSize)
