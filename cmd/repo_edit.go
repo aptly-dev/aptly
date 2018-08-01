@@ -16,12 +16,13 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(args[0])
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.LocalRepoCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
@@ -52,7 +53,7 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+	err = collectionFactory.LocalRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
 	}

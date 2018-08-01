@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -446,8 +445,10 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		}
 		defer packagesFile.Close()
 
-		stat, _ := packagesFile.Stat()
-		progress.InitBar(stat.Size(), true)
+		if progress != nil {
+			stat, _ := packagesFile.Stat()
+			progress.InitBar(stat.Size(), true)
+		}
 
 		sreader := NewControlFileReader(packagesReader)
 
@@ -460,8 +461,10 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 				break
 			}
 
-			off, _ := packagesFile.Seek(0, 1)
-			progress.SetBar(int(off))
+			if progress != nil {
+				off, _ := packagesFile.Seek(0, 1)
+				progress.SetBar(int(off))
+			}
 
 			var p *Package
 
@@ -478,14 +481,18 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 			err = repo.packageList.Add(p)
 			if err != nil {
 				if _, ok := err.(*PackageConflictError); ok {
-					progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+					if progress != nil {
+						progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+					}
 				} else {
 					return err
 				}
 			}
 		}
 
-		progress.ShutdownBar()
+		if progress != nil {
+			progress.ShutdownBar()
+		}
 	}
 
 	return nil
@@ -653,7 +660,6 @@ func (repo *RemoteRepo) RefKey() []byte {
 
 // RemoteRepoCollection does listing, updating/adding/deleting of RemoteRepos
 type RemoteRepoCollection struct {
-	*sync.RWMutex
 	db   database.Storage
 	list []*RemoteRepo
 }
@@ -661,8 +667,7 @@ type RemoteRepoCollection struct {
 // NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
 func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
 	result := &RemoteRepoCollection{
-		RWMutex: &sync.RWMutex{},
-		db:      db,
+		db: db,
 	}
 
 	blobs := db.FetchByPrefix([]byte("R"))
@@ -699,17 +704,13 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	err := collection.db.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch := collection.db.StartBatch()
+
+	batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
-	return nil
+	return collection.db.FinishBatch(batch)
 }
 
 // LoadComplete loads additional information for remote repo
@@ -781,10 +782,8 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
-	err := collection.db.Delete(repo.Key())
-	if err != nil {
-		return err
-	}
-
-	return collection.db.Delete(repo.RefKey())
+	batch := collection.db.StartBatch()
+	batch.Delete(repo.Key())
+	batch.Delete(repo.RefKey())
+	return collection.db.FinishBatch(batch)
 }

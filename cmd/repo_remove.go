@@ -18,19 +18,20 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
 	context.Progress().Printf("Loading packages...\n")
 
-	list, err := deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -60,7 +61,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 	} else {
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-		err = context.CollectionFactory().LocalRepoCollection().Update(repo)
+		err = collectionFactory.LocalRepoCollection().Update(repo)
 		if err != nil {
 			return fmt.Errorf("unable to save: %s", err)
 		}

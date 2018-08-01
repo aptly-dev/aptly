@@ -24,7 +24,8 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 
 	storage, prefix := deb.ParsePrefix(param)
 
-	repo, err := context.CollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -42,13 +43,13 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	for component, sourceID := range repo.Sources {
 		var name string
 		if repo.SourceKind == deb.SourceSnapshot {
-			source, e := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+			source, e := collectionFactory.SnapshotCollection().ByUUID(sourceID)
 			if e != nil {
 				continue
 			}
 			name = source.Name
 		} else if repo.SourceKind == deb.SourceLocalRepo {
-			source, e := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+			source, e := collectionFactory.LocalRepoCollection().ByUUID(sourceID)
 			if e != nil {
 				continue
 			}

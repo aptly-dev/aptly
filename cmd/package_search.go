@@ -29,7 +29,8 @@ func aptlyPackageSearch(cmd *commander.Command, args []string) error {
 		q = &deb.MatchAllQuery{}
 	}
 
-	result := q.Query(context.CollectionFactory().PackageCollection())
+	collectionFactory := context.NewCollectionFactory()
+	result := q.Query(collectionFactory.PackageCollection())
 	if result.Len() == 0 {
 		return fmt.Errorf("no results")
 	}

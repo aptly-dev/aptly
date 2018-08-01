@@ -15,8 +15,8 @@ class PackagesAPITestShow(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
-        resp = self.post("/api/repos/" + repo_name + "/file/" + d)
-        self.check_equal(resp.status_code, 200)
+        resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_equal(resp.json()['State'], 2)
 
         # get information about package
         resp = self.get("/api/packages/" + urllib.quote('Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'))
