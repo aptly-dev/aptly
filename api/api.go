@@ -4,11 +4,11 @@ package api
 import (
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,49 +35,14 @@ type dbRequest struct {
 	err  chan<- error
 }
 
-// Flushes all collections which cache in-memory objects
-func flushColections() {
-	// lock everything to eliminate in-progress calls
-	r := context.CollectionFactory().RemoteRepoCollection()
-	r.Lock()
-	defer r.Unlock()
-
-	l := context.CollectionFactory().LocalRepoCollection()
-	l.Lock()
-	defer l.Unlock()
-
-	s := context.CollectionFactory().SnapshotCollection()
-	s.Lock()
-	defer s.Unlock()
-
-	p := context.CollectionFactory().PublishedRepoCollection()
-	p.Lock()
-	defer p.Unlock()
-
-	// all collections locked, flush them
-	context.CollectionFactory().Flush()
-}
-
-// Periodically flushes CollectionFactory to free up memory used by
-// collections, flushing caches.
-//
-// Should be run in goroutine!
-func cacheFlusher() {
-	ticker := time.Tick(15 * time.Minute)
-
-	for {
-		<-ticker
-
-		flushColections()
-	}
-}
+var dbRequests chan dbRequest
 
 // Acquire database lock and release it when not needed anymore.
 //
 // Should be run in a goroutine!
-func acquireDatabase(requests <-chan dbRequest) {
+func acquireDatabase() {
 	clients := 0
-	for request := range requests {
+	for request := range dbRequests {
 		var err error
 
 		switch request.kind {
@@ -94,7 +59,6 @@ func acquireDatabase(requests <-chan dbRequest) {
 		case releasedb:
 			clients--
 			if clients == 0 {
-				flushColections()
 				err = context.CloseDatabase()
 			} else {
 				err = nil
@@ -105,12 +69,52 @@ func acquireDatabase(requests <-chan dbRequest) {
 	}
 }
 
+// Should be called before database access is needed in any api call.
+// Happens per default for each api call. It is important that you run
+// runTaskInBackground to run a task which accquire database.
+// Important do not forget to defer to releaseDatabaseConnection
+func acquireDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{acquiredb, errCh}
+
+	return <-errCh
+}
+
+// Release database connection when not needed anymore
+func releaseDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{releasedb, errCh}
+	return <-errCh
+}
+
+// runs tasks in background. Acquires database connection first.
+func runTaskInBackground(name string, resources []string, proc task.Process) (task.Task, *task.ResourceConflictError) {
+	return context.TaskList().RunTaskInBackground(name, resources, func(out *task.Output, detail *task.Detail) error {
+		err := acquireDatabaseConnection()
+
+		if err != nil {
+			return err
+		}
+
+		defer releaseDatabaseConnection()
+		return proc(out, detail)
+	})
+}
+
 // Common piece of code to show list of packages,
 // with searching & details if requested
-func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
+func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) {
 	result := []*deb.Package{}
 
-	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), nil)
+	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return

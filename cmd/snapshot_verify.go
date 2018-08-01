@@ -16,13 +16,14 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 	}
 
 	snapshots := make([]*deb.Snapshot, len(args))
+	collectionFactory := context.NewCollectionFactory()
 	for i := range snapshots {
-		snapshots[i], err = context.CollectionFactory().SnapshotCollection().ByName(args[i])
+		snapshots[i], err = collectionFactory.SnapshotCollection().ByName(args[i])
 		if err != nil {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
 
-		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshots[i])
+		err = collectionFactory.SnapshotCollection().LoadComplete(snapshots[i])
 		if err != nil {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
@@ -30,7 +31,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
-	packageList, err := deb.NewPackageListFromRefList(snapshots[0].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+	packageList, err := deb.NewPackageListFromRefList(snapshots[0].RefList(), collectionFactory.PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
@@ -43,7 +44,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 
 	var pL *deb.PackageList
 	for i := 1; i < len(snapshots); i++ {
-		pL, err = deb.NewPackageListFromRefList(snapshots[i].RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+		pL, err = deb.NewPackageListFromRefList(snapshots[i].RefList(), collectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to load packages: %s", err)
 		}

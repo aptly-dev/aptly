@@ -13,13 +13,14 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		snapshot *deb.Snapshot
 	)
 
+	collectionFactory := context.NewCollectionFactory()
 	if len(args) == 4 && args[1] == "from" && args[2] == "mirror" { // nolint: goconst
 		// aptly snapshot create snap from mirror mirror
 		var repo *deb.RemoteRepo
 
 		repoName, snapshotName := args[3], args[0]
 
-		repo, err = context.CollectionFactory().RemoteRepoCollection().ByName(repoName)
+		repo, err = collectionFactory.RemoteRepoCollection().ByName(repoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -29,7 +30,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+		err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -44,12 +45,12 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 
 		localRepoName, snapshotName := args[3], args[0]
 
-		repo, err = context.CollectionFactory().LocalRepoCollection().ByName(localRepoName)
+		repo, err = collectionFactory.LocalRepoCollection().ByName(localRepoName)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -70,7 +71,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().Add(snapshot)
+	err = collectionFactory.SnapshotCollection().Add(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to add snapshot: %s", err)
 	}
