@@ -25,7 +25,8 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	var published *deb.PublishedRepo
 
-	published, err = context.CollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
+	collectionFactory := context.NewCollectionFactory()
+	published, err = collectionFactory.PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -34,7 +35,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: not a local repository publish")
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().LoadComplete(published, context.CollectionFactory())
+	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -59,20 +60,20 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.SkipContents = context.Flags().Lookup("skip-contents").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, context.CollectionFactory(), signer, context.Progress(), forceOverwrite)
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().Update(published)
+	err = collectionFactory.PublishedRepoCollection().Update(published)
 	if err != nil {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = context.CollectionFactory().PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-			context.GetPublishedStorage(storage), context.CollectionFactory(), context.Progress())
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
+			context.GetPublishedStorage(storage), collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}

@@ -44,4 +44,6 @@ class GraphAPITest(APITest):
 
         # remove the repos again
         for repo in tempRepos:
-            self.check_equal(self.delete("/api/repos/" + repo, params={"force": "1"}).status_code, 200)
+            self.check_equal(self.delete_task(
+                "/api/repos/" + repo, params={"force": "1"}).json()['State'], 2
+            )

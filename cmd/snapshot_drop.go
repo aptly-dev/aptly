@@ -15,18 +15,19 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 	}
 
 	name := args[0]
+	collectionFactory := context.NewCollectionFactory()
 
-	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+	snapshot, err := collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	published := context.CollectionFactory().PublishedRepoCollection().BySnapshot(snapshot)
+	published := collectionFactory.PublishedRepoCollection().BySnapshot(snapshot)
 
 	if len(published) > 0 {
 		fmt.Printf("Snapshot `%s` is published currently:\n", snapshot.Name)
 		for _, repo := range published {
-			err = context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+			err = collectionFactory.PublishedRepoCollection().LoadComplete(repo, collectionFactory)
 			if err != nil {
 				return fmt.Errorf("unable to load published: %s", err)
 			}
@@ -38,7 +39,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 
 	force := context.Flags().Lookup("force").Value.Get().(bool)
 	if !force {
-		snapshots := context.CollectionFactory().SnapshotCollection().BySnapshotSource(snapshot)
+		snapshots := collectionFactory.SnapshotCollection().BySnapshotSource(snapshot)
 		if len(snapshots) > 0 {
 			fmt.Printf("Snapshot `%s` was used as a source in following snapshots:\n", snapshot.Name)
 			for _, snap := range snapshots {
@@ -49,7 +50,7 @@ func aptlySnapshotDrop(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().Drop(snapshot)
+	err = collectionFactory.SnapshotCollection().Drop(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to drop: %s", err)
 	}

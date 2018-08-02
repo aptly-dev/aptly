@@ -15,31 +15,32 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 	}
 
 	onlyMatching := context.Flags().Lookup("only-matching").Value.Get().(bool)
+	collectionFactory := context.NewCollectionFactory()
 
 	// Load <name-a> snapshot
-	snapshotA, err := context.CollectionFactory().SnapshotCollection().ByName(args[0])
+	snapshotA, err := collectionFactory.SnapshotCollection().ByName(args[0])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotA)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotA)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
 	// Load <name-b> snapshot
-	snapshotB, err := context.CollectionFactory().SnapshotCollection().ByName(args[1])
+	snapshotB, err := collectionFactory.SnapshotCollection().ByName(args[1])
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshotB)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotB)
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.CollectionFactory().PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
 	if err != nil {
 		return fmt.Errorf("unable to calculate diff: %s", err)
 	}
