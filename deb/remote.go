@@ -660,28 +660,34 @@ type RemoteRepoCollection struct {
 
 // NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
 func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
-	result := &RemoteRepoCollection{
+	return &RemoteRepoCollection{
 		RWMutex: &sync.RWMutex{},
 		db:      db,
 	}
+}
 
-	blobs := db.FetchByPrefix([]byte("R"))
-	result.list = make([]*RemoteRepo, 0, len(blobs))
+func (collection *RemoteRepoCollection) loadList() {
+	if collection.list != nil {
+		return
+	}
+
+	blobs := collection.db.FetchByPrefix([]byte("R"))
+	collection.list = make([]*RemoteRepo, 0, len(blobs))
 
 	for _, blob := range blobs {
 		r := &RemoteRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding mirror: %s\n", err)
 		} else {
-			result.list = append(result.list, r)
+			collection.list = append(collection.list, r)
 		}
 	}
-
-	return result
 }
 
 // Add appends new repo to collection and saves it
 func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Name == repo.Name {
 			return fmt.Errorf("mirror with name %s already exists", repo.Name)
@@ -728,6 +734,8 @@ func (collection *RemoteRepoCollection) LoadComplete(repo *RemoteRepo) error {
 
 // ByName looks up repository by name
 func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Name == name {
 			return r, nil
@@ -738,6 +746,8 @@ func (collection *RemoteRepoCollection) ByName(name string) (*RemoteRepo, error)
 
 // ByUUID looks up repository by uuid
 func (collection *RemoteRepoCollection) ByUUID(uuid string) (*RemoteRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.UUID == uuid {
 			return r, nil
@@ -748,23 +758,28 @@ func (collection *RemoteRepoCollection) ByUUID(uuid string) (*RemoteRepo, error)
 
 // ForEach runs method for each repository
 func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo) error) error {
-	var err error
-	for _, r := range collection.list {
-		err = handler(r)
-		if err != nil {
-			return err
+	return collection.db.ProcessByPrefix([]byte("R"), func(key, blob []byte) error {
+		r := &RemoteRepo{}
+		if err := r.Decode(blob); err != nil {
+			log.Printf("Error decoding mirror: %s\n", err)
+			return nil
 		}
-	}
-	return err
+
+		return handler(r)
+	})
 }
 
 // Len returns number of remote repos
 func (collection *RemoteRepoCollection) Len() int {
+	collection.loadList()
+
 	return len(collection.list)
 }
 
 // Drop removes remote repo from collection
 func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
+	collection.loadList()
+
 	repoPosition := -1
 
 	for i, r := range collection.list {
