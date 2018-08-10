@@ -20,7 +20,8 @@ func aptlyMirrorRename(cmd *commander.Command, args []string) error {
 
 	oldName, newName := args[0], args[1]
 
-	repo, err = context.CollectionFactory().RemoteRepoCollection().ByName(oldName)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err = collectionFactory.RemoteRepoCollection().ByName(oldName)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
@@ -30,13 +31,13 @@ func aptlyMirrorRename(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
 
-	_, err = context.CollectionFactory().RemoteRepoCollection().ByName(newName)
+	_, err = collectionFactory.RemoteRepoCollection().ByName(newName)
 	if err == nil {
 		return fmt.Errorf("unable to rename: mirror %s already exists", newName)
 	}
 
 	repo.Name = newName
-	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}

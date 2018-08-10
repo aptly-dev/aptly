@@ -28,8 +28,8 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	layout := context.Flags().Lookup("layout").Value.String()
 
 	fmt.Printf("Generating graph...\n")
-	graph, err := deb.BuildGraph(context.CollectionFactory(), layout)
-
+	collectionFactory := context.NewCollectionFactory()
+	graph, err := deb.BuildGraph(collectionFactory, layout)
 	if err != nil {
 		return err
 	}

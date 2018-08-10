@@ -27,15 +27,16 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 		}
 	}
 
+	collectionFactory := context.NewCollectionFactory()
 	if len(args) == 4 {
 		var snapshot *deb.Snapshot
 
-		snapshot, err = context.CollectionFactory().SnapshotCollection().ByName(args[3])
+		snapshot, err = collectionFactory.SnapshotCollection().ByName(args[3])
 		if err != nil {
 			return fmt.Errorf("unable to load source snapshot: %s", err)
 		}
 
-		err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 		if err != nil {
 			return fmt.Errorf("unable to load source snapshot: %s", err)
 		}
@@ -43,7 +44,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 		repo.UpdateRefList(snapshot.RefList())
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().Add(repo)
+	err = collectionFactory.LocalRepoCollection().Add(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add local repo: %s", err)
 	}

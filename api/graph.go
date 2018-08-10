@@ -21,17 +21,7 @@ func apiGraph(c *gin.Context) {
 
 	ext := c.Params.ByName("ext")
 	layout := c.Request.URL.Query().Get("layout")
-
-	factory := context.CollectionFactory()
-
-	factory.RemoteRepoCollection().Lock()
-	defer factory.RemoteRepoCollection().Unlock()
-	factory.LocalRepoCollection().Lock()
-	defer factory.LocalRepoCollection().Unlock()
-	factory.SnapshotCollection().Lock()
-	defer factory.SnapshotCollection().Unlock()
-	factory.PublishedRepoCollection().Lock()
-	defer factory.PublishedRepoCollection().Unlock()
+	factory := context.NewCollectionFactory()
 
 	graph, err := deb.BuildGraph(factory, layout)
 	if err != nil {

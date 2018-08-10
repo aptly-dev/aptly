@@ -69,7 +69,7 @@ func (p *Progress) Flush() {
 }
 
 // InitBar starts progressbar for count bytes or count items
-func (p *Progress) InitBar(count int64, isBytes bool) {
+func (p *Progress) InitBar(count int64, isBytes bool, barType aptly.BarType) {
 	if p.bar != nil {
 		panic("bar already initialized")
 	}

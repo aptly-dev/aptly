@@ -21,14 +21,14 @@ const (
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
-func ListPackagesRefList(reflist *deb.PackageRefList) (err error) {
+func ListPackagesRefList(reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) (err error) {
 	fmt.Printf("Packages:\n")
 
 	if reflist == nil {
 		return
 	}
 
-	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), context.Progress())
+	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
 	}
