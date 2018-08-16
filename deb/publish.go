@@ -852,28 +852,34 @@ type PublishedRepoCollection struct {
 
 // NewPublishedRepoCollection loads PublishedRepos from DB and makes up collection
 func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
-	result := &PublishedRepoCollection{
+	return &PublishedRepoCollection{
 		RWMutex: &sync.RWMutex{},
 		db:      db,
 	}
+}
 
-	blobs := db.FetchByPrefix([]byte("U"))
-	result.list = make([]*PublishedRepo, 0, len(blobs))
+func (collection *PublishedRepoCollection) loadList() {
+	if collection.list != nil {
+		return
+	}
+
+	blobs := collection.db.FetchByPrefix([]byte("U"))
+	collection.list = make([]*PublishedRepo, 0, len(blobs))
 
 	for _, blob := range blobs {
 		r := &PublishedRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding published repo: %s\n", err)
 		} else {
-			result.list = append(result.list, r)
+			collection.list = append(collection.list, r)
 		}
 	}
-
-	return result
 }
 
 // Add appends new repo to collection and saves it
 func (collection *PublishedRepoCollection) Add(repo *PublishedRepo) error {
+	collection.loadList()
+
 	if collection.CheckDuplicate(repo) != nil {
 		return fmt.Errorf("published repo with storage/prefix/distribution %s/%s/%s already exists", repo.Storage, repo.Prefix, repo.Distribution)
 	}
@@ -889,6 +895,8 @@ func (collection *PublishedRepoCollection) Add(repo *PublishedRepo) error {
 
 // CheckDuplicate verifies that there's no published repo with the same name
 func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *PublishedRepo {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Prefix == repo.Prefix && r.Distribution == repo.Distribution && r.Storage == repo.Storage {
 			return r
@@ -978,6 +986,8 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 
 // ByStoragePrefixDistribution looks up repository by storage, prefix & distribution
 func (collection *PublishedRepoCollection) ByStoragePrefixDistribution(storage, prefix, distribution string) (*PublishedRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Prefix == prefix && r.Distribution == distribution && r.Storage == storage {
 			return r, nil
@@ -991,6 +1001,8 @@ func (collection *PublishedRepoCollection) ByStoragePrefixDistribution(storage, 
 
 // ByUUID looks up repository by uuid
 func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.UUID == uuid {
 			return r, nil
@@ -1001,6 +1013,8 @@ func (collection *PublishedRepoCollection) ByUUID(uuid string) (*PublishedRepo, 
 
 // BySnapshot looks up repository by snapshot source
 func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*PublishedRepo {
+	collection.loadList()
+
 	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == SourceSnapshot {
@@ -1021,6 +1035,8 @@ func (collection *PublishedRepoCollection) BySnapshot(snapshot *Snapshot) []*Pub
 
 // ByLocalRepo looks up repository by local repo source
 func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*PublishedRepo {
+	collection.loadList()
+
 	var result []*PublishedRepo
 	for _, r := range collection.list {
 		if r.SourceKind == SourceLocalRepo {
@@ -1041,24 +1057,29 @@ func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*Publi
 
 // ForEach runs method for each repository
 func (collection *PublishedRepoCollection) ForEach(handler func(*PublishedRepo) error) error {
-	var err error
-	for _, r := range collection.list {
-		err = handler(r)
-		if err != nil {
-			return err
+	return collection.db.ProcessByPrefix([]byte("U"), func(key, blob []byte) error {
+		r := &PublishedRepo{}
+		if err := r.Decode(blob); err != nil {
+			log.Printf("Error decoding published repo: %s\n", err)
+			return nil
 		}
-	}
-	return err
+
+		return handler(r)
+	})
 }
 
 // Len returns number of remote repos
 func (collection *PublishedRepoCollection) Len() int {
+	collection.loadList()
+
 	return len(collection.list)
 }
 
 // CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
 func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix string, components []string,
 	publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+
+	collection.loadList()
 
 	var err error
 	referencedFiles := map[string][]string{}
@@ -1141,6 +1162,9 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly.PublishedStorageProvider,
 	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
 	force, skipCleanup bool) error {
+
+	collection.loadList()
+
 	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return err

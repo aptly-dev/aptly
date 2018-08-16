@@ -99,28 +99,34 @@ type LocalRepoCollection struct {
 
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
-	result := &LocalRepoCollection{
+	return &LocalRepoCollection{
 		RWMutex: &sync.RWMutex{},
 		db:      db,
 	}
+}
 
-	blobs := db.FetchByPrefix([]byte("L"))
-	result.list = make([]*LocalRepo, 0, len(blobs))
+func (collection *LocalRepoCollection) loadList() {
+	if collection.list != nil {
+		return
+	}
+
+	blobs := collection.db.FetchByPrefix([]byte("L"))
+	collection.list = make([]*LocalRepo, 0, len(blobs))
 
 	for _, blob := range blobs {
 		r := &LocalRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding repo: %s\n", err)
 		} else {
-			result.list = append(result.list, r)
+			collection.list = append(collection.list, r)
 		}
 	}
-
-	return result
 }
 
 // Add appends new repo to collection and saves it
 func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Name == repo.Name {
 			return fmt.Errorf("local repo with name %s already exists", repo.Name)
@@ -153,6 +159,8 @@ func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
 
 // LoadComplete loads additional information for local repo
 func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo) error {
+	collection.loadList()
+
 	encoded, err := collection.db.Get(repo.RefKey())
 	if err == database.ErrNotFound {
 		return nil
@@ -167,6 +175,8 @@ func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo) error {
 
 // ByName looks up repository by name
 func (collection *LocalRepoCollection) ByName(name string) (*LocalRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.Name == name {
 			return r, nil
@@ -177,6 +187,8 @@ func (collection *LocalRepoCollection) ByName(name string) (*LocalRepo, error) {
 
 // ByUUID looks up repository by uuid
 func (collection *LocalRepoCollection) ByUUID(uuid string) (*LocalRepo, error) {
+	collection.loadList()
+
 	for _, r := range collection.list {
 		if r.UUID == uuid {
 			return r, nil
@@ -187,23 +199,28 @@ func (collection *LocalRepoCollection) ByUUID(uuid string) (*LocalRepo, error) {
 
 // ForEach runs method for each repository
 func (collection *LocalRepoCollection) ForEach(handler func(*LocalRepo) error) error {
-	var err error
-	for _, r := range collection.list {
-		err = handler(r)
-		if err != nil {
-			return err
+	return collection.db.ProcessByPrefix([]byte("L"), func(key, blob []byte) error {
+		r := &LocalRepo{}
+		if err := r.Decode(blob); err != nil {
+			log.Printf("Error decoding repo: %s\n", err)
+			return nil
 		}
-	}
-	return err
+
+		return handler(r)
+	})
 }
 
 // Len returns number of remote repos
 func (collection *LocalRepoCollection) Len() int {
+	collection.loadList()
+
 	return len(collection.list)
 }
 
 // Drop removes remote repo from collection
 func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
+	collection.loadList()
+
 	repoPosition := -1
 
 	for i, r := range collection.list {

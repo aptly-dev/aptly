@@ -179,28 +179,34 @@ type SnapshotCollection struct {
 
 // NewSnapshotCollection loads Snapshots from DB and makes up collection
 func NewSnapshotCollection(db database.Storage) *SnapshotCollection {
-	result := &SnapshotCollection{
+	return &SnapshotCollection{
 		RWMutex: &sync.RWMutex{},
 		db:      db,
 	}
+}
 
-	blobs := db.FetchByPrefix([]byte("S"))
-	result.list = make([]*Snapshot, 0, len(blobs))
+func (collection *SnapshotCollection) loadList() {
+	if collection.list != nil {
+		return
+	}
+
+	blobs := collection.db.FetchByPrefix([]byte("S"))
+	collection.list = make([]*Snapshot, 0, len(blobs))
 
 	for _, blob := range blobs {
 		s := &Snapshot{}
 		if err := s.Decode(blob); err != nil {
 			log.Printf("Error decoding snapshot: %s\n", err)
 		} else {
-			result.list = append(result.list, s)
+			collection.list = append(collection.list, s)
 		}
 	}
-
-	return result
 }
 
 // Add appends new repo to collection and saves it
 func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
+	collection.loadList()
+
 	for _, s := range collection.list {
 		if s.Name == snapshot.Name {
 			return fmt.Errorf("snapshot with name %s already exists", snapshot.Name)
@@ -216,7 +222,7 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 	return nil
 }
 
-// Update stores updated information about repo in DB
+// Update stores updated information about snapshot in DB
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 	err := collection.db.Put(snapshot.Key(), snapshot.Encode())
 	if err != nil {
@@ -241,6 +247,8 @@ func (collection *SnapshotCollection) LoadComplete(snapshot *Snapshot) error {
 
 // ByName looks up snapshot by name
 func (collection *SnapshotCollection) ByName(name string) (*Snapshot, error) {
+	collection.loadList()
+
 	for _, s := range collection.list {
 		if s.Name == name {
 			return s, nil
@@ -251,6 +259,8 @@ func (collection *SnapshotCollection) ByName(name string) (*Snapshot, error) {
 
 // ByUUID looks up snapshot by UUID
 func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
+	collection.loadList()
+
 	for _, s := range collection.list {
 		if s.UUID == uuid {
 			return s, nil
@@ -261,6 +271,8 @@ func (collection *SnapshotCollection) ByUUID(uuid string) (*Snapshot, error) {
 
 // ByRemoteRepoSource looks up snapshots that have specified RemoteRepo as a source
 func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Snapshot {
+	collection.loadList()
+
 	var result []*Snapshot
 
 	for _, s := range collection.list {
@@ -273,6 +285,8 @@ func (collection *SnapshotCollection) ByRemoteRepoSource(repo *RemoteRepo) []*Sn
 
 // ByLocalRepoSource looks up snapshots that have specified LocalRepo as a source
 func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snapshot {
+	collection.loadList()
+
 	var result []*Snapshot
 
 	for _, s := range collection.list {
@@ -285,6 +299,8 @@ func (collection *SnapshotCollection) ByLocalRepoSource(repo *LocalRepo) []*Snap
 
 // BySnapshotSource looks up snapshots that have specified snapshot as a source
 func (collection *SnapshotCollection) BySnapshotSource(snapshot *Snapshot) []*Snapshot {
+	collection.loadList()
+
 	var result []*Snapshot
 
 	for _, s := range collection.list {
@@ -297,18 +313,21 @@ func (collection *SnapshotCollection) BySnapshotSource(snapshot *Snapshot) []*Sn
 
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) ForEach(handler func(*Snapshot) error) error {
-	var err error
-	for _, s := range collection.list {
-		err = handler(s)
-		if err != nil {
-			return err
+	return collection.db.ProcessByPrefix([]byte("S"), func(key, blob []byte) error {
+		s := &Snapshot{}
+		if err := s.Decode(blob); err != nil {
+			log.Printf("Error decoding snapshot: %s\n", err)
+			return nil
 		}
-	}
-	return err
+
+		return handler(s)
+	})
 }
 
 // ForEachSorted runs method for each snapshot following some sort order
 func (collection *SnapshotCollection) ForEachSorted(sortMethod string, handler func(*Snapshot) error) error {
+	collection.loadList()
+
 	sorter, err := newSnapshotSorter(sortMethod, collection)
 	if err != nil {
 		return err
@@ -327,11 +346,15 @@ func (collection *SnapshotCollection) ForEachSorted(sortMethod string, handler f
 // Len returns number of snapshots in collection
 // ForEach runs method for each snapshot
 func (collection *SnapshotCollection) Len() int {
+	collection.loadList()
+
 	return len(collection.list)
 }
 
 // Drop removes snapshot from collection
 func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
+	collection.loadList()
+
 	snapshotPosition := -1
 
 	for i, s := range collection.list {
