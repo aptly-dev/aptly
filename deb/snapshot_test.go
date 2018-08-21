@@ -2,6 +2,7 @@ package deb
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/aptly-dev/aptly/database"
 
@@ -158,6 +159,10 @@ func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
 	snapshot, err = collection.ByUUID(s.snapshot1.UUID)
 	c.Assert(err, IsNil)
 	c.Assert(snapshot.String(), Equals, s.snapshot1.String())
+
+	snapshot, err = collection.ByUUID(s.snapshot2.UUID)
+	c.Assert(err, IsNil)
+	c.Assert(snapshot.String(), Equals, s.snapshot2.String())
 }
 
 func (s *SnapshotCollectionSuite) TestUpdateLoadComplete(c *C) {
@@ -191,6 +196,23 @@ func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
 		return e
 	})
 	c.Assert(err, Equals, e)
+}
+
+func (s *SnapshotCollectionSuite) TestForEachSorted(c *C) {
+	s.collection.Add(s.snapshot2)
+	s.collection.Add(s.snapshot1)
+	s.collection.Add(s.snapshot4)
+	s.collection.Add(s.snapshot3)
+
+	names := []string{}
+
+	err := s.collection.ForEachSorted("name", func(snapshot *Snapshot) error {
+		names = append(names, snapshot.Name)
+		return nil
+	})
+	c.Assert(err, IsNil)
+
+	c.Check(sort.StringsAreSorted(names), Equals, true)
 }
 
 func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
@@ -230,7 +252,11 @@ func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
 	c.Assert(s.collection.Add(snapshot4), IsNil)
 	c.Assert(s.collection.Add(snapshot5), IsNil)
 
-	c.Check(s.collection.BySnapshotSource(s.snapshot1), DeepEquals, []*Snapshot{snapshot3, snapshot4})
+	list := s.collection.BySnapshotSource(s.snapshot1)
+	sorter, _ := newSnapshotSorter("name", list)
+	sort.Sort(sorter)
+
+	c.Check(sorter.list, DeepEquals, []*Snapshot{snapshot3, snapshot4})
 	c.Check(s.collection.BySnapshotSource(s.snapshot2), DeepEquals, []*Snapshot{snapshot3})
 	c.Check(s.collection.BySnapshotSource(snapshot5), DeepEquals, []*Snapshot(nil))
 }
