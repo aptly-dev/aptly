@@ -71,7 +71,7 @@ If you have Go environment set up, you can build aptly from source by running (g
     cd $GOPATH/src/github.com/aptly-dev/aptly
     make install
 
-Binary would be installed to ```$GOPATH/bin/aptly``.
+Binary would be installed to ``$GOPATH/bin/aptly``.
 
 Contributing
 ------------
