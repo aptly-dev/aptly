@@ -71,7 +71,7 @@ If you have Go environment set up, you can build aptly from source by running (g
     cd $GOPATH/src/github.com/aptly-dev/aptly
     make install
 
-Binary would be installed to ```$GOPATH/bin/aptly``.
+Binary would be installed to ``$GOPATH/bin/aptly``.
 
 Contributing
 ------------
@@ -90,7 +90,7 @@ Vagrant:
 Docker:
 
 -    `Docker container <https://github.com/mikepurvis/aptly-docker>`_ with aptly inside by Mike Purvis
--    `Docker container <https://github.com/bryanhong/docker-aptly>`_ with aptly and nginx by Bryan Hong
+-    `Docker container <https://github.com/urpylka/docker-aptly>`_ with aptly and nginx by Artem Smirnov
 
 With configuration management systems:
 
