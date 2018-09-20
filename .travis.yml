@@ -24,11 +24,11 @@ matrix:
       env: RUN_LONG_TESTS=no
   fast_finish: true
   include:
-    - go: 1.8.x
-      env: RUN_LONG_TESTS=no
     - go: 1.9.x
-      env: RUN_LONG_TESTS=yes
+      env: RUN_LONG_TESTS=no
     - go: 1.10.x
+      env: RUN_LONG_TESTS=yes
+    - go: 1.11.x
       env:
         - RUN_LONG_TESTS=yes
         - DEPLOY_BINARIES=yes
