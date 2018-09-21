@@ -58,8 +58,6 @@ class CreateMirror6Test(BaseTest):
     """
     create mirror: missing release
     """
-    expectedCode = 1
-
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://mirror.yandex.ru/debian/ suslik"
 
 

@@ -77,6 +77,7 @@ type RemoteRepoSuite struct {
 	PackageListMixinSuite
 	repo              *RemoteRepo
 	flat              *RemoteRepo
+	norelease         *RemoteRepo
 	downloader        *http.FakeDownloader
 	progress          aptly.Progress
 	db                database.Storage
@@ -90,6 +91,7 @@ var _ = Suite(&RemoteRepoSuite{})
 func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false, false)
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false)
+	s.norelease, _ = NewRemoteRepo("mapr", "http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/", "./", []string{}, []string{}, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
 	s.db, _ = database.NewOpenDB(c.MkDir())
@@ -604,6 +606,18 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 
 	s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
+}
+
+func (s *RemoteRepoSuite) TestDownloadNoRelease(c *C) {
+	downloader := http.NewFakeDownloader()
+	downloader.ExpectError("http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/Release", &http.Error{Code: 404})
+	downloader.ExpectError("http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/Packages.bz2", &http.Error{Code: 404})
+	downloader.ExpectError("http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/Packages.gz", &http.Error{Code: 404})
+	downloader.ExpectError("http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/Packages.xz", &http.Error{Code: 404})
+	downloader.ExpectResponse("http://archive.mapr.com/releases/ecosystem-5.x/ubuntu/binary/Packages", examplePackagesFile)
+
+	err := s.norelease.Fetch(downloader, nil)
+	c.Assert(err, IsNil)
 }
 
 type RemoteRepoCollectionSuite struct {
