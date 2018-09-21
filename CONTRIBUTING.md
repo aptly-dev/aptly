@@ -86,8 +86,8 @@ to prepend it or to skip this test if you're security conscious.
 
 As Go is using repository path in import paths, it's better to clone aptly repo (not your fork) at default location:
 
-    mkdir -p ~/go/src/github.com/smira
-    cd ~/go/src/github.com/smira
+    mkdir -p ~/go/src/github.com/aptly-dev
+    cd ~/go/src/github.com/aptly-dev
     git clone git@github.com:aptly-dev/aptly.git
     cd aptly
 

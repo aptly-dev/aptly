@@ -124,6 +124,11 @@ func (s *LocalRepoCollectionSuite) TestByUUID(c *C) {
 
 	r, err := s.collection.ByUUID(repo.UUID)
 	c.Assert(err, IsNil)
+	c.Assert(r, Equals, repo)
+
+	collection := NewLocalRepoCollection(s.db)
+	r, err = collection.ByUUID(repo.UUID)
+	c.Assert(err, IsNil)
 	c.Assert(r.String(), Equals, repo.String())
 }
 

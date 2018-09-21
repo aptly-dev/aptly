@@ -64,14 +64,14 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `Bintray <http://dl.bintray.com/smira/aptly/>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.8+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.9+ required)::
 
     mkdir -p $GOPATH/src/github.com/aptly-dev/aptly
     git clone https://github.com/aptly-dev/aptly $GOPATH/src/github.com/aptly-dev/aptly
     cd $GOPATH/src/github.com/aptly-dev/aptly
     make install
 
-Binary would be installed to ```$GOPATH/bin/aptly``.
+Binary would be installed to ``$GOPATH/bin/aptly``.
 
 Contributing
 ------------
@@ -90,7 +90,7 @@ Vagrant:
 Docker:
 
 -    `Docker container <https://github.com/mikepurvis/aptly-docker>`_ with aptly inside by Mike Purvis
--    `Docker container <https://github.com/bryanhong/docker-aptly>`_ with aptly and nginx by Bryan Hong
+-    `Docker container <https://github.com/urpylka/docker-aptly>`_ with aptly and nginx by Artem Smirnov
 
 With configuration management systems:
 

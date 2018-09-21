@@ -59,6 +59,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	context.CollectionFactory().Flush()
+
 	if verbose {
 		context.Progress().ColoredPrintf("@{y}Loading local repos:@|")
 	}
@@ -90,6 +92,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	context.CollectionFactory().Flush()
+
 	if verbose {
 		context.Progress().ColoredPrintf("@{y}Loading snapshots:@|")
 	}
@@ -117,6 +121,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	context.CollectionFactory().Flush()
 
 	if verbose {
 		context.Progress().ColoredPrintf("@{y}Loading published repositories:@|")
@@ -149,6 +155,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	context.CollectionFactory().Flush()
 
 	// ... and compare it to the list of all packages
 	context.Progress().ColoredPrintf("@{w!}Loading list of all packages...@|")
@@ -191,6 +199,8 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("@{y!}Skipped deletion, as -dry-run has been requested.@|")
 		}
 	}
+
+	context.CollectionFactory().Flush()
 
 	// now, build a list of files that should be present in Repository (package pool)
 	context.Progress().ColoredPrintf("@{w!}Building list of files referenced by packages...@|")
