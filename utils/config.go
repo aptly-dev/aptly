@@ -21,6 +21,7 @@ type ConfigStructure struct { // nolint: maligned
 	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
 	GpgProvider            string                           `json:"gpgProvider"`
 	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
+	DownloadBinPackages    bool                             `json:"downloadBinPackages"`
 	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
 	PpaCodename            string                           `json:"ppaCodename"`
@@ -84,6 +85,7 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
+	DownloadBinPackages:    true,
 	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
