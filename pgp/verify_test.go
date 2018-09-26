@@ -20,6 +20,7 @@ func (s *VerifierSuite) TestVerifyDetached(c *C) {
 		{"1.text", "1.signature"},
 		{"2.text", "2.signature"},
 		{"3.text", "3.signature"},
+		{"4.text", "4.signature"},
 	} {
 		cleartext, err := os.Open(test.textName)
 		c.Assert(err, IsNil)

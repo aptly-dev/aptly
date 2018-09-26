@@ -367,7 +367,14 @@ func (g *GoVerifier) printLog(signers []signatureResult) {
 
 // VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
 func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error {
-	signers, missingKeys, err := checkArmoredDetachedSignature(g.trustedKeyring, cleartext, signature)
+	var signatureBuf bytes.Buffer
+
+	signers, missingKeys, err := checkArmoredDetachedSignature(g.trustedKeyring, cleartext, io.TeeReader(signature, &signatureBuf))
+
+	if err == io.EOF {
+		// most probably not armored signature
+		signers, missingKeys, err = checkDetachedSignature(g.trustedKeyring, cleartext, &signatureBuf)
+	}
 
 	g.printLog(signers)
 
