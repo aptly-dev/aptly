@@ -20,6 +20,7 @@ Options:
   -gpg-provider="": PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
   -ignore-signatures: disable verification of Release file signatures
   -keyring=: gpg keyring to use when verifying Release file (could be specified multiple times)
+  -with-installer: download additional not packaged installer files
   -with-sources: download source packages in addition to binary packages
   -with-udebs: download .udeb packages (Debian installer support)
 ERROR: unable to parse flags

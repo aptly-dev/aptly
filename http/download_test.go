@@ -123,3 +123,22 @@ func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	c.Assert(s.d.Download(s.ctx, s.url+"/test", "/"),
 		ErrorMatches, ".*permission denied")
 }
+
+func (s *DownloaderSuite) TestGetLength(c *C) {
+	size, err := s.d.GetLength(s.ctx, s.url+"/test")
+
+	c.Assert(err, IsNil)
+	c.Assert(size, Equals, int64(12))
+}
+
+func (s *DownloaderSuite) TestGetLength404(c *C) {
+	_, err := s.d.GetLength(s.ctx, s.url+"/doesntexist")
+
+	c.Assert(err, ErrorMatches, "HTTP code 404.*")
+}
+
+func (s *DownloaderSuite) TestGetLengthConnectError(c *C) {
+	_, err := s.d.GetLength(s.ctx, "http://nosuch.localhost/")
+
+	c.Assert(err, ErrorMatches, ".*no such host")
+}

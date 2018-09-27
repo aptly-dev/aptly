@@ -60,8 +60,17 @@ func (f *FakeDownloader) Empty() bool {
 	return len(f.expected) == 0
 }
 
-// DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+// GetLength returns content length of given url
+func (f *FakeDownloader) GetLength(ctx context.Context, url string) (int64, error) {
+	expectation, err := f.getExpectedRequest(url)
+	if err != nil {
+		return -1, err
+	}
+
+	return int64(len(expectation.Response)), nil
+}
+
+func (f *FakeDownloader) getExpectedRequest(url string) (*expectedRequest, error) {
 	var expectation expectedRequest
 	if len(f.expected) > 0 && f.expected[0].URL == url {
 		expectation, f.expected = f.expected[0], f.expected[1:]
@@ -69,14 +78,24 @@ func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, f
 		expectation = f.anyExpected[url]
 		delete(f.anyExpected, url)
 	} else {
-		return fmt.Errorf("unexpected request for %s", url)
+		return nil, fmt.Errorf("unexpected request for %s", url)
 	}
 
 	if expectation.Err != nil {
-		return expectation.Err
+		return nil, expectation.Err
 	}
 
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	return &expectation, nil
+}
+
+// DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
+func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+	expectation, err := f.getExpectedRequest(url)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		return err
 	}

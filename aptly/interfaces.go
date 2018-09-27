@@ -69,7 +69,7 @@ type PublishedStorage interface {
 	// Remove removes single file under public path
 	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location
-	LinkFromPool(publishedDirectory, baseName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
+	LinkFromPool(publishedDirectory, fileName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
 	// Filelist returns list of files under prefix
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file
@@ -130,6 +130,8 @@ type Downloader interface {
 	DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
+	// GetLength returns size by heading object with url
+	GetLength(ctx context.Context, url string) (int64, error)
 }
 
 // ChecksumStorage is stores checksums in some (persistent) storage

@@ -84,6 +84,7 @@ class BaseTest(object):
     fixtureDBDir = os.path.join(os.environ["HOME"], "aptly-fixture-db")
     fixturePoolDir = os.path.join(os.environ["HOME"], "aptly-fixture-pool")
     fixtureGpgKeys = ["debian-archive-keyring.gpg",
+                      "ubuntu-archive-keyring.gpg",
                       "launchpad.key",
                       "flat.key",
                       "pagerduty.key",

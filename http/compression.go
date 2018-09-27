@@ -4,7 +4,6 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
-	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -90,7 +89,7 @@ func DownloadTryCompression(ctx context.Context, downloader aptly.Downloader, ba
 	}
 
 	if err == nil {
-		err = fmt.Errorf("no candidates for %s found", baseURL.ResolveReference(&url.URL{Path: path}))
+		return nil, nil, &NoCandidateFoundError{URL: baseURL.ResolveReference(&url.URL{Path: path})}
 	}
 	return nil, nil, err
 }

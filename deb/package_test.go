@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/aptly-dev/aptly/files"
+	"github.com/aptly-dev/aptly/http"
 
 	. "gopkg.in/check.v1"
 )
@@ -22,7 +23,7 @@ func (s *PackageSuite) SetUpTest(c *C) {
 	s.stanza = packageStanza.Copy()
 
 	buf := bytes.NewBufferString(sourcePackageMeta)
-	s.sourceStanza, _ = NewControlFileReader(buf).ReadStanza(false)
+	s.sourceStanza, _ = NewControlFileReader(buf, false, false).ReadStanza()
 }
 
 func (s *PackageSuite) TestNewFromPara(c *C) {
@@ -43,7 +44,7 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 }
 
 func (s *PackageSuite) TestNewUdebFromPara(c *C) {
-	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
+	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta), false, false).ReadStanza()
 	p := NewUdebPackageFromControlFile(stanza)
 
 	c.Check(p.IsSource, Equals, false)
@@ -55,6 +56,29 @@ func (s *PackageSuite) TestNewUdebFromPara(c *C) {
 	c.Check(p.Files(), HasLen, 1)
 	c.Check(p.Files()[0].Filename, Equals, "dmidecode-udeb_2.11-9_amd64.udeb")
 	c.Check(p.deps.Depends, DeepEquals, []string{"libc6-udeb (>= 2.13)"})
+}
+
+func (s *PackageSuite) TestNewInstallerFromPara(c *C) {
+	repo, _ := NewRemoteRepo("yandex", "http://example.com/debian", "squeeze", []string{"main"}, []string{}, false, false, false)
+	downloader := http.NewFakeDownloader()
+	downloader.ExpectResponse("http://example.com/debian/dists/squeeze/main/installer-i386/current/images/MANIFEST.udebs", "MANIFEST.udebs")
+	downloader.ExpectResponse("http://example.com/debian/dists/squeeze/main/installer-i386/current/images/udeb.list", "udeb.list")
+	downloader.ExpectResponse("", "udeb.list")
+	stanza, _ := NewControlFileReader(bytes.NewBufferString(installerPackageMeta), false, true).ReadStanza()
+	p, err := NewInstallerPackageFromControlFile(stanza, repo, "main", "i386", downloader)
+	c.Check(err, IsNil)
+
+	c.Check(p.IsSource, Equals, false)
+	c.Check(p.IsUdeb, Equals, false)
+	c.Check(p.IsInstaller, Equals, true)
+	c.Check(p.Name, Equals, "installer")
+	c.Check(p.Version, Equals, "")
+	c.Check(p.Architecture, Equals, "i386")
+	c.Check(p.Files(), HasLen, 2)
+	c.Check(p.Files()[0].Filename, Equals, "./MANIFEST.udebs")
+	c.Check(p.Files()[0].Checksums.Size, Equals, int64(14))
+	c.Check(p.Files()[1].Filename, Equals, "./udeb.list")
+	c.Check(p.Files()[1].Checksums.Size, Equals, int64(9))
 }
 
 func (s *PackageSuite) TestNewSourceFromPara(c *C) {
@@ -156,7 +180,7 @@ func (s *PackageSuite) TestGetField(c *C) {
 
 	p4, _ := NewSourcePackageFromControlFile(s.sourceStanza.Copy())
 
-	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta)).ReadStanza(false)
+	stanza5, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta), false, false).ReadStanza()
 	p5 := NewUdebPackageFromControlFile(stanza5)
 
 	c.Check(p.GetField("$Source"), Equals, "alien-arena")
@@ -372,13 +396,13 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 
 	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
-	err := p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
+	err := p.LinkFromPool(publishedStorage, packagePool, "", "pool/non-free/a/alien-arena", false)
 	c.Check(err, IsNil)
 	c.Check(p.Files()[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
 	c.Check(p.Files()[0].downloadPath, Equals, "pool/non-free/a/alien-arena")
 
 	p.IsSource = true
-	err = p.LinkFromPool(publishedStorage, packagePool, "", "non-free", false)
+	err = p.LinkFromPool(publishedStorage, packagePool, "", "pool/non-free/a/alien-arena", false)
 	c.Check(err, IsNil)
 	c.Check(p.Extra()["Directory"], Equals, "pool/non-free/a/alien-arena")
 }
@@ -490,3 +514,6 @@ Size: 29188
 MD5sum: ae70341c4d96dcded89fa670bcfea31e
 SHA1: 9532ae4226a85805189a671ee0283f719d48a5ba
 SHA256: bbb3a2cb07f741c3995b6d4bb08d772d83582b93a0236d4ea7736bc0370fc320`
+
+const installerPackageMeta = `9d8bb14044dee520f4706ab197dfff10e9e39ecb3c1a402331712154e8284b2e  ./MANIFEST.udebs
+dab96042d8e25e0f6bbb8d7c5bd78543afb5eb31a4a8b122ece68ab197228028  ./udeb.list`

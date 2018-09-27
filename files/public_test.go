@@ -181,39 +181,40 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 
 func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	tests := []struct {
-		prefix           string
-		component        string
-		sourcePath       string
-		poolDirectory    string
-		expectedFilename string
+		prefix             string
+		sourcePath         string
+		publishedDirectory string
+		expectedFilename   string
 	}{
 		{ // package name regular
-			prefix:           "",
-			component:        "main",
-			sourcePath:       "mars-invaders_1.03.deb",
-			poolDirectory:    "m/mars-invaders",
-			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
+			prefix:             "",
+			sourcePath:         "mars-invaders_1.03.deb",
+			publishedDirectory: "pool/main/m/mars-invaders",
+			expectedFilename:   "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
 		},
 		{ // lib-like filename
-			prefix:           "",
-			component:        "main",
-			sourcePath:       "libmars-invaders_1.03.deb",
-			poolDirectory:    "libm/libmars-invaders",
-			expectedFilename: "pool/main/libm/libmars-invaders/libmars-invaders_1.03.deb",
+			prefix:             "",
+			sourcePath:         "libmars-invaders_1.03.deb",
+			publishedDirectory: "pool/main/libm/libmars-invaders",
+			expectedFilename:   "pool/main/libm/libmars-invaders/libmars-invaders_1.03.deb",
 		},
 		{ // duplicate link, shouldn't panic
-			prefix:           "",
-			component:        "main",
-			sourcePath:       "mars-invaders_1.03.deb",
-			poolDirectory:    "m/mars-invaders",
-			expectedFilename: "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
+			prefix:             "",
+			sourcePath:         "mars-invaders_1.03.deb",
+			publishedDirectory: "pool/main/m/mars-invaders",
+			expectedFilename:   "pool/main/m/mars-invaders/mars-invaders_1.03.deb",
 		},
 		{ // prefix & component
-			prefix:           "ppa",
-			component:        "contrib",
-			sourcePath:       "libmars-invaders_1.04.deb",
-			poolDirectory:    "libm/libmars-invaders",
-			expectedFilename: "pool/contrib/libm/libmars-invaders/libmars-invaders_1.04.deb",
+			prefix:             "ppa",
+			sourcePath:         "libmars-invaders_1.04.deb",
+			publishedDirectory: "pool/contrib/libm/libmars-invaders",
+			expectedFilename:   "pool/contrib/libm/libmars-invaders/libmars-invaders_1.04.deb",
+		},
+		{ // installer file
+			prefix:             "",
+			sourcePath:         "netboot/boot.img.gz",
+			publishedDirectory: "dists/jessie/non-free/installer-i386/current/images",
+			expectedFilename:   "dists/jessie/non-free/installer-i386/current/images/netboot/boot.img.gz",
 		},
 	}
 
@@ -221,6 +222,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 
 	for _, t := range tests {
 		tmpPath := filepath.Join(c.MkDir(), t.sourcePath)
+		os.MkdirAll(filepath.Dir(tmpPath), 0777)
 		err := ioutil.WriteFile(tmpPath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
 
@@ -231,7 +233,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Assert(err, IsNil)
 
 		// Test using hardlinks
-		err = s.storage.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storage.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err := os.Stat(filepath.Join(s.storage.rootPath, t.prefix, t.expectedFilename))
@@ -241,7 +243,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Nlink), Equals, 3)
 
 		// Test using symlinks
-		err = s.storageSymlink.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageSymlink.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Lstat(filepath.Join(s.storageSymlink.rootPath, t.prefix, t.expectedFilename))
@@ -252,7 +254,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Mode&syscall.S_IFMT), Equals, int(syscall.S_IFLNK))
 
 		// Test using copy with checksum verification
-		err = s.storageCopy.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageCopy.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Stat(filepath.Join(s.storageCopy.rootPath, t.prefix, t.expectedFilename))
@@ -262,7 +264,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Nlink), Equals, 1)
 
 		// Test using copy with size verification
-		err = s.storageCopySize.LinkFromPool(filepath.Join(t.prefix, "pool", t.component, t.poolDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageCopySize.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Stat(filepath.Join(s.storageCopySize.rootPath, t.prefix, t.expectedFilename))

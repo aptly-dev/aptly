@@ -88,6 +88,9 @@ var (
 		"Directory",
 		"Files",
 	}
+	canonicalOrderInstaller = []string{
+		"",
+	}
 )
 
 // Copy returns copy of Stanza
@@ -101,6 +104,9 @@ func (s Stanza) Copy() (result Stanza) {
 
 func isMultilineField(field string, isRelease bool) bool {
 	switch field {
+	// file without a section
+	case "":
+		return true
 	case "Description":
 		return true
 	case "Files":
@@ -132,27 +138,35 @@ func writeField(w *bufio.Writer, field, value string, isRelease bool) (err error
 	if !isMultilineField(field, isRelease) {
 		_, err = w.WriteString(field + ": " + value + "\n")
 	} else {
-		if !strings.HasSuffix(value, "\n") {
+		if field != "" && !strings.HasSuffix(value, "\n") {
 			value = value + "\n"
 		}
 
-		if field != "Description" {
+		if field != "Description" && field != "" {
 			value = "\n" + value
 		}
-		_, err = w.WriteString(field + ":" + value)
+
+		if field != "" {
+			_, err = w.WriteString(field + ":" + value)
+		} else {
+			_, err = w.WriteString(value)
+		}
 	}
 
 	return
 }
 
 // WriteTo saves stanza back to stream, modifying itself on the fly
-func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
+func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease, isInstaller bool) error {
 	canonicalOrder := canonicalOrderBinary
 	if isSource {
 		canonicalOrder = canonicalOrderSource
 	}
 	if isRelease {
 		canonicalOrder = canonicalOrderRelease
+	}
+	if isInstaller {
+		canonicalOrder = canonicalOrderInstaller
 	}
 
 	for _, field := range canonicalOrder {
@@ -166,10 +180,13 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease bool) error {
 		}
 	}
 
-	for field, value := range s {
-		err := writeField(w, field, value, isRelease)
-		if err != nil {
-			return err
+	// no extra fields in installer
+	if !isInstaller {
+		for field, value := range s {
+			err := writeField(w, field, value, isRelease)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -212,22 +229,28 @@ func canonicalCase(field string) string {
 
 // ControlFileReader implements reading of control files stanza by stanza
 type ControlFileReader struct {
-	scanner *bufio.Scanner
+	scanner     *bufio.Scanner
+	isRelease   bool
+	isInstaller bool
 }
 
 // NewControlFileReader creates ControlFileReader, it wraps with buffering
-func NewControlFileReader(r io.Reader) *ControlFileReader {
+func NewControlFileReader(r io.Reader, isRelease, isInstaller bool) *ControlFileReader {
 	scnr := bufio.NewScanner(bufio.NewReaderSize(r, 32768))
 	scnr.Buffer(nil, MaxFieldSize)
 
-	return &ControlFileReader{scanner: scnr}
+	return &ControlFileReader{
+		scanner:     scnr,
+		isRelease:   isRelease,
+		isInstaller: isInstaller,
+	}
 }
 
 // ReadStanza reeads one stanza from control file
-func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
+func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 	stanza := make(Stanza, 32)
 	lastField := ""
-	lastFieldMultiline := false
+	lastFieldMultiline := c.isInstaller
 
 	for c.scanner.Scan() {
 		line := c.scanner.Text()
@@ -240,7 +263,7 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 			continue
 		}
 
-		if line[0] == ' ' || line[0] == '\t' {
+		if line[0] == ' ' || line[0] == '\t' || c.isInstaller {
 			if lastFieldMultiline {
 				stanza[lastField] += line + "\n"
 			} else {
@@ -252,7 +275,7 @@ func (c *ControlFileReader) ReadStanza(isRelease bool) (Stanza, error) {
 				return nil, ErrMalformedStanza
 			}
 			lastField = canonicalCase(parts[0])
-			lastFieldMultiline = isMultilineField(lastField, isRelease)
+			lastFieldMultiline = isMultilineField(lastField, c.isRelease)
 			if lastFieldMultiline {
 				stanza[lastField] = parts[1]
 				if parts[1] != "" {

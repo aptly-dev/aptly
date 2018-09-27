@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -157,9 +158,17 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
 
+	tmpFile3 := filepath.Join(c.MkDir(), "netboot/boot.img.gz")
+	os.MkdirAll(filepath.Dir(tmpFile3), 0777)
+	err = ioutil.WriteFile(tmpFile3, []byte("Contents"), 0644)
+	c.Assert(err, IsNil)
+	cksum3 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
+
 	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
 	c.Assert(err, IsNil)
 	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true, cs)
+	c.Assert(err, IsNil)
+	src3, err := pool.Import(tmpFile3, "netboot/boot.img.gz", &cksum3, true, cs)
 	c.Assert(err, IsNil)
 
 	// first link from pool
@@ -193,6 +202,14 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
 	c.Check(err, IsNil)
 	c.Check(data, DeepEquals, []byte("Spam"))
+
+	// link from pool with nested file name
+	err = s.storage.LinkFromPool("dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
+	c.Check(err, IsNil)
+
+	data, err = s.storage.conn.ObjectGetBytes("test", "dists/jessie/non-free/installer-i386/current/images/netboot/boot.img.gz")
+	c.Check(err, IsNil)
+	c.Check(data, DeepEquals, []byte("Contents"))
 }
 
 func (s *PublishedStorageSuite) TestSymLink(c *C) {
