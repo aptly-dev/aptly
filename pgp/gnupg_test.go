@@ -210,6 +210,8 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 
 	c.Assert(s.verifier.InitKeyring(), IsNil)
 
+	s.skipDefaultKey = true
+
 	s.SignerSuite.SetUpTest(c)
 }
 

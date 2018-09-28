@@ -59,6 +59,7 @@ class CreateMirror6Test(BaseTest):
     create mirror: missing release
     """
     expectedCode = 1
+    requiresGPG1 = True
 
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://mirror.yandex.ru/debian/ suslik"
 
@@ -92,6 +93,7 @@ class CreateMirror9Test(BaseTest):
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
     fixtureGpg = True
+    requiresGPG1 = True
 
     def outputMatchPrepare(_, s):
         return re.sub(r'Signature made .* using|Warning: using insecure memory!\n', '', s)
@@ -396,3 +398,21 @@ class CreateMirror31Test(BaseTest):
 
     def outputMatchPrepare(_, s):
         return re.sub(r'Signature made .* using', '', s)
+
+
+class CreateMirror32Test(BaseTest):
+    """
+    create mirror: repo with Release + Release.gpg verification (gpg2)
+    """
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://mirror.yandex.ru/debian/ wheezy"
+    fixtureGpg = True
+    requiresGPG2 = True
+
+    def outputMatchPrepare(_, s):
+        return \
+            re.sub(r'([A-F0-9]{8})[A-F0-9]{8}', r'\1',
+                   re.sub(r'^gpgv: (Signature made .+|.+using RSA key.+)\n', '', s, flags=re.MULTILINE))
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror32", "mirror_show")
