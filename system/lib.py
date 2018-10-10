@@ -50,6 +50,34 @@ class FileHTTPServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         pass
 
 
+class GPGFinder(object):
+    """
+    GnuPG binary discovery.
+    """
+
+    def __init__(self):
+        self.gpg1 = self.find_gpg(["gpg1", "gpg"], "gpg (GnuPG) 1.")
+        self.gpg2 = self.find_gpg(["gpg2", "gpg"], "gpg (GnuPG) 2.")
+
+        self.gpg = self.gpg1
+        if self.gpg is None:
+            self.gpg = self.gpg2
+
+        if self.gpg is None:
+            raise Exception("GnuPG binary wasn't found")
+
+    def find_gpg(self, executables, expected_version):
+        for executable in executables:
+            try:
+                output = subprocess.check_output([executable, "--version"])
+                if expected_version in output:
+                    return executable
+            except Exception:
+                pass
+
+        return None
+
+
 class BaseTest(object):
     """
     Base class for all tests.
@@ -62,6 +90,8 @@ class BaseTest(object):
     fixtureGpg = False
     fixtureWebServer = False
     requiresFTP = False
+    requiresGPG1 = False
+    requiresGPG2 = False
 
     expectedCode = 0
     configFile = {
@@ -95,6 +125,8 @@ class BaseTest(object):
 
     captureResults = False
 
+    gpgFinder = GPGFinder()
+
     def test(self):
         self.prepare()
         self.run()
@@ -110,6 +142,10 @@ class BaseTest(object):
 
     def prepare_default_config(self):
         cfg = self.configFile.copy()
+        if self.requiresGPG1:
+            cfg["gpgProvider"] = "gpg1"
+        elif self.requiresGPG2:
+            cfg["gpgProvider"] = "gpg2"
         cfg.update(**self.configOverride)
         f = open(os.path.join(os.environ["HOME"], ".aptly.conf"), "w")
         f.write(json.dumps(cfg))
@@ -121,6 +157,10 @@ class BaseTest(object):
         if self.fixtureDB and not os.path.exists(self.fixtureDBDir):
             return False
         if self.requiresFTP and os.environ.get('NO_FTP_ACCESS', '') == 'yes':
+            return False
+        if self.requiresGPG1 and self.gpgFinder.gpg1 is None:
+            return False
+        if self.requiresGPG2 and self.gpgFinder.gpg2 is None:
             return False
 
         return True
@@ -141,8 +181,13 @@ class BaseTest(object):
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
                                                      self.fixtureWebServer))
 
+        if self.requiresGPG2:
+            self.run_cmd([
+                self.gpgFinder.gpg2, "--import",
+                os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files") + "/aptly.sec"], expected_code=None)
+
         if self.fixtureGpg:
-            self.run_cmd(["gpg", "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
+            self.run_cmd([self.gpgFinder.gpg, "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
                          [os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", key) for key in self.fixtureGpgKeys])
 
         if hasattr(self, "fixtureCmds"):
@@ -176,8 +221,9 @@ class BaseTest(object):
         try:
             proc = self._start_process(command, stdout=subprocess.PIPE)
             output, _ = proc.communicate()
-            if proc.returncode != expected_code:
-                raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
+            if expected_code is not None:
+                if proc.returncode != expected_code:
+                    raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
             return output
         except Exception, e:
             raise Exception("Running command %s failed: %s" % (command, str(e)))

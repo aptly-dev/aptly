@@ -27,5 +27,5 @@ Options:
   -dep-follow-source: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests: when processing dependencies, follow Suggests
   -dep-verbose-resolve: when processing dependencies, print detailed logs
-  -gpg-provider="": PGP implementation ("gpg" for external gpg or "internal" for Go internal implementation)
+  -gpg-provider="": PGP implementation ("gpg", "gpg1", "gpg2" for external gpg or "internal" for Go internal implementation)
 ERROR: unable to parse command

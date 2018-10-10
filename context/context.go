@@ -387,11 +387,29 @@ func (context *AptlyContext) pgpProvider() string {
 		provider = context.config().GpgProvider
 	}
 
-	if !(provider == "gpg" || provider == "internal") { // nolint: goconst
+	switch provider {
+	case "gpg": // nolint: goconst
+	case "gpg1": // nolint: goconst
+	case "gpg2": // nolint: goconst
+	case "internal": // nolint: goconst
+	default:
 		Fatal(fmt.Errorf("unknown gpg provider: %v", provider))
 	}
 
 	return provider
+}
+
+func (context *AptlyContext) getGPGFinder(provider string) pgp.GPGFinder {
+	switch context.pgpProvider() {
+	case "gpg1":
+		return pgp.GPG1Finder()
+	case "gpg2":
+		return pgp.GPG2Finder()
+	case "gpg":
+		return pgp.GPGDefaultFinder()
+	}
+
+	panic("uknown GPG provider type")
 }
 
 // GetSigner returns Signer with respect to provider
@@ -399,11 +417,12 @@ func (context *AptlyContext) GetSigner() pgp.Signer {
 	context.Lock()
 	defer context.Unlock()
 
-	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return pgp.NewGpgSigner()
+	provider := context.pgpProvider()
+	if provider == "internal" { // nolint: goconst
+		return &pgp.GoSigner{}
 	}
 
-	return &pgp.GoSigner{}
+	return pgp.NewGpgSigner(context.getGPGFinder(provider))
 }
 
 // GetVerifier returns Verifier with respect to provider
@@ -411,11 +430,12 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	context.Lock()
 	defer context.Unlock()
 
-	if context.pgpProvider() == "gpg" { // nolint: goconst
-		return pgp.NewGpgVerifier()
+	provider := context.pgpProvider()
+	if provider == "internal" { // nolint: goconst
+		return &pgp.GoVerifier{}
 	}
 
-	return &pgp.GoVerifier{}
+	return pgp.NewGpgVerifier(context.getGPGFinder(provider))
 }
 
 // UpdateFlags sets internal copy of flags in the context

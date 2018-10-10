@@ -24,6 +24,11 @@ type GoSignerSuite struct {
 var _ = Suite(&GoSignerSuite{})
 
 func (s *GoSignerSuite) SetUpTest(c *C) {
+	s.keyringNoPassphrase = [2]string{"keyrings/aptly.pub", "keyrings/aptly.sec"}
+	s.keyringPassphrase = [2]string{"keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec"}
+	s.passphraseKey = "F30E8CB9CDDE2AF8"
+	s.noPassphraseKey = "21DBB89C16DB3E6D"
+
 	s.signer = &GoSigner{}
 	s.signer.SetBatch(true)
 
