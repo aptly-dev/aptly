@@ -577,14 +577,20 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packag
 
 	err = repo.packageList.ForEach(func(p *Package) error {
 		if repo.packageRefs != nil && skipExistingPackages {
-			if repo.packageRefs.Has(p) {
-				// skip this package, but load checksums/files from package in DB
-				var prevP *Package
+			var prevP *Package
+
+			if !hasAllChecksums(p) {
+				//Some checksums missing, so we cannot rely on p.Key(). Next best thing: search for a matching package in the pool.
+				prevP = findMatchingPackage(packagePool, packageCollection, checksumStorage, p)
+			} else if repo.packageRefs.Has(p) {
 				prevP, err = packageCollection.ByKey(p.Key(""))
 				if err != nil {
 					return err
 				}
+			}
 
+			if prevP != nil {
+				// skip this package, but load checksums/files from package in DB
 				p.UpdateFiles(prevP.Files())
 				return nil
 			}
@@ -880,4 +886,66 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 	}
 
 	return collection.db.Delete(repo.RefKey())
+}
+
+// Check if a package has all mandatory checksums to rely on the package hash
+func hasAllChecksums(p *Package) bool {
+	for _, f := range p.Files() {
+		chk := f.Checksums
+		if len(chk.MD5) == 0 || len(chk.SHA1) == 0 || len(chk.SHA256) == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// Find stored packages which match the provided package, but which might have a missing checksum.
+func findMatchingPackage(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, p *Package) *Package {
+	var found *Package
+	files := p.Files()
+	packageCollection.SearchByKey(p.Architecture, p.Name, p.Version).ForEach(func(poolP *Package) error {
+		if hasAllChecksums(poolP) && files.match(packagePool, checksumStorage, poolP) {
+			found = poolP
+		}
+		return nil
+	})
+
+	return found
+}
+
+// See if a package matches against a package in the pool.  Some checksums might be missing.
+func (files PackageFiles) match(packagePool aptly.PackagePool, checksumStorage aptly.ChecksumStorage, poolP *Package) bool {
+	poolFiles := poolP.Files()
+	if len(poolFiles) != len(files) {
+		return false
+	}
+
+	sort.Sort(files)
+	sort.Sort(poolFiles)
+	for i, file := range files {
+		poolFile := poolFiles[i]
+		chk := file.Checksums
+		poolChk := poolFile.Checksums
+
+		if !(poolFile.Filename == file.Filename &&
+			chk.Size == poolChk.Size &&
+			equalOrEmpty(chk.MD5, poolChk.MD5) &&
+			equalOrEmpty(chk.SHA1, poolChk.SHA1) &&
+			equalOrEmpty(chk.SHA256, poolChk.SHA256) &&
+			equalOrEmpty(chk.SHA512, poolChk.SHA512)) {
+			return false
+		}
+
+		_, found, err := packagePool.Verify(poolFile.PoolPath, poolFile.Filename, &poolChk, checksumStorage)
+		if !found || err != nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+// true if strings are equal or one of them is empty.
+func equalOrEmpty(a string, b string) bool {
+	return len(a) == 0 || len(b) == 0 || a == b
 }

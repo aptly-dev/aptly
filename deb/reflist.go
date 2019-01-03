@@ -69,7 +69,7 @@ func (l *PackageRefList) Encode() []byte {
 	return buf.Bytes()
 }
 
-// Decode decodes msgpack representation into PackageRefLit
+// Decode decodes msgpack representation into PackageRefList
 func (l *PackageRefList) Decode(input []byte) error {
 	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
 	return decoder.Decode(l)
