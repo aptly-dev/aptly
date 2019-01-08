@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"sort"
 	"strings"
 	"unicode"
 )
@@ -182,8 +183,16 @@ func (s Stanza) WriteTo(w *bufio.Writer, isSource, isRelease, isInstaller bool) 
 
 	// no extra fields in installer
 	if !isInstaller {
-		for field, value := range s {
-			err := writeField(w, field, value, isRelease)
+		// Print extra fields in deterministic order (alphabetical)
+		keys := make([]string, len(s))
+		i := 0
+		for field := range s {
+			keys[i] = field
+			i++
+		}
+		sort.Strings(keys)
+		for _, field := range keys {
+			err := writeField(w, field, s[field], isRelease)
 			if err != nil {
 				return err
 			}
