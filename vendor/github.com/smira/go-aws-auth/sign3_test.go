@@ -6,56 +6,48 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/assertions"
+	"github.com/smartystreets/assertions/should"
 )
 
 func TestSignature3(t *testing.T) {
 	// http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/RESTAuthentication.html
 	// http://docs.aws.amazon.com/ses/latest/DeveloperGuide/query-interface-authentication.html
 
-	Convey("Given bogus credentials", t, func() {
-		keys := *testCredV3
+	assert := assertions.New(t)
 
-		// Mock time
-		now = func() time.Time {
-			parsed, _ := time.Parse(timeFormatV3, exampleReqTsV3)
-			return parsed
-		}
+	// Given bogus credentials
+	keys := *testCredV3
 
-		Convey("Given a plain request that is unprepared", func() {
-			request := test_plainRequestV3()
+	// Mock time
+	now = func() time.Time {
+		parsed, _ := time.Parse(timeFormatV3, exampleReqTsV3)
+		return parsed
+	}
 
-			Convey("The request should be prepared to be signed", func() {
-				expectedUnsigned := test_unsignedRequestV3()
-				prepareRequestV3(request)
-				So(request, ShouldResemble, expectedUnsigned)
-			})
-		})
+	// Given a plain request that is unprepared
+	request := test_plainRequestV3()
 
-		Convey("Given a prepared, but unsigned, request", func() {
-			request := test_unsignedRequestV3()
+	// The request should be prepared to be signed
+	expectedUnsigned := test_unsignedRequestV3()
+	prepareRequestV3(request)
+	assert.So(request, should.Resemble, expectedUnsigned)
 
-			Convey("The absolute path should be extracted correctly", func() {
-				So(request.URL.Path, ShouldEqual, "/")
-			})
+	// Given a prepared, but unsigned, request
+	request = test_unsignedRequestV3()
 
-			Convey("The string to sign should be well-formed", func() {
-				actual := stringToSignV3(request)
-				So(actual, ShouldEqual, expectedStringToSignV3)
-			})
+	// The absolute path should be extracted correctly
+	assert.So(request.URL.Path, should.Equal, "/")
 
-			Convey("The resulting signature should be correct", func() {
-				actual := signatureV3(stringToSignV3(request), keys)
-				So(actual, ShouldEqual, "PjAJ6buiV6l4WyzmmuwtKE59NJXVg5Dr3Sn4PCMZ0Yk=")
-			})
+	// The string to sign should be well-formed
+	assert.So(stringToSignV3(request), should.Equal, expectedStringToSignV3)
 
-			Convey("The final signed request should be correctly formed", func() {
-				Sign3(request, keys)
-				actual := request.Header.Get("X-Amzn-Authorization")
-				So(actual, ShouldResemble, expectedAuthHeaderV3)
-			})
-		})
-	})
+	// The resulting signature should be correct
+	assert.So(signatureV3(stringToSignV3(request), keys), should.Equal, "PjAJ6buiV6l4WyzmmuwtKE59NJXVg5Dr3Sn4PCMZ0Yk=")
+
+	// The final signed request should be correctly formed
+	Sign3(request, keys)
+	assert.So(request.Header.Get("X-Amzn-Authorization"), should.Resemble, expectedAuthHeaderV3)
 }
 
 func test_plainRequestV3() *http.Request {
@@ -63,9 +55,9 @@ func test_plainRequestV3() *http.Request {
 	values.Set("Action", "GetSendStatistics")
 	values.Set("Version", "2010-12-01")
 
-	url := baseUrlV3 + "/?" + values.Encode()
+	address := baseUrlV3 + "/?" + values.Encode()
 
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest("GET", address, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -83,23 +75,20 @@ func test_unsignedRequestV3() *http.Request {
 }
 
 func TestVersion3STSRequestPreparer(t *testing.T) {
-	Convey("Given a plain request with no custom headers", t, func() {
-		request := test_plainRequestV3()
+	// Given a plain request with no custom headers
+	request := test_plainRequestV3()
 
-		Convey("And a set of credentials with an STS token", func() {
-			var keys Credentials
-			keys = *testCredV3WithSTS
+	// And a set of credentials with an STS token
+	var keys Credentials
+	keys = *testCredV3WithSTS
 
-			Convey("It should include an X-Amz-Security-Token when the request is signed", func() {
-				actualSigned := Sign3(request, keys)
-				actual := actualSigned.Header.Get("X-Amz-Security-Token")
+	// It should include an X-Amz-Security-Token when the request is signed
+	actualSigned := Sign3(request, keys)
+	actual := actualSigned.Header.Get("X-Amz-Security-Token")
 
-				So(actual, ShouldNotBeBlank)
-				So(actual, ShouldEqual, testCredV4WithSTS.SecurityToken)
-
-			})
-		})
-	})
+	assert := assertions.New(t)
+	assert.So(actual, should.NotBeBlank)
+	assert.So(actual, should.Equal, testCredV4WithSTS.SecurityToken)
 
 }
 

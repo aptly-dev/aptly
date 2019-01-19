@@ -6,82 +6,68 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/assertions"
+	"github.com/smartystreets/assertions/should"
+	"github.com/smartystreets/gunit"
 )
 
-func TestSignature2(t *testing.T) {
-	// http://docs.aws.amazon.com/general/latest/gr/signature-version-2.html
+// http://docs.aws.amazon.com/general/latest/gr/signature-version-2.html
 
-	Convey("Given bogus credentials", t, func() {
-		keys := *testCredV2
+func TestSignature2Fixture(t *testing.T) {
+	gunit.RunSequential(new(Signature2Fixture), t)
+}
 
-		// Mock time
-		now = func() time.Time {
-			parsed, _ := time.Parse(timeFormatV2, exampleReqTsV2)
-			return parsed
-		}
+type Signature2Fixture struct {
+	*gunit.Fixture
 
-		Convey("Given a plain request that is unprepared", func() {
-			request := test_plainRequestV2()
+	keys Credentials
+}
 
-			Convey("The request should be prepared to be signed", func() {
-				expectedUnsigned := test_unsignedRequestV2()
-				prepareRequestV2(request, keys)
-				So(request, ShouldResemble, expectedUnsigned)
-			})
-		})
+func (this *Signature2Fixture) Setup() {
+	this.keys = *testCredV2
 
-		Convey("Given a prepared, but unsigned, request", func() {
-			request := test_unsignedRequestV2()
+	// Mock time
+	now = func() time.Time {
+		parsed, _ := time.Parse(timeFormatV2, exampleReqTsV2)
+		return parsed
+	}
+}
 
-			Convey("The canonical query string should be correct", func() {
-				actual := canonicalQueryStringV2(request)
-				expected := canonicalQsV2
-				So(actual, ShouldEqual, expected)
-			})
+func (this *Signature2Fixture) TestSignUnpreparedPlanRequest() {
+	request := test_plainRequestV2()
+	prepareRequestV2(request, this.keys)
+	this.So(request, should.Resemble, test_unsignedRequestV2())
+}
 
-			Convey("The absolute path should be extracted correctly", func() {
-				So(request.URL.Path, ShouldEqual, "/")
-			})
+func (this *Signature2Fixture) TestSignPreparedUnsignedRequest() {
+	request := test_unsignedRequestV2()
+	actual := canonicalQueryStringV2(request)
+	expected := canonicalQsV2
+	this.So(actual, should.Equal, expected)
+	this.So(request.URL.Path, should.Equal, "/")
 
-			Convey("The string to sign should be well-formed", func() {
-				actual := stringToSignV2(request)
-				So(actual, ShouldEqual, expectedStringToSignV2)
-			})
+	this.So(stringToSignV2(request), should.Equal, expectedStringToSignV2)
+	this.So(signatureV2(stringToSignV2(request), this.keys), should.Equal, "i91nKc4PWAt0JJIdXwz9HxZCJDdiy6cf/Mj6vPxyYIs=")
 
-			Convey("The resulting signature should be correct", func() {
-				actual := signatureV2(stringToSignV2(request), keys)
-				So(actual, ShouldEqual, "i91nKc4PWAt0JJIdXwz9HxZCJDdiy6cf/Mj6vPxyYIs=")
-			})
-
-			Convey("The final signed request should be correctly formed", func() {
-				Sign2(request, keys)
-				actual := request.URL.String()
-				So(actual, ShouldResemble, expectedFinalUrlV2)
-			})
-		})
-	})
+	Sign2(request, this.keys)
+	this.So(request.URL.String(), should.Equal, expectedFinalUrlV2)
 }
 
 func TestVersion2STSRequestPreparer(t *testing.T) {
-	Convey("Given a plain request ", t, func() {
-		request := test_plainRequestV2()
+	// Given a plain request
+	request := test_plainRequestV2()
 
-		Convey("And a set of credentials with an STS token", func() {
-			var keys Credentials
-			keys = *testCredV2WithSTS
+	// And a set of credentials with an STS token
+	var keys Credentials
+	keys = *testCredV2WithSTS
 
-			Convey("It should include the SecurityToken parameter when the request is signed", func() {
-				actualSigned := Sign2(request, keys)
-				actual := actualSigned.URL.Query()["SecurityToken"][0]
+	// It should include the SecurityToken parameter when the request is signed
+	actualSigned := Sign2(request, keys)
+	actual := actualSigned.URL.Query()["SecurityToken"][0]
 
-				So(actual, ShouldNotBeBlank)
-				So(actual, ShouldEqual, testCredV2WithSTS.SecurityToken)
-
-			})
-		})
-	})
-
+	assert := assertions.New(t)
+	assert.So(actual, should.NotBeBlank)
+	assert.So(actual, should.Equal, testCredV2WithSTS.SecurityToken)
 }
 
 func test_plainRequestV2() *http.Request {
@@ -89,9 +75,9 @@ func test_plainRequestV2() *http.Request {
 	values.Set("Action", "DescribeJobFlows")
 	values.Set("Version", "2009-03-31")
 
-	url := baseUrlV2 + "?" + values.Encode()
+	address := baseUrlV2 + "?" + values.Encode()
 
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest("GET", address, nil)
 	if err != nil {
 		panic(err)
 	}

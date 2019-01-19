@@ -2,18 +2,23 @@
 
 
 [[projects]]
+  digest = "1:e8777c437e157121465a08c05304d5847ae70b5683ef4afeb723b3c9e5e3bc67"
   name = "github.com/AlekSi/pointer"
   packages = ["."]
+  pruneopts = ""
   revision = "08a25bac605b3fcb6cc27f3917b2c2c87451963d"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:218a66570875d243938fff08f17ec03e79b18c138d0845b2428bcb4929ffa4fe"
   name = "github.com/DisposaBoy/JsonConfigReader"
   packages = ["."]
+  pruneopts = ""
   revision = "33a99fdf1d5ee1f79b5077e9c06f955ad356d5f4"
 
 [[projects]]
+  digest = "1:658ab137074ef3d1216e01cbe166eb171a1bd77daeae0b686ab1ae184a9a5ec9"
   name = "github.com/awalterschulze/gographviz"
   packages = [
     ".",
@@ -22,10 +27,12 @@
     "scanner",
     "token"
   ]
+  pruneopts = ""
   revision = "761fd5fbb34e4c2c138c280395b65b48e4ff5a53"
   version = "v1.0"
 
 [[projects]]
+  digest = "1:a72e35a51b628d148241720897de644fd6d3cea45d8489dae9d373ced5dfc302"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -56,155 +63,203 @@
     "service/s3",
     "service/sts"
   ]
+  pruneopts = ""
   revision = "a72204b9bf8d48230ee0fe8995613b394c66f2da"
   version = "v1.13.31"
 
 [[projects]]
+  digest = "1:b9922c7da8a89c973758c03bde497017567f785b49bd253402a3587abec1e53d"
   name = "github.com/cheggaaa/pb"
   packages = ["."]
+  pruneopts = ""
   revision = "cdf719fac0dd208251aa828e687c2d5802053b51"
   version = "v1.0.10"
 
 [[projects]]
   branch = "master"
+  digest = "1:1120f960f5c334f0f94bad29eefaf73d52d226893369693686148f66c1993f15"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
+  pruneopts = ""
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
 
 [[projects]]
+  digest = "1:348ceb76f2ac958e541e4ba3190484b68df28c38ac9720ed4ef8d36af69ce52e"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
     "binding",
     "render"
   ]
+  pruneopts = ""
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
 
 [[projects]]
+  digest = "1:fbed9ba4076145ae05ef7deeb14d49565e112d6c283a8c4304fa3b7be785fa5e"
   name = "github.com/go-ini/ini"
   packages = ["."]
+  pruneopts = ""
   revision = "1730955e3146956d6a087861380f9b4667ed5071"
   version = "v1.26.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:27854310d59099f8dcc61dd8af4a69f0a3597f001154b2fb4d1c41baf2e31ec1"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
+  pruneopts = ""
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
 
 [[projects]]
   branch = "master"
+  digest = "1:09307dfb1aa3f49a2bf869dcfa4c6c06ecd3c207221bd1c1a1141f0e51f209eb"
   name = "github.com/golang/snappy"
   packages = ["."]
+  pruneopts = ""
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
+  digest = "1:6ee50e0ace655f26787c120dbce51b3185c470f475c9e57d0dcada8ebb115004"
   name = "github.com/h2non/filetype"
   packages = ["matchers"]
+  pruneopts = ""
   revision = "cc14fdc9ca0e4c2bafad7458f6ff79fd3947cfbb"
   version = "v1.0.5"
 
 [[projects]]
   branch = "master"
+  digest = "1:64b78d98b8956492576911baf6a1e3499816d4575e485d12792e4abe7d8b6c46"
   name = "github.com/jlaffaye/ftp"
   packages = ["."]
+  pruneopts = ""
   revision = "2403248fa8cc9f7909862627aa7337f13f8e0bf1"
 
 [[projects]]
+  digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
+  pruneopts = ""
   revision = "0b12d6b5"
 
 [[projects]]
+  branch = "master"
+  digest = "1:c728183dd470c8bb2d1775edc641a81ec25f5e3804b8b0536e99f71df17a13a6"
+  name = "github.com/kjk/lzma"
+  packages = ["."]
+  pruneopts = ""
+  revision = "3fd93898850d5252457e48c1b3d5e1510597280b"
+
+[[projects]]
+  digest = "1:78229b46ddb7434f881390029bd1af7661294af31f6802e0e1bedaad4ab0af3c"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
+  pruneopts = ""
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
 
 [[projects]]
+  digest = "1:81e673df85e765593a863f67cba4544cf40e8919590f04d67664940786c2b61a"
   name = "github.com/mattn/go-runewidth"
   packages = ["."]
+  pruneopts = ""
   revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
   version = "v0.0.2"
 
 [[projects]]
+  digest = "1:fb8502ed69803c4cd97b1def119db73869ec2f7e2b408eb9c1b8276df6f05b3e"
   name = "github.com/mattn/go-shellwords"
   packages = ["."]
+  pruneopts = ""
   revision = "005a0944d84452842197c2108bd9168ced206f78"
   version = "v1.0.2"
 
 [[projects]]
   branch = "master"
+  digest = "1:3ba28ef4fbbf8d099c6227b698a6ceae28f8a071e12f06839c12c4c0003b7554"
   name = "github.com/mkrautz/goar"
   packages = ["."]
+  pruneopts = ""
   revision = "282caa8bd9daba480b51f1d5a988714913b97aad"
 
 [[projects]]
   branch = "master"
+  digest = "1:d33ce379780d7c43405b9251289493cabada82f6bf9ab35eea6915d04f6ac8e0"
   name = "github.com/mxk/go-flowrate"
   packages = ["flowrate"]
+  pruneopts = ""
   revision = "cca7078d478f8520f85629ad7c68962d31ed7682"
 
 [[projects]]
   branch = "master"
+  digest = "1:428d8af27f534ed06d783b03d477124796de06aa86402777cd2b494c64278da5"
   name = "github.com/ncw/swift"
   packages = [
     ".",
     "swifttest"
   ]
+  pruneopts = ""
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
 
 [[projects]]
   branch = "master"
+  digest = "1:beeb9206cc21cfeb113066c3dcf4bbb0ba304d73dd441f3244721566f51f44e6"
   name = "github.com/pborman/uuid"
   packages = ["."]
+  pruneopts = ""
   revision = "c65b2f87fee37d1c7854c9164a450713c28d50cd"
 
 [[projects]]
+  digest = "1:1d7e1867c49a6dd9856598ef7c3123604ea3daabf5b83f303ff457bcbc410b1d"
   name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  pruneopts = ""
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:c6e71685a14409c3a1fdbecef044ee6447c3887de7c2bb025ee12f9a8a368960"
   name = "github.com/smira/commander"
   packages = ["."]
+  pruneopts = ""
   revision = "f408b00e68d5d6e21b9f18bd310978dafc604e47"
 
 [[projects]]
   branch = "master"
+  digest = "1:a75eb2e6e718988505f704d651eeb4734f0f0b580f761aa58b4a5b0afe585091"
   name = "github.com/smira/flag"
   packages = ["."]
+  pruneopts = ""
   revision = "695ea5e84e76dea7c8656e43c384e54b32aa1b2a"
 
 [[projects]]
   branch = "master"
+  digest = "1:cd3b8057abbb453404cbef569951a7359986eedfc0a887f9bc5efff8d02e1760"
   name = "github.com/smira/go-aws-auth"
   packages = ["."]
-  revision = "0070896e9d7f4f9f2d558532b2d896ce2239992a"
+  pruneopts = ""
+  revision = "8b73995fd8d1d82519c7037ee243a497552cd54d"
 
 [[projects]]
   branch = "master"
+  digest = "1:7dd59b3536a07651baf394466da3b8a20bd3ed9ce1984c7583fdf2412fdcfea9"
   name = "github.com/smira/go-ftp-protocol"
   packages = ["protocol"]
+  pruneopts = ""
   revision = "066b75c2b70dca7ae10b1b88b47534a3c31ccfaa"
 
 [[projects]]
   branch = "master"
+  digest = "1:55fe1086100b305a5562e9f1e6825ef97c49e82331cb0f055b2069f7c7ebd469"
   name = "github.com/smira/go-xz"
   packages = ["."]
+  pruneopts = ""
   revision = "0c531f070014e218b21f3cfca801cc992d52726d"
 
 [[projects]]
   branch = "master"
-  name = "github.com/kjk/lzma"
-  packages = ["."]
-  revision = "3fd93898850d5252457e48c1b3d5e1510597280b"
-
-[[projects]]
-  branch = "master"
+  digest = "1:175bc8d87d54849b9b9fc6cd473c5830e090fbf3c2f0ca71c7642a697e5d9237"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -220,21 +275,27 @@
     "leveldb/table",
     "leveldb/util"
   ]
+  pruneopts = ""
   revision = "714f901b98fdb3aa954b4193d8cbd64a28d80cad"
 
 [[projects]]
+  digest = "1:b9bca27d5fbe4ad1a1802706629580ce923bb14255c51375480dff1bebcbb8b2"
   name = "github.com/ugorji/go"
   packages = ["codec"]
+  pruneopts = ""
   revision = "71c2886f5a673a35f909803f38ece5810165097b"
 
 [[projects]]
   branch = "master"
+  digest = "1:2d8078b329a80bf4b71537dcd30853ff89fcafb611c94b2dfdb3d43ef1f23a1a"
   name = "github.com/wsxiaoys/terminal"
   packages = ["color"]
+  pruneopts = ""
   revision = "0940f3fc43a0ed42d04916b1c04578462c650b09"
 
 [[projects]]
   branch = "master"
+  digest = "1:51aff2b69272cb95713b74675c0817e0a0caadc20337a8d9115bc68bf1105280"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -247,44 +308,97 @@
     "openpgp/s2k",
     "ssh/terminal"
   ]
+  pruneopts = ""
   revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
 
 [[projects]]
   branch = "master"
+  digest = "1:267aa6124260d0e48d1ebf8bb84dce97caa133406b3caabc076cfc7a9e85ffe4"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows"
   ]
+  pruneopts = ""
   revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
 
 [[projects]]
   branch = "v1"
+  digest = "1:e75566abfb876e81f00290ec153ff994c33bf8886134c1a38a9a9df5c15a2045"
   name = "gopkg.in/check.v1"
   packages = ["."]
+  pruneopts = ""
   revision = "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec"
 
 [[projects]]
+  digest = "1:dd549e360e5a8f982a28c2bcbe667307ceffe538ed9afc7c965524f1ac285b3f"
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
+  pruneopts = ""
   revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
   version = "v8.18.2"
 
 [[projects]]
+  digest = "1:0e886d5a5845f58255fb57bcb4a6aae7e1f9dd7c53defe7b87d57dd4cd127545"
   name = "gopkg.in/h2non/filetype.v1"
   packages = ["types"]
+  pruneopts = ""
   revision = "3093b8ebec6efb56ac813238b8beab4ed4eaac6a"
   version = "v1.0.1"
 
 [[projects]]
   branch = "v2"
+  digest = "1:81314a486195626940617e43740b4fa073f265b0715c9f54ce2027fee1cb5f61"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3ae43715f5d857c1686ad4b4310a5537afc8d0ab50dc658d11db7c2b36f17fee"
+  input-imports = [
+    "github.com/AlekSi/pointer",
+    "github.com/DisposaBoy/JsonConfigReader",
+    "github.com/awalterschulze/gographviz",
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/awserr",
+    "github.com/aws/aws-sdk-go/aws/corehandlers",
+    "github.com/aws/aws-sdk-go/aws/credentials",
+    "github.com/aws/aws-sdk-go/aws/request",
+    "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/s3",
+    "github.com/cheggaaa/pb",
+    "github.com/gin-gonic/gin",
+    "github.com/h2non/filetype/matchers",
+    "github.com/kjk/lzma",
+    "github.com/mattn/go-shellwords",
+    "github.com/mkrautz/goar",
+    "github.com/mxk/go-flowrate/flowrate",
+    "github.com/ncw/swift",
+    "github.com/ncw/swift/swifttest",
+    "github.com/pborman/uuid",
+    "github.com/pkg/errors",
+    "github.com/smira/commander",
+    "github.com/smira/flag",
+    "github.com/smira/go-aws-auth",
+    "github.com/smira/go-ftp-protocol/protocol",
+    "github.com/smira/go-xz",
+    "github.com/syndtr/goleveldb/leveldb",
+    "github.com/syndtr/goleveldb/leveldb/filter",
+    "github.com/syndtr/goleveldb/leveldb/opt",
+    "github.com/syndtr/goleveldb/leveldb/storage",
+    "github.com/syndtr/goleveldb/leveldb/util",
+    "github.com/ugorji/go/codec",
+    "github.com/wsxiaoys/terminal/color",
+    "golang.org/x/crypto/openpgp",
+    "golang.org/x/crypto/openpgp/armor",
+    "golang.org/x/crypto/openpgp/clearsign",
+    "golang.org/x/crypto/openpgp/errors",
+    "golang.org/x/crypto/openpgp/packet",
+    "golang.org/x/crypto/ssh/terminal",
+    "golang.org/x/sys/unix",
+    "gopkg.in/check.v1"
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
