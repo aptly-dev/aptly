@@ -5,7 +5,6 @@ import (
 )
 
 type VersionSuite struct {
-	stanza Stanza
 }
 
 var _ = Suite(&VersionSuite{})

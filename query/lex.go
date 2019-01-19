@@ -119,14 +119,6 @@ func (l *lexer) backup() {
 	l.pos -= l.width
 }
 
-// peek returns but does not consume
-// the next rune in the input.
-func (l *lexer) peek() rune {
-	r := l.next()
-	l.backup()
-	return r
-}
-
 func (l *lexer) Current() item {
 	if l.last.typ == 0 {
 		l.last = <-l.items

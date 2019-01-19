@@ -13,7 +13,7 @@ func DirIsAccessible(filename string) error {
 	_, err := os.Stat(filename)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return fmt.Errorf("Something went wrong, %v", err)
+			return fmt.Errorf("error checking directory '%s': %s", filename, err)
 		}
 	} else {
 		if unix.Access(filename, unix.W_OK) != nil {
