@@ -7,7 +7,6 @@
         "deadcode",
         "goimports",
         "misspell",
-        "gosimple",
         "ineffassign",
         "staticcheck",
         "varcheck",

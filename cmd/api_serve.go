@@ -58,7 +58,25 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	listenURL, err := url.Parse(listen)
 	if err == nil && listenURL.Scheme == "unix" {
 		file := listenURL.Path
-		os.Remove(file)
+
+		var stat os.FileInfo
+		stat, err = os.Stat(file)
+		shouldRemove := true
+
+		if err == nil && stat.Mode()&os.ModeSocket == os.ModeSocket {
+			shouldRemove = false
+		}
+
+		if err != nil && os.IsNotExist(err) {
+			shouldRemove = false
+		}
+
+		if shouldRemove {
+			err = os.Remove(file)
+			if err != nil {
+				fmt.Printf("Warning: error removing file %s: %s\n", file, err)
+			}
+		}
 
 		var listener net.Listener
 		listener, err = net.Listen("unix", file)

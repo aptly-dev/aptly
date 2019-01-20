@@ -10,8 +10,7 @@ import (
 )
 
 type GnupgSuite struct {
-	verifier Verifier
-	bins     string
+	bins string
 }
 
 var _ = Suite(&GnupgSuite{})
