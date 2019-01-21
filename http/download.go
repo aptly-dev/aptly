@@ -81,7 +81,7 @@ func (downloader *downloaderImpl) GetLength(ctx context.Context, url string) (in
 	}
 
 	if resp.ContentLength < 0 {
-		return -1, fmt.Errorf("Could not determine length of %s", url)
+		return -1, fmt.Errorf("could not determine length of %s", url)
 	}
 
 	return resp.ContentLength, nil
@@ -94,11 +94,11 @@ func (downloader *downloaderImpl) Download(ctx context.Context, url string, dest
 
 func retryableError(err error) bool {
 	switch err.(type) {
-	case net.Error:
-		return true
 	case *net.OpError:
 		return true
 	case syscall.Errno:
+		return true
+	case net.Error:
 		return true
 	}
 	return false

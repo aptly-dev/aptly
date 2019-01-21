@@ -73,7 +73,6 @@ type Server struct {
 type bucket struct {
 	name    string
 	acl     string
-	ctime   time.Time
 	objects map[string]*object
 }
 

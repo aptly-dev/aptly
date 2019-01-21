@@ -540,12 +540,10 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 				}
 			}
 			err = repo.packageList.Add(p)
-			if err != nil {
-				if _, ok := err.(*PackageConflictError); ok {
-					progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
-				} else {
-					return err
-				}
+			if _, ok := err.(*PackageConflictError); ok {
+				progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+			} else if err != nil {
+				return err
 			}
 		}
 
