@@ -190,6 +190,12 @@ func (storage *PublishedStorage) Remove(path string) error {
 	}
 	_, err := storage.s3.DeleteObject(params)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			if aerr.Code() == s3.ErrCodeNoSuchBucket {
+				// ignore 'no such bucket' errors on removal
+				return nil
+			}
+		}
 		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
@@ -206,6 +212,12 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 
 	filelist, _, err := storage.internalFilelist(path, false)
 	if err != nil {
+		if aerr, ok := errors.Cause(err).(awserr.Error); ok {
+			if aerr.Code() == s3.ErrCodeNoSuchBucket {
+				// ignore 'no such bucket' errors on removal
+				return nil
+			}
+		}
 		return err
 	}
 
@@ -356,7 +368,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 	})
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, storage, err)
+		return nil, nil, errors.WithMessagef(err, "error listing under prefix %s in %s: %s", prefix, storage, err)
 	}
 
 	return paths, md5s, nil
