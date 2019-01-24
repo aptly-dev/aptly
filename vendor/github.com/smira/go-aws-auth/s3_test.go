@@ -7,99 +7,98 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"net/http/httptest"
+
+	"github.com/smartystreets/assertions"
+	"github.com/smartystreets/assertions/should"
+	"github.com/smartystreets/gunit"
 )
 
-func TestSignatureS3(t *testing.T) {
-	// http://docs.aws.amazon.com/AmazonS3/2006-03-01/dev/RESTAuthentication.html
-	// Note: S3 now supports signed signature version 4
-	// (but signed URL requests still utilize a lot of the same functionality)
+// http://docs.aws.amazon.com/AmazonS3/2006-03-01/dev/RESTAuthentication.html
+// Note: S3 now supports signed signature version 4
+// (but signed URL requests still utilize a lot of the same functionality)
 
-	Convey("Given a GET request to Amazon S3", t, func() {
-		keys := *testCredS3
-		request := test_plainRequestS3()
+func TestSignatureS3Fixture(t *testing.T) {
+	gunit.RunSequential(new(SignatureS3Fixture), t)
+}
 
-		// Mock time
-		now = func() time.Time {
-			parsed, _ := time.Parse(timeFormatS3, exampleReqTsS3)
-			return parsed
-		}
+type SignatureS3Fixture struct {
+	*gunit.Fixture
 
-		Convey("The request should be prepared with a Date header", func() {
-			prepareRequestS3(request)
-			So(request.Header.Get("Date"), ShouldEqual, exampleReqTsS3)
-		})
+	keys    Credentials
+	request *http.Request
+}
 
-		Convey("The CanonicalizedAmzHeaders should be built properly", func() {
-			req2 := test_headerRequestS3()
-			actual := canonicalAmzHeadersS3(req2)
-			So(actual, ShouldEqual, expectedCanonAmzHeadersS3)
-		})
+func (this *SignatureS3Fixture) Setup() {
+	this.keys = *testCredS3
+	this.request = test_plainRequestS3()
 
-		Convey("The CanonicalizedResource should be built properly", func() {
-			actual := canonicalResourceS3(request)
-			So(actual, ShouldEqual, expectedCanonResourceS3)
-		})
+	now = func() time.Time {
+		parsed, _ := time.Parse(timeFormatS3, exampleReqTsS3)
+		return parsed
+	}
+}
 
-		Convey("The string to sign should be correct", func() {
-			actual := stringToSignS3(request)
-			So(actual, ShouldEqual, expectedStringToSignS3)
-		})
+func (this *SignatureS3Fixture) TestRequestShouldHaveADateHeader() {
+	prepareRequestS3(this.request)
+	this.So(this.request.Header.Get("Date"), should.Equal, exampleReqTsS3)
+}
 
-		Convey("The final signature string should be exactly correct", func() {
-			actual := signatureS3(stringToSignS3(request), keys)
-			So(actual, ShouldEqual, "bWq2s1WEIj+Ydj0vQ697zp+IXMU=")
-		})
-	})
+func (this *SignatureS3Fixture) TestRequestShouldHaveCanonicalizedAmzHeaders() {
+	req2 := test_headerRequestS3()
+	actual := canonicalAmzHeadersS3(req2)
+	this.So(actual, should.Equal, expectedCanonAmzHeadersS3)
+}
 
-	Convey("Given a GET request for a resource on S3 for query string authentication", t, func() {
-		keys := *testCredS3
-		request, _ := http.NewRequest("GET", "https://johnsmith.s3.amazonaws.com/johnsmith/photos/puppy.jpg", nil)
+func (this *SignatureS3Fixture) TestCanonicalizedResourceBuiltProperly() {
+	actual := canonicalResourceS3(this.request)
+	this.So(actual, should.Equal, expectedCanonResourceS3)
+}
 
-		now = func() time.Time {
-			parsed, _ := time.Parse(timeFormatS3, exampleReqTsS3)
-			return parsed
-		}
+func (this *SignatureS3Fixture) TestStringToSignShouldBeCorrect() {
+	actual := stringToSignS3(this.request)
+	this.So(actual, should.Equal, expectedStringToSignS3)
+}
 
-		Convey("The string to sign should be correct", func() {
-			actual := stringToSignS3Url("GET", now(), request.URL.Path)
-			So(actual, ShouldEqual, expectedStringToSignS3Url)
-		})
+func (this *SignatureS3Fixture) TestFinalSignatureShouldBeExactlyCorrect() {
+	actual := signatureS3(stringToSignS3(this.request), this.keys)
+	this.So(actual, should.Equal, "bWq2s1WEIj+Ydj0vQ697zp+IXMU=")
+}
 
-		Convey("The signature of string to sign should be correct", func() {
-			actual := signatureS3(expectedStringToSignS3Url, keys)
-			So(actual, ShouldEqual, "R2K/+9bbnBIbVDCs7dqlz3XFtBQ=")
-		})
+func (this *SignatureS3Fixture) TestQueryStringAuthentication() {
+	this.request = httptest.NewRequest("GET", "https://johnsmith.s3.amazonaws.com/johnsmith/photos/puppy.jpg", nil)
 
-		Convey("The finished signed URL should be correct", func() {
-			expiry := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
-			So(SignS3Url(request, expiry, keys).URL.String(), ShouldEqual, expectedSignedS3Url)
-		})
-	})
+	// The string to sign should be correct
+	actual := stringToSignS3Url("GET", now(), this.request.URL.Path)
+	this.So(actual, should.Equal, expectedStringToSignS3Url)
+
+	// The signature of string to sign should be correct
+	actualSignature := signatureS3(expectedStringToSignS3Url, this.keys)
+	this.So(actualSignature, should.Equal, "R2K/+9bbnBIbVDCs7dqlz3XFtBQ=")
+
+	// The finished signed URL should be correct
+	expiry := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	this.So(SignS3Url(this.request, expiry, this.keys).URL.String(), should.Equal, expectedSignedS3Url)
 }
 
 func TestS3STSRequestPreparer(t *testing.T) {
-	Convey("Given a plain request with no custom headers", t, func() {
-		request := test_plainRequestS3()
+	// Given a plain request with no custom headers
+	request := test_plainRequestS3()
 
-		Convey("And a set of credentials with an STS token", func() {
-			keys := *testCredS3WithSTS
+	// And a set of credentials with an STS token
+	keys := *testCredS3WithSTS
 
-			Convey("It should include an X-Amz-Security-Token when the request is signed", func() {
-				actualSigned := SignS3(request, keys)
-				actual := actualSigned.Header.Get("X-Amz-Security-Token")
+	// It should include an X-Amz-Security-Token when the request is signed
+	actualSigned := SignS3(request, keys)
+	actual := actualSigned.Header.Get("X-Amz-Security-Token")
 
-				So(actual, ShouldNotBeBlank)
-				So(actual, ShouldEqual, testCredS3WithSTS.SecurityToken)
-
-			})
-		})
-	})
+	assert := assertions.New(t)
+	assert.So(actual, should.NotBeBlank)
+	assert.So(actual, should.Equal, testCredS3WithSTS.SecurityToken)
 }
 
 func test_plainRequestS3() *http.Request {
-	request, _ := http.NewRequest("GET", "https://johnsmith.s3.amazonaws.com/photos/puppy.jpg", nil)
-	return request
+	return httptest.NewRequest("GET", "https://johnsmith.s3.amazonaws.com/photos/puppy.jpg", nil)
 }
 
 func test_headerRequestS3() *http.Request {

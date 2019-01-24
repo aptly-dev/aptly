@@ -192,15 +192,17 @@ const (
 var (
 	awsSignVersion = map[string]int{
 		"autoscaling":          4,
+		"ce":                   4,
 		"cloudfront":           4,
 		"cloudformation":       4,
 		"cloudsearch":          4,
 		"monitoring":           4,
 		"dynamodb":             4,
-		"ec2":                  2,
+		"ec2":                  4,
 		"elasticmapreduce":     4,
 		"elastictranscoder":    4,
-		"elasticache":          2,
+		"elasticache":          4,
+		"es":                   4,
 		"glacier":              4,
 		"kinesis":              4,
 		"redshift":             4,
@@ -210,10 +212,10 @@ var (
 		"sqs":                  4,
 		"s3":                   4,
 		"elasticbeanstalk":     4,
-		"importexport":         2,
+		"importexport":         4,
 		"iam":                  4,
-		"route53":              3,
+		"route53":              4,
 		"elasticloadbalancing": 4,
-		"email":                3,
+		"email":                4,
 	}
 )

@@ -1202,7 +1202,10 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 
 	err = repo.RemoveFiles(publishedStorageProvider, removePrefix, removePoolComponents, progress)
 	if err != nil {
-		return err
+		if !force {
+			return fmt.Errorf("published files removal failed, use -force-drop to override: %s", err)
+		}
+		// ignore error with -force-drop
 	}
 
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =

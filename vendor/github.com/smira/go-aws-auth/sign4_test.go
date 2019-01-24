@@ -2,173 +2,155 @@ package awsauth
 
 import (
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/assertions"
+	"github.com/smartystreets/assertions/should"
 )
 
-func TestVersion4RequestPreparer(t *testing.T) {
-	Convey("Given a plain request with no custom headers", t, func() {
-		request := test_plainRequestV4(false)
+func TestVersion4RequestPreparer_1(t *testing.T) {
+	// Given a plain request with no custom headers
+	request := test_plainRequestV4(false)
+	prepareRequestV4(request)
 
-		expectedUnsigned := test_unsignedRequestV4(true, false)
-		expectedUnsigned.Header.Set("X-Amz-Date", timestampV4())
+	expectedUnsigned := test_unsignedRequestV4(true, false)
+	expectedUnsigned.Header.Set("X-Amz-Date", timestampV4())
 
-		Convey("The necessary, default headers should be appended", func() {
-			prepareRequestV4(request)
-			So(request, ShouldResemble, expectedUnsigned)
-		})
+	assert := assertions.New(t)
 
-		Convey("Forward-slash should be appended to URI if not present", func() {
-			prepareRequestV4(request)
-			So(request.URL.Path, ShouldEqual, "/")
-		})
+	// The necessary, default headers should be appended
+	assert.So(dumpRequest(request), should.Equal, dumpRequest(expectedUnsigned))
 
-		Convey("And a set of credentials", func() {
-			var keys Credentials
-			keys = *testCredV4
+	// Forward-slash should be appended to URI if not present
+	assert.So(request.URL.Path, should.Equal, "/")
+}
 
-			Convey("It should be signed with an Authorization header", func() {
-				actualSigned := Sign4(request, keys)
-				actual := actualSigned.Header.Get("Authorization")
+func TestVersion4RequestPreparer_2(t *testing.T) {
+	// And a set of credentials
+	// It should be signed with an Authorization header
+	request := test_plainRequestV4(false)
+	actualSigned := Sign4(request, *testCredV4)
+	actual := actualSigned.Header.Get("Authorization")
 
-				So(actual, ShouldNotBeBlank)
-				So(actual, ShouldContainSubstring, "Credential="+testCredV4.AccessKeyID)
-				So(actual, ShouldContainSubstring, "SignedHeaders=")
-				So(actual, ShouldContainSubstring, "Signature=")
-				So(actual, ShouldContainSubstring, "AWS4")
-			})
-		})
-	})
+	assert := assertions.New(t)
+	assert.So(actual, should.NotBeBlank)
+	assert.So(actual, should.ContainSubstring, "Credential="+testCredV4.AccessKeyID)
+	assert.So(actual, should.ContainSubstring, "SignedHeaders=")
+	assert.So(actual, should.ContainSubstring, "Signature=")
+	assert.So(actual, should.ContainSubstring, "AWS4")
+}
 
-	Convey("Given a request with custom, necessary headers", t, func() {
-		Convey("The custom, necessary headers must not be changed", func() {
-			request := test_unsignedRequestV4(true, false)
-			prepareRequestV4(request)
-			So(request, ShouldResemble, test_unsignedRequestV4(true, false))
-		})
-	})
+func TestVersion4RequestPreparer_3(t *testing.T) {
+	// Given a request with custom, necessary headers
+	// The custom, necessary headers must not be changed
+	request := test_unsignedRequestV4(true, false)
+	prepareRequestV4(request)
+	assertions.New(t).So(dumpRequest(request), should.Equal, dumpRequest(test_unsignedRequestV4(true, false)))
 }
 
 func TestVersion4STSRequestPreparer(t *testing.T) {
-	Convey("Given a plain request with no custom headers", t, func() {
-		request := test_plainRequestV4(false)
+	// Given a plain request with no custom headers
+	request := test_plainRequestV4(false)
 
-		Convey("And a set of credentials with an STS token", func() {
-			var keys Credentials
-			keys = *testCredV4WithSTS
+	// And a set of credentials with an STS token
+	var keys Credentials
+	keys = *testCredV4WithSTS
 
-			Convey("It should include an X-Amz-Security-Token when the request is signed", func() {
-				actualSigned := Sign4(request, keys)
-				actual := actualSigned.Header.Get("X-Amz-Security-Token")
+	// It should include an X-Amz-Security-Token when the request is signed
+	actualSigned := Sign4(request, keys)
+	actual := actualSigned.Header.Get("X-Amz-Security-Token")
 
-				So(actual, ShouldNotBeBlank)
-				So(actual, ShouldEqual, testCredV4WithSTS.SecurityToken)
-
-			})
-		})
-	})
-
+	assert := assertions.New(t)
+	assert.So(actual, should.NotBeBlank)
+	assert.So(actual, should.Equal, testCredV4WithSTS.SecurityToken)
 }
 
 func TestVersion4SigningTasks(t *testing.T) {
 	// http://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html
 
-	Convey("Given a bogus request and credentials from AWS documentation with an additional meta tag", t, func() {
-		request := test_unsignedRequestV4(true, true)
-		meta := new(metadata)
+	// Given a bogus request and credentials from AWS documentation with an additional meta tag
+	request := test_unsignedRequestV4(true, true)
+	meta := new(metadata)
+	assert := assertions.New(t)
 
-		Convey("(Task 1) The canonical request should be built correctly", func() {
-			hashedCanonReq := hashedCanonicalRequestV4(request, meta)
+	// (Task 1) The canonical request should be built correctly
+	hashedCanonReq := hashedCanonicalRequestV4(request, meta)
+	assert.So(hashedCanonReq, should.Equal, expectingV4["CanonicalHash"])
 
-			So(hashedCanonReq, ShouldEqual, expectingV4["CanonicalHash"])
-		})
+	// (Task 2) The string to sign should be built correctly
+	stringToSign := stringToSignV4(request, hashedCanonReq, meta)
+	assert.So(stringToSign, should.Equal, expectingV4["StringToSign"])
 
-		Convey("(Task 2) The string to sign should be built correctly", func() {
-			hashedCanonReq := hashedCanonicalRequestV4(request, meta)
-			stringToSign := stringToSignV4(request, hashedCanonReq, meta)
-
-			So(stringToSign, ShouldEqual, expectingV4["StringToSign"])
-		})
-
-		Convey("(Task 3) The version 4 signed signature should be correct", func() {
-			hashedCanonReq := hashedCanonicalRequestV4(request, meta)
-			stringToSign := stringToSignV4(request, hashedCanonReq, meta)
-			signature := signatureV4(test_signingKeyV4(), stringToSign)
-
-			So(signature, ShouldEqual, expectingV4["SignatureV4"])
-		})
-	})
+	// (Task 3) The version 4 signed signature should be correct
+	signature := signatureV4(test_signingKeyV4(), stringToSign)
+	assert.So(signature, should.Equal, expectingV4["SignatureV4"])
 }
 
 func TestSignature4Helpers(t *testing.T) {
+	// The signing key should be properly generated
+	expected := []byte{152, 241, 216, 137, 254, 196, 244, 66, 26, 220, 82, 43, 171, 12, 225, 248, 46, 105, 41, 194, 98, 237, 21, 229, 169, 76, 144, 239, 209, 227, 176, 231}
+	actual := test_signingKeyV4()
 
-	keys := *testCredV4
+	assertions.New(t).So(actual, should.Resemble, expected)
+}
+func TestSignature4Helpers_1(t *testing.T) {
+	// Authorization headers should be built properly
+	meta := &metadata{
+		algorithm:       "AWS4-HMAC-SHA256",
+		credentialScope: "20110909/us-east-1/iam/aws4_request",
+		signedHeaders:   "content-type;host;x-amz-date",
+	}
+	expected := expectingV4["AuthHeader"] + expectingV4["SignatureV4"]
+	actual := buildAuthHeaderV4(expectingV4["SignatureV4"], meta, *testCredV4)
 
-	Convey("The signing key should be properly generated", t, func() {
-		expected := []byte{152, 241, 216, 137, 254, 196, 244, 66, 26, 220, 82, 43, 171, 12, 225, 248, 46, 105, 41, 194, 98, 237, 21, 229, 169, 76, 144, 239, 209, 227, 176, 231}
-		actual := test_signingKeyV4()
+	assertions.New(t).So(actual, should.Equal, expected)
+}
+func TestSignature4Helpers_2(t *testing.T) {
+	// Timestamps should be in the correct format, in UTC time
+	actual := timestampV4()
 
-		So(actual, ShouldResemble, expected)
-	})
+	assert := assertions.New(t)
+	assert.So(len(actual), should.Equal, 16)
+	assert.So(actual, should.NotContainSubstring, ":")
+	assert.So(actual, should.NotContainSubstring, "-")
+	assert.So(actual, should.NotContainSubstring, " ")
+	assert.So(actual, should.EndWith, "Z")
+	assert.So(actual, should.ContainSubstring, "T")
+}
+func TestSignature4Helpers_3(t *testing.T) {
+	// Given an Version 4 AWS-formatted timestamp
+	ts := "20110909T233600Z"
 
-	Convey("Authorization headers should be built properly", t, func() {
-		meta := &metadata{
-			algorithm:       "AWS4-HMAC-SHA256",
-			credentialScope: "20110909/us-east-1/iam/aws4_request",
-			signedHeaders:   "content-type;host;x-amz-date",
-		}
-		expected := expectingV4["AuthHeader"] + expectingV4["SignatureV4"]
-		actual := buildAuthHeaderV4(expectingV4["SignatureV4"], meta, keys)
+	// The date string should be extracted properly
+	assertions.New(t).So(tsDateV4(ts), should.Equal, "20110909")
+}
+func TestSignature4Helpers_4(t *testing.T) {
+	// Given any request with a body
+	request := test_plainRequestV4(false)
 
-		So(actual, ShouldEqual, expected)
-	})
+	// Its body should be read and replaced without differences
+	expected := []byte(requestValuesV4.Encode())
+	assert := assertions.New(t)
 
-	Convey("Timestamps should be in the correct format, in UTC time", t, func() {
-		actual := timestampV4()
+	actual1 := readAndReplaceBody(request)
+	assert.So(actual1, should.Resemble, expected)
 
-		So(len(actual), ShouldEqual, 16)
-		So(actual, ShouldNotContainSubstring, ":")
-		So(actual, ShouldNotContainSubstring, "-")
-		So(actual, ShouldNotContainSubstring, " ")
-		So(actual, ShouldEndWith, "Z")
-		So(actual, ShouldContainSubstring, "T")
-	})
-
-	Convey("Given an Version 4 AWS-formatted timestamp", t, func() {
-		ts := "20110909T233600Z"
-
-		Convey("The date string should be extracted properly", func() {
-			So(tsDateV4(ts), ShouldEqual, "20110909")
-		})
-	})
-
-	Convey("Given any request with a body", t, func() {
-		request := test_plainRequestV4(false)
-
-		Convey("Its body should be read and replaced without differences", func() {
-			expected := []byte(requestValuesV4.Encode())
-
-			actual1 := readAndReplaceBody(request)
-			So(actual1, ShouldResemble, expected)
-
-			actual2 := readAndReplaceBody(request)
-			So(actual2, ShouldResemble, expected)
-		})
-	})
+	actual2 := readAndReplaceBody(request)
+	assert.So(actual2, should.Resemble, expected)
 }
 
 func test_plainRequestV4(trailingSlash bool) *http.Request {
-	url := "http://iam.amazonaws.com"
+	address := "http://iam.amazonaws.com"
 	body := strings.NewReader(requestValuesV4.Encode())
 
 	if trailingSlash {
-		url += "/"
+		address += "/"
 	}
 
-	request, err := http.NewRequest("POST", url, body)
+	request, err := http.NewRequest("POST", address, body)
 
 	if err != nil {
 		panic(err)
@@ -189,6 +171,11 @@ func test_unsignedRequestV4(trailingSlash, tag bool) *http.Request {
 
 func test_signingKeyV4() []byte {
 	return signingKeyV4(testCredV4.SecretAccessKey, "20110909", "us-east-1", "iam")
+}
+
+func dumpRequest(request *http.Request) string {
+	dump, _ := httputil.DumpRequestOut(request, true)
+	return string(dump)
 }
 
 var (

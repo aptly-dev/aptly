@@ -18,6 +18,7 @@ import (
 type PublishedStorageSuite struct {
 	srv                      *Server
 	storage, prefixedStorage *PublishedStorage
+	noSuchBucketStorage      *PublishedStorage
 }
 
 var _ = Suite(&PublishedStorageSuite{})
@@ -31,6 +32,8 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.storage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false)
 	c.Assert(err, IsNil)
 	s.prefixedStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", false, true, false, false)
+	c.Assert(err, IsNil)
+	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false)
 	c.Assert(err, IsNil)
 
 	_, err = s.storage.s3.CreateBucket(&s3.CreateBucketInput{Bucket: aws.String("test")})
@@ -170,6 +173,11 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	s.AssertNoFile(c, "lala/xyz")
 }
 
+func (s *PublishedStorageSuite) TestRemoveNoSuchBucket(c *C) {
+	err := s.noSuchBucketStorage.Remove("a/b")
+	c.Check(err, IsNil)
+}
+
 func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
 	s.storage.plusWorkaround = true
 
@@ -216,6 +224,11 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "testa"})
+}
+
+func (s *PublishedStorageSuite) TestRemoveDirsNoSuchBucket(c *C) {
+	err := s.noSuchBucketStorage.RemoveDirs("a/b", nil)
+	c.Check(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
