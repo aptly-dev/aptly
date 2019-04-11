@@ -130,6 +130,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		published.ButAutomaticUpgrades = butAutomaticUpgrades
 	}
 	published.Label = context.Flags().Lookup("label").Value.String()
+	published.Suite = context.Flags().Lookup("suite").Value.String()
 
 	published.SkipContents = context.Config().SkipContentsPublishing
 
@@ -230,6 +231,7 @@ Example:
 	cmd.Flag.String("notautomatic", "", "overwrite value for NotAutomatic field")
 	cmd.Flag.String("butautomaticupgrades", "", "overwrite value for ButAutomaticUpgrades field")
 	cmd.Flag.String("label", "", "label to publish")
+	cmd.Flag.String("suite", "", "suite to publish (defaults to distribution)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 	cmd.Flag.Bool("acquire-by-hash", false, "provide index files by hash")
 
