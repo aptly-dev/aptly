@@ -163,6 +163,18 @@ func (s *Snapshot) Decode(input []byte) error {
 			s.SourceKind = snapshot11.SourceKind
 			s.SourceIDs = snapshot11.SourceIDs
 			s.Description = snapshot11.Description
+		} else if strings.Contains(err.Error(), "invalid length of bytes for decoding time") {
+			// DB created by old codec version, time.Time is not builtin type.
+			// https://github.com/ugorji/go-codec/issues/269
+			decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{
+				// only can be configured in Deprecated BasicHandle struct
+				BasicHandle: codec.BasicHandle{ // nolint: staticcheck
+					TimeNotBuiltin: true,
+				},
+			})
+			if err = decoder.Decode(s); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
