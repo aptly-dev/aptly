@@ -696,6 +696,18 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 			repo.ReleaseFiles = repo11.ReleaseFiles
 			repo.Filter = repo11.Filter
 			repo.FilterWithDeps = repo11.FilterWithDeps
+		} else if strings.Contains(err.Error(), "invalid length of bytes for decoding time") {
+			// DB created by old codec version, time.Time is not builtin type.
+			// https://github.com/ugorji/go-codec/issues/269
+			decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{
+				// only can be configured in Deprecated BasicHandle struct
+				BasicHandle: codec.BasicHandle{ // nolint: staticcheck
+					TimeNotBuiltin: true,
+				},
+			})
+			if err = decoder.Decode(repo); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
