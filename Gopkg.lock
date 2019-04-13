@@ -25,7 +25,7 @@
     "ast",
     "parser",
     "scanner",
-    "token"
+    "token",
   ]
   pruneopts = ""
   revision = "761fd5fbb34e4c2c138c280395b65b48e4ff5a53"
@@ -61,7 +61,7 @@
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/sts"
+    "service/sts",
   ]
   pruneopts = ""
   revision = "a72204b9bf8d48230ee0fe8995613b394c66f2da"
@@ -89,7 +89,7 @@
   packages = [
     ".",
     "binding",
-    "render"
+    "render",
   ]
   pruneopts = ""
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
@@ -196,7 +196,7 @@
   name = "github.com/ncw/swift"
   packages = [
     ".",
-    "swifttest"
+    "swifttest",
   ]
   pruneopts = ""
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
@@ -273,17 +273,18 @@
     "leveldb/opt",
     "leveldb/storage",
     "leveldb/table",
-    "leveldb/util"
+    "leveldb/util",
   ]
   pruneopts = ""
   revision = "714f901b98fdb3aa954b4193d8cbd64a28d80cad"
 
 [[projects]]
-  digest = "1:b9bca27d5fbe4ad1a1802706629580ce923bb14255c51375480dff1bebcbb8b2"
+  digest = "1:a1ca17cff1abec6d4ecdeb03c52338c559affd7f0b2474e928c162986da2d348"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = ""
-  revision = "71c2886f5a673a35f909803f38ece5810165097b"
+  revision = "2adff0894ba3bc2eeb9f9aea45fefd49802e1a13"
+  version = "v1.1.4"
 
 [[projects]]
   branch = "master"
@@ -306,7 +307,7 @@
     "openpgp/errors",
     "openpgp/packet",
     "openpgp/s2k",
-    "ssh/terminal"
+    "ssh/terminal",
   ]
   pruneopts = ""
   revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
@@ -317,7 +318,7 @@
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
   pruneopts = ""
   revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
@@ -398,7 +399,7 @@
     "golang.org/x/crypto/openpgp/packet",
     "golang.org/x/crypto/ssh/terminal",
     "golang.org/x/sys/unix",
-    "gopkg.in/check.v1"
+    "gopkg.in/check.v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
