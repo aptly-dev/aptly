@@ -15,7 +15,7 @@ import (
 // LocalRepo is a collection of packages created locally
 type LocalRepo struct {
 	// Permanent internal ID
-	UUID string `json:"-"`
+	UUID string `codec:"UUID" json:"-"`
 	// User-assigned name
 	Name string
 	// Comment
@@ -25,7 +25,7 @@ type LocalRepo struct {
 	// DefaultComponent
 	DefaultComponent string `codec:",omitempty"`
 	// Uploaders configuration
-	Uploaders *Uploaders `code:",omitempty" json:"-"`
+	Uploaders *Uploaders `codec:"Uploaders,omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 }
