@@ -1,17 +1,30 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
-// Use of this source code is governed by a BSD-style license found in the LICENSE file.
+// Copyright (c) 2012-2018 Ugorji Nwoke. All rights reserved.
+// Use of this source code is governed by a MIT license found in the LICENSE file.
 
 /*
-High Performance, Feature-Rich Idiomatic Go encoding library for msgpack and binc .
+Package codec provides a
+High Performance, Feature-Rich Idiomatic Go 1.4+ codec/encoding library
+for binc, msgpack, cbor, json.
 
 Supported Serialization formats are:
 
-  - msgpack: [https://github.com/msgpack/msgpack]
-  - binc: [http://github.com/ugorji/binc]
+  - msgpack: https://github.com/msgpack/msgpack
+  - binc:    http://github.com/ugorji/binc
+  - cbor:    http://cbor.io http://tools.ietf.org/html/rfc7049
+  - json:    http://json.org http://tools.ietf.org/html/rfc7159
+  - simple:
 
 To install:
 
     go get github.com/ugorji/go/codec
+
+This package will carefully use 'unsafe' for performance reasons in specific places.
+You can build without unsafe use by passing the safe or appengine tag
+i.e. 'go install -tags=safe ...'. Note that unsafe is only supported for the last 3
+go sdk versions e.g. current go release is go 1.9, so we support unsafe use only from
+go 1.7+ . This is because supporting unsafe requires knowledge of implementation details.
+
+For detailed usage information, read the primer at http://ugorji.net/blog/go-codec-primer .
 
 The idiomatic Go support is as seen in other encoding packages in
 the standard library (ie json, xml, gob, etc).
@@ -19,46 +32,55 @@ the standard library (ie json, xml, gob, etc).
 Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
+  - Support for go1.4 and above, while selectively using newer APIs for later releases
+  - Excellent code coverage ( > 90% )
   - Very High Performance.
-    Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
-    This was achieved by taking extreme care on:
-      - managing allocation
-      - function frame size (important due to Go's use of split stacks),
-      - reflection use (and by-passing reflection for common types)
-      - recursion implications
-      - zero-copy mode (encoding/decoding to byte slice without using temp buffers)
-  - Correct.
-    Care was taken to precisely handle corner cases like:
-      overflows, nil maps and slices, nil value in stream, etc.
-  - Efficient zero-copying into temporary byte buffers
-    when encoding into or decoding from a byte slice.
+    Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
+  - Careful selected use of 'unsafe' for targeted performance gains.
+    100% mode exists where 'unsafe' is not used at all.
+  - Lock-free (sans mutex) concurrency for scaling to 100's of cores
+  - In-place updates during decode, with option to zero value in maps and slices prior to decode
+  - Coerce types where appropriate
+    e.g. decode an int in the stream into a float, decode numbers from formatted strings, etc
+  - Corner Cases:
+    Overflows, nil maps/slices, nil values in streams are handled correctly
   - Standard field renaming via tags
-  - Encoding from any value
+  - Support for omitting empty fields during an encoding
+  - Encoding from any value and decoding into pointer to any value
     (struct, slice, map, primitives, pointers, interface{}, etc)
-  - Decoding into pointer to any non-nil typed value
-    (struct, slice, map, int, float32, bool, string, reflect.Value, etc)
-  - Supports extension functions to handle the encode/decode of custom types
-  - Support Go 1.2 encoding.BinaryMarshaler/BinaryUnmarshaler
-  - Schema-less decoding
-    (decode into a pointer to a nil interface{} as opposed to a typed non-nil value).
+  - Extensions to support efficient encoding/decoding of any named types
+  - Support encoding.(Binary|Text)(M|Unm)arshaler interfaces
+  - Support IsZero() bool to determine if a value is a zero value.
+    Analogous to time.Time.IsZero() bool.
+  - Decoding without a schema (into a interface{}).
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
+  - Mapping a non-interface type to an interface, so we can decode appropriately
+    into any interface type with a correctly configured non-interface value.
+  - Encode a struct as an array, and decode struct from an array in the data stream
+  - Option to encode struct keys as numbers (instead of strings)
+    (to support structured streams with fields encoded as numeric codes)
+  - Comprehensive support for anonymous fields
+  - Fast (no-reflection) encoding/decoding of common maps and slices
+  - Code-generation for faster performance.
+  - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
+  - Support indefinite-length formats to enable true streaming
+    (for formats which support it e.g. json, cbor)
+  - Support canonical encoding, where a value is ALWAYS encoded as same sequence of bytes.
+    This mostly applies to maps, where iteration order is non-deterministic.
+  - NIL in data stream decoded as zero value
+  - Never silently skip data when decoding.
+    User decides whether to return an error or silently skip data when keys or indexes
+    in the data stream do not map to fields in the struct.
+  - Detect and error when encoding a cyclic reference (instead of stack overflow shutdown)
+  - Encode/Decode from/to chan types (for iterative streaming support)
+  - Drop-in replacement for encoding/json. `json:` key in struct tag supported.
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
-  - Msgpack Specific:
-      - Provides extension functions to handle spec-defined extensions (binary, timestamp)
-      - Options to resolve ambiguities in handling raw bytes (as string or []byte)
-        during schema-less decoding (decoding into a nil interface{})
-      - RPC Server/Client Codec for msgpack-rpc protocol defined at:
-        https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
-  - Fast Paths for some container types:
-    For some container types, we circumvent reflection and its associated overhead
-    and allocation costs, and encode/decode directly. These types are:
-	    []interface{}
-	    []int
-	    []string
-	    map[interface{}]interface{}
-	    map[int]interface{}
-	    map[string]interface{}
+  - Handle unique idiosyncrasies of codecs e.g.
+    - For messagepack, configure how ambiguities in handling raw bytes are resolved
+    - For messagepack, provide rpc server/client codec to support
+      msgpack-rpc protocol defined at:
+      https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
 
 Extension Support
 
@@ -78,6 +100,27 @@ encoded as an empty map because it has no exported fields, while UUID
 would be encoded as a string. However, with extension support, you can
 encode any of these however you like.
 
+Custom Encoding and Decoding
+
+This package maintains symmetry in the encoding and decoding halfs.
+We determine how to encode or decode by walking this decision tree
+
+  - is type a codec.Selfer?
+  - is there an extension registered for the type?
+  - is format binary, and is type a encoding.BinaryMarshaler and BinaryUnmarshaler?
+  - is format specifically json, and is type a encoding/json.Marshaler and Unmarshaler?
+  - is format text-based, and type an encoding.TextMarshaler and TextUnmarshaler?
+  - else we use a pair of functions based on the "kind" of the type e.g. map, slice, int64, etc
+
+This symmetry is important to reduce chances of issues happening because the
+encoding and decoding sides are out of sync e.g. decoded via very specific
+encoding.TextUnmarshaler but encoded via kind-specific generalized mode.
+
+Consequently, if a type only defines one-half of the symmetry
+(e.g. it implements UnmarshalJSON() but not MarshalJSON() ),
+then that type doesn't satisfy the check and we will continue walking down the
+decision tree.
+
 RPC
 
 RPC Client and Server Codecs are implemented, so the codecs can be used
@@ -85,19 +128,34 @@ with the standard net/rpc package.
 
 Usage
 
-Typical usage model:
+The Handle is SAFE for concurrent READ, but NOT SAFE for concurrent modification.
+
+The Encoder and Decoder are NOT safe for concurrent use.
+
+Consequently, the usage model is basically:
+
+    - Create and initialize the Handle before any use.
+      Once created, DO NOT modify it.
+    - Multiple Encoders or Decoders can now use the Handle concurrently.
+      They only read information off the Handle (never write).
+    - However, each Encoder or Decoder MUST not be used concurrently
+    - To re-use an Encoder/Decoder, call Reset(...) on it first.
+      This allows you use state maintained on the Encoder/Decoder.
+
+Sample usage model:
 
     // create and configure Handle
     var (
       bh codec.BincHandle
       mh codec.MsgpackHandle
+      ch codec.CborHandle
     )
 
     mh.MapType = reflect.TypeOf(map[string]interface{}(nil))
 
     // configure extensions
     // e.g. for msgpack, define functions and enable Time support for tag 1
-    // mh.AddExt(reflect.TypeOf(time.Time{}), 1, myMsgpackTimeEncodeExtFn, myMsgpackTimeDecodeExtFn)
+    // mh.SetExt(reflect.TypeOf(time.Time{}), 1, myExt)
 
     // create and use decoder/encoder
     var (
@@ -131,13 +189,39 @@ Typical usage model:
     //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
 
-Representative Benchmark Results
+Running Tests
 
-Run the benchmark suite using:
-   go test -bi -bench=. -benchmem
+To run tests, use the following:
 
-To run full benchmark suite (including against vmsgpack and bson),
-see notes in ext_dep_test.go
+    go test
+
+To run the full suite of tests, use the following:
+
+    go test -tags alltests -run Suite
+
+You can run the tag 'safe' to run tests or build in safe mode. e.g.
+
+    go test -tags safe -run Json
+    go test -tags "alltests safe" -run Suite
+
+Running Benchmarks
+
+Please see http://github.com/ugorji/go-codec-bench .
+
+Caveats
+
+Struct fields matching the following are ignored during encoding and decoding
+    - struct tag value set to -
+    - func, complex numbers, unsafe pointers
+    - unexported and not embedded
+    - unexported and embedded and not struct kind
+    - unexported and embedded pointers (from go1.10)
+
+Every other field in a struct will be encoded/decoded.
+
+Embedded fields are encoded as if they exist in the top-level struct,
+with some caveats. See Encode documentation.
 
 */
 package codec
+
