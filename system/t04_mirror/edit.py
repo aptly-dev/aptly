@@ -48,7 +48,7 @@ class EditMirror5Test(BaseTest):
     edit mirror: remove filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ wheezy/updates main",
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://archive.debian.org/debian-security/ wheezy/updates main",
     ]
     runCmd = "aptly mirror edit -filter= mirror5"
 
@@ -64,7 +64,9 @@ class EditMirror6Test(BaseTest):
     """
     edit mirror: change architectures
     """
-    fixtureDB = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create -ignore-signatures wheezy-main http://archive.debian.org/debian/ wheezy main",
+    ]
     runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,s390 wheezy-main"
 
     def check(self):
@@ -76,7 +78,9 @@ class EditMirror7Test(BaseTest):
     """
     edit mirror: change architectures to missing archs
     """
-    fixtureDB = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create -ignore-signatures wheezy-main http://archive.debian.org/debian/ wheezy main",
+    ]
     runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 wheezy-main"
     expectedCode = 1
 

@@ -1,5 +1,5 @@
 Name: mirror1
-Archive Root URL: http://mirror.yandex.ru/debian/
+Archive Root URL: http://archive.debian.org/debian/
 Distribution: wheezy
 Components: main, contrib, non-free
 Architectures: amd64, armel, armhf, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc

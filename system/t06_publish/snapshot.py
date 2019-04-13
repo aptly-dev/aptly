@@ -896,7 +896,7 @@ class PublishSnapshot35Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://archive.debian.org/debian/ wheezy main",
         "aptly mirror update -keyring=aptlytest.gpg wheezy",
         "aptly snapshot create wheezy from mirror wheezy",
     ]
@@ -1026,7 +1026,7 @@ class PublishSnapshot37Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://archive.debian.org/debian/ wheezy main",
         "aptly mirror update -keyring=aptlytest.gpg wheezy",
         "aptly mirror update -keyring=aptlytest.gpg wheezy",
         "aptly snapshot create wheezy from mirror wheezy",
@@ -1041,7 +1041,7 @@ class PublishSnapshot38Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://mirror.yandex.ru/debian/ wheezy main",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://archive.debian.org/debian/ wheezy main",
         "aptly mirror update -keyring=aptlytest.gpg wheezy",
         "aptly snapshot create wheezy from mirror wheezy",
     ]

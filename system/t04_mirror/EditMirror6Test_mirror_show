@@ -1,11 +1,10 @@
 Name: wheezy-main
-Archive Root URL: http://mirror.yandex.ru/debian/
+Archive Root URL: http://archive.debian.org/debian/
 Distribution: wheezy
 Components: main
 Architectures: amd64, s390
 Download Sources: no
 Download .udebs: no
-Number of packages: 56121
 
 Information from release file:
 Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc

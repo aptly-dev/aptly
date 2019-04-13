@@ -173,7 +173,7 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://archive.debian.org/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
     outputMatchPrepare = filterOutSignature
@@ -265,7 +265,7 @@ class UpdateMirror17Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://archive.debian.org/debian wheezy main",
     ]
     runCmd = "aptly mirror update -ignore-signatures wheezy"
 
@@ -292,7 +292,7 @@ class UpdateMirror18Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://archive.debian.org/debian wheezy main",
     ]
     runCmd = "aptly mirror update -ignore-signatures wheezy"
     configOverride = {'skipLegacyPool': True}
@@ -385,7 +385,7 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://archive.debian.org/debian/ wheezy main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
     outputMatchPrepare = filterOutSignature

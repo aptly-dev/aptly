@@ -1,5 +1,5 @@
 Name: mirror3
-Archive Root URL: http://mirror.yandex.ru/debian/
+Archive Root URL: http://archive.debian.org/debian/
 Distribution: wheezy
 Components: main, contrib
 Architectures: i386, amd64

@@ -1,4 +1,4 @@
-Downloading http://mirror.yandex.ru/debian/dists/wheezy/Release...
+Downloading http://archive.debian.org/debian/dists/wheezy/Release...
 
-Mirror [mirror17]: http://mirror.yandex.ru/debian/ wheezy [src] successfully added.
+Mirror [mirror17]: http://archive.debian.org/debian/ wheezy [src] successfully added.
 You can run 'aptly mirror update mirror17' to download repository contents.

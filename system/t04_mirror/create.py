@@ -7,7 +7,7 @@ class CreateMirror1Test(BaseTest):
     """
     create mirror: all architectures + all components
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian/ wheezy"
 
     def check(self):
         self.check_output()
@@ -18,7 +18,7 @@ class CreateMirror2Test(BaseTest):
     """
     create mirror: all architectures and 1 component
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror2  http://mirror.yandex.ru/debian/ wheezy main"
+    runCmd = "aptly mirror create --ignore-signatures mirror2  http://archive.debian.org/debian/ wheezy main"
 
     def check(self):
         self.check_output()
@@ -29,7 +29,7 @@ class CreateMirror3Test(BaseTest):
     """
     create mirror: some architectures and 2 components
     """
-    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror3 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror3 http://archive.debian.org/debian/ wheezy main contrib"
 
     def check(self):
         self.check_output()
@@ -42,7 +42,7 @@ class CreateMirror4Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror4 http://mirror.yandex.ru/debian/ wheezy life"
+    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror4 http://archive.debian.org/debian/ wheezy life"
 
 
 class CreateMirror5Test(BaseTest):
@@ -51,7 +51,7 @@ class CreateMirror5Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=i386,nano68 mirror create --ignore-signatures mirror5 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly -architectures=i386,nano68 mirror create --ignore-signatures mirror5 http://archive.debian.org/debian/ wheezy"
 
 
 class CreateMirror6Test(BaseTest):
@@ -61,14 +61,14 @@ class CreateMirror6Test(BaseTest):
     expectedCode = 1
     requiresGPG1 = True
 
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://mirror.yandex.ru/debian/ suslik"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://archive.debian.org/debian/ suslik"
 
 
 class CreateMirror7Test(BaseTest):
     """
     create mirror: architectures fixed via config file
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror7 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    runCmd = "aptly mirror create --ignore-signatures mirror7 http://archive.debian.org/debian/ wheezy main contrib"
     configOverride = {"architectures": ["i386", "amd64"]}
 
     def check(self):
@@ -81,9 +81,9 @@ class CreateMirror8Test(BaseTest):
     create mirror: already exists
     """
     fixtureCmds = [
-        "aptly mirror create --ignore-signatures mirror8 http://mirror.yandex.ru/debian/ wheezy main contrib"
+        "aptly mirror create --ignore-signatures mirror8 http://archive.debian.org/debian/ wheezy main contrib"
     ]
-    runCmd = "aptly mirror create --ignore-signatures mirror8 http://mirror.yandex.ru/debian/ wheezy main contrib"
+    runCmd = "aptly mirror create --ignore-signatures mirror8 http://archive.debian.org/debian/ wheezy main contrib"
     expectedCode = 1
 
 
@@ -91,7 +91,7 @@ class CreateMirror9Test(BaseTest):
     """
     create mirror: repo with InRelease verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://archive.debian.org/debian/ wheezy-backports"
     fixtureGpg = True
     requiresGPG1 = True
 
@@ -110,7 +110,7 @@ class CreateMirror10Test(BaseTest):
     """
     create mirror: repo with InRelease verification, failure
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://archive.debian.org/debian-backports/ squeeze-backports"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     expectedCode = 1
@@ -123,7 +123,7 @@ class CreateMirror11Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://archive.debian.org/debian/ wheezy"
     fixtureGpg = True
 
     def outputMatchPrepare(_, s):
@@ -138,7 +138,7 @@ class CreateMirror12Test(BaseTest):
     """
     create mirror: repo with Release+Release.gpg verification, failure
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://archive.debian.org/debian/ wheezy"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     expectedCode = 1
@@ -151,7 +151,7 @@ class CreateMirror13Test(BaseTest):
     """
     create mirror: skip verification using config file
     """
-    runCmd = "aptly mirror create mirror13 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create mirror13 http://archive.debian.org/debian/ wheezy"
     configOverride = {"gpgDisableVerify": True}
 
     def check(self):
@@ -191,14 +191,14 @@ class CreateMirror16Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=source mirror create -ignore-signatures mirror16 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly -architectures=source mirror create -ignore-signatures mirror16 http://archive.debian.org/debian/ wheezy"
 
 
 class CreateMirror17Test(BaseTest):
     """
     create mirror: mirror with sources enabled
     """
-    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-sources mirror17 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-sources mirror17 http://archive.debian.org/debian/ wheezy"
 
     def check(self):
         self.check_output()
@@ -231,7 +231,7 @@ class CreateMirror19Test(BaseTest):
     """
     fixtureGpg = True
 
-    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://security.debian.org/ wheezy/updates main"
+    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://archive.debian.org/debian-security/ wheezy/updates main"
 
     def outputMatchPrepare(_, s):
         return re.sub(r'Signature made .* using', '', s)
@@ -284,7 +284,7 @@ class CreateMirror22Test(BaseTest):
     """
     create mirror: mirror with filter
     """
-    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror22 http://security.debian.org/ wheezy/updates main"
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror22 http://archive.debian.org/debian-security/ wheezy/updates main"
 
     def check(self):
         def removeDates(s):
@@ -298,7 +298,7 @@ class CreateMirror23Test(BaseTest):
     """
     create mirror: mirror with wrong filter
     """
-    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://security.debian.org/ wheezy/updates main"
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://archive.debian.org/debian-security/ wheezy/updates main"
     expectedCode = 1
 
 
@@ -306,7 +306,7 @@ class CreateMirror24Test(BaseTest):
     """
     create mirror: disable config value with option
     """
-    runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://security.debian.org/ wheezy/updates main"
+    runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://archive.debian.org/debian-security/ wheezy/updates main"
     fixtureGpg = True
 
     def outputMatchPrepare(_, s):
@@ -321,7 +321,7 @@ class CreateMirror25Test(BaseTest):
     """
     create mirror: mirror with udebs enabled
     """
-    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-udebs mirror25 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-udebs mirror25 http://archive.debian.org/debian/ wheezy"
 
     def check(self):
         self.check_output()
@@ -366,7 +366,7 @@ class CreateMirror29Test(BaseTest):
     """
     create mirror: repo with InRelease verification (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://mirror.yandex.ru/debian/ wheezy-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://archive.debian.org/debian/ wheezy-backports"
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
 
@@ -378,7 +378,7 @@ class CreateMirror30Test(BaseTest):
     """
     create mirror: repo with InRelease verification, failure  (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://mirror.yandex.ru/debian-backports/ squeeze-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://archive.debian.org/debian-backports/ squeeze-backports"
     configOverride = {"gpgProvider": "internal"}
     gold_processor = BaseTest.expand_environ
     fixtureGpg = False
@@ -392,7 +392,7 @@ class CreateMirror31Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://archive.debian.org/debian/ wheezy"
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
 
@@ -404,7 +404,7 @@ class CreateMirror32Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (gpg2)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://mirror.yandex.ru/debian/ wheezy"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://archive.debian.org/debian/ wheezy"
     fixtureGpg = True
     requiresGPG2 = True
 
