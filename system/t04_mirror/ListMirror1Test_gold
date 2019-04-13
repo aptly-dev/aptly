@@ -2,6 +2,6 @@ List of mirrors:
  * [mirror1]: http://archive.debian.org/debian/ wheezy
  * [mirror2]: http://archive.debian.org/debian/ wheezy [src]
  * [mirror3]: http://archive.debian.org/debian/ wheezy
- * [mirror4]: http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_7.0/ ./
+ * [mirror4]: http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/ ./
 
 To get more information about mirror, run `aptly mirror show <name>`.
