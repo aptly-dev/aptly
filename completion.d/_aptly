@@ -452,6 +452,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                             "-butautomaticupgrades=[set value for ButAutomaticUpgrades field]:$bool"
                             "-distribution=[distribution name to publish]:distribution:($dists)"
                             "-label=[label to publish]:label: "
+                            "-suite=[suite to publish]:suite: "
                             "-notautomatic=[set value for NotAutomatic field]:notautomatic: "
                             "-origin=[origin name to publish]:origin: "
                             ${components_options[@]}
