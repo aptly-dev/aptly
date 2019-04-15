@@ -1056,3 +1056,30 @@ class PublishSnapshot38Test(BaseTest):
         self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/MANIFEST')
 
         self.check_file_contents('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS', "installer_s390x", match_prepare=sorted_processor)
+
+class PublishSnapshot39Test(BaseTest):
+    """
+    publish snapshot: custom suite
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -suite=stable snap1"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot39Test, self).check()
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Release', 'release_i386')
+        self.check_file_contents('public/dists/maverick/main/binary-amd64/Release', 'release_amd64')
+
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/maverick/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
+
+        self.check_file_contents('public/dists/maverick/main/Contents-i386.gz', 'contents_i386', match_prepare=ungzip_if_required)
+        self.check_file_contents('public/dists/maverick/main/Contents-amd64.gz', 'contents_amd64', match_prepare=ungzip_if_required)

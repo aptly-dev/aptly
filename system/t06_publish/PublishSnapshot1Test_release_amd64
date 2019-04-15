@@ -1,5 +1,6 @@
 Origin: LP-PPA-gladky-anton-gnuplot
 Label: . maverick
 Archive: maverick
+Suite: maverick
 Architecture: amd64
 Component: main
