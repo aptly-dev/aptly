@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/h2non/filetype/matchers"
-	"github.com/mkrautz/goar"
+	ar "github.com/mkrautz/goar"
 	"github.com/pkg/errors"
 
 	"github.com/aptly-dev/aptly/pgp"

@@ -300,7 +300,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			}
 
 			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
-			if err != nil {
+			if err2 != nil {
 				c.AbortWithError(404, err2)
 				return
 			}

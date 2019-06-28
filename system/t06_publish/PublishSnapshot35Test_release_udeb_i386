@@ -1,5 +1,5 @@
 Origin: Debian
-Label: . wheezy
-Archive: wheezy
+Label: . stretch
+Archive: stretch
 Architecture: i386
 Component: main

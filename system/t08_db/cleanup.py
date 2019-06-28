@@ -109,8 +109,8 @@ class CleanupDB9Test(BaseTest):
     runCmd = "aptly db cleanup"
 
     def check(self):
-            self.check_output()
-            self.check_cmd_output("aptly publish drop def", "publish_drop", match_prepare=self.expand_environ)
+        self.check_output()
+        self.check_cmd_output("aptly publish drop def", "publish_drop", match_prepare=self.expand_environ)
 
 
 class CleanupDB10Test(BaseTest):

@@ -80,7 +80,7 @@ If you're new to Go, follow [getting started guide](https://golang.org/doc/insta
 initial setup. With Go 1.8+, default `$GOPATH` is `$HOME/go`, so rest of this document assumes that.
 
 Usually `$GOPATH/bin` is appended to your `$PATH` to make it easier to run built binaries, but you might choose
-to prepend it or to skip this test if you're security conscious.  
+to prepend it or to skip this test if you're security conscious.
 
 ### Forking and Cloning
 
@@ -184,9 +184,8 @@ Style checks could be run with:
 
     make check
 
-aptly is using [gometalinter](https://github.com/alecthomas/gometalinter) to run style checks on Go code. Configuration
-for the linter could be found in [linter.json](linter.json) file. Running linters might take considerable amount of time
-unfortunately, but usually warning reported by linters hint at real code issues.
+aptly is using [golangci-lint](https://github.com/golangci/golangci-lint) to run style checks on Go code. Configuration
+for the linter could be found in [.golangci.yml](.golangci.yml) file.
 
 Python code (system tests) are linted with [flake8 tool](https://pypi.python.org/pypi/flake8).
 
