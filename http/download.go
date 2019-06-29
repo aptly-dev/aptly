@@ -188,6 +188,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 			// get out of the loop
 			break
 		}
+		downloader.progress.Printf("Retrying %s...\n", url)
 	}
 
 	// still an error after retrying, giving up
