@@ -48,7 +48,7 @@ class EditMirror5Test(BaseTest):
     edit mirror: remove filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ wheezy/updates main",
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ stretch/updates main",
     ]
     runCmd = "aptly mirror edit -filter= mirror5"
 
@@ -64,20 +64,24 @@ class EditMirror6Test(BaseTest):
     """
     edit mirror: change architectures
     """
-    fixtureDB = True
-    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,s390 wheezy-main"
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=amd64 mirror6 http://mirror.yandex.ru/debian stretch main"
+    ]
+    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,i386 mirror6"
 
     def check(self):
         self.check_output()
-        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+        self.check_cmd_output("aptly mirror show mirror6", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
 
 
 class EditMirror7Test(BaseTest):
     """
     edit mirror: change architectures to missing archs
     """
-    fixtureDB = True
-    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 wheezy-main"
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures -architectures=amd64 stretch http://mirror.yandex.ru/debian stretch main"
+    ]
+    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 stretch"
     expectedCode = 1
 
 
@@ -108,5 +112,5 @@ class EditMirror10Test(BaseTest):
     edit mirror: change archive url
     """
     requiresFTP = True
-    fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian wheezy main"]
+    fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian stretch main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"

@@ -1,0 +1,22 @@
+run:
+  tests: false
+
+
+linters:
+  enable-all: false
+  disable-all: true
+  enable:
+   - govet
+   - golint
+   - gofmt
+   - deadcode
+   - goimports
+   - misspell
+   - ineffassign
+   - staticcheck
+   - varcheck
+   - structcheck
+   - maligned
+   - vetshadow
+   - goconst
+   - interfacer

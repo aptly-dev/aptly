@@ -97,7 +97,7 @@ class UpdateMirror7Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
@@ -125,7 +125,7 @@ class UpdateMirror9Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -140,7 +140,7 @@ class UpdateMirror10Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -157,10 +157,10 @@ class UpdateMirror11Test(BaseTest):
     fixtureGpg = True
     requiresFTP = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 wheezy-main ftp://ftp.ru.debian.org/debian/ wheezy main",
+        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 stretch-main ftp://ftp.ru.debian.org/debian/ stretch main",
     ]
     outputMatchPrepare = filterOutSignature
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy-main"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch-main"
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -173,9 +173,9 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
     ]
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
@@ -265,9 +265,9 @@ class UpdateMirror17Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://mirror.yandex.ru/debian stretch main",
     ]
-    runCmd = "aptly mirror update -ignore-signatures wheezy"
+    runCmd = "aptly mirror update -ignore-signatures stretch"
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -275,15 +275,15 @@ class UpdateMirror17Test(BaseTest):
     def prepare(self):
         super(UpdateMirror17Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
-        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
-                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.62.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
     def check(self):
         super(UpdateMirror17Test, self).check()
         # check pool
-        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_not_exists('pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
 
 
 class UpdateMirror18Test(BaseTest):
@@ -292,9 +292,9 @@ class UpdateMirror18Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev wheezy http://mirror.yandex.ru/debian wheezy main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://mirror.yandex.ru/debian stretch main",
     ]
-    runCmd = "aptly mirror update -ignore-signatures wheezy"
+    runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
 
     def output_processor(self, output):
@@ -303,15 +303,15 @@ class UpdateMirror18Test(BaseTest):
     def prepare(self):
         super(UpdateMirror18Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
-        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
-                    os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+        shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.62.0.1_i386.deb"),
+                    os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
     def check(self):
         super(UpdateMirror18Test, self).check()
         # check pool
-        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists('pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
 
 
 class UpdateMirror19Test(BaseTest):
@@ -336,7 +336,7 @@ class UpdateMirror20Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran3/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     configOverride = {"gpgProvider": "internal"}
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
@@ -374,7 +374,7 @@ class UpdateMirror22Test(BaseTest):
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
 
-    def outputMatchPrepare(_, s):
+    def outputMatchPrepare(self, s):
         return re.sub(r'Signature made .* using|Packages filtered: .* -> 0.', '', s)
 
 
@@ -385,9 +385,9 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://mirror.yandex.ru/debian/ stretch main non-free",
     ]
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg wheezy"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):

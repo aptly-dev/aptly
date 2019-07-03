@@ -47,7 +47,7 @@ func TLSListeners(unsetEnv bool, tlsConfig *tls.Config) ([]net.Listener, error) 
 		return nil, err
 	}
 
-	if tlsConfig != nil && err == nil {
+	if tlsConfig != nil {
 		for i, l := range listeners {
 			// Activate TLS only for TCP sockets
 			if l.Addr().Network() == "tcp" {

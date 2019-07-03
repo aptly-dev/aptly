@@ -93,7 +93,7 @@ class ImportRepo6Test(BaseTest):
     """
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
-        "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ wheezy",
+        "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ stretch",
     ]
     runCmd = "aptly repo import mirror1 repo1 nginx"
     expectedCode = 1

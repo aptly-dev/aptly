@@ -1,20 +1,22 @@
 Name: mirror13
 Archive Root URL: http://mirror.yandex.ru/debian/
-Distribution: wheezy
+Distribution: stretch
 Components: main, contrib, non-free
-Architectures: amd64, armel, armhf, i386, ia64, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc
+Architectures: amd64, arm64, armel, armhf, i386, mips, mips64el, mipsel, ppc64el, s390x
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
-Architectures: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
-Codename: wheezy
+Acquire-By-Hash: yes
+Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
+Changelogs: http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
+Codename: stretch
 Components: main contrib non-free
-Date: Sat, 17 Jun 2017 08:55:32 UTC
-Description:  Debian 7.11 Released 04 June 2016
+Date: Sat, 27 Apr 2019 09:29:22 UTC
+Description:  Debian 9.9 Released 27 April 2019
 
 Label: Debian
 Origin: Debian
-Suite: oldoldstable
-Version: 7.11
+Suite: stable
+Version: 9.9

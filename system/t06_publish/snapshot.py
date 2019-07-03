@@ -896,61 +896,61 @@ class PublishSnapshot35Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
-        "aptly mirror update -keyring=aptlytest.gpg wheezy",
-        "aptly snapshot create wheezy from mirror wheezy",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg stretch",
+        "aptly snapshot create stretch from mirror stretch",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
         super(PublishSnapshot35Test, self).check()
 
-        self.check_exists('public/dists/wheezy/InRelease')
-        self.check_exists('public/dists/wheezy/Release')
-        self.check_exists('public/dists/wheezy/Release.gpg')
+        self.check_exists('public/dists/stretch/InRelease')
+        self.check_exists('public/dists/stretch/Release')
+        self.check_exists('public/dists/stretch/Release.gpg')
 
-        self.check_exists('public/dists/wheezy/main/binary-i386/Release')
-        self.check_exists('public/dists/wheezy/main/binary-i386/Packages')
-        self.check_exists('public/dists/wheezy/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/wheezy/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/wheezy/main/Contents-i386.gz')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-i386/Release')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-i386/Packages')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-i386/Packages.gz')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/wheezy/main/Contents-udeb-i386.gz')
-        self.check_exists('public/dists/wheezy/main/binary-amd64/Release')
-        self.check_exists('public/dists/wheezy/main/binary-amd64/Packages')
-        self.check_exists('public/dists/wheezy/main/binary-amd64/Packages.gz')
-        self.check_exists('public/dists/wheezy/main/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/wheezy/main/Contents-amd64.gz')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-amd64/Release')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-amd64/Packages')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-amd64/Packages.gz')
-        self.check_exists('public/dists/wheezy/main/debian-installer/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/wheezy/main/Contents-udeb-amd64.gz')
-        self.check_not_exists('public/dists/wheezy/main/source/Sources')
-        self.check_not_exists('public/dists/wheezy/main/source/Sources.gz')
-        self.check_not_exists('public/dists/wheezy/main/source/Sources.bz2')
+        self.check_exists('public/dists/stretch/main/binary-i386/Release')
+        self.check_exists('public/dists/stretch/main/binary-i386/Packages')
+        self.check_exists('public/dists/stretch/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/stretch/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/stretch/main/Contents-i386.gz')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-i386/Release')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-i386/Packages')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-i386/Packages.gz')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/stretch/main/Contents-udeb-i386.gz')
+        self.check_exists('public/dists/stretch/main/binary-amd64/Release')
+        self.check_exists('public/dists/stretch/main/binary-amd64/Packages')
+        self.check_exists('public/dists/stretch/main/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/stretch/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/stretch/main/Contents-amd64.gz')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-amd64/Release')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-amd64/Packages')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-amd64/Packages.gz')
+        self.check_exists('public/dists/stretch/main/debian-installer/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/stretch/main/Contents-udeb-amd64.gz')
+        self.check_not_exists('public/dists/stretch/main/source/Sources')
+        self.check_not_exists('public/dists/stretch/main/source/Sources.gz')
+        self.check_not_exists('public/dists/stretch/main/source/Sources.bz2')
 
-        self.check_exists('public/pool/main/g/gnupg/gpgv-udeb_1.4.12-7+deb7u7_amd64.udeb')
-        self.check_exists('public/pool/main/g/gnupg/gpgv-udeb_1.4.12-7+deb7u7_i386.udeb')
-        self.check_exists('public/pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_amd64.deb')
-        self.check_exists('public/pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_i386.deb')
+        self.check_exists('public/pool/main/g/gnupg2/gpgv-udeb_2.1.18-8~deb9u4_amd64.udeb')
+        self.check_exists('public/pool/main/g/gnupg2/gpgv-udeb_2.1.18-8~deb9u4_i386.udeb')
+        self.check_exists('public/pool/main/g/gnupg2/gpgv_2.1.18-8~deb9u4_amd64.deb')
+        self.check_exists('public/pool/main/g/gnupg2/gpgv_2.1.18-8~deb9u4_i386.deb')
 
-        self.check_file_contents('public/dists/wheezy/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/wheezy/main/debian-installer/binary-i386/Packages', 'packages_udeb_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/wheezy/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/wheezy/main/debian-installer/binary-amd64/Packages', 'packages_udeb_amd64', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/stretch/main/binary-i386/Packages', 'packages_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-i386/Packages', 'packages_udeb_i386', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/stretch/main/binary-amd64/Packages', 'packages_amd64', match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-amd64/Packages', 'packages_udeb_amd64', match_prepare=sorted_processor)
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/wheezy/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/stretch/Release', 'release', match_prepare=strip_processor)
 
-        self.check_file_contents('public/dists/wheezy/main/debian-installer/binary-i386/Release', 'release_udeb_i386', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-i386/Release', 'release_udeb_i386', match_prepare=strip_processor)
 
         # verify sums
-        release = self.read_file('public/dists/wheezy/Release').split("\n")
+        release = self.read_file('public/dists/stretch/Release').split("\n")
         release = [l for l in release if l.startswith(" ")]
         pathsSeen = set()
         for l in release:
@@ -963,7 +963,7 @@ class PublishSnapshot35Test(BaseTest):
 
             fileSize = int(fileSize)
 
-            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/wheezy/', path))
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/stretch/', path))
             if fileSize != st.st_size:
                 raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
 
@@ -976,7 +976,7 @@ class PublishSnapshot35Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/wheezy', path)))
+            h.update(self.read_file(os.path.join('public/dists/stretch', path)))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
@@ -1026,12 +1026,12 @@ class PublishSnapshot37Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg)' -with-udebs wheezy http://mirror.yandex.ru/debian/ wheezy main non-free",
-        "aptly mirror update -keyring=aptlytest.gpg wheezy",
-        "aptly mirror update -keyring=aptlytest.gpg wheezy",
-        "aptly snapshot create wheezy from mirror wheezy",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg stretch",
+        "aptly mirror update -keyring=aptlytest.gpg stretch",
+        "aptly snapshot create stretch from mirror stretch",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
 
 
@@ -1041,18 +1041,18 @@ class PublishSnapshot38Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer wheezy http://mirror.yandex.ru/debian/ wheezy main",
-        "aptly mirror update -keyring=aptlytest.gpg wheezy",
-        "aptly snapshot create wheezy from mirror wheezy",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://mirror.yandex.ru/debian/ stretch main",
+        "aptly mirror update -keyring=aptlytest.gpg stretch",
+        "aptly snapshot create stretch from mirror stretch",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec wheezy"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
         super(PublishSnapshot38Test, self).check()
-        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS')
-        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS.gpg')
-        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/generic/debian.exec')
-        self.check_exists('public/dists/wheezy/main/installer-s390x/current/images/MANIFEST')
+        self.check_exists('public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS')
+        self.check_exists('public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS.gpg')
+        self.check_exists('public/dists/stretch/main/installer-s390x/current/images/generic/debian.exec')
+        self.check_exists('public/dists/stretch/main/installer-s390x/current/images/MANIFEST')
 
-        self.check_file_contents('public/dists/wheezy/main/installer-s390x/current/images/SHA256SUMS', "installer_s390x", match_prepare=sorted_processor)
+        self.check_file_contents('public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS', "installer_s390x", match_prepare=sorted_processor)

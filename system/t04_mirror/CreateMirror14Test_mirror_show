@@ -1,6 +1,6 @@
 Name: mirror14
 Archive Root URL: https://cloud.r-project.org/bin/linux/debian/
-Distribution: ./jessie-cran3/
+Distribution: ./jessie-cran35/
 Components: 
 Architectures: 
 Download Sources: no
@@ -9,9 +9,8 @@ Last update: never
 
 Information from release file:
 Architectures: i386 amd64 armel all
-Codename: jessie-cran3
+Codename: jessie-cran35
 Components: main
-Date: Sun, 12 Mar 2017 23:23:14 UTC
 Label: CRAN Backports
 Origin: CRAN
-Suite: jessie-cran3
+Suite: jessie-cran35

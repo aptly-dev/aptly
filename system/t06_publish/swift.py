@@ -12,6 +12,7 @@ class SwiftPublish1Test(SwiftTest):
     fixtureCmds = [
         "aptly repo create -distribution=maverick local-repo",
         "aptly repo add local-repo ${files}",
+        "aptly repo remove local-repo libboost-program-options-dev_1.62.0.1_i386",
     ]
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo swift:test1:"
 
@@ -48,6 +49,7 @@ class SwiftPublish2Test(SwiftTest):
     fixtureCmds = [
         "aptly repo create -distribution=maverick local-repo",
         "aptly repo add local-repo ${files}/",
+        "aptly repo remove local-repo libboost-program-options-dev_1.62.0.1_i386",
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo swift:test1:",
         "aptly repo remove local-repo pyspi"
     ]

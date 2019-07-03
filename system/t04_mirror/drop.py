@@ -6,7 +6,7 @@ class DropMirror1Test(BaseTest):
     drop mirror: regular list
     """
     fixtureCmds = [
-        "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ wheezy",
+        "aptly mirror create --ignore-signatures mirror1 http://mirror.yandex.ru/debian/ stretch",
     ]
     runCmd = "aptly mirror drop mirror1"
 

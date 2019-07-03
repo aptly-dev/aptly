@@ -3,83 +3,244 @@
 
 
 
+
+
+
+
+
+
+
+Architecture: all
+Architecture: all
+Architecture: all
 Architecture: all
 Architecture: i386
 Architecture: i386
 Architecture: i386
-Depends: libbz2-1.0, libc6 (>= 2.4), libreadline6 (>= 6.0), libusb-0.1-4 (>= 2:0.1.12), zlib1g (>= 1:1.1.4), dpkg (>= 1.15.4) | install-info, gpgv
-Depends: libbz2-1.0, libc6 (>= 2.4), zlib1g (>= 1:1.1.4)
-Depends: libc6 (>= 2.4), libcurl3-gnutls (>= 7.16.2), libldap-2.4-2 (>= 2.4.7), gnupg
-Description-Md5: 19709c7fc27595437225fd34d295b347
+Architecture: i386
+Architecture: i386
+Architecture: i386
+Architecture: i386
+Breaks: debsig-verify (<< 0.15), dirmngr (<< 2.1.18-8~deb9u4), gnupg2 (<< 2.1.11-7+exp1), libgnupg-interface-perl (<< 0.52-3), libgnupg-perl (<= 0.19-1), libmail-gnupg-perl (<= 0.22-1), monkeysphere (<< 0.38~), php-crypt-gpg (<= 1.4.1-1), python-apt (<= 1.1.0~beta4), python-gnupg (<< 0.3.8-3), python3-apt (<= 1.1.0~beta4)
+Breaks: gnupg (<< 2.1.14-2~), gnupg2 (<< 2.1.14-2~)
+Breaks: gnupg2 (<< 2.0.21-2), gpgv2 (<< 2.1.11-7+exp1), python-debian (<< 0.1.29)
+Breaks: gnupg2 (<< 2.1.10-2)
+Breaks: gnupg2 (<< 2.1.10-2)
+Depends: adduser, lsb-base (>= 3.2-13), libassuan0 (>= 2.4.0), libc6 (>= 2.15), libgcrypt20 (>= 1.7.0), libgnutls30 (>= 3.5.6), libgpg-error0 (>= 1.21), libksba8 (>= 1.3.4), libldap-2.4-2 (>= 2.4.7), libnpth0 (>= 0.90)
+Depends: gnupg (>= 2.1.18-8~deb9u4)
+Depends: gnupg-agent (= 2.1.18-8~deb9u4), libassuan0 (>= 2.0.1), libbz2-1.0, libc6 (>= 2.15), libgcrypt20 (>= 1.7.0), libgpg-error0 (>= 1.14), libksba8 (>= 1.3.4), libreadline7 (>= 6.0), libsqlite3-0 (>= 3.7.15), zlib1g (>= 1:1.1.4)
+Depends: gnupg-agent (= 2.1.18-8~deb9u4), libassuan0 (>= 2.0.1), libc6 (>= 2.7), libgcrypt20 (>= 1.7.0), libgpg-error0 (>= 1.14), libksba8 (>= 1.3.4), libreadline7 (>= 6.0)
+Depends: gnupg-agent (= 2.1.18-8~deb9u4), libassuan0 (>= 2.2.0), libc6 (>= 2.15), libgcrypt20 (>= 1.7.0), libgpg-error0 (>= 1.14), libksba8 (>= 1.3.4), libnpth0 (>= 0.90), libusb-1.0-0 (>= 2:1.0.9)
+Depends: gpgv (>= 2.1.18-8~deb9u4)
+Depends: libbz2-1.0, libc6 (>= 2.7), libgcrypt20 (>= 1.7.0), libgpg-error0 (>= 1.14), zlib1g (>= 1:1.1.4)
+Depends: pinentry-curses | pinentry, libassuan0 (>= 2.3.0), libc6 (>= 2.15), libgcrypt20 (>= 1.7.0), libgpg-error0 (>= 1.25), libnpth0 (>= 0.90), libreadline7 (>= 6.0)
 Description-Md5: 3f8767984a5f4b323de309446d07435d
-Description-Md5: 55306a4e1e1fd63e577767c1b9f5161c
-Description-Md5: 8bbdb812806fb623e26b7b93f549c74b
+Description-Md5: 4ea8f4f4d6a0a387a4a3aeba3e6cc888
+Description-Md5: 7fad035451f503be001479931e85b925
+Description-Md5: 842ffff693d698ec180bc5b9b7ce7ffa
+Description-Md5: 89b483348e055462163fcb51eb9f4d69
+Description-Md5: 8f75eade9d1c231674b0f42baf637938
+Description-Md5: b00f9e73860378b7bce07e0ad3dd2e88
+Description-Md5: d09741caa0bbe13153a4e4c54325393d
+Description-Md5: e0a75e34d2b98be880e3fca6a5088ca5
+Description-Md5: e6cd72adf0d5f886dd5a174557278b63
+Description-Md5: f3169025ef42efce30c47d3dda21ff8a
+Description: GNU privacy guard - S/MIME version
 Description: GNU privacy guard - a free PGP replacement
-Description: GNU privacy guard - a free PGP replacement (cURL)
+Description: GNU privacy guard - a free PGP replacement (dummy transitional package)
+Description: GNU privacy guard - cryptographic agent
+Description: GNU privacy guard - localization files
+Description: GNU privacy guard - network certificate management service
 Description: GNU privacy guard - signature verification tool
+Description: GNU privacy guard - signature verification tool (dummy transitional package)
 Description: GNU privacy guard - signature verification tool (win32 build)
-Filename: pool/main/g/gnupg/gnupg-curl_1.4.12-7+deb7u7_i386.deb
-Filename: pool/main/g/gnupg/gnupg_1.4.12-7+deb7u7_i386.deb
-Filename: pool/main/g/gnupg/gpgv-win32_1.4.12-7+deb7u7_all.deb
-Filename: pool/main/g/gnupg/gpgv_1.4.12-7+deb7u7_i386.deb
-Homepage: http://www.gnupg.org
-Homepage: http://www.gnupg.org
-Homepage: http://www.gnupg.org
-Homepage: http://www.gnupg.org
-Installed-Size: 1480
-Installed-Size: 401
-Installed-Size: 4613
-Installed-Size: 89
-MD5sum: 5f15f3ac2f586b95ab21c3f83fd1bf35
-MD5sum: 7619869434ee598ba4b1e3de3a48b7a6
-MD5sum: b7456c472a331b1e905712328d25da27
-MD5sum: f892c96687ced1c2adfd8f00d9ca6f5a
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Description: GNU privacy guard - smart card support
+Description: minimal signature verification tool (static build)
+Enhances: gnupg
+Enhances: gnupg, gpgsm, squid
+Enhances: gnupg-agent
+Filename: pool/main/g/gnupg2/dirmngr_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/gnupg-agent_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/gnupg-l10n_2.1.18-8~deb9u4_all.deb
+Filename: pool/main/g/gnupg2/gnupg2_2.1.18-8~deb9u4_all.deb
+Filename: pool/main/g/gnupg2/gnupg_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/gpgsm_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/gpgv-static_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/gpgv-win32_2.1.18-8~deb9u4_all.deb
+Filename: pool/main/g/gnupg2/gpgv2_2.1.18-8~deb9u4_all.deb
+Filename: pool/main/g/gnupg2/gpgv_2.1.18-8~deb9u4_i386.deb
+Filename: pool/main/g/gnupg2/scdaemon_2.1.18-8~deb9u4_i386.deb
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Homepage: https://www.gnupg.org/
+Installed-Size: 1164
+Installed-Size: 1300
+Installed-Size: 1459
+Installed-Size: 2278
+Installed-Size: 2415
+Installed-Size: 309
+Installed-Size: 309
+Installed-Size: 4257
+Installed-Size: 787
+Installed-Size: 792
+Installed-Size: 859
+MD5sum: 193e30e603474bf8077c581ec60f076d
+MD5sum: 2a8ed409177a3513d87847211e546a23
+MD5sum: 3112b2d2e7a9b2ca6d5da595233b45e4
+MD5sum: 559919711bff1dba5d38b3519147c30b
+MD5sum: 715efa2f46e000a16e1f6f50ed59caf3
+MD5sum: 766fbe76bddbc65d3c6ddbda14003039
+MD5sum: 81e122fbf98ddc9375fd1ac7c6a7832f
+MD5sum: a995b9ae089cc7845886ce13e42e8bb7
+MD5sum: ab145cc5660a14f12334121dc3ef76f4
+MD5sum: d9074abf593c6de3bc52430cf0bd50d8
+MD5sum: e41a1a2a1bb112787e34f7af20d845ed
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Multi-Arch: foreign
 Multi-Arch: foreign
 Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Multi-Arch: foreign
+Package: dirmngr
 Package: gnupg
-Package: gnupg-curl
+Package: gnupg-agent
+Package: gnupg-l10n
+Package: gnupg2
+Package: gpgsm
 Package: gpgv
+Package: gpgv-static
 Package: gpgv-win32
+Package: gpgv2
+Package: scdaemon
+Priority: extra
+Priority: extra
 Priority: extra
 Priority: important
 Priority: important
 Priority: optional
-Recommends: libldap-2.4-2 (>= 2.4.7), gnupg-curl
-SHA1: 31e0942b2511a2c73723271163efc0eb29d056ff
-SHA1: 72c9a6c444d8a6e8ec57f2b778c631946def9d1a
-SHA1: 9889f1717f36e00b6143aed530bd3d0c54c116fd
-SHA1: df8a0ef18df0fb86167128ac6c31d6709c2f9c6b
-SHA256: 27760f636f6dbfe387dfbede1131fe7a0dd5fd3b0ab562213193ffa7cfcadfb5
-SHA256: 6898801e3f3c97a30bef1ee50381479b69360a28807fb63fcce4abef4da1aec7
-SHA256: b852d7681ea328bd8b45140973624781e65d0363961d92bcc2ab0bbf1cc6ed52
-SHA256: cff40c87faea248c77de7d9fc50fcbc80631cd1bc8cec2b1033e0db452e08ea6
-SHA512: 6e2f3b4add560a19154717ad4dea1af9e07ef251403c85c87ef5b30e3f8639d74ab8bb1a27b7e4d3346a66f0c9180c70435557caa4e6eded9bd9010f3f5d7123
-SHA512: adda521ac2837bba7bf4e4a6a633f79187dff5ec3806d1bbe97544ac0a00024a41583f70434362755ef33aa788f79c7dc1a0bdb3daaf9a0465d1b90600ba30ee
-SHA512: e1c69691ceb3afb10ad8287e34ef4af75046f99e8aa51d5f15c1e8ac904377ac44023aed1bd7572ebc64c68aca9f99dbd485e13952f6b65e41cf47598af5e03f
-SHA512: e6277d5e08210fc7258fc239d1715657a4bd9a4c3c190e41a0b3e4d101bd3abfd7b5c87ed8111a1f3efec239b27938a42cd25a582a6f9d93fdb28fc9684cf14c
+Priority: optional
+Priority: optional
+Priority: optional
+Priority: optional
+Priority: optional
+Provides: gpg
+Provides: gpg-agent
+Recommends: debian-archive-keyring, debootstrap
+Recommends: dirmngr (= 2.1.18-8~deb9u4)
+Recommends: dirmngr (= 2.1.18-8~deb9u4), gnupg-l10n (= 2.1.18-8~deb9u4)
+Recommends: gnupg (= 2.1.18-8~deb9u4)
+Recommends: gnupg (= 2.1.18-8~deb9u4) | gpgsm
+Replaces: gnupg (<< 2.1.14-2~), gnupg2 (<< 2.1.14-2~)
+Replaces: gnupg2 (<< 2.0.21-2), gpgv2 (<< 2.1.11-7+exp1)
+Replaces: gnupg2 (<< 2.1.10-2)
+Replaces: gnupg2 (<< 2.1.10-2)
+Replaces: gnupg2 (<< 2.1.11-7+exp1)
+SHA1: 04201af8fb7d5161c8b00260d282dfe4c2871977
+SHA1: 097d04443da99f24e6ecd05b1b16c4340c1e0768
+SHA1: 1021b11c9747e6ccaba19f000bba17492e3c10a1
+SHA1: 1f3c3f21f58b7ce82cad8fdd1f280c3bb3c93a39
+SHA1: 4698afbd44e1f6c0534728cbc735c5d6b57fa272
+SHA1: 4831c1d722732dd71cf52c9dd690ff7ff5a00e06
+SHA1: 7f1129f9482d9235e830833eef736ee96d09d791
+SHA1: 8747fd9b76206634a2e7f3f83973c35698fb9f21
+SHA1: deb109c6e61d1d37b1f74d025bb3f19121d72dd9
+SHA1: e60d9d4883c340c6cbe250eebdee4dd450419bec
+SHA1: f8d56cf53e5b72212d154af0ad3a173f91db6dfa
+SHA256: 16e247a1267007801a6078910fcf20304b4607e27786f16acd17a619ed4bfd04
+SHA256: 1b004d4e6c16ba2d66d224dfa31c99df6f660298e68c713066d3f4b6a946b310
+SHA256: 1c7b8057981f13630d4266ebbb64cb76645e51b5a9d95e7ecf74d6a1097a2122
+SHA256: 36240327d6161e8bb17ee175f4fdd4743f851f17695d882f7a18341d9c9fda2b
+SHA256: 3c3d588a50b856c52c8fce01bf7547e43a67e786329354e27327715b49958d8a
+SHA256: 54701b363b17d165a69c3dca30c3edf4f0a6489b8b7e18e652b4d315164df6b7
+SHA256: 6f95efd8d4d87177dab2004c29a269d4d7bd73dc8141f588ef8cc88d9b6ffbf4
+SHA256: 8b7ea7b25a99c88430c6ccf9fae4ad8178612efb18a9390a3126d6a462d5c1b7
+SHA256: bda2a271d27507977f68ed93d87bb20b8c7927a8eecd2e7ae6249ba0658d9cba
+SHA256: bfd41d3ef52914c407acc6aa1351aa8ea002bfe3fa37ed95dd80135078b7d811
+SHA256: e07d25e76de61ea86425e8bbee44860af83df42ca6b2e02db3cec41af52edfb3
+SHA512: 5797786d8cfc852d32e7fc9bd1cea7147e346512fb62357ba3c6cdb9dfd06538b365ccf40aab56ceac9102573894b145b58ca40cfe60e74b542412f7d703e283
+SHA512: 61addd38aa6c0843a0b1d8a4698e88b690ff1b5acb035c0d7b449a28496b8d9226aeff16eab0826044d783c4988d36f594f543511966567d97f9ecee58ff5624
+SHA512: 6573fc00bab150f9f2a37033b463c98df5273c038928ea548686973b901dcb7edf1fc7579f938c4bb0e4d34fd1bed43ff2e64ac38869c94645aa9692c6dc50c7
+SHA512: 7224149ad8d4145487ba297da501e70a95fbcbf1c7cee4db8999da86e31dc34af8b9c6b7b4acce89504225d3096439f22a4442b7431d2a44a5040decdd5cfa90
+SHA512: 924caf29c19f0ca20c62ad5bdb331c07791e4a63969afe48424d36025804d2136ef7c7864c9f358c22d9f80bba00a3184fe7711799ae358159405c0c0f0adaac
+SHA512: 95fd31e0079252c83441148a17e113c3cdafbaf41cc09059d1462a9c6122aa3a284f07936b2a8090b807a0e5e4068dd6bb4f6f6b582d85427152fa837c26157d
+SHA512: aacedbf56dfc029f4ba82587ba34f77ff131ad42d3b01fbf84589e173d904bc4e6897ea198821b6fdb8927527bbc2dea53fbccc5be973908c9bd837a84dbd530
+SHA512: b429c3e87b7e07f2399e44a9972babb0126a41e8ff56e29ec0465931787e6b20cb8c3d6dfec85b7c88f80604f8c91cb00c320c79a46e76b7353f99981a7809c5
+SHA512: d86889a5b527fb03ad558736f6baf53697e7e9dc7de60e92bf46312e0a169f0b353ca5ffa98ac244193bc084a9293b989d6c77be5b0fb550a9a31e342594f69a
+SHA512: f077b15446aa7201eea023fc3085288b3e4eb4960bb378dfe1bd30b014419351dcb6037a7c758110e91bd71a720ce23ba3c7204019fe09f51c36bc08d83d42f7
+SHA512: f660d9b547d965c416d518dfdf9fa5b107576431b8f5ebc2d689cc75ee0769d57536d201a55c93bd84e0b37209cbd0723d0328c2e98952c9ac80b28904637736
 Section: utils
 Section: utils
 Section: utils
 Section: utils
-Size: 1938694
-Size: 221686
-Size: 617064
-Size: 63192
-Source: gnupg
-Source: gnupg
-Source: gnupg
+Section: utils
+Section: utils
+Section: utils
+Section: utils
+Section: utils
+Section: utils
+Section: utils
+Size: 1137222
+Size: 1174722
+Size: 299380
+Size: 299456
+Size: 491502
+Size: 499700
+Size: 522488
+Size: 576192
+Size: 622058
+Size: 738932
+Size: 893032
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Source: gnupg2
+Suggests: dbus-user-session, libpam-systemd, pinentry-gnome3, scdaemon
+Suggests: dbus-user-session, libpam-systemd, pinentry-gnome3, tor
 Suggests: gnupg
-Suggests: gnupg-doc, xloadimage | imagemagick | eog, libpcsclite1
+Suggests: parcimonie, xloadimage
 Suggests: wine
-Tag: implemented-in::c, interface::commandline, network::client, protocol::http, role::plugin, role::program, scope::utility, security::authentication, security::cryptography, suite::gnu, use::checking, works-with::file, works-with::text
+Tag: implemented-in::c, interface::commandline, network::client, role::program, security::cryptography, suite::gnu, works-with::pim
 Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::authentication, security::cryptography, security::privacy, suite::gnu, use::checking, works-with::file, works-with::text
 Tag: implemented-in::c, interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::checking
-Version: 1.4.12-7+deb7u7
-Version: 1.4.12-7+deb7u7
-Version: 1.4.12-7+deb7u7
-Version: 1.4.12-7+deb7u7
+Tag: interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu
+Tag: interface::commandline, role::program, scope::utility, security::cryptography, suite::gnu, use::converting
+Tag: interface::daemon, network::server, protocol::ldap, role::program, security::cryptography, use::downloading, works-with::db
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
+Version: 2.1.18-8~deb9u4
