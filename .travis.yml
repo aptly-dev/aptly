@@ -92,3 +92,9 @@ deploy:
     on:
       branch: master
       condition: "$DEPLOY_BINARIES = yes"
+  - provider: script
+    script: bash upload-artifacts.sh release
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: "$DEPLOY_BINARIES = yes"
