@@ -337,15 +337,16 @@ class CreateMirror26Test(BaseTest):
     expectedCode = 1
 
 
-class CreateMirror27Test(BaseTest):
-    """
-    create mirror: component with slashes, no stripping
-    """
-    runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
+# TODO: disabled as linux.dell.com doesn't resolve
+# class CreateMirror27Test(BaseTest):
+#     """
+#     create mirror: component with slashes, no stripping
+#     """
+#     runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
 
-    def check(self):
-        self.check_output()
-        self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
+#     def check(self):
+#         self.check_output()
+#         self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
 
 
 class CreateMirror28Test(BaseTest):
