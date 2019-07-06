@@ -33,7 +33,7 @@ if [[ "$1" = "nightly" ]]; then
 fi
 
 if [[ "$1" = "release" ]]; then
-    aptly_repository=aptly-repository
+    aptly_repository=aptly-release
     aptly_snapshot=aptly-$version
     aptly_published=s3:repo.aptly.info:./squeeze
 
