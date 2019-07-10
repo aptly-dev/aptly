@@ -14,7 +14,8 @@ type GPGVersion int
 const (
 	GPG1x      GPGVersion = 1
 	GPG20x     GPGVersion = 2
-	GPG21xPlus GPGVersion = 3
+	GPG21x     GPGVersion = 3
+	GPG22xPlus GPGVersion = 4
 )
 
 var gpgVersionRegex = regexp.MustCompile(`\(GnuPG\) (\d)\.(\d)`)
@@ -135,13 +136,15 @@ func cliVersionCheck(cmd string, marker string) (result bool, version GPGVersion
 	strOutput := string(output)
 	result = strings.Contains(strOutput, marker)
 
-	version = GPG21xPlus
+	version = GPG22xPlus
 	matches := gpgVersionRegex.FindStringSubmatch(strOutput)
 	if matches != nil {
 		if matches[1] == "1" {
 			version = GPG1x
 		} else if matches[1] == "2" && matches[2] == "0" {
 			version = GPG20x
+		} else if matches[1] == "2" && matches[2] == "1" {
+			version = GPG21x
 		}
 	}
 

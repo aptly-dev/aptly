@@ -158,6 +158,9 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 	if err != nil {
 		c.Skip(err.Error())
 	}
+	if ver == GPG21x {
+		c.Skip("skipping sign test on GnuPG 2.1.x, due to loopback pinentry mode troubles")
+	}
 
 	// import private keys into gpg2, they're stored outside of keyring files
 	for _, item := range []struct {
@@ -172,11 +175,11 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 			continue
 		}
 
-		args := []string{"--import", "--no-default-keyring"}
+		args := []string{"--import", "--no-default-keyring", "--batch"}
 
 		if item.suffix == "_passprhase" {
-			args = append(args, "--passphrase", "verysecret", "--no-tty", "--batch")
-			if ver == GPG21xPlus {
+			args = append(args, "--passphrase", "verysecret", "--no-tty")
+			if ver >= GPG21x {
 				args = append(args, "--pinentry-mode", "loopback")
 			}
 		}
@@ -190,7 +193,7 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 	// import public keys into gpg2
 	// we can't use pre-built keyrings as gpg 2.0.x and 2.1+ have different keyring formats
 	for _, suffix := range []string{"", "_passphrase"} {
-		output, err := exec.Command(gpg, "--no-default-keyring", "--keyring", "./keyrings/aptly2"+suffix+".gpg",
+		output, err := exec.Command(gpg, "--no-default-keyring", "--batch", "--keyring", "./keyrings/aptly2"+suffix+".gpg",
 			"--import", "keyrings/aptly2"+suffix+".pub.armor").CombinedOutput()
 		c.Log(string(output))
 		c.Check(err, IsNil)
