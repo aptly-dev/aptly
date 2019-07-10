@@ -17,6 +17,11 @@ for file in $packages; do
 done
 
 if [[ "$1" = "nightly" ]]; then
+    if echo "$version" | grep -vq "+"; then
+       # skip nightly when on release tag
+       exit 0
+    fi
+
     aptly_repository=aptly-nightly
     aptly_published=s3:repo.aptly.info:./nightly
 
