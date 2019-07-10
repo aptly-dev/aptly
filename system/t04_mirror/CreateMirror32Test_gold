@@ -1,9 +1,8 @@
 Downloading http://mirror.yandex.ru/debian/dists/stretch/InRelease...
 Downloading http://mirror.yandex.ru/debian/dists/stretch/Release...
 Downloading http://mirror.yandex.ru/debian/dists/stretch/Release.gpg...
-gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
+gpgv: WARNING: multiple signatures detected.  Only the first will be checked.
 gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
-gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
 
 Mirror [mirror32]: http://mirror.yandex.ru/debian/ stretch successfully added.
 You can run 'aptly mirror update mirror32' to download repository contents.

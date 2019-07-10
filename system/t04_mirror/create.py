@@ -103,7 +103,8 @@ class CreateMirror9Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror9", "mirror_show", match_prepare=removeDates)
+        self.check_cmd_output("aptly mirror show mirror9",
+                              "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror10Test(BaseTest):
@@ -174,7 +175,8 @@ class CreateMirror14Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror14", "mirror_show", match_prepare=removeDates)
+        self.check_cmd_output("aptly mirror show mirror14",
+                              "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror15Test(BaseTest):
@@ -241,7 +243,8 @@ class CreateMirror19Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror19", "mirror_show", match_prepare=removeDates)
+        self.check_cmd_output("aptly mirror show mirror19",
+                              "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror20Test(BaseTest):
@@ -256,7 +259,8 @@ class CreateMirror20Test(BaseTest):
 
     def outputMatchPrepare(self, s):
         return s.replace('getsockopt: ', '').replace('connect: ', ''). \
-            replace('proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137')
+            replace('proxyconnect tcp',
+                    'http: error connecting to proxy http://127.0.0.1:3137')
 
 
 class CreateMirror21Test(BaseTest):
@@ -277,7 +281,8 @@ class CreateMirror21Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror21", "mirror_show", match_prepare=lambda s: removeSHA512(removeDates(s)))
+        self.check_cmd_output("aptly mirror show mirror21", "mirror_show",
+                              match_prepare=lambda s: removeSHA512(removeDates(s)))
 
 
 class CreateMirror22Test(BaseTest):
@@ -291,7 +296,8 @@ class CreateMirror22Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror22", "mirror_show", match_prepare=removeDates)
+        self.check_cmd_output("aptly mirror show mirror22",
+                              "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror23Test(BaseTest):
@@ -337,16 +343,15 @@ class CreateMirror26Test(BaseTest):
     expectedCode = 1
 
 
-# TODO: disabled as linux.dell.com doesn't resolve
-# class CreateMirror27Test(BaseTest):
-#     """
-#     create mirror: component with slashes, no stripping
-#     """
-#     runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
+class CreateMirror27Test(BaseTest):
+    """
+    create mirror: component with slashes, no stripping
+    """
+    runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
 
-#     def check(self):
-#         self.check_output()
-#         self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
 
 
 class CreateMirror28Test(BaseTest):
@@ -360,7 +365,8 @@ class CreateMirror28Test(BaseTest):
             return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
 
         self.check_output()
-        self.check_cmd_output("aptly mirror show mirror28", "mirror_show", match_prepare=removeDates)
+        self.check_cmd_output("aptly mirror show mirror28",
+                              "mirror_show", match_prepare=removeDates)
 
 
 class CreateMirror29Test(BaseTest):
