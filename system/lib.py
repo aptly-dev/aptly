@@ -39,8 +39,8 @@ class FileHTTPServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         words = filter(None, words)
         path = self.rootPath
         for word in words:
-            drive, word = os.path.splitdrive(word)
-            head, word = os.path.split(word)
+            _, word = os.path.splitdrive(word)
+            _, word = os.path.split(word)
             if word in (os.curdir, os.pardir):
                 continue
             path = os.path.join(path, word)
@@ -138,7 +138,8 @@ class BaseTest(object):
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly.conf")):
             os.remove(os.path.join(os.environ["HOME"], ".aptly.conf"))
         if os.path.exists(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg")):
-            os.remove(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
+            os.remove(os.path.join(
+                os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
 
     def prepare_default_config(self):
         cfg = self.configFile.copy()
@@ -168,18 +169,21 @@ class BaseTest(object):
     def prepare_fixture(self):
         if self.fixturePool:
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
-            os.symlink(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"))
+            os.symlink(self.fixturePoolDir, os.path.join(
+                os.environ["HOME"], ".aptly", "pool"))
 
         if self.fixturePoolCopy:
             os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0755)
-            shutil.copytree(self.fixturePoolDir, os.path.join(os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
+            shutil.copytree(self.fixturePoolDir, os.path.join(
+                os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
-            shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], ".aptly", "db"))
+            shutil.copytree(self.fixtureDBDir, os.path.join(
+                os.environ["HOME"], ".aptly", "db"))
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
-                                                     self.fixtureWebServer))
+                                                                  self.fixtureWebServer))
 
         if self.requiresGPG2:
             self.run_cmd([
@@ -195,7 +199,8 @@ class BaseTest(object):
                 self.run_cmd(cmd)
 
     def run(self):
-        self.output = self.output_processor(self.run_cmd(self.runCmd, self.expectedCode))
+        self.output = self.output_processor(
+            self.run_cmd(self.runCmd, self.expectedCode))
 
     def _start_process(self, command, stderr=subprocess.STDOUT, stdout=None):
         if not hasattr(command, "__iter__"):
@@ -223,10 +228,12 @@ class BaseTest(object):
             output, _ = proc.communicate()
             if expected_code is not None:
                 if proc.returncode != expected_code:
-                    raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, expected_code, output))
+                    raise Exception("exit code %d != %d (output: %s)" % (
+                        proc.returncode, expected_code, output))
             return output
         except Exception, e:
-            raise Exception("Running command %s failed: %s" % (command, str(e)))
+            raise Exception("Running command %s failed: %s" %
+                            (command, str(e)))
 
     def gold_processor(self, gold):
         return gold
@@ -245,7 +252,8 @@ class BaseTest(object):
 
     def check_output(self):
         try:
-            self.verify_match(self.get_gold(), self.output, match_prepare=self.outputMatchPrepare)
+            self.verify_match(self.get_gold(), self.output,
+                              match_prepare=self.outputMatchPrepare)
         except:  # noqa: E722
             if self.captureResults:
                 if self.outputMatchPrepare is not None:
@@ -279,7 +287,8 @@ class BaseTest(object):
         contents = self.read_file(path)
         try:
 
-            self.verify_match(self.get_gold(gold_name), contents, match_prepare=match_prepare)
+            self.verify_match(self.get_gold(gold_name),
+                              contents, match_prepare=match_prepare)
         except:  # noqa: E722
             if self.captureResults:
                 if match_prepare is not None:
@@ -334,7 +343,8 @@ class BaseTest(object):
             if k not in b:
                 diff += "unexpected key '%s'\n" % (k,)
             elif b[k] != v:
-                diff += "wrong value '%s' for key '%s', expected '%s'\n" % (v, k, b[k])
+                diff += "wrong value '%s' for key '%s', expected '%s'\n" % (
+                    v, k, b[k])
         if diff:
             raise Exception("content doesn't match:\n" + diff)
 
@@ -344,7 +354,8 @@ class BaseTest(object):
             b = match_prepare(b)
 
         if a != b:
-            diff = "".join(difflib.unified_diff([l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
+            diff = "".join(difflib.unified_diff(
+                [l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
 
             raise Exception("content doesn't match:\n" + diff + "\n")
 
@@ -357,7 +368,8 @@ class BaseTest(object):
 
     def start_webserver(self, directory):
         FileHTTPServerRequestHandler.rootPath = directory
-        self.webserver = ThreadedTCPServer(("localhost", 0), FileHTTPServerRequestHandler)
+        self.webserver = ThreadedTCPServer(
+            ("localhost", 0), FileHTTPServerRequestHandler)
 
         server_thread = threading.Thread(target=self.webserver.serve_forever)
         server_thread.daemon = True
