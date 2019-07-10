@@ -2,9 +2,13 @@ Downloading http://mirror.yandex.ru/debian/dists/stretch-backports/InRelease...
 
 gpgv:  RSA key ID 2B90D010
 
+gpgv:  RSA key ID B7D453EC
+
 Downloading http://mirror.yandex.ru/debian/dists/stretch-backports/Release...
 Downloading http://mirror.yandex.ru/debian/dists/stretch-backports/Release.gpg...
 
 gpgv:  RSA key ID 2B90D010
+
+gpgv:  RSA key ID B7D453EC
 
 ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

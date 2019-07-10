@@ -13,10 +13,10 @@ Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
 Changelogs: http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
 Codename: stretch
 Components: main contrib non-free
-Date: Sat, 27 Apr 2019 09:29:22 UTC
+Date: Sat, 06 Jul 2019 09:10:16 UTC
 Description:  Debian 9.9 Released 27 April 2019
 
 Label: Debian
 Origin: Debian
-Suite: stable
+Suite: oldstable
 Version: 9.9

@@ -2,10 +2,7 @@ Downloading http://mirror.yandex.ru/debian/dists/stretch/InRelease...
 Downloading http://mirror.yandex.ru/debian/dists/stretch/Release...
 Downloading http://mirror.yandex.ru/debian/dists/stretch/Release.gpg...
 
-gpgv:  RSA key ID 46925553
-
+gpgv: WARNING: multiple signatures detected.  Only the first will be checked.
 gpgv:  RSA key ID 2B90D010
-
-gpgv:  RSA key ID 1A7B6500
 
 ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

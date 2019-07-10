@@ -21,9 +21,6 @@ Downloading http://mirror.yandex.ru/debian/dists/stretch/non-free/binary-s390x/P
 Downloading http://mirror.yandex.ru/debian/dists/stretch/non-free/installer-s390x/current/images/SHA256SUMS...
 Mirror `stretch` has been successfully updated.
 Packages filtered: 49279 -> 1.
-gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
-gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
 gpgv:  RSA key ID 2B90D010
-gpgv:  RSA key ID 46925553
-gpgv:  RSA key ID 1A7B6500
+gpgv: WARNING: multiple signatures detected.  Only the first will be checked.
