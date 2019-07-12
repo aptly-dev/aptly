@@ -15,7 +15,17 @@
       "output_token": "NextToken",
       "limit_key": "MaxResults"
     },
+    "ListMailboxPermissions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults"
+    },
     "ListOrganizations": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults"
+    },
+    "ListResourceDelegates": {
       "input_token": "NextToken",
       "output_token": "NextToken",
       "limit_key": "MaxResults"

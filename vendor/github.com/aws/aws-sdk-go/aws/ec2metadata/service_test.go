@@ -13,8 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/awstesting"
 	"github.com/aws/aws-sdk-go/awstesting/unit"
+	"github.com/aws/aws-sdk-go/internal/sdktesting"
 )
 
 func TestClientOverrideDefaultHTTPClientTimeout(t *testing.T) {
@@ -80,12 +80,14 @@ func TestClientOverrideDefaultHTTPClientTimeoutRaceWithTransport(t *testing.T) {
 }
 
 func TestClientDisableIMDS(t *testing.T) {
-	env := awstesting.StashEnv()
-	defer awstesting.PopEnv(env)
+	restoreEnvFn := sdktesting.StashEnv()
+	defer restoreEnvFn()
 
 	os.Setenv("AWS_EC2_METADATA_DISABLED", "true")
 
-	svc := ec2metadata.New(unit.Session)
+	svc := ec2metadata.New(unit.Session, &aws.Config{
+		LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
+	})
 	resp, err := svc.Region()
 	if err == nil {
 		t.Fatalf("expect error, got none")

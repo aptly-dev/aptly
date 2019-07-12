@@ -3,11 +3,12 @@ package session
 import (
 	"fmt"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/go-ini/ini"
-	"github.com/stretchr/testify/assert"
+	"github.com/aws/aws-sdk-go/internal/ini"
 )
 
 var (
@@ -124,23 +125,100 @@ func TestLoadSharedConfig(t *testing.T) {
 			Profile:   "profile_name",
 			Err:       SharedConfigLoadError{Filename: filepath.Join("testdata", "shared_config_invalid_ini")},
 		},
+		{
+			Filenames: []string{testConfigOtherFilename, testConfigFilename},
+			Profile:   "assume_role_with_credential_source",
+			Expected: sharedConfig{
+				AssumeRole: assumeRoleConfig{
+					RoleARN:          "assume_role_with_credential_source_role_arn",
+					CredentialSource: credSourceEc2Metadata,
+				},
+			},
+		},
+		{
+			Filenames: []string{testConfigOtherFilename, testConfigFilename},
+			Profile:   "multiple_assume_role",
+			Expected: sharedConfig{
+				AssumeRole: assumeRoleConfig{
+					RoleARN:       "multiple_assume_role_role_arn",
+					SourceProfile: "assume_role",
+				},
+				AssumeRoleSource: &sharedConfig{
+					AssumeRole: assumeRoleConfig{
+						RoleARN:       "assume_role_role_arn",
+						SourceProfile: "complete_creds",
+					},
+					AssumeRoleSource: &sharedConfig{
+						Creds: credentials.Value{
+							AccessKeyID:     "complete_creds_akid",
+							SecretAccessKey: "complete_creds_secret",
+							ProviderName:    fmt.Sprintf("SharedConfigCredentials: %s", testConfigFilename),
+						},
+					},
+				},
+			},
+		},
+		{
+			Filenames: []string{testConfigOtherFilename, testConfigFilename},
+			Profile:   "multiple_assume_role_with_credential_source",
+			Expected: sharedConfig{
+				AssumeRole: assumeRoleConfig{
+					RoleARN:       "multiple_assume_role_with_credential_source_role_arn",
+					SourceProfile: "assume_role_with_credential_source",
+				},
+				AssumeRoleSource: &sharedConfig{
+					AssumeRole: assumeRoleConfig{
+						RoleARN:          "assume_role_with_credential_source_role_arn",
+						CredentialSource: credSourceEc2Metadata,
+					},
+				},
+			},
+		},
+		{
+			Filenames: []string{testConfigOtherFilename, testConfigFilename},
+			Profile:   "multiple_assume_role_with_credential_source2",
+			Expected: sharedConfig{
+				AssumeRole: assumeRoleConfig{
+					RoleARN:       "multiple_assume_role_with_credential_source2_role_arn",
+					SourceProfile: "multiple_assume_role_with_credential_source",
+				},
+				AssumeRoleSource: &sharedConfig{
+					AssumeRole: assumeRoleConfig{
+						RoleARN:       "multiple_assume_role_with_credential_source_role_arn",
+						SourceProfile: "assume_role_with_credential_source",
+					},
+					AssumeRoleSource: &sharedConfig{
+						AssumeRole: assumeRoleConfig{
+							RoleARN:          "assume_role_with_credential_source_role_arn",
+							CredentialSource: credSourceEc2Metadata,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for i, c := range cases {
 		cfg, err := loadSharedConfig(c.Profile, c.Filenames)
 		if c.Err != nil {
-			assert.Contains(t, err.Error(), c.Err.Error(), "expected error, %d", i)
+			if e, a := c.Err.Error(), err.Error(); !strings.Contains(a, e) {
+				t.Errorf("%d, expect %v, to contain %v", i, e, a)
+			}
 			continue
 		}
 
-		assert.NoError(t, err, "unexpected error, %d", i)
-		assert.Equal(t, c.Expected, cfg, "not equal, %d", i)
+		if err != nil {
+			t.Errorf("%d, expect nil, %v", i, err)
+		}
+		if e, a := c.Expected, cfg; !reflect.DeepEqual(e, a) {
+			t.Errorf("%d, expect %v, got %v", i, e, a)
+		}
 	}
 }
 
 func TestLoadSharedConfigFromFile(t *testing.T) {
 	filename := testConfigFilename
-	f, err := ini.Load(filename)
+	f, err := ini.OpenFile(filename)
 	if err != nil {
 		t.Fatalf("failed to load test config file, %s, %v", filename, err)
 	}
@@ -233,12 +311,18 @@ func TestLoadSharedConfigFromFile(t *testing.T) {
 
 		err := cfg.setFromIniFile(c.Profile, iniFile)
 		if c.Err != nil {
-			assert.Contains(t, err.Error(), c.Err.Error(), "expected error, %d", i)
+			if e, a := c.Err.Error(), err.Error(); !strings.Contains(a, e) {
+				t.Errorf("%d, expect %v, to contain %v", i, e, a)
+			}
 			continue
 		}
 
-		assert.NoError(t, err, "unexpected error, %d", i)
-		assert.Equal(t, c.Expected, cfg, "not equal, %d", i)
+		if err != nil {
+			t.Errorf("%d, expect nil, %v", i, err)
+		}
+		if e, a := c.Expected, cfg; !reflect.DeepEqual(e, a) {
+			t.Errorf("%d, expect %v, got %v", i, e, a)
+		}
 	}
 }
 
@@ -264,11 +348,17 @@ func TestLoadSharedConfigIniFiles(t *testing.T) {
 
 	for i, c := range cases {
 		files, err := loadSharedConfigIniFiles(c.Filenames)
-		assert.NoError(t, err, "unexpected error, %d", i)
-		assert.Equal(t, len(c.Expected), len(files), "expected num files, %d", i)
+		if err != nil {
+			t.Errorf("%d, expect nil, %v", i, err)
+		}
+		if e, a := len(c.Expected), len(files); e != a {
+			t.Errorf("expect %v, got %v", e, a)
+		}
 
 		for i, expectedFile := range c.Expected {
-			assert.Equal(t, expectedFile.Filename, files[i].Filename)
+			if e, a := expectedFile.Filename, files[i].Filename; e != a {
+				t.Errorf("expect %v, got %v", e, a)
+			}
 		}
 	}
 }

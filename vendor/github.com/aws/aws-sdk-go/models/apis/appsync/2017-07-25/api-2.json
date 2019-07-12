@@ -7,6 +7,7 @@
     "protocol":"rest-json",
     "serviceAbbreviation":"AWSAppSync",
     "serviceFullName":"AWS AppSync",
+    "serviceId":"AppSync",
     "signatureVersion":"v4",
     "signingName":"appsync",
     "uid":"appsync-2017-07-25"
@@ -47,6 +48,21 @@
         {"shape":"InternalFailureException"}
       ]
     },
+    "CreateFunction":{
+      "name":"CreateFunction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/apis/{apiId}/functions"
+      },
+      "input":{"shape":"CreateFunctionRequest"},
+      "output":{"shape":"CreateFunctionResponse"},
+      "errors":[
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"}
+      ]
+    },
     "CreateGraphqlApi":{
       "name":"CreateGraphqlApi",
       "http":{
@@ -61,7 +77,6 @@
         {"shape":"ConcurrentModificationException"},
         {"shape":"UnauthorizedException"},
         {"shape":"InternalFailureException"},
-        {"shape":"LimitExceededException"},
         {"shape":"ApiLimitExceededException"}
       ]
     },
@@ -127,6 +142,21 @@
         {"shape":"InternalFailureException"}
       ]
     },
+    "DeleteFunction":{
+      "name":"DeleteFunction",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/apis/{apiId}/functions/{functionId}"
+      },
+      "input":{"shape":"DeleteFunctionRequest"},
+      "output":{"shape":"DeleteFunctionResponse"},
+      "errors":[
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"}
+      ]
+    },
     "DeleteGraphqlApi":{
       "name":"DeleteGraphqlApi",
       "http":{
@@ -140,7 +170,8 @@
         {"shape":"ConcurrentModificationException"},
         {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
-        {"shape":"InternalFailureException"}
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
       ]
     },
     "DeleteResolver":{
@@ -190,6 +221,20 @@
         {"shape":"InternalFailureException"}
       ]
     },
+    "GetFunction":{
+      "name":"GetFunction",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/apis/{apiId}/functions/{functionId}"
+      },
+      "input":{"shape":"GetFunctionRequest"},
+      "output":{"shape":"GetFunctionResponse"},
+      "errors":[
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
     "GetGraphqlApi":{
       "name":"GetGraphqlApi",
       "http":{
@@ -202,7 +247,8 @@
         {"shape":"BadRequestException"},
         {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
-        {"shape":"InternalFailureException"}
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
       ]
     },
     "GetIntrospectionSchema":{
@@ -295,6 +341,21 @@
         {"shape":"InternalFailureException"}
       ]
     },
+    "ListFunctions":{
+      "name":"ListFunctions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/apis/{apiId}/functions"
+      },
+      "input":{"shape":"ListFunctionsRequest"},
+      "output":{"shape":"ListFunctionsResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"}
+      ]
+    },
     "ListGraphqlApis":{
       "name":"ListGraphqlApis",
       "http":{
@@ -322,6 +383,38 @@
         {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
         {"shape":"InternalFailureException"}
+      ]
+    },
+    "ListResolversByFunction":{
+      "name":"ListResolversByFunction",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/apis/{apiId}/functions/{functionId}/resolvers"
+      },
+      "input":{"shape":"ListResolversByFunctionRequest"},
+      "output":{"shape":"ListResolversByFunctionResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"}
+      ]
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
       ]
     },
     "ListTypes":{
@@ -354,6 +447,40 @@
         {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
         {"shape":"InternalFailureException"}
+      ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
       ]
     },
     "UpdateApiKey":{
@@ -389,6 +516,21 @@
         {"shape":"InternalFailureException"}
       ]
     },
+    "UpdateFunction":{
+      "name":"UpdateFunction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/apis/{apiId}/functions/{functionId}"
+      },
+      "input":{"shape":"UpdateFunctionRequest"},
+      "output":{"shape":"UpdateFunctionResponse"},
+      "errors":[
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalFailureException"}
+      ]
+    },
     "UpdateGraphqlApi":{
       "name":"UpdateGraphqlApi",
       "http":{
@@ -402,7 +544,8 @@
         {"shape":"ConcurrentModificationException"},
         {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
-        {"shape":"InternalFailureException"}
+        {"shape":"InternalFailureException"},
+        {"shape":"AccessDeniedException"}
       ]
     },
     "UpdateResolver":{
@@ -438,6 +581,26 @@
     }
   },
   "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "AdditionalAuthenticationProvider":{
+      "type":"structure",
+      "members":{
+        "authenticationType":{"shape":"AuthenticationType"},
+        "openIDConnectConfig":{"shape":"OpenIDConnectConfig"},
+        "userPoolConfig":{"shape":"CognitoUserPoolConfig"}
+      }
+    },
+    "AdditionalAuthenticationProviders":{
+      "type":"list",
+      "member":{"shape":"AdditionalAuthenticationProvider"}
+    },
     "ApiKey":{
       "type":"structure",
       "members":{
@@ -479,8 +642,28 @@
       "enum":[
         "API_KEY",
         "AWS_IAM",
-        "AMAZON_COGNITO_USER_POOLS"
+        "AMAZON_COGNITO_USER_POOLS",
+        "OPENID_CONNECT"
       ]
+    },
+    "AuthorizationConfig":{
+      "type":"structure",
+      "required":["authorizationType"],
+      "members":{
+        "authorizationType":{"shape":"AuthorizationType"},
+        "awsIamConfig":{"shape":"AwsIamConfig"}
+      }
+    },
+    "AuthorizationType":{
+      "type":"string",
+      "enum":["AWS_IAM"]
+    },
+    "AwsIamConfig":{
+      "type":"structure",
+      "members":{
+        "signingRegion":{"shape":"String"},
+        "signingServiceName":{"shape":"String"}
+      }
     },
     "BadRequestException":{
       "type":"structure",
@@ -492,6 +675,19 @@
     },
     "Blob":{"type":"blob"},
     "Boolean":{"type":"boolean"},
+    "BooleanValue":{"type":"boolean"},
+    "CognitoUserPoolConfig":{
+      "type":"structure",
+      "required":[
+        "userPoolId",
+        "awsRegion"
+      ],
+      "members":{
+        "userPoolId":{"shape":"String"},
+        "awsRegion":{"shape":"String"},
+        "appIdClientRegex":{"shape":"String"}
+      }
+    },
     "ConcurrentModificationException":{
       "type":"structure",
       "members":{
@@ -538,13 +734,44 @@
         "serviceRoleArn":{"shape":"String"},
         "dynamodbConfig":{"shape":"DynamodbDataSourceConfig"},
         "lambdaConfig":{"shape":"LambdaDataSourceConfig"},
-        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"}
+        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"},
+        "httpConfig":{"shape":"HttpDataSourceConfig"},
+        "relationalDatabaseConfig":{"shape":"RelationalDatabaseDataSourceConfig"}
       }
     },
     "CreateDataSourceResponse":{
       "type":"structure",
       "members":{
         "dataSource":{"shape":"DataSource"}
+      }
+    },
+    "CreateFunctionRequest":{
+      "type":"structure",
+      "required":[
+        "apiId",
+        "name",
+        "dataSourceName",
+        "requestMappingTemplate",
+        "functionVersion"
+      ],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "name":{"shape":"ResourceName"},
+        "description":{"shape":"String"},
+        "dataSourceName":{"shape":"ResourceName"},
+        "requestMappingTemplate":{"shape":"MappingTemplate"},
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "functionVersion":{"shape":"String"}
+      }
+    },
+    "CreateFunctionResponse":{
+      "type":"structure",
+      "members":{
+        "functionConfiguration":{"shape":"FunctionConfiguration"}
       }
     },
     "CreateGraphqlApiRequest":{
@@ -555,8 +782,12 @@
       ],
       "members":{
         "name":{"shape":"String"},
+        "logConfig":{"shape":"LogConfig"},
         "authenticationType":{"shape":"AuthenticationType"},
-        "userPoolConfig":{"shape":"UserPoolConfig"}
+        "userPoolConfig":{"shape":"UserPoolConfig"},
+        "openIDConnectConfig":{"shape":"OpenIDConnectConfig"},
+        "tags":{"shape":"TagMap"},
+        "additionalAuthenticationProviders":{"shape":"AdditionalAuthenticationProviders"}
       }
     },
     "CreateGraphqlApiResponse":{
@@ -571,7 +802,6 @@
         "apiId",
         "typeName",
         "fieldName",
-        "dataSourceName",
         "requestMappingTemplate"
       ],
       "members":{
@@ -588,7 +818,9 @@
         "fieldName":{"shape":"ResourceName"},
         "dataSourceName":{"shape":"ResourceName"},
         "requestMappingTemplate":{"shape":"MappingTemplate"},
-        "responseMappingTemplate":{"shape":"MappingTemplate"}
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "kind":{"shape":"ResolverKind"},
+        "pipelineConfig":{"shape":"PipelineConfig"}
       }
     },
     "CreateResolverResponse":{
@@ -630,7 +862,9 @@
         "serviceRoleArn":{"shape":"String"},
         "dynamodbConfig":{"shape":"DynamodbDataSourceConfig"},
         "lambdaConfig":{"shape":"LambdaDataSourceConfig"},
-        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"}
+        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"},
+        "httpConfig":{"shape":"HttpDataSourceConfig"},
+        "relationalDatabaseConfig":{"shape":"RelationalDatabaseDataSourceConfig"}
       }
     },
     "DataSourceType":{
@@ -639,7 +873,9 @@
         "AWS_LAMBDA",
         "AMAZON_DYNAMODB",
         "AMAZON_ELASTICSEARCH",
-        "NONE"
+        "NONE",
+        "HTTP",
+        "RELATIONAL_DATABASE"
       ]
     },
     "DataSources":{
@@ -697,6 +933,30 @@
       }
     },
     "DeleteDataSourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteFunctionRequest":{
+      "type":"structure",
+      "required":[
+        "apiId",
+        "functionId"
+      ],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "functionId":{
+          "shape":"ResourceName",
+          "location":"uri",
+          "locationName":"functionId"
+        }
+      }
+    },
+    "DeleteFunctionResponse":{
       "type":"structure",
       "members":{
       }
@@ -795,6 +1055,35 @@
       }
     },
     "ErrorMessage":{"type":"string"},
+    "FieldLogLevel":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "ERROR",
+        "ALL"
+      ]
+    },
+    "FunctionConfiguration":{
+      "type":"structure",
+      "members":{
+        "functionId":{"shape":"String"},
+        "functionArn":{"shape":"String"},
+        "name":{"shape":"ResourceName"},
+        "description":{"shape":"String"},
+        "dataSourceName":{"shape":"ResourceName"},
+        "requestMappingTemplate":{"shape":"MappingTemplate"},
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "functionVersion":{"shape":"String"}
+      }
+    },
+    "Functions":{
+      "type":"list",
+      "member":{"shape":"FunctionConfiguration"}
+    },
+    "FunctionsIds":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
     "GetDataSourceRequest":{
       "type":"structure",
       "required":[
@@ -818,6 +1107,31 @@
       "type":"structure",
       "members":{
         "dataSource":{"shape":"DataSource"}
+      }
+    },
+    "GetFunctionRequest":{
+      "type":"structure",
+      "required":[
+        "apiId",
+        "functionId"
+      ],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "functionId":{
+          "shape":"ResourceName",
+          "location":"uri",
+          "locationName":"functionId"
+        }
+      }
+    },
+    "GetFunctionResponse":{
+      "type":"structure",
+      "members":{
+        "functionConfiguration":{"shape":"FunctionConfiguration"}
       }
     },
     "GetGraphqlApiRequest":{
@@ -853,6 +1167,11 @@
           "shape":"OutputType",
           "location":"querystring",
           "locationName":"format"
+        },
+        "includeDirectives":{
+          "shape":"BooleanValue",
+          "location":"querystring",
+          "locationName":"includeDirectives"
         }
       }
     },
@@ -957,14 +1276,25 @@
         "name":{"shape":"ResourceName"},
         "apiId":{"shape":"String"},
         "authenticationType":{"shape":"AuthenticationType"},
+        "logConfig":{"shape":"LogConfig"},
         "userPoolConfig":{"shape":"UserPoolConfig"},
+        "openIDConnectConfig":{"shape":"OpenIDConnectConfig"},
         "arn":{"shape":"String"},
-        "uris":{"shape":"MapOfStringToString"}
+        "uris":{"shape":"MapOfStringToString"},
+        "tags":{"shape":"TagMap"},
+        "additionalAuthenticationProviders":{"shape":"AdditionalAuthenticationProviders"}
       }
     },
     "GraphqlApis":{
       "type":"list",
       "member":{"shape":"GraphqlApi"}
+    },
+    "HttpDataSourceConfig":{
+      "type":"structure",
+      "members":{
+        "endpoint":{"shape":"String"},
+        "authorizationConfig":{"shape":"AuthorizationConfig"}
+      }
     },
     "InternalFailureException":{
       "type":"structure",
@@ -1046,6 +1376,34 @@
         "nextToken":{"shape":"PaginationToken"}
       }
     },
+    "ListFunctionsRequest":{
+      "type":"structure",
+      "required":["apiId"],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListFunctionsResponse":{
+      "type":"structure",
+      "members":{
+        "functions":{"shape":"Functions"},
+        "nextToken":{"shape":"PaginationToken"}
+      }
+    },
     "ListGraphqlApisRequest":{
       "type":"structure",
       "members":{
@@ -1065,6 +1423,42 @@
       "type":"structure",
       "members":{
         "graphqlApis":{"shape":"GraphqlApis"},
+        "nextToken":{"shape":"PaginationToken"}
+      }
+    },
+    "ListResolversByFunctionRequest":{
+      "type":"structure",
+      "required":[
+        "apiId",
+        "functionId"
+      ],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "functionId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"functionId"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListResolversByFunctionResponse":{
+      "type":"structure",
+      "members":{
+        "resolvers":{"shape":"Resolvers"},
         "nextToken":{"shape":"PaginationToken"}
       }
     },
@@ -1104,6 +1498,23 @@
         "nextToken":{"shape":"PaginationToken"}
       }
     },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{"shape":"TagMap"}
+      }
+    },
     "ListTypesRequest":{
       "type":"structure",
       "required":[
@@ -1140,6 +1551,17 @@
         "nextToken":{"shape":"PaginationToken"}
       }
     },
+    "LogConfig":{
+      "type":"structure",
+      "required":[
+        "fieldLogLevel",
+        "cloudWatchLogsRoleArn"
+      ],
+      "members":{
+        "fieldLogLevel":{"shape":"FieldLogLevel"},
+        "cloudWatchLogsRoleArn":{"shape":"String"}
+      }
+    },
     "Long":{"type":"long"},
     "MapOfStringToString":{
       "type":"map",
@@ -1149,7 +1571,7 @@
     "MappingTemplate":{
       "type":"string",
       "max":65536,
-      "min":0
+      "min":1
     },
     "MaxResults":{
       "type":"integer",
@@ -1164,6 +1586,16 @@
       "error":{"httpStatusCode":404},
       "exception":true
     },
+    "OpenIDConnectConfig":{
+      "type":"structure",
+      "required":["issuer"],
+      "members":{
+        "issuer":{"shape":"String"},
+        "clientId":{"shape":"String"},
+        "iatTTL":{"shape":"Long"},
+        "authTTL":{"shape":"Long"}
+      }
+    },
     "OutputType":{
       "type":"string",
       "enum":[
@@ -1175,6 +1607,33 @@
       "type":"string",
       "pattern":"[\\\\S]+"
     },
+    "PipelineConfig":{
+      "type":"structure",
+      "members":{
+        "functions":{"shape":"FunctionsIds"}
+      }
+    },
+    "RdsHttpEndpointConfig":{
+      "type":"structure",
+      "members":{
+        "awsRegion":{"shape":"String"},
+        "dbClusterIdentifier":{"shape":"String"},
+        "databaseName":{"shape":"String"},
+        "schema":{"shape":"String"},
+        "awsSecretStoreArn":{"shape":"String"}
+      }
+    },
+    "RelationalDatabaseDataSourceConfig":{
+      "type":"structure",
+      "members":{
+        "relationalDatabaseSourceType":{"shape":"RelationalDatabaseSourceType"},
+        "rdsHttpEndpointConfig":{"shape":"RdsHttpEndpointConfig"}
+      }
+    },
+    "RelationalDatabaseSourceType":{
+      "type":"string",
+      "enum":["RDS_HTTP_ENDPOINT"]
+    },
     "Resolver":{
       "type":"structure",
       "members":{
@@ -1183,12 +1642,27 @@
         "dataSourceName":{"shape":"ResourceName"},
         "resolverArn":{"shape":"String"},
         "requestMappingTemplate":{"shape":"MappingTemplate"},
-        "responseMappingTemplate":{"shape":"MappingTemplate"}
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "kind":{"shape":"ResolverKind"},
+        "pipelineConfig":{"shape":"PipelineConfig"}
       }
+    },
+    "ResolverKind":{
+      "type":"string",
+      "enum":[
+        "UNIT",
+        "PIPELINE"
+      ]
     },
     "Resolvers":{
       "type":"list",
       "member":{"shape":"Resolver"}
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":75,
+      "min":70,
+      "pattern":"^arn:aws:appsync:[A-Za-z0-9_/.-]{0,63}:\\d{12}:apis/[0-9A-Za-z_-]{26}$"
     },
     "ResourceName":{
       "type":"string",
@@ -1199,7 +1673,10 @@
       "enum":[
         "PROCESSING",
         "ACTIVE",
-        "DELETING"
+        "DELETING",
+        "FAILED",
+        "SUCCESS",
+        "NOT_APPLICABLE"
       ]
     },
     "StartSchemaCreationRequest":{
@@ -1224,6 +1701,49 @@
       }
     },
     "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{"shape":"TagMap"}
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
     "Type":{
       "type":"structure",
       "members":{
@@ -1252,6 +1772,30 @@
       },
       "error":{"httpStatusCode":401},
       "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
     },
     "UpdateApiKeyRequest":{
       "type":"structure",
@@ -1303,13 +1847,50 @@
         "serviceRoleArn":{"shape":"String"},
         "dynamodbConfig":{"shape":"DynamodbDataSourceConfig"},
         "lambdaConfig":{"shape":"LambdaDataSourceConfig"},
-        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"}
+        "elasticsearchConfig":{"shape":"ElasticsearchDataSourceConfig"},
+        "httpConfig":{"shape":"HttpDataSourceConfig"},
+        "relationalDatabaseConfig":{"shape":"RelationalDatabaseDataSourceConfig"}
       }
     },
     "UpdateDataSourceResponse":{
       "type":"structure",
       "members":{
         "dataSource":{"shape":"DataSource"}
+      }
+    },
+    "UpdateFunctionRequest":{
+      "type":"structure",
+      "required":[
+        "apiId",
+        "name",
+        "functionId",
+        "dataSourceName",
+        "requestMappingTemplate",
+        "functionVersion"
+      ],
+      "members":{
+        "apiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"apiId"
+        },
+        "name":{"shape":"ResourceName"},
+        "description":{"shape":"String"},
+        "functionId":{
+          "shape":"ResourceName",
+          "location":"uri",
+          "locationName":"functionId"
+        },
+        "dataSourceName":{"shape":"ResourceName"},
+        "requestMappingTemplate":{"shape":"MappingTemplate"},
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "functionVersion":{"shape":"String"}
+      }
+    },
+    "UpdateFunctionResponse":{
+      "type":"structure",
+      "members":{
+        "functionConfiguration":{"shape":"FunctionConfiguration"}
       }
     },
     "UpdateGraphqlApiRequest":{
@@ -1325,8 +1906,11 @@
           "locationName":"apiId"
         },
         "name":{"shape":"String"},
+        "logConfig":{"shape":"LogConfig"},
         "authenticationType":{"shape":"AuthenticationType"},
-        "userPoolConfig":{"shape":"UserPoolConfig"}
+        "userPoolConfig":{"shape":"UserPoolConfig"},
+        "openIDConnectConfig":{"shape":"OpenIDConnectConfig"},
+        "additionalAuthenticationProviders":{"shape":"AdditionalAuthenticationProviders"}
       }
     },
     "UpdateGraphqlApiResponse":{
@@ -1341,7 +1925,6 @@
         "apiId",
         "typeName",
         "fieldName",
-        "dataSourceName",
         "requestMappingTemplate"
       ],
       "members":{
@@ -1362,7 +1945,9 @@
         },
         "dataSourceName":{"shape":"ResourceName"},
         "requestMappingTemplate":{"shape":"MappingTemplate"},
-        "responseMappingTemplate":{"shape":"MappingTemplate"}
+        "responseMappingTemplate":{"shape":"MappingTemplate"},
+        "kind":{"shape":"ResolverKind"},
+        "pipelineConfig":{"shape":"PipelineConfig"}
       }
     },
     "UpdateResolverResponse":{

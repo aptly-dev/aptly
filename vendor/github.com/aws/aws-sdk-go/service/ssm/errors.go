@@ -30,6 +30,12 @@ const (
 	// The specified association does not exist.
 	ErrCodeAssociationDoesNotExist = "AssociationDoesNotExist"
 
+	// ErrCodeAssociationExecutionDoesNotExist for service response error code
+	// "AssociationExecutionDoesNotExist".
+	//
+	// The specified execution ID does not exist. Verify the ID number and try again.
+	ErrCodeAssociationExecutionDoesNotExist = "AssociationExecutionDoesNotExist"
+
 	// ErrCodeAssociationLimitExceeded for service response error code
 	// "AssociationLimitExceeded".
 	//
@@ -120,8 +126,8 @@ const (
 	// ErrCodeDoesNotExistException for service response error code
 	// "DoesNotExistException".
 	//
-	// Error returned when the ID specified for a resource, such as a Maintenance
-	// Window or Patch baseline, doesn't exist.
+	// Error returned when the ID specified for a resource, such as a maintenance
+	// window or Patch baseline, doesn't exist.
 	//
 	// For information about resource limits in Systems Manager, see AWS Systems
 	// Manager Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_ssm).
@@ -133,6 +139,13 @@ const (
 	// The content of the association document matches another document. Change
 	// the content of the document and try again.
 	ErrCodeDuplicateDocumentContent = "DuplicateDocumentContent"
+
+	// ErrCodeDuplicateDocumentVersionName for service response error code
+	// "DuplicateDocumentVersionName".
+	//
+	// The version name has already been used in this document. Specify a different
+	// version name, and then try again.
+	ErrCodeDuplicateDocumentVersionName = "DuplicateDocumentVersionName"
 
 	// ErrCodeDuplicateInstanceId for service response error code
 	// "DuplicateInstanceId".
@@ -150,8 +163,9 @@ const (
 	// ErrCodeHierarchyLevelLimitExceededException for service response error code
 	// "HierarchyLevelLimitExceededException".
 	//
-	// A hierarchy can have a maximum of 15 levels. For more information, see Working
-	// with Systems Manager Parameters (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-working.html).
+	// A hierarchy can have a maximum of 15 levels. For more information, see Requirements
+	// and Constraints for Parameter Names (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-parameter-name-constraints.html)
+	// in the AWS Systems Manager User Guide.
 	ErrCodeHierarchyLevelLimitExceededException = "HierarchyLevelLimitExceededException"
 
 	// ErrCodeHierarchyTypeMismatchException for service response error code
@@ -168,6 +182,14 @@ const (
 	// Error returned when an idempotent operation is retried and the parameters
 	// don't match the original call to the API with the same idempotency token.
 	ErrCodeIdempotentParameterMismatch = "IdempotentParameterMismatch"
+
+	// ErrCodeIncompatiblePolicyException for service response error code
+	// "IncompatiblePolicyException".
+	//
+	// There is a conflict in the policies specified for this parameter. You can't,
+	// for example, specify two Expiration policies for a parameter. Review your
+	// policies, and try again.
+	ErrCodeIncompatiblePolicyException = "IncompatiblePolicyException"
 
 	// ErrCodeInternalServerError for service response error code
 	// "InternalServerError".
@@ -189,11 +211,24 @@ const (
 	// or ActivationCode and try again.
 	ErrCodeInvalidActivationId = "InvalidActivationId"
 
+	// ErrCodeInvalidAggregatorException for service response error code
+	// "InvalidAggregatorException".
+	//
+	// The specified aggregator is not valid for inventory groups. Verify that the
+	// aggregator uses a valid inventory type such as AWS:Application or AWS:InstanceInformation.
+	ErrCodeInvalidAggregatorException = "InvalidAggregatorException"
+
 	// ErrCodeInvalidAllowedPatternException for service response error code
 	// "InvalidAllowedPatternException".
 	//
 	// The request does not meet the regular expression requirement.
 	ErrCodeInvalidAllowedPatternException = "InvalidAllowedPatternException"
+
+	// ErrCodeInvalidAssociation for service response error code
+	// "InvalidAssociation".
+	//
+	// The association is not valid or does not exist.
+	ErrCodeInvalidAssociation = "InvalidAssociation"
 
 	// ErrCodeInvalidAssociationVersion for service response error code
 	// "InvalidAssociationVersion".
@@ -226,6 +261,20 @@ const (
 	// ErrCodeInvalidCommandId for service response error code
 	// "InvalidCommandId".
 	ErrCodeInvalidCommandId = "InvalidCommandId"
+
+	// ErrCodeInvalidDeleteInventoryParametersException for service response error code
+	// "InvalidDeleteInventoryParametersException".
+	//
+	// One or more of the parameters specified for the delete operation is not valid.
+	// Verify all parameters and try again.
+	ErrCodeInvalidDeleteInventoryParametersException = "InvalidDeleteInventoryParametersException"
+
+	// ErrCodeInvalidDeletionIdException for service response error code
+	// "InvalidDeletionIdException".
+	//
+	// The ID specified for the delete operation does not exist or is not valid.
+	// Verify the ID and try again.
+	ErrCodeInvalidDeletionIdException = "InvalidDeletionIdException"
 
 	// ErrCodeInvalidDocument for service response error code
 	// "InvalidDocument".
@@ -291,12 +340,12 @@ const (
 	//
 	// You do not have permission to access the instance.
 	//
-	// The SSM Agent is not running. On managed instances and Linux instances, verify
+	// SSM Agent is not running. On managed instances and Linux instances, verify
 	// that the SSM Agent is running. On EC2 Windows instances, verify that the
 	// EC2Config service is running.
 	//
-	// The SSM Agent or EC2Config service is not registered to the SSM endpoint.
-	// Try reinstalling the SSM Agent or EC2Config service.
+	// SSM Agent or EC2Config service is not registered to the SSM endpoint. Try
+	// reinstalling SSM Agent or EC2Config service.
 	//
 	// The instance is not in valid state. Valid states are: Running, Pending, Stopped,
 	// Stopping. Invalid states are: Shutting-down and Terminated.
@@ -308,12 +357,24 @@ const (
 	// The specified filter value is not valid.
 	ErrCodeInvalidInstanceInformationFilterValue = "InvalidInstanceInformationFilterValue"
 
+	// ErrCodeInvalidInventoryGroupException for service response error code
+	// "InvalidInventoryGroupException".
+	//
+	// The specified inventory group is not valid.
+	ErrCodeInvalidInventoryGroupException = "InvalidInventoryGroupException"
+
 	// ErrCodeInvalidInventoryItemContextException for service response error code
 	// "InvalidInventoryItemContextException".
 	//
 	// You specified invalid keys or values in the Context attribute for InventoryItem.
 	// Verify the keys and values, and try again.
 	ErrCodeInvalidInventoryItemContextException = "InvalidInventoryItemContextException"
+
+	// ErrCodeInvalidInventoryRequestException for service response error code
+	// "InvalidInventoryRequestException".
+	//
+	// The request is not valid.
+	ErrCodeInvalidInventoryRequestException = "InvalidInventoryRequestException"
 
 	// ErrCodeInvalidItemContentException for service response error code
 	// "InvalidItemContentException".
@@ -339,6 +400,13 @@ const (
 	// One or more configuration items is not valid. Verify that a valid Amazon
 	// Resource Name (ARN) was provided for an Amazon SNS topic.
 	ErrCodeInvalidNotificationConfig = "InvalidNotificationConfig"
+
+	// ErrCodeInvalidOptionException for service response error code
+	// "InvalidOptionException".
+	//
+	// The delete inventory option specified is not valid. Verify the option and
+	// try again.
+	ErrCodeInvalidOptionException = "InvalidOptionException"
 
 	// ErrCodeInvalidOutputFolder for service response error code
 	// "InvalidOutputFolder".
@@ -372,6 +440,19 @@ const (
 	//
 	// The plugin name is not valid.
 	ErrCodeInvalidPluginName = "InvalidPluginName"
+
+	// ErrCodeInvalidPolicyAttributeException for service response error code
+	// "InvalidPolicyAttributeException".
+	//
+	// A policy attribute or its value is invalid.
+	ErrCodeInvalidPolicyAttributeException = "InvalidPolicyAttributeException"
+
+	// ErrCodeInvalidPolicyTypeException for service response error code
+	// "InvalidPolicyTypeException".
+	//
+	// The policy type is not supported. Parameter Store supports the following
+	// policy types: Expiration, ExpirationNotification, and NoChangeNotification.
+	ErrCodeInvalidPolicyTypeException = "InvalidPolicyTypeException"
 
 	// ErrCodeInvalidResourceId for service response error code
 	// "InvalidResourceId".
@@ -432,7 +513,7 @@ const (
 	// "InvocationDoesNotExist".
 	//
 	// The command ID and instance ID you specified did not match any invocations.
-	// Verify the command ID adn the instance ID and try again.
+	// Verify the command ID and the instance ID and try again.
 	ErrCodeInvocationDoesNotExist = "InvocationDoesNotExist"
 
 	// ErrCodeItemContentMismatchException for service response error code
@@ -452,6 +533,32 @@ const (
 	//
 	// The size limit of a document is 64 KB.
 	ErrCodeMaxDocumentSizeExceeded = "MaxDocumentSizeExceeded"
+
+	// ErrCodeOpsItemAlreadyExistsException for service response error code
+	// "OpsItemAlreadyExistsException".
+	//
+	// The OpsItem already exists.
+	ErrCodeOpsItemAlreadyExistsException = "OpsItemAlreadyExistsException"
+
+	// ErrCodeOpsItemInvalidParameterException for service response error code
+	// "OpsItemInvalidParameterException".
+	//
+	// A specified parameter argument isn't valid. Verify the available arguments
+	// and try again.
+	ErrCodeOpsItemInvalidParameterException = "OpsItemInvalidParameterException"
+
+	// ErrCodeOpsItemLimitExceededException for service response error code
+	// "OpsItemLimitExceededException".
+	//
+	// The request caused OpsItems to exceed one or more limits. For information
+	// about OpsItem limits, see What are the resource limits for OpsCenter? (http://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+	ErrCodeOpsItemLimitExceededException = "OpsItemLimitExceededException"
+
+	// ErrCodeOpsItemNotFoundException for service response error code
+	// "OpsItemNotFoundException".
+	//
+	// The specified OpsItem ID doesn't exist. Verify the ID and try again.
+	ErrCodeOpsItemNotFoundException = "OpsItemNotFoundException"
 
 	// ErrCodeParameterAlreadyExists for service response error code
 	// "ParameterAlreadyExists".
@@ -484,12 +591,25 @@ const (
 	// The parameter name is not valid.
 	ErrCodeParameterPatternMismatchException = "ParameterPatternMismatchException"
 
+	// ErrCodeParameterVersionLabelLimitExceeded for service response error code
+	// "ParameterVersionLabelLimitExceeded".
+	//
+	// A parameter version can have a maximum of ten labels.
+	ErrCodeParameterVersionLabelLimitExceeded = "ParameterVersionLabelLimitExceeded"
+
 	// ErrCodeParameterVersionNotFound for service response error code
 	// "ParameterVersionNotFound".
 	//
 	// The specified parameter version was not found. Verify the parameter name
 	// and version, and try again.
 	ErrCodeParameterVersionNotFound = "ParameterVersionNotFound"
+
+	// ErrCodePoliciesLimitExceededException for service response error code
+	// "PoliciesLimitExceededException".
+	//
+	// You specified more than the maximum number of allowed policies for the parameter.
+	// The maximum is 10.
+	ErrCodePoliciesLimitExceededException = "PoliciesLimitExceededException"
 
 	// ErrCodeResourceDataSyncAlreadyExistsException for service response error code
 	// "ResourceDataSyncAlreadyExistsException".
@@ -526,11 +646,18 @@ const (
 	// "ResourceLimitExceededException".
 	//
 	// Error returned when the caller has exceeded the default resource limits.
-	// For example, too many Maintenance Windows or Patch baselines have been created.
+	// For example, too many maintenance windows or patch baselines have been created.
 	//
 	// For information about resource limits in Systems Manager, see AWS Systems
 	// Manager Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_ssm).
 	ErrCodeResourceLimitExceededException = "ResourceLimitExceededException"
+
+	// ErrCodeServiceSettingNotFound for service response error code
+	// "ServiceSettingNotFound".
+	//
+	// The specified service setting was not found. Either the service name or the
+	// setting has not been provisioned by the AWS service team.
+	ErrCodeServiceSettingNotFound = "ServiceSettingNotFound"
 
 	// ErrCodeStatusUnchanged for service response error code
 	// "StatusUnchanged".
@@ -551,6 +678,15 @@ const (
 	// operation, but the target is still referenced in a task.
 	ErrCodeTargetInUseException = "TargetInUseException"
 
+	// ErrCodeTargetNotConnected for service response error code
+	// "TargetNotConnected".
+	//
+	// The specified target instance for the session is not fully configured for
+	// use with Session Manager. For more information, see Getting Started with
+	// Session Manager (http://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started.html)
+	// in the AWS Systems Manager User Guide.
+	ErrCodeTargetNotConnected = "TargetNotConnected"
+
 	// ErrCodeTooManyTagsError for service response error code
 	// "TooManyTagsError".
 	//
@@ -570,6 +706,16 @@ const (
 	//
 	// The size of inventory data has exceeded the total size limit for the resource.
 	ErrCodeTotalSizeLimitExceededException = "TotalSizeLimitExceededException"
+
+	// ErrCodeUnsupportedFeatureRequiredException for service response error code
+	// "UnsupportedFeatureRequiredException".
+	//
+	// Microsoft application patching is only available on EC2 instances and Advanced
+	// Instances. To patch Microsoft applications on on-premises servers and VMs,
+	// you must enable Advanced Instances. For more information, see Using the Advanced-Instances
+	// Tier (http://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
+	// in the AWS Systems Manager User Guide.
+	ErrCodeUnsupportedFeatureRequiredException = "UnsupportedFeatureRequiredException"
 
 	// ErrCodeUnsupportedInventoryItemContextException for service response error code
 	// "UnsupportedInventoryItemContextException".

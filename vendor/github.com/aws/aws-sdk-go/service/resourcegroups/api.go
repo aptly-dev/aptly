@@ -3,6 +3,8 @@
 package resourcegroups
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -13,7 +15,7 @@ const opCreateGroup = "CreateGroup"
 // CreateGroupRequest generates a "aws/request.Request" representing the
 // client's request for the CreateGroup operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -105,7 +107,7 @@ const opDeleteGroup = "DeleteGroup"
 // DeleteGroupRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteGroup operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -201,7 +203,7 @@ const opGetGroup = "GetGroup"
 // GetGroupRequest generates a "aws/request.Request" representing the
 // client's request for the GetGroup operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -296,7 +298,7 @@ const opGetGroupQuery = "GetGroupQuery"
 // GetGroupQueryRequest generates a "aws/request.Request" representing the
 // client's request for the GetGroupQuery operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -391,7 +393,7 @@ const opGetTags = "GetTags"
 // GetTagsRequest generates a "aws/request.Request" representing the
 // client's request for the GetTags operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -430,8 +432,8 @@ func (c *ResourceGroups) GetTagsRequest(input *GetTagsInput) (req *request.Reque
 
 // GetTags API operation for AWS Resource Groups.
 //
-// Returns a list of tags that are associated with a resource, specified by
-// an ARN.
+// Returns a list of tags that are associated with a resource group, specified
+// by an ARN.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -487,7 +489,7 @@ const opListGroupResources = "ListGroupResources"
 // ListGroupResourcesRequest generates a "aws/request.Request" representing the
 // client's request for the ListGroupResources operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -511,8 +513,8 @@ const opListGroupResources = "ListGroupResources"
 func (c *ResourceGroups) ListGroupResourcesRequest(input *ListGroupResourcesInput) (req *request.Request, output *ListGroupResourcesOutput) {
 	op := &request.Operation{
 		Name:       opListGroupResources,
-		HTTPMethod: "GET",
-		HTTPPath:   "/groups/{GroupName}/resource-identifiers",
+		HTTPMethod: "POST",
+		HTTPPath:   "/groups/{GroupName}/resource-identifiers-list",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"NextToken"},
 			OutputTokens:    []string{"NextToken"},
@@ -599,7 +601,7 @@ func (c *ResourceGroups) ListGroupResourcesWithContext(ctx aws.Context, input *L
 //    // Example iterating over at most 3 pages of a ListGroupResources operation.
 //    pageNum := 0
 //    err := client.ListGroupResourcesPages(params,
-//        func(page *ListGroupResourcesOutput, lastPage bool) bool {
+//        func(page *resourcegroups.ListGroupResourcesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -643,7 +645,7 @@ const opListGroups = "ListGroups"
 // ListGroupsRequest generates a "aws/request.Request" representing the
 // client's request for the ListGroups operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -667,8 +669,8 @@ const opListGroups = "ListGroups"
 func (c *ResourceGroups) ListGroupsRequest(input *ListGroupsInput) (req *request.Request, output *ListGroupsOutput) {
 	op := &request.Operation{
 		Name:       opListGroups,
-		HTTPMethod: "GET",
-		HTTPPath:   "/groups",
+		HTTPMethod: "POST",
+		HTTPPath:   "/groups-list",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"NextToken"},
 			OutputTokens:    []string{"NextToken"},
@@ -747,7 +749,7 @@ func (c *ResourceGroups) ListGroupsWithContext(ctx aws.Context, input *ListGroup
 //    // Example iterating over at most 3 pages of a ListGroups operation.
 //    pageNum := 0
 //    err := client.ListGroupsPages(params,
-//        func(page *ListGroupsOutput, lastPage bool) bool {
+//        func(page *resourcegroups.ListGroupsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -791,7 +793,7 @@ const opSearchResources = "SearchResources"
 // SearchResourcesRequest generates a "aws/request.Request" representing the
 // client's request for the SearchResources operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -901,7 +903,7 @@ func (c *ResourceGroups) SearchResourcesWithContext(ctx aws.Context, input *Sear
 //    // Example iterating over at most 3 pages of a SearchResources operation.
 //    pageNum := 0
 //    err := client.SearchResourcesPages(params,
-//        func(page *SearchResourcesOutput, lastPage bool) bool {
+//        func(page *resourcegroups.SearchResourcesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -945,7 +947,7 @@ const opTag = "Tag"
 // TagRequest generates a "aws/request.Request" representing the
 // client's request for the Tag operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -984,8 +986,8 @@ func (c *ResourceGroups) TagRequest(input *TagInput) (req *request.Request, outp
 
 // Tag API operation for AWS Resource Groups.
 //
-// Adds specified tags to a resource with the specified ARN. Existing tags on
-// a resource are not changed if they are not specified in the request parameters.
+// Adds tags to a resource group with the specified ARN. Existing tags on a
+// resource group are not changed if they are not specified in the request parameters.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1041,7 +1043,7 @@ const opUntag = "Untag"
 // UntagRequest generates a "aws/request.Request" representing the
 // client's request for the Untag operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -1136,7 +1138,7 @@ const opUpdateGroup = "UpdateGroup"
 // UpdateGroupRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateGroup operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -1232,7 +1234,7 @@ const opUpdateGroupQuery = "UpdateGroupQuery"
 // UpdateGroupQueryRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateGroupQuery operation. The "output" return
 // value will be populated with the request's response once the request completes
-// successfuly.
+// successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
@@ -1332,7 +1334,7 @@ type CreateGroupInput struct {
 
 	// The name of the group, which is the identifier of the group in other operations.
 	// A resource group name cannot be updated after it is created. A resource group
-	// name can have a maximum of 127 characters, including letters, numbers, hyphens,
+	// name can have a maximum of 128 characters, including letters, numbers, hyphens,
 	// dots, and underscores. The name cannot start with AWS or aws; these are reserved.
 	// A resource group name must be unique within your account.
 	//
@@ -1346,8 +1348,8 @@ type CreateGroupInput struct {
 	ResourceQuery *ResourceQuery `type:"structure" required:"true"`
 
 	// The tags to add to the group. A tag is a string-to-string map of key-value
-	// pairs. Tag keys can have a maximum character length of 127 characters, and
-	// tag values can have a maximum length of 255 characters.
+	// pairs. Tag keys can have a maximum character length of 128 characters, and
+	// tag values can have a maximum length of 256 characters.
 	Tags map[string]*string `type:"map"`
 }
 
@@ -1645,11 +1647,11 @@ func (s *GetGroupQueryOutput) SetGroupQuery(v *GroupQuery) *GetGroupQueryOutput 
 type GetTagsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the resource for which you want a list of tags. The resource must
-	// exist within the account you are using.
+	// The ARN of the resource group for which you want a list of tags. The resource
+	// must exist within the account you are using.
 	//
 	// Arn is a required field
-	Arn *string `location:"uri" locationName:"Arn" type:"string" required:"true"`
+	Arn *string `location:"uri" locationName:"Arn" min:"12" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1668,6 +1670,9 @@ func (s *GetTagsInput) Validate() error {
 	if s.Arn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Arn"))
 	}
+	if s.Arn != nil && len(*s.Arn) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 12))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1684,10 +1689,10 @@ func (s *GetTagsInput) SetArn(v string) *GetTagsInput {
 type GetTagsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the tagged resource.
-	Arn *string `type:"string"`
+	// The ARN of the tagged resource group.
+	Arn *string `min:"12" type:"string"`
 
-	// The tags associated with the specified resource.
+	// The tags associated with the specified resource group.
 	Tags map[string]*string `type:"map"`
 }
 
@@ -1723,7 +1728,7 @@ type Group struct {
 	// The ARN of a resource group.
 	//
 	// GroupArn is a required field
-	GroupArn *string `type:"string" required:"true"`
+	GroupArn *string `min:"12" type:"string" required:"true"`
 
 	// The name of a resource group.
 	//
@@ -1756,6 +1761,97 @@ func (s *Group) SetGroupArn(v string) *Group {
 // SetName sets the Name field's value.
 func (s *Group) SetName(v string) *Group {
 	s.Name = &v
+	return s
+}
+
+// A filter name and value pair that is used to obtain more specific results
+// from a list of groups.
+type GroupFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the filter. Filter names are case-sensitive.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true" enum:"GroupFilterName"`
+
+	// One or more filter values. Allowed filter values vary by group filter name,
+	// and are case-sensitive.
+	//
+	// Values is a required field
+	Values []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s GroupFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GroupFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GroupFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GroupFilter"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *GroupFilter) SetName(v string) *GroupFilter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *GroupFilter) SetValues(v []*string) *GroupFilter {
+	s.Values = v
+	return s
+}
+
+// The ARN and group name of a group.
+type GroupIdentifier struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of a resource group.
+	GroupArn *string `min:"12" type:"string"`
+
+	// The name of a resource group.
+	GroupName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s GroupIdentifier) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GroupIdentifier) GoString() string {
+	return s.String()
+}
+
+// SetGroupArn sets the GroupArn field's value.
+func (s *GroupIdentifier) SetGroupArn(v string) *GroupIdentifier {
+	s.GroupArn = &v
+	return s
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *GroupIdentifier) SetGroupName(v string) *GroupIdentifier {
+	s.GroupName = &v
 	return s
 }
 
@@ -1802,6 +1898,14 @@ func (s *GroupQuery) SetResourceQuery(v *ResourceQuery) *GroupQuery {
 type ListGroupResourcesInput struct {
 	_ struct{} `type:"structure"`
 
+	// Filters, formatted as ResourceFilter objects, that you want to apply to a
+	// ListGroupResources operation.
+	//
+	//    * resource-type - Filter resources by their type. Specify up to five resource
+	//    types in the format AWS::ServiceCode::ResourceType. For example, AWS::EC2::Instance,
+	//    or AWS::S3::Bucket.
+	Filters []*ResourceFilter `type:"list"`
+
 	// The name of the resource group.
 	//
 	// GroupName is a required field
@@ -1839,11 +1943,27 @@ func (s *ListGroupResourcesInput) Validate() error {
 	if s.MaxResults != nil && *s.MaxResults < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
 	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListGroupResourcesInput) SetFilters(v []*ResourceFilter) *ListGroupResourcesInput {
+	s.Filters = v
+	return s
 }
 
 // SetGroupName sets the GroupName field's value.
@@ -1871,6 +1991,11 @@ type ListGroupResourcesOutput struct {
 	// to get more results.
 	NextToken *string `type:"string"`
 
+	// A list of QueryError objects. Each error is an object that contains ErrorCode
+	// and Message structures. Possible values for ErrorCode are CLOUDFORMATION_STACK_INACTIVE
+	// and CLOUDFORMATION_STACK_NOT_EXISTING.
+	QueryErrors []*QueryError `type:"list"`
+
 	// The ARNs and resource types of resources that are members of the group that
 	// you specified.
 	ResourceIdentifiers []*ResourceIdentifier `type:"list"`
@@ -1892,6 +2017,12 @@ func (s *ListGroupResourcesOutput) SetNextToken(v string) *ListGroupResourcesOut
 	return s
 }
 
+// SetQueryErrors sets the QueryErrors field's value.
+func (s *ListGroupResourcesOutput) SetQueryErrors(v []*QueryError) *ListGroupResourcesOutput {
+	s.QueryErrors = v
+	return s
+}
+
 // SetResourceIdentifiers sets the ResourceIdentifiers field's value.
 func (s *ListGroupResourcesOutput) SetResourceIdentifiers(v []*ResourceIdentifier) *ListGroupResourcesOutput {
 	s.ResourceIdentifiers = v
@@ -1900,6 +2031,14 @@ func (s *ListGroupResourcesOutput) SetResourceIdentifiers(v []*ResourceIdentifie
 
 type ListGroupsInput struct {
 	_ struct{} `type:"structure"`
+
+	// Filters, formatted as GroupFilter objects, that you want to apply to a ListGroups
+	// operation.
+	//
+	//    * resource-type - Filter groups by resource type. Specify up to five resource
+	//    types in the format AWS::ServiceCode::ResourceType. For example, AWS::EC2::Instance,
+	//    or AWS::S3::Bucket.
+	Filters []*GroupFilter `type:"list"`
 
 	// The maximum number of resource group results that are returned by ListGroups
 	// in paginated output. By default, this number is 50.
@@ -1927,11 +2066,27 @@ func (s *ListGroupsInput) Validate() error {
 	if s.MaxResults != nil && *s.MaxResults < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
 	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListGroupsInput) SetFilters(v []*GroupFilter) *ListGroupsInput {
+	s.Filters = v
+	return s
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -1949,8 +2104,14 @@ func (s *ListGroupsInput) SetNextToken(v string) *ListGroupsInput {
 type ListGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// A list of GroupIdentifier objects. Each identifier is an object that contains
+	// both the GroupName and the GroupArn.
+	GroupIdentifiers []*GroupIdentifier `type:"list"`
+
 	// A list of resource groups.
-	Groups []*Group `type:"list"`
+	//
+	// Deprecated: This field is deprecated, use GroupIdentifiers instead.
+	Groups []*Group `deprecated:"true" type:"list"`
 
 	// The NextToken value to include in a subsequent ListGroups request, to get
 	// more results.
@@ -1967,6 +2128,12 @@ func (s ListGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetGroupIdentifiers sets the GroupIdentifiers field's value.
+func (s *ListGroupsOutput) SetGroupIdentifiers(v []*GroupIdentifier) *ListGroupsOutput {
+	s.GroupIdentifiers = v
+	return s
+}
+
 // SetGroups sets the Groups field's value.
 func (s *ListGroupsOutput) SetGroups(v []*Group) *ListGroupsOutput {
 	s.Groups = v
@@ -1976,6 +2143,105 @@ func (s *ListGroupsOutput) SetGroups(v []*Group) *ListGroupsOutput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListGroupsOutput) SetNextToken(v string) *ListGroupsOutput {
 	s.NextToken = &v
+	return s
+}
+
+// A two-part error structure that can occur in ListGroupResources or SearchResources
+// operations on CloudFormation stack-based queries. The error occurs if the
+// CloudFormation stack on which the query is based either does not exist, or
+// has a status that renders the stack inactive. A QueryError occurrence does
+// not necessarily mean that AWS Resource Groups could not complete the operation,
+// but the resulting group might have no member resources.
+type QueryError struct {
+	_ struct{} `type:"structure"`
+
+	// Possible values are CLOUDFORMATION_STACK_INACTIVE and CLOUDFORMATION_STACK_NOT_EXISTING.
+	ErrorCode *string `type:"string" enum:"QueryErrorCode"`
+
+	// A message that explains the ErrorCode value. Messages might state that the
+	// specified CloudFormation stack does not exist (or no longer exists). For
+	// CLOUDFORMATION_STACK_INACTIVE, the message typically states that the CloudFormation
+	// stack has a status that is not (or no longer) active, such as CREATE_FAILED.
+	Message *string `type:"string"`
+}
+
+// String returns the string representation
+func (s QueryError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s QueryError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *QueryError) SetErrorCode(v string) *QueryError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *QueryError) SetMessage(v string) *QueryError {
+	s.Message = &v
+	return s
+}
+
+// A filter name and value pair that is used to obtain more specific results
+// from a list of resources.
+type ResourceFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the filter. Filter names are case-sensitive.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true" enum:"ResourceFilterName"`
+
+	// One or more filter values. Allowed filter values vary by resource filter
+	// name, and are case-sensitive.
+	//
+	// Values is a required field
+	Values []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s ResourceFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ResourceFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResourceFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResourceFilter"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *ResourceFilter) SetName(v string) *ResourceFilter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *ResourceFilter) SetValues(v []*string) *ResourceFilter {
+	s.Values = v
 	return s
 }
 
@@ -2021,17 +2287,43 @@ type ResourceQuery struct {
 	// Query is a required field
 	Query *string `type:"string" required:"true"`
 
-	// The type of the query. The valid value in this release is TAG_FILTERS_1_0.
+	// The type of the query. The valid values in this release are TAG_FILTERS_1_0
+	// and CLOUDFORMATION_STACK_1_0.
 	//
-	// TAG_FILTERS_1_0: A JSON syntax that lets you specify a collection of simple
-	// tag filters for resource types and tags, as supported by the AWS Tagging
-	// API GetResources operation. When more than one element is present, only resources
-	// that match all filters are part of the result. If a filter specifies more
-	// than one value for a key, a resource matches the filter if its tag value
-	// matches any of the specified values.
+	//  TAG_FILTERS_1_0: A JSON syntax that lets you specify a collection of simple
+	//  tag filters for resource types and tags, as supported by the AWS Tagging
+	//  API GetResources (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html)
+	//  operation. If you specify more than one tag key, only resources that match
+	//  all tag keys, and at least one value of each specified tag key, are returned
+	//  in your query. If you specify more than one value for a tag key, a resource
+	//  matches the filter if it has a tag key value that matches any of the specified
+	//  values.
+	//
+	// For example, consider the following sample query for resources that have
+	// two tags, Stage and Version, with two values each. ([{"Key":"Stage","Values":["Test","Deploy"]},{"Key":"Version","Values":["1","2"]}])
+	// The results of this query might include the following.
+	//
+	//    * An EC2 instance that has the following two tags: {"Key":"Stage","Value":"Deploy"},
+	//    and {"Key":"Version","Value":"2"}
+	//
+	//    * An S3 bucket that has the following two tags: {"Key":"Stage","Value":"Test"},
+	//    and {"Key":"Version","Value":"1"}
+	//
+	// The query would not return the following results, however. The following
+	// EC2 instance does not have all tag keys specified in the filter, so it is
+	// rejected. The RDS database has all of the tag keys, but no values that match
+	// at least one of the specified tag key values in the filter.
+	//
+	//    * An EC2 instance that has only the following tag: {"Key":"Stage","Value":"Deploy"}.
+	//
+	//    * An RDS database that has the following two tags: {"Key":"Stage","Value":"Archived"},
+	//    and {"Key":"Version","Value":"4"}
+	//
+	//  CLOUDFORMATION_STACK_1_0: A JSON syntax that lets you specify a CloudFormation
+	//  stack ARN.
 	//
 	// Type is a required field
-	Type *string `type:"string" required:"true" enum:"QueryType"`
+	Type *string `min:"1" type:"string" required:"true" enum:"QueryType"`
 }
 
 // String returns the string representation
@@ -2052,6 +2344,9 @@ func (s *ResourceQuery) Validate() error {
 	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.Type != nil && len(*s.Type) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Type", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -2147,6 +2442,11 @@ type SearchResourcesOutput struct {
 	// get more results.
 	NextToken *string `type:"string"`
 
+	// A list of QueryError objects. Each error is an object that contains ErrorCode
+	// and Message structures. Possible values for ErrorCode are CLOUDFORMATION_STACK_INACTIVE
+	// and CLOUDFORMATION_STACK_NOT_EXISTING.
+	QueryErrors []*QueryError `type:"list"`
+
 	// The ARNs and resource types of resources that are members of the group that
 	// you specified.
 	ResourceIdentifiers []*ResourceIdentifier `type:"list"`
@@ -2168,6 +2468,12 @@ func (s *SearchResourcesOutput) SetNextToken(v string) *SearchResourcesOutput {
 	return s
 }
 
+// SetQueryErrors sets the QueryErrors field's value.
+func (s *SearchResourcesOutput) SetQueryErrors(v []*QueryError) *SearchResourcesOutput {
+	s.QueryErrors = v
+	return s
+}
+
 // SetResourceIdentifiers sets the ResourceIdentifiers field's value.
 func (s *SearchResourcesOutput) SetResourceIdentifiers(v []*ResourceIdentifier) *SearchResourcesOutput {
 	s.ResourceIdentifiers = v
@@ -2180,11 +2486,11 @@ type TagInput struct {
 	// The ARN of the resource to which to add tags.
 	//
 	// Arn is a required field
-	Arn *string `location:"uri" locationName:"Arn" type:"string" required:"true"`
+	Arn *string `location:"uri" locationName:"Arn" min:"12" type:"string" required:"true"`
 
 	// The tags to add to the specified resource. A tag is a string-to-string map
-	// of key-value pairs. Tag keys can have a maximum character length of 127 characters,
-	// and tag values can have a maximum length of 255 characters.
+	// of key-value pairs. Tag keys can have a maximum character length of 128 characters,
+	// and tag values can have a maximum length of 256 characters.
 	//
 	// Tags is a required field
 	Tags map[string]*string `type:"map" required:"true"`
@@ -2205,6 +2511,9 @@ func (s *TagInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TagInput"}
 	if s.Arn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 12))
 	}
 	if s.Tags == nil {
 		invalidParams.Add(request.NewErrParamRequired("Tags"))
@@ -2232,7 +2541,7 @@ type TagOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the tagged resource.
-	Arn *string `type:"string"`
+	Arn *string `min:"12" type:"string"`
 
 	// The tags that have been added to the specified resource.
 	Tags map[string]*string `type:"map"`
@@ -2266,7 +2575,7 @@ type UntagInput struct {
 	// The ARN of the resource from which to remove tags.
 	//
 	// Arn is a required field
-	Arn *string `location:"uri" locationName:"Arn" type:"string" required:"true"`
+	Arn *string `location:"uri" locationName:"Arn" min:"12" type:"string" required:"true"`
 
 	// The keys of the tags to be removed.
 	//
@@ -2289,6 +2598,9 @@ func (s *UntagInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UntagInput"}
 	if s.Arn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 12))
 	}
 	if s.Keys == nil {
 		invalidParams.Add(request.NewErrParamRequired("Keys"))
@@ -2316,7 +2628,7 @@ type UntagOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the resource from which tags have been removed.
-	Arn *string `type:"string"`
+	Arn *string `min:"12" type:"string"`
 
 	// The keys of tags that have been removed.
 	Keys []*string `type:"list"`
@@ -2504,6 +2816,27 @@ func (s *UpdateGroupQueryOutput) SetGroupQuery(v *GroupQuery) *UpdateGroupQueryO
 }
 
 const (
+	// GroupFilterNameResourceType is a GroupFilterName enum value
+	GroupFilterNameResourceType = "resource-type"
+)
+
+const (
+	// QueryErrorCodeCloudformationStackInactive is a QueryErrorCode enum value
+	QueryErrorCodeCloudformationStackInactive = "CLOUDFORMATION_STACK_INACTIVE"
+
+	// QueryErrorCodeCloudformationStackNotExisting is a QueryErrorCode enum value
+	QueryErrorCodeCloudformationStackNotExisting = "CLOUDFORMATION_STACK_NOT_EXISTING"
+)
+
+const (
 	// QueryTypeTagFilters10 is a QueryType enum value
 	QueryTypeTagFilters10 = "TAG_FILTERS_1_0"
+
+	// QueryTypeCloudformationStack10 is a QueryType enum value
+	QueryTypeCloudformationStack10 = "CLOUDFORMATION_STACK_1_0"
+)
+
+const (
+	// ResourceFilterNameResourceType is a ResourceFilterName enum value
+	ResourceFilterNameResourceType = "resource-type"
 )

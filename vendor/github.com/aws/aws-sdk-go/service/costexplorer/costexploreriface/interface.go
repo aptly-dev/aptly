@@ -64,6 +64,10 @@ type CostExplorerAPI interface {
 	GetCostAndUsageWithContext(aws.Context, *costexplorer.GetCostAndUsageInput, ...request.Option) (*costexplorer.GetCostAndUsageOutput, error)
 	GetCostAndUsageRequest(*costexplorer.GetCostAndUsageInput) (*request.Request, *costexplorer.GetCostAndUsageOutput)
 
+	GetCostForecast(*costexplorer.GetCostForecastInput) (*costexplorer.GetCostForecastOutput, error)
+	GetCostForecastWithContext(aws.Context, *costexplorer.GetCostForecastInput, ...request.Option) (*costexplorer.GetCostForecastOutput, error)
+	GetCostForecastRequest(*costexplorer.GetCostForecastInput) (*request.Request, *costexplorer.GetCostForecastOutput)
+
 	GetDimensionValues(*costexplorer.GetDimensionValuesInput) (*costexplorer.GetDimensionValuesOutput, error)
 	GetDimensionValuesWithContext(aws.Context, *costexplorer.GetDimensionValuesInput, ...request.Option) (*costexplorer.GetDimensionValuesOutput, error)
 	GetDimensionValuesRequest(*costexplorer.GetDimensionValuesInput) (*request.Request, *costexplorer.GetDimensionValuesOutput)
@@ -83,6 +87,10 @@ type CostExplorerAPI interface {
 	GetTags(*costexplorer.GetTagsInput) (*costexplorer.GetTagsOutput, error)
 	GetTagsWithContext(aws.Context, *costexplorer.GetTagsInput, ...request.Option) (*costexplorer.GetTagsOutput, error)
 	GetTagsRequest(*costexplorer.GetTagsInput) (*request.Request, *costexplorer.GetTagsOutput)
+
+	GetUsageForecast(*costexplorer.GetUsageForecastInput) (*costexplorer.GetUsageForecastOutput, error)
+	GetUsageForecastWithContext(aws.Context, *costexplorer.GetUsageForecastInput, ...request.Option) (*costexplorer.GetUsageForecastOutput, error)
+	GetUsageForecastRequest(*costexplorer.GetUsageForecastInput) (*request.Request, *costexplorer.GetUsageForecastOutput)
 }
 
 var _ CostExplorerAPI = (*costexplorer.CostExplorer)(nil)
