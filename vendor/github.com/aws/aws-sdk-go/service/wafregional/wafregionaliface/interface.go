@@ -125,6 +125,10 @@ type WAFRegionalAPI interface {
 	DeleteIPSetWithContext(aws.Context, *waf.DeleteIPSetInput, ...request.Option) (*waf.DeleteIPSetOutput, error)
 	DeleteIPSetRequest(*waf.DeleteIPSetInput) (*request.Request, *waf.DeleteIPSetOutput)
 
+	DeleteLoggingConfiguration(*waf.DeleteLoggingConfigurationInput) (*waf.DeleteLoggingConfigurationOutput, error)
+	DeleteLoggingConfigurationWithContext(aws.Context, *waf.DeleteLoggingConfigurationInput, ...request.Option) (*waf.DeleteLoggingConfigurationOutput, error)
+	DeleteLoggingConfigurationRequest(*waf.DeleteLoggingConfigurationInput) (*request.Request, *waf.DeleteLoggingConfigurationOutput)
+
 	DeletePermissionPolicy(*waf.DeletePermissionPolicyInput) (*waf.DeletePermissionPolicyOutput, error)
 	DeletePermissionPolicyWithContext(aws.Context, *waf.DeletePermissionPolicyInput, ...request.Option) (*waf.DeletePermissionPolicyOutput, error)
 	DeletePermissionPolicyRequest(*waf.DeletePermissionPolicyInput) (*request.Request, *waf.DeletePermissionPolicyOutput)
@@ -188,6 +192,10 @@ type WAFRegionalAPI interface {
 	GetIPSet(*waf.GetIPSetInput) (*waf.GetIPSetOutput, error)
 	GetIPSetWithContext(aws.Context, *waf.GetIPSetInput, ...request.Option) (*waf.GetIPSetOutput, error)
 	GetIPSetRequest(*waf.GetIPSetInput) (*request.Request, *waf.GetIPSetOutput)
+
+	GetLoggingConfiguration(*waf.GetLoggingConfigurationInput) (*waf.GetLoggingConfigurationOutput, error)
+	GetLoggingConfigurationWithContext(aws.Context, *waf.GetLoggingConfigurationInput, ...request.Option) (*waf.GetLoggingConfigurationOutput, error)
+	GetLoggingConfigurationRequest(*waf.GetLoggingConfigurationInput) (*request.Request, *waf.GetLoggingConfigurationOutput)
 
 	GetPermissionPolicy(*waf.GetPermissionPolicyInput) (*waf.GetPermissionPolicyOutput, error)
 	GetPermissionPolicyWithContext(aws.Context, *waf.GetPermissionPolicyInput, ...request.Option) (*waf.GetPermissionPolicyOutput, error)
@@ -257,6 +265,10 @@ type WAFRegionalAPI interface {
 	ListIPSetsWithContext(aws.Context, *waf.ListIPSetsInput, ...request.Option) (*waf.ListIPSetsOutput, error)
 	ListIPSetsRequest(*waf.ListIPSetsInput) (*request.Request, *waf.ListIPSetsOutput)
 
+	ListLoggingConfigurations(*waf.ListLoggingConfigurationsInput) (*waf.ListLoggingConfigurationsOutput, error)
+	ListLoggingConfigurationsWithContext(aws.Context, *waf.ListLoggingConfigurationsInput, ...request.Option) (*waf.ListLoggingConfigurationsOutput, error)
+	ListLoggingConfigurationsRequest(*waf.ListLoggingConfigurationsInput) (*request.Request, *waf.ListLoggingConfigurationsOutput)
+
 	ListRateBasedRules(*waf.ListRateBasedRulesInput) (*waf.ListRateBasedRulesOutput, error)
 	ListRateBasedRulesWithContext(aws.Context, *waf.ListRateBasedRulesInput, ...request.Option) (*waf.ListRateBasedRulesOutput, error)
 	ListRateBasedRulesRequest(*waf.ListRateBasedRulesInput) (*request.Request, *waf.ListRateBasedRulesOutput)
@@ -293,6 +305,10 @@ type WAFRegionalAPI interface {
 	ListSubscribedRuleGroupsWithContext(aws.Context, *waf.ListSubscribedRuleGroupsInput, ...request.Option) (*waf.ListSubscribedRuleGroupsOutput, error)
 	ListSubscribedRuleGroupsRequest(*waf.ListSubscribedRuleGroupsInput) (*request.Request, *waf.ListSubscribedRuleGroupsOutput)
 
+	ListTagsForResource(*waf.ListTagsForResourceInput) (*waf.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *waf.ListTagsForResourceInput, ...request.Option) (*waf.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*waf.ListTagsForResourceInput) (*request.Request, *waf.ListTagsForResourceOutput)
+
 	ListWebACLs(*waf.ListWebACLsInput) (*waf.ListWebACLsOutput, error)
 	ListWebACLsWithContext(aws.Context, *waf.ListWebACLsInput, ...request.Option) (*waf.ListWebACLsOutput, error)
 	ListWebACLsRequest(*waf.ListWebACLsInput) (*request.Request, *waf.ListWebACLsOutput)
@@ -301,9 +317,21 @@ type WAFRegionalAPI interface {
 	ListXssMatchSetsWithContext(aws.Context, *waf.ListXssMatchSetsInput, ...request.Option) (*waf.ListXssMatchSetsOutput, error)
 	ListXssMatchSetsRequest(*waf.ListXssMatchSetsInput) (*request.Request, *waf.ListXssMatchSetsOutput)
 
+	PutLoggingConfiguration(*waf.PutLoggingConfigurationInput) (*waf.PutLoggingConfigurationOutput, error)
+	PutLoggingConfigurationWithContext(aws.Context, *waf.PutLoggingConfigurationInput, ...request.Option) (*waf.PutLoggingConfigurationOutput, error)
+	PutLoggingConfigurationRequest(*waf.PutLoggingConfigurationInput) (*request.Request, *waf.PutLoggingConfigurationOutput)
+
 	PutPermissionPolicy(*waf.PutPermissionPolicyInput) (*waf.PutPermissionPolicyOutput, error)
 	PutPermissionPolicyWithContext(aws.Context, *waf.PutPermissionPolicyInput, ...request.Option) (*waf.PutPermissionPolicyOutput, error)
 	PutPermissionPolicyRequest(*waf.PutPermissionPolicyInput) (*request.Request, *waf.PutPermissionPolicyOutput)
+
+	TagResource(*waf.TagResourceInput) (*waf.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *waf.TagResourceInput, ...request.Option) (*waf.TagResourceOutput, error)
+	TagResourceRequest(*waf.TagResourceInput) (*request.Request, *waf.TagResourceOutput)
+
+	UntagResource(*waf.UntagResourceInput) (*waf.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *waf.UntagResourceInput, ...request.Option) (*waf.UntagResourceOutput, error)
+	UntagResourceRequest(*waf.UntagResourceInput) (*request.Request, *waf.UntagResourceOutput)
 
 	UpdateByteMatchSet(*waf.UpdateByteMatchSetInput) (*waf.UpdateByteMatchSetOutput, error)
 	UpdateByteMatchSetWithContext(aws.Context, *waf.UpdateByteMatchSetInput, ...request.Option) (*waf.UpdateByteMatchSetOutput, error)

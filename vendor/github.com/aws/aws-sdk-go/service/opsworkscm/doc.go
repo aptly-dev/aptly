@@ -4,7 +4,9 @@
 // requests to AWS OpsWorks for Chef Automate.
 //
 // AWS OpsWorks for configuration management (CM) is a service that runs and
-// manages configuration management servers.
+// manages configuration management servers. You can use AWS OpsWorks CM to
+// create and manage AWS OpsWorks for Chef Automate and AWS OpsWorks for Puppet
+// Enterprise servers, and add or remove nodes for the servers to manage.
 //
 // Glossary of terms
 //
@@ -18,7 +20,7 @@
 //    they are deleted.
 //
 //    * Engine: The engine is the specific configuration manager that you want
-//    to use. Valid values in this release include Chef and Puppet.
+//    to use. Valid values in this release include ChefAutomate and Puppet.
 //
 //    * Backup: This is an application-level backup of the data that the configuration
 //    manager stores. AWS OpsWorks CM creates an S3 bucket for backups when
@@ -34,7 +36,6 @@
 //    the AWS OpsWorks CM database. These attributes store information about
 //    configuration limits (servers, backups, etc.) and your customer account.
 //
-//
 // Endpoints
 //
 // AWS OpsWorks CM supports the following endpoints, all HTTPS. You must connect
@@ -43,7 +44,19 @@
 //
 //    * opsworks-cm.us-east-1.amazonaws.com
 //
+//    * opsworks-cm.us-east-2.amazonaws.com
+//
+//    * opsworks-cm.us-west-1.amazonaws.com
+//
 //    * opsworks-cm.us-west-2.amazonaws.com
+//
+//    * opsworks-cm.ap-northeast-1.amazonaws.com
+//
+//    * opsworks-cm.ap-southeast-1.amazonaws.com
+//
+//    * opsworks-cm.ap-southeast-2.amazonaws.com
+//
+//    * opsworks-cm.eu-central-1.amazonaws.com
 //
 //    * opsworks-cm.eu-west-1.amazonaws.com
 //

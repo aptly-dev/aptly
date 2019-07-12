@@ -41,8 +41,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewSession_WithCustomCABundle_Env(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	endpoint, err := awstesting.CreateTLSServer(TLSBundleCertFile, TLSBundleKeyFile, nil)
 	if err != nil {
@@ -75,8 +75,8 @@ func TestNewSession_WithCustomCABundle_Env(t *testing.T) {
 }
 
 func TestNewSession_WithCustomCABundle_EnvNotExists(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	os.Setenv("AWS_CA_BUNDLE", "file-not-exists")
 
@@ -93,8 +93,8 @@ func TestNewSession_WithCustomCABundle_EnvNotExists(t *testing.T) {
 }
 
 func TestNewSession_WithCustomCABundle_Option(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	endpoint, err := awstesting.CreateTLSServer(TLSBundleCertFile, TLSBundleKeyFile, nil)
 	if err != nil {
@@ -127,9 +127,37 @@ func TestNewSession_WithCustomCABundle_Option(t *testing.T) {
 	}
 }
 
+func TestNewSession_WithCustomCABundle_HTTPProxyAvailable(t *testing.T) {
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
+
+	s, err := NewSessionWithOptions(Options{
+		Config: aws.Config{
+			HTTPClient:  &http.Client{},
+			Region:      aws.String("mock-region"),
+			Credentials: credentials.AnonymousCredentials,
+		},
+		CustomCABundle: bytes.NewReader(awstesting.TLSBundleCA),
+	})
+	if err != nil {
+		t.Fatalf("expect no error, got %v", err)
+	}
+	if s == nil {
+		t.Fatalf("expect session to be created, got none")
+	}
+
+	tr := s.Config.HTTPClient.Transport.(*http.Transport)
+	if tr.Proxy == nil {
+		t.Fatalf("expect transport proxy, was nil")
+	}
+	if tr.TLSClientConfig.RootCAs == nil {
+		t.Fatalf("expect TLS config to have root CAs")
+	}
+}
+
 func TestNewSession_WithCustomCABundle_OptionPriority(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	endpoint, err := awstesting.CreateTLSServer(TLSBundleCertFile, TLSBundleKeyFile, nil)
 	if err != nil {
@@ -171,8 +199,8 @@ func (m *mockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 func TestNewSession_WithCustomCABundle_UnsupportedTransport(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	s, err := NewSessionWithOptions(Options{
 		Config: aws.Config{
@@ -198,8 +226,8 @@ func TestNewSession_WithCustomCABundle_UnsupportedTransport(t *testing.T) {
 }
 
 func TestNewSession_WithCustomCABundle_TransportSet(t *testing.T) {
-	oldEnv := initSessionTestEnv()
-	defer awstesting.PopEnv(oldEnv)
+	restoreEnvFn := initSessionTestEnv()
+	defer restoreEnvFn()
 
 	endpoint, err := awstesting.CreateTLSServer(TLSBundleCertFile, TLSBundleKeyFile, nil)
 	if err != nil {

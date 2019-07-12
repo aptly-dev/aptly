@@ -4,6 +4,12 @@ package appsync
 
 const (
 
+	// ErrCodeAccessDeniedException for service response error code
+	// "AccessDeniedException".
+	//
+	// You do not have access to perform this operation on this resource.
+	ErrCodeAccessDeniedException = "AccessDeniedException"
+
 	// ErrCodeApiKeyLimitExceededException for service response error code
 	// "ApiKeyLimitExceededException".
 	//
@@ -13,7 +19,8 @@ const (
 	// ErrCodeApiKeyValidityOutOfBoundsException for service response error code
 	// "ApiKeyValidityOutOfBoundsException".
 	//
-	// The API key expiration must be set to a value between 1 and 365 days.
+	// The API key expiration must be set to a value between 1 and 365 days from
+	// creation (for CreateApiKey) or from update (for UpdateApiKey).
 	ErrCodeApiKeyValidityOutOfBoundsException = "ApiKeyValidityOutOfBoundsException"
 
 	// ErrCodeApiLimitExceededException for service response error code
@@ -26,13 +33,13 @@ const (
 	// "BadRequestException".
 	//
 	// The request is not well formed. For example, a value is invalid or a required
-	// field is missing. Check the field values, and try again.
+	// field is missing. Check the field values, and then try again.
 	ErrCodeBadRequestException = "BadRequestException"
 
 	// ErrCodeConcurrentModificationException for service response error code
 	// "ConcurrentModificationException".
 	//
-	// Another modification is being made. That modification must complete before
+	// Another modification is in progress at this time and it must complete before
 	// you can make your change.
 	ErrCodeConcurrentModificationException = "ConcurrentModificationException"
 
@@ -57,8 +64,8 @@ const (
 	// ErrCodeNotFoundException for service response error code
 	// "NotFoundException".
 	//
-	// The resource specified in the request was not found. Check the resource and
-	// try again.
+	// The resource specified in the request was not found. Check the resource,
+	// and then try again.
 	ErrCodeNotFoundException = "NotFoundException"
 
 	// ErrCodeUnauthorizedException for service response error code

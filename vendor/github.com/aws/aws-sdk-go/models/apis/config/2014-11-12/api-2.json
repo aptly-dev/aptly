@@ -13,6 +13,19 @@
     "uid":"config-2014-11-12"
   },
   "operations":{
+    "BatchGetAggregateResourceConfig":{
+      "name":"BatchGetAggregateResourceConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetAggregateResourceConfigRequest"},
+      "output":{"shape":"BatchGetAggregateResourceConfigResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"NoSuchConfigurationAggregatorException"}
+      ]
+    },
     "BatchGetResourceConfig":{
       "name":"BatchGetResourceConfig",
       "http":{
@@ -96,6 +109,18 @@
         {"shape":"ResourceInUseException"}
       ]
     },
+    "DeleteOrganizationConfigRule":{
+      "name":"DeleteOrganizationConfigRule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteOrganizationConfigRuleRequest"},
+      "errors":[
+        {"shape":"NoSuchOrganizationConfigRuleException"},
+        {"shape":"ResourceInUseException"}
+      ]
+    },
     "DeletePendingAggregationRequest":{
       "name":"DeletePendingAggregationRequest",
       "http":{
@@ -105,6 +130,31 @@
       "input":{"shape":"DeletePendingAggregationRequestRequest"},
       "errors":[
         {"shape":"InvalidParameterValueException"}
+      ]
+    },
+    "DeleteRemediationConfiguration":{
+      "name":"DeleteRemediationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRemediationConfigurationRequest"},
+      "output":{"shape":"DeleteRemediationConfigurationResponse"},
+      "errors":[
+        {"shape":"NoSuchRemediationConfigurationException"},
+        {"shape":"RemediationInProgressException"}
+      ]
+    },
+    "DeleteRetentionConfiguration":{
+      "name":"DeleteRetentionConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRetentionConfigurationRequest"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"NoSuchRetentionConfigurationException"}
       ]
     },
     "DeliverConfigSnapshot":{
@@ -282,6 +332,34 @@
         {"shape":"NoSuchDeliveryChannelException"}
       ]
     },
+    "DescribeOrganizationConfigRuleStatuses":{
+      "name":"DescribeOrganizationConfigRuleStatuses",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeOrganizationConfigRuleStatusesRequest"},
+      "output":{"shape":"DescribeOrganizationConfigRuleStatusesResponse"},
+      "errors":[
+        {"shape":"NoSuchOrganizationConfigRuleException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"}
+      ]
+    },
+    "DescribeOrganizationConfigRules":{
+      "name":"DescribeOrganizationConfigRules",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeOrganizationConfigRulesRequest"},
+      "output":{"shape":"DescribeOrganizationConfigRulesResponse"},
+      "errors":[
+        {"shape":"NoSuchOrganizationConfigRuleException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"InvalidLimitException"}
+      ]
+    },
     "DescribePendingAggregationRequests":{
       "name":"DescribePendingAggregationRequests",
       "http":{
@@ -294,6 +372,41 @@
         {"shape":"InvalidParameterValueException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"InvalidLimitException"}
+      ]
+    },
+    "DescribeRemediationConfigurations":{
+      "name":"DescribeRemediationConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeRemediationConfigurationsRequest"},
+      "output":{"shape":"DescribeRemediationConfigurationsResponse"}
+    },
+    "DescribeRemediationExecutionStatus":{
+      "name":"DescribeRemediationExecutionStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeRemediationExecutionStatusRequest"},
+      "output":{"shape":"DescribeRemediationExecutionStatusResponse"},
+      "errors":[
+        {"shape":"NoSuchRemediationConfigurationException"}
+      ]
+    },
+    "DescribeRetentionConfigurations":{
+      "name":"DescribeRetentionConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeRetentionConfigurationsRequest"},
+      "output":{"shape":"DescribeRetentionConfigurationsResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"NoSuchRetentionConfigurationException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "GetAggregateComplianceDetailsByConfigRule":{
@@ -324,6 +437,36 @@
         {"shape":"InvalidLimitException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"NoSuchConfigurationAggregatorException"}
+      ]
+    },
+    "GetAggregateDiscoveredResourceCounts":{
+      "name":"GetAggregateDiscoveredResourceCounts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAggregateDiscoveredResourceCountsRequest"},
+      "output":{"shape":"GetAggregateDiscoveredResourceCountsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"NoSuchConfigurationAggregatorException"}
+      ]
+    },
+    "GetAggregateResourceConfig":{
+      "name":"GetAggregateResourceConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAggregateResourceConfigRequest"},
+      "output":{"shape":"GetAggregateResourceConfigResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"NoSuchConfigurationAggregatorException"},
+        {"shape":"OversizedConfigurationItemException"},
+        {"shape":"ResourceNotDiscoveredException"}
       ]
     },
     "GetComplianceDetailsByConfigRule":{
@@ -386,6 +529,20 @@
         {"shape":"InvalidNextTokenException"}
       ]
     },
+    "GetOrganizationConfigRuleDetailedStatus":{
+      "name":"GetOrganizationConfigRuleDetailedStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetOrganizationConfigRuleDetailedStatusRequest"},
+      "output":{"shape":"GetOrganizationConfigRuleDetailedStatusResponse"},
+      "errors":[
+        {"shape":"NoSuchOrganizationConfigRuleException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"}
+      ]
+    },
     "GetResourceConfigHistory":{
       "name":"GetResourceConfigHistory",
       "http":{
@@ -403,6 +560,21 @@
         {"shape":"ResourceNotDiscoveredException"}
       ]
     },
+    "ListAggregateDiscoveredResources":{
+      "name":"ListAggregateDiscoveredResources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAggregateDiscoveredResourcesRequest"},
+      "output":{"shape":"ListAggregateDiscoveredResourcesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"NoSuchConfigurationAggregatorException"}
+      ]
+    },
     "ListDiscoveredResources":{
       "name":"ListDiscoveredResources",
       "http":{
@@ -416,6 +588,21 @@
         {"shape":"InvalidLimitException"},
         {"shape":"InvalidNextTokenException"},
         {"shape":"NoAvailableConfigurationRecorderException"}
+      ]
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "PutAggregationAuthorization":{
@@ -507,6 +694,65 @@
         {"shape":"NoSuchConfigRuleException"}
       ]
     },
+    "PutOrganizationConfigRule":{
+      "name":"PutOrganizationConfigRule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutOrganizationConfigRuleRequest"},
+      "output":{"shape":"PutOrganizationConfigRuleResponse"},
+      "errors":[
+        {"shape":"MaxNumberOfOrganizationConfigRulesExceededException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ValidationException"},
+        {"shape":"OrganizationAccessDeniedException"},
+        {"shape":"NoAvailableOrganizationException"},
+        {"shape":"OrganizationAllFeaturesNotEnabledException"},
+        {"shape":"InsufficientPermissionsException"}
+      ]
+    },
+    "PutRemediationConfigurations":{
+      "name":"PutRemediationConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutRemediationConfigurationsRequest"},
+      "output":{"shape":"PutRemediationConfigurationsResponse"},
+      "errors":[
+        {"shape":"InsufficientPermissionsException"},
+        {"shape":"InvalidParameterValueException"}
+      ]
+    },
+    "PutRetentionConfiguration":{
+      "name":"PutRetentionConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutRetentionConfigurationRequest"},
+      "output":{"shape":"PutRetentionConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"MaxNumberOfRetentionConfigurationsExceededException"}
+      ]
+    },
+    "SelectResourceConfig":{
+      "name":"SelectResourceConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"SelectResourceConfigRequest"},
+      "output":{"shape":"SelectResourceConfigResponse"},
+      "errors":[
+        {"shape":"InvalidExpressionException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"}
+      ]
+    },
     "StartConfigRulesEvaluation":{
       "name":"StartConfigRulesEvaluation",
       "http":{
@@ -534,6 +780,19 @@
         {"shape":"NoAvailableDeliveryChannelException"}
       ]
     },
+    "StartRemediationExecution":{
+      "name":"StartRemediationExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartRemediationExecutionRequest"},
+      "output":{"shape":"StartRemediationExecutionResponse"},
+      "errors":[
+        {"shape":"InsufficientPermissionsException"},
+        {"shape":"NoSuchRemediationConfigurationException"}
+      ]
+    },
     "StopConfigurationRecorder":{
       "name":"StopConfigurationRecorder",
       "http":{
@@ -543,6 +802,31 @@
       "input":{"shape":"StopConfigurationRecorderRequest"},
       "errors":[
         {"shape":"NoSuchConfigurationRecorderException"}
+      ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyTagsException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
       ]
     }
   },
@@ -612,6 +896,22 @@
       "type":"list",
       "member":{"shape":"AggregateEvaluationResult"}
     },
+    "AggregateResourceIdentifier":{
+      "type":"structure",
+      "required":[
+        "SourceAccountId",
+        "SourceRegion",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "SourceAccountId":{"shape":"AccountId"},
+        "SourceRegion":{"shape":"AwsRegion"},
+        "ResourceId":{"shape":"ResourceId"},
+        "ResourceType":{"shape":"ResourceType"},
+        "ResourceName":{"shape":"ResourceName"}
+      }
+    },
     "AggregatedSourceStatus":{
       "type":"structure",
       "members":{
@@ -667,6 +967,11 @@
       "min":1
     },
     "AllSupported":{"type":"boolean"},
+    "AmazonResourceName":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
     "AvailabilityZone":{"type":"string"},
     "AwsRegion":{
       "type":"string",
@@ -700,6 +1005,24 @@
       "type":"string",
       "max":768,
       "min":1
+    },
+    "BatchGetAggregateResourceConfigRequest":{
+      "type":"structure",
+      "required":[
+        "ConfigurationAggregatorName",
+        "ResourceIdentifiers"
+      ],
+      "members":{
+        "ConfigurationAggregatorName":{"shape":"ConfigurationAggregatorName"},
+        "ResourceIdentifiers":{"shape":"ResourceIdentifiersList"}
+      }
+    },
+    "BatchGetAggregateResourceConfigResponse":{
+      "type":"structure",
+      "members":{
+        "BaseConfigurationItems":{"shape":"BaseConfigurationItems"},
+        "UnprocessedResourceIdentifiers":{"shape":"UnprocessedResourceIdentifierList"}
+      }
     },
     "BatchGetResourceConfigRequest":{
       "type":"structure",
@@ -828,7 +1151,8 @@
         "Source":{"shape":"Source"},
         "InputParameters":{"shape":"StringWithCharLimit1024"},
         "MaximumExecutionFrequency":{"shape":"MaximumExecutionFrequency"},
-        "ConfigRuleState":{"shape":"ConfigRuleState"}
+        "ConfigRuleState":{"shape":"ConfigRuleState"},
+        "CreatedBy":{"shape":"StringWithCharLimit256"}
       }
     },
     "ConfigRuleComplianceFilters":{
@@ -1018,6 +1342,11 @@
       "member":{"shape":"ConfigurationRecorderStatus"}
     },
     "ConfigurationStateId":{"type":"string"},
+    "CosmosPageLimit":{
+      "type":"integer",
+      "max":100,
+      "min":0
+    },
     "Date":{"type":"timestamp"},
     "DeleteAggregationAuthorizationRequest":{
       "type":"structure",
@@ -1070,6 +1399,13 @@
       "members":{
       }
     },
+    "DeleteOrganizationConfigRuleRequest":{
+      "type":"structure",
+      "required":["OrganizationConfigRuleName"],
+      "members":{
+        "OrganizationConfigRuleName":{"shape":"StringWithCharLimit64"}
+      }
+    },
     "DeletePendingAggregationRequestRequest":{
       "type":"structure",
       "required":[
@@ -1079,6 +1415,26 @@
       "members":{
         "RequesterAccountId":{"shape":"AccountId"},
         "RequesterAwsRegion":{"shape":"AwsRegion"}
+      }
+    },
+    "DeleteRemediationConfigurationRequest":{
+      "type":"structure",
+      "required":["ConfigRuleName"],
+      "members":{
+        "ConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "ResourceType":{"shape":"String"}
+      }
+    },
+    "DeleteRemediationConfigurationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteRetentionConfigurationRequest":{
+      "type":"structure",
+      "required":["RetentionConfigurationName"],
+      "members":{
+        "RetentionConfigurationName":{"shape":"RetentionConfigurationName"}
       }
     },
     "DeliverConfigSnapshotRequest":{
@@ -1305,6 +1661,36 @@
         "DeliveryChannels":{"shape":"DeliveryChannelList"}
       }
     },
+    "DescribeOrganizationConfigRuleStatusesRequest":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRuleNames":{"shape":"OrganizationConfigRuleNames"},
+        "Limit":{"shape":"CosmosPageLimit"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeOrganizationConfigRuleStatusesResponse":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRuleStatuses":{"shape":"OrganizationConfigRuleStatuses"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeOrganizationConfigRulesRequest":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRuleNames":{"shape":"OrganizationConfigRuleNames"},
+        "Limit":{"shape":"CosmosPageLimit"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeOrganizationConfigRulesResponse":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRules":{"shape":"OrganizationConfigRules"},
+        "NextToken":{"shape":"String"}
+      }
+    },
     "DescribePendingAggregationRequestsLimit":{
       "type":"integer",
       "max":20,
@@ -1323,6 +1709,54 @@
         "PendingAggregationRequests":{"shape":"PendingAggregationRequestList"},
         "NextToken":{"shape":"String"}
       }
+    },
+    "DescribeRemediationConfigurationsRequest":{
+      "type":"structure",
+      "required":["ConfigRuleNames"],
+      "members":{
+        "ConfigRuleNames":{"shape":"ConfigRuleNames"}
+      }
+    },
+    "DescribeRemediationConfigurationsResponse":{
+      "type":"structure",
+      "members":{
+        "RemediationConfigurations":{"shape":"RemediationConfigurations"}
+      }
+    },
+    "DescribeRemediationExecutionStatusRequest":{
+      "type":"structure",
+      "required":["ConfigRuleName"],
+      "members":{
+        "ConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "ResourceKeys":{"shape":"ResourceKeys"},
+        "Limit":{"shape":"Limit"},
+        "NextToken":{"shape":"StringWithCharLimit256"}
+      }
+    },
+    "DescribeRemediationExecutionStatusResponse":{
+      "type":"structure",
+      "members":{
+        "RemediationExecutionStatuses":{"shape":"RemediationExecutionStatuses"},
+        "NextToken":{"shape":"StringWithCharLimit256"}
+      }
+    },
+    "DescribeRetentionConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "RetentionConfigurationNames":{"shape":"RetentionConfigurationNameList"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "DescribeRetentionConfigurationsResponse":{
+      "type":"structure",
+      "members":{
+        "RetentionConfigurations":{"shape":"RetentionConfigurationList"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "DiscoveredResourceIdentifierList":{
+      "type":"list",
+      "member":{"shape":"AggregateResourceIdentifier"}
     },
     "EarlierTime":{"type":"timestamp"},
     "EmptiableStringWithCharLimit256":{
@@ -1386,6 +1820,39 @@
       "type":"string",
       "enum":["aws.config"]
     },
+    "ExcludedAccounts":{
+      "type":"list",
+      "member":{"shape":"AccountId"},
+      "max":1000,
+      "min":0
+    },
+    "Expression":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "FailedRemediationBatch":{
+      "type":"structure",
+      "members":{
+        "FailureMessage":{"shape":"String"},
+        "FailedItems":{"shape":"RemediationConfigurations"}
+      }
+    },
+    "FailedRemediationBatches":{
+      "type":"list",
+      "member":{"shape":"FailedRemediationBatch"}
+    },
+    "FieldInfo":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"FieldName"}
+      }
+    },
+    "FieldInfoList":{
+      "type":"list",
+      "member":{"shape":"FieldInfo"}
+    },
+    "FieldName":{"type":"string"},
     "GetAggregateComplianceDetailsByConfigRuleRequest":{
       "type":"structure",
       "required":[
@@ -1428,6 +1895,44 @@
         "GroupByKey":{"shape":"StringWithCharLimit256"},
         "AggregateComplianceCounts":{"shape":"AggregateComplianceCountList"},
         "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "GetAggregateDiscoveredResourceCountsRequest":{
+      "type":"structure",
+      "required":["ConfigurationAggregatorName"],
+      "members":{
+        "ConfigurationAggregatorName":{"shape":"ConfigurationAggregatorName"},
+        "Filters":{"shape":"ResourceCountFilters"},
+        "GroupByKey":{"shape":"ResourceCountGroupKey"},
+        "Limit":{"shape":"GroupByAPILimit"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "GetAggregateDiscoveredResourceCountsResponse":{
+      "type":"structure",
+      "required":["TotalDiscoveredResources"],
+      "members":{
+        "TotalDiscoveredResources":{"shape":"Long"},
+        "GroupByKey":{"shape":"StringWithCharLimit256"},
+        "GroupedResourceCounts":{"shape":"GroupedResourceCountList"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "GetAggregateResourceConfigRequest":{
+      "type":"structure",
+      "required":[
+        "ConfigurationAggregatorName",
+        "ResourceIdentifier"
+      ],
+      "members":{
+        "ConfigurationAggregatorName":{"shape":"ConfigurationAggregatorName"},
+        "ResourceIdentifier":{"shape":"AggregateResourceIdentifier"}
+      }
+    },
+    "GetAggregateResourceConfigResponse":{
+      "type":"structure",
+      "members":{
+        "ConfigurationItem":{"shape":"ConfigurationItem"}
       }
     },
     "GetComplianceDetailsByConfigRuleRequest":{
@@ -1501,6 +2006,23 @@
         "nextToken":{"shape":"NextToken"}
       }
     },
+    "GetOrganizationConfigRuleDetailedStatusRequest":{
+      "type":"structure",
+      "required":["OrganizationConfigRuleName"],
+      "members":{
+        "OrganizationConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "Filters":{"shape":"StatusDetailFilters"},
+        "Limit":{"shape":"CosmosPageLimit"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "GetOrganizationConfigRuleDetailedStatusResponse":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRuleDetailedStatus":{"shape":"OrganizationConfigRuleDetailedStatus"},
+        "NextToken":{"shape":"String"}
+      }
+    },
     "GetResourceConfigHistoryRequest":{
       "type":"structure",
       "required":[
@@ -1529,6 +2051,21 @@
       "max":1000,
       "min":0
     },
+    "GroupedResourceCount":{
+      "type":"structure",
+      "required":[
+        "GroupName",
+        "ResourceCount"
+      ],
+      "members":{
+        "GroupName":{"shape":"StringWithCharLimit256"},
+        "ResourceCount":{"shape":"Long"}
+      }
+    },
+    "GroupedResourceCountList":{
+      "type":"list",
+      "member":{"shape":"GroupedResourceCount"}
+    },
     "IncludeGlobalResourceTypes":{"type":"boolean"},
     "InsufficientDeliveryPolicyException":{
       "type":"structure",
@@ -1550,6 +2087,12 @@
       "exception":true
     },
     "InvalidDeliveryChannelNameException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "InvalidExpressionException":{
       "type":"structure",
       "members":{
       },
@@ -1627,6 +2170,27 @@
       },
       "exception":true
     },
+    "ListAggregateDiscoveredResourcesRequest":{
+      "type":"structure",
+      "required":[
+        "ConfigurationAggregatorName",
+        "ResourceType"
+      ],
+      "members":{
+        "ConfigurationAggregatorName":{"shape":"ConfigurationAggregatorName"},
+        "ResourceType":{"shape":"ResourceType"},
+        "Filters":{"shape":"ResourceFilters"},
+        "Limit":{"shape":"Limit"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListAggregateDiscoveredResourcesResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceIdentifiers":{"shape":"DiscoveredResourceIdentifierList"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
     "ListDiscoveredResourcesRequest":{
       "type":"structure",
       "required":["resourceType"],
@@ -1644,6 +2208,22 @@
       "members":{
         "resourceIdentifiers":{"shape":"ResourceIdentifierList"},
         "nextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"AmazonResourceName"},
+        "Limit":{"shape":"Limit"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{"shape":"TagList"},
+        "NextToken":{"shape":"NextToken"}
       }
     },
     "Long":{"type":"long"},
@@ -1665,6 +2245,18 @@
       },
       "exception":true
     },
+    "MaxNumberOfOrganizationConfigRulesExceededException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "MaxNumberOfRetentionConfigurationsExceededException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
     "MaximumExecutionFrequency":{
       "type":"string",
       "enum":[
@@ -1674,6 +2266,33 @@
         "Twelve_Hours",
         "TwentyFour_Hours"
       ]
+    },
+    "MemberAccountRuleStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_SUCCESSFUL",
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "DELETE_SUCCESSFUL",
+        "DELETE_FAILED",
+        "DELETE_IN_PROGRESS"
+      ]
+    },
+    "MemberAccountStatus":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "ConfigRuleName",
+        "MemberAccountRuleStatus"
+      ],
+      "members":{
+        "AccountId":{"shape":"AccountId"},
+        "ConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "MemberAccountRuleStatus":{"shape":"MemberAccountRuleStatus"},
+        "ErrorCode":{"shape":"String"},
+        "ErrorMessage":{"shape":"String"},
+        "LastUpdateTime":{"shape":"Date"}
+      }
     },
     "MessageType":{
       "type":"string",
@@ -1740,6 +2359,24 @@
       },
       "exception":true
     },
+    "NoSuchOrganizationConfigRuleException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "NoSuchRemediationConfigurationException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "NoSuchRetentionConfigurationException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
     "OrderingTimestamp":{"type":"timestamp"},
     "OrganizationAccessDeniedException":{
       "type":"structure",
@@ -1757,6 +2394,114 @@
       }
     },
     "OrganizationAllFeaturesNotEnabledException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "OrganizationConfigRule":{
+      "type":"structure",
+      "required":[
+        "OrganizationConfigRuleName",
+        "OrganizationConfigRuleArn"
+      ],
+      "members":{
+        "OrganizationConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "OrganizationConfigRuleArn":{"shape":"StringWithCharLimit256"},
+        "OrganizationManagedRuleMetadata":{"shape":"OrganizationManagedRuleMetadata"},
+        "OrganizationCustomRuleMetadata":{"shape":"OrganizationCustomRuleMetadata"},
+        "ExcludedAccounts":{"shape":"ExcludedAccounts"},
+        "LastUpdateTime":{"shape":"Date"}
+      }
+    },
+    "OrganizationConfigRuleDetailedStatus":{
+      "type":"list",
+      "member":{"shape":"MemberAccountStatus"}
+    },
+    "OrganizationConfigRuleNames":{
+      "type":"list",
+      "member":{"shape":"StringWithCharLimit64"},
+      "max":25,
+      "min":0
+    },
+    "OrganizationConfigRuleStatus":{
+      "type":"structure",
+      "required":[
+        "OrganizationConfigRuleName",
+        "OrganizationRuleStatus"
+      ],
+      "members":{
+        "OrganizationConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "OrganizationRuleStatus":{"shape":"OrganizationRuleStatus"},
+        "ErrorCode":{"shape":"String"},
+        "ErrorMessage":{"shape":"String"},
+        "LastUpdateTime":{"shape":"Date"}
+      }
+    },
+    "OrganizationConfigRuleStatuses":{
+      "type":"list",
+      "member":{"shape":"OrganizationConfigRuleStatus"}
+    },
+    "OrganizationConfigRuleTriggerType":{
+      "type":"string",
+      "enum":[
+        "ConfigurationItemChangeNotification",
+        "OversizedConfigurationItemChangeNotification",
+        "ScheduledNotification"
+      ]
+    },
+    "OrganizationConfigRuleTriggerTypes":{
+      "type":"list",
+      "member":{"shape":"OrganizationConfigRuleTriggerType"}
+    },
+    "OrganizationConfigRules":{
+      "type":"list",
+      "member":{"shape":"OrganizationConfigRule"}
+    },
+    "OrganizationCustomRuleMetadata":{
+      "type":"structure",
+      "required":[
+        "LambdaFunctionArn",
+        "OrganizationConfigRuleTriggerTypes"
+      ],
+      "members":{
+        "Description":{"shape":"StringWithCharLimit256Min0"},
+        "LambdaFunctionArn":{"shape":"StringWithCharLimit256"},
+        "OrganizationConfigRuleTriggerTypes":{"shape":"OrganizationConfigRuleTriggerTypes"},
+        "InputParameters":{"shape":"StringWithCharLimit2048"},
+        "MaximumExecutionFrequency":{"shape":"MaximumExecutionFrequency"},
+        "ResourceTypesScope":{"shape":"ResourceTypesScope"},
+        "ResourceIdScope":{"shape":"StringWithCharLimit768"},
+        "TagKeyScope":{"shape":"StringWithCharLimit128"},
+        "TagValueScope":{"shape":"StringWithCharLimit256"}
+      }
+    },
+    "OrganizationManagedRuleMetadata":{
+      "type":"structure",
+      "required":["RuleIdentifier"],
+      "members":{
+        "Description":{"shape":"StringWithCharLimit256Min0"},
+        "RuleIdentifier":{"shape":"StringWithCharLimit256"},
+        "InputParameters":{"shape":"StringWithCharLimit2048"},
+        "MaximumExecutionFrequency":{"shape":"MaximumExecutionFrequency"},
+        "ResourceTypesScope":{"shape":"ResourceTypesScope"},
+        "ResourceIdScope":{"shape":"StringWithCharLimit768"},
+        "TagKeyScope":{"shape":"StringWithCharLimit128"},
+        "TagValueScope":{"shape":"StringWithCharLimit256"}
+      }
+    },
+    "OrganizationRuleStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_SUCCESSFUL",
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "DELETE_SUCCESSFUL",
+        "DELETE_FAILED",
+        "DELETE_IN_PROGRESS"
+      ]
+    },
+    "OversizedConfigurationItemException":{
       "type":"structure",
       "members":{
       },
@@ -1788,7 +2533,8 @@
       ],
       "members":{
         "AuthorizedAccountId":{"shape":"AccountId"},
-        "AuthorizedAwsRegion":{"shape":"AwsRegion"}
+        "AuthorizedAwsRegion":{"shape":"AwsRegion"},
+        "Tags":{"shape":"TagsList"}
       }
     },
     "PutAggregationAuthorizationResponse":{
@@ -1801,7 +2547,8 @@
       "type":"structure",
       "required":["ConfigRule"],
       "members":{
-        "ConfigRule":{"shape":"ConfigRule"}
+        "ConfigRule":{"shape":"ConfigRule"},
+        "Tags":{"shape":"TagsList"}
       }
     },
     "PutConfigurationAggregatorRequest":{
@@ -1810,7 +2557,8 @@
       "members":{
         "ConfigurationAggregatorName":{"shape":"ConfigurationAggregatorName"},
         "AccountAggregationSources":{"shape":"AccountAggregationSourceList"},
-        "OrganizationAggregationSource":{"shape":"OrganizationAggregationSource"}
+        "OrganizationAggregationSource":{"shape":"OrganizationAggregationSource"},
+        "Tags":{"shape":"TagsList"}
       }
     },
     "PutConfigurationAggregatorResponse":{
@@ -1846,6 +2594,54 @@
       "type":"structure",
       "members":{
         "FailedEvaluations":{"shape":"Evaluations"}
+      }
+    },
+    "PutOrganizationConfigRuleRequest":{
+      "type":"structure",
+      "required":["OrganizationConfigRuleName"],
+      "members":{
+        "OrganizationConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "OrganizationManagedRuleMetadata":{"shape":"OrganizationManagedRuleMetadata"},
+        "OrganizationCustomRuleMetadata":{"shape":"OrganizationCustomRuleMetadata"},
+        "ExcludedAccounts":{"shape":"ExcludedAccounts"}
+      }
+    },
+    "PutOrganizationConfigRuleResponse":{
+      "type":"structure",
+      "members":{
+        "OrganizationConfigRuleArn":{"shape":"StringWithCharLimit256"}
+      }
+    },
+    "PutRemediationConfigurationsRequest":{
+      "type":"structure",
+      "required":["RemediationConfigurations"],
+      "members":{
+        "RemediationConfigurations":{"shape":"RemediationConfigurations"}
+      }
+    },
+    "PutRemediationConfigurationsResponse":{
+      "type":"structure",
+      "members":{
+        "FailedBatches":{"shape":"FailedRemediationBatches"}
+      }
+    },
+    "PutRetentionConfigurationRequest":{
+      "type":"structure",
+      "required":["RetentionPeriodInDays"],
+      "members":{
+        "RetentionPeriodInDays":{"shape":"RetentionPeriodInDays"}
+      }
+    },
+    "PutRetentionConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "RetentionConfiguration":{"shape":"RetentionConfiguration"}
+      }
+    },
+    "QueryInfo":{
+      "type":"structure",
+      "members":{
+        "SelectFields":{"shape":"FieldInfoList"}
       }
     },
     "RecorderName":{
@@ -1894,6 +2690,97 @@
       "member":{"shape":"Relationship"}
     },
     "RelationshipName":{"type":"string"},
+    "RemediationConfiguration":{
+      "type":"structure",
+      "required":[
+        "ConfigRuleName",
+        "TargetType",
+        "TargetId"
+      ],
+      "members":{
+        "ConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "TargetType":{"shape":"RemediationTargetType"},
+        "TargetId":{"shape":"StringWithCharLimit256"},
+        "TargetVersion":{"shape":"String"},
+        "Parameters":{"shape":"RemediationParameters"},
+        "ResourceType":{"shape":"String"}
+      }
+    },
+    "RemediationConfigurations":{
+      "type":"list",
+      "member":{"shape":"RemediationConfiguration"},
+      "max":25,
+      "min":0
+    },
+    "RemediationExecutionState":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "RemediationExecutionStatus":{
+      "type":"structure",
+      "members":{
+        "ResourceKey":{"shape":"ResourceKey"},
+        "State":{"shape":"RemediationExecutionState"},
+        "StepDetails":{"shape":"RemediationExecutionSteps"},
+        "InvocationTime":{"shape":"Date"},
+        "LastUpdatedTime":{"shape":"Date"}
+      }
+    },
+    "RemediationExecutionStatuses":{
+      "type":"list",
+      "member":{"shape":"RemediationExecutionStatus"}
+    },
+    "RemediationExecutionStep":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"String"},
+        "State":{"shape":"RemediationExecutionStepState"},
+        "ErrorMessage":{"shape":"String"},
+        "StartTime":{"shape":"Date"},
+        "StopTime":{"shape":"Date"}
+      }
+    },
+    "RemediationExecutionStepState":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "PENDING",
+        "FAILED"
+      ]
+    },
+    "RemediationExecutionSteps":{
+      "type":"list",
+      "member":{"shape":"RemediationExecutionStep"}
+    },
+    "RemediationInProgressException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "RemediationParameterValue":{
+      "type":"structure",
+      "members":{
+        "ResourceValue":{"shape":"ResourceValue"},
+        "StaticValue":{"shape":"StaticValue"}
+      }
+    },
+    "RemediationParameters":{
+      "type":"map",
+      "key":{"shape":"StringWithCharLimit256"},
+      "value":{"shape":"RemediationParameterValue"},
+      "max":25,
+      "min":0
+    },
+    "RemediationTargetType":{
+      "type":"string",
+      "enum":["SSM_DOCUMENT"]
+    },
     "ResourceCount":{
       "type":"structure",
       "members":{
@@ -1901,13 +2788,42 @@
         "count":{"shape":"Long"}
       }
     },
+    "ResourceCountFilters":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{"shape":"ResourceType"},
+        "AccountId":{"shape":"AccountId"},
+        "Region":{"shape":"AwsRegion"}
+      }
+    },
+    "ResourceCountGroupKey":{
+      "type":"string",
+      "enum":[
+        "RESOURCE_TYPE",
+        "ACCOUNT_ID",
+        "AWS_REGION"
+      ]
+    },
     "ResourceCounts":{
       "type":"list",
       "member":{"shape":"ResourceCount"}
     },
     "ResourceCreationTime":{"type":"timestamp"},
     "ResourceDeletionTime":{"type":"timestamp"},
-    "ResourceId":{"type":"string"},
+    "ResourceFilters":{
+      "type":"structure",
+      "members":{
+        "AccountId":{"shape":"AccountId"},
+        "ResourceId":{"shape":"ResourceId"},
+        "ResourceName":{"shape":"ResourceName"},
+        "Region":{"shape":"AwsRegion"}
+      }
+    },
+    "ResourceId":{
+      "type":"string",
+      "max":768,
+      "min":1
+    },
     "ResourceIdList":{
       "type":"list",
       "member":{"shape":"ResourceId"}
@@ -1924,6 +2840,12 @@
     "ResourceIdentifierList":{
       "type":"list",
       "member":{"shape":"ResourceIdentifier"}
+    },
+    "ResourceIdentifiersList":{
+      "type":"list",
+      "member":{"shape":"AggregateResourceIdentifier"},
+      "max":100,
+      "min":1
     },
     "ResourceInUseException":{
       "type":"structure",
@@ -1950,6 +2872,12 @@
     },
     "ResourceName":{"type":"string"},
     "ResourceNotDiscoveredException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "ResourceNotFoundException":{
       "type":"structure",
       "members":{
       },
@@ -2007,7 +2935,21 @@
         "AWS::WAFRegional::Rule",
         "AWS::WAFRegional::WebACL",
         "AWS::CloudFront::Distribution",
-        "AWS::CloudFront::StreamingDistribution"
+        "AWS::CloudFront::StreamingDistribution",
+        "AWS::WAF::RuleGroup",
+        "AWS::WAFRegional::RuleGroup",
+        "AWS::Lambda::Function",
+        "AWS::ElasticBeanstalk::Application",
+        "AWS::ElasticBeanstalk::ApplicationVersion",
+        "AWS::ElasticBeanstalk::Environment",
+        "AWS::ElasticLoadBalancing::LoadBalancer",
+        "AWS::XRay::EncryptionConfig",
+        "AWS::SSM::AssociationCompliance",
+        "AWS::SSM::PatchCompliance",
+        "AWS::Shield::Protection",
+        "AWS::ShieldRegional::Protection",
+        "AWS::Config::ResourceCompliance",
+        "AWS::CodePipeline::Pipeline"
       ]
     },
     "ResourceTypeList":{
@@ -2019,6 +2961,58 @@
       "member":{"shape":"StringWithCharLimit256"},
       "max":20,
       "min":0
+    },
+    "ResourceTypesScope":{
+      "type":"list",
+      "member":{"shape":"StringWithCharLimit256"},
+      "max":100,
+      "min":0
+    },
+    "ResourceValue":{
+      "type":"structure",
+      "members":{
+        "Value":{"shape":"ResourceValueType"}
+      }
+    },
+    "ResourceValueType":{
+      "type":"string",
+      "enum":["RESOURCE_ID"]
+    },
+    "Results":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "RetentionConfiguration":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RetentionPeriodInDays"
+      ],
+      "members":{
+        "Name":{"shape":"RetentionConfigurationName"},
+        "RetentionPeriodInDays":{"shape":"RetentionPeriodInDays"}
+      }
+    },
+    "RetentionConfigurationList":{
+      "type":"list",
+      "member":{"shape":"RetentionConfiguration"}
+    },
+    "RetentionConfigurationName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[\\w\\-]+"
+    },
+    "RetentionConfigurationNameList":{
+      "type":"list",
+      "member":{"shape":"RetentionConfigurationName"},
+      "max":1,
+      "min":0
+    },
+    "RetentionPeriodInDays":{
+      "type":"integer",
+      "max":2557,
+      "min":30
     },
     "RuleLimit":{
       "type":"integer",
@@ -2032,6 +3026,23 @@
         "TagKey":{"shape":"StringWithCharLimit128"},
         "TagValue":{"shape":"StringWithCharLimit256"},
         "ComplianceResourceId":{"shape":"BaseResourceId"}
+      }
+    },
+    "SelectResourceConfigRequest":{
+      "type":"structure",
+      "required":["Expression"],
+      "members":{
+        "Expression":{"shape":"Expression"},
+        "Limit":{"shape":"Limit"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "SelectResourceConfigResponse":{
+      "type":"structure",
+      "members":{
+        "Results":{"shape":"Results"},
+        "QueryInfo":{"shape":"QueryInfo"},
+        "NextToken":{"shape":"NextToken"}
       }
     },
     "Source":{
@@ -2078,6 +3089,43 @@
         "ConfigurationRecorderName":{"shape":"RecorderName"}
       }
     },
+    "StartRemediationExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "ConfigRuleName",
+        "ResourceKeys"
+      ],
+      "members":{
+        "ConfigRuleName":{"shape":"StringWithCharLimit64"},
+        "ResourceKeys":{"shape":"ResourceKeys"}
+      }
+    },
+    "StartRemediationExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "FailureMessage":{"shape":"String"},
+        "FailedItems":{"shape":"ResourceKeys"}
+      }
+    },
+    "StaticParameterValues":{
+      "type":"list",
+      "member":{"shape":"StringWithCharLimit256"},
+      "max":25,
+      "min":0
+    },
+    "StaticValue":{
+      "type":"structure",
+      "members":{
+        "Values":{"shape":"StaticParameterValues"}
+      }
+    },
+    "StatusDetailFilters":{
+      "type":"structure",
+      "members":{
+        "AccountId":{"shape":"AccountId"},
+        "MemberAccountRuleStatus":{"shape":"MemberAccountRuleStatus"}
+      }
+    },
     "StopConfigurationRecorderRequest":{
       "type":"structure",
       "required":["ConfigurationRecorderName"],
@@ -2096,14 +3144,29 @@
       "max":128,
       "min":1
     },
+    "StringWithCharLimit2048":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
     "StringWithCharLimit256":{
       "type":"string",
       "max":256,
       "min":1
     },
+    "StringWithCharLimit256Min0":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
     "StringWithCharLimit64":{
       "type":"string",
       "max":64,
+      "min":1
+    },
+    "StringWithCharLimit768":{
+      "type":"string",
+      "max":768,
       "min":1
     },
     "SupplementaryConfiguration":{
@@ -2113,10 +3176,77 @@
     },
     "SupplementaryConfigurationName":{"type":"string"},
     "SupplementaryConfigurationValue":{"type":"string"},
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{"shape":"TagKey"},
+        "Value":{"shape":"TagValue"}
+      }
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"AmazonResourceName"},
+        "Tags":{"shape":"TagList"}
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
     "Tags":{
       "type":"map",
       "key":{"shape":"Name"},
       "value":{"shape":"Value"}
+    },
+    "TagsList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "UnprocessedResourceIdentifierList":{
+      "type":"list",
+      "member":{"shape":"AggregateResourceIdentifier"}
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"AmazonResourceName"},
+        "TagKeys":{"shape":"TagKeyList"}
+      }
     },
     "ValidationException":{
       "type":"structure",

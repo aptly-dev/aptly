@@ -72,6 +72,10 @@ type GuardDutyAPI interface {
 	CreateDetectorWithContext(aws.Context, *guardduty.CreateDetectorInput, ...request.Option) (*guardduty.CreateDetectorOutput, error)
 	CreateDetectorRequest(*guardduty.CreateDetectorInput) (*request.Request, *guardduty.CreateDetectorOutput)
 
+	CreateFilter(*guardduty.CreateFilterInput) (*guardduty.CreateFilterOutput, error)
+	CreateFilterWithContext(aws.Context, *guardduty.CreateFilterInput, ...request.Option) (*guardduty.CreateFilterOutput, error)
+	CreateFilterRequest(*guardduty.CreateFilterInput) (*request.Request, *guardduty.CreateFilterOutput)
+
 	CreateIPSet(*guardduty.CreateIPSetInput) (*guardduty.CreateIPSetOutput, error)
 	CreateIPSetWithContext(aws.Context, *guardduty.CreateIPSetInput, ...request.Option) (*guardduty.CreateIPSetOutput, error)
 	CreateIPSetRequest(*guardduty.CreateIPSetInput) (*request.Request, *guardduty.CreateIPSetOutput)
@@ -95,6 +99,10 @@ type GuardDutyAPI interface {
 	DeleteDetector(*guardduty.DeleteDetectorInput) (*guardduty.DeleteDetectorOutput, error)
 	DeleteDetectorWithContext(aws.Context, *guardduty.DeleteDetectorInput, ...request.Option) (*guardduty.DeleteDetectorOutput, error)
 	DeleteDetectorRequest(*guardduty.DeleteDetectorInput) (*request.Request, *guardduty.DeleteDetectorOutput)
+
+	DeleteFilter(*guardduty.DeleteFilterInput) (*guardduty.DeleteFilterOutput, error)
+	DeleteFilterWithContext(aws.Context, *guardduty.DeleteFilterInput, ...request.Option) (*guardduty.DeleteFilterOutput, error)
+	DeleteFilterRequest(*guardduty.DeleteFilterInput) (*request.Request, *guardduty.DeleteFilterOutput)
 
 	DeleteIPSet(*guardduty.DeleteIPSetInput) (*guardduty.DeleteIPSetOutput, error)
 	DeleteIPSetWithContext(aws.Context, *guardduty.DeleteIPSetInput, ...request.Option) (*guardduty.DeleteIPSetOutput, error)
@@ -123,6 +131,10 @@ type GuardDutyAPI interface {
 	GetDetector(*guardduty.GetDetectorInput) (*guardduty.GetDetectorOutput, error)
 	GetDetectorWithContext(aws.Context, *guardduty.GetDetectorInput, ...request.Option) (*guardduty.GetDetectorOutput, error)
 	GetDetectorRequest(*guardduty.GetDetectorInput) (*request.Request, *guardduty.GetDetectorOutput)
+
+	GetFilter(*guardduty.GetFilterInput) (*guardduty.GetFilterOutput, error)
+	GetFilterWithContext(aws.Context, *guardduty.GetFilterInput, ...request.Option) (*guardduty.GetFilterOutput, error)
+	GetFilterRequest(*guardduty.GetFilterInput) (*request.Request, *guardduty.GetFilterOutput)
 
 	GetFindings(*guardduty.GetFindingsInput) (*guardduty.GetFindingsOutput, error)
 	GetFindingsWithContext(aws.Context, *guardduty.GetFindingsInput, ...request.Option) (*guardduty.GetFindingsOutput, error)
@@ -163,6 +175,13 @@ type GuardDutyAPI interface {
 	ListDetectorsPages(*guardduty.ListDetectorsInput, func(*guardduty.ListDetectorsOutput, bool) bool) error
 	ListDetectorsPagesWithContext(aws.Context, *guardduty.ListDetectorsInput, func(*guardduty.ListDetectorsOutput, bool) bool, ...request.Option) error
 
+	ListFilters(*guardduty.ListFiltersInput) (*guardduty.ListFiltersOutput, error)
+	ListFiltersWithContext(aws.Context, *guardduty.ListFiltersInput, ...request.Option) (*guardduty.ListFiltersOutput, error)
+	ListFiltersRequest(*guardduty.ListFiltersInput) (*request.Request, *guardduty.ListFiltersOutput)
+
+	ListFiltersPages(*guardduty.ListFiltersInput, func(*guardduty.ListFiltersOutput, bool) bool) error
+	ListFiltersPagesWithContext(aws.Context, *guardduty.ListFiltersInput, func(*guardduty.ListFiltersOutput, bool) bool, ...request.Option) error
+
 	ListFindings(*guardduty.ListFindingsInput) (*guardduty.ListFindingsOutput, error)
 	ListFindingsWithContext(aws.Context, *guardduty.ListFindingsInput, ...request.Option) (*guardduty.ListFindingsOutput, error)
 	ListFindingsRequest(*guardduty.ListFindingsInput) (*request.Request, *guardduty.ListFindingsOutput)
@@ -191,6 +210,10 @@ type GuardDutyAPI interface {
 	ListMembersPages(*guardduty.ListMembersInput, func(*guardduty.ListMembersOutput, bool) bool) error
 	ListMembersPagesWithContext(aws.Context, *guardduty.ListMembersInput, func(*guardduty.ListMembersOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*guardduty.ListTagsForResourceInput) (*guardduty.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *guardduty.ListTagsForResourceInput, ...request.Option) (*guardduty.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*guardduty.ListTagsForResourceInput) (*request.Request, *guardduty.ListTagsForResourceOutput)
+
 	ListThreatIntelSets(*guardduty.ListThreatIntelSetsInput) (*guardduty.ListThreatIntelSetsOutput, error)
 	ListThreatIntelSetsWithContext(aws.Context, *guardduty.ListThreatIntelSetsInput, ...request.Option) (*guardduty.ListThreatIntelSetsOutput, error)
 	ListThreatIntelSetsRequest(*guardduty.ListThreatIntelSetsInput) (*request.Request, *guardduty.ListThreatIntelSetsOutput)
@@ -206,13 +229,25 @@ type GuardDutyAPI interface {
 	StopMonitoringMembersWithContext(aws.Context, *guardduty.StopMonitoringMembersInput, ...request.Option) (*guardduty.StopMonitoringMembersOutput, error)
 	StopMonitoringMembersRequest(*guardduty.StopMonitoringMembersInput) (*request.Request, *guardduty.StopMonitoringMembersOutput)
 
+	TagResource(*guardduty.TagResourceInput) (*guardduty.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *guardduty.TagResourceInput, ...request.Option) (*guardduty.TagResourceOutput, error)
+	TagResourceRequest(*guardduty.TagResourceInput) (*request.Request, *guardduty.TagResourceOutput)
+
 	UnarchiveFindings(*guardduty.UnarchiveFindingsInput) (*guardduty.UnarchiveFindingsOutput, error)
 	UnarchiveFindingsWithContext(aws.Context, *guardduty.UnarchiveFindingsInput, ...request.Option) (*guardduty.UnarchiveFindingsOutput, error)
 	UnarchiveFindingsRequest(*guardduty.UnarchiveFindingsInput) (*request.Request, *guardduty.UnarchiveFindingsOutput)
 
+	UntagResource(*guardduty.UntagResourceInput) (*guardduty.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *guardduty.UntagResourceInput, ...request.Option) (*guardduty.UntagResourceOutput, error)
+	UntagResourceRequest(*guardduty.UntagResourceInput) (*request.Request, *guardduty.UntagResourceOutput)
+
 	UpdateDetector(*guardduty.UpdateDetectorInput) (*guardduty.UpdateDetectorOutput, error)
 	UpdateDetectorWithContext(aws.Context, *guardduty.UpdateDetectorInput, ...request.Option) (*guardduty.UpdateDetectorOutput, error)
 	UpdateDetectorRequest(*guardduty.UpdateDetectorInput) (*request.Request, *guardduty.UpdateDetectorOutput)
+
+	UpdateFilter(*guardduty.UpdateFilterInput) (*guardduty.UpdateFilterOutput, error)
+	UpdateFilterWithContext(aws.Context, *guardduty.UpdateFilterInput, ...request.Option) (*guardduty.UpdateFilterOutput, error)
+	UpdateFilterRequest(*guardduty.UpdateFilterInput) (*request.Request, *guardduty.UpdateFilterOutput)
 
 	UpdateFindingsFeedback(*guardduty.UpdateFindingsFeedbackInput) (*guardduty.UpdateFindingsFeedbackOutput, error)
 	UpdateFindingsFeedbackWithContext(aws.Context, *guardduty.UpdateFindingsFeedbackInput, ...request.Option) (*guardduty.UpdateFindingsFeedbackOutput, error)

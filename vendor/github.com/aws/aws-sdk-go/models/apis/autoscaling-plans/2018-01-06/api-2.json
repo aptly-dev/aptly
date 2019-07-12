@@ -72,13 +72,42 @@
         {"shape":"ConcurrentUpdateException"},
         {"shape":"InternalServiceException"}
       ]
+    },
+    "GetScalingPlanResourceForecastData":{
+      "name":"GetScalingPlanResourceForecastData",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetScalingPlanResourceForecastDataRequest"},
+      "output":{"shape":"GetScalingPlanResourceForecastDataResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServiceException"}
+      ]
+    },
+    "UpdateScalingPlan":{
+      "name":"UpdateScalingPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateScalingPlanRequest"},
+      "output":{"shape":"UpdateScalingPlanResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConcurrentUpdateException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"ObjectNotFoundException"}
+      ]
     }
   },
   "shapes":{
     "ApplicationSource":{
       "type":"structure",
       "members":{
-        "CloudFormationStackARN":{"shape":"XmlString"}
+        "CloudFormationStackARN":{"shape":"XmlString"},
+        "TagFilters":{"shape":"TagFilters"}
       }
     },
     "ApplicationSources":{
@@ -113,6 +142,21 @@
         "ScalingPlanVersion":{"shape":"ScalingPlanVersion"}
       }
     },
+    "CustomizedLoadMetricSpecification":{
+      "type":"structure",
+      "required":[
+        "MetricName",
+        "Namespace",
+        "Statistic"
+      ],
+      "members":{
+        "MetricName":{"shape":"MetricName"},
+        "Namespace":{"shape":"MetricNamespace"},
+        "Dimensions":{"shape":"MetricDimensions"},
+        "Statistic":{"shape":"MetricStatistic"},
+        "Unit":{"shape":"MetricUnit"}
+      }
+    },
     "CustomizedScalingMetricSpecification":{
       "type":"structure",
       "required":[
@@ -127,6 +171,17 @@
         "Statistic":{"shape":"MetricStatistic"},
         "Unit":{"shape":"MetricUnit"}
       }
+    },
+    "Datapoint":{
+      "type":"structure",
+      "members":{
+        "Timestamp":{"shape":"TimestampType"},
+        "Value":{"shape":"MetricScale"}
+      }
+    },
+    "Datapoints":{
+      "type":"list",
+      "member":{"shape":"Datapoint"}
     },
     "DeleteScalingPlanRequest":{
       "type":"structure",
@@ -181,8 +236,48 @@
         "NextToken":{"shape":"NextToken"}
       }
     },
+    "DisableDynamicScaling":{"type":"boolean"},
     "DisableScaleIn":{"type":"boolean"},
     "ErrorMessage":{"type":"string"},
+    "ForecastDataType":{
+      "type":"string",
+      "enum":[
+        "CapacityForecast",
+        "LoadForecast",
+        "ScheduledActionMinCapacity",
+        "ScheduledActionMaxCapacity"
+      ]
+    },
+    "GetScalingPlanResourceForecastDataRequest":{
+      "type":"structure",
+      "required":[
+        "ScalingPlanName",
+        "ScalingPlanVersion",
+        "ServiceNamespace",
+        "ResourceId",
+        "ScalableDimension",
+        "ForecastDataType",
+        "StartTime",
+        "EndTime"
+      ],
+      "members":{
+        "ScalingPlanName":{"shape":"ScalingPlanName"},
+        "ScalingPlanVersion":{"shape":"ScalingPlanVersion"},
+        "ServiceNamespace":{"shape":"ServiceNamespace"},
+        "ResourceId":{"shape":"XmlString"},
+        "ScalableDimension":{"shape":"ScalableDimension"},
+        "ForecastDataType":{"shape":"ForecastDataType"},
+        "StartTime":{"shape":"TimestampType"},
+        "EndTime":{"shape":"TimestampType"}
+      }
+    },
+    "GetScalingPlanResourceForecastDataResponse":{
+      "type":"structure",
+      "required":["Datapoints"],
+      "members":{
+        "Datapoints":{"shape":"Datapoints"}
+      }
+    },
     "InternalServiceException":{
       "type":"structure",
       "members":{
@@ -203,6 +298,15 @@
         "Message":{"shape":"ErrorMessage"}
       },
       "exception":true
+    },
+    "LoadMetricType":{
+      "type":"string",
+      "enum":[
+        "ASGTotalCPUUtilization",
+        "ASGTotalNetworkIn",
+        "ASGTotalNetworkOut",
+        "ALBTargetGroupRequestCount"
+      ]
     },
     "MaxResults":{"type":"integer"},
     "MetricDimension":{
@@ -254,6 +358,14 @@
       "type":"string",
       "enum":["TargetTrackingScaling"]
     },
+    "PredefinedLoadMetricSpecification":{
+      "type":"structure",
+      "required":["PredefinedLoadMetricType"],
+      "members":{
+        "PredefinedLoadMetricType":{"shape":"LoadMetricType"},
+        "ResourceLabel":{"shape":"ResourceLabel"}
+      }
+    },
     "PredefinedScalingMetricSpecification":{
       "type":"structure",
       "required":["PredefinedScalingMetricType"],
@@ -261,6 +373,21 @@
         "PredefinedScalingMetricType":{"shape":"ScalingMetricType"},
         "ResourceLabel":{"shape":"ResourceLabel"}
       }
+    },
+    "PredictiveScalingMaxCapacityBehavior":{
+      "type":"string",
+      "enum":[
+        "SetForecastCapacityToMaxCapacity",
+        "SetMaxCapacityToForecastCapacity",
+        "SetMaxCapacityAboveForecastCapacity"
+      ]
+    },
+    "PredictiveScalingMode":{
+      "type":"string",
+      "enum":[
+        "ForecastAndScale",
+        "ForecastOnly"
+      ]
     },
     "ResourceCapacity":{"type":"integer"},
     "ResourceIdMaxLen1600":{
@@ -303,7 +430,15 @@
         "ScalableDimension":{"shape":"ScalableDimension"},
         "MinCapacity":{"shape":"ResourceCapacity"},
         "MaxCapacity":{"shape":"ResourceCapacity"},
-        "TargetTrackingConfigurations":{"shape":"TargetTrackingConfigurations"}
+        "TargetTrackingConfigurations":{"shape":"TargetTrackingConfigurations"},
+        "PredefinedLoadMetricSpecification":{"shape":"PredefinedLoadMetricSpecification"},
+        "CustomizedLoadMetricSpecification":{"shape":"CustomizedLoadMetricSpecification"},
+        "ScheduledActionBufferTime":{"shape":"ScheduledActionBufferTime"},
+        "PredictiveScalingMaxCapacityBehavior":{"shape":"PredictiveScalingMaxCapacityBehavior"},
+        "PredictiveScalingMaxCapacityBuffer":{"shape":"ResourceCapacity"},
+        "PredictiveScalingMode":{"shape":"PredictiveScalingMode"},
+        "ScalingPolicyUpdateBehavior":{"shape":"ScalingPolicyUpdateBehavior"},
+        "DisableDynamicScaling":{"shape":"DisableDynamicScaling"}
       }
     },
     "ScalingInstructions":{
@@ -344,6 +479,7 @@
         "ScalingInstructions":{"shape":"ScalingInstructions"},
         "StatusCode":{"shape":"ScalingPlanStatusCode"},
         "StatusMessage":{"shape":"XmlString"},
+        "StatusStartTime":{"shape":"TimestampType"},
         "CreationTime":{"shape":"TimestampType"}
       }
     },
@@ -351,7 +487,7 @@
       "type":"string",
       "max":128,
       "min":1,
-      "pattern":"[\\p{Print}&&[^|]]+"
+      "pattern":"[\\p{Print}&&[^|:/]]+"
     },
     "ScalingPlanNames":{
       "type":"list",
@@ -390,7 +526,9 @@
         "CreationInProgress",
         "CreationFailed",
         "DeletionInProgress",
-        "DeletionFailed"
+        "DeletionFailed",
+        "UpdateInProgress",
+        "UpdateFailed"
       ]
     },
     "ScalingPlanVersion":{"type":"long"},
@@ -414,6 +552,13 @@
         "TargetTrackingConfiguration":{"shape":"TargetTrackingConfiguration"}
       }
     },
+    "ScalingPolicyUpdateBehavior":{
+      "type":"string",
+      "enum":[
+        "KeepExternalPolicies",
+        "ReplaceExternalPolicies"
+      ]
+    },
     "ScalingStatusCode":{
       "type":"string",
       "enum":[
@@ -421,6 +566,10 @@
         "PartiallyActive",
         "Active"
       ]
+    },
+    "ScheduledActionBufferTime":{
+      "type":"integer",
+      "min":0
     },
     "ServiceNamespace":{
       "type":"string",
@@ -431,6 +580,21 @@
         "rds",
         "dynamodb"
       ]
+    },
+    "TagFilter":{
+      "type":"structure",
+      "members":{
+        "Key":{"shape":"XmlStringMaxLen128"},
+        "Values":{"shape":"TagValues"}
+      }
+    },
+    "TagFilters":{
+      "type":"list",
+      "member":{"shape":"TagFilter"}
+    },
+    "TagValues":{
+      "type":"list",
+      "member":{"shape":"XmlStringMaxLen256"}
     },
     "TargetTrackingConfiguration":{
       "type":"structure",
@@ -450,6 +614,24 @@
       "member":{"shape":"TargetTrackingConfiguration"}
     },
     "TimestampType":{"type":"timestamp"},
+    "UpdateScalingPlanRequest":{
+      "type":"structure",
+      "required":[
+        "ScalingPlanName",
+        "ScalingPlanVersion"
+      ],
+      "members":{
+        "ScalingPlanName":{"shape":"ScalingPlanName"},
+        "ScalingPlanVersion":{"shape":"ScalingPlanVersion"},
+        "ApplicationSource":{"shape":"ApplicationSource"},
+        "ScalingInstructions":{"shape":"ScalingInstructions"}
+      }
+    },
+    "UpdateScalingPlanResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "ValidationException":{
       "type":"structure",
       "members":{
@@ -459,6 +641,18 @@
     },
     "XmlString":{
       "type":"string",
+      "pattern":"[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
+    },
+    "XmlStringMaxLen128":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
+    },
+    "XmlStringMaxLen256":{
+      "type":"string",
+      "max":256,
+      "min":1,
       "pattern":"[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
     }
   }
