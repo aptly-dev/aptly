@@ -2,6 +2,7 @@ package deb
 
 import (
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/utils"
 
 	. "gopkg.in/check.v1"
@@ -22,7 +23,7 @@ func (s *ChecksumCollectionSuite) SetUpTest(c *C) {
 		SHA1:   "da39a3ee5e6b4b0d3255bfef95601890afd80709",
 		SHA256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 	}
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewChecksumCollection(s.db)
 }
 

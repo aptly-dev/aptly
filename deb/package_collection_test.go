@@ -2,6 +2,7 @@ package deb
 
 import (
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/utils"
 
 	. "gopkg.in/check.v1"
@@ -17,7 +18,7 @@ var _ = Suite(&PackageCollectionSuite{})
 
 func (s *PackageCollectionSuite) SetUpTest(c *C) {
 	s.p = NewPackageFromControlFile(packageStanza.Copy())
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewPackageCollection(s.db)
 }
 
@@ -113,7 +114,7 @@ func (s *PackageCollectionSuite) TestDeleteByKey(c *C) {
 	_, err = s.db.Get(s.p.Key("xF"))
 	c.Check(err, IsNil)
 
-	err = s.collection.DeleteByKey(s.p.Key(""))
+	err = s.collection.DeleteByKey(s.p.Key(""), s.db)
 	c.Check(err, IsNil)
 
 	_, err = s.collection.ByKey(s.p.Key(""))

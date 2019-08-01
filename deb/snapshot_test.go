@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 
 	. "gopkg.in/check.v1"
 )
@@ -113,7 +114,7 @@ type SnapshotCollectionSuite struct {
 var _ = Suite(&SnapshotCollectionSuite{})
 
 func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewSnapshotCollection(s.db)
 	s.SetUpPackages()
 
