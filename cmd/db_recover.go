@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/aptly-dev/aptly/database"
 	"github.com/smira/commander"
+
+	"github.com/aptly-dev/aptly/database/goleveldb"
 )
 
 // aptly db recover
@@ -15,7 +16,7 @@ func aptlyDbRecover(cmd *commander.Command, args []string) error {
 	}
 
 	context.Progress().Printf("Recovering database...\n")
-	err = database.RecoverDB(context.DBPath())
+	err = goleveldb.RecoverDB(context.DBPath())
 
 	return err
 }

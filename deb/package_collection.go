@@ -275,9 +275,9 @@ func (collection *PackageCollection) AllPackageRefs() *PackageRefList {
 }
 
 // DeleteByKey deletes package in DB by key
-func (collection *PackageCollection) DeleteByKey(key []byte) error {
+func (collection *PackageCollection) DeleteByKey(key []byte, dbw database.Writer) error {
 	for _, key := range [][]byte{key, append([]byte("xF"), key...), append([]byte("xD"), key...), append([]byte("xE"), key...)} {
-		err := collection.db.Delete(key)
+		err := dbw.Delete(key)
 		if err != nil {
 			return err
 		}

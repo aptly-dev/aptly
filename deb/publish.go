@@ -612,8 +612,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			// to push each path of the package into the database.
 			// We'll want this batched so as to avoid an excessive
 			// amount of write() calls.
-			tempDB.StartBatch()
-			defer tempDB.FinishBatch()
+			tempBatch := tempDB.CreateBatch()
+			defer tempBatch.Write()
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
@@ -632,7 +632,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 								contentIndexesMap[key] = contentIndex
 							}
 
-							contentIndex.Push(qualifiedName, contents)
+							contentIndex.Push(qualifiedName, contents, tempBatch)
 						}
 					}
 

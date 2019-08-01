@@ -1,9 +1,12 @@
-package database
+package goleveldb_test
 
 import (
 	"testing"
 
 	. "gopkg.in/check.v1"
+
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 )
 
 // Launch gocheck tests
@@ -13,7 +16,7 @@ func Test(t *testing.T) {
 
 type LevelDBSuite struct {
 	path string
-	db   Storage
+	db   database.Storage
 }
 
 var _ = Suite(&LevelDBSuite{})
@@ -22,7 +25,7 @@ func (s *LevelDBSuite) SetUpTest(c *C) {
 	var err error
 
 	s.path = c.MkDir()
-	s.db, err = NewOpenDB(s.path)
+	s.db, err = goleveldb.NewOpenDB(s.path)
 	c.Assert(err, IsNil)
 }
 
@@ -43,10 +46,10 @@ func (s *LevelDBSuite) TestRecoverDB(c *C) {
 	err = s.db.Close()
 	c.Check(err, IsNil)
 
-	err = RecoverDB(s.path)
+	err = goleveldb.RecoverDB(s.path)
 	c.Check(err, IsNil)
 
-	s.db, err = NewOpenDB(s.path)
+	s.db, err = goleveldb.NewOpenDB(s.path)
 	c.Check(err, IsNil)
 
 	result, err := s.db.Get(key)
@@ -143,11 +146,11 @@ func (s *LevelDBSuite) TestByPrefix(c *C) {
 	c.Check(keys, DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
 
 	c.Check(s.db.ProcessByPrefix([]byte{0x80}, func(k, v []byte) error {
-		return ErrNotFound
-	}), Equals, ErrNotFound)
+		return database.ErrNotFound
+	}), Equals, database.ErrNotFound)
 
 	c.Check(s.db.ProcessByPrefix([]byte{0xa0}, func(k, v []byte) error {
-		return ErrNotFound
+		return database.ErrNotFound
 	}), IsNil)
 
 	c.Check(s.db.FetchByPrefix([]byte{0xa0}), DeepEquals, [][]byte{})
@@ -176,9 +179,9 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 	err := s.db.Put(key, value)
 	c.Assert(err, IsNil)
 
-	s.db.StartBatch()
-	s.db.Put(key2, value2)
-	s.db.Delete(key)
+	batch := s.db.CreateBatch()
+	batch.Put(key2, value2)
+	batch.Delete(key)
 
 	v, err := s.db.Get(key)
 	c.Check(err, IsNil)
@@ -187,7 +190,7 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 	_, err = s.db.Get(key2)
 	c.Check(err, ErrorMatches, "key not found")
 
-	err = s.db.FinishBatch()
+	err = batch.Write()
 	c.Check(err, IsNil)
 
 	v2, err := s.db.Get(key2)
@@ -196,11 +199,87 @@ func (s *LevelDBSuite) TestBatch(c *C) {
 
 	_, err = s.db.Get(key)
 	c.Check(err, ErrorMatches, "key not found")
+}
 
-	c.Check(func() { s.db.FinishBatch() }, Panics, "no batch")
+func (s *LevelDBSuite) TestTransactionCommit(c *C) {
+	var (
+		key    = []byte("key")
+		key2   = []byte("key2")
+		value  = []byte("value")
+		value2 = []byte("value2")
+	)
 
-	s.db.StartBatch()
-	c.Check(func() { s.db.StartBatch() }, Panics, "batch already started")
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	transaction, err := s.db.OpenTransaction()
+	c.Assert(err, IsNil)
+	transaction.Put(key2, value2)
+	transaction.Delete(key)
+
+	v, err := s.db.Get(key)
+	c.Check(err, IsNil)
+	c.Check(v, DeepEquals, value)
+
+	_, err = s.db.Get(key2)
+	c.Check(err, ErrorMatches, "key not found")
+
+	v2, err := transaction.Get(key2)
+	c.Check(err, IsNil)
+	c.Check(v2, DeepEquals, value2)
+
+	_, err = transaction.Get(key)
+	c.Check(err, ErrorMatches, "key not found")
+
+	err = transaction.Commit()
+	c.Check(err, IsNil)
+
+	v2, err = s.db.Get(key2)
+	c.Check(err, IsNil)
+	c.Check(v2, DeepEquals, value2)
+
+	_, err = s.db.Get(key)
+	c.Check(err, ErrorMatches, "key not found")
+}
+
+func (s *LevelDBSuite) TestTransactionDiscard(c *C) {
+	var (
+		key    = []byte("key")
+		key2   = []byte("key2")
+		value  = []byte("value")
+		value2 = []byte("value2")
+	)
+
+	err := s.db.Put(key, value)
+	c.Assert(err, IsNil)
+
+	transaction, err := s.db.OpenTransaction()
+	c.Assert(err, IsNil)
+	transaction.Put(key2, value2)
+	transaction.Delete(key)
+
+	v, err := s.db.Get(key)
+	c.Check(err, IsNil)
+	c.Check(v, DeepEquals, value)
+
+	_, err = s.db.Get(key2)
+	c.Check(err, ErrorMatches, "key not found")
+
+	v2, err := transaction.Get(key2)
+	c.Check(err, IsNil)
+	c.Check(v2, DeepEquals, value2)
+
+	_, err = transaction.Get(key)
+	c.Check(err, ErrorMatches, "key not found")
+
+	transaction.Discard()
+
+	v, err = s.db.Get(key)
+	c.Check(err, IsNil)
+	c.Check(v, DeepEquals, value)
+
+	_, err = s.db.Get(key2)
+	c.Check(err, ErrorMatches, "key not found")
 }
 
 func (s *LevelDBSuite) TestCompactDB(c *C) {

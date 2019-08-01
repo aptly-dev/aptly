@@ -10,6 +10,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/http"
 	"github.com/aptly-dev/aptly/pgp"
@@ -92,7 +93,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir(), false)
 	s.cs = files.NewMockChecksumStorage()
@@ -663,7 +664,7 @@ type RemoteRepoCollectionSuite struct {
 var _ = Suite(&RemoteRepoCollectionSuite{})
 
 func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewRemoteRepoCollection(s.db)
 	s.SetUpPackages()
 }
