@@ -896,7 +896,7 @@ class PublishSnapshot35Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
     ]
@@ -1026,7 +1026,7 @@ class PublishSnapshot37Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
@@ -1041,7 +1041,7 @@ class PublishSnapshot38Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://mirror.yandex.ru/debian/ stretch main",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main",
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
     ]

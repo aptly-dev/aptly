@@ -53,6 +53,7 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 		},
 	}
 
+	downloader.client.CheckRedirect = downloader.checkRedirect
 	if downLimit > 0 {
 		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
 	} else {
@@ -60,6 +61,14 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 	}
 
 	return downloader
+}
+
+func (downloader *downloaderImpl) checkRedirect(req *http.Request, via []*http.Request) error {
+	if downloader.progress != nil {
+		downloader.progress.Printf("Following redirect to %s...\n", req.URL)
+	}
+
+	return nil
 }
 
 // GetProgress returns Progress object
