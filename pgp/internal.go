@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -351,7 +352,13 @@ func (g *GoVerifier) printLog(signers []signatureResult) {
 
 		if signer.Entity != nil {
 			i := 0
+			names := make([]string, 0, len(signer.Entity.Identities))
 			for name := range signer.Entity.Identities {
+				names = append(names, name)
+			}
+			sort.Strings(names)
+
+			for _, name := range names {
 				if i == 0 {
 					fmt.Printf("openpgp: Good signature from \"%s\"\n", name)
 				} else {

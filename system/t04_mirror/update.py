@@ -227,7 +227,8 @@ class UpdateMirror15Test(BaseTest):
     def check(self):
         super(UpdateMirror15Test, self).check()
         # check pool
-        self.check_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class UpdateMirror16Test(BaseTest):
@@ -248,7 +249,8 @@ class UpdateMirror16Test(BaseTest):
     def prepare(self):
         super(UpdateMirror16Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
+        os.makedirs(os.path.join(
+            os.environ["HOME"], ".aptly", "pool", "00", "35"))
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
                     os.path.join(os.environ["HOME"], ".aptly", "pool", "00", "35"))
@@ -256,7 +258,8 @@ class UpdateMirror16Test(BaseTest):
     def check(self):
         super(UpdateMirror16Test, self).check()
         # check pool
-        self.check_not_exists('pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_not_exists(
+            'pool/c7/6b/4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class UpdateMirror17Test(BaseTest):
@@ -275,7 +278,8 @@ class UpdateMirror17Test(BaseTest):
     def prepare(self):
         super(UpdateMirror17Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
+        os.makedirs(os.path.join(
+            os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.62.0.1_i386.deb"),
                     os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
@@ -283,7 +287,8 @@ class UpdateMirror17Test(BaseTest):
     def check(self):
         super(UpdateMirror17Test, self).check()
         # check pool
-        self.check_not_exists('pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
+        self.check_not_exists(
+            'pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
 
 
 class UpdateMirror18Test(BaseTest):
@@ -303,7 +308,8 @@ class UpdateMirror18Test(BaseTest):
     def prepare(self):
         super(UpdateMirror18Test, self).prepare()
 
-        os.makedirs(os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
+        os.makedirs(os.path.join(
+            os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.62.0.1_i386.deb"),
                     os.path.join(os.environ["HOME"], ".aptly", "pool", "e0", "bb"))
@@ -311,7 +317,8 @@ class UpdateMirror18Test(BaseTest):
     def check(self):
         super(UpdateMirror18Test, self).check()
         # check pool
-        self.check_exists('pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
+        self.check_exists(
+            'pool/db/a2/f225645a2a8bd8378e2f64bd1faa_libboost-program-options-dev_1.62.0.1_i386.deb')
 
 
 class UpdateMirror19Test(BaseTest):
@@ -336,7 +343,7 @@ class UpdateMirror20Test(BaseTest):
     """
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     configOverride = {"gpgProvider": "internal"}
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
