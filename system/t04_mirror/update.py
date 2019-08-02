@@ -10,6 +10,10 @@ def filterOutSignature(_, s):
     return re.sub(r'Signature made .* using', '', s)
 
 
+def filterOutRedirects(_, s):
+    return re.sub(r'Following redirect to .+?\n', '', s)
+
+
 class UpdateMirror1Test(BaseTest):
     """
     update mirrors: regular update
@@ -19,6 +23,7 @@ class UpdateMirror1Test(BaseTest):
         "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures varnish"
+    outputMatchPrepare = filterOutRedirects
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -173,7 +178,7 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -191,6 +196,7 @@ class UpdateMirror13Test(BaseTest):
         "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+    outputMatchPrepare = filterOutRedirects
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -206,6 +212,7 @@ class UpdateMirror14Test(BaseTest):
         "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
+    outputMatchPrepare = filterOutRedirects
 
     def output_processor(self, output):
         return "\n".join(sorted(output.split("\n")))
@@ -268,7 +275,7 @@ class UpdateMirror17Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://mirror.yandex.ru/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
 
@@ -297,7 +304,7 @@ class UpdateMirror18Test(BaseTest):
     """
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://mirror.yandex.ru/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
@@ -392,7 +399,7 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://mirror.yandex.ru/debian/ stretch main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -408,7 +415,7 @@ class UpdateMirror24Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://mirror.yandex.ru/ubuntu/ trusty main restricted",
+        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://mirror.enzu.com/ubuntu/ trusty main restricted",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg trusty"
     outputMatchPrepare = filterOutSignature

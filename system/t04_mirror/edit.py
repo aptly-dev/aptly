@@ -65,7 +65,7 @@ class EditMirror6Test(BaseTest):
     edit mirror: change architectures
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=amd64 mirror6 http://mirror.yandex.ru/debian stretch main"
+        "aptly mirror create -ignore-signatures -architectures=amd64 mirror6 http://cdn-fastly.deb.debian.org/debian stretch main"
     ]
     runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,i386 mirror6"
 
@@ -79,7 +79,7 @@ class EditMirror7Test(BaseTest):
     edit mirror: change architectures to missing archs
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=amd64 stretch http://mirror.yandex.ru/debian stretch main"
+        "aptly mirror create -ignore-signatures -architectures=amd64 stretch http://cdn-fastly.deb.debian.org/debian stretch main"
     ]
     runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 stretch"
     expectedCode = 1
