@@ -98,6 +98,7 @@ class BaseTest(object):
         "rootDir": "%s/.aptly" % os.environ["HOME"],
         "downloadConcurrency": 4,
         "downloadSpeedLimit": 0,
+        "downloadRetries": 5,
         "architectures": [],
         "dependencyFollowSuggests": False,
         "dependencyFollowRecommends": False,
