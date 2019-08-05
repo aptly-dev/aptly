@@ -213,7 +213,15 @@ func (context *AptlyContext) Downloader() aptly.Downloader {
 		if downloadLimit == 0 {
 			downloadLimit = context.config().DownloadLimit
 		}
-		context.downloader = http.NewDownloader(downloadLimit*1024, context._progress())
+		maxTries := context.config().DownloadRetries + 1
+		maxTriesFlag := context.flags.Lookup("max-tries")
+		if maxTriesFlag != nil {
+			maxTriesFlagValue := maxTriesFlag.Value.Get().(int)
+			if maxTriesFlagValue > maxTries {
+				maxTries = maxTriesFlagValue
+			}
+		}
+		context.downloader = http.NewDownloader(downloadLimit*1024, maxTries, context._progress())
 	}
 
 	return context.downloader

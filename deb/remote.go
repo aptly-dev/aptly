@@ -423,7 +423,7 @@ ok:
 
 // DownloadPackageIndexes downloads & parses package index files
 func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, verifier pgp.Verifier, collectionFactory *CollectionFactory,
-	ignoreMismatch bool, maxTries int) error {
+	ignoreMismatch bool) error {
 	if repo.packageList != nil {
 		panic("packageList != nil")
 	}
@@ -456,7 +456,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 	for _, info := range packagesPaths {
 		path, kind, component, architecture := info[0], info[1], info[2], info[3]
-		packagesReader, packagesFile, err := http.DownloadTryCompression(gocontext.TODO(), d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch, maxTries)
+		packagesReader, packagesFile, err := http.DownloadTryCompression(gocontext.TODO(), d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch)
 
 		isInstaller := kind == PackageTypeInstaller
 		if err != nil {
