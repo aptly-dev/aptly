@@ -294,7 +294,7 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 // ImportChangesFiles imports referenced files in changes files into local repository
 func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles bool,
 	verifier pgp.Verifier, repoTemplateString string, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
-	pool aptly.PackagePool, checksumStorage aptly.ChecksumStorage, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
+	pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
 
 	var repoTemplate *template.Template
 	repoTemplate, err = template.New("repo").Parse(repoTemplateString)
@@ -384,7 +384,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 		var processedFiles2, failedFiles2 []string
 
 		processedFiles2, failedFiles2, err = ImportPackageFiles(list, packageFiles, forceReplace, verifier, pool,
-			packageCollection, reporter, restriction, checksumStorage)
+			packageCollection, reporter, restriction, checksumStorageProvider)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to import package files: %s", err)

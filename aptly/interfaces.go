@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/utils"
 )
 
@@ -133,6 +134,9 @@ type Downloader interface {
 	// GetLength returns size by heading object with url
 	GetLength(ctx context.Context, url string) (int64, error)
 }
+
+// ChecksumStorageProvider creates ChecksumStorage based on DB
+type ChecksumStorageProvider func(db database.ReaderWriter) ChecksumStorage
 
 // ChecksumStorage is stores checksums in some (persistent) storage
 type ChecksumStorage interface {

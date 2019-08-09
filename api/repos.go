@@ -327,7 +327,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	}
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		context.CollectionFactory().PackageCollection(), reporter, nil, context.CollectionFactory().ChecksumCollection())
+		context.CollectionFactory().PackageCollection(), reporter, nil, context.CollectionFactory().ChecksumCollection)
 	failedFiles = append(failedFiles, failedFiles2...)
 
 	processedFiles = append(processedFiles, otherFiles...)
@@ -420,7 +420,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	_, failedFiles2, err = deb.ImportChangesFiles(
 		changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
 		repoTemplateString, context.Progress(), localRepoCollection, context.CollectionFactory().PackageCollection(),
-		context.PackagePool(), context.CollectionFactory().ChecksumCollection(), nil, query.Parse)
+		context.PackagePool(), context.CollectionFactory().ChecksumCollection, nil, query.Parse)
 	failedFiles = append(failedFiles, failedFiles2...)
 
 	if err != nil {

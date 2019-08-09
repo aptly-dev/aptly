@@ -49,7 +49,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
 		context.CollectionFactory().PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()}, nil,
-		context.CollectionFactory().ChecksumCollection())
+		context.CollectionFactory().ChecksumCollection)
 	failedFiles = append(failedFiles, failedFiles2...)
 	if err != nil {
 		return fmt.Errorf("unable to import package files: %s", err)

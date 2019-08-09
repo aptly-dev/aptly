@@ -774,7 +774,7 @@ func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
 	r2, _ := collection.ByName("tyndex")
 	c.Check(r2.String(), Equals, repo2.String())
 
-	c.Check(func() { s.collection.Drop(repo1) }, Panics, "repo not found!")
+	c.Check(s.collection.Drop(repo1), ErrorMatches, "repo not found")
 }
 
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily
