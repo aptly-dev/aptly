@@ -216,14 +216,22 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 
 // Update stores updated information about snapshot in DB
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
-	err := collection.db.Put(snapshot.Key(), snapshot.Encode())
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	err = transaction.Put(snapshot.Key(), snapshot.Encode())
 	if err != nil {
 		return err
 	}
 	if snapshot.packageRefs != nil {
-		return collection.db.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+		if err = transaction.Put(snapshot.RefKey(), snapshot.packageRefs.Encode()); err != nil {
+			return err
+		}
 	}
-	return nil
+	return transaction.Commit()
 }
 
 // LoadComplete loads additional information about snapshot
@@ -379,18 +387,31 @@ func (collection *SnapshotCollection) Len() int {
 
 // Drop removes snapshot from collection
 func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
-	if _, err := collection.db.Get(snapshot.Key()); err == database.ErrNotFound {
-		panic("snapshot not found!")
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	if _, err = transaction.Get(snapshot.Key()); err != nil {
+		if err == database.ErrNotFound {
+			return errors.New("snapshot not found")
+		}
+
+		return err
 	}
 
 	delete(collection.cache, snapshot.UUID)
 
-	err := collection.db.Delete(snapshot.Key())
-	if err != nil {
+	if err = transaction.Delete(snapshot.Key()); err != nil {
 		return err
 	}
 
-	return collection.db.Delete(snapshot.RefKey())
+	if err = transaction.Delete(snapshot.RefKey()); err != nil {
+		return err
+	}
+
+	return transaction.Commit()
 }
 
 // Snapshot sorting methods

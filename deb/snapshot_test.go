@@ -280,5 +280,5 @@ func (s *SnapshotCollectionSuite) TestDrop(c *C) {
 	_, err = collection.ByUUID(s.snapshot1.UUID)
 	c.Check(err, ErrorMatches, "snapshot .* not found")
 
-	c.Check(func() { s.collection.Drop(s.snapshot1) }, Panics, "snapshot not found!")
+	c.Check(s.collection.Drop(s.snapshot1), ErrorMatches, "snapshot not found")
 }

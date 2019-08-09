@@ -66,10 +66,18 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 // ImportPackageFiles imports files into local repository
 func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier pgp.Verifier,
 	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery,
-	checksumStorage aptly.ChecksumStorage) (processedFiles []string, failedFiles []string, err error) {
+	checksumStorageProvider aptly.ChecksumStorageProvider) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
 	}
+
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return nil, nil, err
+	}
+	defer transaction.Discard()
+
+	checksumStorage := checksumStorageProvider(transaction)
 
 	for _, file := range packageFiles {
 		var (
@@ -193,7 +201,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
-		err = collection.Update(p)
+		err = collection.UpdateInTransaction(p, transaction)
 		if err != nil {
 			reporter.Warning("Unable to save package %s: %s", p, err)
 			failedFiles = append(failedFiles, file)
@@ -219,6 +227,6 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		processedFiles = append(processedFiles, candidateProcessedFiles...)
 	}
 
-	err = nil
+	err = transaction.Commit()
 	return
 }

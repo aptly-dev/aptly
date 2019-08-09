@@ -123,7 +123,7 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	processedFiles, failedFiles, err := ImportChangesFiles(
 		append(changesFiles, "testdata/changes/notexistent.changes"),
 		s.Reporter, true, true, false, false, &NullVerifier{},
-		"test", s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, s.checksumStorage,
+		"test", s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
 		nil, nil)
 	c.Assert(err, IsNil)
 	c.Check(failedFiles, DeepEquals, append(expectedFailedFiles, "testdata/changes/notexistent.changes"))

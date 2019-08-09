@@ -199,5 +199,5 @@ func (s *LocalRepoCollectionSuite) TestDrop(c *C) {
 	r2, _ := collection.ByName("local2")
 	c.Check(r2.String(), Equals, repo2.String())
 
-	c.Check(func() { s.collection.Drop(repo1) }, Panics, "local repo not found!")
+	c.Check(s.collection.Drop(repo1), ErrorMatches, "local repo not found")
 }

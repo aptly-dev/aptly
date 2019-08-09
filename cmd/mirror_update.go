@@ -84,7 +84,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Building download queue...\n")
 	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), context.CollectionFactory().PackageCollection(),
-		context.CollectionFactory().ChecksumCollection(), skipExistingPackages)
+		context.CollectionFactory().ChecksumCollection(nil), skipExistingPackages)
 
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -210,7 +210,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 
 		// and import it back to the pool
-		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, context.CollectionFactory().ChecksumCollection())
+		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, context.CollectionFactory().ChecksumCollection(nil))
 		if err != nil {
 			return fmt.Errorf("unable to import file: %s", err)
 		}

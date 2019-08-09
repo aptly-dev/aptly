@@ -30,6 +30,12 @@ type Writer interface {
 	Delete(key []byte) error
 }
 
+// ReaderWriter combines Reader and Writer
+type ReaderWriter interface {
+	Reader
+	Writer
+}
+
 // Storage is an interface to KV storage
 type Storage interface {
 	Reader
