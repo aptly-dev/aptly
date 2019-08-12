@@ -29,7 +29,7 @@ var (
 
 // Internal errors
 var (
-	errWrongPasshprase = errors.New("unable to decrypt the key, passphrase is wrong")
+	errWrongPassphrase = errors.New("unable to decrypt the key, passphrase is wrong")
 )
 
 // GoSigner is implementation of Signer interface using Go internal OpenPGP library
@@ -60,7 +60,7 @@ func (g *GoSigner) SetKeyRing(keyring, secretKeyring string) {
 	g.keyringFile, g.secretKeyringFile = keyring, secretKeyring
 }
 
-// SetPassphrase sets passhprase params
+// SetPassphrase sets passphrase params
 func (g *GoSigner) SetPassphrase(passphrase, passphraseFile string) {
 	g.passphrase, g.passphraseFile = passphrase, passphraseFile
 }
@@ -182,7 +182,7 @@ func (g *GoSigner) Init() error {
 				g.passphrase = string(bytePassphrase)
 
 				err = g.decryptKey()
-				if err == nil || err != errWrongPasshprase {
+				if err == nil || err != errWrongPassphrase {
 					break
 				}
 
@@ -209,7 +209,7 @@ func (g *GoSigner) decryptKey() error {
 
 	if e, ok := err.(openpgp_errors.StructuralError); ok {
 		if string(e) == "private key checksum failure" {
-			return errWrongPasshprase
+			return errWrongPassphrase
 		}
 	}
 

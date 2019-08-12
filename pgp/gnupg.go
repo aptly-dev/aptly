@@ -44,7 +44,7 @@ func (g *GpgSigner) SetKeyRing(keyring, secretKeyring string) {
 	g.keyring, g.secretKeyring = keyring, secretKeyring
 }
 
-// SetPassphrase sets passhprase params
+// SetPassphrase sets passphrase params
 func (g *GpgSigner) SetPassphrase(passphrase, passphraseFile string) {
 	g.passphrase, g.passphraseFile = passphrase, passphraseFile
 }
