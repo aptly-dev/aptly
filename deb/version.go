@@ -236,6 +236,17 @@ func ParseDependencyVariants(variants string) (l []Dependency, err error) {
 	return
 }
 
+// ParseDependencyArch parses the dependency name in format "pkg:any" into name and architecture
+func ParseDependencyArch(d *Dependency) {
+	if strings.ContainsRune(d.Pkg, ':') {
+		parts := strings.SplitN(d.Pkg, ":", 2)
+		d.Pkg, d.Architecture = parts[0], parts[1]
+		if d.Architecture == "any" {
+			d.Architecture = ""
+		}
+	}
+}
+
 // ParseDependency parses dependency in format "pkg (>= 1.35) [arch]" into parts
 func ParseDependency(dep string) (d Dependency, err error) {
 	if strings.HasSuffix(dep, "}") {
@@ -252,6 +263,7 @@ func ParseDependency(dep string) (d Dependency, err error) {
 	if !strings.HasSuffix(dep, ")") {
 		d.Pkg = strings.TrimSpace(dep)
 		d.Relation = VersionDontCare
+		ParseDependencyArch(&d)
 		return
 	}
 
@@ -262,13 +274,7 @@ func ParseDependency(dep string) (d Dependency, err error) {
 	}
 
 	d.Pkg = strings.TrimSpace(dep[0:i])
-	if strings.ContainsRune(d.Pkg, ':') {
-		parts := strings.SplitN(d.Pkg, ":", 2)
-		d.Pkg, d.Architecture = parts[0], parts[1]
-		if d.Architecture == "any" {
-			d.Architecture = ""
-		}
-	}
+	ParseDependencyArch(&d)
 
 	rel := ""
 	if dep[i+1] == '>' || dep[i+1] == '<' || dep[i+1] == '=' {
