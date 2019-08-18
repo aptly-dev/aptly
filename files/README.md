@@ -40,8 +40,8 @@ ex:
 For each uploaded _Debian_ package a [MD5](https://en.wikipedia.org/wiki/MD5) checksum is computed.
 This checksum is used to create a file tree where each package will reside, with following hierarchy
 
-
-**Note:** [MD5](https://en.wikipedia.org/wiki/MD5) is only used in legacy.
+**Note:** [MD5](https://en.wikipedia.org/wiki/MD5) is only legacy layout. Its support is limited to
+ 'read' files from the pool, it never puts files this way for new package files.
 
 #### Directory and sub-directories structure
 
