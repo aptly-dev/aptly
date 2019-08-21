@@ -23,6 +23,7 @@ func (s *ConfigSuite) TestLoadConfig(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(s.config.RootDir, Equals, "/opt/aptly/")
 	c.Check(s.config.DownloadConcurrency, Equals, 33)
+	c.Check(s.config.DatabaseOpenAttempts, Equals, 33)
 }
 
 func (s *ConfigSuite) TestSaveConfig(c *C) {
@@ -30,6 +31,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 
 	s.config.RootDir = "/tmp/aptly"
 	s.config.DownloadConcurrency = 5
+	s.config.DatabaseOpenAttempts = 5
 	s.config.GpgProvider = "gpg"
 
 	s.config.FileSystemPublishRoots = map[string]FileSystemPublishRoot{"test": {
@@ -58,6 +60,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
 		"  \"downloadRetries\": 0,\n"+
+		"  \"databaseOpenAttempts\": 5,\n"+
 		"  \"architectures\": null,\n"+
 		"  \"dependencyFollowSuggests\": false,\n"+
 		"  \"dependencyFollowRecommends\": false,\n"+
@@ -115,4 +118,4 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"}")
 }
 
-const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33}`
+const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33, "databaseOpenAttempts": 33}`

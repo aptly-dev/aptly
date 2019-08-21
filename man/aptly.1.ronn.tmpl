@@ -31,6 +31,7 @@ Configuration file is stored in JSON format (default values shown below):
       "downloadConcurrency": 4,
       "downloadSpeedLimit": 0,
       "downloadRetries": 0,
+      "databaseOpenAttempts": 10,
       "architectures": [],
       "dependencyFollowSuggests": false,
       "dependencyFollowRecommends": false,
@@ -104,6 +105,10 @@ Options:
 
   * `downloadRetries`:
     number of retries for download attempts
+
+  * `databaseOpenAttempts`:
+    number of attempts to open DB if it's locked by other instance; could be overridden with option
+    `-db-open-attempts`
 
   * `architectures`:
     is a list of architectures to process; if left empty defaults to all available architectures; could be

@@ -40,6 +40,7 @@ Configuration file is stored in JSON format (default values shown below):
   "downloadSpeedLimit": 0,
   "downloadRetries": 0,
   "architectures": [],
+  "databaseOpenAttempts": 10,
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
   "dependencyFollowAllVariants": false,
@@ -120,6 +121,10 @@ limit in kbytes/sec on download speed while mirroring remote repositories
 .TP
 \fBdownloadRetries\fR
 number of retries for download attempts
+.
+.TP
+\fBdatabaseOpenAttempts\fR
+number of attempts to open DB if it's locked by other instance; could be overridden with option \fB\-db-open-attempts\fR
 .
 .TP
 \fBarchitectures\fR
