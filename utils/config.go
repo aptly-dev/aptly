@@ -12,6 +12,7 @@ type ConfigStructure struct { // nolint: maligned
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
 	DownloadRetries        int                              `json:"downloadRetries"`
+	DatabaseOpenAttempts   int                              `json:"databaseOpenAttempts"`
 	Architectures          []string                         `json:"architectures"`
 	DepFollowSuggests      bool                             `json:"dependencyFollowSuggests"`
 	DepFollowRecommends    bool                             `json:"dependencyFollowRecommends"`
@@ -76,6 +77,7 @@ var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
+	DatabaseOpenAttempts:   -1,
 	Architectures:          []string{},
 	DepFollowSuggests:      false,
 	DepFollowRecommends:    false,

@@ -99,6 +99,7 @@ class BaseTest(object):
         "downloadConcurrency": 4,
         "downloadSpeedLimit": 0,
         "downloadRetries": 5,
+        "databaseOpenAttempts": 10,
         "architectures": [],
         "dependencyFollowSuggests": False,
         "dependencyFollowRecommends": False,

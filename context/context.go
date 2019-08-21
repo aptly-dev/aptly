@@ -259,7 +259,13 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 		}
 	}
 
-	tries := context.flags.Lookup("db-open-attempts").Value.Get().(int)
+	var tries int
+	if context.config().DatabaseOpenAttempts == -1 {
+		tries = context.flags.Lookup("db-open-attempts").Value.Get().(int)
+	} else {
+		tries = context.config().DatabaseOpenAttempts
+	}
+
 	const BaseDelay = 10 * time.Second
 	const Jitter = 1 * time.Second
 
