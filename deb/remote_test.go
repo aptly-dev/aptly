@@ -10,6 +10,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/http"
 	"github.com/aptly-dev/aptly/pgp"
@@ -92,7 +93,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	s.progress = console.NewProgress()
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir(), false)
 	s.cs = files.NewMockChecksumStorage()
@@ -276,7 +277,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -303,7 +304,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -324,7 +325,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -351,7 +352,7 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/SHA256SUMS", exampleInstallerHashSumFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/MANIFEST", exampleInstallerManifestFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -395,7 +396,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -439,7 +440,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -464,7 +465,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, 1)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -488,7 +489,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -516,7 +517,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -538,7 +539,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -569,7 +570,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err := s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -615,7 +616,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -641,7 +642,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	err = s.flat.Fetch(downloader, nil)
 	c.Assert(err, IsNil)
 
-	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, 1)
+	err = s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true)
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
@@ -663,7 +664,7 @@ type RemoteRepoCollectionSuite struct {
 var _ = Suite(&RemoteRepoCollectionSuite{})
 
 func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewRemoteRepoCollection(s.db)
 	s.SetUpPackages()
 }
@@ -773,7 +774,7 @@ func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
 	r2, _ := collection.ByName("tyndex")
 	c.Check(r2.String(), Equals, repo2.String())
 
-	c.Check(func() { s.collection.Drop(repo1) }, Panics, "repo not found!")
+	c.Check(s.collection.Drop(repo1), ErrorMatches, "repo not found")
 }
 
 const exampleReleaseFile = `Origin: LP-PPA-agenda-developers-daily

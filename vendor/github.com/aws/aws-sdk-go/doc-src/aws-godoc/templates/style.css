@@ -173,7 +173,7 @@ div#mobile-nav {
 }
 
 div#logo_container {
-	height:100%; 
+	height:100%;
 	display:table-cell;
 	float:left;
 	vertical-align:middle;
@@ -186,7 +186,11 @@ div#mobile_only {
 div#fixed {
 	position: fixed;
 	width: 100%;
+	max-width: 100%;
 	height: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
 }
 
 div .top_link {
@@ -768,10 +772,10 @@ a.error {
 	div#mobile-nav {
 		display:inline-block;
 		float:right;
-		border-bottom: 13px double white; 
-		border-top: 4px solid white; 
+		border-bottom: 13px double white;
+		border-top: 4px solid white;
 		content:"";
-		height: 5px; 
+		height: 5px;
 		width:30px;
 	}
 
@@ -823,10 +827,10 @@ a.error {
 	div#mobile-nav {
 		display:inline-block;
 		float:right;
-		border-bottom: 13px double white; 
-		border-top: 4px solid white; 
+		border-bottom: 13px double white;
+		border-top: 4px solid white;
 		content:"";
-		height: 5px; 
+		height: 5px;
 		width:30px;
 		padding-left:20px;
 		padding-top:10px;
@@ -872,10 +876,10 @@ a.error {
 	div#mobile-nav {
 		display:inline-block;
 		float:right;
-		border-bottom: 13px double white; 
-		border-top: 4px solid white; 
+		border-bottom: 13px double white;
+		border-top: 4px solid white;
 		content:"";
-		height: 5px; 
+		height: 5px;
 		width:30px;
 	}
 }
@@ -981,10 +985,10 @@ a.error {
 	div#mobile-nav {
 		display:inline-block;
 		float:right;
-		border-bottom: 13px double white; 
-		border-top: 4px solid white; 
+		border-bottom: 13px double white;
+		border-top: 4px solid white;
 		content:"";
-		height: 5px; 
+		height: 5px;
 		width:30px;
 	}
 }
@@ -1026,10 +1030,10 @@ a.error {
 	div#mobile-nav {
 		display:inline-block;
 		float:right;
-		border-bottom: 13px double white; 
-		border-top: 4px solid white; 
+		border-bottom: 13px double white;
+		border-top: 4px solid white;
 		content:"";
-		height: 5px; 
+		height: 5px;
 		width:30px;
 	}
 }

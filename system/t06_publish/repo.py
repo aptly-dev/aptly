@@ -37,7 +37,8 @@ class PublishRepo1Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
@@ -46,21 +47,29 @@ class PublishRepo1Test(BaseTest):
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
-        self.check_file_contents('public/dists/maverick/main/source/Sources', 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
-        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages', 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
-        self.check_file_contents('public/dists/maverick/main/Contents-i386.gz', 'contents_i386', match_prepare=ungzip_if_required)
-        self.check_file_contents('public/dists/maverick/Contents-i386.gz', 'contents_i386_legacy', match_prepare=ungzip_if_required)
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents('public/dists/maverick/main/source/Sources',
+                                 'sources', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/binary-i386/Packages',
+                                 'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/Contents-i386.gz',
+                                 'contents_i386', match_prepare=ungzip_if_required)
+        self.check_file_contents('public/dists/maverick/Contents-i386.gz',
+                                 'contents_i386_legacy', match_prepare=ungzip_if_required)
 
         # verify signatures
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
         # verify sums
@@ -77,9 +86,11 @@ class PublishRepo1Test(BaseTest):
 
             fileSize = int(fileSize)
 
-            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
+            st = os.stat(os.path.join(
+                os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
             if fileSize != st.st_size:
-                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+                raise Exception("file size doesn't match for %s: %d != %d" % (
+                    path, fileSize, st.st_size))
 
             if len(fileHash) == 32:
                 h = hashlib.md5()
@@ -90,10 +101,12 @@ class PublishRepo1Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join(
+                'public/dists/maverick', path)))
 
             if h.hexdigest() != fileHash:
-                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+                raise Exception("file hash doesn't match for %s: %s != %s" % (
+                    path, fileHash, h.hexdigest()))
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.bz2', 'main/binary-i386/Packages.gz',
                              'main/source/Sources', 'main/source/Sources.gz', 'main/source/Sources.bz2',
@@ -121,18 +134,24 @@ class PublishRepo2Test(BaseTest):
         self.check_exists('public/dists/maverick/Release.gpg')
 
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/contrib/Contents-i386.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources')
         self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
 
         self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class PublishRepo3Test(BaseTest):
@@ -154,18 +173,27 @@ class PublishRepo3Test(BaseTest):
         self.check_exists('public/dists/maverick/Release.gpg')
 
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/contrib/Contents-i386.gz')
         self.check_not_exists('public/dists/maverick/contrib/source/Sources')
-        self.check_not_exists('public/dists/maverick/contrib/source/Sources.gz')
-        self.check_not_exists('public/dists/maverick/contrib/source/Sources.bz2')
+        self.check_not_exists(
+            'public/dists/maverick/contrib/source/Sources.gz')
+        self.check_not_exists(
+            'public/dists/maverick/contrib/source/Sources.bz2')
 
-        self.check_not_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_not_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_not_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_not_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_not_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
+        self.check_not_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_not_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_not_exists(
+            'public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class PublishRepo4Test(BaseTest):
@@ -186,19 +214,26 @@ class PublishRepo4Test(BaseTest):
         self.check_exists('public/ppa/dists/maverick/Release')
         self.check_exists('public/ppa/dists/maverick/Release.gpg')
 
-        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages')
-        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/ppa/dists/maverick/main/binary-i386/Packages')
+        self.check_exists(
+            'public/ppa/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/ppa/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/ppa/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/ppa/dists/maverick/main/source/Sources')
         self.check_exists('public/ppa/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/ppa/dists/maverick/main/source/Sources.bz2')
 
         self.check_exists('public/ppa/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/ppa/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/ppa/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/ppa/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/ppa/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/ppa/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists(
+            'public/ppa/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists(
+            'public/ppa/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/ppa/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class PublishRepo5Test(BaseTest):
@@ -310,14 +345,16 @@ class PublishRepo12Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
 
 class PublishRepo13Test(BaseTest):
@@ -351,18 +388,24 @@ class PublishRepo14Test(BaseTest):
         self.check_exists('public/dists/maverick/Release.gpg')
 
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/contrib/Contents-i386.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources')
         self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
 
         self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/contrib/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class PublishRepo15Test(BaseTest):
@@ -380,7 +423,8 @@ class PublishRepo15Test(BaseTest):
         super(PublishRepo15Test, self).check()
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
 
 class PublishRepo16Test(BaseTest):
@@ -403,7 +447,8 @@ class PublishRepo16Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
@@ -431,14 +476,17 @@ class PublishRepo17Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
         self.check_exists('public/dists/maverick/main/source/Sources.bz2')
 
         self.check_exists('public/dists/maverick/contrib/binary-i386/Packages')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/contrib/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/dists/maverick/contrib/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/contrib/source/Sources')
         self.check_exists('public/dists/maverick/contrib/source/Sources.gz')
         self.check_exists('public/dists/maverick/contrib/source/Sources.bz2')
@@ -446,20 +494,26 @@ class PublishRepo17Test(BaseTest):
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+        self.check_exists(
+            'public/pool/contrib/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)
 
         # verify signatures
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
         # verify sums
@@ -476,9 +530,11 @@ class PublishRepo17Test(BaseTest):
 
             fileSize = int(fileSize)
 
-            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
+            st = os.stat(os.path.join(
+                os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
             if fileSize != st.st_size:
-                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+                raise Exception("file size doesn't match for %s: %d != %d" % (
+                    path, fileSize, st.st_size))
 
             if len(fileHash) == 32:
                 h = hashlib.md5()
@@ -489,10 +545,12 @@ class PublishRepo17Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join(
+                'public/dists/maverick', path)))
 
             if h.hexdigest() != fileHash:
-                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+                raise Exception("file hash doesn't match for %s: %s != %s" % (
+                    path, fileHash, h.hexdigest()))
 
         if pathsSeen != set(['main/binary-i386/Packages', 'main/binary-i386/Packages.gz',
                              'main/binary-i386/Packages.bz2',
@@ -616,7 +674,8 @@ class PublishRepo25Test(BaseTest):
     def check(self):
         super(PublishRepo25Test, self).check()
 
-        self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
+        self.check_file_contents(
+            "public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
 
 
 class PublishRepo26Test(BaseTest):
@@ -640,7 +699,8 @@ class PublishRepo26Test(BaseTest):
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
 
@@ -665,12 +725,17 @@ class PublishRepo27Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Release')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
-        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Release')
-        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages')
-        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages.gz')
-        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Packages.bz2')
+        self.check_exists(
+            'public/dists/maverick/main/debian-installer/binary-i386/Release')
+        self.check_exists(
+            'public/dists/maverick/main/debian-installer/binary-i386/Packages')
+        self.check_exists(
+            'public/dists/maverick/main/debian-installer/binary-i386/Packages.gz')
+        self.check_exists(
+            'public/dists/maverick/main/debian-installer/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-udeb-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Release')
         self.check_exists('public/dists/maverick/main/source/Sources')
@@ -680,13 +745,18 @@ class PublishRepo27Test(BaseTest):
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
         self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_exists('public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
-        self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
-        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
-        self.check_exists('public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb')
+        self.check_exists(
+            'public/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc')
+        self.check_exists(
+            'public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+        self.check_exists(
+            'public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_amd64.udeb')
+        self.check_exists(
+            'public/pool/main/d/dmraid/dmraid-udeb_1.0.0.rc16-4.1_i386.udeb')
 
         # verify contents except of sums
-        self.check_file_contents('public/dists/maverick/main/debian-installer/binary-i386/Packages', 'udeb_binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
+        self.check_file_contents('public/dists/maverick/main/debian-installer/binary-i386/Packages',
+                                 'udeb_binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
 
 
 class PublishRepo28Test(BaseTest):
@@ -707,8 +777,10 @@ class PublishRepo28Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Release')
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
-        self.check_exists('public/dists/maverick/main/debian-installer/binary-i386/Release')
-        self.check_not_exists('public/dists/maverick/main/Contents-udeb-i386.gz')
+        self.check_exists(
+            'public/dists/maverick/main/debian-installer/binary-i386/Release')
+        self.check_not_exists(
+            'public/dists/maverick/main/Contents-udeb-i386.gz')
 
 
 class PublishRepo29Test(BaseTest):
@@ -742,7 +814,8 @@ class PublishRepo30Test(BaseTest):
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
 
@@ -768,7 +841,8 @@ class PublishRepo31Test(BaseTest):
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
 
 
@@ -791,8 +865,9 @@ class PublishRepo32Test(BaseTest):
         super(PublishRepo32Test, self).check()
 
         # verify signatures
-        self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
+        self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
                       "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/InRelease')])
-        self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly_passphrase.pub"),
-                      "--verify", os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
+        self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb",  "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
+                      "--verify", os.path.join(
+                          os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])

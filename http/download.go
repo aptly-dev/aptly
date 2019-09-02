@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,12 +29,13 @@ var (
 type downloaderImpl struct {
 	progress  aptly.Progress
 	aggWriter io.Writer
+	maxTries  int
 	client    *http.Client
 }
 
 // NewDownloader creates new instance of Downloader which specified number
 // of threads and download limit in bytes/sec
-func NewDownloader(downLimit int64, progress aptly.Progress) aptly.Downloader {
+func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly.Downloader {
 	transport := http.Transport{}
 	transport.Proxy = http.DefaultTransport.(*http.Transport).Proxy
 	transport.ResponseHeaderTimeout = 30 * time.Second
@@ -45,11 +47,13 @@ func NewDownloader(downLimit int64, progress aptly.Progress) aptly.Downloader {
 
 	downloader := &downloaderImpl{
 		progress: progress,
+		maxTries: maxTries,
 		client: &http.Client{
 			Transport: &transport,
 		},
 	}
 
+	downloader.client.CheckRedirect = downloader.checkRedirect
 	if downLimit > 0 {
 		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
 	} else {
@@ -57,6 +61,14 @@ func NewDownloader(downLimit int64, progress aptly.Progress) aptly.Downloader {
 	}
 
 	return downloader
+}
+
+func (downloader *downloaderImpl) checkRedirect(req *http.Request, via []*http.Request) error {
+	if downloader.progress != nil {
+		downloader.progress.Printf("Following redirect to %s...\n", req.URL)
+	}
+
+	return nil
 }
 
 // GetProgress returns Progress object
@@ -71,7 +83,19 @@ func (downloader *downloaderImpl) GetLength(ctx context.Context, url string) (in
 		return -1, err
 	}
 
-	resp, err := downloader.client.Do(req)
+	var resp *http.Response
+
+	maxTries := downloader.maxTries
+	for maxTries > 0 {
+		resp, err = downloader.client.Do(req)
+		if err != nil && retryableError(err) {
+			maxTries--
+		} else {
+			// stop retrying
+			break
+		}
+	}
+
 	if err != nil {
 		return -1, errors.Wrap(err, url)
 	}
@@ -89,10 +113,25 @@ func (downloader *downloaderImpl) GetLength(ctx context.Context, url string) (in
 
 // Download starts new download task
 func (downloader *downloaderImpl) Download(ctx context.Context, url string, destination string) error {
-	return downloader.DownloadWithChecksum(ctx, url, destination, nil, false, 1)
+	return downloader.DownloadWithChecksum(ctx, url, destination, nil, false)
 }
 
 func retryableError(err error) bool {
+	// unwrap errors.Wrap
+	err = errors.Cause(err)
+
+	// unwrap *url.Error
+	if wrapped, ok := err.(*url.Error); ok {
+		err = wrapped.Err
+	}
+
+	switch err {
+	case io.EOF:
+		return true
+	case io.ErrUnexpectedEOF:
+		return true
+	}
+
 	switch err.(type) {
 	case *net.OpError:
 		return true
@@ -101,6 +140,7 @@ func retryableError(err error) bool {
 	case net.Error:
 		return true
 	}
+
 	return false
 }
 
@@ -123,7 +163,7 @@ func (downloader *downloaderImpl) newRequest(ctx context.Context, method, url st
 
 // DownloadWithChecksum starts new download task with checksum verification
 func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url string, destination string,
-	expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+	expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 
 	if downloader.progress != nil {
 		downloader.progress.Printf("Downloading %s...\n", url)
@@ -131,6 +171,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 	req, err := downloader.newRequest(ctx, "GET", url)
 
 	var temppath string
+	maxTries := downloader.maxTries
 	for maxTries > 0 {
 		temppath, err = downloader.download(req, url, destination, expected, ignoreMismatch)
 

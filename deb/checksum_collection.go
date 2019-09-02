@@ -11,12 +11,12 @@ import (
 
 // ChecksumCollection does management of ChecksumInfo in DB
 type ChecksumCollection struct {
-	db          database.Storage
+	db          database.ReaderWriter
 	codecHandle *codec.MsgpackHandle
 }
 
 // NewChecksumCollection creates new ChecksumCollection and binds it to database
-func NewChecksumCollection(db database.Storage) *ChecksumCollection {
+func NewChecksumCollection(db database.ReaderWriter) *ChecksumCollection {
 	return &ChecksumCollection{
 		db:          db,
 		codecHandle: &codec.MsgpackHandle{},

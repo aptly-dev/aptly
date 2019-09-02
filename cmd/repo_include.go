@@ -56,7 +56,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 	_, failedFiles2, err = deb.ImportChangesFiles(
 		changesFiles, reporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles, verifier, repoTemplateString,
 		context.Progress(), context.CollectionFactory().LocalRepoCollection(), context.CollectionFactory().PackageCollection(),
-		context.PackagePool(), context.CollectionFactory().ChecksumCollection(),
+		context.PackagePool(), context.CollectionFactory().ChecksumCollection,
 		uploaders, query.Parse)
 	failedFiles = append(failedFiles, failedFiles2...)
 

@@ -25,14 +25,14 @@
     "ast",
     "parser",
     "scanner",
-    "token"
+    "token",
   ]
   pruneopts = ""
   revision = "761fd5fbb34e4c2c138c280395b65b48e4ff5a53"
   version = "v1.0"
 
 [[projects]]
-  digest = "1:a72e35a51b628d148241720897de644fd6d3cea45d8489dae9d373ced5dfc302"
+  digest = "1:06a3d6c930263524e16e4c0b4b6cf461f83ffcb468864a18f537ce19a44e5de4"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -44,28 +44,36 @@
     "aws/credentials",
     "aws/credentials/ec2rolecreds",
     "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
     "aws/credentials/stscreds",
+    "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
     "aws/endpoints",
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/ini",
+    "internal/s3err",
     "internal/sdkio",
     "internal/sdkrand",
+    "internal/sdkuri",
     "internal/shareddefaults",
     "private/protocol",
+    "private/protocol/eventstream",
+    "private/protocol/eventstream/eventstreamapi",
+    "private/protocol/json/jsonutil",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/sts"
+    "service/sts",
   ]
   pruneopts = ""
-  revision = "a72204b9bf8d48230ee0fe8995613b394c66f2da"
-  version = "v1.13.31"
+  revision = "420cda5d6383f94f7d9c231aa44bad3325181950"
+  version = "v1.20.20"
 
 [[projects]]
   digest = "1:b9922c7da8a89c973758c03bde497017567f785b49bd253402a3587abec1e53d"
@@ -89,19 +97,11 @@
   packages = [
     ".",
     "binding",
-    "render"
+    "render",
   ]
   pruneopts = ""
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
-
-[[projects]]
-  digest = "1:fbed9ba4076145ae05ef7deeb14d49565e112d6c283a8c4304fa3b7be785fa5e"
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  pruneopts = ""
-  revision = "1730955e3146956d6a087861380f9b4667ed5071"
-  version = "v1.26.0"
 
 [[projects]]
   branch = "master"
@@ -136,11 +136,11 @@
   revision = "2403248fa8cc9f7909862627aa7337f13f8e0bf1"
 
 [[projects]]
-  digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
+  digest = "1:13fe471d0ed891e8544eddfeeb0471fd3c9f2015609a1c000aefdedf52a19d40"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   pruneopts = ""
-  revision = "0b12d6b5"
+  revision = "c2b33e84"
 
 [[projects]]
   branch = "master"
@@ -196,7 +196,7 @@
   name = "github.com/ncw/swift"
   packages = [
     ".",
-    "swifttest"
+    "swifttest",
   ]
   pruneopts = ""
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
@@ -273,17 +273,18 @@
     "leveldb/opt",
     "leveldb/storage",
     "leveldb/table",
-    "leveldb/util"
+    "leveldb/util",
   ]
   pruneopts = ""
   revision = "714f901b98fdb3aa954b4193d8cbd64a28d80cad"
 
 [[projects]]
-  digest = "1:b9bca27d5fbe4ad1a1802706629580ce923bb14255c51375480dff1bebcbb8b2"
+  digest = "1:a1ca17cff1abec6d4ecdeb03c52338c559affd7f0b2474e928c162986da2d348"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = ""
-  revision = "71c2886f5a673a35f909803f38ece5810165097b"
+  revision = "2adff0894ba3bc2eeb9f9aea45fefd49802e1a13"
+  version = "v1.1.4"
 
 [[projects]]
   branch = "master"
@@ -306,7 +307,7 @@
     "openpgp/errors",
     "openpgp/packet",
     "openpgp/s2k",
-    "ssh/terminal"
+    "ssh/terminal",
   ]
   pruneopts = ""
   revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
@@ -317,7 +318,7 @@
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
   pruneopts = ""
   revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
@@ -398,7 +399,7 @@
     "golang.org/x/crypto/openpgp/packet",
     "golang.org/x/crypto/ssh/terminal",
     "golang.org/x/sys/unix",
-    "gopkg.in/check.v1"
+    "gopkg.in/check.v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

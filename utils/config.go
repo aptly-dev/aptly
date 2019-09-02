@@ -11,6 +11,7 @@ type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
+	DownloadRetries        int                              `json:"downloadRetries"`
 	Architectures          []string                         `json:"architectures"`
 	DepFollowSuggests      bool                             `json:"dependencyFollowSuggests"`
 	DepFollowRecommends    bool                             `json:"dependencyFollowRecommends"`

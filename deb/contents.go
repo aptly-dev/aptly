@@ -25,11 +25,11 @@ func NewContentsIndex(db database.Storage) *ContentsIndex {
 }
 
 // Push adds package to contents index, calculating package contents as required
-func (index *ContentsIndex) Push(qualifiedName []byte, contents []string) error {
+func (index *ContentsIndex) Push(qualifiedName []byte, contents []string, dbw database.Writer) error {
 	for _, path := range contents {
 		// for performance reasons we only write to leveldb during push.
 		// merging of qualified names per path will be done in WriteTo
-		err := index.db.Put(append(append(append(index.prefix, []byte(path)...), byte(0)), qualifiedName...), nil)
+		err := dbw.Put(append(append(append(index.prefix, []byte(path)...), byte(0)), qualifiedName...), nil)
 		if err != nil {
 			return err
 		}

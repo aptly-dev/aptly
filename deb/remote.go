@@ -423,7 +423,7 @@ ok:
 
 // DownloadPackageIndexes downloads & parses package index files
 func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, verifier pgp.Verifier, collectionFactory *CollectionFactory,
-	ignoreMismatch bool, maxTries int) error {
+	ignoreMismatch bool) error {
 	if repo.packageList != nil {
 		panic("packageList != nil")
 	}
@@ -456,7 +456,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 	for _, info := range packagesPaths {
 		path, kind, component, architecture := info[0], info[1], info[2], info[3]
-		packagesReader, packagesFile, err := http.DownloadTryCompression(gocontext.TODO(), d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch, maxTries)
+		packagesReader, packagesFile, err := http.DownloadTryCompression(gocontext.TODO(), d, repo.IndexesRootURL(), path, repo.ReleaseFiles, ignoreMismatch)
 
 		isInstaller := kind == PackageTypeInstaller
 		if err != nil {
@@ -617,34 +617,44 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packag
 
 // FinalizeDownload swaps for final value of package refs
 func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	transaction, err := collectionFactory.PackageCollection().db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
 	repo.LastDownloadDate = time.Now()
 
 	if progress != nil {
-		progress.InitBar(int64(repo.packageList.Len()), true)
+		progress.InitBar(int64(repo.packageList.Len()), false)
 	}
 
 	var i int
 
 	// update all the packages in collection
-	err := repo.packageList.ForEach(func(p *Package) error {
+	err = repo.packageList.ForEach(func(p *Package) error {
 		i++
 		if progress != nil {
 			progress.SetBar(i)
 		}
 		// download process might have updated checksums
 		p.UpdateFiles(p.Files())
-		return collectionFactory.PackageCollection().Update(p)
+		return collectionFactory.PackageCollection().UpdateInTransaction(p, transaction)
 	})
 
-	repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+	if err == nil {
+		repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+		repo.packageList = nil
+	}
 
 	if progress != nil {
 		progress.ShutdownBar()
 	}
 
-	repo.packageList = nil
-
-	return err
+	if err != nil {
+		return err
+	}
+	return transaction.Commit()
 }
 
 // Encode does msgpack encoding of RemoteRepo
@@ -696,6 +706,18 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 			repo.ReleaseFiles = repo11.ReleaseFiles
 			repo.Filter = repo11.Filter
 			repo.FilterWithDeps = repo11.FilterWithDeps
+		} else if strings.Contains(err.Error(), "invalid length of bytes for decoding time") {
+			// DB created by old codec version, time.Time is not builtin type.
+			// https://github.com/ugorji/go-codec/issues/269
+			decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{
+				// only can be configured in Deprecated BasicHandle struct
+				BasicHandle: codec.BasicHandle{ // nolint: staticcheck
+					TimeNotBuiltin: true,
+				},
+			})
+			if err = decoder.Decode(repo); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
@@ -783,17 +805,24 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	err := collection.db.Put(repo.Key(), repo.Encode())
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	err = transaction.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 	if repo.packageRefs != nil {
-		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
+		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+
+	return transaction.Commit()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -866,16 +895,29 @@ func (collection *RemoteRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
-	if _, err := collection.db.Get(repo.Key()); err == database.ErrNotFound {
-		panic("repo not found!")
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	if _, err = transaction.Get(repo.Key()); err != nil {
+		if err == database.ErrNotFound {
+			return errors.New("repo not found")
+		}
+
+		return err
 	}
 
 	delete(collection.cache, repo.UUID)
 
-	err := collection.db.Delete(repo.Key())
-	if err != nil {
+	if err = transaction.Delete(repo.Key()); err != nil {
 		return err
 	}
 
-	return collection.db.Delete(repo.RefKey())
+	if err = transaction.Delete(repo.RefKey()); err != nil {
+		return err
+	}
+
+	return transaction.Commit()
 }

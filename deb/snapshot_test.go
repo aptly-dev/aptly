@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 
 	. "gopkg.in/check.v1"
 )
@@ -113,7 +114,7 @@ type SnapshotCollectionSuite struct {
 var _ = Suite(&SnapshotCollectionSuite{})
 
 func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewSnapshotCollection(s.db)
 	s.SetUpPackages()
 
@@ -279,5 +280,5 @@ func (s *SnapshotCollectionSuite) TestDrop(c *C) {
 	_, err = collection.ByUUID(s.snapshot1.UUID)
 	c.Check(err, ErrorMatches, "snapshot .* not found")
 
-	c.Check(func() { s.collection.Drop(s.snapshot1) }, Panics, "snapshot not found!")
+	c.Check(s.collection.Drop(s.snapshot1), ErrorMatches, "snapshot not found")
 }

@@ -29,10 +29,35 @@ const (
 
 type testSuite struct {
 	*api.API
-	Description string
-	Cases       []testCase
-	Type        uint
-	title       string
+	Description    string
+	ClientEndpoint string
+	Cases          []testCase
+	Type           uint
+	title          string
+}
+
+func (s *testSuite) UnmarshalJSON(p []byte) error {
+	type stub testSuite
+
+	var v stub
+	if err := json.Unmarshal(p, &v); err != nil {
+		return err
+	}
+
+	if len(v.ClientEndpoint) == 0 {
+		v.ClientEndpoint = "https://test"
+	}
+	for i := 0; i < len(v.Cases); i++ {
+		if len(v.Cases[i].InputTest.Host) == 0 {
+			v.Cases[i].InputTest.Host = "test"
+		}
+		if len(v.Cases[i].InputTest.URI) == 0 {
+			v.Cases[i].InputTest.URI = "/"
+		}
+	}
+
+	*s = testSuite(v)
+	return nil
 }
 
 type testCase struct {
@@ -46,6 +71,7 @@ type testCase struct {
 
 type testExpectation struct {
 	Body       string
+	Host       string
 	URI        string
 	Headers    map[string]string
 	JSONValues map[string]string
@@ -129,7 +155,7 @@ func (t *testSuite) TestSuite() string {
 
 var tplInputTestCase = template.Must(template.New("inputcase").Parse(`
 func Test{{ .OpName }}(t *testing.T) {
-	svc := New{{ .TestCase.TestSuite.API.StructName }}(unit.Session, &aws.Config{Endpoint: aws.String("https://test")})
+	svc := New{{ .TestCase.TestSuite.API.StructName }}(unit.Session, &aws.Config{Endpoint: aws.String("{{ .TestCase.TestSuite.ClientEndpoint  }}")})
 	{{ if ne .ParamsString "" }}input := {{ .ParamsString }}
 	{{ range $k, $v := .JSONValues -}}
 	input.{{ $k }} = {{ $v }} 
@@ -138,7 +164,7 @@ func Test{{ .OpName }}(t *testing.T) {
 	r := req.HTTPRequest
 
 	// build request
-	{{ .TestCase.TestSuite.API.ProtocolPackage }}.Build(req)
+	req.Build()
 	if req.Error != nil {
 		t.Errorf("expect no error, got %v", req.Error)
 	}
@@ -149,13 +175,13 @@ func Test{{ .OpName }}(t *testing.T) {
 	}
 	{{ .BodyAssertions }}{{ end }}
 
-	{{ if ne .TestCase.InputTest.URI "" }}// assert URL
-	awstesting.AssertURL(t, "https://test{{ .TestCase.InputTest.URI }}", r.URL.String()){{ end }}
+	// assert URL
+	awstesting.AssertURL(t, "https://{{ .TestCase.InputTest.Host }}{{ .TestCase.InputTest.URI }}", r.URL.String())
 
 	// assert headers
 	{{ range $k, $v := .TestCase.InputTest.Headers -}}
 		if e, a := "{{ $v }}", r.Header.Get("{{ $k }}"); e != a {
-			t.Errorf("expect %v to be %v", e, a)
+			t.Errorf("expect %v, got %v", e, a)
 		}
 	{{ end }}
 }
@@ -237,8 +263,8 @@ func Test{{ .OpName }}(t *testing.T) {
 	{{ end }}
 
 	// unmarshal response
-	{{ .TestCase.TestSuite.API.ProtocolPackage }}.UnmarshalMeta(req)
-	{{ .TestCase.TestSuite.API.ProtocolPackage }}.Unmarshal(req)
+	req.Handlers.UnmarshalMeta.Run(req)
+	req.Handlers.Unmarshal.Run(req)
 	if req.Error != nil {
 		t.Errorf("expect not error, got %v", req.Error)
 	}
@@ -270,7 +296,7 @@ func (i *testCase) TestCase(idx int) string {
 		case "rest-xml":
 			i.InputTest.Body = util.SortXML(bytes.NewReader([]byte(i.InputTest.Body)))
 		case "json", "rest-json":
-			i.InputTest.Body = strings.Replace(i.InputTest.Body, " ", "", -1)
+			// Nothing to do
 		}
 
 		jsonValues := buildJSONValues(i.Given.InputRef.Shape)
@@ -394,6 +420,7 @@ func generateTestSuite(filename string) string {
 		suite.API.NoConstServiceNames = true // don't generate service names
 		suite.API.Setup()
 		suite.API.Metadata.EndpointPrefix = suite.API.PackageName()
+		suite.API.Metadata.EndpointsID = suite.API.Metadata.EndpointPrefix
 
 		// Sort in order for deterministic test generation
 		names := make([]string, 0, len(suite.API.Shapes))
@@ -481,7 +508,7 @@ func GenerateAssertions(out interface{}, shape *api.Shape, prefix string) string
 		case "timestamp":
 			return fmtAssertEqual(
 				fmt.Sprintf("time.Unix(%#v, 0).UTC().String()", out),
-				fmt.Sprintf("%s.String()", prefix),
+				fmt.Sprintf("%s.UTC().String()", prefix),
 			)
 		case "blob":
 			return fmtAssertEqual(
@@ -517,6 +544,10 @@ func getType(t string) uint {
 }
 
 func main() {
+	if len(os.Getenv("AWS_SDK_CODEGEN_DEBUG")) != 0 {
+		api.LogDebug(os.Stdout)
+	}
+
 	fmt.Println("Generating test suite", os.Args[1:])
 	out := generateTestSuite(os.Args[1])
 	if len(os.Args) == 3 {

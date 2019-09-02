@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 sudo: required
 
 language: go
@@ -26,11 +26,11 @@ matrix:
       env: RUN_LONG_TESTS=no
   fast_finish: true
   include:
-    - go: 1.9.x
-      env: RUN_LONG_TESTS=no
     - go: 1.10.x
-      env: RUN_LONG_TESTS=yes
+      env: RUN_LONG_TESTS=no
     - go: 1.11.x
+      env: RUN_LONG_TESTS=yes
+    - go: 1.12.x
       env:
         - RUN_LONG_TESTS=yes
         - DEPLOY_BINARIES=yes
@@ -67,7 +67,7 @@ before_deploy:
 deploy:
   - provider: releases
     api_key:
-      - secure: "MMk5S1Im6RrVudZasjtlCJa/rvRp4oavrR86WI2kQszs1iZIcdGyVhHiOGfWTwMjA/3iPdbAdu/WrjxCwI14GC5ws+rs8ICO6JIZktjtAwlfwlrV+nsrCiYx1EThghq43VEcykgz2UAJoJj/egv+UCEpe8yDTsvJ6we5HiXdTw0="
+      secure: XHxYAFBzzgOZyK6JXQpEp0kGrZPmd02esEJjwJXZpWT68kRzCCrBXg+x3vIcgRtl82oQbflv/ThNlGT80iqSmd+Itsa5lUJoJnRxbP8qSykfCXmkrgsHIxbGxWIL+JHAWmwQdkV91kDS04nmjl9MDptLId0tuleWwcMH6h1hgMg=
     file_glob: true
     file: build/*
     skip_cleanup: true
@@ -91,4 +91,10 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
+      condition: "$DEPLOY_BINARIES = yes"
+  - provider: script
+    script: bash upload-artifacts.sh release
+    skip_cleanup: true
+    on:
+      tags: true
       condition: "$DEPLOY_BINARIES = yes"

@@ -3,6 +3,7 @@ package deb
 import (
 	"sync"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 )
 
@@ -91,9 +92,13 @@ func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollec
 }
 
 // ChecksumCollection returns (or creates) new ChecksumCollection
-func (factory *CollectionFactory) ChecksumCollection() *ChecksumCollection {
+func (factory *CollectionFactory) ChecksumCollection(db database.ReaderWriter) aptly.ChecksumStorage {
 	factory.Lock()
 	defer factory.Unlock()
+
+	if db != nil {
+		return NewChecksumCollection(db)
+	}
 
 	if factory.checksums == nil {
 		factory.checksums = NewChecksumCollection(factory.db)

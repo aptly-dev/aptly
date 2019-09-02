@@ -3,3 +3,4 @@ requests
 requests-unixsocket
 python-swiftclient
 flake8
+termcolor

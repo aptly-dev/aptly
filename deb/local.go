@@ -15,7 +15,7 @@ import (
 // LocalRepo is a collection of packages created locally
 type LocalRepo struct {
 	// Permanent internal ID
-	UUID string `json:"-"`
+	UUID string `codec:"UUID" json:"-"`
 	// User-assigned name
 	Name string
 	// Comment
@@ -25,7 +25,7 @@ type LocalRepo struct {
 	// DefaultComponent
 	DefaultComponent string `codec:",omitempty"`
 	// Uploaders configuration
-	Uploaders *Uploaders `code:",omitempty" json:"-"`
+	Uploaders *Uploaders `codec:"Uploaders,omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 }
@@ -161,17 +161,23 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
-	err := collection.db.Put(repo.Key(), repo.Encode())
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	err = transaction.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 	if repo.packageRefs != nil {
-		err = collection.db.Put(repo.RefKey(), repo.packageRefs.Encode())
+		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return transaction.Commit()
 }
 
 // LoadComplete loads additional information for local repo
@@ -245,16 +251,28 @@ func (collection *LocalRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
-	if _, err := collection.db.Get(repo.Key()); err == database.ErrNotFound {
-		panic("local repo not found!")
-	}
-
-	delete(collection.cache, repo.UUID)
-
-	err := collection.db.Delete(repo.Key())
+	transaction, err := collection.db.OpenTransaction()
 	if err != nil {
 		return err
 	}
+	defer transaction.Discard()
 
-	return collection.db.Delete(repo.RefKey())
+	delete(collection.cache, repo.UUID)
+
+	if _, err = transaction.Get(repo.Key()); err != nil {
+		if err == database.ErrNotFound {
+			return errors.New("local repo not found")
+		}
+		return err
+	}
+
+	if err = transaction.Delete(repo.Key()); err != nil {
+		return err
+	}
+
+	if err = transaction.Delete(repo.RefKey()); err != nil {
+		return err
+	}
+
+	return transaction.Commit()
 }

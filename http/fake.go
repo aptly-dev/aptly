@@ -89,7 +89,7 @@ func (f *FakeDownloader) getExpectedRequest(url string) (*expectedRequest, error
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error {
+func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	expectation, err := f.getExpectedRequest(url)
 	if err != nil {
 		return err
@@ -130,7 +130,7 @@ func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, f
 
 // Download performs fake download by matching against first expectation in the queue
 func (f *FakeDownloader) Download(ctx context.Context, url string, filename string) error {
-	return f.DownloadWithChecksum(ctx, url, filename, nil, false, 1)
+	return f.DownloadWithChecksum(ctx, url, filename, nil, false)
 }
 
 // GetProgress returns Progress object

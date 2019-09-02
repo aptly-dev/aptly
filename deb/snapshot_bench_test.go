@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 )
 
 func BenchmarkSnapshotCollectionForEach(b *testing.B) {
@@ -14,7 +14,7 @@ func BenchmarkSnapshotCollectionForEach(b *testing.B) {
 	tmpDir := os.TempDir()
 	defer os.RemoveAll(tmpDir)
 
-	db, _ := database.NewOpenDB(tmpDir)
+	db, _ := goleveldb.NewOpenDB(tmpDir)
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)
@@ -43,7 +43,7 @@ func BenchmarkSnapshotCollectionByUUID(b *testing.B) {
 	tmpDir := os.TempDir()
 	defer os.RemoveAll(tmpDir)
 
-	db, _ := database.NewOpenDB(tmpDir)
+	db, _ := goleveldb.NewOpenDB(tmpDir)
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)
@@ -74,7 +74,7 @@ func BenchmarkSnapshotCollectionByName(b *testing.B) {
 	tmpDir := os.TempDir()
 	defer os.RemoveAll(tmpDir)
 
-	db, _ := database.NewOpenDB(tmpDir)
+	db, _ := goleveldb.NewOpenDB(tmpDir)
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)

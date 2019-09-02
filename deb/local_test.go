@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 
 	. "gopkg.in/check.v1"
 )
@@ -18,7 +19,7 @@ type LocalRepoSuite struct {
 var _ = Suite(&LocalRepoSuite{})
 
 func (s *LocalRepoSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.list = NewPackageList()
 	s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
 	s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
@@ -83,7 +84,7 @@ type LocalRepoCollectionSuite struct {
 var _ = Suite(&LocalRepoCollectionSuite{})
 
 func (s *LocalRepoCollectionSuite) SetUpTest(c *C) {
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewLocalRepoCollection(s.db)
 
 	s.list = NewPackageList()
@@ -198,5 +199,5 @@ func (s *LocalRepoCollectionSuite) TestDrop(c *C) {
 	r2, _ := collection.ByName("local2")
 	c.Check(r2.String(), Equals, repo2.String())
 
-	c.Check(func() { s.collection.Drop(repo1) }, Panics, "local repo not found!")
+	c.Check(s.collection.Drop(repo1), ErrorMatches, "local repo not found")
 }

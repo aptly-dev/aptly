@@ -44,7 +44,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	buf = make([]byte, 4)
 	d := NewFakeDownloader()
 	d.ExpectResponse("http://example.com/file.bz2", bzipData)
-	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false, 1)
+	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
@@ -56,7 +56,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &Error{Code: 404})
 	d.ExpectResponse("http://example.com/file.gz", gzipData)
-	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false, 1)
+	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
@@ -69,7 +69,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectError("http://example.com/file.bz2", &Error{Code: 404})
 	d.ExpectError("http://example.com/file.gz", &Error{Code: 404})
 	d.ExpectResponse("http://example.com/file.xz", xzData)
-	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false, 1)
+	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
@@ -83,7 +83,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectError("http://example.com/file.gz", &Error{Code: 404})
 	d.ExpectError("http://example.com/file.xz", &Error{Code: 404})
 	d.ExpectResponse("http://example.com/file", rawData)
-	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false, 1)
+	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
@@ -94,7 +94,7 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d = NewFakeDownloader()
 	d.ExpectError("http://example.com/file.bz2", &Error{Code: 404})
 	d.ExpectResponse("http://example.com/file.gz", "x")
-	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true, 1)
+	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true)
 	c.Assert(err, ErrorMatches, "unexpected EOF")
 	c.Assert(d.Empty(), Equals, true)
 }
@@ -112,7 +112,7 @@ func (s *CompressionSuite) TestDownloadTryCompressionLongestSuffix(c *C) {
 	buf = make([]byte, 4)
 	d := NewFakeDownloader()
 	d.ExpectResponse("http://example.com/subdir/file.bz2", bzipData)
-	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "subdir/file", expectedChecksums, false, 1)
+	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "subdir/file", expectedChecksums, false)
 	c.Assert(err, IsNil)
 	defer file.Close()
 	io.ReadFull(r, buf)
@@ -122,7 +122,7 @@ func (s *CompressionSuite) TestDownloadTryCompressionLongestSuffix(c *C) {
 
 func (s *CompressionSuite) TestDownloadTryCompressionErrors(c *C) {
 	d := NewFakeDownloader()
-	_, _, err := DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true, 1)
+	_, _, err := DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true)
 	c.Assert(err, ErrorMatches, "unexpected request.*")
 
 	d = NewFakeDownloader()
@@ -130,7 +130,7 @@ func (s *CompressionSuite) TestDownloadTryCompressionErrors(c *C) {
 	d.ExpectError("http://example.com/file.gz", &Error{Code: 404})
 	d.ExpectError("http://example.com/file.xz", &Error{Code: 404})
 	d.ExpectError("http://example.com/file", errors.New("403"))
-	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true, 1)
+	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", nil, true)
 	c.Assert(err, ErrorMatches, "403")
 
 	d = NewFakeDownloader()
@@ -144,6 +144,6 @@ func (s *CompressionSuite) TestDownloadTryCompressionErrors(c *C) {
 		"file.xz":  {Size: 7},
 		"file":     {Size: 7},
 	}
-	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false, 1)
+	_, _, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, ErrorMatches, "checksums don't match.*")
 }

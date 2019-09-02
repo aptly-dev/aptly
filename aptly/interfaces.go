@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/utils"
 )
 
@@ -127,12 +128,15 @@ type Downloader interface {
 	// Download starts new download task
 	Download(ctx context.Context, url string, destination string) error
 	// DownloadWithChecksum starts new download task with checksum verification
-	DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool, maxTries int) error
+	DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error
 	// GetProgress returns Progress object
 	GetProgress() Progress
 	// GetLength returns size by heading object with url
 	GetLength(ctx context.Context, url string) (int64, error)
 }
+
+// ChecksumStorageProvider creates ChecksumStorage based on DB
+type ChecksumStorageProvider func(db database.ReaderWriter) ChecksumStorage
 
 // ChecksumStorage is stores checksums in some (persistent) storage
 type ChecksumStorage interface {

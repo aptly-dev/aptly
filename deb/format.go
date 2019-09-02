@@ -134,7 +134,9 @@ func isMultilineField(field string, isRelease bool) bool {
 	return false
 }
 
-// Write single field from Stanza to writer
+// Write single field from Stanza to writer.
+//
+//nolint: interfacer
 func writeField(w *bufio.Writer, field, value string, isRelease bool) (err error) {
 	if !isMultilineField(field, isRelease) {
 		_, err = w.WriteString(field + ": " + value + "\n")

@@ -57,6 +57,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
+		"  \"downloadRetries\": 0,\n"+
 		"  \"architectures\": null,\n"+
 		"  \"dependencyFollowSuggests\": false,\n"+
 		"  \"dependencyFollowRecommends\": false,\n"+

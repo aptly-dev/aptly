@@ -26,7 +26,7 @@ import (
 //    // myFunc uses an SDK service client to make a request to
 //    // AWS CodeCommit.
 //    func myFunc(svc codecommitiface.CodeCommitAPI) bool {
-//        // Make svc.BatchGetRepositories request
+//        // Make svc.BatchDescribeMergeConflicts request
 //    }
 //
 //    func main() {
@@ -42,7 +42,7 @@ import (
 //    type mockCodeCommitClient struct {
 //        codecommitiface.CodeCommitAPI
 //    }
-//    func (m *mockCodeCommitClient) BatchGetRepositories(input *codecommit.BatchGetRepositoriesInput) (*codecommit.BatchGetRepositoriesOutput, error) {
+//    func (m *mockCodeCommitClient) BatchDescribeMergeConflicts(input *codecommit.BatchDescribeMergeConflictsInput) (*codecommit.BatchDescribeMergeConflictsOutput, error) {
 //        // mock response/functionality
 //    }
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type CodeCommitAPI interface {
+	BatchDescribeMergeConflicts(*codecommit.BatchDescribeMergeConflictsInput) (*codecommit.BatchDescribeMergeConflictsOutput, error)
+	BatchDescribeMergeConflictsWithContext(aws.Context, *codecommit.BatchDescribeMergeConflictsInput, ...request.Option) (*codecommit.BatchDescribeMergeConflictsOutput, error)
+	BatchDescribeMergeConflictsRequest(*codecommit.BatchDescribeMergeConflictsInput) (*request.Request, *codecommit.BatchDescribeMergeConflictsOutput)
+
 	BatchGetRepositories(*codecommit.BatchGetRepositoriesInput) (*codecommit.BatchGetRepositoriesOutput, error)
 	BatchGetRepositoriesWithContext(aws.Context, *codecommit.BatchGetRepositoriesInput, ...request.Option) (*codecommit.BatchGetRepositoriesOutput, error)
 	BatchGetRepositoriesRequest(*codecommit.BatchGetRepositoriesInput) (*request.Request, *codecommit.BatchGetRepositoriesOutput)
@@ -67,6 +71,10 @@ type CodeCommitAPI interface {
 	CreateBranch(*codecommit.CreateBranchInput) (*codecommit.CreateBranchOutput, error)
 	CreateBranchWithContext(aws.Context, *codecommit.CreateBranchInput, ...request.Option) (*codecommit.CreateBranchOutput, error)
 	CreateBranchRequest(*codecommit.CreateBranchInput) (*request.Request, *codecommit.CreateBranchOutput)
+
+	CreateCommit(*codecommit.CreateCommitInput) (*codecommit.CreateCommitOutput, error)
+	CreateCommitWithContext(aws.Context, *codecommit.CreateCommitInput, ...request.Option) (*codecommit.CreateCommitOutput, error)
+	CreateCommitRequest(*codecommit.CreateCommitInput) (*request.Request, *codecommit.CreateCommitOutput)
 
 	CreatePullRequest(*codecommit.CreatePullRequestInput) (*codecommit.CreatePullRequestOutput, error)
 	CreatePullRequestWithContext(aws.Context, *codecommit.CreatePullRequestInput, ...request.Option) (*codecommit.CreatePullRequestOutput, error)
@@ -76,6 +84,10 @@ type CodeCommitAPI interface {
 	CreateRepositoryWithContext(aws.Context, *codecommit.CreateRepositoryInput, ...request.Option) (*codecommit.CreateRepositoryOutput, error)
 	CreateRepositoryRequest(*codecommit.CreateRepositoryInput) (*request.Request, *codecommit.CreateRepositoryOutput)
 
+	CreateUnreferencedMergeCommit(*codecommit.CreateUnreferencedMergeCommitInput) (*codecommit.CreateUnreferencedMergeCommitOutput, error)
+	CreateUnreferencedMergeCommitWithContext(aws.Context, *codecommit.CreateUnreferencedMergeCommitInput, ...request.Option) (*codecommit.CreateUnreferencedMergeCommitOutput, error)
+	CreateUnreferencedMergeCommitRequest(*codecommit.CreateUnreferencedMergeCommitInput) (*request.Request, *codecommit.CreateUnreferencedMergeCommitOutput)
+
 	DeleteBranch(*codecommit.DeleteBranchInput) (*codecommit.DeleteBranchOutput, error)
 	DeleteBranchWithContext(aws.Context, *codecommit.DeleteBranchInput, ...request.Option) (*codecommit.DeleteBranchOutput, error)
 	DeleteBranchRequest(*codecommit.DeleteBranchInput) (*request.Request, *codecommit.DeleteBranchOutput)
@@ -84,9 +96,20 @@ type CodeCommitAPI interface {
 	DeleteCommentContentWithContext(aws.Context, *codecommit.DeleteCommentContentInput, ...request.Option) (*codecommit.DeleteCommentContentOutput, error)
 	DeleteCommentContentRequest(*codecommit.DeleteCommentContentInput) (*request.Request, *codecommit.DeleteCommentContentOutput)
 
+	DeleteFile(*codecommit.DeleteFileInput) (*codecommit.DeleteFileOutput, error)
+	DeleteFileWithContext(aws.Context, *codecommit.DeleteFileInput, ...request.Option) (*codecommit.DeleteFileOutput, error)
+	DeleteFileRequest(*codecommit.DeleteFileInput) (*request.Request, *codecommit.DeleteFileOutput)
+
 	DeleteRepository(*codecommit.DeleteRepositoryInput) (*codecommit.DeleteRepositoryOutput, error)
 	DeleteRepositoryWithContext(aws.Context, *codecommit.DeleteRepositoryInput, ...request.Option) (*codecommit.DeleteRepositoryOutput, error)
 	DeleteRepositoryRequest(*codecommit.DeleteRepositoryInput) (*request.Request, *codecommit.DeleteRepositoryOutput)
+
+	DescribeMergeConflicts(*codecommit.DescribeMergeConflictsInput) (*codecommit.DescribeMergeConflictsOutput, error)
+	DescribeMergeConflictsWithContext(aws.Context, *codecommit.DescribeMergeConflictsInput, ...request.Option) (*codecommit.DescribeMergeConflictsOutput, error)
+	DescribeMergeConflictsRequest(*codecommit.DescribeMergeConflictsInput) (*request.Request, *codecommit.DescribeMergeConflictsOutput)
+
+	DescribeMergeConflictsPages(*codecommit.DescribeMergeConflictsInput, func(*codecommit.DescribeMergeConflictsOutput, bool) bool) error
+	DescribeMergeConflictsPagesWithContext(aws.Context, *codecommit.DescribeMergeConflictsInput, func(*codecommit.DescribeMergeConflictsOutput, bool) bool, ...request.Option) error
 
 	DescribePullRequestEvents(*codecommit.DescribePullRequestEventsInput) (*codecommit.DescribePullRequestEventsOutput, error)
 	DescribePullRequestEventsWithContext(aws.Context, *codecommit.DescribePullRequestEventsInput, ...request.Option) (*codecommit.DescribePullRequestEventsOutput, error)
@@ -132,9 +155,28 @@ type CodeCommitAPI interface {
 	GetDifferencesPages(*codecommit.GetDifferencesInput, func(*codecommit.GetDifferencesOutput, bool) bool) error
 	GetDifferencesPagesWithContext(aws.Context, *codecommit.GetDifferencesInput, func(*codecommit.GetDifferencesOutput, bool) bool, ...request.Option) error
 
+	GetFile(*codecommit.GetFileInput) (*codecommit.GetFileOutput, error)
+	GetFileWithContext(aws.Context, *codecommit.GetFileInput, ...request.Option) (*codecommit.GetFileOutput, error)
+	GetFileRequest(*codecommit.GetFileInput) (*request.Request, *codecommit.GetFileOutput)
+
+	GetFolder(*codecommit.GetFolderInput) (*codecommit.GetFolderOutput, error)
+	GetFolderWithContext(aws.Context, *codecommit.GetFolderInput, ...request.Option) (*codecommit.GetFolderOutput, error)
+	GetFolderRequest(*codecommit.GetFolderInput) (*request.Request, *codecommit.GetFolderOutput)
+
+	GetMergeCommit(*codecommit.GetMergeCommitInput) (*codecommit.GetMergeCommitOutput, error)
+	GetMergeCommitWithContext(aws.Context, *codecommit.GetMergeCommitInput, ...request.Option) (*codecommit.GetMergeCommitOutput, error)
+	GetMergeCommitRequest(*codecommit.GetMergeCommitInput) (*request.Request, *codecommit.GetMergeCommitOutput)
+
 	GetMergeConflicts(*codecommit.GetMergeConflictsInput) (*codecommit.GetMergeConflictsOutput, error)
 	GetMergeConflictsWithContext(aws.Context, *codecommit.GetMergeConflictsInput, ...request.Option) (*codecommit.GetMergeConflictsOutput, error)
 	GetMergeConflictsRequest(*codecommit.GetMergeConflictsInput) (*request.Request, *codecommit.GetMergeConflictsOutput)
+
+	GetMergeConflictsPages(*codecommit.GetMergeConflictsInput, func(*codecommit.GetMergeConflictsOutput, bool) bool) error
+	GetMergeConflictsPagesWithContext(aws.Context, *codecommit.GetMergeConflictsInput, func(*codecommit.GetMergeConflictsOutput, bool) bool, ...request.Option) error
+
+	GetMergeOptions(*codecommit.GetMergeOptionsInput) (*codecommit.GetMergeOptionsOutput, error)
+	GetMergeOptionsWithContext(aws.Context, *codecommit.GetMergeOptionsInput, ...request.Option) (*codecommit.GetMergeOptionsOutput, error)
+	GetMergeOptionsRequest(*codecommit.GetMergeOptionsInput) (*request.Request, *codecommit.GetMergeOptionsOutput)
 
 	GetPullRequest(*codecommit.GetPullRequestInput) (*codecommit.GetPullRequestOutput, error)
 	GetPullRequestWithContext(aws.Context, *codecommit.GetPullRequestInput, ...request.Option) (*codecommit.GetPullRequestOutput, error)
@@ -169,9 +211,33 @@ type CodeCommitAPI interface {
 	ListRepositoriesPages(*codecommit.ListRepositoriesInput, func(*codecommit.ListRepositoriesOutput, bool) bool) error
 	ListRepositoriesPagesWithContext(aws.Context, *codecommit.ListRepositoriesInput, func(*codecommit.ListRepositoriesOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*codecommit.ListTagsForResourceInput) (*codecommit.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *codecommit.ListTagsForResourceInput, ...request.Option) (*codecommit.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*codecommit.ListTagsForResourceInput) (*request.Request, *codecommit.ListTagsForResourceOutput)
+
+	MergeBranchesByFastForward(*codecommit.MergeBranchesByFastForwardInput) (*codecommit.MergeBranchesByFastForwardOutput, error)
+	MergeBranchesByFastForwardWithContext(aws.Context, *codecommit.MergeBranchesByFastForwardInput, ...request.Option) (*codecommit.MergeBranchesByFastForwardOutput, error)
+	MergeBranchesByFastForwardRequest(*codecommit.MergeBranchesByFastForwardInput) (*request.Request, *codecommit.MergeBranchesByFastForwardOutput)
+
+	MergeBranchesBySquash(*codecommit.MergeBranchesBySquashInput) (*codecommit.MergeBranchesBySquashOutput, error)
+	MergeBranchesBySquashWithContext(aws.Context, *codecommit.MergeBranchesBySquashInput, ...request.Option) (*codecommit.MergeBranchesBySquashOutput, error)
+	MergeBranchesBySquashRequest(*codecommit.MergeBranchesBySquashInput) (*request.Request, *codecommit.MergeBranchesBySquashOutput)
+
+	MergeBranchesByThreeWay(*codecommit.MergeBranchesByThreeWayInput) (*codecommit.MergeBranchesByThreeWayOutput, error)
+	MergeBranchesByThreeWayWithContext(aws.Context, *codecommit.MergeBranchesByThreeWayInput, ...request.Option) (*codecommit.MergeBranchesByThreeWayOutput, error)
+	MergeBranchesByThreeWayRequest(*codecommit.MergeBranchesByThreeWayInput) (*request.Request, *codecommit.MergeBranchesByThreeWayOutput)
+
 	MergePullRequestByFastForward(*codecommit.MergePullRequestByFastForwardInput) (*codecommit.MergePullRequestByFastForwardOutput, error)
 	MergePullRequestByFastForwardWithContext(aws.Context, *codecommit.MergePullRequestByFastForwardInput, ...request.Option) (*codecommit.MergePullRequestByFastForwardOutput, error)
 	MergePullRequestByFastForwardRequest(*codecommit.MergePullRequestByFastForwardInput) (*request.Request, *codecommit.MergePullRequestByFastForwardOutput)
+
+	MergePullRequestBySquash(*codecommit.MergePullRequestBySquashInput) (*codecommit.MergePullRequestBySquashOutput, error)
+	MergePullRequestBySquashWithContext(aws.Context, *codecommit.MergePullRequestBySquashInput, ...request.Option) (*codecommit.MergePullRequestBySquashOutput, error)
+	MergePullRequestBySquashRequest(*codecommit.MergePullRequestBySquashInput) (*request.Request, *codecommit.MergePullRequestBySquashOutput)
+
+	MergePullRequestByThreeWay(*codecommit.MergePullRequestByThreeWayInput) (*codecommit.MergePullRequestByThreeWayOutput, error)
+	MergePullRequestByThreeWayWithContext(aws.Context, *codecommit.MergePullRequestByThreeWayInput, ...request.Option) (*codecommit.MergePullRequestByThreeWayOutput, error)
+	MergePullRequestByThreeWayRequest(*codecommit.MergePullRequestByThreeWayInput) (*request.Request, *codecommit.MergePullRequestByThreeWayOutput)
 
 	PostCommentForComparedCommit(*codecommit.PostCommentForComparedCommitInput) (*codecommit.PostCommentForComparedCommitOutput, error)
 	PostCommentForComparedCommitWithContext(aws.Context, *codecommit.PostCommentForComparedCommitInput, ...request.Option) (*codecommit.PostCommentForComparedCommitOutput, error)
@@ -193,9 +259,17 @@ type CodeCommitAPI interface {
 	PutRepositoryTriggersWithContext(aws.Context, *codecommit.PutRepositoryTriggersInput, ...request.Option) (*codecommit.PutRepositoryTriggersOutput, error)
 	PutRepositoryTriggersRequest(*codecommit.PutRepositoryTriggersInput) (*request.Request, *codecommit.PutRepositoryTriggersOutput)
 
+	TagResource(*codecommit.TagResourceInput) (*codecommit.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *codecommit.TagResourceInput, ...request.Option) (*codecommit.TagResourceOutput, error)
+	TagResourceRequest(*codecommit.TagResourceInput) (*request.Request, *codecommit.TagResourceOutput)
+
 	TestRepositoryTriggers(*codecommit.TestRepositoryTriggersInput) (*codecommit.TestRepositoryTriggersOutput, error)
 	TestRepositoryTriggersWithContext(aws.Context, *codecommit.TestRepositoryTriggersInput, ...request.Option) (*codecommit.TestRepositoryTriggersOutput, error)
 	TestRepositoryTriggersRequest(*codecommit.TestRepositoryTriggersInput) (*request.Request, *codecommit.TestRepositoryTriggersOutput)
+
+	UntagResource(*codecommit.UntagResourceInput) (*codecommit.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *codecommit.UntagResourceInput, ...request.Option) (*codecommit.UntagResourceOutput, error)
+	UntagResourceRequest(*codecommit.UntagResourceInput) (*request.Request, *codecommit.UntagResourceOutput)
 
 	UpdateComment(*codecommit.UpdateCommentInput) (*codecommit.UpdateCommentOutput, error)
 	UpdateCommentWithContext(aws.Context, *codecommit.UpdateCommentInput, ...request.Option) (*codecommit.UpdateCommentOutput, error)

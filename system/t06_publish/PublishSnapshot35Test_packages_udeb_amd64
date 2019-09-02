@@ -1,37 +1,19 @@
 
 
-
 Architecture: amd64
-Architecture: amd64
-Depends: libc6-udeb (>= 2.13), libusb-0.1-udeb, zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
-Depends: libc6-udeb (>= 2.13), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
-Description-Md5: 0d5b74cda45e2a6526c6943d2cd0c362
+Depends: libc6-udeb (>= 2.24), libgcrypt20-udeb (>= 1.7.0-0), libgpg-error0-udeb (>= 1.26), zlib1g-udeb (>= 1:1.2.3.3.dfsg-1)
 Description-Md5: c52656f4cc79fd4b089086b9173d2923
-Description: GNU privacy guard - a free PGP replacement
 Description: minimal signature verification tool
-Filename: pool/main/g/gnupg/gnupg-udeb_1.4.12-7+deb7u7_amd64.udeb
-Filename: pool/main/g/gnupg/gpgv-udeb_1.4.12-7+deb7u7_amd64.udeb
-Installed-Size: 301
-Installed-Size: 833
-MD5sum: 2fda838d1101cc202ddd087c8c98b635
-MD5sum: 6d90567115ee873d4ce6c87991cfaed0
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
-Maintainer: Debian GnuPG-Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
-Package: gnupg-udeb
+Filename: pool/main/g/gnupg2/gpgv-udeb_2.1.18-8~deb9u4_amd64.udeb
+Installed-Size: 411
+MD5sum: 1e9ef857867061a4f989a27167d17f85
+Maintainer: Debian GnuPG Maintainers <pkg-gnupg-maint@lists.alioth.debian.org>
 Package: gpgv-udeb
 Priority: extra
-Priority: extra
-SHA1: 5d32171182e956f8277d44378b1623bbeae23110
-SHA1: dbe121bae44db6eb6108311f41997c4ede1178b2
-SHA256: 4abcb1191d8a3e58d88fb56084f9d784255ba68c767babc3c2819b7a1a689b78
-SHA256: dd7230f9d025c47e8c94e4101e2970e94aed50ec0c65801f9c7cd0a03d6723e1
-SHA512: 520ff1cc4053499609c87329d9458560817c5638bd6871ba3b0598c3cb95420859601aa09728998d8227a4ab29930f4d0474660e26921829641b7bed2751ec5e
-SHA512: a0d5e55d8e183f19111cf3067fa8d434a263bad5bafce39fedaeb3ef7fd97577fef852e4f2bb5e04e27b2a0b79d3e707ff12af5b54879f33f124cdf1626a3dea
+SHA1: 027038384a4ff7b5384db238aecd91348e522953
+SHA256: 805a332ace274081fbc9aab49403af59864e958343dc70a28af6793d9146dfdc
+SHA512: 81a4ead2ff7227163f77158d032fec45fd0a8e20579182cedf461d5032c8b28da6ddcf87fb83a9b93b355073104c84fea23c52b33e21ba95f2f5adf490af0785
 Section: debian-installer
-Section: debian-installer
-Size: 130734
-Size: 354018
-Source: gnupg
-Source: gnupg
-Version: 1.4.12-7+deb7u7
-Version: 1.4.12-7+deb7u7
+Size: 178766
+Source: gnupg2
+Version: 2.1.18-8~deb9u4

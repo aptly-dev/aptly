@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
-	"github.com/smira/go-aws-auth"
+	awsauth "github.com/smira/go-aws-auth"
 )
 
 const errCodeNotFound = "NotFound"

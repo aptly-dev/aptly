@@ -41,7 +41,6 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	ignoreMismatch := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
-	maxTries := context.Flags().Lookup("max-tries").Value.Get().(int)
 
 	verifier, err := getVerifier(context.Flags())
 	if err != nil {
@@ -54,7 +53,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	context.Progress().Printf("Downloading & parsing package files...\n")
-	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, context.CollectionFactory(), ignoreMismatch, maxTries)
+	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, context.CollectionFactory(), ignoreMismatch)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -85,7 +84,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Building download queue...\n")
 	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), context.CollectionFactory().PackageCollection(),
-		context.CollectionFactory().ChecksumCollection(), skipExistingPackages)
+		context.CollectionFactory().ChecksumCollection(nil), skipExistingPackages)
 
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -173,8 +172,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 						repo.PackageURL(task.File.DownloadURL()).String(),
 						task.TempDownPath,
 						&task.File.Checksums,
-						ignoreMismatch,
-						maxTries)
+						ignoreMismatch)
 					if e != nil {
 						pushError(e)
 						continue
@@ -212,7 +210,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 
 		// and import it back to the pool
-		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, context.CollectionFactory().ChecksumCollection())
+		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, context.CollectionFactory().ChecksumCollection(nil))
 		if err != nil {
 			return fmt.Errorf("unable to import file: %s", err)
 		}

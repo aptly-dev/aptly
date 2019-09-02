@@ -6,6 +6,7 @@
     "protocol":"rest-json",
     "serviceAbbreviation":"EFS",
     "serviceFullName":"Amazon Elastic File System",
+    "serviceId":"EFS",
     "signatureVersion":"v4",
     "uid":"elasticfilesystem-2015-02-01"
   },
@@ -23,7 +24,9 @@
         {"shape":"BadRequest"},
         {"shape":"InternalServerError"},
         {"shape":"FileSystemAlreadyExists"},
-        {"shape":"FileSystemLimitExceeded"}
+        {"shape":"FileSystemLimitExceeded"},
+        {"shape":"InsufficientThroughputCapacity"},
+        {"shape":"ThroughputLimitExceeded"}
       ]
     },
     "CreateMountTarget":{
@@ -123,6 +126,21 @@
         {"shape":"FileSystemNotFound"}
       ]
     },
+    "DescribeLifecycleConfiguration":{
+      "name":"DescribeLifecycleConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-02-01/file-systems/{FileSystemId}/lifecycle-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeLifecycleConfigurationRequest"},
+      "output":{"shape":"LifecycleConfigurationDescription"},
+      "errors":[
+        {"shape":"InternalServerError"},
+        {"shape":"BadRequest"},
+        {"shape":"FileSystemNotFound"}
+      ]
+    },
     "DescribeMountTargetSecurityGroups":{
       "name":"DescribeMountTargetSecurityGroups",
       "http":{
@@ -186,6 +204,41 @@
         {"shape":"SecurityGroupLimitExceeded"},
         {"shape":"SecurityGroupNotFound"}
       ]
+    },
+    "PutLifecycleConfiguration":{
+      "name":"PutLifecycleConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2015-02-01/file-systems/{FileSystemId}/lifecycle-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"PutLifecycleConfigurationRequest"},
+      "output":{"shape":"LifecycleConfigurationDescription"},
+      "errors":[
+        {"shape":"BadRequest"},
+        {"shape":"InternalServerError"},
+        {"shape":"FileSystemNotFound"},
+        {"shape":"IncorrectFileSystemLifeCycleState"}
+      ]
+    },
+    "UpdateFileSystem":{
+      "name":"UpdateFileSystem",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2015-02-01/file-systems/{FileSystemId}",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateFileSystemRequest"},
+      "output":{"shape":"FileSystemDescription"},
+      "errors":[
+        {"shape":"BadRequest"},
+        {"shape":"FileSystemNotFound"},
+        {"shape":"IncorrectFileSystemLifeCycleState"},
+        {"shape":"InsufficientThroughputCapacity"},
+        {"shape":"InternalServerError"},
+        {"shape":"ThroughputLimitExceeded"},
+        {"shape":"TooManyRequests"}
+      ]
     }
   },
   "shapes":{
@@ -207,7 +260,10 @@
         "CreationToken":{"shape":"CreationToken"},
         "PerformanceMode":{"shape":"PerformanceMode"},
         "Encrypted":{"shape":"Encrypted"},
-        "KmsKeyId":{"shape":"KmsKeyId"}
+        "KmsKeyId":{"shape":"KmsKeyId"},
+        "ThroughputMode":{"shape":"ThroughputMode"},
+        "ProvisionedThroughputInMibps":{"shape":"ProvisionedThroughputInMibps"},
+        "Tags":{"shape":"Tags"}
       }
     },
     "CreateMountTargetRequest":{
@@ -323,6 +379,17 @@
         "NextMarker":{"shape":"Marker"}
       }
     },
+    "DescribeLifecycleConfigurationRequest":{
+      "type":"structure",
+      "required":["FileSystemId"],
+      "members":{
+        "FileSystemId":{
+          "shape":"FileSystemId",
+          "location":"uri",
+          "locationName":"FileSystemId"
+        }
+      }
+    },
     "DescribeMountTargetSecurityGroupsRequest":{
       "type":"structure",
       "required":["MountTargetId"],
@@ -434,7 +501,8 @@
         "LifeCycleState",
         "NumberOfMountTargets",
         "SizeInBytes",
-        "PerformanceMode"
+        "PerformanceMode",
+        "Tags"
       ],
       "members":{
         "OwnerId":{"shape":"AwsAccountId"},
@@ -447,7 +515,10 @@
         "SizeInBytes":{"shape":"FileSystemSize"},
         "PerformanceMode":{"shape":"PerformanceMode"},
         "Encrypted":{"shape":"Encrypted"},
-        "KmsKeyId":{"shape":"KmsKeyId"}
+        "KmsKeyId":{"shape":"KmsKeyId"},
+        "ThroughputMode":{"shape":"ThroughputMode"},
+        "ProvisionedThroughputInMibps":{"shape":"ProvisionedThroughputInMibps"},
+        "Tags":{"shape":"Tags"}
       }
     },
     "FileSystemDescriptions":{
@@ -485,12 +556,18 @@
       "error":{"httpStatusCode":404},
       "exception":true
     },
+    "FileSystemNullableSizeValue":{
+      "type":"long",
+      "min":0
+    },
     "FileSystemSize":{
       "type":"structure",
       "required":["Value"],
       "members":{
         "Value":{"shape":"FileSystemSizeValue"},
-        "Timestamp":{"shape":"Timestamp"}
+        "Timestamp":{"shape":"Timestamp"},
+        "ValueInIA":{"shape":"FileSystemNullableSizeValue"},
+        "ValueInStandard":{"shape":"FileSystemNullableSizeValue"}
       }
     },
     "FileSystemSizeValue":{
@@ -515,6 +592,16 @@
         "Message":{"shape":"ErrorMessage"}
       },
       "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "InsufficientThroughputCapacity":{
+      "type":"structure",
+      "required":["ErrorCode"],
+      "members":{
+        "ErrorCode":{"shape":"ErrorCode"},
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":503},
       "exception":true
     },
     "InternalServerError":{
@@ -548,9 +635,26 @@
       "enum":[
         "creating",
         "available",
+        "updating",
         "deleting",
         "deleted"
       ]
+    },
+    "LifecycleConfigurationDescription":{
+      "type":"structure",
+      "members":{
+        "LifecyclePolicies":{"shape":"LifecyclePolicies"}
+      }
+    },
+    "LifecyclePolicies":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicy"}
+    },
+    "LifecyclePolicy":{
+      "type":"structure",
+      "members":{
+        "TransitionToIA":{"shape":"TransitionToIARules"}
+      }
     },
     "Marker":{"type":"string"},
     "MaxItems":{
@@ -644,6 +748,25 @@
         "maxIO"
       ]
     },
+    "ProvisionedThroughputInMibps":{
+      "type":"double",
+      "min":1.0
+    },
+    "PutLifecycleConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "FileSystemId",
+        "LifecyclePolicies"
+      ],
+      "members":{
+        "FileSystemId":{
+          "shape":"FileSystemId",
+          "location":"uri",
+          "locationName":"FileSystemId"
+        },
+        "LifecyclePolicies":{"shape":"LifecyclePolicies"}
+      }
+    },
     "SecurityGroup":{"type":"string"},
     "SecurityGroupLimitExceeded":{
       "type":"structure",
@@ -709,7 +832,43 @@
       "type":"list",
       "member":{"shape":"Tag"}
     },
+    "ThroughputLimitExceeded":{
+      "type":"structure",
+      "required":["ErrorCode"],
+      "members":{
+        "ErrorCode":{"shape":"ErrorCode"},
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ThroughputMode":{
+      "type":"string",
+      "enum":[
+        "bursting",
+        "provisioned"
+      ]
+    },
     "Timestamp":{"type":"timestamp"},
+    "TooManyRequests":{
+      "type":"structure",
+      "required":["ErrorCode"],
+      "members":{
+        "ErrorCode":{"shape":"ErrorCode"},
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "TransitionToIARules":{
+      "type":"string",
+      "enum":[
+        "AFTER_14_DAYS",
+        "AFTER_30_DAYS",
+        "AFTER_60_DAYS",
+        "AFTER_90_DAYS"
+      ]
+    },
     "UnsupportedAvailabilityZone":{
       "type":"structure",
       "required":["ErrorCode"],
@@ -719,6 +878,19 @@
       },
       "error":{"httpStatusCode":400},
       "exception":true
+    },
+    "UpdateFileSystemRequest":{
+      "type":"structure",
+      "required":["FileSystemId"],
+      "members":{
+        "FileSystemId":{
+          "shape":"FileSystemId",
+          "location":"uri",
+          "locationName":"FileSystemId"
+        },
+        "ThroughputMode":{"shape":"ThroughputMode"},
+        "ProvisionedThroughputInMibps":{"shape":"ProvisionedThroughputInMibps"}
+      }
     }
   }
 }

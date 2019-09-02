@@ -7,6 +7,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/utils"
 
@@ -37,7 +38,7 @@ func (s *ChangesSuite) SetUpTest(c *C) {
 	err := utils.CopyFile("testdata/changes/calamares.changes", s.Path)
 	c.Assert(err, IsNil)
 
-	s.db, _ = database.NewOpenDB(c.MkDir())
+	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.localRepoCollection = NewLocalRepoCollection(s.db)
 	s.packageCollection = NewPackageCollection(s.db)
 
@@ -122,7 +123,7 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	processedFiles, failedFiles, err := ImportChangesFiles(
 		append(changesFiles, "testdata/changes/notexistent.changes"),
 		s.Reporter, true, true, false, false, &NullVerifier{},
-		"test", s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, s.checksumStorage,
+		"test", s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
 		nil, nil)
 	c.Assert(err, IsNil)
 	c.Check(failedFiles, DeepEquals, append(expectedFailedFiles, "testdata/changes/notexistent.changes"))

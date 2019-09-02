@@ -7,6 +7,7 @@
     "protocol":"json",
     "serviceAbbreviation":"CodePipeline",
     "serviceFullName":"AWS CodePipeline",
+    "serviceId":"CodePipeline",
     "signatureVersion":"v4",
     "targetPrefix":"CodePipeline_20150709",
     "uid":"codepipeline-2015-07-09"
@@ -51,7 +52,10 @@
       "output":{"shape":"CreateCustomActionTypeOutput"},
       "errors":[
         {"shape":"ValidationException"},
-        {"shape":"LimitExceededException"}
+        {"shape":"LimitExceededException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"InvalidTagsException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     },
     "CreatePipeline":{
@@ -69,7 +73,10 @@
         {"shape":"InvalidActionDeclarationException"},
         {"shape":"InvalidBlockerDeclarationException"},
         {"shape":"InvalidStructureException"},
-        {"shape":"LimitExceededException"}
+        {"shape":"LimitExceededException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"InvalidTagsException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     },
     "DeleteCustomActionType":{
@@ -80,7 +87,8 @@
       },
       "input":{"shape":"DeleteCustomActionTypeInput"},
       "errors":[
-        {"shape":"ValidationException"}
+        {"shape":"ValidationException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     },
     "DeletePipeline":{
@@ -91,7 +99,34 @@
       },
       "input":{"shape":"DeletePipelineInput"},
       "errors":[
-        {"shape":"ValidationException"}
+        {"shape":"ValidationException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "DeleteWebhook":{
+      "name":"DeleteWebhook",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteWebhookInput"},
+      "output":{"shape":"DeleteWebhookOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "DeregisterWebhookWithThirdParty":{
+      "name":"DeregisterWebhookWithThirdParty",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeregisterWebhookWithThirdPartyInput"},
+      "output":{"shape":"DeregisterWebhookWithThirdPartyOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"WebhookNotFoundException"}
       ]
     },
     "DisableStageTransition":{
@@ -189,6 +224,21 @@
         {"shape":"InvalidJobException"}
       ]
     },
+    "ListActionExecutions":{
+      "name":"ListActionExecutions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListActionExecutionsInput"},
+      "output":{"shape":"ListActionExecutionsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"PipelineNotFoundException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"PipelineExecutionNotFoundException"}
+      ]
+    },
     "ListActionTypes":{
       "name":"ListActionTypes",
       "http":{
@@ -225,6 +275,35 @@
       "input":{"shape":"ListPipelinesInput"},
       "output":{"shape":"ListPipelinesOutput"},
       "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidNextTokenException"}
+      ]
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"InvalidArnException"}
+      ]
+    },
+    "ListWebhooks":{
+      "name":"ListWebhooks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWebhooksInput"},
+      "output":{"shape":"ListWebhooksOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
         {"shape":"InvalidNextTokenException"}
       ]
     },
@@ -340,6 +419,38 @@
         {"shape":"InvalidClientTokenException"}
       ]
     },
+    "PutWebhook":{
+      "name":"PutWebhook",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutWebhookInput"},
+      "output":{"shape":"PutWebhookOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InvalidWebhookFilterPatternException"},
+        {"shape":"InvalidWebhookAuthenticationParametersException"},
+        {"shape":"PipelineNotFoundException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"InvalidTagsException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "RegisterWebhookWithThirdParty":{
+      "name":"RegisterWebhookWithThirdParty",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RegisterWebhookWithThirdPartyInput"},
+      "output":{"shape":"RegisterWebhookWithThirdPartyOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"WebhookNotFoundException"}
+      ]
+    },
     "RetryStageExecution":{
       "name":"RetryStageExecution",
       "http":{
@@ -369,6 +480,39 @@
         {"shape":"PipelineNotFoundException"}
       ]
     },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"InvalidTagsException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidArnException"},
+        {"shape":"InvalidTagsException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
     "UpdatePipeline":{
       "name":"UpdatePipeline",
       "http":{
@@ -382,11 +526,17 @@
         {"shape":"InvalidStageDeclarationException"},
         {"shape":"InvalidActionDeclarationException"},
         {"shape":"InvalidBlockerDeclarationException"},
-        {"shape":"InvalidStructureException"}
+        {"shape":"InvalidStructureException"},
+        {"shape":"LimitExceededException"}
       ]
     }
   },
   "shapes":{
+    "AWSRegionName":{
+      "type":"string",
+      "max":30,
+      "min":4
+    },
     "AWSSessionCredentials":{
       "type":"structure",
       "required":[
@@ -514,7 +664,8 @@
     "ActionContext":{
       "type":"structure",
       "members":{
-        "name":{"shape":"ActionName"}
+        "name":{"shape":"ActionName"},
+        "actionExecutionId":{"shape":"ActionExecutionId"}
       }
     },
     "ActionDeclaration":{
@@ -530,7 +681,8 @@
         "configuration":{"shape":"ActionConfigurationMap"},
         "outputArtifacts":{"shape":"OutputArtifactList"},
         "inputArtifacts":{"shape":"InputArtifactList"},
-        "roleArn":{"shape":"RoleArn"}
+        "roleArn":{"shape":"RoleArn"},
+        "region":{"shape":"AWSRegionName"}
       }
     },
     "ActionExecution":{
@@ -545,6 +697,57 @@
         "externalExecutionUrl":{"shape":"Url"},
         "percentComplete":{"shape":"Percentage"},
         "errorDetails":{"shape":"ErrorDetails"}
+      }
+    },
+    "ActionExecutionDetail":{
+      "type":"structure",
+      "members":{
+        "pipelineExecutionId":{"shape":"PipelineExecutionId"},
+        "actionExecutionId":{"shape":"ActionExecutionId"},
+        "pipelineVersion":{"shape":"PipelineVersion"},
+        "stageName":{"shape":"StageName"},
+        "actionName":{"shape":"ActionName"},
+        "startTime":{"shape":"Timestamp"},
+        "lastUpdateTime":{"shape":"Timestamp"},
+        "status":{"shape":"ActionExecutionStatus"},
+        "input":{"shape":"ActionExecutionInput"},
+        "output":{"shape":"ActionExecutionOutput"}
+      }
+    },
+    "ActionExecutionDetailList":{
+      "type":"list",
+      "member":{"shape":"ActionExecutionDetail"}
+    },
+    "ActionExecutionFilter":{
+      "type":"structure",
+      "members":{
+        "pipelineExecutionId":{"shape":"PipelineExecutionId"}
+      }
+    },
+    "ActionExecutionId":{"type":"string"},
+    "ActionExecutionInput":{
+      "type":"structure",
+      "members":{
+        "actionTypeId":{"shape":"ActionTypeId"},
+        "configuration":{"shape":"ActionConfigurationMap"},
+        "roleArn":{"shape":"RoleArn"},
+        "region":{"shape":"AWSRegionName"},
+        "inputArtifacts":{"shape":"ArtifactDetailList"}
+      }
+    },
+    "ActionExecutionOutput":{
+      "type":"structure",
+      "members":{
+        "outputArtifacts":{"shape":"ArtifactDetailList"},
+        "executionResult":{"shape":"ActionExecutionResult"}
+      }
+    },
+    "ActionExecutionResult":{
+      "type":"structure",
+      "members":{
+        "externalExecutionId":{"shape":"ExternalExecutionId"},
+        "externalExecutionSummary":{"shape":"ExternalExecutionSummary"},
+        "externalExecutionUrl":{"shape":"Url"}
       }
     },
     "ActionExecutionStatus":{
@@ -704,6 +907,17 @@
         "location":{"shape":"ArtifactLocation"}
       }
     },
+    "ArtifactDetail":{
+      "type":"structure",
+      "members":{
+        "name":{"shape":"ArtifactName"},
+        "s3location":{"shape":"S3Location"}
+      }
+    },
+    "ArtifactDetailList":{
+      "type":"list",
+      "member":{"shape":"ArtifactDetail"}
+    },
     "ArtifactDetails":{
       "type":"structure",
       "required":[
@@ -769,6 +983,11 @@
       "min":3,
       "pattern":"[a-zA-Z0-9\\-\\.]+"
     },
+    "ArtifactStoreMap":{
+      "type":"map",
+      "key":{"shape":"AWSRegionName"},
+      "value":{"shape":"ArtifactStore"}
+    },
     "ArtifactStoreType":{
       "type":"string",
       "enum":["S3"]
@@ -798,13 +1017,30 @@
       "type":"string",
       "pattern":"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
     },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-]+$"
+    },
     "ClientToken":{
       "type":"string",
       "max":256,
       "min":1
     },
     "Code":{"type":"string"},
-    "ContinuationToken":{"type":"string"},
+    "ConcurrentModificationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"Message"}
+      },
+      "exception":true
+    },
+    "ContinuationToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
     "CreateCustomActionTypeInput":{
       "type":"structure",
       "required":[
@@ -821,27 +1057,31 @@
         "settings":{"shape":"ActionTypeSettings"},
         "configurationProperties":{"shape":"ActionConfigurationPropertyList"},
         "inputArtifactDetails":{"shape":"ArtifactDetails"},
-        "outputArtifactDetails":{"shape":"ArtifactDetails"}
+        "outputArtifactDetails":{"shape":"ArtifactDetails"},
+        "tags":{"shape":"TagList"}
       }
     },
     "CreateCustomActionTypeOutput":{
       "type":"structure",
       "required":["actionType"],
       "members":{
-        "actionType":{"shape":"ActionType"}
+        "actionType":{"shape":"ActionType"},
+        "tags":{"shape":"TagList"}
       }
     },
     "CreatePipelineInput":{
       "type":"structure",
       "required":["pipeline"],
       "members":{
-        "pipeline":{"shape":"PipelineDeclaration"}
+        "pipeline":{"shape":"PipelineDeclaration"},
+        "tags":{"shape":"TagList"}
       }
     },
     "CreatePipelineOutput":{
       "type":"structure",
       "members":{
-        "pipeline":{"shape":"PipelineDeclaration"}
+        "pipeline":{"shape":"PipelineDeclaration"},
+        "tags":{"shape":"TagList"}
       }
     },
     "CurrentRevision":{
@@ -877,9 +1117,32 @@
         "name":{"shape":"PipelineName"}
       }
     },
+    "DeleteWebhookInput":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{"shape":"WebhookName"}
+      }
+    },
+    "DeleteWebhookOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeregisterWebhookWithThirdPartyInput":{
+      "type":"structure",
+      "members":{
+        "webhookName":{"shape":"WebhookName"}
+      }
+    },
+    "DeregisterWebhookWithThirdPartyOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "Description":{
       "type":"string",
-      "max":2048,
+      "max":160,
       "min":1
     },
     "DisableStageTransitionInput":{
@@ -957,7 +1220,13 @@
       "max":1500,
       "min":1
     },
-    "ExecutionSummary":{"type":"string"},
+    "ExecutionSummary":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ExternalExecutionId":{"type":"string"},
+    "ExternalExecutionSummary":{"type":"string"},
     "FailureDetails":{
       "type":"structure",
       "required":[
@@ -1083,6 +1352,13 @@
       },
       "exception":true
     },
+    "InvalidArnException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"Message"}
+      },
+      "exception":true
+    },
     "InvalidBlockerDeclarationException":{
       "type":"structure",
       "members":{
@@ -1126,6 +1402,25 @@
       "exception":true
     },
     "InvalidStructureException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "InvalidTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"Message"}
+      },
+      "exception":true
+    },
+    "InvalidWebhookAuthenticationParametersException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "InvalidWebhookFilterPatternException":{
       "type":"structure",
       "members":{
       },
@@ -1187,6 +1482,11 @@
         "Failed"
       ]
     },
+    "JsonPath":{
+      "type":"string",
+      "max":150,
+      "min":1
+    },
     "LastChangedAt":{"type":"timestamp"},
     "LastChangedBy":{"type":"string"},
     "LastUpdatedBy":{"type":"string"},
@@ -1195,6 +1495,23 @@
       "members":{
       },
       "exception":true
+    },
+    "ListActionExecutionsInput":{
+      "type":"structure",
+      "required":["pipelineName"],
+      "members":{
+        "pipelineName":{"shape":"PipelineName"},
+        "filter":{"shape":"ActionExecutionFilter"},
+        "maxResults":{"shape":"MaxResults"},
+        "nextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListActionExecutionsOutput":{
+      "type":"structure",
+      "members":{
+        "actionExecutionDetails":{"shape":"ActionExecutionDetailList"},
+        "nextToken":{"shape":"NextToken"}
+      }
     },
     "ListActionTypesInput":{
       "type":"structure",
@@ -1240,6 +1557,57 @@
         "nextToken":{"shape":"NextToken"}
       }
     },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "nextToken":{"shape":"NextToken"},
+        "maxResults":{"shape":"MaxResults"}
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{"shape":"TagList"},
+        "nextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListWebhookItem":{
+      "type":"structure",
+      "required":[
+        "definition",
+        "url"
+      ],
+      "members":{
+        "definition":{"shape":"WebhookDefinition"},
+        "url":{"shape":"WebhookUrl"},
+        "errorMessage":{"shape":"WebhookErrorMessage"},
+        "errorCode":{"shape":"WebhookErrorCode"},
+        "lastTriggered":{"shape":"WebhookLastTriggered"},
+        "arn":{"shape":"WebhookArn"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "ListWebhooksInput":{
+      "type":"structure",
+      "members":{
+        "NextToken":{"shape":"NextToken"},
+        "MaxResults":{"shape":"MaxResults"}
+      }
+    },
+    "ListWebhooksOutput":{
+      "type":"structure",
+      "members":{
+        "webhooks":{"shape":"WebhookList"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "MatchEquals":{
+      "type":"string",
+      "max":150,
+      "min":1
+    },
     "MaxBatchSize":{
       "type":"integer",
       "min":1
@@ -1254,7 +1622,11 @@
       "max":5,
       "min":0
     },
-    "Message":{"type":"string"},
+    "Message":{
+      "type":"string",
+      "max":5000,
+      "min":1
+    },
     "MinimumArtifactCount":{
       "type":"integer",
       "max":5,
@@ -1265,7 +1637,11 @@
       "max":2048,
       "min":1
     },
-    "Nonce":{"type":"string"},
+    "Nonce":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
     "NotLatestPipelineExecutionException":{
       "type":"structure",
       "members":{
@@ -1297,7 +1673,9 @@
       "members":{
         "pipelineName":{"shape":"PipelineName"},
         "stage":{"shape":"StageContext"},
-        "action":{"shape":"ActionContext"}
+        "action":{"shape":"ActionContext"},
+        "pipelineArn":{"shape":"PipelineArn"},
+        "pipelineExecutionId":{"shape":"PipelineExecutionId"}
       }
     },
     "PipelineDeclaration":{
@@ -1305,13 +1683,13 @@
       "required":[
         "name",
         "roleArn",
-        "artifactStore",
         "stages"
       ],
       "members":{
         "name":{"shape":"PipelineName"},
         "roleArn":{"shape":"RoleArn"},
         "artifactStore":{"shape":"ArtifactStore"},
+        "artifactStores":{"shape":"ArtifactStoreMap"},
         "stages":{"shape":"PipelineStageDeclarationList"},
         "version":{"shape":"PipelineVersion"}
       }
@@ -1351,7 +1729,8 @@
         "pipelineExecutionId":{"shape":"PipelineExecutionId"},
         "status":{"shape":"PipelineExecutionStatus"},
         "startTime":{"shape":"Timestamp"},
-        "lastUpdateTime":{"shape":"Timestamp"}
+        "lastUpdateTime":{"shape":"Timestamp"},
+        "sourceRevisions":{"shape":"SourceRevisionList"}
       }
     },
     "PipelineExecutionSummaryList":{
@@ -1533,12 +1912,47 @@
         "executionDetails":{"shape":"ExecutionDetails"}
       }
     },
+    "PutWebhookInput":{
+      "type":"structure",
+      "required":["webhook"],
+      "members":{
+        "webhook":{"shape":"WebhookDefinition"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "PutWebhookOutput":{
+      "type":"structure",
+      "members":{
+        "webhook":{"shape":"ListWebhookItem"}
+      }
+    },
     "QueryParamMap":{
       "type":"map",
       "key":{"shape":"ActionConfigurationKey"},
       "value":{"shape":"ActionConfigurationQueryableValue"},
       "max":1,
       "min":0
+    },
+    "RegisterWebhookWithThirdPartyInput":{
+      "type":"structure",
+      "members":{
+        "webhookName":{"shape":"WebhookName"}
+      }
+    },
+    "RegisterWebhookWithThirdPartyOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ResourceArn":{
+      "type":"string",
+      "pattern":"arn:aws(-[\\w]+)*:codepipeline:.+:[0-9]{12}:.+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
     },
     "RetryStageExecutionInput":{
       "type":"structure",
@@ -1592,10 +2006,41 @@
         "objectKey":{"shape":"S3ObjectKey"}
       }
     },
+    "S3Bucket":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
     "S3BucketName":{"type":"string"},
+    "S3Key":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "S3Location":{
+      "type":"structure",
+      "members":{
+        "bucket":{"shape":"S3Bucket"},
+        "key":{"shape":"S3Key"}
+      }
+    },
     "S3ObjectKey":{"type":"string"},
     "SecretAccessKey":{"type":"string"},
     "SessionToken":{"type":"string"},
+    "SourceRevision":{
+      "type":"structure",
+      "required":["actionName"],
+      "members":{
+        "actionName":{"shape":"ActionName"},
+        "revisionId":{"shape":"Revision"},
+        "revisionSummary":{"shape":"RevisionSummary"},
+        "revisionUrl":{"shape":"Url"}
+      }
+    },
+    "SourceRevisionList":{
+      "type":"list",
+      "member":{"shape":"SourceRevision"}
+    },
     "StageActionDeclarationList":{
       "type":"list",
       "member":{"shape":"ActionDeclaration"}
@@ -1687,7 +2132,11 @@
       "type":"structure",
       "required":["name"],
       "members":{
-        "name":{"shape":"PipelineName"}
+        "name":{"shape":"PipelineName"},
+        "clientRequestToken":{
+          "shape":"ClientRequestToken",
+          "idempotencyToken":true
+        }
       }
     },
     "StartPipelineExecutionOutput":{
@@ -1695,6 +2144,51 @@
       "members":{
         "pipelineExecutionId":{"shape":"PipelineExecutionId"}
       }
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{"shape":"TagKey"},
+        "value":{"shape":"TagValue"}
+      }
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
     },
     "ThirdPartyJob":{
       "type":"structure",
@@ -1735,6 +2229,13 @@
     },
     "Time":{"type":"timestamp"},
     "Timestamp":{"type":"timestamp"},
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"Message"}
+      },
+      "exception":true
+    },
     "TransitionState":{
       "type":"structure",
       "members":{
@@ -1742,6 +2243,22 @@
         "lastChangedBy":{"shape":"LastChangedBy"},
         "lastChangedAt":{"shape":"LastChangedAt"},
         "disabledReason":{"shape":"DisabledReason"}
+      }
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "tagKeys":{"shape":"TagKeyList"}
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
       }
     },
     "UpdatePipelineInput":{
@@ -1778,6 +2295,88 @@
       "max":9,
       "min":1,
       "pattern":"[0-9A-Za-z_-]+"
+    },
+    "WebhookArn":{"type":"string"},
+    "WebhookAuthConfiguration":{
+      "type":"structure",
+      "members":{
+        "AllowedIPRange":{"shape":"WebhookAuthConfigurationAllowedIPRange"},
+        "SecretToken":{"shape":"WebhookAuthConfigurationSecretToken"}
+      }
+    },
+    "WebhookAuthConfigurationAllowedIPRange":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "WebhookAuthConfigurationSecretToken":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "WebhookAuthenticationType":{
+      "type":"string",
+      "enum":[
+        "GITHUB_HMAC",
+        "IP",
+        "UNAUTHENTICATED"
+      ]
+    },
+    "WebhookDefinition":{
+      "type":"structure",
+      "required":[
+        "name",
+        "targetPipeline",
+        "targetAction",
+        "filters",
+        "authentication",
+        "authenticationConfiguration"
+      ],
+      "members":{
+        "name":{"shape":"WebhookName"},
+        "targetPipeline":{"shape":"PipelineName"},
+        "targetAction":{"shape":"ActionName"},
+        "filters":{"shape":"WebhookFilters"},
+        "authentication":{"shape":"WebhookAuthenticationType"},
+        "authenticationConfiguration":{"shape":"WebhookAuthConfiguration"}
+      }
+    },
+    "WebhookErrorCode":{"type":"string"},
+    "WebhookErrorMessage":{"type":"string"},
+    "WebhookFilterRule":{
+      "type":"structure",
+      "required":["jsonPath"],
+      "members":{
+        "jsonPath":{"shape":"JsonPath"},
+        "matchEquals":{"shape":"MatchEquals"}
+      }
+    },
+    "WebhookFilters":{
+      "type":"list",
+      "member":{"shape":"WebhookFilterRule"},
+      "max":5
+    },
+    "WebhookLastTriggered":{"type":"timestamp"},
+    "WebhookList":{
+      "type":"list",
+      "member":{"shape":"ListWebhookItem"}
+    },
+    "WebhookName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[A-Za-z0-9.@\\-_]+"
+    },
+    "WebhookNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "WebhookUrl":{
+      "type":"string",
+      "max":1000,
+      "min":1
     }
   }
 }

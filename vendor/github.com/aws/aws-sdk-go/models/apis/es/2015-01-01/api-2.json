@@ -24,6 +24,21 @@
         {"shape":"InternalException"}
       ]
     },
+    "CancelElasticsearchServiceSoftwareUpdate":{
+      "name":"CancelElasticsearchServiceSoftwareUpdate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2015-01-01/es/serviceSoftwareUpdate/cancel"
+      },
+      "input":{"shape":"CancelElasticsearchServiceSoftwareUpdateRequest"},
+      "output":{"shape":"CancelElasticsearchServiceSoftwareUpdateResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ]
+    },
     "CreateElasticsearchDomain":{
       "name":"CreateElasticsearchDomain",
       "http":{
@@ -130,6 +145,84 @@
         {"shape":"ValidationException"}
       ]
     },
+    "DescribeReservedElasticsearchInstanceOfferings":{
+      "name":"DescribeReservedElasticsearchInstanceOfferings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-01-01/es/reservedInstanceOfferings"
+      },
+      "input":{"shape":"DescribeReservedElasticsearchInstanceOfferingsRequest"},
+      "output":{"shape":"DescribeReservedElasticsearchInstanceOfferingsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"InternalException"}
+      ]
+    },
+    "DescribeReservedElasticsearchInstances":{
+      "name":"DescribeReservedElasticsearchInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-01-01/es/reservedInstances"
+      },
+      "input":{"shape":"DescribeReservedElasticsearchInstancesRequest"},
+      "output":{"shape":"DescribeReservedElasticsearchInstancesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"},
+        {"shape":"ValidationException"},
+        {"shape":"DisabledOperationException"}
+      ]
+    },
+    "GetCompatibleElasticsearchVersions":{
+      "name":"GetCompatibleElasticsearchVersions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-01-01/es/compatibleVersions"
+      },
+      "input":{"shape":"GetCompatibleElasticsearchVersionsRequest"},
+      "output":{"shape":"GetCompatibleElasticsearchVersionsResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"}
+      ]
+    },
+    "GetUpgradeHistory":{
+      "name":"GetUpgradeHistory",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-01-01/es/upgradeDomain/{DomainName}/history"
+      },
+      "input":{"shape":"GetUpgradeHistoryRequest"},
+      "output":{"shape":"GetUpgradeHistoryResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"}
+      ]
+    },
+    "GetUpgradeStatus":{
+      "name":"GetUpgradeStatus",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2015-01-01/es/upgradeDomain/{DomainName}/status"
+      },
+      "input":{"shape":"GetUpgradeStatusRequest"},
+      "output":{"shape":"GetUpgradeStatusResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"}
+      ]
+    },
     "ListDomainNames":{
       "name":"ListDomainNames",
       "http":{
@@ -187,6 +280,23 @@
         {"shape":"InternalException"}
       ]
     },
+    "PurchaseReservedElasticsearchInstanceOffering":{
+      "name":"PurchaseReservedElasticsearchInstanceOffering",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2015-01-01/es/purchaseReservedInstanceOffering"
+      },
+      "input":{"shape":"PurchaseReservedElasticsearchInstanceOfferingRequest"},
+      "output":{"shape":"PurchaseReservedElasticsearchInstanceOfferingResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"}
+      ]
+    },
     "RemoveTags":{
       "name":"RemoveTags",
       "http":{
@@ -198,6 +308,21 @@
         {"shape":"BaseException"},
         {"shape":"ValidationException"},
         {"shape":"InternalException"}
+      ]
+    },
+    "StartElasticsearchServiceSoftwareUpdate":{
+      "name":"StartElasticsearchServiceSoftwareUpdate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2015-01-01/es/serviceSoftwareUpdate/start"
+      },
+      "input":{"shape":"StartElasticsearchServiceSoftwareUpdateRequest"},
+      "output":{"shape":"StartElasticsearchServiceSoftwareUpdateResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
       ]
     },
     "UpdateElasticsearchDomainConfig":{
@@ -215,6 +340,23 @@
         {"shape":"LimitExceededException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"ValidationException"}
+      ]
+    },
+    "UpgradeElasticsearchDomain":{
+      "name":"UpgradeElasticsearchDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2015-01-01/es/upgradeDomain"
+      },
+      "input":{"shape":"UpgradeElasticsearchDomainRequest"},
+      "output":{"shape":"UpgradeElasticsearchDomainResponse"},
+      "errors":[
+        {"shape":"BaseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"}
       ]
     }
   },
@@ -277,6 +419,19 @@
       "exception":true
     },
     "Boolean":{"type":"boolean"},
+    "CancelElasticsearchServiceSoftwareUpdateRequest":{
+      "type":"structure",
+      "required":["DomainName"],
+      "members":{
+        "DomainName":{"shape":"DomainName"}
+      }
+    },
+    "CancelElasticsearchServiceSoftwareUpdateResponse":{
+      "type":"structure",
+      "members":{
+        "ServiceSoftwareOptions":{"shape":"ServiceSoftwareOptions"}
+      }
+    },
     "CloudWatchLogsLogGroupArn":{"type":"string"},
     "CognitoOptions":{
       "type":"structure",
@@ -298,6 +453,17 @@
         "Status":{"shape":"OptionStatus"}
       }
     },
+    "CompatibleElasticsearchVersionsList":{
+      "type":"list",
+      "member":{"shape":"CompatibleVersionsMap"}
+    },
+    "CompatibleVersionsMap":{
+      "type":"structure",
+      "members":{
+        "SourceVersion":{"shape":"ElasticsearchVersionString"},
+        "TargetVersions":{"shape":"ElasticsearchVersionList"}
+      }
+    },
     "CreateElasticsearchDomainRequest":{
       "type":"structure",
       "required":["DomainName"],
@@ -311,6 +477,7 @@
         "VPCOptions":{"shape":"VPCOptions"},
         "CognitoOptions":{"shape":"CognitoOptions"},
         "EncryptionAtRestOptions":{"shape":"EncryptionAtRestOptions"},
+        "NodeToNodeEncryptionOptions":{"shape":"NodeToNodeEncryptionOptions"},
         "AdvancedOptions":{"shape":"AdvancedOptions"},
         "LogPublishingOptions":{"shape":"LogPublishingOptions"}
       }
@@ -337,6 +504,17 @@
       "members":{
         "DomainStatus":{"shape":"ElasticsearchDomainStatus"}
       }
+    },
+    "DeploymentCloseDateTimeStamp":{"type":"timestamp"},
+    "DeploymentStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING_UPDATE",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "NOT_ELIGIBLE",
+        "ELIGIBLE"
+      ]
     },
     "DescribeElasticsearchDomainConfigRequest":{
       "type":"structure",
@@ -418,6 +596,60 @@
         "LimitsByRole":{"shape":"LimitsByRole"}
       }
     },
+    "DescribeReservedElasticsearchInstanceOfferingsRequest":{
+      "type":"structure",
+      "members":{
+        "ReservedElasticsearchInstanceOfferingId":{
+          "shape":"GUID",
+          "location":"querystring",
+          "locationName":"offeringId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "DescribeReservedElasticsearchInstanceOfferingsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{"shape":"NextToken"},
+        "ReservedElasticsearchInstanceOfferings":{"shape":"ReservedElasticsearchInstanceOfferingList"}
+      }
+    },
+    "DescribeReservedElasticsearchInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "ReservedElasticsearchInstanceId":{
+          "shape":"GUID",
+          "location":"querystring",
+          "locationName":"reservationId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "DescribeReservedElasticsearchInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{"shape":"String"},
+        "ReservedElasticsearchInstances":{"shape":"ReservedElasticsearchInstanceList"}
+      }
+    },
     "DisabledOperationException":{
       "type":"structure",
       "members":{
@@ -450,6 +682,7 @@
       "type":"list",
       "member":{"shape":"DomainName"}
     },
+    "Double":{"type":"double"},
     "EBSOptions":{
       "type":"structure",
       "members":{
@@ -482,6 +715,22 @@
         "m4.2xlarge.elasticsearch",
         "m4.4xlarge.elasticsearch",
         "m4.10xlarge.elasticsearch",
+        "m5.large.elasticsearch",
+        "m5.xlarge.elasticsearch",
+        "m5.2xlarge.elasticsearch",
+        "m5.4xlarge.elasticsearch",
+        "m5.12xlarge.elasticsearch",
+        "r5.large.elasticsearch",
+        "r5.xlarge.elasticsearch",
+        "r5.2xlarge.elasticsearch",
+        "r5.4xlarge.elasticsearch",
+        "r5.12xlarge.elasticsearch",
+        "c5.large.elasticsearch",
+        "c5.xlarge.elasticsearch",
+        "c5.2xlarge.elasticsearch",
+        "c5.4xlarge.elasticsearch",
+        "c5.9xlarge.elasticsearch",
+        "c5.18xlarge.elasticsearch",
         "t2.micro.elasticsearch",
         "t2.small.elasticsearch",
         "t2.medium.elasticsearch",
@@ -522,6 +771,7 @@
         "InstanceCount":{"shape":"IntegerClass"},
         "DedicatedMasterEnabled":{"shape":"Boolean"},
         "ZoneAwarenessEnabled":{"shape":"Boolean"},
+        "ZoneAwarenessConfig":{"shape":"ZoneAwarenessConfig"},
         "DedicatedMasterType":{"shape":"ESPartitionInstanceType"},
         "DedicatedMasterCount":{"shape":"IntegerClass"}
       }
@@ -548,6 +798,7 @@
         "VPCOptions":{"shape":"VPCDerivedInfoStatus"},
         "CognitoOptions":{"shape":"CognitoOptionsStatus"},
         "EncryptionAtRestOptions":{"shape":"EncryptionAtRestOptionsStatus"},
+        "NodeToNodeEncryptionOptions":{"shape":"NodeToNodeEncryptionOptionsStatus"},
         "AdvancedOptions":{"shape":"AdvancedOptionsStatus"},
         "LogPublishingOptions":{"shape":"LogPublishingOptionsStatus"}
       }
@@ -569,6 +820,7 @@
         "Endpoint":{"shape":"ServiceUrl"},
         "Endpoints":{"shape":"EndpointsMap"},
         "Processing":{"shape":"Boolean"},
+        "UpgradeProcessing":{"shape":"Boolean"},
         "ElasticsearchVersion":{"shape":"ElasticsearchVersionString"},
         "ElasticsearchClusterConfig":{"shape":"ElasticsearchClusterConfig"},
         "EBSOptions":{"shape":"EBSOptions"},
@@ -577,8 +829,10 @@
         "VPCOptions":{"shape":"VPCDerivedInfo"},
         "CognitoOptions":{"shape":"CognitoOptions"},
         "EncryptionAtRestOptions":{"shape":"EncryptionAtRestOptions"},
+        "NodeToNodeEncryptionOptions":{"shape":"NodeToNodeEncryptionOptions"},
         "AdvancedOptions":{"shape":"AdvancedOptions"},
-        "LogPublishingOptions":{"shape":"LogPublishingOptions"}
+        "LogPublishingOptions":{"shape":"LogPublishingOptions"},
+        "ServiceSoftwareOptions":{"shape":"ServiceSoftwareOptions"}
       }
     },
     "ElasticsearchDomainStatusList":{
@@ -629,11 +883,82 @@
       "value":{"shape":"ServiceUrl"}
     },
     "ErrorMessage":{"type":"string"},
+    "GUID":{
+      "type":"string",
+      "pattern":"\\p{XDigit}{8}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{12}"
+    },
+    "GetCompatibleElasticsearchVersionsRequest":{
+      "type":"structure",
+      "members":{
+        "DomainName":{
+          "shape":"DomainName",
+          "location":"querystring",
+          "locationName":"domainName"
+        }
+      }
+    },
+    "GetCompatibleElasticsearchVersionsResponse":{
+      "type":"structure",
+      "members":{
+        "CompatibleElasticsearchVersions":{"shape":"CompatibleElasticsearchVersionsList"}
+      }
+    },
+    "GetUpgradeHistoryRequest":{
+      "type":"structure",
+      "required":["DomainName"],
+      "members":{
+        "DomainName":{
+          "shape":"DomainName",
+          "location":"uri",
+          "locationName":"DomainName"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "GetUpgradeHistoryResponse":{
+      "type":"structure",
+      "members":{
+        "UpgradeHistories":{"shape":"UpgradeHistoryList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "GetUpgradeStatusRequest":{
+      "type":"structure",
+      "required":["DomainName"],
+      "members":{
+        "DomainName":{
+          "shape":"DomainName",
+          "location":"uri",
+          "locationName":"DomainName"
+        }
+      }
+    },
+    "GetUpgradeStatusResponse":{
+      "type":"structure",
+      "members":{
+        "UpgradeStep":{"shape":"UpgradeStep"},
+        "StepStatus":{"shape":"UpgradeStatus"},
+        "UpgradeName":{"shape":"UpgradeName"}
+      }
+    },
     "IdentityPoolId":{
       "type":"string",
       "max":55,
       "min":1,
       "pattern":"[\\w-]+:[0-9a-f-]+"
+    },
+    "InstanceCount":{
+      "type":"integer",
+      "min":1
     },
     "InstanceCountLimits":{
       "type":"structure",
@@ -649,6 +974,7 @@
       }
     },
     "InstanceRole":{"type":"string"},
+    "Integer":{"type":"integer"},
     "IntegerClass":{"type":"integer"},
     "InternalException":{
       "type":"structure",
@@ -663,6 +989,11 @@
       },
       "error":{"httpStatusCode":409},
       "exception":true
+    },
+    "Issue":{"type":"string"},
+    "Issues":{
+      "type":"list",
+      "member":{"shape":"Issue"}
     },
     "KmsKeyId":{
       "type":"string",
@@ -796,7 +1127,8 @@
       "type":"string",
       "enum":[
         "INDEX_SLOW_LOGS",
-        "SEARCH_SLOW_LOGS"
+        "SEARCH_SLOW_LOGS",
+        "ES_APPLICATION_LOGS"
       ]
     },
     "MaxResults":{
@@ -806,6 +1138,23 @@
     "MaximumInstanceCount":{"type":"integer"},
     "MinimumInstanceCount":{"type":"integer"},
     "NextToken":{"type":"string"},
+    "NodeToNodeEncryptionOptions":{
+      "type":"structure",
+      "members":{
+        "Enabled":{"shape":"Boolean"}
+      }
+    },
+    "NodeToNodeEncryptionOptionsStatus":{
+      "type":"structure",
+      "required":[
+        "Options",
+        "Status"
+      ],
+      "members":{
+        "Options":{"shape":"NodeToNodeEncryptionOptions"},
+        "Status":{"shape":"OptionStatus"}
+      }
+    },
     "OptionState":{
       "type":"string",
       "enum":[
@@ -830,6 +1179,36 @@
       }
     },
     "PolicyDocument":{"type":"string"},
+    "PurchaseReservedElasticsearchInstanceOfferingRequest":{
+      "type":"structure",
+      "required":[
+        "ReservedElasticsearchInstanceOfferingId",
+        "ReservationName"
+      ],
+      "members":{
+        "ReservedElasticsearchInstanceOfferingId":{"shape":"GUID"},
+        "ReservationName":{"shape":"ReservationToken"},
+        "InstanceCount":{"shape":"InstanceCount"}
+      }
+    },
+    "PurchaseReservedElasticsearchInstanceOfferingResponse":{
+      "type":"structure",
+      "members":{
+        "ReservedElasticsearchInstanceId":{"shape":"GUID"},
+        "ReservationName":{"shape":"ReservationToken"}
+      }
+    },
+    "RecurringCharge":{
+      "type":"structure",
+      "members":{
+        "RecurringChargeAmount":{"shape":"Double"},
+        "RecurringChargeFrequency":{"shape":"String"}
+      }
+    },
+    "RecurringChargeList":{
+      "type":"list",
+      "member":{"shape":"RecurringCharge"}
+    },
     "RemoveTagsRequest":{
       "type":"structure",
       "required":[
@@ -840,6 +1219,58 @@
         "ARN":{"shape":"ARN"},
         "TagKeys":{"shape":"StringList"}
       }
+    },
+    "ReservationToken":{
+      "type":"string",
+      "max":64,
+      "min":5
+    },
+    "ReservedElasticsearchInstance":{
+      "type":"structure",
+      "members":{
+        "ReservationName":{"shape":"ReservationToken"},
+        "ReservedElasticsearchInstanceId":{"shape":"GUID"},
+        "ReservedElasticsearchInstanceOfferingId":{"shape":"String"},
+        "ElasticsearchInstanceType":{"shape":"ESPartitionInstanceType"},
+        "StartTime":{"shape":"UpdateTimestamp"},
+        "Duration":{"shape":"Integer"},
+        "FixedPrice":{"shape":"Double"},
+        "UsagePrice":{"shape":"Double"},
+        "CurrencyCode":{"shape":"String"},
+        "ElasticsearchInstanceCount":{"shape":"Integer"},
+        "State":{"shape":"String"},
+        "PaymentOption":{"shape":"ReservedElasticsearchInstancePaymentOption"},
+        "RecurringCharges":{"shape":"RecurringChargeList"}
+      }
+    },
+    "ReservedElasticsearchInstanceList":{
+      "type":"list",
+      "member":{"shape":"ReservedElasticsearchInstance"}
+    },
+    "ReservedElasticsearchInstanceOffering":{
+      "type":"structure",
+      "members":{
+        "ReservedElasticsearchInstanceOfferingId":{"shape":"GUID"},
+        "ElasticsearchInstanceType":{"shape":"ESPartitionInstanceType"},
+        "Duration":{"shape":"Integer"},
+        "FixedPrice":{"shape":"Double"},
+        "UsagePrice":{"shape":"Double"},
+        "CurrencyCode":{"shape":"String"},
+        "PaymentOption":{"shape":"ReservedElasticsearchInstancePaymentOption"},
+        "RecurringCharges":{"shape":"RecurringChargeList"}
+      }
+    },
+    "ReservedElasticsearchInstanceOfferingList":{
+      "type":"list",
+      "member":{"shape":"ReservedElasticsearchInstanceOffering"}
+    },
+    "ReservedElasticsearchInstancePaymentOption":{
+      "type":"string",
+      "enum":[
+        "ALL_UPFRONT",
+        "PARTIAL_UPFRONT",
+        "NO_UPFRONT"
+      ]
     },
     "ResourceAlreadyExistsException":{
       "type":"structure",
@@ -860,6 +1291,18 @@
       "max":2048,
       "min":20
     },
+    "ServiceSoftwareOptions":{
+      "type":"structure",
+      "members":{
+        "CurrentVersion":{"shape":"String"},
+        "NewVersion":{"shape":"String"},
+        "UpdateAvailable":{"shape":"Boolean"},
+        "Cancellable":{"shape":"Boolean"},
+        "UpdateStatus":{"shape":"DeploymentStatus"},
+        "Description":{"shape":"String"},
+        "AutomatedUpdateDate":{"shape":"DeploymentCloseDateTimeStamp"}
+      }
+    },
     "ServiceUrl":{"type":"string"},
     "SnapshotOptions":{
       "type":"structure",
@@ -878,6 +1321,20 @@
         "Status":{"shape":"OptionStatus"}
       }
     },
+    "StartElasticsearchServiceSoftwareUpdateRequest":{
+      "type":"structure",
+      "required":["DomainName"],
+      "members":{
+        "DomainName":{"shape":"DomainName"}
+      }
+    },
+    "StartElasticsearchServiceSoftwareUpdateResponse":{
+      "type":"structure",
+      "members":{
+        "ServiceSoftwareOptions":{"shape":"ServiceSoftwareOptions"}
+      }
+    },
+    "StartTimestamp":{"type":"timestamp"},
     "StorageSubTypeName":{"type":"string"},
     "StorageType":{
       "type":"structure",
@@ -964,6 +1421,70 @@
       }
     },
     "UpdateTimestamp":{"type":"timestamp"},
+    "UpgradeElasticsearchDomainRequest":{
+      "type":"structure",
+      "required":[
+        "DomainName",
+        "TargetVersion"
+      ],
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "TargetVersion":{"shape":"ElasticsearchVersionString"},
+        "PerformCheckOnly":{"shape":"Boolean"}
+      }
+    },
+    "UpgradeElasticsearchDomainResponse":{
+      "type":"structure",
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "TargetVersion":{"shape":"ElasticsearchVersionString"},
+        "PerformCheckOnly":{"shape":"Boolean"}
+      }
+    },
+    "UpgradeHistory":{
+      "type":"structure",
+      "members":{
+        "UpgradeName":{"shape":"UpgradeName"},
+        "StartTimestamp":{"shape":"StartTimestamp"},
+        "UpgradeStatus":{"shape":"UpgradeStatus"},
+        "StepsList":{"shape":"UpgradeStepsList"}
+      }
+    },
+    "UpgradeHistoryList":{
+      "type":"list",
+      "member":{"shape":"UpgradeHistory"}
+    },
+    "UpgradeName":{"type":"string"},
+    "UpgradeStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "SUCCEEDED_WITH_ISSUES",
+        "FAILED"
+      ]
+    },
+    "UpgradeStep":{
+      "type":"string",
+      "enum":[
+        "PRE_UPGRADE_CHECK",
+        "SNAPSHOT",
+        "UPGRADE"
+      ]
+    },
+    "UpgradeStepItem":{
+      "type":"structure",
+      "members":{
+        "UpgradeStep":{"shape":"UpgradeStep"},
+        "UpgradeStepStatus":{"shape":"UpgradeStatus"},
+        "Issues":{"shape":"Issues"},
+        "ProgressPercent":{"shape":"Double"}
+      }
+    },
+    "UpgradeStepsList":{
+      "type":"list",
+      "member":{"shape":"UpgradeStepItem"}
+    },
     "UserPoolId":{
       "type":"string",
       "max":55,
@@ -1011,6 +1532,12 @@
         "gp2",
         "io1"
       ]
+    },
+    "ZoneAwarenessConfig":{
+      "type":"structure",
+      "members":{
+        "AvailabilityZoneCount":{"shape":"IntegerClass"}
+      }
     }
   }
 }

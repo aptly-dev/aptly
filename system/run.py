@@ -68,14 +68,16 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
+                sys.stdout.write("%s:%s... " % (test, o.__name__))
+                sys.stdout.flush()
+
                 t = o()
                 if t.longTest and not include_long_tests or not t.fixture_available():
                     numSkipped += 1
+                    sys.stdout.write(colored("SKIP\n", color="yellow"))
                     continue
 
                 numTests += 1
-
-                sys.stdout.write("%s:%s... " % (test, o.__name__))
 
                 try:
                     t.captureResults = capture_results
@@ -93,14 +95,16 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     if lastBase is not None:
         lastBase.shutdown_class()
 
-    print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (numTests, numTests - numFailed, numFailed, numSkipped)
+    print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (
+        numTests, numTests - numFailed, numFailed, numSkipped)
 
     if len(fails) > 0:
         print "\nFAILURES (%d):" % (len(fails), )
 
         for (test, t, typ, val, tb, testModule) in fails:
             doc = t.__doc__ or ''
-            print "%s:%s %s" % (test, t.__class__.__name__, testModule.__name__ + ": " + doc.strip())
+            print "%s:%s %s" % (test, t.__class__.__name__,
+                                testModule.__name__ + ": " + doc.strip())
             traceback.print_exception(typ, val, tb)
             print "=" * 60
 
@@ -110,7 +114,8 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 if __name__ == "__main__":
     if 'APTLY_VERSION' not in os.environ:
         try:
-            os.environ['APTLY_VERSION'] = os.popen("make version").read().strip()
+            os.environ['APTLY_VERSION'] = os.popen(
+                "make version").read().strip()
         except BaseException, e:
             print "Failed to capture current version: ", e
 

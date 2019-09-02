@@ -612,8 +612,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			// to push each path of the package into the database.
 			// We'll want this batched so as to avoid an excessive
 			// amount of write() calls.
-			tempDB.StartBatch()
-			defer tempDB.FinishBatch()
+			tempBatch := tempDB.CreateBatch()
+			defer tempBatch.Write()
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
@@ -632,7 +632,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 								contentIndexesMap[key] = contentIndex
 							}
 
-							contentIndex.Push(qualifiedName, contents)
+							contentIndex.Push(qualifiedName, contents, tempBatch)
 						}
 					}
 
@@ -914,21 +914,27 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 }
 
 // Update stores updated information about repo in DB
-func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) (err error) {
-	err = collection.db.Put(repo.Key(), repo.Encode())
+func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
+	transaction, err := collection.db.OpenTransaction()
 	if err != nil {
-		return
+		return err
+	}
+	defer transaction.Discard()
+
+	err = transaction.Put(repo.Key(), repo.Encode())
+	if err != nil {
+		return err
 	}
 
 	if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			err = collection.db.Put(repo.RefKey(component), item.packageRefs.Encode())
+			err = transaction.Put(repo.RefKey(component), item.packageRefs.Encode())
 			if err != nil {
-				return
+				return err
 			}
 		}
 	}
-	return
+	return transaction.Commit()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -1170,6 +1176,13 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
 	force, skipCleanup bool) error {
 
+	transaction, err := collection.db.OpenTransaction()
+	if err != nil {
+		return err
+	}
+	defer transaction.Discard()
+
+	// TODO: load via transaction
 	collection.loadList()
 
 	repo, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
@@ -1221,17 +1234,17 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		}
 	}
 
-	err = collection.db.Delete(repo.Key())
+	err = transaction.Delete(repo.Key())
 	if err != nil {
 		return err
 	}
 
 	for _, component := range repo.Components() {
-		err = collection.db.Delete(repo.RefKey(component))
+		err = transaction.Delete(repo.RefKey(component))
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return transaction.Commit()
 }

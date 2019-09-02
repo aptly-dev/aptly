@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "September 2018" "" ""
+.TH "APTLY" "1" "August 2019" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -38,6 +38,7 @@ Configuration file is stored in JSON format (default values shown below):
   "rootDir": "$HOME/\.aptly",
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
+  "downloadRetries": 0,
   "architectures": [],
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
@@ -114,7 +115,11 @@ is a number of parallel download threads to use when downloading packages
 .
 .TP
 \fBdownloadSpeedLimit\fR
-limit in kbytes/sec on download speed while mirroring remote repositieis
+limit in kbytes/sec on download speed while mirroring remote repositories
+.
+.TP
+\fBdownloadRetries\fR
+number of retries for download attempts
 .
 .TP
 \fBarchitectures\fR
@@ -2049,6 +2054,12 @@ Strajan Sebastian (https://github\.com/strajansebastian)
 .
 .IP "\[ci]" 4
 Artem Smirnov (https://github\.com/urpylka)
+.
+.IP "\[ci]" 4
+William Manley (https://github\.com/wmanley)
+.
+.IP "\[ci]" 4
+Shengjing Zhu (https://github\.com/zhsj)
 .
 .IP "" 0
 

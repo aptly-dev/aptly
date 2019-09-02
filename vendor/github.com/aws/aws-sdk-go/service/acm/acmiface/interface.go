@@ -99,6 +99,10 @@ type ACMAPI interface {
 	RemoveTagsFromCertificateWithContext(aws.Context, *acm.RemoveTagsFromCertificateInput, ...request.Option) (*acm.RemoveTagsFromCertificateOutput, error)
 	RemoveTagsFromCertificateRequest(*acm.RemoveTagsFromCertificateInput) (*request.Request, *acm.RemoveTagsFromCertificateOutput)
 
+	RenewCertificate(*acm.RenewCertificateInput) (*acm.RenewCertificateOutput, error)
+	RenewCertificateWithContext(aws.Context, *acm.RenewCertificateInput, ...request.Option) (*acm.RenewCertificateOutput, error)
+	RenewCertificateRequest(*acm.RenewCertificateInput) (*request.Request, *acm.RenewCertificateOutput)
+
 	RequestCertificate(*acm.RequestCertificateInput) (*acm.RequestCertificateOutput, error)
 	RequestCertificateWithContext(aws.Context, *acm.RequestCertificateInput, ...request.Option) (*acm.RequestCertificateOutput, error)
 	RequestCertificateRequest(*acm.RequestCertificateInput) (*request.Request, *acm.RequestCertificateOutput)
@@ -110,6 +114,9 @@ type ACMAPI interface {
 	UpdateCertificateOptions(*acm.UpdateCertificateOptionsInput) (*acm.UpdateCertificateOptionsOutput, error)
 	UpdateCertificateOptionsWithContext(aws.Context, *acm.UpdateCertificateOptionsInput, ...request.Option) (*acm.UpdateCertificateOptionsOutput, error)
 	UpdateCertificateOptionsRequest(*acm.UpdateCertificateOptionsInput) (*request.Request, *acm.UpdateCertificateOptionsOutput)
+
+	WaitUntilCertificateValidated(*acm.DescribeCertificateInput) error
+	WaitUntilCertificateValidatedWithContext(aws.Context, *acm.DescribeCertificateInput, ...request.WaiterOption) error
 }
 
 var _ ACMAPI = (*acm.ACM)(nil)

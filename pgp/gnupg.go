@@ -78,7 +78,7 @@ func (g *GpgSigner) gpgArgs() []string {
 
 	if g.batch {
 		args = append(args, "--no-tty", "--batch")
-		if g.version == GPG21xPlus {
+		if g.version >= GPG21x {
 			args = append(args, "--pinentry-mode", "loopback")
 		}
 	}
