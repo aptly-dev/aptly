@@ -505,8 +505,10 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 		}
 		defer packagesFile.Close()
 
-		stat, _ := packagesFile.Stat()
-		progress.InitBar(stat.Size(), true)
+		if progress != nil {
+			stat, _ := packagesFile.Stat()
+			progress.InitBar(stat.Size(), true)
+		}
 
 		sreader := NewControlFileReader(packagesReader, false, isInstaller)
 
@@ -519,8 +521,10 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 				break
 			}
 
-			off, _ := packagesFile.Seek(0, 1)
-			progress.SetBar(int(off))
+			if progress != nil {
+				off, _ := packagesFile.Seek(0, 1)
+				progress.SetBar(int(off))
+			}
 
 			var p *Package
 
@@ -541,13 +545,17 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 			}
 			err = repo.packageList.Add(p)
 			if _, ok := err.(*PackageConflictError); ok {
-				progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+				if progress != nil {
+					progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+				}
 			} else if err != nil {
 				return err
 			}
 		}
 
-		progress.ShutdownBar()
+		if progress != nil {
+			progress.ShutdownBar()
+		}
 	}
 
 	return nil

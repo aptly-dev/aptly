@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -53,11 +54,16 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 		},
 	}
 
+	progressWriter := io.Writer(progress)
+	if progress == nil {
+		progressWriter = ioutil.Discard
+	}
+
 	downloader.client.CheckRedirect = downloader.checkRedirect
 	if downLimit > 0 {
-		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
+		downloader.aggWriter = flowrate.NewWriter(progressWriter, downLimit)
 	} else {
-		downloader.aggWriter = progress
+		downloader.aggWriter = progressWriter
 	}
 
 	return downloader
