@@ -232,4 +232,8 @@ func (s *VersionSuite) TestDependencyString(c *C) {
 	d, _ = ParseDependency("dpkg")
 	d.Architecture = "i386"
 	c.Check(d.String(), Equals, "dpkg [i386]")
+
+	d, _ = ParseDependency("dpkg:any")
+	c.Check(d.Pkg, Equals, "dpkg")
+	c.Check(d.Architecture, Equals, "")
 }
