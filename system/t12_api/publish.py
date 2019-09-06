@@ -49,7 +49,8 @@ class PublishAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
 
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo_expected)
@@ -90,7 +91,8 @@ class PublishAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
         self.check_equal(resp.status_code, 201)
         self.check_equal(resp.json(), repo2_expected)
 
@@ -159,7 +161,8 @@ class PublishSnapshotAPITest(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
-            'Storage': ''})
+            'Storage': '',
+            'Suite': ''})
 
         self.check_exists("public/" + prefix + "/dists/squeeze/Release")
         self.check_exists("public/" + prefix +
@@ -235,7 +238,8 @@ class PublishUpdateAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
@@ -328,7 +332,8 @@ class PublishUpdateSkipCleanupAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
@@ -392,7 +397,8 @@ class PublishSwitchAPITestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
         self.check_equal(resp.json(), repo_expected)
 
         self.check_not_exists(
@@ -431,7 +437,8 @@ class PublishSwitchAPITestRepo(APITest):
             'SkipContents': True,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)
@@ -492,7 +499,8 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
         self.check_equal(resp.json(), repo_expected)
 
         self.check_not_exists(
@@ -524,7 +532,8 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'SkipContents': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
         self.check_equal(resp.json(), repo_expected)
 
         d = self.random_name()
@@ -559,7 +568,8 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'SkipContents': True,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
-            'Storage': ''}
+            'Storage': '',
+            'Suite': ''}
 
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), repo_expected)

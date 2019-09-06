@@ -1,5 +1,6 @@
 Origin: Debian
 Label: . stretch
 Archive: stretch
+Suite: stretch
 Architecture: i386
 Component: main
