@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "August 2019" "" ""
+.TH "APTLY" "1" "September 2019" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -39,8 +39,8 @@ Configuration file is stored in JSON format (default values shown below):
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "downloadRetries": 0,
-  "architectures": [],
   "databaseOpenAttempts": 10,
+  "architectures": [],
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
   "dependencyFollowAllVariants": false,
@@ -124,7 +124,7 @@ number of retries for download attempts
 .
 .TP
 \fBdatabaseOpenAttempts\fR
-number of attempts to open DB if it's locked by other instance; could be overridden with option \fB\-db-open-attempts\fR
+number of attempts to open DB if it\(cqs locked by other instance; could be overridden with option \fB\-db\-open\-attempts\fR
 .
 .TP
 \fBarchitectures\fR
@@ -1454,6 +1454,10 @@ don\(cqt generate Contents indexes
 \-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
+.TP
+\-\fBsuite\fR=
+suite to publish (defaults to distribution)
+.
 .SH "PUBLISH SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
@@ -1552,6 +1556,10 @@ don\(cqt generate Contents indexes
 .TP
 \-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
+.
+.TP
+\-\fBsuite\fR=
+suite to publish (defaults to distribution)
 .
 .SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
@@ -2066,4 +2074,14 @@ William Manley (https://github\.com/wmanley)
 .IP "\[ci]" 4
 Shengjing Zhu (https://github\.com/zhsj)
 .
+.IP "\[ci]" 4
+Nabil Bendafi (https://github\.com/nabilbendafi)
+.
+.IP "\[ci]" 4
+Raphael Medaer (https://github\.com/rmedaer)
+.
+.IP "\[ci]" 4
+Raul Benencia (https://github\.com/rul)
+.
 .IP "" 0
+
