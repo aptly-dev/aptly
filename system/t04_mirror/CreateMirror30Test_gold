@@ -8,4 +8,6 @@ openpgp:  RSA key ID 7638D0442B90D010
 openpgp: Can't check signature: public key not found
 openpgp:  RSA key ID 04EE7237B7D453EC
 openpgp: Can't check signature: public key not found
+openpgp:  RSA key ID EF0F382A1A7B6500
+openpgp: Can't check signature: public key not found
 ERROR: unable to fetch mirror: failed to verify detached signature: openpgp: signature made by unknown entity
