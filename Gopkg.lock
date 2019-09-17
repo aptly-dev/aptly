@@ -25,7 +25,7 @@
     "ast",
     "parser",
     "scanner",
-    "token",
+    "token"
   ]
   pruneopts = ""
   revision = "761fd5fbb34e4c2c138c280395b65b48e4ff5a53"
@@ -69,7 +69,7 @@
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/sts",
+    "service/sts"
   ]
   pruneopts = ""
   revision = "420cda5d6383f94f7d9c231aa44bad3325181950"
@@ -97,7 +97,7 @@
   packages = [
     ".",
     "binding",
-    "render",
+    "render"
   ]
   pruneopts = ""
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
@@ -196,7 +196,7 @@
   name = "github.com/ncw/swift"
   packages = [
     ".",
-    "swifttest",
+    "swifttest"
   ]
   pruneopts = ""
   revision = "8e9b10220613abdbc2896808ee6b43e411a4fa6c"
@@ -258,8 +258,7 @@
   revision = "0c531f070014e218b21f3cfca801cc992d52726d"
 
 [[projects]]
-  branch = "master"
-  digest = "1:175bc8d87d54849b9b9fc6cd473c5830e090fbf3c2f0ca71c7642a697e5d9237"
+  digest = "1:0a9834d471916f392c608d4f13225444d47b6b7a0378dce1aef683d83711179f"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -273,10 +272,11 @@
     "leveldb/opt",
     "leveldb/storage",
     "leveldb/table",
-    "leveldb/util",
+    "leveldb/util"
   ]
   pruneopts = ""
-  revision = "714f901b98fdb3aa954b4193d8cbd64a28d80cad"
+  revision = "9d007e481048296f09f59bd19bb7ae584563cd95"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:a1ca17cff1abec6d4ecdeb03c52338c559affd7f0b2474e928c162986da2d348"
@@ -307,7 +307,7 @@
     "openpgp/errors",
     "openpgp/packet",
     "openpgp/s2k",
-    "ssh/terminal",
+    "ssh/terminal"
   ]
   pruneopts = ""
   revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
@@ -318,7 +318,7 @@
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows",
+    "windows"
   ]
   pruneopts = ""
   revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
@@ -399,7 +399,7 @@
     "golang.org/x/crypto/openpgp/packet",
     "golang.org/x/crypto/ssh/terminal",
     "golang.org/x/sys/unix",
-    "gopkg.in/check.v1",
+    "gopkg.in/check.v1"
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
