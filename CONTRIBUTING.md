@@ -84,10 +84,8 @@ to prepend it or to skip this test if you're security conscious.
 
 ### Forking and Cloning
 
-As Go is using repository path in import paths, it's better to clone aptly repo (not your fork) at default location:
+As aptly is using Go modules, aptly repository could be cloned to any location on the file system:
 
-    mkdir -p ~/go/src/github.com/aptly-dev
-    cd ~/go/src/github.com/aptly-dev
     git clone git@github.com:aptly-dev/aptly.git
     cd aptly
 
@@ -107,6 +105,10 @@ You would need some additional tools and Python virtual environment to run tests
     make prepare dev system/env
 
 This is usually one-time action.
+
+Aptly is using Go modules to manage dependencies, download modules using:
+
+    make modules
 
 ### Building
 

@@ -66,10 +66,9 @@ Binary executables (depends almost only on libc) are available for download from
 
 If you have Go environment set up, you can build aptly from source by running (go 1.11+ required)::
 
-    mkdir -p $GOPATH/src/github.com/aptly-dev/aptly
-    git clone https://github.com/aptly-dev/aptly $GOPATH/src/github.com/aptly-dev/aptly
-    cd $GOPATH/src/github.com/aptly-dev/aptly
-    make install
+    git clone https://github.com/aptly-dev/aptly
+    cd aptly
+    make modules install
 
 Binary would be installed to ``$GOPATH/bin/aptly``.
 
