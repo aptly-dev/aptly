@@ -1,3 +1,0 @@
-Package ar implements reading and writing of ar archives.
-It supports reading archives in the GNU and BSD formats, but
-only supports writing in the BSD format.
