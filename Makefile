@@ -11,13 +11,17 @@ TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
 
-all: test bench check system-test
+all: modules test bench check system-test
 
 prepare:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.17.1
 
+modules:
+	go mod download
+	go mod verify
+	go mod tidy -v
+
 dev:
-	go get -u github.com/golang/dep/...
 	go get -u github.com/laher/goxc
 
 check: system/env
@@ -74,4 +78,4 @@ man:
 version:
 	@echo $(VERSION)
 
-.PHONY: man version release goxc
+.PHONY: man modules version release goxc
