@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os/exec"
 	"regexp"
-	"strings"
 )
 
 // GPGVersion stores discovered GPG version
@@ -52,7 +51,7 @@ func GPG1Finder() GPGFinder {
 	return &pathGPGFinder{
 		gpgNames:                 []string{"gpg", "gpg1"},
 		gpgvNames:                []string{"gpgv", "gpgv1"},
-		expectedVersionSubstring: "(GnuPG) 1.",
+		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "Couldn't find a suitable gpg executable. Make sure gnupg1 is available as either gpg(v) or gpg(v)1 in $PATH",
 	}
 }
@@ -62,7 +61,7 @@ func GPG2Finder() GPGFinder {
 	return &pathGPGFinder{
 		gpgNames:                 []string{"gpg", "gpg2"},
 		gpgvNames:                []string{"gpgv", "gpgv2"},
-		expectedVersionSubstring: "(GnuPG) 2.",
+		expectedVersionSubstring: `\(GnuPG.*\) (2).(\d)`,
 		errorMessage:             "Couldn't find a suitable gpg executable. Make sure gnupg2 is available as either gpg(v) or gpg(v)2 in $PATH",
 	}
 }
@@ -134,10 +133,11 @@ func cliVersionCheck(cmd string, marker string) (result bool, version GPGVersion
 	}
 
 	strOutput := string(output)
-	result = strings.Contains(strOutput, marker)
+	regex := regexp.MustCompile(marker)
 
 	version = GPG22xPlus
-	matches := gpgVersionRegex.FindStringSubmatch(strOutput)
+	matches := regex.FindStringSubmatch(strOutput)
+	result = (matches != nil)
 	if matches != nil {
 		if matches[1] == "1" {
 			version = GPG1x
