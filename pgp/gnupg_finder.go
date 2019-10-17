@@ -17,8 +17,6 @@ const (
 	GPG22xPlus GPGVersion = 4
 )
 
-var gpgVersionRegex = regexp.MustCompile(`\(GnuPG\) (\d)\.(\d)`)
-
 // GPGFinder implement search for gpg executables and returns version of discovered executables
 type GPGFinder interface {
 	FindGPG() (gpg string, version GPGVersion, err error)
