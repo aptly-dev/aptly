@@ -41,6 +41,7 @@ class PublishAPITestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'Origin': '',
@@ -86,6 +87,7 @@ class PublishAPITestRepo(APITest):
         repo2_expected = {
             'AcquireByHash': False,
             'Architectures': ['amd64', 'i386'],
+            'Codename': '',
             'Distribution': distribution,
             'Label': '',
             'Origin': '',
@@ -164,6 +166,7 @@ class PublishSnapshotAPITest(APITest):
         repo_expected = {
             'AcquireByHash': True,
             'Architectures': ['i386'],
+            'Codename': '',
             'Distribution': 'squeeze',
             'Label': 'fun',
             'Origin': 'earth',
@@ -249,6 +252,7 @@ class PublishUpdateAPITestRepo(APITest):
         repo_expected = {
             'AcquireByHash': True,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'Origin': '',
@@ -343,6 +347,7 @@ class PublishUpdateSkipCleanupAPITestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'Origin': '',
@@ -406,6 +411,7 @@ class PublishSwitchAPITestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'NotAutomatic': '',
@@ -449,6 +455,7 @@ class PublishSwitchAPITestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'Origin': '',
@@ -510,6 +517,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'NotAutomatic': '',
@@ -546,6 +554,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'otherdist',
             'Label': '',
             'NotAutomatic': '',
@@ -584,6 +593,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         repo_expected = {
             'AcquireByHash': False,
             'Architectures': ['i386', 'source'],
+            'Codename': '',
             'Distribution': 'wheezy',
             'Label': '',
             'Origin': '',
