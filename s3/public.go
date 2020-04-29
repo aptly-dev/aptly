@@ -3,9 +3,12 @@ package s3
 import (
 	"fmt"
 	"io"
+	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
@@ -392,7 +395,25 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 		params.ServerSideEncryption = aws.String(storage.encryptionMethod)
 	}
 
+	// Sometimes we need to wait for S3 to become consistent
 	_, err := storage.s3.CopyObject(params)
+	rand.Seed(time.Now().UnixNano())
+	sleep := time.Second
+	maxTries := 3
+	for maxTries > 0 {
+		if err != nil {
+			log.Printf("Try %d: error copying %s -> %s in %s: %s\n", 4-maxTries, oldName, newName, storage, err)
+			maxTries--
+			// Add some randomness to prevent creating a Thundering Herd
+			jitter := time.Duration(rand.Int63n(int64(sleep)))
+			sleep = sleep + jitter/2
+			time.Sleep(sleep)
+			_, err = storage.s3.CopyObject(params)
+		} else {
+			// stop retrying
+			break
+		}
+	}
 	if err != nil {
 		return fmt.Errorf("error copying %s -> %s in %s: %s", oldName, newName, storage, err)
 	}
