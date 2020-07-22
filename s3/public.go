@@ -150,6 +150,20 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	return err
 }
 
+// getMD5 retrieves MD5 stored in the metadata, if any
+func (storage *PublishedStorage) getMD5(path string) (string, error) {
+	params := &s3.HeadObjectInput{
+		Bucket: aws.String(storage.bucket),
+		Key:    aws.String(filepath.Join(storage.prefix, path)),
+	}
+	output, err := storage.s3.HeadObject(params)
+	if err != nil {
+		return "", err
+	}
+
+	return aws.StringValue(output.Metadata["Md5"]), nil
+}
+
 // putFile uploads file-like object to
 func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker, sourceMD5 string) error {
 
@@ -303,6 +317,17 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
+		if len(destinationMD5) != 32 {
+			// doesn’t look like a valid MD5,
+			// attempt to fetch one from the metadata
+			var err error
+			destinationMD5, err = storage.getMD5(relPath)
+			if err != nil {
+				err = errors.Wrap(err, fmt.Sprintf("error verifying MD5 for %s: %s", storage, poolPath))
+				return err
+			}
+			storage.pathCache[relPath] = destinationMD5
+		}
 		if sourceMD5 == "" {
 			return fmt.Errorf("unable to compare object, MD5 checksum missing")
 		}
