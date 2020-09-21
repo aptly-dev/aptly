@@ -2,6 +2,8 @@
 aptly
 =====
 
+**This project is no longer maintained.**
+
 .. image:: https://api.travis-ci.org/aptly-dev/aptly.svg?branch=master
     :target: https://travis-ci.org/aptly-dev/aptly
 
