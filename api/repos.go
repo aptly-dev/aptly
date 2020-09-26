@@ -61,6 +61,7 @@ func apiReposCreate(c *gin.Context) {
 // PUT /api/repos/:name
 func apiReposEdit(c *gin.Context) {
 	var b struct {
+		Name                *string
 		Comment             *string
 		DefaultDistribution *string
 		DefaultComponent    *string
@@ -79,6 +80,15 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
+	if b.Name != nil {
+            _, err := collection.ByName(*b.Name)
+            if err == nil {
+                    // already exists
+                    c.AbortWithError(404, err)
+                    return
+            }
+            repo.Name = *b.Name
+	}
 	if b.Comment != nil {
 		repo.Comment = *b.Comment
 	}
