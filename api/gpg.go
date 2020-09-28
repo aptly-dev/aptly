@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+        "github.com/aptly-dev/aptly/pgp"
 )
 
 // POST /api/gpg
@@ -57,10 +58,17 @@ func apiGPGAddKey(c *gin.Context) {
 		args = append(args, "--recv", b.GpgKeyID)
 	}
 
+        finder := pgp.GPG1Finder()
+	gpg, _, err := finder.FindGPG()
+	if err != nil {
+            c.AbortWithError(400, err)
+            return
+        }
+
 	// it might happened that we have a situation with an erroneous
 	// gpg command (e.g. when GpgKeyID and GpgKeyArmor is set).
 	// there is no error handling for such as gpg will do this for us
-	cmd := exec.Command("gpg", args...)
+	cmd := exec.Command(gpg, args...)
 	cmd.Stdout = os.Stdout
 	if err = cmd.Run(); err != nil {
 		c.AbortWithError(400, err)
