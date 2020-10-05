@@ -176,6 +176,11 @@ func (repo *RemoteRepo) RefList() *PackageRefList {
 	return repo.packageRefs
 }
 
+// PackageList returns package list for repo
+func (repo *RemoteRepo) PackageList() *PackageList {
+	return repo.packageList
+}
+
 // MarkAsUpdating puts current PID and sets status to updating
 func (repo *RemoteRepo) MarkAsUpdating() {
 	repo.Status = MirrorUpdating
