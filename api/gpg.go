@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+        "fmt"
+        "strings"
 
 	"github.com/gin-gonic/gin"
         "github.com/aptly-dev/aptly/pgp"
@@ -55,7 +57,7 @@ func apiGPGAddKey(c *gin.Context) {
 
 	}
 	if len(b.GpgKeyID) > 0 {
-		args = append(args, "--recv", b.GpgKeyID)
+		args = append(args, "--recv-keys", b.GpgKeyID)
 	}
 
         finder := pgp.GPG1Finder()
@@ -69,6 +71,7 @@ func apiGPGAddKey(c *gin.Context) {
 	// gpg command (e.g. when GpgKeyID and GpgKeyArmor is set).
 	// there is no error handling for such as gpg will do this for us
 	cmd := exec.Command(gpg, args...)
+        fmt.Printf("running %s %s\n", gpg, strings.Join(args, " "))
 	cmd.Stdout = os.Stdout
 	if err = cmd.Run(); err != nil {
 		c.AbortWithError(400, err)
