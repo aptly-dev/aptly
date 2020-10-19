@@ -97,7 +97,7 @@ as 'package-name' or as package queries.
 
 Example:
 
-    $ aptly snapshot filter wheezy-main wheezy-required 'Priorioty (required)'
+    $ aptly snapshot filter wheezy-main wheezy-required 'Priority (required)'
 `,
 		Flag: *flag.NewFlagSet("aptly-snapshot-filter", flag.ExitOnError),
 	}
