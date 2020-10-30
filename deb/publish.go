@@ -583,7 +583,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		// For all architectures, pregenerate packages/sources files
 		for _, arch := range p.Architectures {
-			indexes.PackageIndex(component, arch, false, false)
+			indexes.PackageIndex(component, arch, false, false,false)
 		}
 
 		if progress != nil {
@@ -650,7 +650,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 					}
 
-					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, pkg.IsInstaller).BufWriter()
+					if pkg.IsInstaller && strings.Contains(p.Distribution, "focal") {
+						bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, false, true).BufWriter()
+					} else {
+						bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, true, false).BufWriter()
+					}
 					if err != nil {
 						return err
 					}
@@ -708,7 +712,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 			// For all architectures, pregenerate .udeb indexes
 			for _, arch := range p.Architectures {
-				indexes.PackageIndex(component, arch, true, false)
+				indexes.PackageIndex(component, arch, true, false, false)
 			}
 		}
 

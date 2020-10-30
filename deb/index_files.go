@@ -242,7 +242,7 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 	}
 }
 
-func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bool) *indexFile {
+func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bool, legacy_installer bool) *indexFile {
 	if arch == ArchitectureSource {
 		udeb = false
 	}
@@ -256,6 +256,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 		} else {
 			if udeb {
 				relativePath = filepath.Join(component, "debian-installer", fmt.Sprintf("binary-%s", arch), "Packages")
+			} else if legacy_installer {
+				relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "legacy-images", "SHA256SUMS")
 			} else if installer {
 				relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "images", "SHA256SUMS")
 			} else {

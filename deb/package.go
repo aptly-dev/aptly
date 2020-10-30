@@ -188,8 +188,13 @@ func NewInstallerPackageFromControlFile(input Stanza, repo *RemoteRepo, componen
 	if err != nil {
 		return nil, err
 	}
-
-	relPath := filepath.Join("dists", repo.Distribution, component, fmt.Sprintf("%s-%s", p.Name, architecture), "current", "images")
+	var images string
+	if strings.Contains(repo.Distribution, "focal") {
+		images = "legacy-images"
+	} else {
+		images = "images"
+	}
+	relPath := filepath.Join("dists", repo.Distribution, component, fmt.Sprintf("%s-%s", p.Name, architecture), "current", images)
 	for i := range files {
 		files[i].downloadPath = relPath
 
