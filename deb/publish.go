@@ -583,7 +583,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		// For all architectures, pregenerate packages/sources files
 		for _, arch := range p.Architectures {
-			indexes.PackageIndex(component, arch, false, false,false)
+			indexes.PackageIndex(component, arch, false, false, false)
 		}
 
 		if progress != nil {
@@ -611,7 +611,13 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 						relPath = filepath.Join("pool", component, poolDir)
 					} else {
-						relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
+						var images string
+						if strings.Contains(p.Distribution, "focal") {
+							images = "legacy-images"
+						} else {
+							images = "images"
+						}
+						relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", images)
 					}
 
 					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
@@ -650,11 +656,20 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 					}
 
-					if pkg.IsInstaller && strings.Contains(p.Distribution, "focal") {
-						bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, false, true).BufWriter()
+					var installer bool
+					var legacy_installer bool
+					if strings.Contains(p.Distribution, "focal") && pkg.IsInstaller {
+						legacy_installer = true
+						installer = false
+					} else if pkg.IsInstaller {
+						legacy_installer = false
+						installer = true
 					} else {
-						bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, true, false).BufWriter()
+						legacy_installer = false
+						installer = false
 					}
+
+					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, installer, legacy_installer).BufWriter()
 					if err != nil {
 						return err
 					}

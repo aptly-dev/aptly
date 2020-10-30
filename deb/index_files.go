@@ -246,7 +246,13 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 	if arch == ArchitectureSource {
 		udeb = false
 	}
-	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer)
+	var installer_combined bool
+	if legacy_installer || installer {
+		installer_combined = true
+	} else {
+		installer_combined = false
+	}
+	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer_combined)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string
@@ -268,8 +274,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 		file = &indexFile{
 			parent:        files,
 			discardable:   false,
-			compressable:  !installer,
-			detachedSign:  installer,
+			compressable:  !installer_combined,
+			detachedSign:  installer_combined,
 			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
