@@ -19,7 +19,7 @@ func getVerifier(ignoreSignatures bool, keyRings []string) (pgp.Verifier, error)
 		return nil, nil
 	}
 
-	verifier := &pgp.GpgVerifier{}
+	verifier := context.GetVerifier()
 	for _, keyRing := range keyRings {
 		verifier.AddKeyring(keyRing)
 	}
