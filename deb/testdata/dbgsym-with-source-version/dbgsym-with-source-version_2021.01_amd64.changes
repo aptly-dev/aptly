@@ -1,0 +1,34 @@
+Format: 1.8
+Date: Fri, 08 Jan 2021 20:16:06 +0700
+Source: dbgsym-with-source-version
+Binary: dbgsym-with-source-version
+Architecture: source amd64
+Version: 2021.01
+Distribution: unstable
+Urgency: medium
+Maintainer: Ratchanan Srirattanamet <ratchanan@ubports.com>
+Changed-By: Ratchanan Srirattanamet <ratchanan@ubports.com>
+Description:
+ dbgsym-with-source-version - Test Aptly importing dbgsym with versioned Source field
+Changes:
+ dbgsym-with-source-version (2021.01) unstable; urgency=medium
+ .
+   * Initial Release.
+Checksums-Sha1:
+ 07b21e2cf16c966695455a56343f653b0322d00c 646 dbgsym-with-source-version_2021.01.dsc
+ 626c500200d9837b475f61a2563a647e785a9ccf 1664 dbgsym-with-source-version_2021.01.tar.xz
+ c8b0e5ef412749c60ada84f07b9a9abeb8a9b58f 2668 dbgsym-with-source-version-dbgsym_0.1+aptly2021.01_amd64.ddeb
+ e46bb74e4ca1a8b6013b145d95db90264b873225 3520 dbgsym-with-source-version_0.1+aptly2021.01_amd64.deb
+ d95a8d9cf1e7c0e68a99ad901ed88e8ac2f22fc0 6155 dbgsym-with-source-version_2021.01_amd64.buildinfo
+Checksums-Sha256:
+ f1d6a9ab1b73d8ed798ebac79b472433712cc964fa73c60fc4b82e828a279070 646 dbgsym-with-source-version_2021.01.dsc
+ 00e1915300d0996056867b66d2cfc608e3839febb9feb596fe940f99ced632b0 1664 dbgsym-with-source-version_2021.01.tar.xz
+ afba2bf24c4978de82d49dc196ee26ed678ef54386fa4f1982f70aec985ccc02 2668 dbgsym-with-source-version-dbgsym_0.1+aptly2021.01_amd64.ddeb
+ 7834699e4f3f27ed7cb8776e6846e8367d6e18d0c589bb283900841a2a5bbcd5 3520 dbgsym-with-source-version_0.1+aptly2021.01_amd64.deb
+ 763abc57edbe79e2a7cfc6665bcf63b2c58d8a3d04fb27d7247f0272e21032e1 6155 dbgsym-with-source-version_2021.01_amd64.buildinfo
+Files:
+ d411f22d5ae7a68256faa2d02276da33 646 unknown optional dbgsym-with-source-version_2021.01.dsc
+ 5f50d8d87421226d33536471d294140e 1664 unknown optional dbgsym-with-source-version_2021.01.tar.xz
+ 91adadcd5b04c89a6775e6be20d03705 2668 debug optional dbgsym-with-source-version-dbgsym_0.1+aptly2021.01_amd64.ddeb
+ 1e3c04499395851894fda69903b1c6ff 3520 unknown optional dbgsym-with-source-version_0.1+aptly2021.01_amd64.deb
+ 62d96c0271d499d9c848ec66fc888f6d 6155 unknown optional dbgsym-with-source-version_2021.01_amd64.buildinfo
