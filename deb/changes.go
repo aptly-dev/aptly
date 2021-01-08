@@ -195,11 +195,6 @@ func (c *Changes) PackageQuery() PackageQuery {
 			}
 		}
 
-		ddebQuery = &AndQuery{
-			L: &FieldQuery{Field: "Source", Relation: VersionEqual, Value: c.Source},
-			R: ddebQuery,
-		}
-
 		binaryQuery = &OrQuery{
 			L: binaryQuery,
 			R: ddebQuery,

@@ -131,6 +131,23 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	c.Check(processedFiles, DeepEquals, expectedProcessedFiles)
 }
 
+func (s *ChangesSuite) TestImportDbgsymWithVersionedSourceField(c *C) {
+	repo := NewLocalRepo("test", "Test Comment")
+	c.Assert(s.localRepoCollection.Add(repo), IsNil)
+
+	changesFiles, failedFiles := CollectChangesFiles(
+		[]string{"testdata/dbgsym-with-source-version"}, s.Reporter)
+	c.Check(changesFiles, HasLen, 1)
+	c.Check(failedFiles, HasLen, 0)
+
+	_, failedFiles, err := ImportChangesFiles(
+		changesFiles, s.Reporter, true, true, false, true, &NullVerifier{},
+		template.Must(template.New("test").Parse("test")), s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
+		nil, nil)
+	c.Assert(err, IsNil)
+	c.Check(failedFiles, IsNil)
+}
+
 func (s *ChangesSuite) TestPrepare(c *C) {
 	changes, err := NewChanges("testdata/changes/hardlink_0.2.1_amd64.changes")
 	c.Assert(err, IsNil)
@@ -150,5 +167,5 @@ func (s *ChangesSuite) TestPackageQuery(c *C) {
 
 	q := changes.PackageQuery()
 	c.Check(q.String(), Equals,
-		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), (((Name (= calamares-dbg)) | (Name (= calamares))) | ((Source (= calamares)), ((Name (= calamares-dbg-dbgsym)) | (Name (= calamares-dbgsym)))))))")
+		"(($Architecture (= amd64)) | (($Architecture (= source)) | ($Architecture (= )))), ((($PackageType (= source)), (Name (= calamares))) | ((!($PackageType (= source))), (((Name (= calamares-dbg)) | (Name (= calamares))) | ((Name (= calamares-dbg-dbgsym)) | (Name (= calamares-dbgsym))))))")
 }
