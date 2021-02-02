@@ -27,7 +27,7 @@ dev:
 check: system/env
 ifeq ($(RUN_LONG_TESTS), yes)
 	golangci-lint run
-	. system/env/bin/activate && flake8 --max-line-length=200 --exclude=system/env/ system/
+	system/env/bin/flake8
 endif
 
 install:

@@ -9,7 +9,7 @@ Last update: never
 
 Information from release file:
 Acquire-By-Hash: yes
-Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
+Architectures: amd64 arm64 armel armhf i386
 Codename: stretch
 Components: updates/main updates/contrib updates/non-free
 Description:  Debian 9 Security Updates

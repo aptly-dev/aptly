@@ -15,7 +15,7 @@ def sorted_processor(output):
 
 def ungzip_if_required(output):
     if output.startswith("\x1f\x8b"):
-        return zlib.decompress(output, 16+zlib.MAX_WBITS)
+        return zlib.decompress(output, 16 + zlib.MAX_WBITS)
 
     return output
 
