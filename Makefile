@@ -2,7 +2,7 @@ GOVERSION=$(shell go version | awk '{print $$3;}')
 ifdef TRAVIS_TAG
 	TAG=$(TRAVIS_TAG)
 else
-	TAG="$(shell git describe --tags)"
+	TAG="$(shell git describe --tags --always)"
 endif
 VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
 PACKAGES=context database deb files gpg http query swift s3 utils
