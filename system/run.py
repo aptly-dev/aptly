@@ -86,6 +86,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     numFailed += 1
                     typ, val, tb = sys.exc_info()
                     fails.append((test, t, typ, val, tb, testModule))
+                    traceback.print_exception(typ, val, tb)
                     sys.stdout.write(colored("FAIL\n", color="red"))
                 else:
                     sys.stdout.write(colored("OK\n", color="green"))

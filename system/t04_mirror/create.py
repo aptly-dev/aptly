@@ -258,9 +258,16 @@ class CreateMirror20Test(BaseTest):
     expectedCode = 1
 
     def outputMatchPrepare(self, s):
-        return s.replace('getsockopt: ', '').replace('connect: ', ''). \
-            replace('proxyconnect tcp',
-                    'http: error connecting to proxy http://127.0.0.1:3137')
+        return s.replace(
+            'getsockopt: ', ''
+        ).replace(
+            'connect: ', ''
+        ).replace(
+            'proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137'
+        ).replace(
+            'Get http://security.debian.org/dists/stretch/updates/Release:',
+            'Get "http://security.debian.org/dists/stretch/updates/Release":'
+        )
 
 
 class CreateMirror21Test(BaseTest):

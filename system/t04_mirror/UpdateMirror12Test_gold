@@ -36,7 +36,10 @@ Downloading http://cdn-fastly.deb.debian.org/debian/pool/main/g/gnupg2/gpgv_2.1.
 Downloading http://cdn-fastly.deb.debian.org/debian/pool/main/g/gnupg2/scdaemon_2.1.18-8~deb9u4_amd64.deb...
 Downloading http://cdn-fastly.deb.debian.org/debian/pool/main/g/gnupg2/scdaemon_2.1.18-8~deb9u4_i386.deb...
 Mirror `stretch` has been successfully updated.
-Packages filtered: 78310 -> 20.
+Packages filtered: 78248 -> 20.
 gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
 gpgv:  RSA key ID 2B90D010
-gpgv: WARNING: multiple signatures detected.  Only the first will be checked.
+gpgv:  RSA key ID B7D453EC
+gpgv:  RSA key ID 1A7B6500

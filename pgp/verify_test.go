@@ -47,7 +47,7 @@ func (s *VerifierSuite) TestVerifyClearsigned(c *C) {
 
 		keyInfo, err := s.verifier.VerifyClearsigned(clearsigned, false)
 		c.Assert(err, IsNil)
-		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"8B48AD6246925553", "7638D0442B90D010"})
+		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"04EE7237B7D453EC", "648ACFD622F3D138", "DCC9EFBF77E11517"})
 		c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
 
 		clearsigned.Close()
