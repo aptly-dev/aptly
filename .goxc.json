@@ -34,8 +34,7 @@
         }
     },
 	"ResourcesInclude": "README.rst,LICENSE,AUTHORS,man/aptly.1",
-	"Arch": "386 amd64",
-	"Os": "linux darwin freebsd",
+	"BuildConstraints": "linux,386 linux,amd64 darwin,amd64 freebsd,386 freebsd,amd64",
 	"MainDirsExclude": "_man,vendor",
 	"BuildSettings": {
 		"LdFlagsXVars": {
