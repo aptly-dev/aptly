@@ -85,5 +85,6 @@ Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.
 Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.6.5-1~jessiecran.0_i386.deb...
 Mirror `flat` has been successfully updated.
 gpgv:                 aka "Johannes Ranke <jranke@uni-bremen.de>"
+gpgv:                using RSA key AD7B5162BA456BE3526F8D92FCAE2A0E115C3D8A
 gpgv: Good signature from "Johannes Ranke (Wissenschaftlicher Berater) <johannes.ranke@jrwb.de>"
-gpgv:  RSA key ID 115C3D8A
+gpgv: Signature made Mon Mar 11 20:45:28 2019 EET
