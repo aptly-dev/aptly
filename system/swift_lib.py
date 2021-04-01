@@ -1,6 +1,8 @@
 from lib import BaseTest
+import logging
 import uuid
 import os
+
 
 try:
     import swiftclient
@@ -50,13 +52,21 @@ class SwiftTest(BaseTest):
 
         super(SwiftTest, self).prepare()
 
-    def shutdown(self):
-        if hasattr(self, "container_name"):
+    def _try_delete_container(self):
+        if not hasattr(self, "container_name"):
+            return
+
+        try:
             for obj in swift_conn.get_container(self.container_name,
                                                 full_listing=True)[1]:
                 swift_conn.delete_object(self.container_name, obj.get("name"))
 
             swift_conn.delete_container(self.container_name)
+        except swiftclient.ClientException:
+            logging.exception("Error shutting down Swift container")
+
+    def shutdown(self):
+        self._try_delete_container()
         super(SwiftTest, self).shutdown()
 
     def check_path(self, path):

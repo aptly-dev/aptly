@@ -115,7 +115,7 @@ func (s *DownloaderSuite) TestDownload404(c *C) {
 }
 
 func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
-	c.Assert(s.d.Download(s.ctx, "http://nosuch.localhost/", s.tempfile.Name()),
+	c.Assert(s.d.Download(s.ctx, "http://nosuch.host/", s.tempfile.Name()),
 		ErrorMatches, ".*no such host")
 }
 
@@ -138,7 +138,7 @@ func (s *DownloaderSuite) TestGetLength404(c *C) {
 }
 
 func (s *DownloaderSuite) TestGetLengthConnectError(c *C) {
-	_, err := s.d.GetLength(s.ctx, "http://nosuch.localhost/")
+	_, err := s.d.GetLength(s.ctx, "http://nosuch.host/")
 
 	c.Assert(err, ErrorMatches, ".*no such host")
 }
