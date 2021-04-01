@@ -57,7 +57,9 @@ func apiGPGAddKey(c *gin.Context) {
 
 	}
 	if len(b.GpgKeyID) > 0 {
-		args = append(args, "--recv-keys", b.GpgKeyID)
+                keys := strings.Fields(b.GpgKeyID)
+		args = append(args, "--recv-keys")
+		args = append(args, keys...)
 	}
 
         finder := pgp.GPG1Finder()
