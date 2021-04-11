@@ -9,8 +9,11 @@ require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/cheggaaa/pb v1.0.29
+	github.com/folbricht/tpmk v0.1.2-0.20210411225238-7061339773c3
+	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.15.4 // indirect
+	github.com/google/go-tpm v0.1.2-0.20190306182045-7a7fe86fbbf2
 	github.com/h2non/filetype v1.1.3
 	github.com/jlaffaye/ftp v0.2.0 // indirect
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
@@ -66,7 +69,6 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
-	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
