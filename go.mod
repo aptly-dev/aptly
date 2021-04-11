@@ -9,8 +9,11 @@ require (
 	github.com/aws/aws-sdk-go v1.25.0
 	github.com/cheggaaa/pb v1.0.10
 	github.com/fatih/color v1.7.0 // indirect
+	github.com/folbricht/tpmk v0.1.2-0.20210411225238-7061339773c3
 	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7 // indirect
 	github.com/gin-gonic/gin v1.1.5-0.20170702092826-d459835d2b07
+	github.com/google/go-tpm v0.1.2-0.20190306182045-7a7fe86fbbf2
+	github.com/google/go-tpm-tools v0.0.0-20190131232102-89d1c95730e5
 	github.com/h2non/filetype v1.0.5
 	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc // indirect
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
@@ -32,7 +35,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go v1.1.4
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.0.0-20180403160946-b2aa35443fbc
+	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
 	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
 	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
