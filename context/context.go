@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/azure"
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/database/goleveldb"
@@ -376,6 +377,18 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			var err error
 			publishedStorage, err = swift.NewPublishedStorage(params.UserName, params.Password,
 				params.AuthURL, params.Tenant, params.TenantID, params.Domain, params.DomainID, params.TenantDomain, params.TenantDomainID, params.Container, params.Prefix)
+			if err != nil {
+				Fatal(err)
+			}
+		} else if strings.HasPrefix(name, "azure:") {
+			params, ok := context.config().AzurePublishRoots[name[6:]]
+			if !ok {
+				Fatal(fmt.Errorf("Published Azure storage %v not configured", name[6:]))
+			}
+
+			var err error
+			publishedStorage, err = azure.NewPublishedStorage(
+				params.AccountName, params.AccountKey, params.Container, params.Prefix)
 			if err != nil {
 				Fatal(err)
 			}

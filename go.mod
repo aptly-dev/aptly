@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/AlekSi/pointer v1.0.0
+	github.com/Azure/azure-storage-blob-go v0.13.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e
 	github.com/awalterschulze/gographviz v0.0.0-20160912181450-761fd5fbb34e
 	github.com/aws/aws-sdk-go v1.25.0
@@ -21,7 +22,7 @@ require (
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
 	github.com/ncw/swift v1.0.30
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/gunit v1.0.4 // indirect
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
@@ -32,9 +33,9 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go v1.1.4
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.0.0-20180403160946-b2aa35443fbc
-	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
-	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/sys v0.0.0-20200828194041-157a740278f4
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
