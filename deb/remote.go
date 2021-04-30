@@ -33,7 +33,7 @@ const (
 
 // RemoteRepo represents remote (fetchable) Debian repository.
 //
-// Repostitory could be filtered when fetching by components, architectures
+// Repository could be filtered when fetching by components, architectures
 type RemoteRepo struct {
 	// Permanent internal ID
 	UUID string
