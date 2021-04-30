@@ -1444,7 +1444,7 @@ GPG passphrase\-file for the key (warning: could be insecure)
 .
 .TP
 \-\fBsecret\-keyring\fR=
-GPG secret keyring to use (instead of default)
+GPG secret keyring to use (instead of default); may be of the form \fBtpm://HANDLE?dev=DEVICE\fR to use a TPM-backed key if the selected \fBgpgProvider\fR is \fBinternal\fR, where \fBHANDLE\fR is of the form \fB0x81000003\fR, and \fBdev\fR is a (URL-escaped) value similar to \fB/dev/tpmrm0\fR (which happens to be the default if not given).
 .
 .TP
 \-\fBskip\-contents\fR
