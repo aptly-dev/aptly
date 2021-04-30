@@ -242,11 +242,17 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 	}
 }
 
-func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bool) *indexFile {
+func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bool, legacy_installer bool) *indexFile {
 	if arch == ArchitectureSource {
 		udeb = false
 	}
-	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer)
+	var installer_combined bool
+	if legacy_installer || installer {
+		installer_combined = true
+	} else {
+		installer_combined = false
+	}
+	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer_combined)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string
@@ -256,6 +262,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 		} else {
 			if udeb {
 				relativePath = filepath.Join(component, "debian-installer", fmt.Sprintf("binary-%s", arch), "Packages")
+			} else if legacy_installer {
+				relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "legacy-images", "SHA256SUMS")
 			} else if installer {
 				relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "images", "SHA256SUMS")
 			} else {
@@ -266,8 +274,8 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb, installer bo
 		file = &indexFile{
 			parent:        files,
 			discardable:   false,
-			compressable:  !installer,
-			detachedSign:  installer,
+			compressable:  !installer_combined,
+			detachedSign:  installer_combined,
 			clearSign:     false,
 			acquireByHash: files.acquireByHash,
 			relativePath:  relativePath,
