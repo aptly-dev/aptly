@@ -45,6 +45,7 @@ type PublishedRepo struct {
 	ButAutomaticUpgrades string
 	Label                string
 	Suite                string
+	Codename             string
 	// Architectures is a list of all architectures published
 	Architectures []string
 	// SourceKind is "local"/"repo"
@@ -310,6 +311,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Label":                p.Label,
 		"Origin":               p.Origin,
 		"Suite":                p.Suite,
+		"Codename":             p.Codename,
 		"NotAutomatic":         p.NotAutomatic,
 		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
 		"Prefix":               p.Prefix,
@@ -361,6 +363,10 @@ func (p *PublishedRepo) String() string {
 
 	if p.Suite != "" {
 		extras = append(extras, fmt.Sprintf("suite: %s", p.Suite))
+	}
+
+	if p.Codename != "" {
+		extras = append(extras, fmt.Sprintf("codename: %s", p.Codename))
 	}
 
 	extra = strings.Join(extras, ", ")
@@ -497,6 +503,14 @@ func (p *PublishedRepo) GetSuite() string {
 		return p.Distribution
 	}
 	return p.Suite
+}
+
+// GetCodename returns default or manual Codename:
+func (p *PublishedRepo) GetCodename() string {
+	if p.Codename == "" {
+		return p.Distribution
+	}
+	return p.Codename
 }
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
@@ -722,6 +736,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				release["Origin"] = p.GetOrigin()
 				release["Label"] = p.GetLabel()
 				release["Suite"] = p.GetSuite()
+				release["Codename"] = p.GetCodename()
 				if p.AcquireByHash {
 					release["Acquire-By-Hash"] = "yes"
 				}
@@ -779,7 +794,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 	release["Label"] = p.GetLabel()
 	release["Suite"] = p.GetSuite()
-	release["Codename"] = p.Distribution
+	release["Codename"] = p.GetCodename()
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{ArchitectureSource}), " ")
 	if p.AcquireByHash {
