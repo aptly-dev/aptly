@@ -58,9 +58,7 @@ class CreateMirror6Test(BaseTest):
     """
     create mirror: missing release
     """
-    expectedCode = 1
     requiresGPG1 = True
-
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://cdn-fastly.deb.debian.org/debian/ suslik"
 
 
