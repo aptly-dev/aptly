@@ -99,13 +99,13 @@ func apiDbCleanup(c *gin.Context) {
 		db, _ := context.Database()
 
 		if toDelete.Len() > 0 {
-			batch := db.StartBatch()
+			batch := db.CreateBatch()
 			toDelete.ForEach(func(ref []byte) error {
 				collectionFactory.PackageCollection().DeleteByKey(ref, batch)
 				return nil
 			})
 
-			err = db.FinishBatch(batch)
+			err = batch.Write()
 			if err != nil {
 				return fmt.Errorf("unable to write to DB: %s", err)
 			}
