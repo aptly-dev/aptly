@@ -343,7 +343,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
-		if name == "" {
+		if name == "" || name == "filesystem" {
 			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().RootDir, "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]

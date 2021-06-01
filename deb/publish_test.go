@@ -875,3 +875,24 @@ func (s *PublishedRepoRemoveSuite) TestRemoveRepo5(c *C) {
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/dists/osminog"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/pool/contrib"), Not(PathExists))
 }
+
+func (s *PublishedRepoSuite) TestParsePrefix(c *C) {
+	for _, t := range []struct{ param, storage, prefix string }{
+		// Behavior as implemented prior to aptly-dev/aptly#958
+		{param: "", storage: "", prefix: ""},
+		{param: "storagetype:", storage: "storagetype", prefix: "."},
+		{param: "/path", storage: "", prefix: "path"},
+		{param: "storagetype:/path", storage: "storagetype", prefix: "path"},
+		{param: "storagetype:/path/with/subdirectory", storage: "storagetype", prefix: "path/with/subdirectory"},
+		{param: "storagetype:/path/with/subdirectory", storage: "storagetype", prefix: "path/with/subdirectory"},
+		{param: "storagetype:storename:/path/with/subdirectory", storage: "storagetype:storename", prefix: "path/with/subdirectory"},
+		// Changes made as of aptly-dev/aptly#958
+		{param: "storagetype:storename:path:with:colons", storage: "storagetype:storename", prefix: "path:with:colons"},
+		{param: "storagetype::path:with:colons", storage: "storagetype", prefix: "path:with:colons"},
+		{param: "storagetype:/path:with:colons", storage: "storagetype", prefix: "path:with:colons"},
+	} {
+		storage, prefix := ParsePrefix(t.param)
+		c.Check(storage, Equals, t.storage, Commentf("input = %q", t.param))
+		c.Check(prefix, Equals, t.prefix, Commentf("input = %q", t.param))
+	}
+}

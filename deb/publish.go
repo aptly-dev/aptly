@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -70,17 +71,33 @@ type PublishedRepo struct {
 	AcquireByHash bool
 }
 
+var ParsePrefixRegexp *regexp.Regexp
+
+func init() {
+	ParsePrefixRegexp = regexp.MustCompile(`\A(?:(?P<StoreType>[^:/]+)(?:[:](?P<StoreName>[^:/]*))?[:])?(?P<Prefix>.*?)\z`)
+}
+
 // ParsePrefix splits [storage:]prefix into components
+//
+// - `storage` may be of the form `type:name`, so the longest possible form is `type:name:prefix`
+// - because `/`s are only valid in the Prefix field, any `:` after the first `/` must be literal
 func ParsePrefix(param string) (storage, prefix string) {
-	i := strings.LastIndex(param, ":")
-	if i != -1 {
-		storage = param[:i]
-		prefix = param[i+1:]
+	pieces := ParsePrefixRegexp.FindStringSubmatch(param)
+	if param == "" || pieces == nil { // should not ever happen
+		prefix = param
+	} else {
+		storeType := pieces[1]
+		storeName := pieces[2]
+		prefix = pieces[3]
+		if storeType != "" && storeName != "" {
+			storage = storeType + ":" + storeName
+		} else {
+			// only one at most is nonempty; just concatenate
+			storage = storeType + storeName
+		}
 		if prefix == "" {
 			prefix = "."
 		}
-	} else {
-		prefix = param
 	}
 	prefix = strings.TrimPrefix(strings.TrimSuffix(prefix, "/"), "/")
 	return
