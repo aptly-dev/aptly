@@ -28,13 +28,13 @@ require (
 	github.com/smira/go-aws-auth v0.0.0-20180731211914-8b73995fd8d1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
 	github.com/smira/go-xz v0.0.0-20150414201226-0c531f070014
-	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go v1.1.4
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.0.0-20180403160946-b2aa35443fbc
-	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
-	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405
+	go.etcd.io/etcd/client/v3 v3.5.0-rc.0
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect

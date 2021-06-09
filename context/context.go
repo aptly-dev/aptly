@@ -17,6 +17,7 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/etcddb"
 	"github.com/aptly-dev/aptly/database/goleveldb"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/files"
@@ -253,7 +254,12 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		context.database, err = goleveldb.NewDB(context.dbPath())
+		if context.config().DatabaseEtcd != "" {
+			context.database, err = etcddb.NewDB(context.config().DatabaseEtcd)
+		} else {
+			context.database, err = goleveldb.NewDB(context.dbPath())
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("can't instantiate database: %s", err)
 		}
