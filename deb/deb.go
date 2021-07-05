@@ -16,6 +16,7 @@ import (
 
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/kjk/lzma"
+	"github.com/klauspost/compress/zstd"
 	"github.com/smira/go-xz"
 )
 
@@ -189,6 +190,13 @@ func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 				unlzma := lzma.NewReader(bufReader)
 				defer unlzma.Close()
 				tarInput = unlzma
+			case "data.tar.zst":
+				unzst, err := zstd.NewReader(bufReader)
+				if err != nil {
+					return nil, errors.Wrapf(err, "unable to unzst data.tar.zst from %s", packageFile)
+				}
+				defer unzst.Close()
+				tarInput = unzst
 			default:
 				return nil, fmt.Errorf("unsupported tar compression in %s: %s", packageFile, header.Name)
 			}
