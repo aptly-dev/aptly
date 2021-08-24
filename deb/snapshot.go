@@ -389,13 +389,7 @@ func (collection *SnapshotCollection) Len() int {
 
 // Drop removes snapshot from collection
 func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	if _, err = transaction.Get(snapshot.Key()); err != nil {
+	if _, err := collection.db.Get(snapshot.Key()); err != nil {
 		if err == database.ErrNotFound {
 			return errors.New("snapshot not found")
 		}

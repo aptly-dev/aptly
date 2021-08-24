@@ -898,13 +898,7 @@ func (collection *RemoteRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	if _, err = transaction.Get(repo.Key()); err != nil {
+	if _, err := collection.db.Get(repo.Key()); err != nil {
 		if err == database.ErrNotFound {
 			return errors.New("repo not found")
 		}

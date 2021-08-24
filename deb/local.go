@@ -237,12 +237,13 @@ func (collection *LocalRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
+	if _, err := collection.db.Get(repo.Key()); err != nil {
+		if err == database.ErrNotFound {
+			return errors.New("local repo not found")
+		}
+
 		return err
 	}
-	defer transaction.Discard()
-
 	delete(collection.cache, repo.UUID)
 
 	batch := collection.db.CreateBatch()
