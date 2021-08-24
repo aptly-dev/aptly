@@ -201,3 +201,13 @@ func (s *LocalRepoCollectionSuite) TestDrop(c *C) {
 
 	c.Check(s.collection.Drop(repo1), ErrorMatches, "local repo not found")
 }
+
+func (s *LocalRepoCollectionSuite) TestDropNonExisting(c *C) {
+	repo := NewLocalRepo("local3", "Comment 3")
+
+	_, err := s.collection.ByUUID(repo.UUID)
+	c.Check(err, ErrorMatches, "local repo .* not found")
+
+	err = s.collection.Drop(repo)
+	c.Check(s.collection.Drop(repo), ErrorMatches, "local repo not found")
+}
