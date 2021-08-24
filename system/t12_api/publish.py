@@ -172,7 +172,8 @@ class PublishSnapshotAPITest(APITest):
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot_name}],
             'Storage': '',
-            'Suite': ''})
+            'Suite': '',
+        }
         all_repos = self.get("/api/publish")
         self.check_equal(all_repos.status_code, 200)
         self.check_in(repo_expected, all_repos.json())
