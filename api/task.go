@@ -1,8 +1,11 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
 	"strconv"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +16,7 @@ func apiTasksList(c *gin.Context) {
 	c.JSON(200, list.GetTasks())
 }
 
-// POST /tasks/clear
+// POST /tasks-clear
 func apiTasksClear(c *gin.Context) {
 	list := context.TaskList()
 	list.Clear()
@@ -119,4 +122,16 @@ func apiTasksDelete(c *gin.Context) {
 	}
 
 	c.JSON(200, delTask)
+}
+
+// POST /tasks-dummy
+func apiTasksDummy(c *gin.Context) {
+	resources := []string{"dummy"}
+	taskName := fmt.Sprintf("Dummy task")
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+		out.Printf("Dummy task started\n")
+		detail.Store([]int{1, 2, 3})
+		out.Printf("Dummy task finished\n")
+		return http.StatusTeapot, nil
+	})
 }

@@ -2,6 +2,7 @@ package task
 
 import (
 	"errors"
+	"github.com/aptly-dev/aptly/aptly"
 
 	// need to import as check as otherwise List is redeclared
 	check "gopkg.in/check.v1"
@@ -15,8 +16,8 @@ func (s *ListSuite) TestList(c *check.C) {
 	list := NewList()
 	c.Assert(len(list.GetTasks()), check.Equals, 0)
 
-	task, err := list.RunTaskInBackground("Successful task", nil, func(out *Output, detail *Detail) error {
-		return nil
+	task, err := list.RunTaskInBackground("Successful task", nil, func(out aptly.Progress, detail *Detail) (int, error) {
+		return -1, nil
 	})
 	c.Assert(err, check.IsNil)
 	list.WaitForTaskByID(task.ID)
@@ -30,10 +31,10 @@ func (s *ListSuite) TestList(c *check.C) {
 	detail, _ := list.GetTaskDetailByID(task.ID)
 	c.Check(detail, check.Equals, struct{}{})
 
-	task, err = list.RunTaskInBackground("Faulty task", nil, func(out *Output, detail *Detail) error {
+	task, err = list.RunTaskInBackground("Faulty task", nil, func(out aptly.Progress, detail *Detail) (int, error) {
 		detail.Store("Details")
-		out.WriteString("Test Progress\n")
-		return errors.New("Task failed")
+		out.Printf("Test Progress\n")
+		return -1, errors.New("Task failed")
 	})
 	c.Assert(err, check.IsNil)
 	list.WaitForTaskByID(task.ID)

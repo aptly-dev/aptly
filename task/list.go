@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"github.com/aptly-dev/aptly/aptly"
 	"sync"
 )
 
@@ -138,10 +139,11 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 		}
 		list.Unlock()
 
-		err := process(task.output, task.detail)
+		retCode, err := process(aptly.Progress(task.output), task.detail)
 
 		list.Lock()
 		{
+			task.processReturnCode = retCode
 			if err != nil {
 				task.output.Printf("Task failed with error: %v", err)
 				task.State = FAILED
