@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -146,29 +147,26 @@ func apiMirrorsDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete mirror %s", name)
-	task, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := repo.CheckLock()
 		if err != nil {
-			return fmt.Errorf("unable to drop: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %v", err)
 		}
 
 		if !force {
 			snapshots := snapshotCollection.ByRemoteRepoSource(repo)
 
 			if len(snapshots) > 0 {
-				return fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
+				return http.StatusInternalServerError, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
 			}
 		}
 
-		return mirrorCollection.Drop(repo)
+		err = mirrorCollection.Drop(repo)
+		if err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %v", err)
+		}
+		return http.StatusNoContent, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, task)
 }
 
 // GET /api/mirrors/:name
@@ -352,24 +350,24 @@ func apiMirrorsUpdate(c *gin.Context) {
 	}
 
 	resources := []string{string(remote.Key())}
-	currTask, conflictErr := runTaskInBackground("Update mirror "+b.Name, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, "Update mirror "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 
 		downloader := context.NewDownloader(out)
 		err := remote.Fetch(downloader, verifier)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		if !b.ForceUpdate {
 			err = remote.CheckLock()
 			if err != nil {
-				return fmt.Errorf("unable to update: %s", err)
+				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
 		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.SkipComponentCheck)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		if remote.Filter != "" {
@@ -377,19 +375,19 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 			filterQuery, err = query.Parse(remote.Filter)
 			if err != nil {
-				return fmt.Errorf("unable to update: %s", err)
+				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 			}
 
 			_, _, err = remote.ApplyFilter(context.DependencyOptions(), filterQuery, out)
 			if err != nil {
-				return fmt.Errorf("unable to update: %s", err)
+				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
 		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
 			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		defer func() {
@@ -404,7 +402,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		remote.MarkAsUpdating()
 		err = collection.Update(remote)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		context.GoContextHandleSignals()
@@ -524,7 +522,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			// and import it back to the pool
 			task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
 			if err != nil {
-				return fmt.Errorf("unable to import file: %s", err)
+				return http.StatusInternalServerError, fmt.Errorf("unable to import file: %s", err)
 			}
 
 			// update "attached" files if any
@@ -536,30 +534,23 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 		select {
 		case <-context.Done():
-			return fmt.Errorf("unable to update: interrupted")
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: interrupted")
 		default:
 		}
 
 		if len(errors) > 0 {
 			log.Printf("%s: Unable to update because of previous errors\n", b.Name)
-			return fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 		}
 
 		log.Printf("%s: Finalizing download\n", b.Name)
 		remote.FinalizeDownload(collectionFactory, out)
 		err = collectionFactory.RemoteRepoCollection().Update(remote)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		log.Printf("%s: Mirror updated successfully!\n", b.Name)
-		return nil
+		return http.StatusNoContent, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }

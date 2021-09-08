@@ -3,7 +3,9 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"sort"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -97,16 +99,49 @@ func releaseDatabaseConnection() error {
 
 // runs tasks in background. Acquires database connection first.
 func runTaskInBackground(name string, resources []string, proc task.Process) (task.Task, *task.ResourceConflictError) {
-	return context.TaskList().RunTaskInBackground(name, resources, func(out *task.Output, detail *task.Detail) error {
+	return context.TaskList().RunTaskInBackground(name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := acquireDatabaseConnection()
 
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		defer releaseDatabaseConnection()
 		return proc(out, detail)
 	})
+}
+
+func truthy(value string) bool {
+	switch strings.ToLower(value) {
+	case "y", "yes", "t", "true":
+		return true
+	}
+	return false
+}
+
+func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, proc task.Process) {
+	// Run this task in background if configured globally or per-request
+	background := context.Config().AsyncAPI || truthy(c.Query("_async"))
+	if background {
+		log.Println("Executing task asynchronously")
+		task, conflictErr := runTaskInBackground(name, resources, proc)
+		if conflictErr != nil {
+			c.AbortWithError(409, conflictErr)
+			return
+		}
+		c.JSON(202, task)
+	} else {
+		log.Println("Executing task synchronously")
+		out := context.Progress()
+		detail := task.Detail{}
+		retCode, err := proc(out, &detail)
+		if err != nil {
+			c.AbortWithError(retCode, err)
+			return
+		}
+		response := detail.Load()
+		c.JSON(retCode, response)
+	}
 }
 
 // Common piece of code to show list of packages,

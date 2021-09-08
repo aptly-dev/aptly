@@ -41,3 +41,4 @@ build/
 
 pgp/keyrings/aptly2*.gpg
 pgp/keyrings/aptly2*.gpg~
+pgp/keyrings/.#*

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,13 +82,13 @@ func apiReposEdit(c *gin.Context) {
 	}
 
 	if b.Name != nil {
-            _, err := collection.ByName(*b.Name)
-            if err == nil {
-                    // already exists
-                    c.AbortWithError(404, err)
-                    return
-            }
-            repo.Name = *b.Name
+		_, err := collection.ByName(*b.Name)
+		if err == nil {
+			// already exists
+			c.AbortWithError(404, err)
+			return
+		}
+		repo.Name = *b.Name
 	}
 	if b.Comment != nil {
 		repo.Comment = *b.Comment
@@ -140,28 +141,22 @@ func apiReposDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete repo %s", name)
-	task, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		published := publishedCollection.ByLocalRepo(repo)
 		if len(published) > 0 {
-			return fmt.Errorf("unable to drop, local repo is published")
+			return http.StatusConflict, fmt.Errorf("unable to drop, local repo is published")
 		}
 
 		if !force {
 			snapshots := snapshotCollection.ByLocalRepoSource(repo)
 			if len(snapshots) > 0 {
-				return fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
+				return http.StatusConflict, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
 			}
 		}
 
-		return collection.Drop(repo)
+		detail.Store(gin.H{})
+		return http.StatusOK, collection.Drop(repo)
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, task)
 }
 
 // GET /api/repos/:name/packages
@@ -185,7 +180,7 @@ func apiReposPackagesShow(c *gin.Context) {
 }
 
 // Handler for both add and delete
-func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(list *deb.PackageList, p *deb.Package, out *task.Output) error) {
+func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error) {
 	var b struct {
 		PackageRefs []string
 	}
@@ -210,11 +205,11 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	}
 
 	resources := []string{string(repo.Key())}
-	currTask, conflictErr := runTaskInBackground(taskNamePrefix+repo.Name, resources, func(out *task.Output, detail *task.Detail) error {
-		out.Print("Loading packages...\n")
+	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+		out.Printf("Loading packages...\n")
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
-			return err
+			return http.StatusInternalServerError, err
 		}
 
 		// verify package refs and build package list
@@ -224,33 +219,31 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 			p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
 			if err != nil {
 				if err == database.ErrNotFound {
-					return fmt.Errorf("packages %s: %s", ref, err)
+					return http.StatusNotFound, fmt.Errorf("packages %s: %s", ref, err)
 				}
 
-				return err
+				return http.StatusInternalServerError, err
 			}
 			err = cb(list, p, out)
 			if err != nil {
-				return err
+				return http.StatusBadRequest, err
 			}
 		}
 
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-		return collectionFactory.LocalRepoCollection().Update(repo)
+		err = collectionFactory.LocalRepoCollection().Update(repo)
+		if err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("unable to save: %s", err)
+		}
+		detail.Store(repo)
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // POST /repos/:name/packages
 func apiReposPackagesAdd(c *gin.Context) {
-	apiReposPackagesAddDelete(c, "Add packages to repo ", func(list *deb.PackageList, p *deb.Package, out *task.Output) error {
+	apiReposPackagesAddDelete(c, "Add packages to repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Adding package %s\n", p.Name)
 		return list.Add(p)
 	})
@@ -258,7 +251,7 @@ func apiReposPackagesAdd(c *gin.Context) {
 
 // DELETE /repos/:name/packages
 func apiReposPackagesDelete(c *gin.Context) {
-	apiReposPackagesAddDelete(c, "Delete packages from repo ", func(list *deb.PackageList, p *deb.Package, out *task.Output) error {
+	apiReposPackagesAddDelete(c, "Delete packages from repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Removing package %s\n", p.Name)
 		list.Remove(p)
 		return nil
@@ -315,7 +308,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	resources = append(resources, sources...)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		verifier := context.GetVerifier()
 
 		var (
@@ -334,7 +327,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
-			return fmt.Errorf("unable to load packages: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to load packages: %s", err)
 		}
 
 		processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
@@ -343,14 +336,14 @@ func apiReposPackageFromDir(c *gin.Context) {
 		processedFiles = append(processedFiles, otherFiles...)
 
 		if err != nil {
-			return fmt.Errorf("unable to import package files: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to import package files: %s", err)
 		}
 
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
 		err = collectionFactory.LocalRepoCollection().Update(repo)
 		if err != nil {
-			return fmt.Errorf("unable to save: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to save: %s", err)
 		}
 
 		if !noRemove {
@@ -384,15 +377,12 @@ func apiReposPackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-		return nil
+		detail.Store(gin.H{
+			"Report":      reporter,
+			"FailedFiles": failedFiles,
+		})
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // POST /repos/:name/include/:dir/:file
@@ -453,7 +443,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	}
 	resources = append(resources, sources...)
 
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		var (
 			err                       error
 			verifier                  = context.GetVerifier()
@@ -474,7 +464,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		failedFiles = append(failedFiles, failedFiles2...)
 
 		if err != nil {
-			return fmt.Errorf("unable to import changes files: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to import changes files: %s", err)
 		}
 
 		if !noRemoveFiles {
@@ -499,13 +489,11 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-		return nil
+		detail.Store(gin.H{
+			"Report":      reporter,
+			"FailedFiles": failedFiles,
+		})
+		return http.StatusOK, nil
+
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }

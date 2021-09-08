@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
@@ -14,7 +15,7 @@ import (
 func apiDbCleanup(c *gin.Context) {
 
 	resources := []string{string(task.AllResourcesKey)}
-	currTask, conflictErr := runTaskInBackground("Clean up db", resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, "Clean up db", resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		var err error
 
 		collectionFactory := context.NewCollectionFactory()
@@ -35,7 +36,7 @@ func apiDbCleanup(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		err = collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
@@ -51,7 +52,7 @@ func apiDbCleanup(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
@@ -65,7 +66,7 @@ func apiDbCleanup(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		err = collectionFactory.PublishedRepoCollection().ForEach(func(published *deb.PublishedRepo) error {
@@ -83,7 +84,7 @@ func apiDbCleanup(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		// ... and compare it to the list of all packages
@@ -107,7 +108,7 @@ func apiDbCleanup(c *gin.Context) {
 
 			err = batch.Write()
 			if err != nil {
-				return fmt.Errorf("unable to write to DB: %s", err)
+				return -1, fmt.Errorf("unable to write to DB: %s", err)
 			}
 		}
 
@@ -130,7 +131,7 @@ func apiDbCleanup(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		sort.Strings(referencedFiles)
@@ -139,7 +140,7 @@ func apiDbCleanup(c *gin.Context) {
 		out.Printf("Building list of files in package pool...")
 		existingFiles, err := context.PackagePool().FilepathList(out)
 		if err != nil {
-			return fmt.Errorf("unable to collect file paths: %s", err)
+			return -1, fmt.Errorf("unable to collect file paths: %s", err)
 		}
 
 		// find files which are in the pool but not referenced by packages
@@ -162,7 +163,7 @@ func apiDbCleanup(c *gin.Context) {
 			for _, file := range filesToDelete {
 				size, err = context.PackagePool().Remove(file)
 				if err != nil {
-					return err
+					return -1, err
 				}
 
 				taskDetail.RemainingNumberOfPackagesToDelete--
@@ -174,13 +175,6 @@ func apiDbCleanup(c *gin.Context) {
 		}
 
 		out.Printf("Compacting database...")
-		return db.CompactDB()
+		return -1, db.CompactDB()
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }

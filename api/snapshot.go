@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/task"
@@ -60,35 +62,33 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of mirror %s", name)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := repo.CheckLock()
 		if err != nil {
-			return err
+			return http.StatusConflict, err
 		}
 
 		err = collection.LoadComplete(repo)
 		if err != nil {
-			return err
+			return http.StatusInternalServerError, err
 		}
 
 		snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
 		if err != nil {
-			return err
+			return http.StatusBadRequest, err
 		}
 
 		if b.Description != "" {
 			snapshot.Description = b.Description
 		}
 
-		return snapshotCollection.Add(snapshot)
+		err = snapshotCollection.Add(snapshot)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		detail.Store(snapshot)
+		return http.StatusCreated, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // POST /api/snapshots
@@ -137,7 +137,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
-	currTask, conflictErr := runTaskInBackground("Create snapshot "+b.Name, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		list := deb.NewPackageList()
 
 		// verify package refs and build package list
@@ -145,27 +145,24 @@ func apiSnapshotsCreate(c *gin.Context) {
 			p, err := collectionFactory.PackageCollection().ByKey([]byte(ref))
 			if err != nil {
 				if err == database.ErrNotFound {
-					return fmt.Errorf("package %s: %s", ref, err)
+					return http.StatusNotFound, fmt.Errorf("package %s: %s", ref, err)
 				}
-				return err
+				return http.StatusInternalServerError, err
 			}
 			err = list.Add(p)
 			if err != nil {
-				return err
+				return http.StatusBadRequest, err
 			}
 		}
 
 		snapshot = deb.NewSnapshotFromRefList(b.Name, sources, deb.NewPackageRefListFromPackageList(list), b.Description)
 
-		return snapshotCollection.Add(snapshot)
+		err = snapshotCollection.Add(snapshot)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		return http.StatusCreated, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // POST /api/repos/:name/snapshots
@@ -199,30 +196,28 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := collection.LoadComplete(repo)
 		if err != nil {
-			return err
+			return http.StatusInternalServerError, err
 		}
 
 		snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
 		if err != nil {
-			return err
+			return http.StatusNotFound, err
 		}
 
 		if b.Description != "" {
 			snapshot.Description = b.Description
 		}
 
-		return snapshotCollection.Add(snapshot)
+		err = snapshotCollection.Add(snapshot)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		detail.Store(snapshot)
+		return http.StatusCreated, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // PUT /api/snapshots/:name
@@ -253,10 +248,10 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey()), "S" + b.Name}
 	taskName := fmt.Sprintf("Update snapshot %s", name)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		_, err := collection.ByName(b.Name)
 		if err == nil {
-			return fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
+			return http.StatusConflict, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
 		}
 
 		if b.Name != "" {
@@ -267,15 +262,13 @@ func apiSnapshotsUpdate(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		return collectionFactory.SnapshotCollection().Update(snapshot)
+		err = collectionFactory.SnapshotCollection().Update(snapshot)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+		detail.Store(snapshot)
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // GET /api/snapshots/:name
@@ -315,29 +308,27 @@ func apiSnapshotsDrop(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey())}
 	taskName := fmt.Sprintf("Delete snapshot %s", name)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		published := publishedCollection.BySnapshot(snapshot)
 
 		if len(published) > 0 {
-			return fmt.Errorf("unable to drop: snapshot is published")
+			return http.StatusConflict, fmt.Errorf("unable to drop: snapshot is published")
 		}
 
 		if !force {
 			snapshots := snapshotCollection.BySnapshotSource(snapshot)
 			if len(snapshots) > 0 {
-				return fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override")
+				return http.StatusConflict, fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override")
 			}
 		}
 
-		return snapshotCollection.Drop(snapshot)
+		err = snapshotCollection.Drop(snapshot)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+		detail.Store(gin.H{})
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // GET /api/snapshots/:name/diff/:withSnapshot

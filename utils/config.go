@@ -30,6 +30,7 @@ type ConfigStructure struct { // nolint: maligned
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
+	AsyncAPI               bool                             `json:"AsyncAPI"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -93,6 +94,7 @@ var Config = ConfigStructure{
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
+	AsyncAPI:               false,
 }
 
 // LoadConfig loads configuration from json file

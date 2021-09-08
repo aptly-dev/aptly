@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/task"
@@ -182,12 +184,12 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	collection := collectionFactory.PublishedRepoCollection()
 
 	taskName := fmt.Sprintf("Publish %s: %s", b.SourceKind, strings.Join(names, ", "))
-	task, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		taskDetail := task.PublishDetail{
 			Detail: detail,
 		}
 		publishOutput := &task.PublishOutput{
-			Output:        out,
+			Progress:      out,
 			PublishDetail: taskDetail,
 		}
 
@@ -214,28 +216,22 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
-			return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
+			return 400, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite)
 		if err != nil {
-			return fmt.Errorf("unable to publish: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err)
 		}
 
 		err = collection.Add(published)
 		if err != nil {
-			return fmt.Errorf("unable to save to DB: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return nil
+		detail.Store(published)
+		return http.StatusCreated, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, task)
 }
 
 // PUT /publish/:prefix/:distribution
@@ -333,34 +329,28 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	resources = append(resources, string(published.Key()))
 	taskName := fmt.Sprintf("Update published %s (%s): %s", published.SourceKind, strings.Join(updatedComponents, " "), strings.Join(updatedSnapshots, ", "))
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 		}
 
 		err = collection.Update(published)
 		if err != nil {
-			return fmt.Errorf("unable to save to DB: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 				context.GetPublishedStorage(storage), collectionFactory, out)
 			if err != nil {
-				return fmt.Errorf("unable to update: %s", err)
+				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
-		return nil
+		detail.Store(published)
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
 
 // DELETE /publish/:prefix/:distribution
@@ -377,27 +367,21 @@ func apiPublishDrop(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to drop: %s", err))
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("unable to drop: %s", err))
 		return
 	}
 
 	resources := []string{string(published.Key())}
 
 	taskName := fmt.Sprintf("Delete published %s (%s)", prefix, distribution)
-	currTask, conflictErr := runTaskInBackground(taskName, resources, func(out *task.Output, detail *task.Detail) error {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
 		err := collection.Remove(context, storage, prefix, distribution,
 			collectionFactory, out, force, skipCleanup)
 		if err != nil {
-			return fmt.Errorf("unable to drop: %s", err)
+			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %s", err)
 		}
 
-		return nil
+		detail.Store(gin.H{})
+		return http.StatusOK, nil
 	})
-
-	if conflictErr != nil {
-		c.AbortWithError(409, conflictErr)
-		return
-	}
-
-	c.JSON(202, currTask)
 }
