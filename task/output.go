@@ -17,7 +17,7 @@ type Output struct {
 
 // PublishOutput specific output for publishing api
 type PublishOutput struct {
-	*Output
+	aptly.Progress
 	PublishDetail
 	barType *aptly.BarType
 }

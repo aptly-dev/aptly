@@ -126,6 +126,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"prefix\": \"\"\n"+
 		"    }\n"+
 		"  }\n"+
+		"  \"AsyncAPI\": false\n"+
 		"}")
 }
 
