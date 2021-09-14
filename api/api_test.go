@@ -91,3 +91,21 @@ func (s *ApiSuite) TestGetVersion(c *C) {
 	c.Check(response.Code, Equals, 200)
 	c.Check(response.Body.String(), Matches, ".*Version.*")
 }
+
+func (s *ApiSuite) TestTruthy(c *C) {
+	c.Check(truthy("y"), Equals, true)
+	c.Check(truthy("yes"), Equals, true)
+	c.Check(truthy("t"), Equals, true)
+	c.Check(truthy("true"), Equals, true)
+	c.Check(truthy("1"), Equals, true)
+	c.Check(truthy(true), Equals, true)
+	c.Check(truthy(1), Equals, true)
+
+	c.Check(truthy("no"), Equals, false)
+	c.Check(truthy("foobar"), Equals, false)
+	c.Check(truthy(0), Equals, false)
+	c.Check(truthy(-1), Equals, false)
+	c.Check(truthy(false), Equals, false)
+	c.Check(truthy(nil), Equals, false)
+	c.Check(truthy(gin.H{}), Equals, false)
+}

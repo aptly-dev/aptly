@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -111,17 +112,24 @@ func runTaskInBackground(name string, resources []string, proc task.Process) (ta
 	})
 }
 
-func truthy(value string) bool {
-	switch strings.ToLower(value) {
-	case "y", "yes", "t", "true":
-		return true
+func truthy(value interface{}) bool {
+	switch value.(type) {
+	case string:
+		switch strings.ToLower(value.(string)) {
+		case "y", "yes", "t", "true", "1":
+			return true
+		}
+	case int:
+		return value.(int) == 1
+	case bool:
+		return value.(bool)
 	}
 	return false
 }
 
 func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, proc task.Process) {
 	// Run this task in background if configured globally or per-request
-	background := context.Config().AsyncAPI || truthy(c.Query("_async"))
+	background := truthy(c.DefaultQuery("_async", strconv.FormatBool(context.Config().AsyncAPI)))
 	if background {
 		log.Println("Executing task asynchronously")
 		task, conflictErr := runTaskInBackground(name, resources, proc)
