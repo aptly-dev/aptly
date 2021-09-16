@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -16,8 +17,10 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 	}
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	repos := make([]string, context.CollectionFactory().LocalRepoCollection().Len())
+	jsonRepos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
 	i := 0
 	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		if raw {
@@ -28,7 +31,11 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 				return e
 			}
 
-			repos[i] = fmt.Sprintf(" * %s (packages: %d)", repo.String(), repo.NumPackages())
+			if jsonFlag {
+				jsonRepos[i] = repo
+			} else {
+				repos[i] = fmt.Sprintf(" * %s (packages: %d)", repo.String(), repo.NumPackages())
+			}
 		}
 		i++
 		return nil
@@ -36,13 +43,22 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 
 	context.CloseDatabase()
 
-	sort.Strings(repos)
-
 	if raw {
+		sort.Strings(repos)
 		for _, repo := range repos {
 			fmt.Printf("%s\n", repo)
 		}
+	} else if jsonFlag {
+		sort.Slice(jsonRepos, func(i, j int) bool {
+			return jsonRepos[i].Name < jsonRepos[j].Name
+		})
+		if output, e := json.MarshalIndent(jsonRepos, "", "  "); e == nil {
+			fmt.Println(string(output))
+		} else {
+			err = e
+		}
 	} else {
+		sort.Strings(repos)
 		if len(repos) > 0 {
 			fmt.Printf("List of local repos:\n")
 			for _, repo := range repos {
@@ -72,6 +88,7 @@ Example:
 `,
 	}
 
+	cmd.Flag.Bool("json", false, "display list in JSON format")
 	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd

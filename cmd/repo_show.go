@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 
+	"github.com/aptly-dev/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -16,6 +19,9 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+
 	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
@@ -26,18 +32,42 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	fmt.Printf("Name: %s\n", repo.Name)
-	fmt.Printf("Comment: %s\n", repo.Comment)
-	fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
-	fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
-	if repo.Uploaders != nil {
-		fmt.Printf("Uploaders: %s\n", repo.Uploaders)
-	}
-	fmt.Printf("Number of packages: %d\n", repo.NumPackages())
+	if jsonFlag {
+		// include packages if requested
+		packageList := []string{}
+		if withPackages {
+			if repo.RefList() != nil {
+				var list *deb.PackageList
+				list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+				if err == nil {
+					packageList = list.Strings() // similar output to /api/{repo}/packages
+				}
+			}
 
-	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
-	if withPackages {
-		ListPackagesRefList(repo.RefList())
+			sort.Strings(packageList)
+		}
+
+		// merge the repo object with the package list
+		var output []byte
+		if output, err = json.MarshalIndent(struct {
+			*deb.LocalRepo
+			Packages []string
+		}{repo, packageList}, "", "  "); err == nil {
+			fmt.Println(string(output))
+		}
+	} else {
+		fmt.Printf("Name: %s\n", repo.Name)
+		fmt.Printf("Comment: %s\n", repo.Comment)
+		fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
+		fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
+		if repo.Uploaders != nil {
+			fmt.Printf("Uploaders: %s\n", repo.Uploaders)
+		}
+		fmt.Printf("Number of packages: %d\n", repo.NumPackages())
+
+		if withPackages {
+			ListPackagesRefList(repo.RefList())
+		}
 	}
 
 	return err
@@ -57,6 +87,7 @@ ex:
 		Flag: *flag.NewFlagSet("aptly-repo-show", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("json", false, "display record in JSON format")
 	cmd.Flag.Bool("with-packages", false, "show list of packages")
 
 	return cmd

@@ -1,0 +1,20 @@
+[
+  {
+    "Name": "repo1",
+    "Comment": "",
+    "DefaultDistribution": "",
+    "DefaultComponent": "main"
+  },
+  {
+    "Name": "repo2",
+    "Comment": "Cool2",
+    "DefaultDistribution": "",
+    "DefaultComponent": "main"
+  },
+  {
+    "Name": "repo3",
+    "Comment": "Cool3",
+    "DefaultDistribution": "",
+    "DefaultComponent": "main"
+  }
+]
