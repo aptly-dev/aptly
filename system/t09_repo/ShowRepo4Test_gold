@@ -1,0 +1,7 @@
+{
+  "Name": "repo1",
+  "Comment": "Cool",
+  "DefaultDistribution": "squeeze",
+  "DefaultComponent": "main",
+  "Packages": []
+}

@@ -12,7 +12,7 @@ This checksum is used to create a file tree where each package will reside, with
 
 ex:
 
- sha256sum **476e0**cdac6bc757dd2b78bacc1325323b09c45ecb41d4562deec2a1c7c148405 my-package_1.2.3_all.deb
+ sha256sum **476e**0cdac6bc757dd2b78bacc1325323b09c45ecb41d4562deec2a1c7c148405 my-package_1.2.3_all.deb
 
 ```bash
 ${rootDir}/pool # rootDir defined in aptly.conf
@@ -24,12 +24,12 @@ ${rootDir}/pool # rootDir defined in aptly.conf
 
 The following items are concatenated to form the filename under which package is stored.
   - 5th to the 31st characters of SHA-256 checksum
-  - "\_" (undescore) 
+  - "\_" (undescore)
   - filename of uploaded _Debian_ as defined in [Debian package file names](https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_debian_package_file_names)
 
 ex:
 
- sha256sum 476e0**cdac6bc757dd2b78bacc13253**23b09c45ecb41d4562deec2a1c7c148405 **my-package_1.2.3_all.deb**
+ sha256sum 476e**0cdac6bc757dd2b78bacc13253**23b09c45ecb41d4562deec2a1c7c148405 **my-package_1.2.3_all.deb**
 
 ```
  0cdac6bc757dd2b78bacc13253_my-package_1.2.3_all.deb
