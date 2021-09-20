@@ -10,17 +10,26 @@ import (
 )
 
 func aptlyRepoList(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
-	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
+	if jsonFlag {
+		return aptlyRepoListJson(cmd, args)
+	}
+
+	return aptlyRepoListTxt(cmd, args)
+}
+
+func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
+	var err error
+
+	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+
 	repos := make([]string, context.CollectionFactory().LocalRepoCollection().Len())
-	jsonRepos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
 	i := 0
 	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		if raw {
@@ -31,11 +40,7 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 				return e
 			}
 
-			if jsonFlag {
-				jsonRepos[i] = repo
-			} else {
-				repos[i] = fmt.Sprintf(" * %s (packages: %d)", repo.String(), repo.NumPackages())
-			}
+			repos[i] = fmt.Sprintf(" * %s (packages: %d)", repo.String(), repo.NumPackages())
 		}
 		i++
 		return nil
@@ -47,15 +52,6 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 		sort.Strings(repos)
 		for _, repo := range repos {
 			fmt.Printf("%s\n", repo)
-		}
-	} else if jsonFlag {
-		sort.Slice(jsonRepos, func(i, j int) bool {
-			return jsonRepos[i].Name < jsonRepos[j].Name
-		})
-		if output, e := json.MarshalIndent(jsonRepos, "", "  "); e == nil {
-			fmt.Println(string(output))
-		} else {
-			err = e
 		}
 	} else {
 		sort.Strings(repos)
@@ -69,6 +65,36 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 		} else {
 			fmt.Printf("No local repositories found, create one with `aptly repo create ...`.\n")
 		}
+	}
+
+	return err
+}
+
+func aptlyRepoListJson(cmd *commander.Command, args []string) error {
+	var err error
+
+	jsonRepos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
+	i := 0
+	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
+		}
+
+		jsonRepos[i] = repo
+		i++
+		return nil
+	})
+
+	context.CloseDatabase()
+
+	sort.Slice(jsonRepos, func(i, j int) bool {
+		return jsonRepos[i].Name < jsonRepos[j].Name
+	})
+	if output, e := json.MarshalIndent(jsonRepos, "", "  "); e == nil {
+		fmt.Println(string(output))
+	} else {
+		err = e
 	}
 
 	return err
