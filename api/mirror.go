@@ -147,25 +147,25 @@ func apiMirrorsDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete mirror %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := repo.CheckLock()
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %v", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to drop: %v", err)
 		}
 
 		if !force {
 			snapshots := snapshotCollection.ByRemoteRepoSource(repo)
 
 			if len(snapshots) > 0 {
-				return http.StatusInternalServerError, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
 			}
 		}
 
 		err = mirrorCollection.Drop(repo)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %v", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to drop: %v", err)
 		}
-		return http.StatusNoContent, nil
+		return &task.ProcessReturnValue{http.StatusNoContent, nil}, nil
 	})
 }
 
@@ -350,24 +350,24 @@ func apiMirrorsUpdate(c *gin.Context) {
 	}
 
 	resources := []string{string(remote.Key())}
-	maybeRunTaskInBackground(c, "Update mirror "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, "Update mirror "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 
 		downloader := context.NewDownloader(out)
 		err := remote.Fetch(downloader, verifier)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		if !b.ForceUpdate {
 			err = remote.CheckLock()
 			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
 		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.SkipComponentCheck)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		if remote.Filter != "" {
@@ -375,19 +375,19 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 			filterQuery, err = query.Parse(remote.Filter)
 			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 			}
 
 			_, _, err = remote.ApplyFilter(context.DependencyOptions(), filterQuery, out)
 			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
 		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
 			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		defer func() {
@@ -402,7 +402,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		remote.MarkAsUpdating()
 		err = collection.Update(remote)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		context.GoContextHandleSignals()
@@ -512,45 +512,45 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 		for idx := range queue {
 
-			task := &queue[idx]
+			atask := &queue[idx]
 
-			if !task.Done {
+			if !atask.Done {
 				// download not finished yet
 				continue
 			}
 
 			// and import it back to the pool
-			task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
+			atask.File.PoolPath, err = context.PackagePool().Import(atask.TempDownPath, atask.File.Filename, &atask.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
 			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("unable to import file: %s", err)
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to import file: %s", err)
 			}
 
 			// update "attached" files if any
-			for _, additionalTask := range task.Additional {
-				additionalTask.File.PoolPath = task.File.PoolPath
-				additionalTask.File.Checksums = task.File.Checksums
+			for _, additionalAtask := range atask.Additional {
+				additionalAtask.File.PoolPath = atask.File.PoolPath
+				additionalAtask.File.Checksums = atask.File.Checksums
 			}
 		}
 
 		select {
 		case <-context.Done():
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: interrupted")
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: interrupted")
 		default:
 		}
 
 		if len(errors) > 0 {
 			log.Printf("%s: Unable to update because of previous errors\n", b.Name)
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 		}
 
 		log.Printf("%s: Finalizing download\n", b.Name)
 		remote.FinalizeDownload(collectionFactory, out)
 		err = collectionFactory.RemoteRepoCollection().Update(remote)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		log.Printf("%s: Mirror updated successfully!\n", b.Name)
-		return http.StatusNoContent, nil
+		return &task.ProcessReturnValue{http.StatusNoContent, nil}, nil
 	})
 }

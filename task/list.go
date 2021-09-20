@@ -105,6 +105,17 @@ func (list *List) GetTaskDetailByID(ID int) (interface{}, error) {
 	return detail, nil
 }
 
+// GetTaskReturnValueByID returns process return value of task with given id
+func (list *List) GetTaskReturnValueByID(ID int) (*ProcessReturnValue, error) {
+	task, err := list.GetTaskByID(ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return task.processReturnValue, nil
+}
+
 // RunTaskInBackground creates task and runs it in background. It won't be run and an error
 // returned if there are running tasks which are using needed resources already.
 func (list *List) RunTaskInBackground(name string, resources []string, process Process) (Task, *ResourceConflictError) {
@@ -139,11 +150,11 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 		}
 		list.Unlock()
 
-		retCode, err := process(aptly.Progress(task.output), task.detail)
+		retValue, err := process(aptly.Progress(task.output), task.detail)
 
 		list.Lock()
 		{
-			task.processReturnCode = retCode
+			task.processReturnValue = retValue
 			if err != nil {
 				task.output.Printf("Task failed with error: %v", err)
 				task.State = FAILED
