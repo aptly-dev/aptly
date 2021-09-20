@@ -4,6 +4,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -100,11 +101,11 @@ func releaseDatabaseConnection() error {
 
 // runs tasks in background. Acquires database connection first.
 func runTaskInBackground(name string, resources []string, proc task.Process) (task.Task, *task.ResourceConflictError) {
-	return context.TaskList().RunTaskInBackground(name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	return context.TaskList().RunTaskInBackground(name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := acquireDatabaseConnection()
 
 		if err != nil {
-			return -1, err
+			return nil, err
 		}
 
 		defer releaseDatabaseConnection()
@@ -142,13 +143,16 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		log.Println("Executing task synchronously")
 		out := context.Progress()
 		detail := task.Detail{}
-		retCode, err := proc(out, &detail)
+		retValue, err := proc(out, &detail)
 		if err != nil {
-			c.AbortWithError(retCode, err)
+			c.AbortWithError(retValue.Code, err)
 			return
 		}
-		response := detail.Load()
-		c.JSON(retCode, response)
+		if retValue != nil {
+			c.JSON(retValue.Code, retValue.Value)
+		} else {
+			c.JSON(http.StatusOK, nil)
+		}
 	}
 }
 

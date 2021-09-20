@@ -20,8 +20,13 @@ type PublishDetail struct {
 	RemainingNumberOfPackages int64
 }
 
+type ProcessReturnValue struct {
+	Code  int
+	Value interface{}
+}
+
 // Process is a function implementing the actual task logic
-type Process func(out aptly.Progress, detail *Detail) (int, error)
+type Process func(out aptly.Progress, detail *Detail) (*ProcessReturnValue, error)
 
 const (
 	// IDLE when task is waiting
@@ -36,13 +41,13 @@ const (
 
 // Task represents as task in a queue encapsulates process code
 type Task struct {
-	output            *Output
-	detail            *Detail
-	process           Process
-	processReturnCode int
-	Name              string
-	ID                int
-	State             State
+	output             *Output
+	detail             *Detail
+	process            Process
+	processReturnValue *ProcessReturnValue
+	Name               string
+	ID                 int
+	State              State
 }
 
 // NewTask creates new task

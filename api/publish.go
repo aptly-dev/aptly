@@ -184,7 +184,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	collection := collectionFactory.PublishedRepoCollection()
 
 	taskName := fmt.Sprintf("Publish %s: %s", b.SourceKind, strings.Join(names, ", "))
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		taskDetail := task.PublishDetail{
 			Detail: detail,
 		}
@@ -216,21 +216,20 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
-			return 400, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
+			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
 		err = collection.Add(published)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to save to DB: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		detail.Store(published)
-		return http.StatusCreated, nil
+		return &task.ProcessReturnValue{http.StatusCreated, published}, nil
 	})
 }
 
@@ -329,27 +328,26 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	resources = append(resources, string(published.Key()))
 	taskName := fmt.Sprintf("Update published %s (%s): %s", published.SourceKind, strings.Join(updatedComponents, " "), strings.Join(updatedSnapshots, ", "))
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		err = collection.Update(published)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to save to DB: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 				context.GetPublishedStorage(storage), collectionFactory, out)
 			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err)
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
-		detail.Store(published)
-		return http.StatusOK, nil
+		return &task.ProcessReturnValue{http.StatusOK, published}, nil
 	})
 }
 
@@ -374,14 +372,13 @@ func apiPublishDrop(c *gin.Context) {
 	resources := []string{string(published.Key())}
 
 	taskName := fmt.Sprintf("Delete published %s (%s)", prefix, distribution)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := collection.Remove(context, storage, prefix, distribution,
 			collectionFactory, out, force, skipCleanup)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to drop: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to drop: %s", err)
 		}
 
-		detail.Store(gin.H{})
-		return http.StatusOK, nil
+		return &task.ProcessReturnValue{http.StatusOK, gin.H{}}, nil
 	})
 }

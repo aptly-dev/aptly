@@ -62,20 +62,20 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of mirror %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := repo.CheckLock()
 		if err != nil {
-			return http.StatusConflict, err
+			return &task.ProcessReturnValue{http.StatusConflict, nil}, err
 		}
 
 		err = collection.LoadComplete(repo)
 		if err != nil {
-			return http.StatusInternalServerError, err
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 		}
 
 		snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
 		if err != nil {
-			return http.StatusBadRequest, err
+			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 		}
 
 		if b.Description != "" {
@@ -84,10 +84,9 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 		err = snapshotCollection.Add(snapshot)
 		if err != nil {
-			return http.StatusBadRequest, err
+			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 		}
-		detail.Store(snapshot)
-		return http.StatusCreated, nil
+		return &task.ProcessReturnValue{http.StatusCreated, snapshot}, nil
 	})
 }
 
@@ -137,7 +136,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
-	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		list := deb.NewPackageList()
 
 		// verify package refs and build package list
@@ -145,13 +144,13 @@ func apiSnapshotsCreate(c *gin.Context) {
 			p, err := collectionFactory.PackageCollection().ByKey([]byte(ref))
 			if err != nil {
 				if err == database.ErrNotFound {
-					return http.StatusNotFound, fmt.Errorf("package %s: %s", ref, err)
+					return &task.ProcessReturnValue{http.StatusNotFound, nil}, fmt.Errorf("package %s: %s", ref, err)
 				}
-				return http.StatusInternalServerError, err
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 			}
 			err = list.Add(p)
 			if err != nil {
-				return http.StatusBadRequest, err
+				return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 			}
 		}
 
@@ -159,9 +158,9 @@ func apiSnapshotsCreate(c *gin.Context) {
 
 		err = snapshotCollection.Add(snapshot)
 		if err != nil {
-			return http.StatusBadRequest, err
+			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 		}
-		return http.StatusCreated, nil
+		return &task.ProcessReturnValue{http.StatusCreated, nil}, nil
 	})
 }
 
@@ -196,15 +195,15 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := collection.LoadComplete(repo)
 		if err != nil {
-			return http.StatusInternalServerError, err
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 		}
 
 		snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
 		if err != nil {
-			return http.StatusNotFound, err
+			return &task.ProcessReturnValue{http.StatusNotFound, nil}, err
 		}
 
 		if b.Description != "" {
@@ -213,10 +212,9 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 		err = snapshotCollection.Add(snapshot)
 		if err != nil {
-			return http.StatusBadRequest, err
+			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 		}
-		detail.Store(snapshot)
-		return http.StatusCreated, nil
+		return &task.ProcessReturnValue{http.StatusCreated, snapshot}, nil
 	})
 }
 
@@ -248,10 +246,10 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey()), "S" + b.Name}
 	taskName := fmt.Sprintf("Update snapshot %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		_, err := collection.ByName(b.Name)
 		if err == nil {
-			return http.StatusConflict, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
+			return &task.ProcessReturnValue{http.StatusConflict, nil}, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
 		}
 
 		if b.Name != "" {
@@ -264,10 +262,9 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 		err = collectionFactory.SnapshotCollection().Update(snapshot)
 		if err != nil {
-			return http.StatusInternalServerError, err
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 		}
-		detail.Store(snapshot)
-		return http.StatusOK, nil
+		return &task.ProcessReturnValue{http.StatusOK, snapshot}, nil
 	})
 }
 
@@ -308,26 +305,25 @@ func apiSnapshotsDrop(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey())}
 	taskName := fmt.Sprintf("Delete snapshot %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		published := publishedCollection.BySnapshot(snapshot)
 
 		if len(published) > 0 {
-			return http.StatusConflict, fmt.Errorf("unable to drop: snapshot is published")
+			return &task.ProcessReturnValue{http.StatusConflict, nil}, fmt.Errorf("unable to drop: snapshot is published")
 		}
 
 		if !force {
 			snapshots := snapshotCollection.BySnapshotSource(snapshot)
 			if len(snapshots) > 0 {
-				return http.StatusConflict, fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override")
+				return &task.ProcessReturnValue{http.StatusConflict, nil}, fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override")
 			}
 		}
 
 		err = snapshotCollection.Drop(snapshot)
 		if err != nil {
-			return http.StatusInternalServerError, err
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 		}
-		detail.Store(gin.H{})
-		return http.StatusOK, nil
+		return &task.ProcessReturnValue{http.StatusOK, gin.H{}}, nil
 	})
 }
 
