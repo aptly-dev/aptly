@@ -141,21 +141,20 @@ func apiReposDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete repo %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		published := publishedCollection.ByLocalRepo(repo)
 		if len(published) > 0 {
-			return http.StatusConflict, fmt.Errorf("unable to drop, local repo is published")
+			return &task.ProcessReturnValue{http.StatusConflict, nil}, fmt.Errorf("unable to drop, local repo is published")
 		}
 
 		if !force {
 			snapshots := snapshotCollection.ByLocalRepoSource(repo)
 			if len(snapshots) > 0 {
-				return http.StatusConflict, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
+				return &task.ProcessReturnValue{http.StatusConflict, nil}, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
 			}
 		}
 
-		detail.Store(gin.H{})
-		return http.StatusOK, collection.Drop(repo)
+		return &task.ProcessReturnValue{http.StatusOK, gin.H{}}, collection.Drop(repo)
 	})
 }
 
@@ -205,11 +204,11 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	}
 
 	resources := []string{string(repo.Key())}
-	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		out.Printf("Loading packages...\n")
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
-			return http.StatusInternalServerError, err
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 		}
 
 		// verify package refs and build package list
@@ -219,14 +218,14 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 			p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
 			if err != nil {
 				if err == database.ErrNotFound {
-					return http.StatusNotFound, fmt.Errorf("packages %s: %s", ref, err)
+					return &task.ProcessReturnValue{http.StatusNotFound, nil}, fmt.Errorf("packages %s: %s", ref, err)
 				}
 
-				return http.StatusInternalServerError, err
+				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, err
 			}
 			err = cb(list, p, out)
 			if err != nil {
-				return http.StatusBadRequest, err
+				return &task.ProcessReturnValue{http.StatusBadRequest, nil}, err
 			}
 		}
 
@@ -234,10 +233,9 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 
 		err = collectionFactory.LocalRepoCollection().Update(repo)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to save: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save: %s", err)
 		}
-		detail.Store(repo)
-		return http.StatusOK, nil
+		return &task.ProcessReturnValue{http.StatusOK, repo}, nil
 	})
 }
 
@@ -308,7 +306,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	resources = append(resources, sources...)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		verifier := context.GetVerifier()
 
 		var (
@@ -327,7 +325,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to load packages: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to load packages: %s", err)
 		}
 
 		processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
@@ -336,14 +334,14 @@ func apiReposPackageFromDir(c *gin.Context) {
 		processedFiles = append(processedFiles, otherFiles...)
 
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to import package files: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to import package files: %s", err)
 		}
 
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
 		err = collectionFactory.LocalRepoCollection().Update(repo)
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to save: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save: %s", err)
 		}
 
 		if !noRemove {
@@ -377,11 +375,10 @@ func apiReposPackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-		detail.Store(gin.H{
+		return &task.ProcessReturnValue{http.StatusOK, gin.H{
 			"Report":      reporter,
 			"FailedFiles": failedFiles,
-		})
-		return http.StatusOK, nil
+		}}, nil
 	})
 }
 
@@ -443,7 +440,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	}
 	resources = append(resources, sources...)
 
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (int, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		var (
 			err                       error
 			verifier                  = context.GetVerifier()
@@ -464,7 +461,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		failedFiles = append(failedFiles, failedFiles2...)
 
 		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("unable to import changes files: %s", err)
+			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to import changes files: %s", err)
 		}
 
 		if !noRemoveFiles {
@@ -489,11 +486,10 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-		detail.Store(gin.H{
+		return &task.ProcessReturnValue{http.StatusOK, gin.H{
 			"Report":      reporter,
 			"FailedFiles": failedFiles,
-		})
-		return http.StatusOK, nil
+		}}, nil
 
 	})
 }

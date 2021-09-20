@@ -134,6 +134,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.GET("/tasks/:id/wait", apiTasksWaitForTaskByID)
 		root.GET("/tasks/:id/output", apiTasksOutputShow)
 		root.GET("/tasks/:id/detail", apiTasksDetailShow)
+		root.GET("/tasks/:id/return_value", apiTasksReturnValueShow)
 		root.GET("/tasks/:id", apiTasksShow)
 		root.DELETE("/tasks/:id", apiTasksDelete)
 		root.POST("/tasks-dummy", apiTasksDummy)
