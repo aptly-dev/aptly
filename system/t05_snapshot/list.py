@@ -1,3 +1,5 @@
+import re
+
 from lib import BaseTest
 
 
@@ -92,3 +94,50 @@ class ListSnapshot7Test(BaseTest):
     ]
     runCmd = "aptly -sort=planet snapshot list"
     expectedCode = 1
+
+
+class ListSnapshot8Test(BaseTest):
+    """
+    list snapshots: json regular list
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror wheezy-main",
+        "aptly snapshot create snap2 from mirror wheezy-contrib",
+        "aptly snapshot merge snap3 snap1 snap2",
+        "aptly snapshot pull snap1 snap2 snap4 mame unrar",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap5 from repo local-repo",
+    ]
+    runCmd = "aptly -json snapshot list"
+
+    def outputMatchPrepare(self, s):
+        return re.sub(r'[ ]*"CreatedAt": "[^"]+",?\n', '', s)
+
+
+class ListSnapshot9Test(BaseTest):
+    """
+    list snapshots: json empty list
+    """
+    runCmd = "aptly snapshot -json list"
+
+
+class ListSnapshot10Test(BaseTest):
+    """
+    list snapshots: json regular list sorted by time
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly snapshot create snap2 from mirror wheezy-main",
+        "aptly snapshot create snap1 from mirror wheezy-contrib",
+        "aptly snapshot merge snap3 snap1 snap2",
+        "aptly snapshot pull snap1 snap2 snap4 mame unrar",
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+        "aptly snapshot create snap5 from repo local-repo",
+    ]
+    runCmd = "aptly -json -sort=time snapshot list"
+
+    def outputMatchPrepare(self, s):
+        return re.sub(r'[ ]*"CreatedAt": "[^"]+",?\n', '', s)

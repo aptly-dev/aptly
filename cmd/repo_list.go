@@ -73,7 +73,7 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 func aptlyRepoListJson(cmd *commander.Command, args []string) error {
 	var err error
 
-	jsonRepos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
+	repos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
 	i := 0
 	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
@@ -81,17 +81,17 @@ func aptlyRepoListJson(cmd *commander.Command, args []string) error {
 			return e
 		}
 
-		jsonRepos[i] = repo
+		repos[i] = repo
 		i++
 		return nil
 	})
 
 	context.CloseDatabase()
 
-	sort.Slice(jsonRepos, func(i, j int) bool {
-		return jsonRepos[i].Name < jsonRepos[j].Name
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].Name < repos[j].Name
 	})
-	if output, e := json.MarshalIndent(jsonRepos, "", "  "); e == nil {
+	if output, e := json.MarshalIndent(repos, "", "  "); e == nil {
 		fmt.Println(string(output))
 	} else {
 		err = e

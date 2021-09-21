@@ -40,7 +40,7 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 				var list *deb.PackageList
 				list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 				if err == nil {
-					packageList = list.Strings() // similar output to /api/{repo}/packages
+					packageList = list.FullNames()
 				}
 			}
 
