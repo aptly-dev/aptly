@@ -13,10 +13,10 @@ Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
 Changelogs: http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
 Codename: stretch
 Components: main contrib non-free
-Date: Sat, 18 Jul 2020 10:50:51 UTC
+Date: Sat, 14 Aug 2021 07:42:00 UTC
 Description:  Debian 9.13 Released 18 July 2020
 
 Label: Debian
 Origin: Debian
-Suite: oldstable
+Suite: oldoldstable
 Version: 9.13
