@@ -9,3 +9,6 @@ Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/main/binary-i3
 Downloading http://cdn-fastly.deb.debian.org/debian/pool/main/b/boost-defaults/libboost-program-options-dev_1.62.0.1_i386.deb...
 Mirror `stretch` has been successfully updated.
 Packages filtered: 50604 -> 1.
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/main/binary-i386/Packages.gz
+Success downloading http://cdn-fastly.deb.debian.org/debian/pool/main/b/boost-defaults/libboost-program-options-dev_1.62.0.1_i386.deb

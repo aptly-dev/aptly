@@ -1,4 +1,5 @@
 Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease...
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease
 gpgv:  RSA key ID 115C3D8A
 gpgv: Good signature from "Johannes Ranke (Wissenschaftlicher Berater) <johannes.ranke@jrwb.de>"
 gpgv:                 aka "Johannes Ranke <jranke@uni-bremen.de>"

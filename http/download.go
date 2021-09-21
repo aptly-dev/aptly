@@ -174,6 +174,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 
 	if downloader.progress != nil {
 		downloader.progress.Printf("Downloading %s...\n", url)
+		defer downloader.progress.Flush()
 	}
 	req, err := downloader.newRequest(ctx, "GET", url)
 

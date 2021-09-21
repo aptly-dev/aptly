@@ -223,10 +223,8 @@ func (context *AptlyContext) newDownloader(progress aptly.Progress) aptly.Downlo
 	maxTries := context.config().DownloadRetries + 1
 	maxTriesFlag := context.flags.Lookup("max-tries")
 	if maxTriesFlag != nil {
-		maxTriesFlagValue := maxTriesFlag.Value.Get().(int)
-		if maxTriesFlagValue > maxTries {
-			maxTries = maxTriesFlagValue
-		}
+		// If flag is defined prefer it to global setting
+		maxTries = maxTriesFlag.Value.Get().(int)
 	}
 	return http.NewDownloader(downloadLimit*1024, maxTries, progress)
 }

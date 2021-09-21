@@ -18,6 +18,18 @@ Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.
 Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.6.5-1~jessiecran.0_i386.deb...
 Mirror `flat-src` has been successfully updated.
 Packages filtered: 107 -> 9.
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/Packages.bz2
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/Sources.bz2
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/dh-r_20180403~jessiecran.0_all.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/littler_0.3.5-1~jessiecran.0_all.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/littler_0.3.6-1~jessiecran.0_all.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/pkg-r-autopkgtest_20180403~jessiecran.0_all.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/python3-rpy2_2.9.5-1~jessiecran.0_amd64.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/python3-rpy2_2.9.5-1~jessiecran.0_i386.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward-data_0.6.5-1~jessiecran.0_all.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.6.5-1~jessiecran.0_amd64.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/rkward_0.6.5-1~jessiecran.0_i386.deb
 gpgv:                 aka "Johannes Ranke <jranke@uni-bremen.de>"
 gpgv: Good signature from "Johannes Ranke (Wissenschaftlicher Berater) <johannes.ranke@jrwb.de>"
 gpgv:  RSA key ID 115C3D8A

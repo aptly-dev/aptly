@@ -5,6 +5,9 @@ class MirrorsAPITestCreateShow(APITest):
     """
     POST /api/mirrors, GET /api/mirrors/:name/packages
     """
+
+    skipTest = "Using obsolete repo - wheezy/updates"
+
     def check(self):
         mirror_name = self.random_name()
         mirror_desc = {u'Name': mirror_name,

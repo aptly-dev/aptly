@@ -16,6 +16,7 @@ class RootDirInaccessible(BaseTest):
     """
     serve command aborts if rootDir is inaccessible
     """
+    skipTest = 'User is root' if os.environ['USER'] == 'root' else False
     fixtureDB = False
     fixturePool = False
 
