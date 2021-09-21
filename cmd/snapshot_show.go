@@ -125,7 +125,6 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 				if err != nil {
 					continue
 				}
-				source.ReleaseFiles = nil // do not include the release file info
 				snapshot.RemoteRepos = append(snapshot.RemoteRepos, source)
 			}
 		}

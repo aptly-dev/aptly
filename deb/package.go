@@ -52,10 +52,10 @@ const (
 	PackageTypeInstaller = "installer"
 )
 
-// Special arhictectures
+// Special architectures
 const (
 	ArchitectureAll    = "all"
-	ArhictectureAny    = "any"
+	ArchitectureAny    = "any"
 	ArchitectureSource = "source"
 )
 

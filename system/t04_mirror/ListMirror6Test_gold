@@ -1,0 +1,150 @@
+[
+  {
+    "Name": "mirror1",
+    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "Distribution": "stretch",
+    "Components": [
+      "main",
+      "contrib",
+      "non-free"
+    ],
+    "Architectures": [
+      "amd64",
+      "arm64",
+      "armel",
+      "armhf",
+      "i386",
+      "mips",
+      "mips64el",
+      "mipsel",
+      "ppc64el",
+      "s390x"
+    ],
+    "Meta": {
+      "Acquire-By-Hash": "yes",
+      "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
+      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "stretch",
+      "Components": "main contrib non-free",
+      "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
+      "Description": " Debian 9.13 Released 18 July 2020\n",
+      "Label": "Debian",
+      "Origin": "Debian",
+      "Suite": "oldoldstable",
+      "Version": "9.13"
+    },
+    "LastDownloadDate": "0001-01-01T00:00:00Z",
+    "Filter": "",
+    "Status": 0,
+    "WorkerPID": 0,
+    "FilterWithDeps": false,
+    "SkipComponentCheck": false,
+    "SkipArchitectureCheck": false,
+    "DownloadSources": false,
+    "DownloadUdebs": false,
+    "DownloadInstaller": false
+  },
+  {
+    "Name": "mirror2",
+    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "Distribution": "stretch",
+    "Components": [
+      "contrib"
+    ],
+    "Architectures": [
+      "amd64",
+      "arm64",
+      "armel",
+      "armhf",
+      "i386",
+      "mips",
+      "mips64el",
+      "mipsel",
+      "ppc64el",
+      "s390x"
+    ],
+    "Meta": {
+      "Acquire-By-Hash": "yes",
+      "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
+      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "stretch",
+      "Components": "main contrib non-free",
+      "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
+      "Description": " Debian 9.13 Released 18 July 2020\n",
+      "Label": "Debian",
+      "Origin": "Debian",
+      "Suite": "oldoldstable",
+      "Version": "9.13"
+    },
+    "LastDownloadDate": "0001-01-01T00:00:00Z",
+    "Filter": "",
+    "Status": 0,
+    "WorkerPID": 0,
+    "FilterWithDeps": false,
+    "SkipComponentCheck": false,
+    "SkipArchitectureCheck": false,
+    "DownloadSources": true,
+    "DownloadUdebs": false,
+    "DownloadInstaller": false
+  },
+  {
+    "Name": "mirror3",
+    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "Distribution": "stretch",
+    "Components": [
+      "non-free"
+    ],
+    "Architectures": [
+      "i386"
+    ],
+    "Meta": {
+      "Acquire-By-Hash": "yes",
+      "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
+      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "stretch",
+      "Components": "main contrib non-free",
+      "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
+      "Description": " Debian 9.13 Released 18 July 2020\n",
+      "Label": "Debian",
+      "Origin": "Debian",
+      "Suite": "oldoldstable",
+      "Version": "9.13"
+    },
+    "LastDownloadDate": "0001-01-01T00:00:00Z",
+    "Filter": "",
+    "Status": 0,
+    "WorkerPID": 0,
+    "FilterWithDeps": false,
+    "SkipComponentCheck": false,
+    "SkipArchitectureCheck": false,
+    "DownloadSources": false,
+    "DownloadUdebs": false,
+    "DownloadInstaller": false
+  },
+  {
+    "Name": "mirror4",
+    "ArchiveRoot": "http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/",
+    "Distribution": "./",
+    "Components": null,
+    "Architectures": null,
+    "Meta": {
+      "Architectures": "i386 amd64",
+      "Archive": "Debian_9.0",
+      "Codename": "Debian_9.0",
+      "Date": "Thu Jan 14 15:16:28 2021",
+      "Description": " MirrorBrain (Debian_9.0)\n",
+      "Label": "Apache:MirrorBrain",
+      "Origin": "obs://build.opensuse.org/Apache:MirrorBrain/Debian_9.0"
+    },
+    "LastDownloadDate": "0001-01-01T00:00:00Z",
+    "Filter": "",
+    "Status": 0,
+    "WorkerPID": 0,
+    "FilterWithDeps": false,
+    "SkipComponentCheck": false,
+    "SkipArchitectureCheck": false,
+    "DownloadSources": false,
+    "DownloadUdebs": false,
+    "DownloadInstaller": false
+  }
+]
