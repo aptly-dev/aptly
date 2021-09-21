@@ -1,4 +1,5 @@
 from lib import BaseTest
+import re
 
 
 class ListMirror1Test(BaseTest):
@@ -34,3 +35,26 @@ class ListMirror4Test(BaseTest):
     list mirrors: raw empty list
     """
     runCmd = "aptly -raw mirror list"
+
+
+class ListMirror5Test(BaseTest):
+    """
+    list mirrors: json empty list
+    """
+    runCmd = "aptly mirror list -json"
+
+
+class ListMirror6Test(BaseTest):
+    """
+    list mirrors: regular list
+    """
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch",
+        "aptly mirror create -with-sources --ignore-signatures mirror2 http://cdn-fastly.deb.debian.org/debian/ stretch contrib",
+        "aptly -architectures=i386 mirror create --ignore-signatures mirror3 http://cdn-fastly.deb.debian.org/debian/ stretch non-free",
+        "aptly mirror create -ignore-signatures mirror4 http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/ ./",
+    ]
+    runCmd = "aptly mirror list -json"
+
+    def outputMatchPrepare(_, s):
+        return re.sub(r'[ ]*"UUID": "[\w-]+",?\n', '', s)

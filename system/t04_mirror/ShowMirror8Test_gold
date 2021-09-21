@@ -1,0 +1,39 @@
+{
+  "UUID": "548dbdb6-75d6-42ac-80de-d6aff8012f83",
+  "Name": "mirror4",
+  "ArchiveRoot": "http://security.debian.org/",
+  "Distribution": "stretch/updates",
+  "Components": [
+    "main"
+  ],
+  "Architectures": [
+    "amd64",
+    "arm64",
+    "armel",
+    "armhf",
+    "i386"
+  ],
+  "Meta": {
+    "Acquire-By-Hash": "yes",
+    "Architectures": "amd64 arm64 armel armhf i386",
+    "Codename": "stretch",
+    "Components": "updates/main updates/contrib updates/non-free",
+    "Date": "Tue, 21 Sep 2021 13:02:10 UTC",
+    "Description": " Debian 9 Security Updates\n",
+    "Label": "Debian-Security",
+    "Origin": "Debian",
+    "Suite": "oldoldstable",
+    "Valid-Until": "Fri, 01 Oct 2021 13:02:10 UTC",
+    "Version": "9"
+  },
+  "LastDownloadDate": "0001-01-01T00:00:00Z",
+  "Filter": "nginx | Priority (required)",
+  "Status": 0,
+  "WorkerPID": 0,
+  "FilterWithDeps": true,
+  "SkipComponentCheck": false,
+  "SkipArchitectureCheck": false,
+  "DownloadSources": false,
+  "DownloadUdebs": false,
+  "DownloadInstaller": false
+}
