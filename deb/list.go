@@ -266,6 +266,19 @@ func (l *PackageList) Strings() []string {
 	return result
 }
 
+// FullNames builds a list of package {name}_{version}_{arch}
+func (l *PackageList) FullNames() []string {
+	result := make([]string, l.Len())
+	i := 0
+
+	for _, p := range l.packages {
+		result[i] = p.GetFullName()
+		i++
+	}
+
+	return result
+}
+
 // depSliceDeduplicate removes dups in slice of Dependencies
 func depSliceDeduplicate(s []Dependency) []Dependency {
 	l := len(s)

@@ -1,0 +1,55 @@
+{
+  "Name": "snap1",
+  "SourceKind": "repo",
+  "RemoteRepos": [
+    {
+      "UUID": "c2e70bbb-0640-45d8-b066-58b598c93b43",
+      "Name": "gnuplot-maverick",
+      "ArchiveRoot": "http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/",
+      "Distribution": "maverick",
+      "Components": [
+        "main"
+      ],
+      "Architectures": [
+        "amd64",
+        "armel",
+        "i386",
+        "powerpc"
+      ],
+      "Meta": {
+        "Architectures": "amd64 armel i386 powerpc",
+        "Codename": "maverick",
+        "Components": "main",
+        "Date": "Mon, 22 Oct 2012 13:19:50 UTC",
+        "Description": " Ubuntu Maverick 10.10\n",
+        "Label": "gnuplot",
+        "Origin": "LP-PPA-gladky-anton-gnuplot",
+        "Suite": "maverick",
+        "Version": "10.10"
+      },
+      "LastDownloadDate": "2014-06-28T01:24:09.760026156+04:00",
+      "ReleaseFiles": null,
+      "Filter": "",
+      "Status": 0,
+      "WorkerPID": 0,
+      "FilterWithDeps": false,
+      "SkipComponentCheck": false,
+      "SkipArchitectureCheck": false,
+      "DownloadSources": false,
+      "DownloadUdebs": false,
+      "DownloadInstaller": false
+    }
+  ],
+  "Packages": [
+    "gnuplot-doc_4.6.1-1~maverick2_all",
+    "gnuplot-nox_4.6.1-1~maverick2_amd64",
+    "gnuplot-nox_4.6.1-1~maverick2_i386",
+    "gnuplot-x11_4.6.1-1~maverick2_amd64",
+    "gnuplot-x11_4.6.1-1~maverick2_i386",
+    "gnuplot_4.6.1-1~maverick2_all"
+  ],
+  "Description": "Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
+  "Origin": "LP-PPA-gladky-anton-gnuplot",
+  "NotAutomatic": "",
+  "ButAutomaticUpgrades": ""
+}

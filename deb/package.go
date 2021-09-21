@@ -361,6 +361,11 @@ func (p *Package) GetName() string {
 	return p.Name
 }
 
+// GetFullName returns the package full name
+func (p *Package) GetFullName() string {
+	return strings.Join([]string{p.Name, p.Version, p.Architecture}, "_")
+}
+
 // GetVersion returns package version
 func (p *Package) GetVersion() string {
 	return p.Version

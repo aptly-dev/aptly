@@ -1,0 +1,26 @@
+{
+  "Name": "snap3",
+  "SourceKind": "snapshot",
+  "Snapshots": [
+    {
+      "Name": "snap1",
+      "SourceKind": "repo",
+      "Description": "Snapshot from mirror [gnuplot-maverick]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
+      "Origin": "LP-PPA-gladky-anton-gnuplot",
+      "NotAutomatic": "",
+      "ButAutomaticUpgrades": ""
+    },
+    {
+      "Name": "snap2",
+      "SourceKind": "repo",
+      "Description": "Snapshot from mirror [sensu]: http://repos.sensuapp.org/apt/ sensu",
+      "Origin": "Sensu",
+      "NotAutomatic": "",
+      "ButAutomaticUpgrades": ""
+    }
+  ],
+  "Description": "Pulled into 'snap1' with 'snap2' as source, pull request was: 'sensu'",
+  "Origin": "",
+  "NotAutomatic": "",
+  "ButAutomaticUpgrades": ""
+}

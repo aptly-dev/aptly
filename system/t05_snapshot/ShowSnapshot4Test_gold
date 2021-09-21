@@ -1,0 +1,45 @@
+{
+  "Name": "snap1",
+  "SourceKind": "repo",
+  "RemoteRepos": [
+    {
+      "UUID": "d49dfdff-88a2-40d5-a682-ef37e76bdc3f",
+      "Name": "wheezy-non-free",
+      "ArchiveRoot": "http://mirror.yandex.ru/debian/",
+      "Distribution": "wheezy",
+      "Components": [
+        "non-free"
+      ],
+      "Architectures": [
+        "i386",
+        "amd64"
+      ],
+      "Meta": {
+        "Architectures": "amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc",
+        "Codename": "wheezy",
+        "Components": "main contrib non-free",
+        "Date": "Sat, 26 Apr 2014 09:27:11 UTC",
+        "Description": " Debian 7.5 Released 26 April 2014\n",
+        "Label": "Debian",
+        "Origin": "Debian",
+        "Suite": "stable",
+        "Version": "7.5"
+      },
+      "LastDownloadDate": "2014-06-28T01:23:26.597799094+04:00",
+      "ReleaseFiles": null,
+      "Filter": "",
+      "Status": 0,
+      "WorkerPID": 0,
+      "FilterWithDeps": false,
+      "SkipComponentCheck": false,
+      "SkipArchitectureCheck": false,
+      "DownloadSources": false,
+      "DownloadUdebs": false,
+      "DownloadInstaller": false
+    }
+  ],
+  "Description": "Snapshot from mirror [wheezy-non-free]: http://mirror.yandex.ru/debian/ wheezy",
+  "Origin": "Debian",
+  "NotAutomatic": "",
+  "ButAutomaticUpgrades": ""
+}
