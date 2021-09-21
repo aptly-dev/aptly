@@ -989,6 +989,7 @@ class PublishSnapshot35Test(BaseTest):
     """
     publish snapshot: mirror with udebs
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
@@ -1145,6 +1146,7 @@ class PublishSnapshot37Test(BaseTest):
     """
     publish snapshot: mirror with double mirror update
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
@@ -1160,6 +1162,7 @@ class PublishSnapshot38Test(BaseTest):
     """
     publish snapshot: mirror with installer
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main",

@@ -15,11 +15,11 @@ class TaskAPITestParallelTasks(APITest):
         mirror_desc[u'IgnoreSignatures'] = True
         resp = self.post("/api/mirrors", json=mirror_desc)
         self.check_equal(resp.status_code, 201)
-        resp = self.put("/api/mirrors/" + mirror_name, json=mirror_desc)
+        resp = self.put("/api/mirrors/" + mirror_name, json=mirror_desc, params={'_async': True})
         self.check_equal(resp.status_code, 202)
 
         # check that two mirror updates cannot run at the same time
-        resp2 = self.put("/api/mirrors/" + mirror_name, json=mirror_desc)
+        resp2 = self.put("/api/mirrors/" + mirror_name, json=mirror_desc, params={'_async': True})
         self.check_equal(resp2.status_code, 409)
 
         return resp.json()['ID'], mirror_name
@@ -40,7 +40,7 @@ class TaskAPITestParallelTasks(APITest):
                         "pyspi_0.6.1-1.3.diff.gz",
                         "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
-        resp = self.post("/api/repos/" + repo_name + "/file/" + d)
+        resp = self.post("/api/repos/" + repo_name + "/file/" + d, params={'_async': True})
         self.check_equal(resp.status_code, 202)
 
         return resp.json()['ID'], repo_name
@@ -57,7 +57,7 @@ class TaskAPITestParallelTasks(APITest):
 
     def _snapshot(self, res_type, name):
         uri = "/api/%s/%s/snapshots" % (res_type, name)
-        resp = self.post(uri, json={"Name": name})
+        resp = self.post(uri, json={"Name": name}, params={'_async': True})
         self.check_equal(resp.status_code, 202)
 
         return resp.json()['ID']
@@ -68,7 +68,7 @@ class TaskAPITestParallelTasks(APITest):
                              "SourceKind": source_kind,
                              "Sources": [{"Name": name}],
                              "Signing": DefaultSigningOptions,
-                         })
+                         }, params={'_async': True})
         self.check_equal(resp.status_code, 202)
         return resp.json()['ID']
 

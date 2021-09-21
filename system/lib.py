@@ -78,11 +78,31 @@ class GPGFinder(object):
         return None
 
 
+class DotFinder(object):
+    """
+    dot binary discovery.
+    """
+
+    def __init__(self):
+        self.dot = self.find_dot(["dot"])
+
+    def find_dot(self, executables):
+        for executable in executables:
+            try:
+                subprocess.check_output([executable])
+                return executable
+            except Exception:
+                pass
+
+        return None
+
+
 class BaseTest(object):
     """
     Base class for all tests.
     """
 
+    skipTest = False
     longTest = False
     fixturePool = False
     fixturePoolCopy = False
@@ -92,6 +112,7 @@ class BaseTest(object):
     requiresFTP = False
     requiresGPG1 = False
     requiresGPG2 = False
+    requiresDot = False
 
     expectedCode = 0
     configFile = {
@@ -128,11 +149,15 @@ class BaseTest(object):
     captureResults = False
 
     gpgFinder = GPGFinder()
+    dotFinder = DotFinder()
 
     def test(self):
         self.prepare()
-        self.run()
-        self.check()
+        try:
+            self.run()
+            self.check()
+        finally:
+            self.teardown()
 
     def prepare_remove_all(self):
         if os.path.exists(os.path.join(os.environ["HOME"], ".aptly")):
@@ -164,6 +189,8 @@ class BaseTest(object):
         if self.requiresGPG1 and self.gpgFinder.gpg1 is None:
             return False
         if self.requiresGPG2 and self.gpgFinder.gpg2 is None:
+            return False
+        if self.requiresDot and self.dotFinder.dot is None:
             return False
 
         return True
@@ -367,6 +394,9 @@ class BaseTest(object):
         self.prepare_remove_all()
         self.prepare_default_config()
         self.prepare_fixture()
+
+    def teardown(self):
+        pass
 
     def start_webserver(self, directory):
         FileHTTPServerRequestHandler.rootPath = directory
