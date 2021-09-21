@@ -1,4 +1,5 @@
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease...
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease
 gpgv:  RSA key ID 22F3D138
 gpgv: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
 gpgv:  RSA key ID 386FA1D9

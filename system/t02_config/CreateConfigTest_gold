@@ -21,5 +21,6 @@
   "FileSystemPublishEndpoints": {},
   "S3PublishEndpoints": {},
   "SwiftPublishEndpoints": {},
-  "AzurePublishEndpoints": {}
+  "AzurePublishEndpoints": {},
+  "AsyncAPI": false
 }

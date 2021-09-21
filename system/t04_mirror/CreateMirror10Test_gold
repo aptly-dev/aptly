@@ -1,11 +1,14 @@
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease...
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease
 
 gpgv:  RSA key ID 22F3D138
 
 gpgv:  RSA key ID 386FA1D9
 
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/Release...
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/Release
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/Release.gpg...
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/Release.gpg
 
 gpgv:  RSA key ID 22F3D138
 

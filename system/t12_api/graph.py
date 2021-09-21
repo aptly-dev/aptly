@@ -7,6 +7,8 @@ class GraphAPITest(APITest):
     GET /graph.:ext
     """
 
+    requiresDot = True
+
     def check(self):
         resp = self.get("/api/graph.png")
         self.check_equal(resp.headers["Content-Type"], "image/png")

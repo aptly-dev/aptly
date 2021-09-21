@@ -1,5 +1,6 @@
 Downloading http://linux.dell.com/repo/community/ubuntu/dists/wheezy/Release...
 Following redirect to https://linux.dell.com/repo/community/ubuntu/dists/wheezy/Release...
+Success downloading http://linux.dell.com/repo/community/ubuntu/dists/wheezy/Release
 
 Mirror [mirror27]: http://linux.dell.com/repo/community/ubuntu/ wheezy successfully added.
 You can run 'aptly mirror update mirror27' to download repository contents.

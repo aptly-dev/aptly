@@ -5,9 +5,11 @@ import importlib
 import os
 import inspect
 import fnmatch
+import re
 import sys
 import traceback
 import random
+import subprocess
 
 from lib import BaseTest
 from s3_lib import S3Test
@@ -22,9 +24,14 @@ except ImportError:
         return s
 
 
+def natural_key(string_):
+    """See https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/"""
+    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
+
+
 def walk_modules(package):
     yield importlib.import_module(package)
-    for name in glob.glob(package + "/*.py"):
+    for name in sorted(glob.glob(package + "/*.py"), key=natural_key):
         name = os.path.splitext(os.path.basename(name))[0]
         if name == "__init__":
             continue
@@ -37,14 +44,14 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     Run system test.
     """
     if not tests:
-        tests = glob.glob("t*_*")
+        tests = sorted(glob.glob("t*_*"), key=natural_key)
     fails = []
     numTests = numFailed = numSkipped = 0
     lastBase = None
 
     for test in tests:
         for testModule in walk_modules(test):
-            for name in dir(testModule):
+            for name in sorted(dir(testModule), key=natural_key):
                 o = getattr(testModule, name)
 
                 if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
@@ -72,9 +79,13 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                 sys.stdout.flush()
 
                 t = o()
-                if t.longTest and not include_long_tests or not t.fixture_available():
+                if t.longTest and not include_long_tests or not t.fixture_available() or t.skipTest:
                     numSkipped += 1
-                    sys.stdout.write(colored("SKIP\n", color="yellow"))
+                    msg = 'SKIP'
+                    if t.skipTest and t.skipTest is not True:
+                        # If we have a reason to skip, print it
+                        msg += ': ' + t.skipTest
+                    sys.stdout.write(colored(msg + "\n", color="yellow"))
                     continue
 
                 numTests += 1
@@ -82,7 +93,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                 try:
                     t.captureResults = capture_results
                     t.test()
-                except BaseException:
+                except Exception:
                     numFailed += 1
                     typ, val, tb = sys.exc_info()
                     fails.append((test, t, typ, val, tb, testModule))
@@ -119,6 +130,14 @@ if __name__ == "__main__":
                 "make version").read().strip()
         except BaseException, e:
             print "Failed to capture current version: ", e
+
+    output = subprocess.check_output(['gpg', '--version'])
+    if not output.startswith('gpg (GnuPG) 1'):
+        raise RuntimeError('Tests require gpg v1')
+
+    output = subprocess.check_output(['gpgv', '--version'])
+    if not output.startswith('gpgv (GnuPG) 1'):
+        raise RuntimeError('Tests require gpgv v1')
 
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     random.seed()
