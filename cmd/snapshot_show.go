@@ -29,8 +29,6 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 	var err error
 	name := args[0]
 
-	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
-
 	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
@@ -78,6 +76,7 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 		}
 	}
 
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
 		ListPackagesRefList(snapshot.RefList())
 	}
@@ -89,8 +88,6 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
-
-	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 
 	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
 	if err != nil {
@@ -131,6 +128,7 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 	}
 
 	// include packages if requested
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
 		if snapshot.RefList() != nil {
 			var list *deb.PackageList
