@@ -41,3 +41,27 @@ class PublishList3Test(BaseTest):
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -label=label1 snap2 ppa/tr2",
     ]
     runCmd = "aptly publish list -raw"
+
+
+class PublishList4Test(BaseTest):
+    """
+    publish list json: empty list
+    """
+    runCmd = "aptly publish list -json"
+
+
+class PublishList5Test(BaseTest):
+    """
+    publish list json: several repos list
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot merge snap2 snap1",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
+        "aptly -architectures=amd64 publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=wheezy -component=contrib snap2 ppa/smira",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -origin=origin1 snap2 ppa/tr1",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -label=label1 snap2 ppa/tr2",
+    ]
+    runCmd = "aptly publish list -json"

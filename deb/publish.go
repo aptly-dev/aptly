@@ -282,7 +282,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	return result, nil
 }
 
-// MarshalJSON requires object to be "loeaded completely"
+// MarshalJSON requires object to be "loaded completely"
 func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	type sourceInfo struct {
 		Component, Name string
@@ -313,6 +313,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"NotAutomatic":         p.NotAutomatic,
 		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
 		"Prefix":               p.Prefix,
+		"Path":                 p.GetPath(),
 		"SourceKind":           p.SourceKind,
 		"Sources":              sources,
 		"Storage":              p.Storage,
@@ -489,6 +490,17 @@ func (p *PublishedRepo) GetLabel() string {
 		return p.Prefix + " " + p.Distribution
 	}
 	return p.Label
+}
+
+// GetName returns the unique name of the repo
+func (p *PublishedRepo) GetPath() string {
+	prefix := p.StoragePrefix()
+
+	if prefix == "" {
+		return p.Distribution
+	}
+
+	return fmt.Sprintf("%s/%s", prefix, p.Distribution)
 }
 
 // GetSuite returns default or manual Suite:
