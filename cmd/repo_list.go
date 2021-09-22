@@ -48,13 +48,13 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 
 	context.CloseDatabase()
 
+	sort.Strings(repos)
+
 	if raw {
-		sort.Strings(repos)
 		for _, repo := range repos {
 			fmt.Printf("%s\n", repo)
 		}
 	} else {
-		sort.Strings(repos)
 		if len(repos) > 0 {
 			fmt.Printf("List of local repos:\n")
 			for _, repo := range repos {

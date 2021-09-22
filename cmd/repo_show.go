@@ -11,16 +11,24 @@ import (
 )
 
 func aptlyRepoShow(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 1 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
-	name := args[0]
-
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
-	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyRepoShowJson(cmd, args)
+	}
+
+	return aptlyRepoShowTxt(cmd, args)
+}
+
+func aptlyRepoShowTxt(cmd *commander.Command, args []string) error {
+	var err error
+
+	name := args[0]
 
 	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
@@ -32,42 +40,60 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	if jsonFlag {
-		// include packages if requested
-		packageList := []string{}
-		if withPackages {
-			if repo.RefList() != nil {
-				var list *deb.PackageList
-				list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
-				if err == nil {
-					packageList = list.FullNames()
-				}
+	fmt.Printf("Name: %s\n", repo.Name)
+	fmt.Printf("Comment: %s\n", repo.Comment)
+	fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
+	fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
+	if repo.Uploaders != nil {
+		fmt.Printf("Uploaders: %s\n", repo.Uploaders)
+	}
+	fmt.Printf("Number of packages: %d\n", repo.NumPackages())
+
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		ListPackagesRefList(repo.RefList())
+	}
+
+	return err
+}
+
+func aptlyRepoShowJson(cmd *commander.Command, args []string) error {
+	var err error
+
+	name := args[0]
+
+	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	// include packages if requested
+	packageList := []string{}
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		if repo.RefList() != nil {
+			var list *deb.PackageList
+			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+			if err == nil {
+				packageList = list.FullNames()
 			}
-
-			sort.Strings(packageList)
 		}
 
-		// merge the repo object with the package list
-		var output []byte
-		if output, err = json.MarshalIndent(struct {
-			*deb.LocalRepo
-			Packages []string
-		}{repo, packageList}, "", "  "); err == nil {
-			fmt.Println(string(output))
-		}
-	} else {
-		fmt.Printf("Name: %s\n", repo.Name)
-		fmt.Printf("Comment: %s\n", repo.Comment)
-		fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
-		fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
-		if repo.Uploaders != nil {
-			fmt.Printf("Uploaders: %s\n", repo.Uploaders)
-		}
-		fmt.Printf("Number of packages: %d\n", repo.NumPackages())
+		sort.Strings(packageList)
+	}
 
-		if withPackages {
-			ListPackagesRefList(repo.RefList())
-		}
+	// merge the repo object with the package list
+	var output []byte
+	if output, err = json.MarshalIndent(struct {
+		*deb.LocalRepo
+		Packages []string
+	}{repo, packageList}, "", "  "); err == nil {
+		fmt.Println(string(output))
 	}
 
 	return err

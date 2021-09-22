@@ -97,8 +97,6 @@ func aptlyMirrorShowJson(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
-
 	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
@@ -110,6 +108,7 @@ func aptlyMirrorShowJson(cmd *commander.Command, args []string) error {
 	}
 
 	// include packages if requested
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
 		if repo.RefList() != nil {
 			var list *deb.PackageList

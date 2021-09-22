@@ -43,9 +43,7 @@ func aptlyMirrorListTxt(cmd *commander.Command, args []string) error {
 
 	context.CloseDatabase()
 
-	if len(repos) > 0 {
-		sort.Strings(repos)
-	}
+	sort.Strings(repos)
 
 	if raw {
 		for _, repo := range repos {
