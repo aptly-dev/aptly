@@ -1,0 +1,24 @@
+{
+  "AcquireByHash": false,
+  "Architectures": [
+    "amd64",
+    "i386"
+  ],
+  "ButAutomaticUpgrades": "",
+  "Distribution": "maverick",
+  "Label": "",
+  "NotAutomatic": "",
+  "Origin": "LP-PPA-gladky-anton-gnuplot",
+  "Path": "ppa/smira/maverick",
+  "Prefix": "ppa/smira",
+  "SkipContents": false,
+  "SourceKind": "snapshot",
+  "Sources": [
+    {
+      "Component": "main",
+      "Name": "snap1"
+    }
+  ],
+  "Storage": "",
+  "Suite": ""
+}

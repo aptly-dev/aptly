@@ -131,7 +131,6 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 	}
 
 	// include packages if requested
-	// packageList := []string{}
 	if withPackages {
 		if snapshot.RefList() != nil {
 			var list *deb.PackageList
@@ -147,7 +146,6 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	// merge the repo object with the package list
 	var output []byte
 	if output, err = json.MarshalIndent(snapshot, "", "  "); err == nil {
 		fmt.Println(string(output))
