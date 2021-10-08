@@ -227,7 +227,8 @@ func (context *AptlyContext) newDownloader(progress aptly.Progress) aptly.Downlo
 		// If flag is defined prefer it to global setting
 		maxTries = maxTriesFlag.Value.Get().(int)
 	}
-	return http.NewDownloader(downloadLimit*1024, maxTries, progress)
+	// return http.NewDownloader(downloadLimit*1024, maxTries, progress)
+	return http.NewGrabDownloader(downloadLimit*1024, maxTries, progress)
 }
 
 // Downloader returns instance of current downloader
