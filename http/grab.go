@@ -19,6 +19,7 @@ import (
 type GrabDownloader struct {
 	client   *grab.Client
 	maxTries int
+	progress aptly.Progress
 }
 
 // Check interface
@@ -52,20 +53,30 @@ func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, d
 			// Success
 			break
 		}
+		d.log("Error downloading %s: %v\n", url, err)
 		if retryableError(err) {
 			maxTries--
+			d.log("Retrying download %s: %d\n", url, maxTries)
 			time.Sleep(delay)
 		} else {
 			// Can't retry
+			d.log("Cannot retry download %s\n", url)
 			break
 		}
 	}
 	return err
 }
 
+func (d *GrabDownloader) log(msg string, a ...interface{}) {
+	if d.progress != nil {
+		d.progress.Printf(msg, a...)
+	}
+}
+
 func (d *GrabDownloader) download(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	// TODO clean up dest dir on permanent failure
 	// TODO maxTries
+	d.log("Starting download %s -> %s\n", url, destination)
 	destDir := filepath.Dir(destination)
 	req, _ := grab.NewRequest(destDir, url)
 
@@ -96,8 +107,7 @@ Loop:
 }
 
 func (d *GrabDownloader) GetProgress() aptly.Progress {
-	// TODO
-	return nil
+	return d.progress
 }
 
 func (f *GrabDownloader) GetLength(ctx context.Context, url string) (int64, error) {
