@@ -67,6 +67,8 @@ func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, d
 }
 
 func (d *GrabDownloader) log(msg string, a ...interface{}) {
+	// TODO don't long to stdout
+	fmt.Printf(msg, a...)
 	if d.progress != nil {
 		d.progress.Printf(msg, a...)
 	}
