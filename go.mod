@@ -8,6 +8,7 @@ require (
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e
 	github.com/awalterschulze/gographviz v0.0.0-20160912181450-761fd5fbb34e
 	github.com/aws/aws-sdk-go v1.25.0
+	github.com/cavaliercoder/grab v2.0.0+incompatible
 	github.com/cheggaaa/pb v1.0.10
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7 // indirect
