@@ -10,7 +10,6 @@ import (
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/cavaliercoder/grab"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -75,10 +74,8 @@ func (d *GrabDownloader) log(msg string, a ...interface{}) {
 
 func (d *GrabDownloader) download(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	// TODO clean up dest dir on permanent failure
-	// TODO maxTries
 	d.log("Starting download %s -> %s\n", url, destination)
-	destDir := filepath.Dir(destination)
-	req, _ := grab.NewRequest(destDir, url)
+	req, _ := grab.NewRequest(destination, url)
 
 	// TODO ignoreMismatch
 	if expected != nil {
