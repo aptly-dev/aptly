@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/cavaliercoder/grab"
 	"github.com/pkg/errors"
@@ -19,9 +21,10 @@ import (
 )
 
 type GrabDownloader struct {
-	client   *grab.Client
+	client    *grab.Client
+	progress  aptly.Progress
 	maxTries int
-	progress aptly.Progress
+	downLimit int64
 }
 
 // Check interface
@@ -31,10 +34,13 @@ var (
 
 // NewGrabDownloader creates new expected downloader
 func NewGrabDownloader(downLimit int64, maxTries int, progress aptly.Progress) *GrabDownloader {
+func NewGrabDownloader(downLimit int64, progress aptly.Progress) *GrabDownloader {
 	client := grab.NewClient()
 	return &GrabDownloader{
-		client:   client,
+		client:    client,
+		progress:  progress,
 		maxTries: maxTries,
+		downLimit: downLimit,
 	}
 }
 
@@ -117,6 +123,7 @@ func (d *GrabDownloader) download(ctx context.Context, url string, destination s
 		d.log("Error creating new request: %v\n", err)
 		return errors.Wrap(err, url)
 	}
+	req.RateLimiter = rate.NewLimiter(rate.Limit(d.downLimit), int(d.downLimit))
 
 	d.maybeSetupChecksum(req, expected)
 	if err != nil {
