@@ -123,7 +123,9 @@ func (d *GrabDownloader) download(ctx context.Context, url string, destination s
 		d.log("Error creating new request: %v\n", err)
 		return errors.Wrap(err, url)
 	}
-	req.RateLimiter = rate.NewLimiter(rate.Limit(d.downLimit), int(d.downLimit))
+	if d.downLimit > 0 {
+		req.RateLimiter = rate.NewLimiter(rate.Limit(d.downLimit), int(d.downLimit))
+	}
 
 	d.maybeSetupChecksum(req, expected)
 	if err != nil {
