@@ -2,10 +2,10 @@ package http
 
 import (
 	"context"
-	"crypto/md5"
-	"crypto/sha1"
-	"crypto/sha256"
-	"crypto/sha512"
+	// "crypto/md5"
+	// "crypto/sha1"
+	// "crypto/sha256"
+	// "crypto/sha512"
 	"fmt"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/cavaliercoder/grab"
@@ -78,17 +78,17 @@ func (d *GrabDownloader) download(ctx context.Context, url string, destination s
 	req, _ := grab.NewRequest(destination, url)
 
 	// TODO ignoreMismatch
-	if expected != nil {
-		if expected.MD5 != "" {
-			req.SetChecksum(md5.New(), []byte(expected.MD5), true)
-		} else if expected.SHA1 != "" {
-			req.SetChecksum(sha1.New(), []byte(expected.SHA1), true)
-		} else if expected.SHA256 != "" {
-			req.SetChecksum(sha256.New(), []byte(expected.SHA256), true)
-		} else if expected.SHA512 != "" {
-			req.SetChecksum(sha512.New(), []byte(expected.SHA512), true)
-		}
-	}
+	// if expected != nil {
+	// 	if expected.MD5 != "" {
+	// 		req.SetChecksum(md5.New(), []byte(expected.MD5), true)
+	// 	} else if expected.SHA1 != "" {
+	// 		req.SetChecksum(sha1.New(), []byte(expected.SHA1), true)
+	// 	} else if expected.SHA256 != "" {
+	// 		req.SetChecksum(sha256.New(), []byte(expected.SHA256), true)
+	// 	} else if expected.SHA512 != "" {
+	// 		req.SetChecksum(sha512.New(), []byte(expected.SHA512), true)
+	// 	}
+	// }
 
 	resp := d.client.Do(req)
 
