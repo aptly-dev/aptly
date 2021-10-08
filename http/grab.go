@@ -13,6 +13,7 @@ import (
 
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/cavaliercoder/grab"
+	"github.com/pkg/errors"
 
 	"github.com/aptly-dev/aptly/aptly"
 )
@@ -111,18 +112,18 @@ func (d *GrabDownloader) maybeSetupChecksum(req *grab.Request, expected *utils.C
 
 func (d *GrabDownloader) download(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	// TODO clean up dest dir on permanent failure
-	d.log("Starting download %s -> %s\n", url, destination)
+	d.log("Download %s -> %s\n", url, destination)
 
 	req, err := grab.NewRequest(destination, url)
 	if err != nil {
 		d.log("Error creating new request: %v\n", err)
-		return err
+		return errors.Wrap(err, url)
 	}
 
 	d.maybeSetupChecksum(req, expected)
 	if err != nil {
 		d.log("Error setting up checksum: %v\n", err)
-		return err
+		return errors.Wrap(err, url)
 	}
 
 	resp := d.client.Do(req)
