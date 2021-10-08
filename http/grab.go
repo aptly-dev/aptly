@@ -6,11 +6,13 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
-	"github.com/aptly-dev/aptly/utils"
-	"github.com/cavaliercoder/grab"
 	"net/http"
 	"time"
+
+	"github.com/aptly-dev/aptly/utils"
+	"github.com/cavaliercoder/grab"
 
 	"github.com/aptly-dev/aptly/aptly"
 )
@@ -74,26 +76,53 @@ func (d *GrabDownloader) log(msg string, a ...interface{}) {
 	}
 }
 
+func (d *GrabDownloader) maybeSetupChecksum(req *grab.Request, expected *utils.ChecksumInfo) error {
+	if expected == nil {
+		// Nothing to setup
+		return nil
+	}
+	if expected.MD5 != "" {
+		expected_hash, err := hex.DecodeString(expected.MD5)
+		if err != nil {
+			return err
+		}
+		req.SetChecksum(md5.New(), expected_hash, true)
+	} else if expected.SHA1 != "" {
+		expected_hash, err := hex.DecodeString(expected.SHA1)
+		if err != nil {
+			return err
+		}
+		req.SetChecksum(sha1.New(), expected_hash, true)
+	} else if expected.SHA256 != "" {
+		expected_hash, err := hex.DecodeString(expected.SHA256)
+		if err != nil {
+			return err
+		}
+		req.SetChecksum(sha256.New(), expected_hash, true)
+	} else if expected.SHA512 != "" {
+		expected_hash, err := hex.DecodeString(expected.SHA512)
+		if err != nil {
+			return err
+		}
+		req.SetChecksum(sha512.New(), expected_hash, true)
+	}
+	return nil
+}
+
 func (d *GrabDownloader) download(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	// TODO clean up dest dir on permanent failure
 	d.log("Starting download %s -> %s\n", url, destination)
-	req, _ := grab.NewRequest(destination, url)
 
-	// TODO ignoreMismatch
-	if expected != nil {
-		if expected.MD5 != "" {
-			d.log("Verifying checksum MD5 %s -> %s\n", url, expected.MD5)
-			req.SetChecksum(md5.New(), []byte(expected.MD5), true)
-		} else if expected.SHA1 != "" {
-			d.log("Verifying checksum SHA1 %s -> %s\n", url, expected.SHA1)
-			req.SetChecksum(sha1.New(), []byte(expected.SHA1), true)
-		} else if expected.SHA256 != "" {
-			d.log("Verifying checksum SHA256 %s -> %s\n", url, expected.SHA256)
-			req.SetChecksum(sha256.New(), []byte(expected.SHA256), true)
-		} else if expected.SHA512 != "" {
-			d.log("Verifying checksum SHA512 %s -> %s\n", url, expected.SHA512)
-			req.SetChecksum(sha512.New(), []byte(expected.SHA512), true)
-		}
+	req, err := grab.NewRequest(destination, url)
+	if err != nil {
+		d.log("Error creating new request: %v\n", err)
+		return err
+	}
+
+	d.maybeSetupChecksum(req, expected)
+	if err != nil {
+		d.log("Error setting up checksum: %v\n", err)
+		return err
 	}
 
 	resp := d.client.Do(req)
@@ -106,6 +135,7 @@ Loop:
 			break Loop
 		}
 	}
+	// TODO ignoreMismatch
 	return resp.Err()
 }
 
