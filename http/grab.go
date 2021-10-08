@@ -142,7 +142,7 @@ Loop:
 		}
 	}
 	err = resp.Err()
-	if err != nil && errors.Is(err, grab.ErrBadChecksum) && ignoreMismatch {
+	if err != nil && err == grab.ErrBadChecksum && ignoreMismatch {
 		fmt.Printf("Ignoring checksum mismatch for %s\n", url)
 		return nil
 	}
