@@ -82,12 +82,16 @@ func (d *GrabDownloader) download(ctx context.Context, url string, destination s
 	// TODO ignoreMismatch
 	if expected != nil {
 		if expected.MD5 != "" {
+			d.log("Verifying checksum MD5 %s -> %s\n", url, expected.MD5)
 			req.SetChecksum(md5.New(), []byte(expected.MD5), true)
 		} else if expected.SHA1 != "" {
+			d.log("Verifying checksum SHA1 %s -> %s\n", url, expected.SHA1)
 			req.SetChecksum(sha1.New(), []byte(expected.SHA1), true)
 		} else if expected.SHA256 != "" {
+			d.log("Verifying checksum SHA256 %s -> %s\n", url, expected.SHA256)
 			req.SetChecksum(sha256.New(), []byte(expected.SHA256), true)
 		} else if expected.SHA512 != "" {
+			d.log("Verifying checksum SHA512 %s -> %s\n", url, expected.SHA512)
 			req.SetChecksum(sha512.New(), []byte(expected.SHA512), true)
 		}
 	}
