@@ -16,7 +16,7 @@ import (
 
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/kjk/lzma"
-	"github.com/smira/go-xz"
+	"github.com/ulikunitz/xz"
 )
 
 // Source kinds
@@ -72,7 +72,6 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to unxz %s from %s", header.Name, packageFile)
 				}
-				defer unxz.Close()
 				tarInput = unxz
 			default:
 				return nil, fmt.Errorf("unsupported tar compression in %s: %s", packageFile, header.Name)
@@ -183,7 +182,6 @@ func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to unxz data.tar.xz from %s", packageFile)
 				}
-				defer unxz.Close()
 				tarInput = unxz
 			case "data.tar.lzma":
 				unlzma := lzma.NewReader(bufReader)

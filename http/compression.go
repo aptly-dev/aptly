@@ -11,7 +11,7 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
-	xz "github.com/smira/go-xz"
+	"github.com/ulikunitz/xz"
 )
 
 // List of extensions + corresponding uncompression support
