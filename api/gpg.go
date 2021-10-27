@@ -1,15 +1,15 @@
 package api
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-        "fmt"
-        "strings"
+	"strings"
 
+	"github.com/aptly-dev/aptly/pgp"
 	"github.com/gin-gonic/gin"
-        "github.com/aptly-dev/aptly/pgp"
 )
 
 // POST /api/gpg
@@ -57,23 +57,23 @@ func apiGPGAddKey(c *gin.Context) {
 
 	}
 	if len(b.GpgKeyID) > 0 {
-                keys := strings.Fields(b.GpgKeyID)
+		keys := strings.Fields(b.GpgKeyID)
 		args = append(args, "--recv-keys")
 		args = append(args, keys...)
 	}
 
-        finder := pgp.GPG1Finder()
+	finder := pgp.GPG1Finder()
 	gpg, _, err := finder.FindGPG()
 	if err != nil {
-            c.AbortWithError(400, err)
-            return
-        }
+		c.AbortWithError(400, err)
+		return
+	}
 
 	// it might happened that we have a situation with an erroneous
 	// gpg command (e.g. when GpgKeyID and GpgKeyArmor is set).
 	// there is no error handling for such as gpg will do this for us
 	cmd := exec.Command(gpg, args...)
-        fmt.Printf("running %s %s\n", gpg, strings.Join(args, " "))
+	fmt.Printf("running %s %s\n", gpg, strings.Join(args, " "))
 	cmd.Stdout = os.Stdout
 	if err = cmd.Run(); err != nil {
 		c.AbortWithError(400, err)
