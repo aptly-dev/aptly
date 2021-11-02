@@ -74,10 +74,10 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 func aptlyRepoListJson(cmd *commander.Command, args []string) error {
 	var err error
 
-	repos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
+	repos := make([]*deb.LocalRepo, context.NewCollectionFactory().LocalRepoCollection().Len())
 	i := 0
-	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	context.NewCollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+		e := context.NewCollectionFactory().LocalRepoCollection().LoadComplete(repo)
 		if e != nil {
 			return e
 		}

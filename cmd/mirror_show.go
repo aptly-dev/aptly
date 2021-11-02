@@ -98,12 +98,12 @@ func aptlyMirrorShowJson(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
+	repo, err := context.NewCollectionFactory().RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = context.NewCollectionFactory().RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -113,7 +113,7 @@ func aptlyMirrorShowJson(cmd *commander.Command, args []string) error {
 	if withPackages {
 		if repo.RefList() != nil {
 			var list *deb.PackageList
-			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
 
 			list.PrepareIndex()
 			list.ForEachIndexed(func(p *deb.Package) error {

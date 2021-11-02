@@ -88,12 +88,12 @@ func aptlyPublishShowJson(cmd *commander.Command, args []string) error {
 
 	storage, prefix := deb.ParsePrefix(param)
 
-	repo, err := context.CollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
+	repo, err := context.NewCollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+	err = context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
 	if err != nil {
 		return err
 	}

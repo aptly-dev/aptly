@@ -77,10 +77,10 @@ func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
 func aptlyPublishListJson(cmd *commander.Command, args []string) error {
 	var err error
 
-	repos := make([]*deb.PublishedRepo, 0, context.CollectionFactory().PublishedRepoCollection().Len())
+	repos := make([]*deb.PublishedRepo, 0, context.NewCollectionFactory().PublishedRepoCollection().Len())
 
-	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
-		e := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+	err = context.NewCollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
+		e := context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
 		if e != nil {
 			return e
 		}

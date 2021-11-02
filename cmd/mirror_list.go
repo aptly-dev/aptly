@@ -68,9 +68,9 @@ func aptlyMirrorListTxt(cmd *commander.Command, args []string) error {
 func aptlyMirrorListJson(cmd *commander.Command, args []string) error {
 	var err error
 
-	repos := make([]*deb.RemoteRepo, context.CollectionFactory().RemoteRepoCollection().Len())
+	repos := make([]*deb.RemoteRepo, context.NewCollectionFactory().RemoteRepoCollection().Len())
 	i := 0
-	context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	context.NewCollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		repos[i] = repo
 		i++
 		return nil

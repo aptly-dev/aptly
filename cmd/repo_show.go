@@ -63,12 +63,12 @@ func aptlyRepoShowJson(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	repo, err := context.NewCollectionFactory().LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = context.NewCollectionFactory().LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -79,7 +79,7 @@ func aptlyRepoShowJson(cmd *commander.Command, args []string) error {
 	if withPackages {
 		if repo.RefList() != nil {
 			var list *deb.PackageList
-			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
 			if err == nil {
 				packageList = list.FullNames()
 			}
