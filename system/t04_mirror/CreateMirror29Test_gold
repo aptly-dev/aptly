@@ -1,9 +1,9 @@
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease...
+Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease
 openpgp:  RSA key ID 648ACFD622F3D138
 openpgp: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
 openpgp:  RSA key ID 0E98404D386FA1D9
 openpgp: Good signature from "Debian Archive Automatic Signing Key (11/bullseye) <ftpmaster@debian.org>"
-Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch-backports/InRelease
 
 Mirror [mirror9]: http://cdn-fastly.deb.debian.org/debian/ stretch-backports successfully added.
 You can run 'aptly mirror update mirror9' to download repository contents.
