@@ -90,12 +90,12 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+	snapshot, err := context.NewCollectionFactory().SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	err = context.NewCollectionFactory().SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -105,21 +105,21 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 		for _, sourceID := range snapshot.SourceIDs {
 			if snapshot.SourceKind == deb.SourceSnapshot {
 				var source *deb.Snapshot
-				source, err = context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				source, err = context.NewCollectionFactory().SnapshotCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				snapshot.Snapshots = append(snapshot.Snapshots, source)
 			} else if snapshot.SourceKind == deb.SourceLocalRepo {
 				var source *deb.LocalRepo
-				source, err = context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				source, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				snapshot.LocalRepos = append(snapshot.LocalRepos, source)
 			} else if snapshot.SourceKind == deb.SourceRemoteRepo {
 				var source *deb.RemoteRepo
-				source, err = context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				source, err = context.NewCollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
@@ -133,7 +133,7 @@ func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
 	if withPackages {
 		if snapshot.RefList() != nil {
 			var list *deb.PackageList
-			list, err = deb.NewPackageListFromRefList(snapshot.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+			list, err = deb.NewPackageListFromRefList(snapshot.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
 
 			list.PrepareIndex()
 			list.ForEachIndexed(func(p *deb.Package) error {
