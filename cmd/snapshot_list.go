@@ -64,7 +64,7 @@ func aptlySnapshotListJson(cmd *commander.Command, args []string) error {
 
 	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)
 
-	collection := context.CollectionFactory().SnapshotCollection()
+	collection := context.NewCollectionFactory().SnapshotCollection()
 
 	jsonSnapshots := make([]*deb.Snapshot, collection.Len())
 	i := 0
