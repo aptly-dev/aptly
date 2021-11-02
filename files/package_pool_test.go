@@ -91,6 +91,19 @@ func (s *PackagePoolSuite) TestRemove(c *C) {
 	c.Check(list, DeepEquals, []string{"ae/0c/1.deb", "bd/0a/3.deb", "bd/0b/4.deb"})
 }
 
+func isSameDevice(s *PackagePoolSuite) bool {
+	poolPath, _ := s.pool.buildPoolPath(filepath.Base(s.debFile), &s.checksum)
+	fullPoolPath := filepath.Join(s.pool.rootPath, poolPath)
+	poolDir := filepath.Dir(fullPoolPath)
+	poolDirInfo, _ := os.Stat(poolDir)
+
+	source, _ := os.Open(s.debFile)
+	sourceInfo, _ := source.Stat()
+	defer source.Close()
+
+	return poolDirInfo.Sys().(*syscall.Stat_t).Dev == sourceInfo.Sys().(*syscall.Stat_t).Dev
+}
+
 func (s *PackagePoolSuite) TestImportOk(c *C) {
 	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
@@ -103,7 +116,12 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
 	c.Check(info.Size(), Equals, int64(2738))
-	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 1, Equals, true)
+	// /tmp may be on different devices, so hardlinks are not used
+	if isSameDevice(s) {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 1, Equals, true)
+	} else {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+	}
 
 	// import as different name
 	path, err = s.pool.Import(s.debFile, "some.deb", &s.checksum, false, s.cs)
@@ -326,7 +344,11 @@ func (s *PackagePoolSuite) TestLink(c *C) {
 	info, err := os.Stat(dstPath)
 	c.Assert(err, IsNil)
 	c.Check(info.Size(), Equals, int64(2738))
-	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+	if isSameDevice(s) {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+	} else {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(2))
+	}
 }
 
 func (s *PackagePoolSuite) TestSymlink(c *C) {
@@ -340,7 +362,11 @@ func (s *PackagePoolSuite) TestSymlink(c *C) {
 	info, err := os.Stat(dstPath)
 	c.Assert(err, IsNil)
 	c.Check(info.Size(), Equals, int64(2738))
-	c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+	if isSameDevice(s) {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+	} else {
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+	}
 
 	info, err = os.Lstat(dstPath)
 	c.Assert(err, IsNil)

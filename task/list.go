@@ -56,7 +56,7 @@ func (list *List) DeleteTaskByID(ID int) (Task, error) {
 				return *task, nil
 			}
 
-			return *task, fmt.Errorf("Task with id %v is still running", ID)
+			return *task, fmt.Errorf("Task with id %v is still in state=%d", ID, task.State)
 		}
 	}
 
