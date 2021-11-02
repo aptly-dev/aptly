@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/aptly-dev/aptly/task"
 
@@ -44,6 +45,8 @@ func (s *TaskSuite) TestTaskDelete(c *C) {
 	response, _ := s.HTTPRequest("POST", "/api/tasks-dummy?_async=true", nil)
 	c.Check(response.Code, Equals, 202)
 	c.Check(response.Body.String(), Equals, "{\"Name\":\"Dummy task\",\"ID\":1,\"State\":0}")
+	// Give the task time to start
+	time.Sleep(time.Second)
 	response, _ = s.HTTPRequest("DELETE", "/api/tasks/1", nil)
 	c.Check(response.Code, Equals, 200)
 }

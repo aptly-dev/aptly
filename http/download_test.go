@@ -119,7 +119,15 @@ func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 		ErrorMatches, ".*no such host")
 }
 
+func skipIfRoot(c *C) {
+	user := os.Getenv("USER")
+	if user == "root" {
+		c.Skip("Root user")
+	}
+}
+
 func (s *DownloaderSuite) TestDownloadFileError(c *C) {
+	skipIfRoot(c)
 	c.Assert(s.d.Download(s.ctx, s.url+"/test", "/"),
 		ErrorMatches, ".*permission denied")
 }
