@@ -23,7 +23,7 @@ import (
 type GrabDownloader struct {
 	client    *grab.Client
 	progress  aptly.Progress
-	maxTries int
+	maxTries  int
 	downLimit int64
 }
 
@@ -34,12 +34,11 @@ var (
 
 // NewGrabDownloader creates new expected downloader
 func NewGrabDownloader(downLimit int64, maxTries int, progress aptly.Progress) *GrabDownloader {
-func NewGrabDownloader(downLimit int64, progress aptly.Progress) *GrabDownloader {
 	client := grab.NewClient()
 	return &GrabDownloader{
 		client:    client,
 		progress:  progress,
-		maxTries: maxTries,
+		maxTries:  maxTries,
 		downLimit: downLimit,
 	}
 }
