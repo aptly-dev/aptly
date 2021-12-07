@@ -74,6 +74,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("Loading packages...\n")
 
+
 	dstList, err := deb.NewPackageListFromRefList(dstRepo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to load packages: %s", err)
@@ -89,10 +90,13 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	var architecturesList []string
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
+	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
+
+	if withDeps || forceReplace {
+		dstList.PrepareIndex()
+	}
 
 	if withDeps {
-		dstList.PrepareIndex()
-
 		// Calculate architectures
 		if len(context.ArchitecturesList()) > 0 {
 			architecturesList = context.ArchitecturesList()
@@ -131,6 +135,14 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	}
 
 	err = toProcess.ForEach(func(p *deb.Package) error {
+		if forceReplace {
+			conflictingPackages := dstList.Search(deb.Dependency{Pkg: p.Name, Version: p.Version, Relation: deb.VersionEqual, Architecture: p.Architecture}, true)
+			for _, cp := range conflictingPackages {
+				context.Progress().ColoredPrintf("@r[-]@| %s removed due to conflict with package being added", cp)
+				dstList.Remove(cp)
+			}
+		}
+
 		err = dstList.Add(p)
 		if err != nil {
 			return err
