@@ -78,7 +78,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 			case "control.tar.zst":
 				unzstd, err := zstd.NewReader(bufReader)
 				if err != nil {
-					return nil, errors.Wrapf(err, "unable to unzstd data.tar.zstd from %s", packageFile)
+					return nil, errors.Wrapf(err, "unable to unzstd %s from %s", header.Name, packageFile)
 				}
 				defer unzstd.Close()
 				tarInput = unzstd
@@ -200,7 +200,7 @@ func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 			case "data.tar.zst":
 				unzstd, err := zstd.NewReader(bufReader)
 				if err != nil {
-					return nil, errors.Wrapf(err, "unable to unzstd data.tar.zstd from %s", packageFile)
+					return nil, errors.Wrapf(err, "unable to unzstd %s from %s", header.Name, packageFile)
 				}
 				defer unzstd.Close()
 				tarInput = unzstd
