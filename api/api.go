@@ -114,18 +114,23 @@ func runTaskInBackground(name string, resources []string, proc task.Process) (ta
 }
 
 func truthy(value interface{}) bool {
+	if value == nil {
+		return false
+	}
 	switch value.(type) {
 	case string:
 		switch strings.ToLower(value.(string)) {
-		case "y", "yes", "t", "true", "1":
+		case "n", "no", "f", "false", "0", "off":
+			return false
+		default:
 			return true
 		}
 	case int:
-		return value.(int) == 1
+		return !(value.(int) == 0)
 	case bool:
 		return value.(bool)
 	}
-	return false
+	return true
 }
 
 func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, proc task.Process) {
