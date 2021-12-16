@@ -93,6 +93,14 @@ func (s *ApiSuite) TestGetVersion(c *C) {
 }
 
 func (s *ApiSuite) TestTruthy(c *C) {
+	c.Check(truthy("no"), Equals, false)
+	c.Check(truthy("n"), Equals, false)
+	c.Check(truthy("off"), Equals, false)
+	c.Check(truthy("false"), Equals, false)
+	c.Check(truthy("0"), Equals, false)
+	c.Check(truthy(false), Equals, false)
+	c.Check(truthy(0), Equals, false)
+
 	c.Check(truthy("y"), Equals, true)
 	c.Check(truthy("yes"), Equals, true)
 	c.Check(truthy("t"), Equals, true)
@@ -101,11 +109,9 @@ func (s *ApiSuite) TestTruthy(c *C) {
 	c.Check(truthy(true), Equals, true)
 	c.Check(truthy(1), Equals, true)
 
-	c.Check(truthy("no"), Equals, false)
-	c.Check(truthy("foobar"), Equals, false)
-	c.Check(truthy(0), Equals, false)
-	c.Check(truthy(-1), Equals, false)
-	c.Check(truthy(false), Equals, false)
 	c.Check(truthy(nil), Equals, false)
-	c.Check(truthy(gin.H{}), Equals, false)
+
+	c.Check(truthy("foobar"), Equals, true)
+	c.Check(truthy(-1), Equals, true)
+	c.Check(truthy(gin.H{}), Equals, true)
 }
