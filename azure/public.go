@@ -51,7 +51,7 @@ func NewPublishedStorage(accountName, accountKey, container, prefix string) (*Pu
 
 // String
 func (storage *PublishedStorage) String() string {
-	return fmt.Sprintf("Azure :%s/%s", storage.container, storage.prefix)
+	return fmt.Sprintf("Azure: %s/%s", storage.container, storage.prefix)
 }
 
 // MkDir creates directory recursively under public path
