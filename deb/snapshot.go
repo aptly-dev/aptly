@@ -26,8 +26,14 @@ type Snapshot struct {
 	CreatedAt time.Time
 
 	// Source: kind + ID
-	SourceKind string   `codec:"SourceKind" json:"-"`
+	SourceKind string   `codec:"SourceKind"`
 	SourceIDs  []string `codec:"SourceIDs" json:"-"`
+	// Sources
+	Snapshots   []*Snapshot   `codec:"-" json:",omitempty"`
+	RemoteRepos []*RemoteRepo `codec:"-" json:",omitempty"`
+	LocalRepos  []*LocalRepo  `codec:"-" json:",omitempty"`
+	Packages    []string      `codec:"-" json:",omitempty"`
+
 	// Description of how snapshot was created
 	Description string
 

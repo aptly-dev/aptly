@@ -18,5 +18,5 @@ Description:  Debian 9 Security Updates
 
 Label: Debian-Security
 Origin: Debian
-Suite: oldstable
+Suite: oldoldstable
 Version: 9

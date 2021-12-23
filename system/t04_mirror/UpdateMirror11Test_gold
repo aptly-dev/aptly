@@ -12,10 +12,12 @@ Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sed/sed_4.4-1_i386.deb...
 Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sensible-utils/sensible-utils_0.0.9+deb9u1_all.deb...
 Downloading ftp://ftp.ru.debian.org/debian/pool/main/s/sysvinit/sysvinit-utils_2.88dsf-59.9_i386.deb...
 Mirror `stretch-main` has been successfully updated.
-Packages filtered: 50621 -> 3.
-gpgv: Good signature from "Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>"
-gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
+Packages filtered: 50604 -> 3.
+gpgv: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (11/bullseye) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
-gpgv:  RSA key ID 2B90D010
-gpgv:  RSA key ID 46925553
+gpgv:  RSA key ID B7D453EC
+gpgv:  RSA key ID 22F3D138
 gpgv:  RSA key ID 1A7B6500
+gpgv:  RSA key ID 386FA1D9

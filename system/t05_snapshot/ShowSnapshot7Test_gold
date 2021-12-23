@@ -1,0 +1,22 @@
+{
+  "Name": "snap1",
+  "SourceKind": "local",
+  "LocalRepos": [
+    {
+      "Name": "repo1",
+      "Comment": "Cool",
+      "DefaultDistribution": "wheezy",
+      "DefaultComponent": "contrib"
+    }
+  ],
+  "Packages": [
+    "libboost-program-options-dev_1.49.0.1_i386",
+    "libboost-program-options-dev_1.62.0.1_i386",
+    "pyspi_0.6.1-1.3_source",
+    "pyspi_0.6.1-1.4_source"
+  ],
+  "Description": "Snapshot from local repo [repo1]: Cool",
+  "Origin": "",
+  "NotAutomatic": "",
+  "ButAutomaticUpgrades": ""
+}

@@ -1,0 +1,16 @@
+{
+  "Name": "snap1",
+  "SourceKind": "local",
+  "LocalRepos": [
+    {
+      "Name": "repo1",
+      "Comment": "Cool",
+      "DefaultDistribution": "wheezy",
+      "DefaultComponent": "contrib"
+    }
+  ],
+  "Description": "Snapshot from local repo [repo1]: Cool",
+  "Origin": "",
+  "NotAutomatic": "",
+  "ButAutomaticUpgrades": ""
+}

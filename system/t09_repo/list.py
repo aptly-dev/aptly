@@ -37,3 +37,20 @@ class ListRepo4Test(BaseTest):
         "aptly repo create repo1",
     ]
     runCmd = "aptly repo list -raw"
+
+class ListRepo5Test(BaseTest):
+    """
+    list local repo: json no repos
+    """
+    runCmd = "aptly repo list -json"
+
+class ListRepo6Test(BaseTest):
+    """
+    list local repo: json normal
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Cool3 repo3",
+        "aptly repo create -comment=Cool2 repo2",
+        "aptly repo create repo1",
+    ]
+    runCmd = "aptly repo list -json"

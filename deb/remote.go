@@ -33,7 +33,7 @@ const (
 
 // RemoteRepo represents remote (fetchable) Debian repository.
 //
-// Repostitory could be filtered when fetching by components, architectures
+// Repository could be filtered when fetching by components, architectures
 type RemoteRepo struct {
 	// Permanent internal ID
 	UUID string
@@ -52,7 +52,7 @@ type RemoteRepo struct {
 	// Last update date
 	LastDownloadDate time.Time
 	// Checksums for release files
-	ReleaseFiles map[string]utils.ChecksumInfo
+	ReleaseFiles map[string]utils.ChecksumInfo `json:"-"` // exclude from json output
 	// Filter for packages
 	Filter string
 	// Status marks state of repository (being updated, no action)
@@ -71,6 +71,8 @@ type RemoteRepo struct {
 	DownloadUdebs bool
 	// Should we download installer files?
 	DownloadInstaller bool
+	// Packages for json output
+	Packages []string `codec:"-" json:",omitempty"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -172,6 +174,11 @@ func (repo *RemoteRepo) NumPackages() int {
 // RefList returns package list for repo
 func (repo *RemoteRepo) RefList() *PackageRefList {
 	return repo.packageRefs
+}
+
+// PackageList returns package list for repo
+func (repo *RemoteRepo) PackageList() *PackageList {
+	return repo.packageList
 }
 
 // MarkAsUpdating puts current PID and sets status to updating

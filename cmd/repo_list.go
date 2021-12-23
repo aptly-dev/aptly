@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -9,11 +10,22 @@ import (
 )
 
 func aptlyRepoList(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
+
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyRepoListJson(cmd, args)
+	}
+
+	return aptlyRepoListTxt(cmd, args)
+}
+
+func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
+	var err error
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 
@@ -58,6 +70,36 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlyRepoListJson(cmd *commander.Command, args []string) error {
+	var err error
+
+	repos := make([]*deb.LocalRepo, context.CollectionFactory().LocalRepoCollection().Len())
+	i := 0
+	context.CollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+		e := context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		if e != nil {
+			return e
+		}
+
+		repos[i] = repo
+		i++
+		return nil
+	})
+
+	context.CloseDatabase()
+
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].Name < repos[j].Name
+	})
+	if output, e := json.MarshalIndent(repos, "", "  "); e == nil {
+		fmt.Println(string(output))
+	} else {
+		err = e
+	}
+
+	return err
+}
+
 func makeCmdRepoList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoList,
@@ -72,6 +114,7 @@ Example:
 `,
 	}
 
+	cmd.Flag.Bool("json", false, "display list in JSON format")
 	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd

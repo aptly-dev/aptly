@@ -285,6 +285,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                         ;;
                     list)
                         _arguments '1:: :' \
+                            "-json=[display list in JSON format]:$bool" \
                             "-raw=[display list in machine−readable format]:$bool"
                         ;;
                     move)
@@ -300,6 +301,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                         ;;
                     show)
                         _arguments \
+                            "-json=[display record in JSON format]:$bool" \
                             "-with-packages=[show list of packages]:$bool" \
                             "(-)2:repo name:$repos"
                         ;;

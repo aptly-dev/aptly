@@ -48,7 +48,7 @@ To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list
 
 And import key that is used to sign the release::
 
-    $ apt-key adv --keyserver pool.sks-keyservers.net --recv-keys ED75B5A4483DA07C
+    $ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ED75B5A4483DA07C
 
 After that you can install aptly as any other software package::
 
