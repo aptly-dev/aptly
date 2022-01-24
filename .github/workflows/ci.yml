@@ -23,17 +23,17 @@ jobs:
       matrix:
         go: [1.11, 1.12, 1.13]
         run_long_tests: [no]
-        allow_failure: [no]
+        allow_failure: [false]
         include:
           - go: master
             run_long_tests: no
-            allow_failure: yes
+            allow_failure: true
           - go: 1.14
             run_long_tests: yes
-            allow_failure: no
+            allow_failure: false
           - go: 1.15
             run_long_tests: yes
-            allow_failure: no
+            allow_failure: false
 
     env:
       NO_FTP_ACCESS: yes
