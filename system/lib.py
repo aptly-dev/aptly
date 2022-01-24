@@ -89,7 +89,7 @@ class DotFinder(object):
     def find_dot(self, executables):
         for executable in executables:
             try:
-                subprocess.check_output([executable])
+                subprocess.check_output([executable, "-V"])
                 return executable
             except Exception:
                 pass
