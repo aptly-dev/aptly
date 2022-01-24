@@ -67,7 +67,8 @@ jobs:
           pip install -r system/requirements.txt
 
       - name: Get aptly version
-          make version
+        run: |
+           make version
 
       - name: Make prepare
         run: |
