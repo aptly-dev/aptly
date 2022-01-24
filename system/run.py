@@ -131,11 +131,11 @@ if __name__ == "__main__":
         except BaseException, e:
             print "Failed to capture current version: ", e
 
-    output = subprocess.check_output(['gpg', '--version'])
+    output = subprocess.check_output(['gpg1', '--version'])
     if not output.startswith('gpg (GnuPG) 1'):
         raise RuntimeError('Tests require gpg v1')
 
-    output = subprocess.check_output(['gpgv', '--version'])
+    output = subprocess.check_output(['gpgv1', '--version'])
     if not output.startswith('gpgv (GnuPG) 1'):
         raise RuntimeError('Tests require gpgv v1')
 
