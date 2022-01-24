@@ -22,8 +22,8 @@ jobs:
       fail-fast: true
       matrix:
         go: [1.11, 1.12, 1.13]
-        run_long_tests: no
-        allow_failure: no
+        run_long_tests: [no]
+        allow_failure: [no]
         include:
           - go: master
             run_long_tests: no
