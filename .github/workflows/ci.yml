@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - 'molior-rebase'
+
+defaults:
+  run:
+    # see: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+    shell: bash --noprofile --norc -eo pipefail -x {0}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-18.04
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: true
+      matrix:
+        go: [1.11, 1.12, 1.13]
+        run_long_tests: no
+        allow_failure: no
+        include:
+          - go: master
+            run_long_tests: no
+            allow_failure: yes
+          - go: 1.14
+            run_long_tests: yes
+            allow_failure: no
+          - go: 1.15
+            run_long_tests: yes
+            allow_failure: no
+
+    env:
+      NO_FTP_ACCESS: yes
+      BOTO_CONFIG: /dev/null
+      GO111MODULE: "on"
+      GOPROXY: "https://proxy.golang.org"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 2.7.17
+
+      - name: Install O/S packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python-virtualenv graphviz gnupg1 gnupg2 gpgv1 gpgv2 git gcc make
+
+      - name: Install Python packages
+        run: |
+          pip install six packaging appdirs
+          pip install -U pip setuptools
+          pip install -r system/requirements.txt
+
+      - name: Get aptly version
+          make version
+
+      - name: Make prepare
+        run: |
+          make prepare
+      
+      - name: Make
+        env:
+          RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
+        run: |
+          make
