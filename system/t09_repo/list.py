@@ -38,11 +38,13 @@ class ListRepo4Test(BaseTest):
     ]
     runCmd = "aptly repo list -raw"
 
+
 class ListRepo5Test(BaseTest):
     """
     list local repo: json no repos
     """
     runCmd = "aptly repo list -json"
+
 
 class ListRepo6Test(BaseTest):
     """
