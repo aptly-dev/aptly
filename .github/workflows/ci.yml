@@ -1,3 +1,5 @@
+# Based on https://github.com/aptly-dev/aptly/blob/master/.travis.yml
+
 name: CI
 
 on:
