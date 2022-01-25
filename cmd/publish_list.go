@@ -18,7 +18,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlyPublishListJson(cmd, args)
+		return aptlyPublishListJSON(cmd, args)
 	}
 
 	return aptlyPublishListTxt(cmd, args)
@@ -74,7 +74,7 @@ func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyPublishListJson(cmd *commander.Command, args []string) error {
+func aptlyPublishListJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	repos := make([]*deb.PublishedRepo, 0, context.NewCollectionFactory().PublishedRepoCollection().Len())

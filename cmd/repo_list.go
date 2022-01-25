@@ -18,7 +18,7 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlyRepoListJson(cmd, args)
+		return aptlyRepoListJSON(cmd, args)
 	}
 
 	return aptlyRepoListTxt(cmd, args)
@@ -71,7 +71,7 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyRepoListJson(cmd *commander.Command, args []string) error {
+func aptlyRepoListJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	repos := make([]*deb.LocalRepo, context.NewCollectionFactory().LocalRepoCollection().Len())
