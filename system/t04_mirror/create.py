@@ -411,6 +411,7 @@ class CreateMirror32Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (gpg2)
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://cdn-fastly.deb.debian.org/debian/ stretch"
     fixtureGpg = True
     requiresGPG2 = True
