@@ -205,7 +205,7 @@ class SnapshotsAPITestCreateDelete(APITest):
                  "Architectures": ["i386"],
                  "Sources": [{"Name": snap2}],
                  "Signing": DefaultSigningOptions,
-             }
+            }
         )
         self.check_equal(resp.json()['State'], 2)
 
