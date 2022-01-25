@@ -19,7 +19,7 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlySnapshotShowJson(cmd, args)
+		return aptlySnapshotShowJSON(cmd, args)
 	}
 
 	return aptlySnapshotShowTxt(cmd, args)
@@ -85,7 +85,7 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlySnapshotShowJson(cmd *commander.Command, args []string) error {
+func aptlySnapshotShowJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
