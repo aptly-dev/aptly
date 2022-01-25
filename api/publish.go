@@ -216,20 +216,20 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
-			return &task.ProcessReturnValue{http.StatusBadRequest, nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite)
 		if err != nil {
-			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to publish: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
 		err = collection.Add(published)
 		if err != nil {
-			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save to DB: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{http.StatusCreated, published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: published}, nil
 	})
 }
 
@@ -331,23 +331,23 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
-			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		err = collection.Update(published)
 		if err != nil {
-			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to save to DB: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
 				context.GetPublishedStorage(storage), collectionFactory, out)
 			if err != nil {
-				return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to update: %s", err)
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
 		}
 
-		return &task.ProcessReturnValue{http.StatusOK, published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
 	})
 }
 
@@ -376,9 +376,9 @@ func apiPublishDrop(c *gin.Context) {
 		err := collection.Remove(context, storage, prefix, distribution,
 			collectionFactory, out, force, skipCleanup)
 		if err != nil {
-			return &task.ProcessReturnValue{http.StatusInternalServerError, nil}, fmt.Errorf("unable to drop: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %s", err)
 		}
 
-		return &task.ProcessReturnValue{http.StatusOK, gin.H{}}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
 	})
 }
