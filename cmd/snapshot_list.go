@@ -17,7 +17,7 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlySnapshotListJson(cmd, args)
+		return aptlySnapshotListJSON(cmd, args)
 	}
 
 	return aptlySnapshotListTxt(cmd, args)
@@ -59,7 +59,7 @@ func aptlySnapshotListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlySnapshotListJson(cmd *commander.Command, args []string) error {
+func aptlySnapshotListJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)
