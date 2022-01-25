@@ -2,8 +2,9 @@ package task
 
 import (
 	"fmt"
-	"github.com/aptly-dev/aptly/aptly"
 	"sync"
+
+	"github.com/aptly-dev/aptly/aptly"
 )
 
 // List is handling list of processes and makes sure
