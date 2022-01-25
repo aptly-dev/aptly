@@ -1,8 +1,9 @@
 package task
 
 import (
-	"github.com/aptly-dev/aptly/aptly"
 	"sync/atomic"
+
+	"github.com/aptly-dev/aptly/aptly"
 )
 
 // State task is in

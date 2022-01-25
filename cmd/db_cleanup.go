@@ -189,6 +189,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			err = toDelete.ForEach(func(ref []byte) error {
 				return collectionFactory.PackageCollection().DeleteByKey(ref, batch)
 			})
+			if err != nil {
+				return fmt.Errorf("unable to delete by key: %s", err)
+			}
 
 			err = batch.Write()
 			if err != nil {

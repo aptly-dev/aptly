@@ -516,7 +516,7 @@ func (context *AptlyContext) GoContextHandleSignals() {
 	defer context.Unlock()
 
 	// Catch ^C
-	sigch := make(chan os.Signal)
+	sigch := make(chan os.Signal, 1)
 	signal.Notify(sigch, os.Interrupt)
 
 	var cancel gocontext.CancelFunc
