@@ -18,7 +18,7 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlyPublishShowJson(cmd, args)
+		return aptlyPublishShowJSON(cmd, args)
 	}
 
 	return aptlyPublishShowTxt(cmd, args)
@@ -76,7 +76,7 @@ func aptlyPublishShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyPublishShowJson(cmd *commander.Command, args []string) error {
+func aptlyPublishShowJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	distribution := args[0]

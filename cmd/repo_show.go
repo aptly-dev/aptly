@@ -19,7 +19,7 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlyRepoShowJson(cmd, args)
+		return aptlyRepoShowJSON(cmd, args)
 	}
 
 	return aptlyRepoShowTxt(cmd, args)
@@ -58,7 +58,7 @@ func aptlyRepoShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyRepoShowJson(cmd *commander.Command, args []string) error {
+func aptlyRepoShowJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
