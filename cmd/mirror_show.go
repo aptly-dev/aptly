@@ -21,7 +21,7 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
 	if jsonFlag {
-		return aptlyMirrorShowJson(cmd, args)
+		return aptlyMirrorShowJSON(cmd, args)
 	}
 
 	return aptlyMirrorShowTxt(cmd, args)
@@ -93,7 +93,7 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyMirrorShowJson(cmd *commander.Command, args []string) error {
+func aptlyMirrorShowJSON(cmd *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
