@@ -682,6 +682,7 @@ class PublishRepo26Test(BaseTest):
     """
     publish repo: sign with passphrase
     """
+    requiresGPG1 = True
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}",
