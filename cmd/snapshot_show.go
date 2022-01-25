@@ -134,6 +134,9 @@ func aptlySnapshotShowJSON(cmd *commander.Command, args []string) error {
 		if snapshot.RefList() != nil {
 			var list *deb.PackageList
 			list, err = deb.NewPackageListFromRefList(snapshot.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
+			if err != nil {
+				return fmt.Errorf("unable to get package list: %s", err)
+			}
 
 			list.PrepareIndex()
 			list.ForEachIndexed(func(p *deb.Package) error {
