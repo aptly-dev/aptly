@@ -8,6 +8,7 @@ import json
 import subprocess
 import os
 import posixpath
+import re
 import shlex
 import shutil
 import string
@@ -279,6 +280,15 @@ class BaseTest(object):
     def get_gold(self, gold_name="gold"):
         return self.gold_processor(open(self.get_gold_filename(gold_name), "r").read())
 
+    def strip_retry_lines(self, s):
+        for prefix in (
+                'Following redirect',
+                'Error downloading',
+                'Retrying',
+        ):
+            s = re.sub(r'{}.*\n'.format(prefix), '', s)
+        return s
+
     def check_output(self):
         try:
             self.verify_match(self.get_gold(), self.output,
@@ -381,6 +391,10 @@ class BaseTest(object):
         if match_prepare is not None:
             a = match_prepare(a)
             b = match_prepare(b)
+
+        # Make sure there is something to compare after `match_prepare`
+        if not a or not b:
+            raise Exception("content empty")
 
         if a != b:
             diff = "".join(difflib.unified_diff(

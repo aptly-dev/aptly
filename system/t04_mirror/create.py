@@ -362,6 +362,9 @@ class CreateMirror27Test(BaseTest):
     """
     runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
 
+    def outputMatchPrepare(self, s):
+        return self.strip_retry_lines(s)
+
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
