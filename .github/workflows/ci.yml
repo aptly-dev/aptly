@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go: [1.13]
+        go: [1.14, 1.15]
         run_long_tests: [no]
         allow_failure: [false]
         include:
@@ -33,10 +33,7 @@ jobs:
           # - go: master
           #   run_long_tests: no
           #   allow_failure: true
-          - go: 1.14
-            run_long_tests: yes
-            allow_failure: false
-          - go: 1.15
+          - go: 1.16
             run_long_tests: yes
             allow_failure: false
 
