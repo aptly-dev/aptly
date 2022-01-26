@@ -79,4 +79,7 @@ class ShowMirror8Test(BaseTest):
     runCmd = "aptly mirror show -json mirror4"
 
     def outputMatchPrepare(self, s):
-        return re.sub(r'[ ]*"UUID": "[\w-]+",?\n', '', s)
+        s = re.sub(r'[ ]*"UUID": "[\w-]+",?\n', '', s)
+        s = re.sub('"Date": .*', '"Date": "anytime",', s)
+        s = re.sub('"Valid-Until": .*', '"Valid-Until": "anytime",', s)
+        return s
