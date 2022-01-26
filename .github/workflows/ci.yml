@@ -36,6 +36,9 @@ jobs:
           - go: 1.16
             run_long_tests: yes
             allow_failure: false
+          - go: 1.17
+            run_long_tests: yes
+            allow_failure: false
 
     env:
       NO_FTP_ACCESS: yes
