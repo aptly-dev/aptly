@@ -28,7 +28,7 @@ jobs:
         run_long_tests: [no]
         allow_failure: [false]
         include:
-          # Disable this for now as it's now clear how to select the latest master branch
+          # Disable this for now as it's not clear how to select the latest master branch
           # version of go using actions/setup-go@v2.
           # - go: master
           #   run_long_tests: no
