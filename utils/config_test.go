@@ -125,7 +125,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"container\": \"repo\",\n"+
 		"      \"prefix\": \"\"\n"+
 		"    }\n"+
-		"  }\n"+
+		"  },\n"+
 		"  \"AsyncAPI\": false\n"+
 		"}")
 }
