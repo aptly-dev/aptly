@@ -4,8 +4,9 @@ name: CI
 
 on:
   pull_request:
+  push:
     branches:
-      - 'molior-rebase'
+      - 'main'
 
 defaults:
   run:
@@ -23,7 +24,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go: [1.11, 1.12, 1.13]
+        go: [1.13]
         run_long_tests: [no]
         allow_failure: [false]
         include:
@@ -77,7 +78,7 @@ jobs:
       - name: Make prepare
         run: |
           make prepare
-      
+
       - name: Make
         env:
           RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
