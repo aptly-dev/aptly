@@ -392,10 +392,6 @@ class BaseTest(object):
             a = match_prepare(a)
             b = match_prepare(b)
 
-        # Make sure there is something to compare after `match_prepare`
-        if not a or not b:
-            raise Exception("content empty")
-
         if a != b:
             diff = "".join(difflib.unified_diff(
                 [l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
