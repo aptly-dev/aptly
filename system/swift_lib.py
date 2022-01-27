@@ -25,10 +25,10 @@ try:
         swift_conn = swiftclient.Connection(auth_url, auth_username,
                                             auth_password, auth_version=1)
     else:
-        print "Swift tests disabled: OpenStack creds not found in the environment"
+        print("Swift tests disabled: OpenStack creds not found in the environment")
         swift_conn = None
-except ImportError, e:
-    print "Swift tests disabled: unable to import swiftclient", e
+except ImportError as e:
+    print("Swift tests disabled: unable to import swiftclient", e)
     swift_conn = None
 
 

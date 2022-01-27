@@ -2,7 +2,7 @@
 Testing serving public repo
 """
 
-import httplib
+import http.client
 import os
 import signal
 import subprocess
@@ -50,7 +50,7 @@ class Serve1Test(BaseTest):
             try:
                 time.sleep(1)
 
-                conn = httplib.HTTPConnection("127.0.0.1", 8765)
+                conn = http.client.HTTPConnection("127.0.0.1", 8765)
                 conn.request("GET", "/")
                 r = conn.getresponse()
                 if r.status != 200:
@@ -66,7 +66,7 @@ class Serve1Test(BaseTest):
             if proc.returncode != -2 and proc.returncode != 2:
                 raise Exception("exit code %d != %d (output: %s)" % (proc.returncode, -2, output))
             self.output = output
-        except Exception, e:
+        except Exception as e:
             raise Exception("Running command %s failed: %s" % (self.runCmd, str(e)))
 
     def check(self):

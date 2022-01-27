@@ -5,6 +5,7 @@ class ImportRepo1Test(BaseTest):
     """
     import to local repo: simple import
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
@@ -16,14 +17,12 @@ class ImportRepo1Test(BaseTest):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class ImportRepo2Test(BaseTest):
     """
     import to local repo: import w/deps
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
@@ -35,14 +34,12 @@ class ImportRepo2Test(BaseTest):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class ImportRepo3Test(BaseTest):
     """
     import to local repo: simple move w/deps but w/o archs
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
@@ -50,14 +47,12 @@ class ImportRepo3Test(BaseTest):
     runCmd = "aptly repo import -with-deps wheezy-contrib repo1 redeclipse"
     expectedCode = 1
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class ImportRepo4Test(BaseTest):
     """
     import to local repo: dry run
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
@@ -68,23 +63,18 @@ class ImportRepo4Test(BaseTest):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class ImportRepo5Test(BaseTest):
     """
     import to local repo: wrong dep
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
     ]
     runCmd = "aptly repo import wheezy-contrib repo1 'pyspi >> 0.6.1-1.3)'"
     expectedCode = 1
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class ImportRepo6Test(BaseTest):
@@ -125,11 +115,9 @@ class ImportRepo9Test(BaseTest):
     """
     import to local repo: import with complex query
     """
+    sortOutput = True
     fixtureDB = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
     ]
     runCmd = "aptly repo import wheezy-main repo1 '(httpd, $$Source (=nginx)) | exim4'"
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))

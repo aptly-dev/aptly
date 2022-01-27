@@ -82,7 +82,7 @@ class PublishUpdate1Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
@@ -427,7 +427,7 @@ class PublishUpdate12Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))

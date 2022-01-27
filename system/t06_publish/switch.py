@@ -82,7 +82,7 @@ class PublishSwitch1Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
@@ -346,7 +346,7 @@ class PublishSwitch8Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
@@ -378,8 +378,8 @@ class PublishSwitch9Test(BaseTest):
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,b maverick snap2"
     expectedCode = 2
 
-    def outputMatchPrepare(_, s):
-        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+    def outputMatchPrepare(self, s):
+        return "\n".join([l for l in self.ensure_utf8(s).split("\n") if l.startswith("ERROR")])
 
 
 class PublishSwitch10Test(BaseTest):
@@ -535,7 +535,7 @@ class PublishSwitch14Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))

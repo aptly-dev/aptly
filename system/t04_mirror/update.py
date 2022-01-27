@@ -18,15 +18,13 @@ class UpdateMirror1Test(BaseTest):
     """
     update mirrors: regular update
     """
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures varnish"
     outputMatchPrepare = filterOutRedirects
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class UpdateMirror2Test(BaseTest):
@@ -113,15 +111,13 @@ class UpdateMirror7Test(BaseTest):
     """
     update mirrors: flat repository
     """
+    sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
         "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class UpdateMirror8Test(BaseTest):
@@ -143,6 +139,7 @@ class UpdateMirror9Test(BaseTest):
     """
     update mirrors: flat repository + sources
     """
+    sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
         "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
@@ -150,14 +147,12 @@ class UpdateMirror9Test(BaseTest):
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror10Test(BaseTest):
     """
     update mirrors: filtered
     """
+    sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
@@ -165,15 +160,13 @@ class UpdateMirror10Test(BaseTest):
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror11Test(BaseTest):
     """
     update mirrors: update over FTP
     """
     skipTest = "Requesting obsolete file - stretch/InRelease"
+    sortOutput = True
     longTest = False
     fixtureGpg = True
     requiresFTP = True
@@ -183,15 +176,13 @@ class UpdateMirror11Test(BaseTest):
     outputMatchPrepare = filterOutSignature
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch-main"
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror12Test(BaseTest):
     """
     update mirrors: update with udebs
     """
     skipTest = "Requesting obsolete file - stretch/InRelease"
+    sortOutput = True
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
@@ -200,14 +191,12 @@ class UpdateMirror12Test(BaseTest):
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror13Test(BaseTest):
     """
     update mirrors: regular update with --skip-existing-packages option
     """
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
@@ -215,14 +204,12 @@ class UpdateMirror13Test(BaseTest):
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     outputMatchPrepare = filterOutRedirects
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror14Test(BaseTest):
     """
     update mirrors: regular update with --skip-existing-packages option
     """
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
@@ -231,23 +218,18 @@ class UpdateMirror14Test(BaseTest):
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     outputMatchPrepare = filterOutRedirects
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror15Test(BaseTest):
     """
     update mirrors: update for mirror without MD5 checksums
     """
     skipTest = "Using deprecated service - bintray"
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
     ]
     runCmd = "aptly mirror update --ignore-signatures bintray"
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
     def check(self):
         super(UpdateMirror15Test, self).check()
@@ -263,14 +245,12 @@ class UpdateMirror16Test(BaseTest):
     as mirror lacks MD5 checksum, file would be downloaded but not re-imported
     """
     skipTest = "Using deprecated service - bintray"
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
     ]
     runCmd = "aptly mirror update --ignore-signatures bintray"
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
     def prepare(self):
         super(UpdateMirror16Test, self).prepare()
@@ -292,14 +272,12 @@ class UpdateMirror17Test(BaseTest):
     """
     update mirrors: update for mirror but with file in pool on legacy MD5 location
     """
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
     def prepare(self):
         super(UpdateMirror17Test, self).prepare()
@@ -321,15 +299,13 @@ class UpdateMirror18Test(BaseTest):
     """
     update mirrors: update for mirror but with file in pool on legacy MD5 location and disabled legacy path support
     """
+    sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
     def prepare(self):
         super(UpdateMirror18Test, self).prepare()
@@ -361,13 +337,14 @@ class UpdateMirror19Test(BaseTest):
     outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
-        return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+        return "\n".join(line for line in self.ensure_utf8(output).split("\n") if ".deb" not in line)
 
 
 class UpdateMirror20Test(BaseTest):
     """
     update mirrors: flat repository (internal GPG implementation)
     """
+    sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
         "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
@@ -375,9 +352,6 @@ class UpdateMirror20Test(BaseTest):
     configOverride = {"gpgProvider": "internal"}
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class UpdateMirror21Test(BaseTest):
@@ -395,7 +369,7 @@ class UpdateMirror21Test(BaseTest):
     outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
-        return "\n".join(line for line in output.split("\n") if ".deb" not in line)
+        return "\n".join(line for line in self.ensure_utf8(output).split("\n") if ".deb" not in line)
 
 
 class UpdateMirror22Test(BaseTest):
@@ -418,6 +392,7 @@ class UpdateMirror23Test(BaseTest):
     update mirrors: update with installer
     """
     skipTest = "Requesting obsolete file - stretch/InRelease"
+    sortOutput = True
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
@@ -426,15 +401,13 @@ class UpdateMirror23Test(BaseTest):
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class UpdateMirror24Test(BaseTest):
     """
     update mirrors: update with installer with separate gpg file
     """
     skipTest = "Requesting obsolete file - stretch/InRelease"
+    sortOutput = True
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
@@ -442,6 +415,3 @@ class UpdateMirror24Test(BaseTest):
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg trusty"
     outputMatchPrepare = filterOutSignature
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))

@@ -5,6 +5,7 @@ class MoveRepo1Test(BaseTest):
     """
     move in local repo: simple move
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo create -comment=Cool -distribution=squeeze repo2",
@@ -17,14 +18,12 @@ class MoveRepo1Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo1_show")
         self.check_cmd_output("aptly repo show -with-packages repo2", "repo2_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class MoveRepo2Test(BaseTest):
     """
     move in local repo: simple move w/deps
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo create -comment=Cool -distribution=squeeze repo2",
@@ -37,14 +36,12 @@ class MoveRepo2Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo1_show")
         self.check_cmd_output("aptly repo show -with-packages repo2", "repo2_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class MoveRepo3Test(BaseTest):
     """
     move in local repo: simple move w/deps but w/o archs
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo create -comment=Cool -distribution=squeeze repo2",
@@ -53,14 +50,12 @@ class MoveRepo3Test(BaseTest):
     runCmd = "aptly repo move -with-deps repo1 repo2 'pyspi (>> 0.6.1-1.3)' libboost-program-options-dev_1.49.0.1_i386"
     expectedCode = 1
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class MoveRepo4Test(BaseTest):
     """
     move in local repo: dry run
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo create -comment=Cool -distribution=squeeze repo2",
@@ -73,14 +68,12 @@ class MoveRepo4Test(BaseTest):
         self.check_cmd_output("aptly repo show -with-packages repo1", "repo1_show")
         self.check_cmd_output("aptly repo show -with-packages repo2", "repo2_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class MoveRepo5Test(BaseTest):
     """
     move in local repo: wrong dep
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze repo1",
         "aptly repo create -comment=Cool -distribution=squeeze repo2",
@@ -88,9 +81,6 @@ class MoveRepo5Test(BaseTest):
     ]
     runCmd = "aptly repo move repo1 repo2 'pyspi >> 0.6.1-1.3)'"
     expectedCode = 1
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class MoveRepo6Test(BaseTest):

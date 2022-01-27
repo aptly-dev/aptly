@@ -1,5 +1,5 @@
 from api_lib import APITest
-from publish import DefaultSigningOptions
+from .publish import DefaultSigningOptions
 
 
 class ReposAPITestCreateShow(APITest):
@@ -8,10 +8,10 @@ class ReposAPITestCreateShow(APITest):
     """
     def check(self):
         repo_name = self.random_name()
-        repo_desc = {u'Comment': u'fun repo',
-                     u'DefaultComponent': u'',
-                     u'DefaultDistribution': u'',
-                     u'Name': repo_name}
+        repo_desc = {'Comment': 'fun repo',
+                     'DefaultComponent': '',
+                     'DefaultDistribution': '',
+                     'Name': repo_name}
 
         resp = self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"})
         self.check_equal(resp.json(), repo_desc)
@@ -101,10 +101,10 @@ class ReposAPITestAdd(APITest):
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
 
-        self.check_in("Added: pyspi_0.6.1-1.3_source added", resp.content)
-        self.check_equal("Removed: " in resp.content, False)
-        self.check_equal("Failed files: " in resp.content, False)
-        self.check_equal("Warnings: " in resp.content, False)
+        self.check_in(b"Added: pyspi_0.6.1-1.3_source added", resp.content)
+        self.check_not_in(b"Removed: ", resp.content)
+        self.check_not_in(b"Failed files: ", resp.content)
+        self.check_not_in(b"Warnings: ", resp.content)
 
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(), ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
@@ -169,10 +169,10 @@ class ReposAPITestAddFile(APITest):
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
 
-        self.check_in("Added: libboost-program-options-dev_1.49.0.1_i386 added", resp.content)
-        self.check_equal("Removed: " in resp.content, False)
-        self.check_equal("Failed files: " in resp.content, False)
-        self.check_equal("Warnings: " in resp.content, False)
+        self.check_in(b"Added: libboost-program-options-dev_1.49.0.1_i386 added", resp.content)
+        self.check_not_in(b"Removed: ", resp.content)
+        self.check_not_in(b"Failed files: ", resp.content)
+        self.check_not_in(b"Warnings: ", resp.content)
 
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
@@ -200,10 +200,10 @@ class ReposAPITestInclude(APITest):
 
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
-        self.check_in("Added: hardlink_0.2.1_source added, hardlink_0.2.1_amd64 added", resp.content)
+        self.check_in(b"Added: hardlink_0.2.1_source added, hardlink_0.2.1_amd64 added", resp.content)
         self.check_equal(
             sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
-            [u'Pamd64 hardlink 0.2.1 daf8fcecbf8210ad', u'Psource hardlink 0.2.1 8f72df429d7166e5']
+            ['Pamd64 hardlink 0.2.1 daf8fcecbf8210ad', 'Psource hardlink 0.2.1 8f72df429d7166e5']
         )
 
         self.check_not_exists("upload/" + d)
@@ -238,7 +238,7 @@ class ReposAPITestShowQuery(APITest):
 
         resp = self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi)"})
         self.check_equal(resp.status_code, 400)
-        self.check_equal(resp.json()["error"], u'parsing failed: unexpected token ): expecting end of query')
+        self.check_equal(resp.json()["error"], 'parsing failed: unexpected token ): expecting end of query')
 
 
 class ReposAPITestAddMultiple(APITest):

@@ -79,4 +79,3 @@ version:
 	@echo $(VERSION)
 
 .PHONY: man modules version release goxc
-
