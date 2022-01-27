@@ -5,6 +5,7 @@ class RemoveRepo1Test(BaseTest):
     """
     remove from local repo: as dep
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
@@ -15,14 +16,12 @@ class RemoveRepo1Test(BaseTest):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages local-repo", "repo_show")
 
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
-
 
 class RemoveRepo2Test(BaseTest):
     """
     remove from local repo: as dep with version, key
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
@@ -32,9 +31,6 @@ class RemoveRepo2Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages local-repo", "repo_show")
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))
 
 
 class RemoveRepo3Test(BaseTest):
@@ -49,6 +45,7 @@ class RemoveRepo4Test(BaseTest):
     """
     remove from local repo: dry run
     """
+    sortOutput = True
     fixtureCmds = [
         "aptly repo create -comment=Cool -distribution=squeeze local-repo",
         "aptly repo add local-repo ${files}"
@@ -58,6 +55,3 @@ class RemoveRepo4Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly repo show -with-packages local-repo", "repo_show")
-
-    def output_processor(self, output):
-        return "\n".join(sorted(output.split("\n")))

@@ -1,5 +1,5 @@
 from api_lib import APITest
-from publish import DefaultSigningOptions
+from .publish import DefaultSigningOptions
 
 
 class SnapshotsAPITestCreateShowEmpty(APITest):
@@ -8,8 +8,8 @@ class SnapshotsAPITestCreateShowEmpty(APITest):
     """
     def check(self):
         snapshot_name = self.random_name()
-        snapshot_desc = {u'Description': u'fun snapshot',
-                         u'Name': snapshot_name}
+        snapshot_desc = {'Description': 'fun snapshot',
+                         'Name': snapshot_name}
 
         # create empty snapshot
         resp = self.post_task("/api/snapshots", json=snapshot_desc)
@@ -36,9 +36,9 @@ class SnapshotsAPITestCreateFromRefs(APITest):
     """
     def check(self):
         snapshot_name = self.random_name()
-        snapshot_desc = {u'Description': u'fun snapshot',
-                         u'Name': snapshot_name,
-                         u'SourceSnapshots': [self.random_name()]}
+        snapshot_desc = {'Description': 'fun snapshot',
+                         'Name': snapshot_name,
+                         'SourceSnapshots': [self.random_name()]}
 
         # creating snapshot from missing source snapshot
         resp = self.post("/api/snapshots", json=snapshot_desc)
@@ -115,15 +115,15 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal(resp.json()['State'], 2)
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
 
-        self.check_subset({u'Architecture': 'i386',
-                           u'Package': 'libboost-program-options-dev',
-                           u'Version': '1.49.0.1',
+        self.check_subset({'Architecture': 'i386',
+                           'Package': 'libboost-program-options-dev',
+                           'Version': '1.49.0.1',
                            'FilesHash': '918d2f433384e378'},
                           self.get("/api/snapshots/" + snapshot_name + "/packages", params={"format": "details"}).json()[0])
 
-        self.check_subset({u'Architecture': 'i386',
-                           u'Package': 'libboost-program-options-dev',
-                           u'Version': '1.49.0.1',
+        self.check_subset({'Architecture': 'i386',
+                           'Package': 'libboost-program-options-dev',
+                           'Version': '1.49.0.1',
                            'FilesHash': '918d2f433384e378'},
                           self.get("/api/snapshots/" + snapshot_name + "/packages",
                                    params={"format": "details", "q": "Version (> 0.6.1-1.4)"}).json()[0])
@@ -139,8 +139,8 @@ class SnapshotsAPITestCreateUpdate(APITest):
     """
     def check(self):
         snapshot_name = self.random_name()
-        snapshot_desc = {u'Description': u'fun snapshot',
-                         u'Name': snapshot_name}
+        snapshot_desc = {'Description': 'fun snapshot',
+                         'Name': snapshot_name}
 
         resp = self.post_task("/api/snapshots", json=snapshot_desc)
         self.check_equal(resp.json()['State'], 2)
@@ -171,8 +171,8 @@ class SnapshotsAPITestCreateDelete(APITest):
     """
     def check(self):
         snapshot_name = self.random_name()
-        snapshot_desc = {u'Description': u'fun snapshot',
-                         u'Name': snapshot_name}
+        snapshot_desc = {'Description': 'fun snapshot',
+                         'Name': snapshot_name}
 
         # deleting unreferenced snapshot
         resp = self.post_task("/api/snapshots", json=snapshot_desc)
@@ -251,8 +251,8 @@ class SnapshotsAPITestDiff(APITest):
     GET /api/snapshot/:name/diff/:name2
     """
     def check(self):
-        repos = [self.random_name() for x in xrange(2)]
-        snapshots = [self.random_name() for x in xrange(2)]
+        repos = [self.random_name() for x in range(2)]
+        snapshots = [self.random_name() for x in range(2)]
 
         for repo_name in repos:
             self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)

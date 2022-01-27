@@ -1,5 +1,5 @@
 from api_lib import APITest
-from publish import DefaultSigningOptions
+from .publish import DefaultSigningOptions
 
 
 class TaskAPITestParallelTasks(APITest):
@@ -8,11 +8,11 @@ class TaskAPITestParallelTasks(APITest):
     """
     def _create_mirror(self, dist):
         mirror_name = self.random_name()
-        mirror_desc = {u'Name': mirror_name,
-                       u'ArchiveURL': 'https://packagecloud.io/varnishcache/varnish30/debian/',
-                       u'Distribution': dist,
-                       u'Components': ['main']}
-        mirror_desc[u'IgnoreSignatures'] = True
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'https://packagecloud.io/varnishcache/varnish30/debian/',
+                       'Distribution': dist,
+                       'Components': ['main']}
+        mirror_desc['IgnoreSignatures'] = True
         resp = self.post("/api/mirrors", json=mirror_desc)
         self.check_equal(resp.status_code, 201)
         resp = self.put("/api/mirrors/" + mirror_name, json=mirror_desc, params={'_async': True})

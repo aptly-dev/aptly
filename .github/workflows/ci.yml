@@ -19,7 +19,7 @@ env:
 jobs:
   build:
     name: test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: true
@@ -55,16 +55,16 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 2.7.17
+          python-version: 3.9
 
       - name: Install O/S packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y python-virtualenv graphviz gnupg1 gnupg2 gpgv1 gpgv2 git gcc make
+          sudo apt-get install -y graphviz gnupg1 gnupg2 gpgv1 gpgv2 git gcc make
 
       - name: Install Python packages
         run: |
-          pip install six packaging appdirs
+          pip install six packaging appdirs virtualenv
           pip install -U pip setuptools
           pip install -r system/requirements.txt
 

@@ -2,19 +2,11 @@ import os
 import hashlib
 import inspect
 import re
-import zlib
-from lib import BaseTest
+from lib import BaseTest, ungzip_if_required
 
 
 def strip_processor(output):
     return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
-
-
-def ungzip_if_required(output):
-    if output.startswith("\x1f\x8b"):
-        return zlib.decompress(output, 16 + zlib.MAX_WBITS)
-
-    return output
 
 
 class PublishRepo1Test(BaseTest):
@@ -60,9 +52,9 @@ class PublishRepo1Test(BaseTest):
         self.check_file_contents('public/dists/maverick/main/binary-i386/Packages',
                                  'binary', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
         self.check_file_contents('public/dists/maverick/main/Contents-i386.gz',
-                                 'contents_i386', match_prepare=ungzip_if_required)
+                                 'contents_i386', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
         self.check_file_contents('public/dists/maverick/Contents-i386.gz',
-                                 'contents_i386_legacy', match_prepare=ungzip_if_required)
+                                 'contents_i386_legacy', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
 
         # verify signatures
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
@@ -101,8 +93,7 @@ class PublishRepo1Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join(
-                'public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -545,8 +536,7 @@ class PublishRepo17Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join(
-                'public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -637,8 +627,8 @@ class PublishRepo23Test(BaseTest):
     runCmd = "aptly publish repo -component=main,contrib repo1"
     expectedCode = 2
 
-    def outputMatchPrepare(_, s):
-        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+    def outputMatchPrepare(self, s):
+        return "\n".join([l for l in self.ensure_utf8(s).split("\n") if l.startswith("ERROR")])
 
 
 class PublishRepo24Test(BaseTest):
@@ -832,8 +822,8 @@ class PublishRepo31Test(BaseTest):
     gold_processor = BaseTest.expand_environ
     configOverride = {"gpgProvider": "internal"}
 
-    def outputMatchPrepare(_, s):
-        return re.sub(r' \d{4}-\d{2}-\d{2}', '', s)
+    def outputMatchPrepare(self, s):
+        return re.sub(r' \d{4}-\d{2}-\d{2}', '', self.ensure_utf8(s))
 
     def check(self):
         super(PublishRepo31Test, self).check()

@@ -24,6 +24,9 @@ except ImportError:
         return s
 
 
+PYTHON_MINIMUM_VERSION = (3, 9)
+
+
 def natural_key(string_):
     """See https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/"""
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
@@ -107,18 +110,18 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     if lastBase is not None:
         lastBase.shutdown_class()
 
-    print "TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (
-        numTests, numTests - numFailed, numFailed, numSkipped)
+    print("TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (
+        numTests, numTests - numFailed, numFailed, numSkipped))
 
     if len(fails) > 0:
-        print "\nFAILURES (%d):" % (len(fails), )
+        print("\nFAILURES (%d):" % (len(fails), ))
 
         for (test, t, typ, val, tb, testModule) in fails:
             doc = t.__doc__ or ''
-            print "%s:%s %s" % (test, t.__class__.__name__,
-                                testModule.__name__ + ": " + doc.strip())
+            print("%s:%s %s" % (test, t.__class__.__name__,
+                                testModule.__name__ + ": " + doc.strip()))
             traceback.print_exception(typ, val, tb)
-            print "=" * 60
+            print("=" * 60)
 
         sys.exit(1)
 
@@ -128,14 +131,17 @@ if __name__ == "__main__":
         try:
             os.environ['APTLY_VERSION'] = os.popen(
                 "make version").read().strip()
-        except BaseException, e:
-            print "Failed to capture current version: ", e
+        except BaseException as e:
+            print("Failed to capture current version: ", e)
 
-    output = subprocess.check_output(['gpg1', '--version'])
+    if sys.version_info < PYTHON_MINIMUM_VERSION:
+        raise RuntimeError(f'Tests require Python {PYTHON_MINIMUM_VERSION} or higher.')
+
+    output = subprocess.check_output(['gpg1', '--version'], text=True)
     if not output.startswith('gpg (GnuPG) 1'):
         raise RuntimeError('Tests require gpg v1')
 
-    output = subprocess.check_output(['gpgv1', '--version'])
+    output = subprocess.check_output(['gpgv1', '--version'], text=True)
     if not output.startswith('gpgv (GnuPG) 1'):
         raise RuntimeError('Tests require gpgv v1')
 

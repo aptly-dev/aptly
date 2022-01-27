@@ -145,7 +145,7 @@ class IncludeRepo6Test(BaseTest):
         super(IncludeRepo6Test, self).prepare()
 
         self.tempSrcDir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0755)
+        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0o755)
 
         for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1_amd64.changes", "hardlink_0.2.1_amd64.deb"]:
             shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes", path),
@@ -536,7 +536,7 @@ class IncludeRepo22Test(BaseTest):
         super(IncludeRepo22Test, self).prepare()
 
         self.tempSrcDir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0755)
+        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0o755)
 
         for path in ["hardlink_0.2.1.dsc", "hardlink_0.2.1_amd64.deb"]:
             shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes", path),
