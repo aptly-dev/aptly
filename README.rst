@@ -64,7 +64,7 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `GitHub Releases <https://github.com/aptly-dev/aptly/releases>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.11+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.14+ required)::
 
     git clone https://github.com/aptly-dev/aptly
     cd aptly
