@@ -2,17 +2,17 @@
 aptly
 =====
 
-.. image:: https://api.travis-ci.org/aptly-dev/aptly.svg?branch=master
-    :target: https://travis-ci.org/aptly-dev/aptly
+.. image:: https://github.com/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/aptly-dev/aptly/actions
 
 .. image:: https://codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/aptly-dev/aptly
+    :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/aptly-dev/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/aptly-dev/aptly
-    :target: http://goreportcard.com/report/aptly-dev/aptly
+.. image:: https://goreportcard.com/badge/github.com/aptly-dev/aptly
+    :target: https://goreportcard.com/report/aptly-dev/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
