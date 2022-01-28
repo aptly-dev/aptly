@@ -86,30 +86,31 @@ func (d *GrabDownloader) maybeSetupChecksum(req *grab.Request, expected *utils.C
 		return nil
 	}
 	if expected.MD5 != "" {
-		expected_hash, err := hex.DecodeString(expected.MD5)
+		expectedHash, err := hex.DecodeString(expected.MD5)
 		if err != nil {
 			return err
 		}
-		req.SetChecksum(md5.New(), expected_hash, true)
+		req.SetChecksum(md5.New(), expectedHash, true)
 	} else if expected.SHA1 != "" {
-		expected_hash, err := hex.DecodeString(expected.SHA1)
+		expectedHash, err := hex.DecodeString(expected.SHA1)
 		if err != nil {
 			return err
 		}
-		req.SetChecksum(sha1.New(), expected_hash, true)
+		req.SetChecksum(sha1.New(), expectedHash, true)
 	} else if expected.SHA256 != "" {
-		expected_hash, err := hex.DecodeString(expected.SHA256)
+		expectedHash, err := hex.DecodeString(expected.SHA256)
 		if err != nil {
 			return err
 		}
-		req.SetChecksum(sha256.New(), expected_hash, true)
+		req.SetChecksum(sha256.New(), expectedHash, true)
 	} else if expected.SHA512 != "" {
-		expected_hash, err := hex.DecodeString(expected.SHA512)
+		expectedHash, err := hex.DecodeString(expected.SHA512)
 		if err != nil {
 			return err
 		}
-		req.SetChecksum(sha512.New(), expected_hash, true)
+		req.SetChecksum(sha512.New(), expectedHash, true)
 	}
+	req.Size = expected.Size
 	return nil
 }
 
@@ -154,7 +155,7 @@ func (d *GrabDownloader) GetProgress() aptly.Progress {
 	return d.progress
 }
 
-func (f *GrabDownloader) GetLength(ctx context.Context, url string) (int64, error) {
+func (d *GrabDownloader) GetLength(ctx context.Context, url string) (int64, error) {
 	resp, err := http.Head(url)
 	if err != nil {
 		return -1, err
