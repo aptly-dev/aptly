@@ -63,6 +63,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
 		"  \"downloadRetries\": 0,\n"+
+		"  \"downloader\": \"\",\n"+
 		"  \"databaseOpenAttempts\": 5,\n"+
 		"  \"architectures\": null,\n"+
 		"  \"dependencyFollowSuggests\": false,\n"+

@@ -216,7 +216,7 @@ _aptly()
           "update")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-force -download-limit= -ignore-checksums -ignore-signatures -keyring= -skip-existing-packages" -- ${cur}))
+                COMPREPLY=($(compgen -W "-force -download-limit= -downloader= -ignore-checksums -ignore-signatures -keyring= -skip-existing-packages" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_mirror_list)" -- ${cur}))
               fi
