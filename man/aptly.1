@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "September 2019" "" ""
+.TH "APTLY" "1" "January 2022" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -39,6 +39,7 @@ Configuration file is stored in JSON format (default values shown below):
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "downloadRetries": 0,
+  "downloader": "default",
   "databaseOpenAttempts": 10,
   "architectures": [],
   "dependencyFollowSuggests": false,
@@ -95,6 +96,14 @@ Configuration file is stored in JSON format (default values shown below):
       "authurl": "",
       "tenant": "",
       "tenantid": ""
+    }
+  },
+  "AzurePublishEndpoints": {
+    "test": {
+      "accountName": "",
+      "accountKey": "",
+      "container": "repo",
+      "prefix": ""
     }
   }
 }
@@ -519,6 +528,10 @@ $ aptly mirror list
 Options:
 .
 .TP
+\-\fBjson\fR
+display list in JSON format
+.
+.TP
 \-\fBraw\fR
 display list in machine\-readable format
 .
@@ -536,6 +549,10 @@ $ aptly mirror show wheezy\-main
 .
 .P
 Options:
+.
+.TP
+\-\fBjson\fR
+display record in JSON format
 .
 .TP
 \-\fBwith\-packages\fR
@@ -578,6 +595,10 @@ Options:
 .TP
 \-\fBdownload\-limit\fR=0
 limit download speed (kbytes/sec)
+.
+.TP
+\-\fBdownloader\fR=default
+downloader to use (e\.g\. grab)
 .
 .TP
 \-\fBforce\fR
@@ -867,6 +888,10 @@ $ aptly repo list
 Options:
 .
 .TP
+\-\fBjson\fR
+display list in JSON format
+.
+.TP
 \-\fBraw\fR
 display list in machine\-readable format
 .
@@ -923,6 +948,10 @@ ex: $ aptly repo show testing
 .
 .P
 Options:
+.
+.TP
+\-\fBjson\fR
+display record in JSON format
 .
 .TP
 \-\fBwith\-packages\fR
@@ -1053,6 +1082,10 @@ $ aptly snapshot list
 Options:
 .
 .TP
+\-\fBjson\fR
+display list in JSON format
+.
+.TP
 \-\fBraw\fR
 display list in machine\-readable format
 .
@@ -1081,6 +1114,10 @@ $ aptly snapshot show wheezy\-main
 .
 .P
 Options:
+.
+.TP
+\-\fBjson\fR
+display record in JSON format
 .
 .TP
 \-\fBwith\-packages\fR
@@ -1283,7 +1320,7 @@ Example:
 .
 .nf
 
-$ aptly snapshot filter wheezy\-main wheezy\-required \(cqPriorioty (required)\(cq
+$ aptly snapshot filter wheezy\-main wheezy\-required \(cqPriority (required)\(cq
 .
 .fi
 .
@@ -1347,6 +1384,10 @@ $ aptly publish list
 .
 .P
 Options:
+.
+.TP
+\-\fBjson\fR
+display list in JSON format
 .
 .TP
 \-\fBraw\fR
@@ -1727,6 +1768,13 @@ $ aptly publish show wheezy
 .
 .IP "" 0
 .
+.P
+Options:
+.
+.TP
+\-\fBjson\fR
+display record in JSON format
+.
 .SH "SEARCH FOR PACKAGES MATCHING QUERY"
 \fBaptly\fR \fBpackage\fR \fBsearch\fR [\fIpackage\-query\fR]
 .
@@ -2082,6 +2130,21 @@ Raphael Medaer (https://github\.com/rmedaer)
 .
 .IP "\[ci]" 4
 Raul Benencia (https://github\.com/rul)
+.
+.IP "\[ci]" 4
+Don Kuntz (https://github\.com/dkuntz2)
+.
+.IP "\[ci]" 4
+Joshua Colson (https://github\.com/freakinhippie)
+.
+.IP "\[ci]" 4
+Andre Roth (https://github\.com/neolynx)
+.
+.IP "\[ci]" 4
+Lorenzo Bolla (https://github\.com/lbolla)
+.
+.IP "\[ci]" 4
+Benj Fassbind (https://github\.com/randombenj)
 .
 .IP "" 0
 

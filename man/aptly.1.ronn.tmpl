@@ -31,6 +31,7 @@ Configuration file is stored in JSON format (default values shown below):
       "downloadConcurrency": 4,
       "downloadSpeedLimit": 0,
       "downloadRetries": 0,
+      "downloader": "default",
       "databaseOpenAttempts": 10,
       "architectures": [],
       "dependencyFollowSuggests": false,
@@ -445,7 +446,7 @@ to proxy all HTTP requests.
 
 {{.Long}}
 
-{{if (allFlags .Flag | len) gt 0}}
+{{if allFlags .Flag | len}}
 Options:
 
 {{template "options" .}}
