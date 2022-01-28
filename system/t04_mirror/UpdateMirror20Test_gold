@@ -13,5 +13,11 @@ Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-cl
 Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-class_7.3-15-1~jessiecran.0_i386.deb...
 Mirror `flat` has been successfully updated.
 Packages filtered: 78 -> 4.
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/Packages.bz2
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-class_7.3-14-2~jessiecran.0_amd64.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-class_7.3-14-2~jessiecran.0_i386.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-class_7.3-15-1~jessiecran.0_amd64.deb
+Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/r-cran-class_7.3-15-1~jessiecran.0_i386.deb
 openpgp: Good signature from "Johannes Ranke (Wissenschaftlicher Berater) <johannes.ranke@jrwb.de>"
 openpgp:  RSA key ID FCAE2A0E115C3D8A

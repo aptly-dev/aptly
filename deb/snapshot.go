@@ -7,7 +7,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/aptly-dev/aptly/database"
@@ -26,8 +25,14 @@ type Snapshot struct {
 	CreatedAt time.Time
 
 	// Source: kind + ID
-	SourceKind string   `codec:"SourceKind" json:"-"`
+	SourceKind string   `codec:"SourceKind"`
 	SourceIDs  []string `codec:"SourceIDs" json:"-"`
+	// Sources
+	Snapshots   []*Snapshot   `codec:"-" json:",omitempty"`
+	RemoteRepos []*RemoteRepo `codec:"-" json:",omitempty"`
+	LocalRepos  []*LocalRepo  `codec:"-" json:",omitempty"`
+	Packages    []string      `codec:"-" json:",omitempty"`
+
 	// Description of how snapshot was created
 	Description string
 
@@ -120,6 +125,13 @@ func (s *Snapshot) Key() []byte {
 	return []byte("S" + s.UUID)
 }
 
+// ResourceKey is a unique identifier of the resource
+// this snapshot uses. Instead of uuid it uses name
+// which needs to be unique as well.
+func (s *Snapshot) ResourceKey() []byte {
+	return []byte("S" + s.Name)
+}
+
 // RefKey is a unique id for package reference list
 func (s *Snapshot) RefKey() []byte {
 	return []byte("E" + s.UUID)
@@ -184,7 +196,6 @@ func (s *Snapshot) Decode(input []byte) error {
 
 // SnapshotCollection does listing, updating/adding/deleting of Snapshots
 type SnapshotCollection struct {
-	*sync.RWMutex
 	db    database.Storage
 	cache map[string]*Snapshot
 }
@@ -192,9 +203,8 @@ type SnapshotCollection struct {
 // NewSnapshotCollection loads Snapshots from DB and makes up collection
 func NewSnapshotCollection(db database.Storage) *SnapshotCollection {
 	return &SnapshotCollection{
-		RWMutex: &sync.RWMutex{},
-		db:      db,
-		cache:   map[string]*Snapshot{},
+		db:    db,
+		cache: map[string]*Snapshot{},
 	}
 }
 
@@ -216,22 +226,14 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 
 // Update stores updated information about snapshot in DB
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
+	batch := collection.db.CreateBatch()
 
-	err = transaction.Put(snapshot.Key(), snapshot.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(snapshot.Key(), snapshot.Encode())
 	if snapshot.packageRefs != nil {
-		if err = transaction.Put(snapshot.RefKey(), snapshot.packageRefs.Encode()); err != nil {
-			return err
-		}
+		batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
 	}
-	return transaction.Commit()
+
+	return batch.Write()
 }
 
 // LoadComplete loads additional information about snapshot
@@ -387,13 +389,7 @@ func (collection *SnapshotCollection) Len() int {
 
 // Drop removes snapshot from collection
 func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	if _, err = transaction.Get(snapshot.Key()); err != nil {
+	if _, err := collection.db.Get(snapshot.Key()); err != nil {
 		if err == database.ErrNotFound {
 			return errors.New("snapshot not found")
 		}
@@ -403,15 +399,10 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 
 	delete(collection.cache, snapshot.UUID)
 
-	if err = transaction.Delete(snapshot.Key()); err != nil {
-		return err
-	}
-
-	if err = transaction.Delete(snapshot.RefKey()); err != nil {
-		return err
-	}
-
-	return transaction.Commit()
+	batch := collection.db.CreateBatch()
+	batch.Delete(snapshot.Key())
+	batch.Delete(snapshot.RefKey())
+	return batch.Write()
 }
 
 // Snapshot sorting methods

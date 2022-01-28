@@ -99,7 +99,7 @@ func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageColle
 	result := NewPackageListWithDuplicates(false, reflist.Len())
 
 	if progress != nil {
-		progress.InitBar(int64(reflist.Len()), false)
+		progress.InitBar(int64(reflist.Len()), false, aptly.BarGeneralBuildPackageList)
 	}
 
 	err := reflist.ForEach(func(key []byte) error {
@@ -266,6 +266,19 @@ func (l *PackageList) Strings() []string {
 	return result
 }
 
+// FullNames builds a list of package {name}_{version}_{arch}
+func (l *PackageList) FullNames() []string {
+	result := make([]string, l.Len())
+	i := 0
+
+	for _, p := range l.packages {
+		result[i] = p.GetFullName()
+		i++
+	}
+
+	return result
+}
+
 // depSliceDeduplicate removes dups in slice of Dependencies
 func depSliceDeduplicate(s []Dependency) []Dependency {
 	l := len(s)
@@ -301,7 +314,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 	missing := make([]Dependency, 0, 128)
 
 	if progress != nil {
-		progress.InitBar(int64(l.Len())*int64(len(architectures)), false)
+		progress.InitBar(int64(l.Len())*int64(len(architectures)), false, aptly.BarGeneralVerifyDependencies)
 	}
 
 	for _, arch := range architectures {

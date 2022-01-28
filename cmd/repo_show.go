@@ -1,27 +1,42 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 
+	"github.com/aptly-dev/aptly/deb"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
 
 func aptlyRepoShow(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 1 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyRepoShowJSON(cmd, args)
+	}
+
+	return aptlyRepoShowTxt(cmd, args)
+}
+
+func aptlyRepoShowTxt(cmd *commander.Command, args []string) error {
+	var err error
+
 	name := args[0]
 
-	repo, err := context.CollectionFactory().LocalRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -37,7 +52,49 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		ListPackagesRefList(repo.RefList())
+		ListPackagesRefList(repo.RefList(), collectionFactory)
+	}
+
+	return err
+}
+
+func aptlyRepoShowJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	name := args[0]
+
+	repo, err := context.NewCollectionFactory().LocalRepoCollection().ByName(name)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	err = context.NewCollectionFactory().LocalRepoCollection().LoadComplete(repo)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	// include packages if requested
+	packageList := []string{}
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		if repo.RefList() != nil {
+			var list *deb.PackageList
+			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
+			if err == nil {
+				packageList = list.FullNames()
+			}
+		}
+
+		sort.Strings(packageList)
+	}
+
+	// merge the repo object with the package list
+	var output []byte
+	if output, err = json.MarshalIndent(struct {
+		*deb.LocalRepo
+		Packages []string
+	}{repo, packageList}, "", "  "); err == nil {
+		fmt.Println(string(output))
 	}
 
 	return err
@@ -57,6 +114,7 @@ ex:
 		Flag: *flag.NewFlagSet("aptly-repo-show", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("json", false, "display record in JSON format")
 	cmd.Flag.Bool("with-packages", false, "show list of packages")
 
 	return cmd

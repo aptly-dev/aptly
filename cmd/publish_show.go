@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -9,11 +10,22 @@ import (
 )
 
 func aptlyPublishShow(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
+
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyPublishShowJSON(cmd, args)
+	}
+
+	return aptlyPublishShowTxt(cmd, args)
+}
+
+func aptlyPublishShowTxt(cmd *commander.Command, args []string) error {
+	var err error
 
 	distribution := args[0]
 	param := "."
@@ -24,7 +36,8 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 
 	storage, prefix := deb.ParsePrefix(param)
 
-	repo, err := context.CollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -42,13 +55,13 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	for component, sourceID := range repo.Sources {
 		var name string
 		if repo.SourceKind == deb.SourceSnapshot {
-			source, e := context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+			source, e := collectionFactory.SnapshotCollection().ByUUID(sourceID)
 			if e != nil {
 				continue
 			}
 			name = source.Name
 		} else if repo.SourceKind == deb.SourceLocalRepo {
-			source, e := context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+			source, e := collectionFactory.LocalRepoCollection().ByUUID(sourceID)
 			if e != nil {
 				continue
 			}
@@ -58,6 +71,36 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 		if name != "" {
 			fmt.Printf("  %s: %s [%s]\n", component, name, repo.SourceKind)
 		}
+	}
+
+	return err
+}
+
+func aptlyPublishShowJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	distribution := args[0]
+	param := "."
+
+	if len(args) == 2 {
+		param = args[1]
+	}
+
+	storage, prefix := deb.ParsePrefix(param)
+
+	repo, err := context.NewCollectionFactory().PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	err = context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
+	if err != nil {
+		return err
+	}
+
+	var output []byte
+	if output, err = json.MarshalIndent(repo, "", "  "); err == nil {
+		fmt.Println(string(output))
 	}
 
 	return err
@@ -76,6 +119,8 @@ Example:
     $ aptly publish show wheezy
 `,
 	}
+
+	cmd.Flag.Bool("json", false, "display record in JSON format")
 
 	return cmd
 }

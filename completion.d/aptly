@@ -314,7 +314,11 @@ _aptly()
           ;;
           "list")
             if [[ $numargs -eq 0 ]]; then
-                COMPREPLY=($(compgen -W "-raw" -- ${cur}))
+              if [[ "$cur" == -* ]]; then
+                COMPREPLY=($(compgen -W "-raw -json" -- ${cur}))
+              else
+                COMPREPLY=($(compgen -W "$(__aptly_repo_list)" -- ${cur}))
+              fi
               return 0
             fi
           ;;
@@ -361,7 +365,7 @@ _aptly()
           "show")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-with-packages" -- ${cur}))
+                COMPREPLY=($(compgen -W "-json -with-packages" -- ${cur}))
               else
                 COMPREPLY=($(compgen -W "$(__aptly_repo_list)" -- ${cur}))
               fi

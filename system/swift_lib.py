@@ -1,6 +1,8 @@
 from lib import BaseTest
+import logging
 import uuid
 import os
+
 
 try:
     import swiftclient
@@ -23,10 +25,10 @@ try:
         swift_conn = swiftclient.Connection(auth_url, auth_username,
                                             auth_password, auth_version=1)
     else:
-        print "Swift tests disabled: OpenStack creds not found in the environment"
+        print("Swift tests disabled: OpenStack creds not found in the environment")
         swift_conn = None
-except ImportError, e:
-    print "Swift tests disabled: unable to import swiftclient", e
+except ImportError as e:
+    print("Swift tests disabled: unable to import swiftclient", e)
     swift_conn = None
 
 
@@ -50,13 +52,21 @@ class SwiftTest(BaseTest):
 
         super(SwiftTest, self).prepare()
 
-    def shutdown(self):
-        if hasattr(self, "container_name"):
+    def _try_delete_container(self):
+        if not hasattr(self, "container_name"):
+            return
+
+        try:
             for obj in swift_conn.get_container(self.container_name,
                                                 full_listing=True)[1]:
                 swift_conn.delete_object(self.container_name, obj.get("name"))
 
             swift_conn.delete_container(self.container_name)
+        except swiftclient.ClientException:
+            logging.exception("Error shutting down Swift container")
+
+    def shutdown(self):
+        self._try_delete_container()
         super(SwiftTest, self).shutdown()
 
     def check_path(self, path):

@@ -3,12 +3,16 @@ package api
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"sort"
-	"time"
+	"strconv"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,49 +39,14 @@ type dbRequest struct {
 	err  chan<- error
 }
 
-// Flushes all collections which cache in-memory objects
-func flushColections() {
-	// lock everything to eliminate in-progress calls
-	r := context.CollectionFactory().RemoteRepoCollection()
-	r.Lock()
-	defer r.Unlock()
-
-	l := context.CollectionFactory().LocalRepoCollection()
-	l.Lock()
-	defer l.Unlock()
-
-	s := context.CollectionFactory().SnapshotCollection()
-	s.Lock()
-	defer s.Unlock()
-
-	p := context.CollectionFactory().PublishedRepoCollection()
-	p.Lock()
-	defer p.Unlock()
-
-	// all collections locked, flush them
-	context.CollectionFactory().Flush()
-}
-
-// Periodically flushes CollectionFactory to free up memory used by
-// collections, flushing caches.
-//
-// Should be run in goroutine!
-func cacheFlusher() {
-	ticker := time.Tick(15 * time.Minute)
-
-	for {
-		<-ticker
-
-		flushColections()
-	}
-}
+var dbRequests chan dbRequest
 
 // Acquire database lock and release it when not needed anymore.
 //
 // Should be run in a goroutine!
-func acquireDatabase(requests <-chan dbRequest) {
+func acquireDatabase() {
 	clients := 0
-	for request := range requests {
+	for request := range dbRequests {
 		var err error
 
 		switch request.kind {
@@ -94,7 +63,6 @@ func acquireDatabase(requests <-chan dbRequest) {
 		case releasedb:
 			clients--
 			if clients == 0 {
-				flushColections()
 				err = context.CloseDatabase()
 			} else {
 				err = nil
@@ -105,12 +73,100 @@ func acquireDatabase(requests <-chan dbRequest) {
 	}
 }
 
+// Should be called before database access is needed in any api call.
+// Happens per default for each api call. It is important that you run
+// runTaskInBackground to run a task which accquire database.
+// Important do not forget to defer to releaseDatabaseConnection
+func acquireDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{acquiredb, errCh}
+
+	return <-errCh
+}
+
+// Release database connection when not needed anymore
+func releaseDatabaseConnection() error {
+	if dbRequests == nil {
+		return nil
+	}
+
+	errCh := make(chan error)
+	dbRequests <- dbRequest{releasedb, errCh}
+	return <-errCh
+}
+
+// runs tasks in background. Acquires database connection first.
+func runTaskInBackground(name string, resources []string, proc task.Process) (task.Task, *task.ResourceConflictError) {
+	return context.TaskList().RunTaskInBackground(name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		err := acquireDatabaseConnection()
+
+		if err != nil {
+			return nil, err
+		}
+
+		defer releaseDatabaseConnection()
+		return proc(out, detail)
+	})
+}
+
+func truthy(value interface{}) bool {
+	if value == nil {
+		return false
+	}
+	switch value.(type) {
+	case string:
+		switch strings.ToLower(value.(string)) {
+		case "n", "no", "f", "false", "0", "off":
+			return false
+		default:
+			return true
+		}
+	case int:
+		return !(value.(int) == 0)
+	case bool:
+		return value.(bool)
+	}
+	return true
+}
+
+func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, proc task.Process) {
+	// Run this task in background if configured globally or per-request
+	background := truthy(c.DefaultQuery("_async", strconv.FormatBool(context.Config().AsyncAPI)))
+	if background {
+		log.Println("Executing task asynchronously")
+		task, conflictErr := runTaskInBackground(name, resources, proc)
+		if conflictErr != nil {
+			c.AbortWithError(409, conflictErr)
+			return
+		}
+		c.JSON(202, task)
+	} else {
+		log.Println("Executing task synchronously")
+		out := context.Progress()
+		detail := task.Detail{}
+		retValue, err := proc(out, &detail)
+		if err != nil {
+			c.AbortWithError(retValue.Code, err)
+			return
+		}
+		if retValue != nil {
+			c.JSON(retValue.Code, retValue.Value)
+		} else {
+			c.JSON(http.StatusOK, nil)
+		}
+	}
+}
+
 // Common piece of code to show list of packages,
 // with searching & details if requested
-func showPackages(c *gin.Context, reflist *deb.PackageRefList) {
+func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) {
 	result := []*deb.Package{}
 
-	list, err := deb.NewPackageListFromRefList(reflist, context.CollectionFactory().PackageCollection(), nil)
+	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return

@@ -47,6 +47,24 @@ class APITest(BaseTest):
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.post("http://%s%s" % (self.base_url, uri), *args, **kwargs)
 
+    def _ensure_async(self, kwargs):
+        # Make sure we run this as an async task
+        params = kwargs.get('params', {})
+        params.setdefault('_async', True)
+        kwargs['params'] = params
+
+    def post_task(self, uri, *args, **kwargs):
+        self._ensure_async(kwargs)
+        resp = self.post(uri, *args, **kwargs)
+        if resp.status_code != 202:
+            return resp
+
+        _id = resp.json()['ID']
+        resp = self.get("/api/tasks/" + str(_id) + "/wait")
+        self.check_equal(resp.status_code, 200)
+
+        return self.get("/api/tasks/" + str(_id))
+
     def put(self, uri, *args, **kwargs):
         if "json" in kwargs:
             kwargs["data"] = json.dumps(kwargs.pop("json"))
@@ -55,6 +73,18 @@ class APITest(BaseTest):
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.put("http://%s%s" % (self.base_url, uri), *args, **kwargs)
 
+    def put_task(self, uri, *args, **kwargs):
+        self._ensure_async(kwargs)
+        resp = self.put(uri, *args, **kwargs)
+        if resp.status_code != 202:
+            return resp
+
+        _id = resp.json()['ID']
+        resp = self.get("/api/tasks/" + str(_id) + "/wait")
+        self.check_equal(resp.status_code, 200)
+
+        return self.get("/api/tasks/" + str(_id))
+
     def delete(self, uri, *args, **kwargs):
         if "json" in kwargs:
             kwargs["data"] = json.dumps(kwargs.pop("json"))
@@ -62,6 +92,18 @@ class APITest(BaseTest):
                 kwargs["headers"] = {}
             kwargs["headers"]["Content-Type"] = "application/json"
         return requests.delete("http://%s%s" % (self.base_url, uri), *args, **kwargs)
+
+    def delete_task(self, uri, *args, **kwargs):
+        self._ensure_async(kwargs)
+        resp = self.delete(uri, *args, **kwargs)
+        if resp.status_code != 202:
+            return resp
+
+        _id = resp.json()['ID']
+        resp = self.get("/api/tasks/" + str(_id) + "/wait")
+        self.check_equal(resp.status_code, 200)
+
+        return self.get("/api/tasks/" + str(_id))
 
     def upload(self, uri, *filenames, **kwargs):
         upload_name = kwargs.pop("upload_name", None)

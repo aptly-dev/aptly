@@ -20,15 +20,15 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		// We use a goroutine to count the number of
 		// concurrent requests. When no more requests are
 		// running, we close the database to free the lock.
-		requests := make(chan dbRequest)
+		dbRequests = make(chan dbRequest)
 
-		go acquireDatabase(requests)
+		go acquireDatabase()
 
 		router.Use(func(c *gin.Context) {
 			var err error
 
 			errCh := make(chan error)
-			requests <- dbRequest{acquiredb, errCh}
+			dbRequests <- dbRequest{acquiredb, errCh}
 
 			err = <-errCh
 			if err != nil {
@@ -37,7 +37,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			}
 
 			defer func() {
-				requests <- dbRequest{releasedb, errCh}
+				dbRequests <- dbRequest{releasedb, errCh}
 				err = <-errCh
 				if err != nil {
 					c.AbortWithError(500, err)
@@ -46,9 +46,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 			c.Next()
 		})
-
-	} else {
-		go cacheFlusher()
 	}
 
 	root := router.Group("/api")
@@ -79,6 +76,19 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		root.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
+	}
+
+	{
+		root.GET("/mirrors", apiMirrorsList)
+		root.GET("/mirrors/:name", apiMirrorsShow)
+		root.GET("/mirrors/:name/packages", apiMirrorsPackages)
+		root.POST("/mirrors", apiMirrorsCreate)
+		root.PUT("/mirrors/:name", apiMirrorsUpdate)
+		root.DELETE("/mirrors/:name", apiMirrorsDrop)
+	}
+
+	{
+		root.POST("/gpg/key", apiGPGAddKey)
 	}
 
 	{
@@ -113,6 +123,21 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		root.GET("/graph.:ext", apiGraph)
+	}
+	{
+		root.POST("/db/cleanup", apiDbCleanup)
+	}
+	{
+		root.GET("/tasks", apiTasksList)
+		root.POST("/tasks-clear", apiTasksClear)
+		root.GET("/tasks-wait", apiTasksWait)
+		root.GET("/tasks/:id/wait", apiTasksWaitForTaskByID)
+		root.GET("/tasks/:id/output", apiTasksOutputShow)
+		root.GET("/tasks/:id/detail", apiTasksDetailShow)
+		root.GET("/tasks/:id/return_value", apiTasksReturnValueShow)
+		root.GET("/tasks/:id", apiTasksShow)
+		root.DELETE("/tasks/:id", apiTasksDelete)
+		root.POST("/tasks-dummy", apiTasksDummy)
 	}
 
 	return router

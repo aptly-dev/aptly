@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -9,18 +10,30 @@ import (
 )
 
 func aptlyPublishList(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyPublishListJSON(cmd, args)
+	}
+
+	return aptlyPublishListTxt(cmd, args)
+}
+
+func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
+	var err error
+
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
 
-	published := make([]string, 0, context.CollectionFactory().PublishedRepoCollection().Len())
+	collectionFactory := context.NewCollectionFactory()
+	published := make([]string, 0, collectionFactory.PublishedRepoCollection().Len())
 
-	err = context.CollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
-		e := context.CollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.CollectionFactory())
+	err = collectionFactory.PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
+		e := collectionFactory.PublishedRepoCollection().LoadComplete(repo, collectionFactory)
 		if e != nil {
 			return e
 		}
@@ -61,6 +74,40 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlyPublishListJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	repos := make([]*deb.PublishedRepo, 0, context.NewCollectionFactory().PublishedRepoCollection().Len())
+
+	err = context.NewCollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
+		e := context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
+		if e != nil {
+			return e
+		}
+
+		repos = append(repos, repo)
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("unable to load list of repos: %s", err)
+	}
+
+	context.CloseDatabase()
+
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].GetPath() < repos[j].GetPath()
+	})
+	if output, e := json.MarshalIndent(repos, "", "  "); e == nil {
+		fmt.Println(string(output))
+	} else {
+		err = e
+	}
+
+	return err
+}
+
 func makeCmdPublishList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishList,
@@ -75,6 +122,7 @@ Example:
 `,
 	}
 
+	cmd.Flag.Bool("json", false, "display list in JSON format")
 	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd

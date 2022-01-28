@@ -1,0 +1,83 @@
+# Based on https://github.com/aptly-dev/aptly/blob/master/.travis.yml
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+
+defaults:
+  run:
+    # see: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+    shell: bash --noprofile --norc -eo pipefail -x {0}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-20.04
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: true
+      matrix:
+        go: [1.14, 1.15, 1.16]
+        run_long_tests: [no]
+        allow_failure: [false]
+        include:
+          # Disable this for now as it's not clear how to select the latest master branch
+          # version of go using actions/setup-go@v2.
+          # - go: master
+          #   run_long_tests: no
+          #   allow_failure: true
+          - go: 1.17
+            run_long_tests: yes
+            allow_failure: false
+
+    env:
+      NO_FTP_ACCESS: yes
+      BOTO_CONFIG: /dev/null
+      GO111MODULE: "on"
+      GOPROXY: "https://proxy.golang.org"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install O/S packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz gnupg1 gnupg2 gpgv1 gpgv2 git gcc make
+
+      - name: Install Python packages
+        run: |
+          pip install six packaging appdirs virtualenv
+          pip install -U pip setuptools
+          pip install -r system/requirements.txt
+
+      - name: Get aptly version
+        run: |
+           make version
+
+      - name: Make prepare
+        run: |
+          make prepare
+
+      - name: Make
+        env:
+          RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
+        run: |
+          make

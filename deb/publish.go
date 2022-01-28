@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pborman/uuid"
@@ -283,7 +282,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	return result, nil
 }
 
-// MarshalJSON requires object to be "loeaded completely"
+// MarshalJSON requires object to be "loaded completely"
 func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	type sourceInfo struct {
 		Component, Name string
@@ -315,6 +314,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"NotAutomatic":         p.NotAutomatic,
 		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
 		"Prefix":               p.Prefix,
+		"Path":                 p.GetPath(),
 		"SourceKind":           p.SourceKind,
 		"Sources":              sources,
 		"Storage":              p.Storage,
@@ -497,6 +497,17 @@ func (p *PublishedRepo) GetLabel() string {
 	return p.Label
 }
 
+// GetName returns the unique name of the repo
+func (p *PublishedRepo) GetPath() string {
+	prefix := p.StoragePrefix()
+
+	if prefix == "" {
+		return p.Distribution
+	}
+
+	return fmt.Sprintf("%s/%s", prefix, p.Distribution)
+}
+
 // GetSuite returns default or manual Suite:
 func (p *PublishedRepo) GetSuite() string {
 	if p.Suite == "" {
@@ -591,6 +602,14 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash)
 
 	legacyContentIndexes := map[string]*ContentsIndex{}
+	var count int64
+	for _, list := range lists {
+		count = count + int64(list.Len())
+	}
+
+	if progress != nil {
+		progress.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
+	}
 
 	for component, list := range lists {
 		hadUdebs := false
@@ -598,10 +617,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		// For all architectures, pregenerate packages/sources files
 		for _, arch := range p.Architectures {
 			indexes.PackageIndex(component, arch, false, false)
-		}
-
-		if progress != nil {
-			progress.InitBar(int64(list.Len()), false)
 		}
 
 		list.PrepareIndex()
@@ -640,8 +655,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			// to push each path of the package into the database.
 			// We'll want this batched so as to avoid an excessive
 			// amount of write() calls.
-			tempBatch := tempDB.CreateBatch()
-			defer tempBatch.Write()
+			batch := tempDB.CreateBatch()
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesArchitecture(arch) {
@@ -660,7 +674,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 								contentIndexesMap[key] = contentIndex
 							}
 
-							contentIndex.Push(qualifiedName, contents, tempBatch)
+							contentIndex.Push(qualifiedName, contents, batch)
 						}
 					}
 
@@ -685,7 +699,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.extra = nil
 			pkg.contents = nil
 
-			return nil
+			return batch.Write()
 		})
 
 		if err != nil {
@@ -710,10 +724,6 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 					return fmt.Errorf("unable to generate contents index: %v", err)
 				}
 			}
-		}
-
-		if progress != nil {
-			progress.ShutdownBar()
 		}
 
 		udebs := []bool{false}
@@ -776,6 +786,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 
 	if progress != nil {
+		progress.ShutdownBar()
 		progress.Printf("Finalizing metadata files...\n")
 	}
 
@@ -882,7 +893,6 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 
 // PublishedRepoCollection does listing, updating/adding/deleting of PublishedRepos
 type PublishedRepoCollection struct {
-	*sync.RWMutex
 	db   database.Storage
 	list []*PublishedRepo
 }
@@ -890,8 +900,7 @@ type PublishedRepoCollection struct {
 // NewPublishedRepoCollection loads PublishedRepos from DB and makes up collection
 func NewPublishedRepoCollection(db database.Storage) *PublishedRepoCollection {
 	return &PublishedRepoCollection{
-		RWMutex: &sync.RWMutex{},
-		db:      db,
+		db: db,
 	}
 }
 
@@ -945,26 +954,15 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 
 // Update stores updated information about repo in DB
 func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	err = transaction.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch := collection.db.CreateBatch()
+	batch.Put(repo.Key(), repo.Encode())
 
 	if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			err = transaction.Put(repo.RefKey(component), item.packageRefs.Encode())
-			if err != nil {
-				return err
-			}
+			batch.Put(repo.RefKey(component), item.packageRefs.Encode())
 		}
 	}
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -1206,12 +1204,6 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	storage, prefix, distribution string, collectionFactory *CollectionFactory, progress aptly.Progress,
 	force, skipCleanup bool) error {
 
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
 	// TODO: load via transaction
 	collection.loadList()
 
@@ -1264,17 +1256,12 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		}
 	}
 
-	err = transaction.Delete(repo.Key())
-	if err != nil {
-		return err
-	}
+	batch := collection.db.CreateBatch()
+	batch.Delete(repo.Key())
 
 	for _, component := range repo.Components() {
-		err = transaction.Delete(repo.RefKey(component))
-		if err != nil {
-			return err
-		}
+		batch.Delete(repo.RefKey(component))
 	}
 
-	return transaction.Commit()
+	return batch.Write()
 }

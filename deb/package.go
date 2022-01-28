@@ -52,10 +52,10 @@ const (
 	PackageTypeInstaller = "installer"
 )
 
-// Special arhictectures
+// Special architectures
 const (
 	ArchitectureAll    = "all"
-	ArhictectureAny    = "any"
+	ArchitectureAny    = "any"
 	ArchitectureSource = "source"
 )
 
@@ -359,6 +359,11 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 // GetName returns package name
 func (p *Package) GetName() string {
 	return p.Name
+}
+
+// GetFullName returns the package full name
+func (p *Package) GetFullName() string {
+	return strings.Join([]string{p.Name, p.Version, p.Architecture}, "_")
 }
 
 // GetVersion returns package version

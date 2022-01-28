@@ -3,20 +3,17 @@ run:
 
 
 linters:
-  enable-all: false
   disable-all: true
   enable:
-   - govet
-   - golint
-   - gofmt
    - deadcode
-   - goimports
-   - misspell
-   - ineffassign
-   - staticcheck
-   - varcheck
-   - structcheck
-   - maligned
-   - vetshadow
    - goconst
-   - interfacer
+   - gofmt
+   - goimports
+   - govet
+   - ineffassign
+   - misspell
+   - revive
+   - staticcheck
+   - structcheck
+   - varcheck
+   - vetshadow

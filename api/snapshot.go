@@ -2,9 +2,12 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,9 +15,8 @@ import (
 func apiSnapshotsList(c *gin.Context) {
 	SortMethodString := c.Request.URL.Query().Get("sort")
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.RLock()
-	defer collection.RUnlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	if SortMethodString == "" {
 		SortMethodString = "name"
@@ -46,49 +48,46 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().RemoteRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.RemoteRepoCollection()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	name := c.Params.ByName("name")
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
-
-	repo, err = collection.ByName(c.Params.ByName("name"))
+	repo, err = collection.ByName(name)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
 	}
 
-	err = repo.CheckLock()
-	if err != nil {
-		c.AbortWithError(409, err)
-		return
-	}
+	// including snapshot resource key
+	resources := []string{string(repo.Key()), "S" + b.Name}
+	taskName := fmt.Sprintf("Create snapshot of mirror %s", name)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		err := repo.CheckLock()
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, err
+		}
 
-	err = collection.LoadComplete(repo)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
+		err = collection.LoadComplete(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
 
-	snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
-	if err != nil {
-		c.AbortWithError(400, err)
-		return
-	}
+		snapshot, err = deb.NewSnapshotFromRepository(b.Name, repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
+		}
 
-	if b.Description != "" {
-		snapshot.Description = b.Description
-	}
+		if b.Description != "" {
+			snapshot.Description = b.Description
+		}
 
-	err = snapshotCollection.Add(snapshot)
-	if err != nil {
-		c.AbortWithError(400, err)
-		return
-	}
-
-	c.JSON(201, snapshot)
+		err = snapshotCollection.Add(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
+		}
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
+	})
 }
 
 // POST /api/snapshots
@@ -115,9 +114,9 @@ func apiSnapshotsCreate(c *gin.Context) {
 		}
 	}
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	var resources []string
 
 	sources := make([]*deb.Snapshot, len(b.SourceSnapshots))
 
@@ -133,39 +132,36 @@ func apiSnapshotsCreate(c *gin.Context) {
 			c.AbortWithError(500, err)
 			return
 		}
+
+		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
-	list := deb.NewPackageList()
+	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		list := deb.NewPackageList()
 
-	// verify package refs and build package list
-	for _, ref := range b.PackageRefs {
-		var p *deb.Package
-
-		p, err = context.CollectionFactory().PackageCollection().ByKey([]byte(ref))
-		if err != nil {
-			if err == database.ErrNotFound {
-				c.AbortWithError(404, fmt.Errorf("package %s: %s", ref, err))
-			} else {
-				c.AbortWithError(500, err)
+		// verify package refs and build package list
+		for _, ref := range b.PackageRefs {
+			p, err := collectionFactory.PackageCollection().ByKey([]byte(ref))
+			if err != nil {
+				if err == database.ErrNotFound {
+					return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, fmt.Errorf("package %s: %s", ref, err)
+				}
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 			}
-			return
+			err = list.Add(p)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
+			}
 		}
-		err = list.Add(p)
+
+		snapshot = deb.NewSnapshotFromRefList(b.Name, sources, deb.NewPackageRefListFromPackageList(list), b.Description)
+
+		err = snapshotCollection.Add(snapshot)
 		if err != nil {
-			c.AbortWithError(400, err)
-			return
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
-	}
-
-	snapshot = deb.NewSnapshotFromRefList(b.Name, sources, deb.NewPackageRefListFromPackageList(list), b.Description)
-
-	err = snapshotCollection.Add(snapshot)
-	if err != nil {
-		c.AbortWithError(400, err)
-		return
-	}
-
-	c.JSON(201, snapshot)
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: nil}, nil
+	})
 }
 
 // POST /api/repos/:name/snapshots
@@ -185,43 +181,41 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().LocalRepoCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.LocalRepoCollection()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	name := c.Params.ByName("name")
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
-
-	repo, err = collection.ByName(c.Params.ByName("name"))
+	repo, err = collection.ByName(name)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
 	}
 
-	err = collection.LoadComplete(repo)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
+	// including snapshot resource key
+	resources := []string{string(repo.Key()), "S" + b.Name}
+	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		err := collection.LoadComplete(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
 
-	snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
-	if err != nil {
-		c.AbortWithError(400, err)
-		return
-	}
+		snapshot, err = deb.NewSnapshotFromLocalRepo(b.Name, repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err
+		}
 
-	if b.Description != "" {
-		snapshot.Description = b.Description
-	}
+		if b.Description != "" {
+			snapshot.Description = b.Description
+		}
 
-	err = snapshotCollection.Add(snapshot)
-	if err != nil {
-		c.AbortWithError(400, err)
-		return
-	}
-
-	c.JSON(201, snapshot)
+		err = snapshotCollection.Add(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
+		}
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
+	})
 }
 
 // PUT /api/snapshots/:name
@@ -240,44 +234,44 @@ func apiSnapshotsUpdate(c *gin.Context) {
 		return
 	}
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
+	name := c.Params.ByName("name")
 
-	snapshot, err = collection.ByName(c.Params.ByName("name"))
+	snapshot, err = collection.ByName(name)
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
 	}
 
-	_, err = collection.ByName(b.Name)
-	if err == nil {
-		c.AbortWithError(409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
-		return
-	}
+	resources := []string{string(snapshot.ResourceKey()), "S" + b.Name}
+	taskName := fmt.Sprintf("Update snapshot %s", name)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		_, err := collection.ByName(b.Name)
+		if err == nil {
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
+		}
 
-	if b.Name != "" {
-		snapshot.Name = b.Name
-	}
+		if b.Name != "" {
+			snapshot.Name = b.Name
+		}
 
-	if b.Description != "" {
-		snapshot.Description = b.Description
-	}
+		if b.Description != "" {
+			snapshot.Description = b.Description
+		}
 
-	err = context.CollectionFactory().SnapshotCollection().Update(snapshot)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
-
-	c.JSON(200, snapshot)
+		err = collectionFactory.SnapshotCollection().Update(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: snapshot}, nil
+	})
 }
 
 // GET /api/snapshots/:name
 func apiSnapshotsShow(c *gin.Context) {
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -299,13 +293,9 @@ func apiSnapshotsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
 
-	snapshotCollection := context.CollectionFactory().SnapshotCollection()
-	snapshotCollection.Lock()
-	defer snapshotCollection.Unlock()
-
-	publishedCollection := context.CollectionFactory().PublishedRepoCollection()
-	publishedCollection.RLock()
-	defer publishedCollection.RUnlock()
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	publishedCollection := collectionFactory.PublishedRepoCollection()
 
 	snapshot, err := snapshotCollection.ByName(name)
 	if err != nil {
@@ -313,37 +303,36 @@ func apiSnapshotsDrop(c *gin.Context) {
 		return
 	}
 
-	published := publishedCollection.BySnapshot(snapshot)
+	resources := []string{string(snapshot.ResourceKey())}
+	taskName := fmt.Sprintf("Delete snapshot %s", name)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		published := publishedCollection.BySnapshot(snapshot)
 
-	if len(published) > 0 {
-		c.AbortWithError(409, fmt.Errorf("unable to drop: snapshot is published"))
-		return
-	}
-
-	if !force {
-		snapshots := snapshotCollection.BySnapshotSource(snapshot)
-		if len(snapshots) > 0 {
-			c.AbortWithError(409, fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override"))
-			return
+		if len(published) > 0 {
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to drop: snapshot is published")
 		}
-	}
 
-	err = snapshotCollection.Drop(snapshot)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
+		if !force {
+			snapshots := snapshotCollection.BySnapshotSource(snapshot)
+			if len(snapshots) > 0 {
+				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("won't delete snapshot that was used as source for other snapshots, use ?force=1 to override")
+			}
+		}
 
-	c.JSON(200, gin.H{})
+		err = snapshotCollection.Drop(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
+	})
 }
 
 // GET /api/snapshots/:name/diff/:withSnapshot
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshotA, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -370,7 +359,7 @@ func apiSnapshotsDiff(c *gin.Context) {
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), context.CollectionFactory().PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
@@ -391,9 +380,8 @@ func apiSnapshotsDiff(c *gin.Context) {
 
 // GET /api/snapshots/:name/packages
 func apiSnapshotsSearchPackages(c *gin.Context) {
-	collection := context.CollectionFactory().SnapshotCollection()
-	collection.Lock()
-	defer collection.Unlock()
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
@@ -407,5 +395,5 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 		return
 	}
 
-	showPackages(c, snapshot.RefList())
+	showPackages(c, snapshot.RefList(), collectionFactory)
 }

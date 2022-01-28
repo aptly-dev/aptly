@@ -1,10 +1,12 @@
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/InRelease...
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release...
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release.gpg...
-openpgp:  RSA key ID 7638D0442B90D010
-openpgp: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
 openpgp:  RSA key ID 04EE7237B7D453EC
 openpgp: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
+openpgp:  RSA key ID 648ACFD622F3D138
+openpgp: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
+openpgp:  RSA key ID 0E98404D386FA1D9
+openpgp: Good signature from "Debian Archive Automatic Signing Key (11/bullseye) <ftpmaster@debian.org>"
 openpgp:  RSA key ID EF0F382A1A7B6500
 openpgp: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
 

@@ -25,3 +25,29 @@ class PublishShow2Test(BaseTest):
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1 ppa/smira",
     ]
     runCmd = "aptly publish show maverick ppa/smira"
+
+
+class PublishShow3Test(BaseTest):
+    """
+    publish show json: existing snapshot
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
+    ]
+    runCmd = "aptly publish show -json maverick"
+
+
+class PublishShow4Test(BaseTest):
+    """
+    publish show json: under prefix
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1 ppa/smira",
+    ]
+    runCmd = "aptly publish show -json maverick ppa/smira"

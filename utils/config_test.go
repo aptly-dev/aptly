@@ -44,6 +44,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": {
 		Container: "repo"}}
 
+	s.config.AzurePublishRoots = map[string]AzurePublishRoot{"test": {
+		Container: "repo"}}
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -114,7 +117,16 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"prefix\": \"\",\n"+
 		"      \"container\": \"repo\"\n"+
 		"    }\n"+
-		"  }\n"+
+		"  },\n"+
+		"  \"AzurePublishEndpoints\": {\n"+
+		"    \"test\": {\n"+
+		"      \"accountName\": \"\",\n"+
+		"      \"accountKey\": \"\",\n"+
+		"      \"container\": \"repo\",\n"+
+		"      \"prefix\": \"\"\n"+
+		"    }\n"+
+		"  },\n"+
+		"  \"AsyncAPI\": false\n"+
 		"}")
 }
 

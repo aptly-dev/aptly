@@ -22,12 +22,13 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -53,7 +54,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	context.Progress().Printf("Downloading & parsing package files...\n")
-	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, context.CollectionFactory(), ignoreMismatch)
+	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, collectionFactory, ignoreMismatch)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -83,8 +84,8 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	skipExistingPackages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
 
 	context.Progress().Printf("Building download queue...\n")
-	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), context.CollectionFactory().PackageCollection(),
-		context.CollectionFactory().ChecksumCollection(nil), skipExistingPackages)
+	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
+		collectionFactory.ChecksumCollection(nil), skipExistingPackages)
 
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -95,12 +96,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		err = context.ReOpenDatabase()
 		if err == nil {
 			repo.MarkAsIdle()
-			context.CollectionFactory().RemoteRepoCollection().Update(repo)
+			collectionFactory.RemoteRepoCollection().Update(repo)
 		}
 	}()
 
 	repo.MarkAsUpdating()
-	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -116,7 +117,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	context.Progress().Printf("Download queue: %d items (%s)\n", count, utils.HumanBytes(downloadSize))
 
 	// Download from the queue
-	context.Progress().InitBar(downloadSize, true)
+	context.Progress().InitBar(downloadSize, true, aptly.BarMirrorUpdateDownloadPackages)
 
 	downloadQueue := make(chan int)
 
@@ -197,7 +198,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	// Import downloaded files
-	context.Progress().InitBar(int64(len(queue)), false)
+	context.Progress().InitBar(int64(len(queue)), false, aptly.BarMirrorUpdateImportFiles)
 
 	for idx := range queue {
 		context.Progress().AddBar(1)
@@ -210,7 +211,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 
 		// and import it back to the pool
-		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, context.CollectionFactory().ChecksumCollection(nil))
+		task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
 		if err != nil {
 			return fmt.Errorf("unable to import file: %s", err)
 		}
@@ -234,8 +235,8 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 	}
 
-	repo.FinalizeDownload(context.CollectionFactory(), context.Progress())
-	err = context.CollectionFactory().RemoteRepoCollection().Update(repo)
+	repo.FinalizeDownload(collectionFactory, context.Progress())
+	err = collectionFactory.RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}

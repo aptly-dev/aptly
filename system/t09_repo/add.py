@@ -76,8 +76,8 @@ class AddRepo4Test(BaseTest):
         super(AddRepo4Test, self).prepare()
 
         self.tempSrcDir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0755)
-        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
+        os.makedirs(os.path.join(self.tempSrcDir, "01"), 0o755)
+        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0o755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "libboost-program-options-dev_1.49.0.1_i386.deb"),
                     os.path.join(self.tempSrcDir, "01"))
@@ -133,7 +133,7 @@ class AddRepo5Test(BaseTest):
         super(AddRepo5Test, self).prepare()
 
         self.tempSrcDir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
+        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0o755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
                     os.path.join(self.tempSrcDir, "02", "03"))
@@ -330,7 +330,7 @@ class AddRepo16Test(BaseTest):
         super(AddRepo16Test, self).prepare()
 
         self.tempSrcDir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0755)
+        os.makedirs(os.path.join(self.tempSrcDir, "02", "03"), 0o755)
 
         shutil.copy(os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "pyspi_0.6.1-1.3.dsc"),
                     os.path.join(self.tempSrcDir, "02", "03"))

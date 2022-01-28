@@ -2,17 +2,17 @@
 aptly
 =====
 
-.. image:: https://api.travis-ci.org/aptly-dev/aptly.svg?branch=master
-    :target: https://travis-ci.org/aptly-dev/aptly
+.. image:: https://github.com/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/aptly-dev/aptly/actions
 
 .. image:: https://codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/aptly-dev/aptly
+    :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://gitter.im/aptly-dev/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: http://goreportcard.com/badge/aptly-dev/aptly
-    :target: http://goreportcard.com/report/aptly-dev/aptly
+.. image:: https://goreportcard.com/badge/github.com/aptly-dev/aptly
+    :target: https://goreportcard.com/report/aptly-dev/aptly
 
 Aptly is a swiss army knife for Debian repository management.
 
@@ -48,7 +48,7 @@ To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list
 
 And import key that is used to sign the release::
 
-    $ apt-key adv --keyserver pool.sks-keyservers.net --recv-keys ED75B5A4483DA07C
+    $ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ED75B5A4483DA07C
 
 After that you can install aptly as any other software package::
 
@@ -64,7 +64,7 @@ If you would like to use nightly builds (unstable), please use following reposit
 
 Binary executables (depends almost only on libc) are available for download from `GitHub Releases <https://github.com/aptly-dev/aptly/releases>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.11+ required)::
+If you have Go environment set up, you can build aptly from source by running (go 1.14+ required)::
 
     git clone https://github.com/aptly-dev/aptly
     cd aptly

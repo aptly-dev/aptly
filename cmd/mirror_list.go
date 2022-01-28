@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -9,17 +10,29 @@ import (
 )
 
 func aptlyMirrorList(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 0 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
-	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
-	repos := make([]string, context.CollectionFactory().RemoteRepoCollection().Len())
+	if jsonFlag {
+		return aptlyMirrorListJSON(cmd, args)
+	}
+
+	return aptlyMirrorListTxt(cmd, args)
+}
+
+func aptlyMirrorListTxt(cmd *commander.Command, args []string) error {
+	var err error
+
+	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
+	collectionFactory := context.NewCollectionFactory()
+
+	repos := make([]string, collectionFactory.RemoteRepoCollection().Len())
 	i := 0
-	context.CollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
@@ -52,6 +65,32 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	return err
 }
 
+func aptlyMirrorListJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	repos := make([]*deb.RemoteRepo, context.NewCollectionFactory().RemoteRepoCollection().Len())
+	i := 0
+	context.NewCollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+		repos[i] = repo
+		i++
+		return nil
+	})
+
+	context.CloseDatabase()
+
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].Name < repos[j].Name
+	})
+
+	if output, e := json.MarshalIndent(repos, "", "  "); e == nil {
+		fmt.Println(string(output))
+	} else {
+		err = e
+	}
+
+	return err
+}
+
 func makeCmdMirrorList() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyMirrorList,
@@ -66,6 +105,7 @@ Example:
 `,
 	}
 
+	cmd.Flag.Bool("json", false, "display list in JSON format")
 	cmd.Flag.Bool("raw", false, "display list in machine-readable format")
 
 	return cmd

@@ -1,8 +1,11 @@
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/InRelease...
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release...
 Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release.gpg...
-gpgv: WARNING: multiple signatures detected.  Only the first will be checked.
-gpgv: Good signature from "Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Archive Automatic Signing Key (11/bullseye) <ftpmaster@debian.org>"
+gpgv:                issuer "debian-release@lists.debian.org"
+gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
 
 Mirror [mirror32]: http://cdn-fastly.deb.debian.org/debian/ stretch successfully added.
 You can run 'aptly mirror update mirror32' to download repository contents.

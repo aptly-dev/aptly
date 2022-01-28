@@ -58,6 +58,7 @@ class CreateMirror6Test(BaseTest):
     """
     create mirror: missing release
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     expectedCode = 1
     requiresGPG1 = True
 
@@ -124,6 +125,7 @@ class CreateMirror11Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://cdn-fastly.deb.debian.org/debian/ stretch"
     fixtureGpg = True
 
@@ -139,6 +141,7 @@ class CreateMirror12Test(BaseTest):
     """
     create mirror: repo with Release+Release.gpg verification, failure
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://cdn-fastly.deb.debian.org/debian/ stretch"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
@@ -211,6 +214,7 @@ class CreateMirror18Test(BaseTest):
     """
     create mirror: mirror with ppa URL
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     configOverride = {
         "ppaDistributorID": "ubuntu",
@@ -251,6 +255,7 @@ class CreateMirror20Test(BaseTest):
     """
     create mirror: using failing HTTP_PROXY
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
 
     runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://security.debian.org/ stretch/updates main"
@@ -258,15 +263,23 @@ class CreateMirror20Test(BaseTest):
     expectedCode = 1
 
     def outputMatchPrepare(self, s):
-        return s.replace('getsockopt: ', '').replace('connect: ', ''). \
-            replace('proxyconnect tcp',
-                    'http: error connecting to proxy http://127.0.0.1:3137')
+        return s.replace(
+            'getsockopt: ', ''
+        ).replace(
+            'connect: ', ''
+        ).replace(
+            'proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137'
+        ).replace(
+            'Get http://security.debian.org/dists/stretch/updates/Release:',
+            'Get "http://security.debian.org/dists/stretch/updates/Release":'
+        )
 
 
 class CreateMirror21Test(BaseTest):
     """
     create mirror: flat repository in subdir
     """
+    skipTest = "Requesting obsolete file - InRelease"
     runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror21 http://pkg.jenkins-ci.org/debian-stable binary/"
     fixtureGpg = True
 
@@ -349,6 +362,9 @@ class CreateMirror27Test(BaseTest):
     """
     runCmd = "aptly mirror create --ignore-signatures mirror27 http://linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
 
+    def outputMatchPrepare(self, s):
+        return self.strip_retry_lines(s)
+
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror27", "mirror_show")
@@ -370,6 +386,7 @@ class CreateMirror30Test(BaseTest):
     """
     create mirror: repo with InRelease verification, failure  (internal GPG implementation)
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://cdn-fastly.deb.debian.org/debian/ stretch"
     configOverride = {"gpgProvider": "internal"}
     gold_processor = BaseTest.expand_environ
@@ -384,6 +401,7 @@ class CreateMirror31Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (internal GPG implementation)
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://cdn-fastly.deb.debian.org/debian/ stretch"
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
@@ -396,6 +414,7 @@ class CreateMirror32Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (gpg2)
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://cdn-fastly.deb.debian.org/debian/ stretch"
     fixtureGpg = True
     requiresGPG2 = True

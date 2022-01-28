@@ -20,5 +20,7 @@
     "skipContentsPublishing": false,
     "FileSystemPublishEndpoints": {},
     "S3PublishEndpoints": {},
-    "SwiftPublishEndpoints": {}
+    "SwiftPublishEndpoints": {},
+    "AzurePublishEndpoints": {},
+    "AsyncAPI": false
 }

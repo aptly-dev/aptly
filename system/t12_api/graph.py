@@ -7,19 +7,21 @@ class GraphAPITest(APITest):
     GET /graph.:ext
     """
 
+    requiresDot = True
+
     def check(self):
         resp = self.get("/api/graph.png")
         self.check_equal(resp.headers["Content-Type"], "image/png")
-        self.check_equal(resp.content[:4], '\x89PNG')
+        self.check_equal(resp.content[:4], b'\x89PNG')
 
         self.check_equal(self.post("/api/repos", json={"Name": "xyz", "Comment": "fun repo"}).status_code, 201)
         resp = self.get("/api/graph.svg")
         self.check_equal(resp.headers["Content-Type"], "image/svg+xml")
-        self.check_equal(resp.content[:4], '<?xm')
+        self.check_equal(resp.content[:4], b'<?xm')
 
         resp = self.get("/api/graph.dot")
         self.check_equal(resp.headers["Content-Type"], "text/plain; charset=utf-8")
-        self.check_equal(resp.content[:13], 'digraph aptly')
+        self.check_equal(resp.content[:13], b'digraph aptly')
 
         # basic test of layout:
         #   horizontal should be wider than vertical
@@ -44,4 +46,6 @@ class GraphAPITest(APITest):
 
         # remove the repos again
         for repo in tempRepos:
-            self.check_equal(self.delete("/api/repos/" + repo, params={"force": "1"}).status_code, 200)
+            self.check_equal(self.delete_task(
+                "/api/repos/" + repo, params={"force": "1"}).json()['State'], 2
+            )

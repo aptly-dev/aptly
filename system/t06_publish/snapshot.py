@@ -1,8 +1,7 @@
 import os
 import hashlib
 import inspect
-import zlib
-from lib import BaseTest
+from lib import BaseTest, ungzip_if_required
 
 
 def strip_processor(output):
@@ -11,13 +10,6 @@ def strip_processor(output):
 
 def sorted_processor(output):
     return "\n".join(sorted(output.split("\n")))
-
-
-def ungzip_if_required(output):
-    if output.startswith("\x1f\x8b"):
-        return zlib.decompress(output, 16+zlib.MAX_WBITS)
-
-    return output
 
 
 class PublishSnapshot1Test(BaseTest):
@@ -75,9 +67,9 @@ class PublishSnapshot1Test(BaseTest):
                                  'packages_amd64', match_prepare=sorted_processor)
 
         self.check_file_contents('public/dists/maverick/main/Contents-i386.gz',
-                                 'contents_i386', match_prepare=ungzip_if_required)
+                                 'contents_i386', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
         self.check_file_contents('public/dists/maverick/main/Contents-amd64.gz',
-                                 'contents_amd64', match_prepare=ungzip_if_required)
+                                 'contents_amd64', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
 
         # verify signatures
         self.run_cmd([self.gpgFinder.gpg, "--no-auto-check-trustdb", "--keyring", os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", "aptly.pub"),
@@ -116,8 +108,7 @@ class PublishSnapshot1Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join(
-                'public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -841,8 +832,7 @@ class PublishSnapshot26Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join(
-                'public/dists/maverick', path)))
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -940,8 +930,8 @@ class PublishSnapshot32Test(BaseTest):
     runCmd = "aptly publish snapshot -component=main,contrib snap32.1"
     expectedCode = 2
 
-    def outputMatchPrepare(_, s):
-        return "\n".join([l for l in s.split("\n") if l.startswith("ERROR")])
+    def outputMatchPrepare(self, s):
+        return "\n".join([l for l in self.ensure_utf8(s).split("\n") if l.startswith("ERROR")])
 
 
 class PublishSnapshot33Test(BaseTest):
@@ -989,6 +979,7 @@ class PublishSnapshot35Test(BaseTest):
     """
     publish snapshot: mirror with udebs
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
@@ -1092,7 +1083,7 @@ class PublishSnapshot35Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/stretch', path)))
+            h.update(self.read_file(os.path.join('public/dists/stretch', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -1145,6 +1136,7 @@ class PublishSnapshot37Test(BaseTest):
     """
     publish snapshot: mirror with double mirror update
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
@@ -1160,6 +1152,7 @@ class PublishSnapshot38Test(BaseTest):
     """
     publish snapshot: mirror with installer
     """
+    skipTest = "Requesting obsolete file - stretch/InRelease"
     fixtureGpg = True
     fixtureCmds = [
         "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main",
@@ -1214,6 +1207,6 @@ class PublishSnapshot39Test(BaseTest):
                                  'packages_amd64', match_prepare=sorted_processor)
 
         self.check_file_contents('public/dists/maverick/main/Contents-i386.gz',
-                                 'contents_i386', match_prepare=ungzip_if_required)
+                                 'contents_i386', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
         self.check_file_contents('public/dists/maverick/main/Contents-amd64.gz',
-                                 'contents_amd64', match_prepare=ungzip_if_required)
+                                 'contents_amd64', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)

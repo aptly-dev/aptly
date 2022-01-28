@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -33,7 +32,7 @@ const (
 
 // RemoteRepo represents remote (fetchable) Debian repository.
 //
-// Repostitory could be filtered when fetching by components, architectures
+// Repository could be filtered when fetching by components, architectures
 type RemoteRepo struct {
 	// Permanent internal ID
 	UUID string
@@ -52,7 +51,7 @@ type RemoteRepo struct {
 	// Last update date
 	LastDownloadDate time.Time
 	// Checksums for release files
-	ReleaseFiles map[string]utils.ChecksumInfo
+	ReleaseFiles map[string]utils.ChecksumInfo `json:"-"` // exclude from json output
 	// Filter for packages
 	Filter string
 	// Status marks state of repository (being updated, no action)
@@ -71,6 +70,8 @@ type RemoteRepo struct {
 	DownloadUdebs bool
 	// Should we download installer files?
 	DownloadInstaller bool
+	// Packages for json output
+	Packages []string `codec:"-" json:",omitempty"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -172,6 +173,11 @@ func (repo *RemoteRepo) NumPackages() int {
 // RefList returns package list for repo
 func (repo *RemoteRepo) RefList() *PackageRefList {
 	return repo.packageRefs
+}
+
+// PackageList returns package list for repo
+func (repo *RemoteRepo) PackageList() *PackageList {
+	return repo.packageList
 }
 
 // MarkAsUpdating puts current PID and sets status to updating
@@ -507,7 +513,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 
 		if progress != nil {
 			stat, _ := packagesFile.Stat()
-			progress.InitBar(stat.Size(), true)
+			progress.InitBar(stat.Size(), true, aptly.BarMirrorUpdateBuildPackageList)
 		}
 
 		sreader := NewControlFileReader(packagesReader, false, isInstaller)
@@ -544,12 +550,14 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 				}
 			}
 			err = repo.packageList.Add(p)
-			if _, ok := err.(*PackageConflictError); ok {
-				if progress != nil {
-					progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+			if err != nil {
+				if _, ok := err.(*PackageConflictError); ok {
+					if progress != nil {
+						progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
+					}
+				} else if err != nil {
+					return err
 				}
-			} else if err != nil {
-				return err
 			}
 		}
 
@@ -634,7 +642,7 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 	repo.LastDownloadDate = time.Now()
 
 	if progress != nil {
-		progress.InitBar(int64(repo.packageList.Len()), false)
+		progress.InitBar(int64(repo.packageList.Len()), true, aptly.BarMirrorUpdateFinalizeDownload)
 	}
 
 	var i int
@@ -745,7 +753,6 @@ func (repo *RemoteRepo) RefKey() []byte {
 
 // RemoteRepoCollection does listing, updating/adding/deleting of RemoteRepos
 type RemoteRepoCollection struct {
-	*sync.RWMutex
 	db    database.Storage
 	cache map[string]*RemoteRepo
 }
@@ -753,9 +760,8 @@ type RemoteRepoCollection struct {
 // NewRemoteRepoCollection loads RemoteRepos from DB and makes up collection
 func NewRemoteRepoCollection(db database.Storage) *RemoteRepoCollection {
 	return &RemoteRepoCollection{
-		RWMutex: &sync.RWMutex{},
-		db:      db,
-		cache:   make(map[string]*RemoteRepo),
+		db:    db,
+		cache: make(map[string]*RemoteRepo),
 	}
 }
 
@@ -813,24 +819,13 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
+	batch := collection.db.CreateBatch()
 
-	err = transaction.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
-
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for remote repo
@@ -903,13 +898,7 @@ func (collection *RemoteRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	if _, err = transaction.Get(repo.Key()); err != nil {
+	if _, err := collection.db.Get(repo.Key()); err != nil {
 		if err == database.ErrNotFound {
 			return errors.New("repo not found")
 		}
@@ -919,13 +908,8 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 
 	delete(collection.cache, repo.UUID)
 
-	if err = transaction.Delete(repo.Key()); err != nil {
-		return err
-	}
-
-	if err = transaction.Delete(repo.RefKey()); err != nil {
-		return err
-	}
-
-	return transaction.Commit()
+	batch := collection.db.CreateBatch()
+	batch.Delete(repo.Key())
+	batch.Delete(repo.RefKey())
+	return batch.Write()
 }

@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/smira/commander"
@@ -9,20 +11,31 @@ import (
 )
 
 func aptlySnapshotShow(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 1 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
-	name := args[0]
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
 
-	snapshot, err := context.CollectionFactory().SnapshotCollection().ByName(name)
+	if jsonFlag {
+		return aptlySnapshotShowJSON(cmd, args)
+	}
+
+	return aptlySnapshotShowTxt(cmd, args)
+}
+
+func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
+	var err error
+	name := args[0]
+	collectionFactory := context.NewCollectionFactory()
+
+	snapshot, err := collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -37,21 +50,21 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 			var name string
 			if snapshot.SourceKind == deb.SourceSnapshot {
 				var source *deb.Snapshot
-				source, err = context.CollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				source, err = collectionFactory.SnapshotCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == deb.SourceLocalRepo {
 				var source *deb.LocalRepo
-				source, err = context.CollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				source, err = collectionFactory.LocalRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
 				name = source.Name
 			} else if snapshot.SourceKind == deb.SourceRemoteRepo {
 				var source *deb.RemoteRepo
-				source, err = context.CollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				source, err = collectionFactory.RemoteRepoCollection().ByUUID(sourceID)
 				if err != nil {
 					continue
 				}
@@ -66,7 +79,78 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		ListPackagesRefList(snapshot.RefList())
+		ListPackagesRefList(snapshot.RefList(), collectionFactory)
+	}
+
+	return err
+}
+
+func aptlySnapshotShowJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	name := args[0]
+
+	snapshot, err := context.NewCollectionFactory().SnapshotCollection().ByName(name)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	err = context.NewCollectionFactory().SnapshotCollection().LoadComplete(snapshot)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	// include the sources
+	if len(snapshot.SourceIDs) > 0 {
+		for _, sourceID := range snapshot.SourceIDs {
+			if snapshot.SourceKind == deb.SourceSnapshot {
+				var source *deb.Snapshot
+				source, err = context.NewCollectionFactory().SnapshotCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				snapshot.Snapshots = append(snapshot.Snapshots, source)
+			} else if snapshot.SourceKind == deb.SourceLocalRepo {
+				var source *deb.LocalRepo
+				source, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				snapshot.LocalRepos = append(snapshot.LocalRepos, source)
+			} else if snapshot.SourceKind == deb.SourceRemoteRepo {
+				var source *deb.RemoteRepo
+				source, err = context.NewCollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+				if err != nil {
+					continue
+				}
+				snapshot.RemoteRepos = append(snapshot.RemoteRepos, source)
+			}
+		}
+	}
+
+	// include packages if requested
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		if snapshot.RefList() != nil {
+			var list *deb.PackageList
+			list, err = deb.NewPackageListFromRefList(snapshot.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
+			if err != nil {
+				return fmt.Errorf("unable to get package list: %s", err)
+			}
+
+			list.PrepareIndex()
+			list.ForEachIndexed(func(p *deb.Package) error {
+				snapshot.Packages = append(snapshot.Packages, p.GetFullName())
+				return nil
+			})
+
+			sort.Strings(snapshot.Packages)
+		}
+	}
+
+	var output []byte
+	if output, err = json.MarshalIndent(snapshot, "", "  "); err == nil {
+		fmt.Println(string(output))
 	}
 
 	return err
@@ -87,6 +171,7 @@ Example:
 		Flag: *flag.NewFlagSet("aptly-snapshot-show", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("json", false, "display record in JSON format")
 	cmd.Flag.Bool("with-packages", false, "show list of packages")
 
 	return cmd

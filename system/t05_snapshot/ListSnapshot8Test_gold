@@ -1,0 +1,42 @@
+[
+  {
+    "Name": "snap1",
+    "SourceKind": "repo",
+    "Description": "Snapshot from mirror [wheezy-main]: http://mirror.yandex.ru/debian/ wheezy",
+    "Origin": "Debian",
+    "NotAutomatic": "",
+    "ButAutomaticUpgrades": ""
+  },
+  {
+    "Name": "snap2",
+    "SourceKind": "repo",
+    "Description": "Snapshot from mirror [wheezy-contrib]: http://mirror.yandex.ru/debian/ wheezy",
+    "Origin": "Debian",
+    "NotAutomatic": "",
+    "ButAutomaticUpgrades": ""
+  },
+  {
+    "Name": "snap3",
+    "SourceKind": "snapshot",
+    "Description": "Merged from sources: 'snap1', 'snap2'",
+    "Origin": "",
+    "NotAutomatic": "",
+    "ButAutomaticUpgrades": ""
+  },
+  {
+    "Name": "snap4",
+    "SourceKind": "snapshot",
+    "Description": "Pulled into 'snap1' with 'snap2' as source, pull request was: 'mame unrar'",
+    "Origin": "",
+    "NotAutomatic": "",
+    "ButAutomaticUpgrades": ""
+  },
+  {
+    "Name": "snap5",
+    "SourceKind": "local",
+    "Description": "Snapshot from local repo [local-repo]",
+    "Origin": "",
+    "NotAutomatic": "",
+    "ButAutomaticUpgrades": ""
+  }
+]

@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/aptly-dev/aptly/deb"
@@ -11,20 +13,32 @@ import (
 )
 
 func aptlyMirrorShow(cmd *commander.Command, args []string) error {
-	var err error
 	if len(args) != 1 {
 		cmd.Usage()
 		return commander.ErrCommandError
 	}
 
+	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
+
+	if jsonFlag {
+		return aptlyMirrorShowJSON(cmd, args)
+	}
+
+	return aptlyMirrorShowTxt(cmd, args)
+}
+
+func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
+	var err error
+
 	name := args[0]
 
-	repo, err := context.CollectionFactory().RemoteRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.CollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -72,8 +86,51 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 		if repo.LastDownloadDate.IsZero() {
 			fmt.Printf("Unable to show package list, mirror hasn't been downloaded yet.\n")
 		} else {
-			ListPackagesRefList(repo.RefList())
+			ListPackagesRefList(repo.RefList(), collectionFactory)
 		}
+	}
+
+	return err
+}
+
+func aptlyMirrorShowJSON(cmd *commander.Command, args []string) error {
+	var err error
+
+	name := args[0]
+
+	repo, err := context.NewCollectionFactory().RemoteRepoCollection().ByName(name)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	err = context.NewCollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	if err != nil {
+		return fmt.Errorf("unable to show: %s", err)
+	}
+
+	// include packages if requested
+	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
+	if withPackages {
+		if repo.RefList() != nil {
+			var list *deb.PackageList
+			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
+			if err != nil {
+				return fmt.Errorf("unable to get package list: %s", err)
+			}
+
+			list.PrepareIndex()
+			list.ForEachIndexed(func(p *deb.Package) error {
+				repo.Packages = append(repo.Packages, p.GetFullName())
+				return nil
+			})
+
+			sort.Strings(repo.Packages)
+		}
+	}
+
+	var output []byte
+	if output, err = json.MarshalIndent(repo, "", "  "); err == nil {
+		fmt.Println(string(output))
 	}
 
 	return err
@@ -94,6 +151,7 @@ Example:
 		Flag: *flag.NewFlagSet("aptly-mirror-show", flag.ExitOnError),
 	}
 
+	cmd.Flag.Bool("json", false, "display record in JSON format")
 	cmd.Flag.Bool("with-packages", false, "show detailed list of packages and versions stored in the mirror")
 
 	return cmd

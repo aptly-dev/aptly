@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/aptly-dev/aptly/database"
 	"github.com/pborman/uuid"
@@ -93,7 +92,6 @@ func (repo *LocalRepo) RefKey() []byte {
 
 // LocalRepoCollection does listing, updating/adding/deleting of LocalRepos
 type LocalRepoCollection struct {
-	*sync.RWMutex
 	db    database.Storage
 	cache map[string]*LocalRepo
 }
@@ -101,9 +99,8 @@ type LocalRepoCollection struct {
 // NewLocalRepoCollection loads LocalRepos from DB and makes up collection
 func NewLocalRepoCollection(db database.Storage) *LocalRepoCollection {
 	return &LocalRepoCollection{
-		RWMutex: &sync.RWMutex{},
-		db:      db,
-		cache:   make(map[string]*LocalRepo),
+		db:    db,
+		cache: make(map[string]*LocalRepo),
 	}
 }
 
@@ -161,23 +158,12 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 
 // Update stores updated information about repo in DB
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	err = transaction.Put(repo.Key(), repo.Encode())
-	if err != nil {
-		return err
-	}
+	batch := collection.db.CreateBatch()
+	batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		err = transaction.Put(repo.RefKey(), repo.packageRefs.Encode())
-		if err != nil {
-			return err
-		}
+		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
-	return transaction.Commit()
+	return batch.Write()
 }
 
 // LoadComplete loads additional information for local repo
@@ -251,28 +237,17 @@ func (collection *LocalRepoCollection) Len() int {
 
 // Drop removes remote repo from collection
 func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
-
-	delete(collection.cache, repo.UUID)
-
-	if _, err = transaction.Get(repo.Key()); err != nil {
+	if _, err := collection.db.Get(repo.Key()); err != nil {
 		if err == database.ErrNotFound {
 			return errors.New("local repo not found")
 		}
+
 		return err
 	}
+	delete(collection.cache, repo.UUID)
 
-	if err = transaction.Delete(repo.Key()); err != nil {
-		return err
-	}
-
-	if err = transaction.Delete(repo.RefKey()); err != nil {
-		return err
-	}
-
-	return transaction.Commit()
+	batch := collection.db.CreateBatch()
+	batch.Delete(repo.Key())
+	batch.Delete(repo.RefKey())
+	return batch.Write()
 }

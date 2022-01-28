@@ -38,11 +38,14 @@ class FileSystemEndpointTest(BaseTest):
         if not os.path.islink(os.path.join(os.environ["HOME"], ".aptly", path)):
             raise Exception("path %s is not a symlink" % (path, ))
 
+    def is_hardlink(self, path):
+        return os.stat(os.path.join(os.environ["HOME"], ".aptly", path)).st_nlink >= 2
+
     def check_is_hardlink(self, path):
-        if os.stat(os.path.join(os.environ["HOME"], ".aptly", path)) <= 1:
+        if not self.is_hardlink(path):
             raise Exception("path %s is not a hardlink" % (path, ))
 
     def check_is_copy(self, path):
         fullpath = os.path.join(os.environ["HOME"], ".aptly", path)
-        if not (os.path.isfile(fullpath) and not self.check_is_hardlink(path)):
+        if not (os.path.isfile(fullpath) and not self.is_hardlink(path)):
             raise Exception("path %s is not a copy" % (path, ))

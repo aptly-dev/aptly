@@ -1,0 +1,97 @@
+[
+  {
+    "AcquireByHash": false,
+    "Architectures": [
+      "amd64",
+      "i386"
+    ],
+    "ButAutomaticUpgrades": "",
+    "Distribution": "maverick",
+    "Label": "",
+    "NotAutomatic": "",
+    "Origin": "LP-PPA-gladky-anton-gnuplot",
+    "Path": "./maverick",
+    "Prefix": ".",
+    "SkipContents": false,
+    "SourceKind": "snapshot",
+    "Sources": [
+      {
+        "Component": "main",
+        "Name": "snap1"
+      }
+    ],
+    "Storage": "",
+    "Suite": ""
+  },
+  {
+    "AcquireByHash": false,
+    "Architectures": [
+      "amd64"
+    ],
+    "ButAutomaticUpgrades": "",
+    "Distribution": "wheezy",
+    "Label": "",
+    "NotAutomatic": "",
+    "Origin": "",
+    "Path": "ppa/smira/wheezy",
+    "Prefix": "ppa/smira",
+    "SkipContents": false,
+    "SourceKind": "snapshot",
+    "Sources": [
+      {
+        "Component": "contrib",
+        "Name": "snap2"
+      }
+    ],
+    "Storage": "",
+    "Suite": ""
+  },
+  {
+    "AcquireByHash": false,
+    "Architectures": [
+      "amd64",
+      "i386"
+    ],
+    "ButAutomaticUpgrades": "",
+    "Distribution": "maverick",
+    "Label": "",
+    "NotAutomatic": "",
+    "Origin": "origin1",
+    "Path": "ppa/tr1/maverick",
+    "Prefix": "ppa/tr1",
+    "SkipContents": false,
+    "SourceKind": "snapshot",
+    "Sources": [
+      {
+        "Component": "main",
+        "Name": "snap2"
+      }
+    ],
+    "Storage": "",
+    "Suite": ""
+  },
+  {
+    "AcquireByHash": false,
+    "Architectures": [
+      "amd64",
+      "i386"
+    ],
+    "ButAutomaticUpgrades": "",
+    "Distribution": "maverick",
+    "Label": "label1",
+    "NotAutomatic": "",
+    "Origin": "",
+    "Path": "ppa/tr2/maverick",
+    "Prefix": "ppa/tr2",
+    "SkipContents": false,
+    "SourceKind": "snapshot",
+    "Sources": [
+      {
+        "Component": "main",
+        "Name": "snap2"
+      }
+    ],
+    "Storage": "",
+    "Suite": ""
+  }
+]
