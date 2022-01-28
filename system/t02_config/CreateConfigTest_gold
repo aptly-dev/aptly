@@ -3,6 +3,7 @@
   "downloadConcurrency": 4,
   "downloadSpeedLimit": 0,
   "downloadRetries": 0,
+  "downloader": "default",
   "databaseOpenAttempts": -1,
   "architectures": [],
   "dependencyFollowSuggests": false,

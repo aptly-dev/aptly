@@ -14,7 +14,7 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/aptly-dev/aptly/utils"
-	"github.com/cavaliercoder/grab"
+	"github.com/cavaliergopher/grab/v3"
 	"github.com/pkg/errors"
 
 	"github.com/aptly-dev/aptly/aptly"

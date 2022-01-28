@@ -204,6 +204,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                     update)
                         _arguments \
                             "-download-limit=[limit download speed (kB/s)]:kB/s: " \
+                            "-downloader=[downloader to use]:str: " \
                             "-force=[force update mirror even if it is locked by another process]:$bool" \
                             "-ignore-checksums=[ignore checksum mismatches while downloading package files and metadata]:$bool" \
                             "-ignore-signatures=[disable verification of Release file signatures]:$bool" \

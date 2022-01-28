@@ -267,6 +267,7 @@ Example:
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("skip-existing-packages", false, "do not check file existence for packages listed in the internal database of the mirror")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
+	cmd.Flag.String("downloader", "default", "downloader to use (e.g. grab)")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
 
