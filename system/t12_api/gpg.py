@@ -19,13 +19,11 @@ class GPGAPITestAddKey(APITest):
     POST /gpg/key
     """
 
-    skipTest = "Using obsolete keys.gnupg.net"
-
     def check(self):
         with tempfile.NamedTemporaryFile(suffix=".pub") as keyring:
             gpgkeyid = "9E3E53F19C7DE460"
             resp = self.post("/api/gpg/key", json={
-                "Keyserver": "keys.gnupg.net",
+                "Keyserver": "keyserver.ubuntu.com",
                 "Keyring": keyring.name,
                 "GpgKeyID": gpgkeyid
             })
