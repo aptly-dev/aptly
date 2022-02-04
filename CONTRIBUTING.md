@@ -40,7 +40,7 @@ Please report unacceptable behavior to [team@aptly.info](mailto:team@aptly.info)
 
 There are two kinds of documentation:
 
-* [aptly website](https://www.aptly/info)
+* [aptly website](https://www.aptly.info)
 * aptly `man` page
 
 Core content is mostly the same, but website contains more information, tutorials, examples.
