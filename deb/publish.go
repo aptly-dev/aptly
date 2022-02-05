@@ -641,7 +641,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 		// For all architectures, pregenerate packages/sources files
 		for _, arch := range p.Architectures {
-			indexes.PackageIndex(component, arch, false, false)
+			indexes.PackageIndex(component, arch, false, false, p.Distribution)
 		}
 
 		list.PrepareIndex()
@@ -665,7 +665,11 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 						relPath = filepath.Join("pool", component, poolDir)
 					} else {
-						relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
+						if p.Distribution == "focal" {
+							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "legacy-images")
+						} else {
+							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
+						}
 					}
 
 					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
@@ -703,7 +707,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 					}
 
-					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, pkg.IsInstaller).BufWriter()
+					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, pkg.IsInstaller, p.Distribution).BufWriter()
 					if err != nil {
 						return err
 					}
@@ -757,7 +761,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 			// For all architectures, pregenerate .udeb indexes
 			for _, arch := range p.Architectures {
-				indexes.PackageIndex(component, arch, true, false)
+				indexes.PackageIndex(component, arch, true, false, p.Distribution)
 			}
 		}
 
