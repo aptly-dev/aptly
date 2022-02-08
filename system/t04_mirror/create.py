@@ -401,7 +401,7 @@ class CreateMirror31Test(BaseTest):
     create mirror: repo with Release + Release.gpg verification (internal GPG implementation)
     """
     runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://cdn-fastly.deb.debian.org/debian/ stretch"
-    configOverride = {"gpgProvider": "internal", "max-tries": 1 }
+    configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
 
     def outputMatchPrepare(self, s):
