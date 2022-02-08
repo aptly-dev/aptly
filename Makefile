@@ -11,10 +11,21 @@ TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
 
+# etcd test env
+ETCD_VER=v3.5.2
+DOWNLOAD_URL=https://storage.googleapis.com/etcd
+
 all: modules test bench check system-test
 
 prepare:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.43.0
+
+etcd-prepare:
+	# etcd test prepare
+	rm -rf /tmp/etcd-download-test/test-data && mkdir -p /tmp/etcd-download-test/test-data
+	if [ ! -e /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ]; then curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz; fi
+	tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
+	/tmp/etcd-download-test/etcd --data-dir /tmp/etcd-download-test/test-data &
 
 modules:
 	go mod download
@@ -47,7 +58,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS)
 endif
 
-test:
+test: etcd-prepare
 	go test -v ./... -gocheck.v=true -race -coverprofile=coverage.txt -covermode=atomic
 
 bench:

@@ -33,6 +33,7 @@ type ConfigStructure struct { // nolint: maligned
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
+	DatabaseEtcd           string                           `json:"databaseEtcd"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
