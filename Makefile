@@ -12,6 +12,10 @@ COVERAGE_DIR?=$(shell mktemp -d)
 # Uncomment to update test outputs
 # CAPTURE := "--capture"
 
+# etcd test env
+ETCD_VER=v3.5.2
+DOWNLOAD_URL=https://storage.googleapis.com/etcd
+
 all: modules test bench check system-test
 
 # Self-documenting Makefile
@@ -21,6 +25,13 @@ help:  ## Print this help
 
 prepare:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin $(GOLANGCI_LINT_VERSION)
+
+etcd-prepare:
+	# etcd test prepare
+	rm -rf /tmp/etcd-download-test/test-data && mkdir -p /tmp/etcd-download-test/test-data
+	if [ ! -e /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ]; then curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz; fi
+	tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
+	/tmp/etcd-download-test/etcd --data-dir /tmp/etcd-download-test/test-data &
 
 modules:
 	go mod download
@@ -68,7 +79,7 @@ docker-test: install
 	export APTLY_VERSION=$(VERSION); \
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:
+test: etcd-prepare
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
 
 bench:

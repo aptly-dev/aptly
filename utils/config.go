@@ -40,6 +40,7 @@ type ConfigStructure struct { // nolint: maligned
 	LogLevel               string                           `json:"logLevel"`
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
+	DatabaseEtcd           string                           `json:"databaseEtcd"`
 }
 
 type LocalPoolStorage struct {
