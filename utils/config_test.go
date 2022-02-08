@@ -137,7 +137,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"enableMetricsEndpoint\": false,\n"+
 		"  \"logLevel\": \"info\",\n"+
 		"  \"logFormat\": \"json\",\n"+
-		"  \"serveInAPIMode\": false\n"+
+		"  \"serveInAPIMode\": false,\n"+
+		"  \"databaseEtcd\": \"\"\n"+
 		"}")
 }
 

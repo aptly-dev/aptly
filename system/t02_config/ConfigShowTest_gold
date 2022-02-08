@@ -28,5 +28,6 @@
     "enableMetricsEndpoint": true,
     "logLevel": "debug",
     "logFormat": "default",
-    "serveInAPIMode": true
+    "serveInAPIMode": true,
+    "databaseEtcd": ""
 }

@@ -38,6 +38,7 @@ type ConfigStructure struct { // nolint: maligned
 	LogLevel               string                           `json:"logLevel"`
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
+	DatabaseEtcd           string                           `json:"databaseEtcd"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
