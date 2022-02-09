@@ -22,6 +22,10 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to edit: %s", err)
 	}
 
+	if !checkGroup(repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	}
+
 	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
@@ -39,6 +43,8 @@ func aptlyRepoEdit(cmd *commander.Command, args []string) error {
 			repo.DefaultComponent = flag.Value.String()
 		case "uploaders-file":
 			uploadersFile = pointer.ToString(flag.Value.String())
+		case "ldap-group":
+			repo.LdapGroup = flag.Value.String()
 		}
 	})
 
@@ -82,6 +88,7 @@ Example:
 	cmd.Flag.String("distribution", "", "default distribution when publishing")
 	cmd.Flag.String("component", "", "default component when publishing")
 	cmd.Flag.String("uploaders-file", "", "uploaders.json to be used when including .changes into this repository")
+	cmd.Flag.String("ldap-group", "", "ldap group that owns the repo, leave empty to allow ALL")
 
 	return cmd
 }

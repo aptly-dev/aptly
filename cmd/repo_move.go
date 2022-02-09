@@ -25,6 +25,10 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
 
+	if !checkGroup(dstRepo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", dstRepo.Name, repo.LdapGroup))
+	}
+
 	err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
