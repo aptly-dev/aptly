@@ -124,8 +124,8 @@ class UpdateMirror8Test(BaseTest):
     """
     update mirrors: with sources (already in pool)
     """
+    configOverride = {"max-tries": 1}
 
-    skipTest = "Requesting obsolete file - maverick/InRelease"
     fixtureGpg = True
     fixturePool = True
     fixtureCmds = [
@@ -165,13 +165,14 @@ class UpdateMirror11Test(BaseTest):
     """
     update mirrors: update over FTP
     """
-    skipTest = "Requesting obsolete file - stretch/InRelease"
+    configOverride = {"max-tries": 1}
     sortOutput = True
     longTest = False
     fixtureGpg = True
     requiresFTP = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' -architectures=i386 stretch-main ftp://ftp.ru.debian.org/debian/ stretch main",
+        "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' "
+        "-architectures=i386 stretch-main https://snapshot.debian.org/archive/debian/20220201T025006Z/ stretch main",
     ]
     outputMatchPrepare = filterOutSignature
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch-main"
@@ -181,7 +182,7 @@ class UpdateMirror12Test(BaseTest):
     """
     update mirrors: update with udebs
     """
-    skipTest = "Requesting obsolete file - stretch/InRelease"
+    configOverride = {"max-tries": 1}
     sortOutput = True
     longTest = False
     fixtureGpg = True
@@ -223,11 +224,16 @@ class UpdateMirror15Test(BaseTest):
     """
     update mirrors: update for mirror without MD5 checksums
     """
+    # TODO spin up a Python server to serve that data from fixtures directory, instead of using bintray
+    # e.g. python3 -m http.server --directory src/aptly/system/t04_mirror/test_release/
+    # but that fixture seems to have the wrong hashes...
     skipTest = "Using deprecated service - bintray"
     sortOutput = True
     longTest = False
     fixtureCmds = [
         "aptly mirror create --ignore-signatures bintray https://dl.bintray.com/smira/deb/ ./",
+        # TODO note the ./ is "flat" whereas putting "hardy" looks into dists/hardy
+        # "aptly mirror create --ignore-signatures bintray http://localhost:8000/ hardy",
     ]
     runCmd = "aptly mirror update --ignore-signatures bintray"
 
@@ -327,11 +333,11 @@ class UpdateMirror19Test(BaseTest):
     """
     update mirrors: correct matching of Release checksums
     """
-    skipTest = "Requesting obsolete file - stretch/InRelease"
+    configOverride = {"max-tries": 1}
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://packages.pagerduty.com/pdagent deb/"
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty https://packages.pagerduty.com/pdagent deb/"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
     outputMatchPrepare = filterOutSignature
@@ -358,12 +364,11 @@ class UpdateMirror21Test(BaseTest):
     """
     update mirrors: correct matching of Release checksums (internal pgp implementation)
     """
-    skipTest = "Requesting obsolete file - deb/InRelease"
     longTest = False
-    configOverride = {"gpgProvider": "internal"}
+    configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://packages.pagerduty.com/pdagent deb/"
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty https://packages.pagerduty.com/pdagent deb/"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
     outputMatchPrepare = filterOutSignature
@@ -391,7 +396,7 @@ class UpdateMirror23Test(BaseTest):
     """
     update mirrors: update with installer
     """
-    skipTest = "Requesting obsolete file - stretch/InRelease"
+    configOverride = {"max-tries": 1}
     sortOutput = True
     longTest = False
     fixtureGpg = True
@@ -406,12 +411,12 @@ class UpdateMirror24Test(BaseTest):
     """
     update mirrors: update with installer with separate gpg file
     """
-    skipTest = "Requesting obsolete file - stretch/InRelease"
+    configOverride = {"max-tries": 1}
     sortOutput = True
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://mirror.enzu.com/ubuntu/ trusty main restricted",
+        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://us.archive.ubuntu.com/ubuntu/ trusty main restricted",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg trusty"
     outputMatchPrepare = filterOutSignature
