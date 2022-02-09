@@ -71,7 +71,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		if err != nil {
 			c.AbortWithError(500, err)
 		}
-		c.SetCookie("authenticatorforaptly", token.String(), 3600, "llnw.net", c.ClientIP(), true, true)
+		c.SetCookie("authenticatorforaptly", token.String(), 3600, "localhost", c.ClientIP(), true, true)
 		c.String(200, "Authorized!")
 	})
 
@@ -85,7 +85,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 				if err != nil {
 					c.AbortWithError(500, err)
 				}
-				c.SetCookie("authenticatorforaptly", token.String(), 3600, "llnw.net", c.ClientIP(), true, true)
+				c.SetCookie("authenticatorforaptly", token.String(), 3600, "localhost", c.ClientIP(), true, true)
 			}
 		}
 	})
