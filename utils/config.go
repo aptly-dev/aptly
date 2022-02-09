@@ -9,6 +9,10 @@ import (
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
+	UseAuth                bool                             `json:"useAuth"`
+	LdapServer             string                           `json:"ldapServer"`
+	LdapDN                 string                           `json:"ldapDN"`
+	LdapFilter             string                           `json:"ldapFilter"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
 	DownloadRetries        int                              `json:"downloadRetries"`
@@ -86,6 +90,10 @@ type AzurePublishRoot struct {
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	UseAuth:                false,
+	LdapServer:             "127.0.0.1:389",
+	LdapDN:                 "dc=example,dc=com",
+	LdapFilter:             "(&(objectClass=posixAccount))",
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
