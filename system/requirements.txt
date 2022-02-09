@@ -5,3 +5,5 @@ requests-unixsocket
 python-swiftclient
 flake8
 termcolor
+etcd3
+leveldb
