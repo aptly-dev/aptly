@@ -132,6 +132,10 @@ class BaseTest(object):
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
+    databaseEtcd = os.environ.get("APTLY_ETCD_DATABASE")
+    if databaseEtcd is None:
+        databaseEtcd = ""
+
     configFile = {
         "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
         "downloadConcurrency": 4,
@@ -150,7 +154,8 @@ class BaseTest(object):
         "enableMetricsEndpoint": True,
         "logLevel": "debug",
         "logFormat": "default",
-        "serveInAPIMode": True
+        "serveInAPIMode": True,
+        "databaseEtcd": databaseEtcd,
     }
     configOverride = {}
     environmentOverride = {}
