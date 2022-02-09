@@ -18,6 +18,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 	repo := deb.NewLocalRepo(args[0], context.Flags().Lookup("comment").Value.String())
 	repo.DefaultDistribution = context.Flags().Lookup("distribution").Value.String()
 	repo.DefaultComponent = context.Flags().Lookup("component").Value.String()
+	repo.LdapGroup = context.Flags().Lookup("ldap-group").Value.String()
 
 	uploadersFile := context.Flags().Lookup("uploaders-file").Value.Get().(string)
 	if uploadersFile != "" {
@@ -79,6 +80,7 @@ Example:
 	cmd.Flag.String("distribution", "", "default distribution when publishing")
 	cmd.Flag.String("component", "main", "default component when publishing")
 	cmd.Flag.String("uploaders-file", "", "uploaders.json to be used when including .changes into this repository")
+	cmd.Flag.String("ldap-group", "", "ldap group that owns the repo, leave empty to allow ALL")
 
 	return cmd
 }

@@ -38,6 +38,7 @@ func apiReposCreate(c *gin.Context) {
 		Comment             string
 		DefaultDistribution string
 		DefaultComponent    string
+		LdapGroup           string
 	}
 
 	if c.Bind(&b) != nil {
@@ -47,6 +48,7 @@ func apiReposCreate(c *gin.Context) {
 	repo := deb.NewLocalRepo(b.Name, b.Comment)
 	repo.DefaultComponent = b.DefaultComponent
 	repo.DefaultDistribution = b.DefaultDistribution
+	repo.LdapGroup = b.LdapGroup
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
@@ -66,6 +68,7 @@ func apiReposEdit(c *gin.Context) {
 		Comment             *string
 		DefaultDistribution *string
 		DefaultComponent    *string
+		LdapGroup           *string
 	}
 
 	if c.Bind(&b) != nil {
@@ -79,6 +82,10 @@ func apiReposEdit(c *gin.Context) {
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
+	}
+
+	if !checkGroup(repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	if b.Name != nil {
@@ -98,6 +105,9 @@ func apiReposEdit(c *gin.Context) {
 	}
 	if b.DefaultComponent != nil {
 		repo.DefaultComponent = *b.DefaultComponent
+	}
+	if b.LdapGroup != nil {
+		repo.LdapGroup = *b.LdapGroup
 	}
 
 	err = collection.Update(repo)
@@ -137,6 +147,10 @@ func apiReposDrop(c *gin.Context) {
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
+	}
+
+	if !checkGroup(repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	resources := []string{string(repo.Key())}
@@ -201,6 +215,10 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
+	}
+
+	if !checkGroup(repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	resources := []string{string(repo.Key())}
@@ -292,6 +310,10 @@ func apiReposPackageFromDir(c *gin.Context) {
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
+	}
+
+	if !checkGroup(repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	var taskName string
@@ -434,6 +456,9 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		if err != nil {
 			c.AbortWithError(404, err)
 			return
+		}
+		if !checkGroup(repo.LdapGroup) {
+			c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 		}
 
 		resources = append(resources, string(repo.Key()))
