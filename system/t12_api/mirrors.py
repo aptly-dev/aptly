@@ -6,15 +6,13 @@ class MirrorsAPITestCreateShow(APITest):
     POST /api/mirrors, GET /api/mirrors/:name/packages
     """
 
-    skipTest = "Using obsolete repo - wheezy/updates"
-
     def check(self):
         mirror_name = self.random_name()
         mirror_desc = {'Name': mirror_name,
-                       'ArchiveURL': 'http://security.debian.org/',
+                       'ArchiveURL': 'http://security.debian.org/debian-security/',
                        'Architectures': ['amd64'],
                        'Components': ['main'],
-                       'Distribution': 'wheezy/updates'}
+                       'Distribution': 'buster/updates'}
 
         resp = self.post("/api/mirrors", json=mirror_desc)
         self.check_equal(resp.status_code, 400)
@@ -29,10 +27,10 @@ class MirrorsAPITestCreateShow(APITest):
         resp = self.get("/api/mirrors/" + mirror_name)
         self.check_equal(resp.status_code, 200)
         self.check_subset({'Name': mirror_name,
-                           'ArchiveRoot': 'http://security.debian.org/',
+                           'ArchiveRoot': 'http://security.debian.org/debian-security/',
                            'Architectures': ['amd64'],
                            'Components': ['main'],
-                           'Distribution': 'wheezy/updates'}, resp.json())
+                           'Distribution': 'buster/updates'}, resp.json())
 
         resp = self.get("/api/mirrors/" + mirror_desc["Name"] + "/packages")
         self.check_equal(resp.status_code, 404)
