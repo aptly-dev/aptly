@@ -127,6 +127,10 @@ class BaseTest(object):
     sortOutput = False
 
     expectedCode = 0
+    databaseEtcd = os.environ.get("APTLY_ETCD_DATABASE")
+    if databaseEtcd is None:
+        databaseEtcd = ""
+
     configFile = {
         "rootDir": "%s/.aptly" % os.environ["HOME"],
         "downloadConcurrency": 4,
@@ -142,6 +146,7 @@ class BaseTest(object):
         "gpgDisableSign": False,
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
+        "databaseEtcd": databaseEtcd,
     }
     configOverride = {}
     environmentOverride = {}
