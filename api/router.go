@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	ctx "github.com/aptly-dev/aptly/context"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/nu7hatch/gouuid"
-	//	"github.com/vodolaz095/ldap4gin"
 )
 
 var context *ctx.AptlyContext
@@ -55,9 +57,19 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	// prep our config fetcher ahead of need
 	config := context.Config()
 
+	// set up cookies and sessions
+	token, err := uuid.NewV4()
+	if err != nil {
+		panic(err)
+	}
+
+	store := cookie.NewStore([]byte(token.String()))
+	router.Use(sessions.Sessions(token.String(), store))
+
 	router.GET("/version", apiVersion)
 
 	router.POST("/login", func(c *gin.Context) {
+		session := sessions.Default(c)
 		if config.UseAuth {
 			log.Printf("UseAuth is enabled\n")
 			username := c.PostForm("username")
@@ -66,27 +78,21 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			if err != nil {
 				c.AbortWithError(403, err)
 			}
+			log.Printf("%s authorized from %s\n", username, c.ClientIP())
 		}
-		token, err := uuid.NewV4()
-		if err != nil {
-			c.AbortWithError(500, err)
-		}
-		c.SetCookie("authenticatorforaptly", token.String(), 3600, "localhost", c.ClientIP(), false, true)
+		session.Set(token.String(), time.Now().Unix())
+		session.Save()
 		c.String(200, "Authorized!")
 	})
 
 	authorize := router.Group("/api", func(c *gin.Context) {
+		session := sessions.Default(c)
 		if config.UseAuth {
-			_, err := c.Cookie("authenticatorforaptly")
-			if err != nil {
-				c.AbortWithError(403, fmt.Errorf("unauthorized"))
-			} else {
-				token, err := uuid.NewV4()
-				if err != nil {
-					c.AbortWithError(500, err)
-				}
-				c.SetCookie("authenticatorforaptly", token.String(), 3600, "localhost", c.ClientIP(), false, true)
+			if session.Get(token.String()) == nil {
+				c.AbortWithError(403, fmt.Errorf("not authorized"))
 			}
+			session.Set(token.String(), time.Now().Unix())
+			session.Save()
 		}
 	})
 	{
