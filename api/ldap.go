@@ -3,7 +3,6 @@ package api
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/gin-contrib/sessions"
@@ -13,7 +12,6 @@ import (
 
 func Authorize(username string, password string) error {
 
-	log.Printf("Entering Authorize Function")
 	attributes := []string{"DN", "CN"}
 	var err error
 
@@ -69,9 +67,6 @@ func GetGroups(c *gin.Context, username string) {
 	}
 	filter := fmt.Sprintf("(|(member=uid=%s,ou=people,dc=llnw,dc=com)(member=uid=%s,ou=people,dc=llnw,dc=com))", username, username)
 	request := ldap.NewSearchRequest(dn, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, []string{"dn", "cn"}, nil)
-	filter = fmt.Sprintf("(&(cn=FirstTeam)(|(member=uid=bhawn@llnw.com,ou=people,dc=llnw,dc=com)(member=uid=bhawn@llnw.com,ou=people,dc=llnw,dc=com)))")
-	request = ldap.NewSearchRequest(dn, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, []string{"dn", "cn"}, nil)
-	log.Printf("%#v", request)
 	search, err := conn.Search(request)
 	if err != nil {
 		return
@@ -81,7 +76,6 @@ func GetGroups(c *gin.Context, username string) {
 	}
 	for _, v := range search.Entries {
 		value := strings.Split(strings.TrimLeft(v.DN, "cn="), ",")[0]
-		log.Printf(value)
 		groups = append(groups, fmt.Sprintf("%s,", value))
 	}
 	session.Set("Groups", groups)
