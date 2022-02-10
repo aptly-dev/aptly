@@ -68,12 +68,14 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router.GET("/version", apiVersion)
 
+	var username string
+	var password string
 	router.POST("/login", func(c *gin.Context) {
 		session := sessions.Default(c)
 		if config.UseAuth {
 			log.Printf("UseAuth is enabled\n")
-			username := c.PostForm("username")
-			password := c.PostForm("password")
+			username = c.PostForm("username")
+			password = c.PostForm("password")
 			err := Authorize(username, password)
 			if err != nil {
 				c.AbortWithError(403, err)
@@ -82,6 +84,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		}
 		session.Set(token.String(), time.Now().Unix())
 		session.Save()
+		GetGroups(c, username)
 		c.String(200, "Authorized!")
 	})
 
