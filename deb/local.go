@@ -27,6 +27,8 @@ type LocalRepo struct {
 	Uploaders *Uploaders `codec:"Uploaders,omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
+	// ldap group for repos
+	LdapGroup string `codec:",ldap-group"`
 }
 
 // NewLocalRepo creates new instance of Debian local repository
