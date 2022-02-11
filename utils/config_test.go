@@ -128,7 +128,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    }\n"+
 		"  },\n"+
 		"  \"AsyncAPI\": false,\n"+
-		"  \"databaseEtcd\": \"\"\n"+
+		"  \"databaseBackend\": {\n"+
+		"    \"type\": \"\",\n"+
+		"    \"url\": \"\"\n"+
+		"  }\n"+
 		"}")
 }
 
