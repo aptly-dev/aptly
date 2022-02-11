@@ -30,5 +30,6 @@
   "logLevel": "debug",
   "logFormat": "default",
   "serveInAPIMode": false,
-  "databaseEtcd": ""
+  "databaseEtcd": "",
+  "databaseBackend": {}
 }
