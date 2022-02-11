@@ -132,9 +132,17 @@ class BaseTest(object):
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
-    databaseEtcd = os.environ.get("APTLY_ETCD_DATABASE")
-    if databaseEtcd is None:
-        databaseEtcd = ""
+    databaseType = os.environ.get("APTLY_DATABASE_TYPE")
+    databaseUrl = os.environ.get("APTLY_DATABASE_URL")
+    if databaseType is None:
+        databaseType = ""
+    if databaseUrl is None:
+        databaseUrl = ""
+
+    databaseBackend = {
+        "type": databaseType,
+        "url": databaseUrl,
+    }
 
     configFile = {
         "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
@@ -156,6 +164,7 @@ class BaseTest(object):
         "logFormat": "default",
         "serveInAPIMode": True,
         "databaseEtcd": databaseEtcd,
+        "databaseBackend": databaseBackend,
     }
     configOverride = {}
     environmentOverride = {}
