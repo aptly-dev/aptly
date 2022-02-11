@@ -3,6 +3,7 @@ package context
 
 import (
 	gocontext "context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -289,8 +290,15 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		if context.config().DatabaseEtcd != "" {
-			context.database, err = etcddb.NewDB(context.config().DatabaseEtcd)
+		if context.config().DatabaseBackend.Type == "etcd" {
+			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
+		} else if context.config().DatabaseBackend.Type == "leveldb" {
+			if context.config().DatabaseBackend.DbPath != "" {
+				dbPath := filepath.Join(context.config().RootDir, context.config().DatabaseBackend.DbPath)
+				context.database, err = goleveldb.NewDB(dbPath)
+			} else {
+				return nil, errors.New("leveldb databaseBackend config invalid")
+			}
 		} else {
 			context.database, err = goleveldb.NewDB(context.dbPath())
 		}
