@@ -28,7 +28,10 @@ Configuration file is stored in JSON format (default values shown below):
 
     {
       "rootDir": "$HOME/.aptly",
-      "databaseEtcd": "",
+      "databaseBackend": {
+        "type": "",
+        "url": ""
+      },
       "downloadConcurrency": 4,
       "downloadSpeedLimit": 0,
       "downloadRetries": 0,
@@ -120,8 +123,8 @@ Options:
     the default for downloaded packages (`rootDir`/pool) and
     the default for published repositories (`rootDir`/public)
 
-  * `databaseEtcd`:
-    the etcd database connection address is empty by default, which means it is not used
+  * `databaseBackend`:
+    the database config; if this config is empty, use levledb backend by default
 
   * `downloadConcurrency`:
     is a number of parallel download threads to use when downloading packages

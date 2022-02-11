@@ -41,6 +41,14 @@ type ConfigStructure struct { // nolint: maligned
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
 	DatabaseEtcd           string                           `json:"databaseEtcd"`
+	DatabaseBackend        DBConfig                         `json:"databaseBackend"`
+}
+
+// DBConfig
+type DBConfig struct {
+	Type   string `json:"type"`
+	URL    string `json:"url"`
+	DbPath string `json:"dbPath"`
 }
 
 type LocalPoolStorage struct {
