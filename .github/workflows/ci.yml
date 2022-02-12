@@ -23,6 +23,7 @@ jobs:
     name: test
     runs-on: ubuntu-20.04
     continue-on-error: ${{ matrix.allow_failure }}
+    timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
