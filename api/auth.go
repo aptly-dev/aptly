@@ -10,7 +10,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
-func Authorize(username string, password string) error {
+func authorize(username string, password string) error {
 
 	attributes := []string{"DN", "CN"}
 	var err error
@@ -48,7 +48,7 @@ func Authorize(username string, password string) error {
 	return nil
 }
 
-func GetGroups(c *gin.Context, username string) {
+func getGroups(c *gin.Context, username string) {
 
 	var groups []string
 	config := context.Config()
@@ -82,20 +82,23 @@ func GetGroups(c *gin.Context, username string) {
 	return
 }
 
-func CheckGroup(c *gin.Context, ldgroup string) bool {
+func checkGroup(c *gin.Context, ldgroup string) bool {
 	session := sessions.Default(c)
 	groups := session.Get("Groups")
-	if ldgroup != "" {
-		gflag := false
-		for _, v := range groups.([]string) {
-			if strings.Contains(v, ldgroup) {
-				gflag = true
-				continue
-			}
-			if !gflag {
-				return false
-			}
+	if ldgroup == "" {
+		return true
+	}
+	for _, v := range groups.([]string) {
+		if strings.Contains(v, ldgroup) {
+			return true
 		}
 	}
-	return true
+	return false
+}
+
+func CheckGroup (c *gin.Context, ldgroup string) error err {
+	if (!checkGroup(c, ldgroup)) {
+		err = fmt.Errorf("Authorisation Failred")
+	}
+	return err
 }

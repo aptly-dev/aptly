@@ -84,8 +84,10 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
-	if !CheckGroup(c, repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	err = CheckGroups(c, repo.LdapGroup)
+	if err != nil {
+		c.AbortWithError(403,err)
+		return
 	}
 
 	if b.Name != nil {
