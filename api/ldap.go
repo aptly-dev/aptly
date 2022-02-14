@@ -84,7 +84,7 @@ func GetGroups(c *gin.Context, username string) {
 
 func CheckGroup(c *gin.Context, ldgroup string) bool {
 	session := sessions.Default(c)
-	groups = session.Get("Groups")
+	groups := session.Get("Groups")
 	if ldgroup != "" {
 		gflag := false
 		for _, v := range groups.([]string) {

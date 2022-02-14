@@ -28,10 +28,6 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
-	}
-
 	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
