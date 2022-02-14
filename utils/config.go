@@ -91,9 +91,9 @@ type AzurePublishRoot struct {
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
 	UseAuth:                false,
-	LdapServer:             "127.0.0.1:389",
-	LdapDN:                 "dc=example,dc=com",
-	LdapFilter:             "(&(objectClass=posixAccount))",
+	LdapServer:             "",
+	LdapDN:                 "",
+	LdapFilter:             "",
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
