@@ -87,7 +87,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		c.String(200, "Authorized!")
 	})
 
-	router.POST("/logout", func(c *gin.Context) {
+	router.GET("/logout", func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Delete(token.String())
 		_ = session.Save()
