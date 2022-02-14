@@ -61,9 +61,6 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"{\n"+
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
 		"  \"UseAuth\": false,\n"+
-		"  \"LdapServer\": \"\",\n"+
-		"  \"LdapDN\": \"\",\n"+
-		"  \"LdapFilter\": \"\",\n"+
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
 		"  \"downloadRetries\": 0,\n"+
@@ -132,6 +129,12 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    }\n"+
 		"  },\n"+
 		"  \"AsyncAPI\": false\n"+
+		"  \"Auth\": {\n"+
+		"    \"type\": \"\",\n"+
+		"    \"server\": \"\",\n"+
+		"    \"ldapDN\": \"\",\n"+
+		"    \"ldapFilter\": \"\",\n"+
+		"  },\n"+
 		"}")
 }
 

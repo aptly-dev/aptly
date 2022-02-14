@@ -87,13 +87,16 @@ type AzurePublishRoot struct {
 	Prefix      string `json:"prefix"`
 }
 
+type Auth struct {
+	Type       string `json:"authType"`
+	Server     string `json:"server"`
+	LdapDN     string `json:"ldapDN"`
+	LdapFilter string `json:"ldapFilter"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
-	UseAuth:                false,
-	LdapServer:             "",
-	LdapDN:                 "",
-	LdapFilter:             "",
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
@@ -115,6 +118,7 @@ var Config = ConfigStructure{
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
+	UseAuth:                false, // should we enable auth
 }
 
 // LoadConfig loads configuration from json file
