@@ -10,42 +10,57 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
-func authorize(username string, password string) error {
-
-	attributes := []string{"DN", "CN"}
-	var err error
-
+func Authorize(username string, password string) (ok bool) {
 	config := context.Config()
-	dn := fmt.Sprintf("%s", config.LdapDN)
+
+	if config.Auth.Type != "" {
+		switch strings.ToLower(config.Auth.Type) {
+		case "ldap":
+			ok = doLdapAuth(username, password)
+		default:
+			return false
+		}
+		if ok != true {
+			return false
+		}
+	}
+	return true
+}
+
+func doLdapAuth(username string, password string) bool {
+	config := context.Config()
+	attributes := []string{"DN", "CN"}
+
+	server := config.LdapServer
+	dn := config.LdapDN
 	filter := fmt.Sprintf(config.LdapFilter, username)
 
 	// connect to ldap server
-	server := fmt.Sprintf("%s", config.LdapServer)
 	conn, err := ldap.Dial("tcp", server)
 	if err != nil {
-		return err
+		return false
 	}
 	defer conn.Close()
 
 	// reconnect via tls
-	err = conn.StartTLS(&tls.Config{InsecureSkipVerify: true})
+	err = conn.StartTLS(&tls.Config{InsecureSkipVerify: config.Auth.SecureTLS})
 	if err != nil {
-		return err
+		return false
 	}
 
 	// format our request and then fire it off
 	request := ldap.NewSearchRequest(dn, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, attributes, nil)
 	search, err := conn.Search(request)
 	if err != nil {
-		return err
+		return false
 	}
 	// get our modified dn and then check our user for auth
 	udn := search.Entries[0].DN
 	err = conn.Bind(udn, password)
 	if err != nil {
-		return err
+		return false
 	}
-	return nil
+	return true
 }
 
 func getGroups(c *gin.Context, username string) {
@@ -96,8 +111,8 @@ func checkGroup(c *gin.Context, ldgroup string) bool {
 	return false
 }
 
-func CheckGroup (c *gin.Context, ldgroup string) error err {
-	if (!checkGroup(c, ldgroup)) {
+func CheckGroup(c *gin.Context, ldgroup string) (err error) {
+	if !checkGroup(c, ldgroup) {
 		err = fmt.Errorf("Authorisation Failred")
 	}
 	return err

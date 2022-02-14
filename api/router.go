@@ -76,9 +76,8 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			log.Printf("UseAuth is enabled\n")
 			username = c.PostForm("username")
 			password = c.PostForm("password")
-			err := authorize(username, password)
-			if err != nil {
-				c.AbortWithError(403, err)
+			if !Authorize(username, password) {
+				c.AbortWithError(403, fmt.Errorf("Authorization Failure"))
 			}
 			log.Printf("%s authorized from %s\n", username, c.ClientIP())
 		}
@@ -86,6 +85,13 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		session.Save()
 		getGroups(c, username)
 		c.String(200, "Authorized!")
+	})
+
+	router.POST("/logout", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Delete(token.String())
+		_ = session.Save()
+		c.String(200, "Signed Out")
 	})
 
 	authorize := router.Group("/api", func(c *gin.Context) {
