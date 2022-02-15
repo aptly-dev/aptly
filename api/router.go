@@ -72,6 +72,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	var password string
 	router.POST("/login", func(c *gin.Context) {
 		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: 30})
 		if config.UseAuth {
 			log.Printf("UseAuth is enabled\n")
 			username = c.PostForm("username")
@@ -87,11 +88,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		c.String(200, "Authorized!")
 	})
 
-	router.GET("/logout", func(c *gin.Context) {
+	router.POST("/logout", func(c *gin.Context) {
 		session := sessions.Default(c)
-		session.Delete(token.String())
-		_ = session.Save()
-		c.String(200, "Signed Out")
+		session.Options(sessions.Options{MaxAge: -1})
+		session.Save()
+		c.String(200, "Deauthorized")
 	})
 
 	authorize := router.Group("/api", func(c *gin.Context) {
@@ -100,6 +101,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			if session.Get(token.String()) == nil {
 				c.AbortWithError(403, fmt.Errorf("not authorized"))
 			}
+			session.Options(sessions.Options{MaxAge: 30})
 			session.Set(token.String(), time.Now().Unix())
 			session.Save()
 		}
