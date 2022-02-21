@@ -37,7 +37,7 @@ type ConfigStructure struct { // nolint: maligned
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
-	Auth                   *AAuth                           `json:"Auth"`
+	Auth                   AAuth                            `json:"Auth"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -93,7 +93,7 @@ type AAuth struct {
 	Server     string `json:"server"`
 	LdapDN     string `json:"ldapDN"`
 	LdapFilter string `json:"ldapFilter"`
-	SecureTLS  bool   `json:"securetls"`
+	SecureTLS  bool   `json:"secureTLS"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -121,7 +121,7 @@ var Config = ConfigStructure{
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
 	UseAuth:                false, // should we enable auth
-	Auth:                   &AAuth{},
+	Auth:                   AAuth{},
 }
 
 // LoadConfig loads configuration from json file

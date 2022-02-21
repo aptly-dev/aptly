@@ -134,7 +134,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    \"server\": \"\",\n"+
 		"    \"ldapDN\": \"\",\n"+
 		"    \"ldapFilter\": \"\",\n"+
-		"  },\n"+
+		"    \"secureTLS\": false,\n"+
+		"  }\n"+
 		"}")
 }
 
