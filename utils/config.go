@@ -9,10 +9,8 @@ import (
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
+	LogFile                string                           `json:"logFile"`
 	UseAuth                bool                             `json:"useAuth"`
-	LdapServer             string                           `json:"ldapServer"`
-	LdapDN                 string                           `json:"ldapDN"`
-	LdapFilter             string                           `json:"ldapFilter"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
 	DownloadRetries        int                              `json:"downloadRetries"`
@@ -99,6 +97,8 @@ type AAuth struct {
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	LogFile:                "",
+	UseAuth:                false, // should we enable auth
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
@@ -120,7 +120,6 @@ var Config = ConfigStructure{
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
-	UseAuth:                false, // should we enable auth
 	Auth:                   AAuth{},
 }
 

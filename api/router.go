@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	ctx "github.com/aptly-dev/aptly/context"
@@ -56,6 +57,16 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	// prep our config fetcher ahead of need
 	config := context.Config()
+
+	// prep a logfile if we've set one
+	if config.LogFile != "" {
+		file, err := os.OpenFile(config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		log.SetOutput(file)
+	}
 
 	// set up cookies and sessions
 	token, err := uuid.NewV4()

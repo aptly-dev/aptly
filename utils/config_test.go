@@ -60,6 +60,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	c.Check(string(buf), Equals, ""+
 		"{\n"+
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
+		"  \"logFile\": \"/var/log/aptly-api.log\",\n"+
 		"  \"UseAuth\": false,\n"+
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+

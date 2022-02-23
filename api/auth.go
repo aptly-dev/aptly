@@ -31,9 +31,9 @@ func doLdapAuth(username string, password string) bool {
 	config := context.Config()
 	attributes := []string{"DN", "CN"}
 
-	server := config.LdapServer
-	dn := config.LdapDN
-	filter := fmt.Sprintf(config.LdapFilter, username)
+	server := config.Auth.Server
+	dn := config.Auth.LdapDN
+	filter := fmt.Sprintf(config.Auth.LdapFilter, username)
 
 	// connect to ldap server
 	conn, err := ldap.Dial("tcp", server)
@@ -67,10 +67,10 @@ func getGroups(c *gin.Context, username string) {
 
 	var groups []string
 	config := context.Config()
-	dn := fmt.Sprintf("%s", config.LdapDN)
+	dn := fmt.Sprintf("%s", config.Auth.LdapDN)
 	session := sessions.Default(c)
 	// connect to ldap server
-	server := fmt.Sprintf("%s", config.LdapServer)
+	server := fmt.Sprintf("%s", config.Auth.Server)
 	conn, err := ldap.Dial("tcp", server)
 	if err != nil {
 		return
