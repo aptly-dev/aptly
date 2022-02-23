@@ -124,7 +124,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	})
 
 	{
-		authorize.POST("/gpg/key", apiGPGAddKey)
 		authorize.GET("/repos", apiReposList)
 		authorize.POST("/repos", apiReposCreate)
 		authorize.GET("/repos/:name", apiReposShow)
