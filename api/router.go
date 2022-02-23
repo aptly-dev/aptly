@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	ctx "github.com/aptly-dev/aptly/context"
@@ -67,6 +68,16 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	store := cookie.NewStore([]byte(token.String()))
 	router.Use(sessions.Sessions(token.String(), store))
 
+	// prep a logfile if we've set one
+	if config.LogFile != "" {
+		file, err := os.OpenFile(config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		log.SetOutput(file)
+	}
+
 	// set up cookies and sessions
 	token, err := uuid.NewV4()
 	if err != nil {
@@ -82,20 +93,27 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	var password string
 	router.POST("/login", func(c *gin.Context) {
 		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: 30})
 		if config.UseAuth {
 			log.Printf("UseAuth is enabled\n")
 			username = c.PostForm("username")
 			password = c.PostForm("password")
-			err := Authorize(username, password)
-			if err != nil {
-				c.AbortWithError(403, err)
+			if !Authorize(username, password) {
+				c.AbortWithError(403, fmt.Errorf("Authorization Failure"))
 			}
 			log.Printf("%s authorized from %s\n", username, c.ClientIP())
 		}
 		session.Set(token.String(), time.Now().Unix())
 		session.Save()
-		GetGroups(c, username)
+		getGroups(c, username)
 		c.String(200, "Authorized!")
+	})
+
+	router.POST("/logout", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: -1})
+		session.Save()
+		c.String(200, "Deauthorized")
 	})
 
 	authorize := router.Group("/api", func(c *gin.Context) {
@@ -104,6 +122,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			if session.Get(token.String()) == nil {
 				c.AbortWithError(403, fmt.Errorf("not authorized"))
 			}
+			session.Options(sessions.Options{MaxAge: 30})
 			session.Set(token.String(), time.Now().Unix())
 			session.Save()
 		}

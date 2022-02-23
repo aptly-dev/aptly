@@ -56,6 +56,14 @@ func (repo *LocalRepo) NumPackages() int {
 	return repo.packageRefs.Len()
 }
 
+// LdapGroup returns the ldapgroup if any for the repo
+func (repo *LocalRepo) LDGroup() string {
+	if repo.LdapGroup != "" {
+		return fmt.Sprintf("[%s]", repo.LdapGroup)
+	}
+	return ""
+}
+
 // RefList returns package list for repo
 func (repo *LocalRepo) RefList() *PackageRefList {
 	return repo.packageRefs

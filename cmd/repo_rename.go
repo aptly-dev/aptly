@@ -25,9 +25,6 @@ func aptlyRepoRename(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
-	}
 
 	_, err = collectionFactory.LocalRepoCollection().ByName(newName)
 	if err == nil {
