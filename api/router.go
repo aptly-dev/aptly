@@ -82,15 +82,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		log.SetOutput(file)
 	}
 
-	// set up cookies and sessions
-	token, err := uuid.NewV4()
-	if err != nil {
-		panic(err)
-	}
-
-	store := cookie.NewStore([]byte(token.String()))
-	router.Use(sessions.Sessions(token.String(), store))
-
 	router.GET("/version", apiVersion)
 
 	var username string
@@ -168,19 +159,8 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.POST("/gpg/key", apiGPGAddKey)
 	}
 
-	// set up cookies and sessions
-	token, err := uuid.NewV4()
-	if err != nil {
-		panic(err)
-	}
-
-	store := cookie.NewStore([]byte(token.String()))
-	router.Use(sessions.Sessions(token.String(), store))
-
 	router.GET("/version", apiVersion)
 
-	var username string
-	var password string
 	router.POST("/login", func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Options(sessions.Options{MaxAge: 30})
@@ -206,17 +186,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		c.String(200, "Deauthorized")
 	})
 
-	authorize := router.Group("/api", func(c *gin.Context) {
-		session := sessions.Default(c)
-		if config.UseAuth {
-			if session.Get(token.String()) == nil {
-				c.AbortWithError(403, fmt.Errorf("not authorized"))
-			}
-			session.Options(sessions.Options{MaxAge: 30})
-			session.Set(token.String(), time.Now().Unix())
-			session.Save()
-		}
-	})
 	{
 		authorize.GET("/repos", apiReposList)
 		authorize.POST("/repos", apiReposCreate)
