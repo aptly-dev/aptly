@@ -249,7 +249,7 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlus(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c",  "lala/a b", "lala/a+b", "lala/c", "testa"})
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a b", "lala/a+b", "lala/c", "testa"})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
