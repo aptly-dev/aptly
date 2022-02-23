@@ -122,71 +122,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			session.Save()
 		}
 	})
-	{
-		root.GET("/repos", apiReposList)
-		root.POST("/repos", apiReposCreate)
-		root.GET("/repos/:name", apiReposShow)
-		root.PUT("/repos/:name", apiReposEdit)
-		root.DELETE("/repos/:name", apiReposDrop)
-
-		root.GET("/repos/:name/packages", apiReposPackagesShow)
-		root.POST("/repos/:name/packages", apiReposPackagesAdd)
-		root.DELETE("/repos/:name/packages", apiReposPackagesDelete)
-
-		root.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
-		root.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
-
-		root.POST("/repos/:name/include/:dir/:file", apiReposIncludePackageFromFile)
-		root.POST("/repos/:name/include/:dir", apiReposIncludePackageFromDir)
-
-		root.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
-	}
 
 	{
-		root.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
-	}
-
-	{
-		root.GET("/mirrors", apiMirrorsList)
-		root.GET("/mirrors/:name", apiMirrorsShow)
-		root.GET("/mirrors/:name/packages", apiMirrorsPackages)
-		root.POST("/mirrors", apiMirrorsCreate)
-		root.PUT("/mirrors/:name", apiMirrorsUpdate)
-		root.DELETE("/mirrors/:name", apiMirrorsDrop)
-	}
-
-	{
-		root.POST("/gpg/key", apiGPGAddKey)
-	}
-
-	router.GET("/version", apiVersion)
-
-	router.POST("/login", func(c *gin.Context) {
-		session := sessions.Default(c)
-		session.Options(sessions.Options{MaxAge: 30})
-		if config.UseAuth {
-			log.Printf("UseAuth is enabled\n")
-			username = c.PostForm("username")
-			password = c.PostForm("password")
-			if !Authorize(username, password) {
-				c.AbortWithError(403, fmt.Errorf("Authorization Failure"))
-			}
-			log.Printf("%s authorized from %s\n", username, c.ClientIP())
-		}
-		session.Set(token.String(), time.Now().Unix())
-		session.Save()
-		getGroups(c, username)
-		c.String(200, "Authorized!")
-	})
-
-	router.POST("/logout", func(c *gin.Context) {
-		session := sessions.Default(c)
-		session.Options(sessions.Options{MaxAge: -1})
-		session.Save()
-		c.String(200, "Deauthorized")
-	})
-
-	{
+		authorize.POST("/gpg/key", apiGPGAddKey)
 		authorize.GET("/repos", apiReposList)
 		authorize.POST("/repos", apiReposCreate)
 		authorize.GET("/repos/:name", apiReposShow)
