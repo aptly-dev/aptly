@@ -4,16 +4,6 @@ package context
 import (
 	gocontext "context"
 	"fmt"
-	"math/rand"
-	"os"
-	"os/signal"
-	"path/filepath"
-	"runtime"
-	"runtime/pprof"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/azure"
 	"github.com/aptly-dev/aptly/console"
@@ -29,6 +19,15 @@ import (
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
+	"math/rand"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"strings"
+	"sync"
+	"time"
 )
 
 // AptlyContext is a common context shared by all commands
