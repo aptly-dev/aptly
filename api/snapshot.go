@@ -192,6 +192,9 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
+        if !CheckGroup(c, repo.LdapGroup) {
+           c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+        }
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)

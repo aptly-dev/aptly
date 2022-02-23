@@ -60,6 +60,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	c.Check(string(buf), Equals, ""+
 		"{\n"+
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
+		"  \"UseAuth\": false,\n"+
+		"  \"LdapServer\": \"\",\n"+
+		"  \"LdapDN\": \"\",\n"+
+		"  \"LdapFilter\": \"\",\n"+
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
 		"  \"downloadRetries\": 0,\n"+

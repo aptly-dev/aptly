@@ -84,8 +84,8 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	if !CheckGroup(c, repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	if b.Name != nil {
@@ -149,8 +149,8 @@ func apiReposDrop(c *gin.Context) {
 		return
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	if !CheckGroup(c, repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	resources := []string{string(repo.Key())}
@@ -217,8 +217,8 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		return
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	if !CheckGroup(c, repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	resources := []string{string(repo.Key())}
@@ -312,8 +312,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+	if !CheckGroup(c, repo.LdapGroup) {
+		c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 	}
 
 	var taskName string
@@ -457,8 +457,8 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			c.AbortWithError(404, err)
 			return
 		}
-		if !checkGroup(repo.LdapGroup) {
-			c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
+		if !CheckGroup(c, repo.LdapGroup) {
+			c.AbortWithError(403, fmt.Errorf("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
 		}
 
 		resources = append(resources, string(repo.Key()))

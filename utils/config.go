@@ -86,6 +86,10 @@ type AzurePublishRoot struct {
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	UseAuth:                false,
+	LdapServer:             "",
+	LdapDN:                 "",
+	LdapFilter:             "",
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",

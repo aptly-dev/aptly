@@ -22,10 +22,6 @@ func aptlyRepoDrop(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to drop: %s", err)
 	}
 
-	if !checkGroup(repo.LdapGroup) {
-		c.AbortWithError(403, fmt.Errof("unauthorized for : %s [%s]", repo.Name, repo.LdapGroup))
-	}
-
 	published := collectionFactory.PublishedRepoCollection().ByLocalRepo(repo)
 	if len(published) > 0 {
 		fmt.Printf("Local repo `%s` is published currently:\n", repo.Name)
