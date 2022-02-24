@@ -297,11 +297,18 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
+	// in: prefix/pool/component/liba/libav/
+	// out: prefix
+	directoryRoot := func(path string) string {
+		return strings.Split(path, "/")[0]
+	}
+
+	prefix := directoryRoot(publishedDirectory)
 	relPath := filepath.Join(publishedDirectory, fileName)
 	poolPath := filepath.Join(storage.prefix, relPath)
 
 	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist("", true)
+		paths, md5s, err := storage.internalFilelist(prefix, true)
 		if err != nil {
 			return errors.Wrap(err, "error caching paths under prefix")
 		}
