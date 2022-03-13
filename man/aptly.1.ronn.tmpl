@@ -113,7 +113,14 @@ Configuration file is stored in JSON format (default values shown below):
           "prefix": "",
           "endpoint": ""
         }
-      }
+      },
+      "Auth": {
+        "authType: "",
+        "server\": "",
+        "ldapDN\": "",
+        "ldapFilter": "",
+        "secureTLS": false
+       }
     }
 
 Options:
@@ -207,6 +214,9 @@ Options:
   * `AzurePublishEndpoints`:
     configuration of Azure publishing endpoints (see below)
 
+  * `Auth`:
+    configuration of authorization for repos, only supports ldap at this time (see below)
+
 ## CUSTOM PACKAGE POOLS
 
 aptly defaults to storing downloaded packages at `rootDir/`pool. In order to
@@ -219,6 +229,7 @@ two values:
   * `azure`: Store the package pool in an Azure Blob Storage container. Any
     keys in the below section on Azure publishing may be set on the
     `packagePoolStorage` object in order to configure the Azure connection.
+
 
 ## FILESYSTEM PUBLISHING ENDPOINTS
 
@@ -347,6 +358,26 @@ configuration file. Each endpoint has its name and associated settings:
     endpoint URL to connect to, as described in
     [the Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string);
     defaults to `https://$accountName.blob.core.windows.net`
+
+## AUTH ENDPOINTS
+
+Authorization for repos may be configured for ldap groups (and is extensible for others),
+default is no authorization.
+
+   * `authType`:
+     auth type, only supports ldap currently
+
+   * `server`:
+     auth server to use (eg. ldaps://ldap.example.com)
+
+   * `ldapDN`:
+     DN for ldap searches
+
+   * `ldapFilter:
+     ldap filter
+
+   * `secureTLS`:
+     enable secureTLS, default is off
 
 ## PACKAGE QUERY
 

@@ -1,9 +1,12 @@
 package api
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	ctx "github.com/aptly-dev/aptly/context"
@@ -11,10 +14,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
-
 	_ "github.com/aptly-dev/aptly/docs" // import docs
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 var context *ctx.AptlyContext
@@ -134,99 +140,160 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		api.GET("/healthy", apiHealthy)
 	}
 
+	// set up cookies and sessions
+	token, err := uuid.NewV4()
+	if err != nil {
+		panic(err)
+	}
+
+	store := cookie.NewStore([]byte(token.String()))
+	router.Use(sessions.Sessions(token.String(), store))
+	// prep our config fetcher ahead of need
+	config := context.Config()
+
+	// prep a logfile if we've set one
+	if config.LogFile != "" {
+		file, err := os.OpenFile(config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		log.SetOutput(file)
+	}
+
+	router.GET("/version", apiVersion)
+
+	var username string
+	var password string
+	router.POST("/login", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: 30})
+		if config.UseAuth {
+			log.Printf("UseAuth is enabled\n")
+			username = c.PostForm("username")
+			password = c.PostForm("password")
+			if !Authorize(username, password) {
+				c.AbortWithError(403, fmt.Errorf("Authorization Failure"))
+			}
+			log.Printf("%s authorized from %s\n", username, c.ClientIP())
+		}
+		session.Set(token.String(), time.Now().Unix())
+		session.Save()
+		getGroups(c, username)
+		c.String(200, "Authorized!")
+	})
+
+	router.POST("/logout", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: -1})
+		session.Save()
+		c.String(200, "Deauthorized")
+	})
+
+	authorize := router.Group("/api", func(c *gin.Context) {
+		session := sessions.Default(c)
+		if config.UseAuth {
+			if session.Get(token.String()) == nil {
+				c.AbortWithError(403, fmt.Errorf("not authorized"))
+			}
+			session.Options(sessions.Options{MaxAge: 30})
+			session.Set(token.String(), time.Now().Unix())
+			session.Save()
+		}
+	})
+
 	{
-		api.GET("/repos", apiReposList)
-		api.POST("/repos", apiReposCreate)
-		api.GET("/repos/:name", apiReposShow)
-		api.PUT("/repos/:name", apiReposEdit)
-		api.DELETE("/repos/:name", apiReposDrop)
+		authorize.GET("/repos", apiReposList)
+		authorize.POST("/repos", apiReposCreate)
+		authorize.GET("/repos/:name", apiReposShow)
+		authorize.PUT("/repos/:name", apiReposEdit)
+		authorize.DELETE("/repos/:name", apiReposDrop)
 
-		api.GET("/repos/:name/packages", apiReposPackagesShow)
-		api.POST("/repos/:name/packages", apiReposPackagesAdd)
-		api.DELETE("/repos/:name/packages", apiReposPackagesDelete)
+		authorize.GET("/repos/:name/packages", apiReposPackagesShow)
+		authorize.POST("/repos/:name/packages", apiReposPackagesAdd)
+		authorize.DELETE("/repos/:name/packages", apiReposPackagesDelete)
 
-		api.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
-		api.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
-		api.POST("/repos/:name/copy/:src/:file", apiReposCopyPackage)
+		authorize.POST("/repos/:name/file/:dir/:file", apiReposPackageFromFile)
+		authorize.POST("/repos/:name/file/:dir", apiReposPackageFromDir)
+		authorize.POST("/repos/:name/copy/:src/:file", apiReposCopyPackage)
 
-		api.POST("/repos/:name/include/:dir/:file", apiReposIncludePackageFromFile)
-		api.POST("/repos/:name/include/:dir", apiReposIncludePackageFromDir)
+		authorize.POST("/repos/:name/include/:dir/:file", apiReposIncludePackageFromFile)
+		authorize.POST("/repos/:name/include/:dir", apiReposIncludePackageFromDir)
 
-		api.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
+		authorize.POST("/repos/:name/snapshots", apiSnapshotsCreateFromRepository)
 	}
 
 	{
-		api.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
+		authorize.POST("/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
 	}
 
 	{
-		api.GET("/mirrors", apiMirrorsList)
-		api.GET("/mirrors/:name", apiMirrorsShow)
-		api.GET("/mirrors/:name/packages", apiMirrorsPackages)
-		api.POST("/mirrors", apiMirrorsCreate)
-		api.PUT("/mirrors/:name", apiMirrorsUpdate)
-		api.DELETE("/mirrors/:name", apiMirrorsDrop)
+		authorize.GET("/mirrors", apiMirrorsList)
+		authorize.GET("/mirrors/:name", apiMirrorsShow)
+		authorize.GET("/mirrors/:name/packages", apiMirrorsPackages)
+		authorize.POST("/mirrors", apiMirrorsCreate)
+		authorize.PUT("/mirrors/:name", apiMirrorsUpdate)
+		authorize.DELETE("/mirrors/:name", apiMirrorsDrop)
 	}
 
 	{
-		api.POST("/gpg/key", apiGPGAddKey)
+		authorize.POST("/gpg/key", apiGPGAddKey)
 	}
 
 	{
-		api.GET("/s3", apiS3List)
+		authorize.GET("/s3", apiS3List)
 	}
 
 	{
-		api.GET("/files", apiFilesListDirs)
-		api.POST("/files/:dir", apiFilesUpload)
-		api.GET("/files/:dir", apiFilesListFiles)
-		api.DELETE("/files/:dir", apiFilesDeleteDir)
-		api.DELETE("/files/:dir/:name", apiFilesDeleteFile)
+		authorize.GET("/files", apiFilesListDirs)
+		authorize.POST("/files/:dir", apiFilesUpload)
+		authorize.GET("/files/:dir", apiFilesListFiles)
+		authorize.DELETE("/files/:dir", apiFilesDeleteDir)
+		authorize.DELETE("/files/:dir/:name", apiFilesDeleteFile)
 	}
 
 	{
-
-		api.GET("/publish", apiPublishList)
-		api.POST("/publish", apiPublishRepoOrSnapshot)
-		api.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
-		api.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
-		api.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
+		authorize.GET("/publish", apiPublishList)
+		authorize.POST("/publish", apiPublishRepoOrSnapshot)
+		authorize.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
+		authorize.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
+		authorize.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
 	}
 
 	{
-		api.GET("/snapshots", apiSnapshotsList)
-		api.POST("/snapshots", apiSnapshotsCreate)
-		api.PUT("/snapshots/:name", apiSnapshotsUpdate)
-		api.GET("/snapshots/:name", apiSnapshotsShow)
-		api.GET("/snapshots/:name/packages", apiSnapshotsSearchPackages)
-		api.DELETE("/snapshots/:name", apiSnapshotsDrop)
-		api.GET("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
-		api.POST("/snapshots/:name/merge", apiSnapshotsMerge)
-		api.POST("/snapshots/:name/pull", apiSnapshotsPull)
+		authorize.GET("/snapshots", apiSnapshotsList)
+		authorize.POST("/snapshots", apiSnapshotsCreate)
+		authorize.PUT("/snapshots/:name", apiSnapshotsUpdate)
+		authorize.GET("/snapshots/:name", apiSnapshotsShow)
+		authorize.GET("/snapshots/:name/packages", apiSnapshotsSearchPackages)
+		authorize.DELETE("/snapshots/:name", apiSnapshotsDrop)
+		authorize.GET("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
+		authorize.POST("/snapshots/:name/merge", apiSnapshotsMerge)
+		authorize.POST("/snapshots/:name/pull", apiSnapshotsPull)
 	}
 
 	{
-		api.GET("/packages/:key", apiPackagesShow)
-		api.GET("/packages", apiPackages)
+		authorize.GET("/packages/:key", apiPackagesShow)
+		authorize.GET("/packages", apiPackages)
 	}
 
 	{
-		api.GET("/graph.:ext", apiGraph)
+		authorize.GET("/graph.:ext", apiGraph)
 	}
 	{
-		api.POST("/db/cleanup", apiDbCleanup)
+		authorize.POST("/db/cleanup", apiDbCleanup)
 	}
 	{
-		api.GET("/tasks", apiTasksList)
-		api.POST("/tasks-clear", apiTasksClear)
-		api.GET("/tasks-wait", apiTasksWait)
-		api.GET("/tasks/:id/wait", apiTasksWaitForTaskByID)
-		api.GET("/tasks/:id/output", apiTasksOutputShow)
-		api.GET("/tasks/:id/detail", apiTasksDetailShow)
-		api.GET("/tasks/:id/return_value", apiTasksReturnValueShow)
-		api.GET("/tasks/:id", apiTasksShow)
-		api.DELETE("/tasks/:id", apiTasksDelete)
-		api.POST("/tasks-dummy", apiTasksDummy)
+		authorize.GET("/tasks", apiTasksList)
+		authorize.POST("/tasks-clear", apiTasksClear)
+		authorize.GET("/tasks-wait", apiTasksWait)
+		authorize.GET("/tasks/:id/wait", apiTasksWaitForTaskByID)
+		authorize.GET("/tasks/:id/output", apiTasksOutputShow)
+		authorize.GET("/tasks/:id/detail", apiTasksDetailShow)
+		authorize.GET("/tasks/:id/return_value", apiTasksReturnValueShow)
+		authorize.GET("/tasks/:id", apiTasksShow)
+		authorize.DELETE("/tasks/:id", apiTasksDelete)
+		authorize.POST("/tasks-dummy", apiTasksDummy)
 	}
 
 	return router
