@@ -27,6 +27,8 @@ type LocalRepo struct {
 	Uploaders *Uploaders `codec:"Uploaders,omitempty" json:"-"`
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
+	// ldap group for repos
+	LdapGroup string `codec:",ldap-group"`
 }
 
 // NewLocalRepo creates new instance of Debian local repository
@@ -52,6 +54,14 @@ func (repo *LocalRepo) NumPackages() int {
 		return 0
 	}
 	return repo.packageRefs.Len()
+}
+
+// LdapGroup returns the ldapgroup if any for the repo
+func (repo *LocalRepo) GetLDGroup() string {
+	if repo.LdapGroup != "" {
+		return fmt.Sprintf("[%s]", repo.LdapGroup)
+	}
+	return ""
 }
 
 // RefList returns package list for repo

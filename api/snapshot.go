@@ -251,6 +251,12 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		return
 	}
 
+	err = CheckGroup(c, repo.LdapGroup)
+	if err != nil {
+		c.AbortWithError(403, err)
+		return
+	}
+
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)

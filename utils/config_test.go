@@ -155,7 +155,15 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"packagePoolStorage\": {\n" +
 		"    \"type\": \"local\",\n" +
 		"    \"path\": \"/tmp/aptly-pool\"\n" +
-		"  }\n" +
+		"  },\n" +
+		"  \"useAuth\": false,\n"+
+		"  \"Auth\": {\n"+
+		"    \"authType\": \"\",\n"+
+		"    \"server\": \"\",\n"+
+		"    \"ldapDN\": \"\",\n"+
+		"    \"ldapFilter\": \"\",\n"+
+		"    \"secureTLS\": false\n"+
+		"  }\n"+
 		"}")
 }
 

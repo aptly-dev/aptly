@@ -13,6 +13,7 @@ import (
 
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
+<<<<<<< HEAD
 	// General
 	RootDir              string   `json:"rootDir"                       yaml:"root_dir"`
 	LogLevel             string   `json:"logLevel"                      yaml:"log_level"`
@@ -63,6 +64,10 @@ type ConfigStructure struct { // nolint: maligned
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"         yaml:"swift_publish_endpoints"`
 	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"         yaml:"azure_publish_endpoints"`
 	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"            yaml:"packagepool_storage"`
+
+        // Authentication
+	UseAuth                bool                             `json:"useAuth"`
+	Auth                   AAuth                            `json:"Auth"`
 }
 
 // DBConfig
@@ -211,9 +216,19 @@ type AzureEndpoint struct {
 	Endpoint    string `json:"endpoint"     yaml:"endpoint"`
 }
 
+type AAuth struct {
+	Type       string `json:"authType"`
+	Server     string `json:"server"`
+	LdapDN     string `json:"ldapDN"`
+	LdapFilter string `json:"ldapFilter"`
+	SecureTLS  bool   `json:"secureTLS"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	LogFile:                "",
+	UseAuth:                false, // should we enable auth
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
@@ -243,6 +258,7 @@ var Config = ConfigStructure{
 	LogFormat:              "default",
 	ServeInAPIMode:         false,
 	EnableSwaggerEndpoint:  false,
+	Auth:                   AAuth{},
 }
 
 // LoadConfig loads configuration from json file

@@ -341,6 +341,7 @@ The legacy json configuration is still supported (and also supports comments):
       // Storage. First, publishing endpoints should be described in the aptly
       // configuration file. Each endpoint has its name and associated settings.
       "AzurePublishEndpoints": {
+<<<<<<< HEAD
         // // Endpoint Name
         // "test": {
 
@@ -392,11 +393,25 @@ The legacy json configuration is still supported (and also supports comments):
         // // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
         // // defaults to "https://<accountName>.blob.core.windows.net"
         // "endpoint": ""
-      }
+      },
+
+      // Authorization for repos may be configured for ldap groups (and is extensible for others),
+      // default is no authorization.
+      "Auth": {
+        // // auth type, only supports ldap currently
+        // "authType: "",
+        // // auth server to use (eg. ldaps://ldap.example.com)
+        // "server\": "",
+        // // DN for ldap searches
+        // "ldapDN\": "",
+        // // ldap filter
+        // "ldapFilter": "",
+        // // enable secureTLS, default is off
+        // "secureTLS": false
+       }
 
     // End of config
     }
-
 
 ## PACKAGE QUERY
 

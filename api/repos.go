@@ -95,6 +95,8 @@ type repoCreateParams struct {
 	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
 	// Snapshot name to create repoitory from (optional)
 	FromSnapshot string `            json:"FromSnapshot"         example:""`
+        //
+	LdapGroup           string
 }
 
 // @Summary Create Repository
@@ -125,6 +127,7 @@ func apiReposCreate(c *gin.Context) {
 	repo := deb.NewLocalRepo(b.Name, b.Comment)
 	repo.DefaultComponent = b.DefaultComponent
 	repo.DefaultDistribution = b.DefaultDistribution
+	repo.LdapGroup = b.LdapGroup
 
 	collectionFactory := context.NewCollectionFactory()
 
@@ -173,6 +176,8 @@ type reposEditParams struct {
 	DefaultDistribution *string `        json:"DefaultDistribution"  example:""`
 	// Change Devault Component for publishing
 	DefaultComponent *string `        json:"DefaultComponent"     example:""`
+        //
+	LdapGroup           *string
 }
 
 // @Summary Update Repository
@@ -199,6 +204,12 @@ func apiReposEdit(c *gin.Context) {
 		return
 	}
 
+	err = CheckGroup(c, repo.LdapGroup)
+	if err != nil {
+		c.AbortWithError(403, err)
+		return
+	}
+
 	if b.Name != nil {
 		_, err := collection.ByName(*b.Name)
 		if err == nil {
@@ -216,6 +227,9 @@ func apiReposEdit(c *gin.Context) {
 	}
 	if b.DefaultComponent != nil {
 		repo.DefaultComponent = *b.DefaultComponent
+	}
+	if b.LdapGroup != nil {
+		repo.LdapGroup = *b.LdapGroup
 	}
 
 	err = collection.Update(repo)
@@ -273,6 +287,12 @@ func apiReposDrop(c *gin.Context) {
 	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
+		return
+	}
+
+	err = CheckGroup(c, repo.LdapGroup)
+	if err != nil {
+		c.AbortWithError(403, err)
 		return
 	}
 
@@ -363,6 +383,11 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		err = collection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		err = CheckGroup(c, repo.LdapGroup)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: 403, Value: nil}, err
 		}
 
 		out.Printf("Loading packages...\n")
@@ -520,6 +545,11 @@ func apiReposPackageFromDir(c *gin.Context) {
 		err = collection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		err = CheckGroup(c, repo.LdapGroup)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: 403, Value: nil}, err
 		}
 
 		verifier := context.GetVerifier()
@@ -843,6 +873,11 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		repo, err := collectionFactory.LocalRepoCollection().ByName(repoTemplateString)
 		if err != nil {
 			AbortWithJSONError(c, 404, err)
+			return
+		}
+		err = CheckGroup(c, repo.LdapGroup)
+		if err != nil {
+			c.AbortWithError(403, err)
 			return
 		}
 
