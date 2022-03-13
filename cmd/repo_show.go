@@ -45,6 +45,7 @@ func aptlyRepoShowTxt(_ *commander.Command, args []string) error {
 	fmt.Printf("Comment: %s\n", repo.Comment)
 	fmt.Printf("Default Distribution: %s\n", repo.DefaultDistribution)
 	fmt.Printf("Default Component: %s\n", repo.DefaultComponent)
+	fmt.Printf("Ldap Group: %s\n", repo.LdapGroup)
 	if repo.Uploaders != nil {
 		fmt.Printf("Uploaders: %s\n", repo.Uploaders)
 	}

@@ -242,6 +242,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                 local create_edit=("-comment=[any text that would be used to described local repository]:comment: "
                             "-component=[default component when publishing]:component:($components)"
                             "-distribution=[default distribution when publishing]:distribution:($dists)"
+                            "-ldap-group=[ldap group for repo actions, empty by default]:ldap-group"
                             $aptly_uploaders
                             )
 

@@ -168,6 +168,17 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 				return
 			}
 
+			err = CheckGroup(c, localRepo.LdapGroup)
+			if err != nil {
+				c.AbortWithError(403, err)
+			}
+
+			resources = append(resources, string(localRepo.Key()))
+			err = localCollection.LoadComplete(localRepo)
+			if err != nil {
+				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
+			}
+
 			sources = append(sources, localRepo)
 		}
 	} else {
