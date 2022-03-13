@@ -5,7 +5,7 @@ else
 	TAG="$(shell git describe --tags --always)"
 endif
 VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
-PACKAGES=context database deb files gpg http query swift s3 utils
+PACKAGES=context database deb files gpg http query swift s3 utils auth
 PYTHON?=python
 TESTS?=
 BINPATH?=$(GOPATH)/bin

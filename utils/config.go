@@ -9,6 +9,8 @@ import (
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
+	LogFile                string                           `json:"logFile"`
+	UseAuth                bool                             `json:"useAuth"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
 	DownloadRetries        int                              `json:"downloadRetries"`
@@ -33,6 +35,7 @@ type ConfigStructure struct { // nolint: maligned
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
+	Auth                   AAuth                            `json:"Auth"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -83,9 +86,19 @@ type AzurePublishRoot struct {
 	Prefix      string `json:"prefix"`
 }
 
+type AAuth struct {
+	Type       string `json:"authType"`
+	Server     string `json:"server"`
+	LdapDN     string `json:"ldapDN"`
+	LdapFilter string `json:"ldapFilter"`
+	SecureTLS  bool   `json:"secureTLS"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	LogFile:                "",
+	UseAuth:                false, // should we enable auth
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
@@ -107,6 +120,7 @@ var Config = ConfigStructure{
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
+	Auth:                   AAuth{},
 }
 
 // LoadConfig loads configuration from json file
