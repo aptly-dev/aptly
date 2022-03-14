@@ -20,7 +20,7 @@ func Authorize(username string, password string) (ok bool) {
 		default:
 			return false
 		}
-		if ok != true {
+		if !ok  {
 			return false
 		}
 	}
@@ -67,7 +67,7 @@ func getGroups(c *gin.Context, username string) {
 
 	var groups []string
 	config := context.Config()
-	dn := fmt.Sprintf("%s", config.Auth.LdapDN)
+	dn := config.Auth.LdapDN
 	session := sessions.Default(c)
 	// connect to ldap server
 	server := fmt.Sprintf("%s", config.Auth.Server)
@@ -94,7 +94,6 @@ func getGroups(c *gin.Context, username string) {
 		groups = append(groups, fmt.Sprintf("%s,", value))
 	}
 	session.Set("Groups", groups)
-	return
 }
 
 func checkGroup(c *gin.Context, ldgroup string) bool {
