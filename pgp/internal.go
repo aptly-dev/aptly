@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/openpgp/clearsign"
 	openpgp_errors "golang.org/x/crypto/openpgp/errors"
 	"golang.org/x/crypto/openpgp/packet"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // Test interface
@@ -174,7 +174,7 @@ func (g *GoSigner) Init() error {
 			for attempt := 0; attempt < 3; attempt++ {
 				fmt.Print("\nEnter passphrase: ")
 				var bytePassphrase []byte
-				bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+				bytePassphrase, err = term.ReadPassword(int(syscall.Stdin))
 				if err != nil {
 					return errors.Wrap(err, "error reading passphare")
 				}
