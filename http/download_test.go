@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/user"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
@@ -120,8 +121,12 @@ func (s *DownloaderSuite) TestDownloadConnectError(c *C) {
 }
 
 func skipIfRoot(c *C) {
-	user := os.Getenv("USER")
-	if user == "root" {
+	currentUser, err := user.Current()
+	if err != nil {
+		c.Skip("Unknown user")
+	}
+
+	if currentUser.Username == "root" {
 		c.Skip("Root user")
 	}
 }
@@ -129,7 +134,7 @@ func skipIfRoot(c *C) {
 func (s *DownloaderSuite) TestDownloadFileError(c *C) {
 	skipIfRoot(c)
 	c.Assert(s.d.Download(s.ctx, s.url+"/test", "/"),
-		ErrorMatches, ".*permission denied")
+		ErrorMatches, ".*(permission denied|read-only file system)")
 }
 
 func (s *DownloaderSuite) TestGetLength(c *C) {
