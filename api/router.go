@@ -5,9 +5,16 @@ import (
 
 	ctx "github.com/aptly-dev/aptly/context"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var context *ctx.AptlyContext
+
+func apiMetricsGet() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		promhttp.Handler().ServeHTTP(c.Writer, c.Request)
+	}
+}
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
@@ -15,6 +22,14 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router := gin.Default()
 	router.Use(gin.ErrorLogger())
+
+	if c.Config().EnableMetricsEndpoint {
+		router.Use(instrumentHandlerInFlight(apiRequestsInFlightGauge, getBasePath))
+		router.Use(instrumentHandlerCounter(apiRequestsTotalCounter, getBasePath))
+		router.Use(instrumentHandlerRequestSize(apiRequestSizeSummary, getBasePath))
+		router.Use(instrumentHandlerResponseSize(apiResponseSizeSummary, getBasePath))
+		router.Use(instrumentHandlerDuration(apiRequestsDurationSummary, getBasePath))
+	}
 
 	if context.Flags().Lookup("no-lock").Value.Get().(bool) {
 		// We use a goroutine to count the number of
@@ -51,6 +66,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	root := router.Group("/api")
 
 	{
+		if c.Config().EnableMetricsEndpoint {
+			root.GET("/metrics", apiMetricsGet())
+		}
 		root.GET("/version", apiVersion)
 	}
 

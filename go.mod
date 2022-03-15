@@ -24,18 +24,18 @@ require (
 	github.com/ncw/swift v1.0.30
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.12.1
 	github.com/smartystreets/gunit v1.0.4 // indirect
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-aws-auth v0.0.0-20180731211914-8b73995fd8d1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
 	github.com/smira/go-xz v0.0.0-20150414201226-0c531f070014
-	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go v1.1.4
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20200828194041-157a740278f4
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect

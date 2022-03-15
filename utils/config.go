@@ -33,6 +33,7 @@ type ConfigStructure struct { // nolint: maligned
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
+	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -107,6 +108,7 @@ var Config = ConfigStructure{
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
+	EnableMetricsEndpoint:  false,
 }
 
 // LoadConfig loads configuration from json file
