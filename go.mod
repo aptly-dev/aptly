@@ -29,6 +29,7 @@ require (
 	github.com/ncw/swift v1.0.30
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.12.1
 	github.com/smartystreets/gunit v1.0.4 // indirect
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76

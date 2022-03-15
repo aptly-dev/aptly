@@ -23,5 +23,6 @@
   "S3PublishEndpoints": {},
   "SwiftPublishEndpoints": {},
   "AzurePublishEndpoints": {},
-  "AsyncAPI": false
+  "AsyncAPI": false,
+  "enableMetricsEndpoint": false
 }

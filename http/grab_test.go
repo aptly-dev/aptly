@@ -114,7 +114,7 @@ func (s *GrabDownloaderSuite) TestDownloadConnectError(c *C) {
 func (s *GrabDownloaderSuite) TestDownloadFileError(c *C) {
 	skipIfRoot(c)
 	c.Assert(s.d.Download(s.ctx, s.url+"/test", "/"),
-		ErrorMatches, ".*permission denied")
+		ErrorMatches, ".*(permission denied|read-only file system)")
 }
 
 func (s *GrabDownloaderSuite) TestGetLength(c *C) {
