@@ -372,13 +372,13 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 		prefix += "/"
 	}
 
-	params := &s3.ListObjectsInput{
+	params := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(storage.bucket),
 		Prefix:  aws.String(prefix),
 		MaxKeys: aws.Int64(1000),
 	}
 
-	err = storage.s3.ListObjectsPages(params, func(contents *s3.ListObjectsOutput, lastPage bool) bool {
+	err = storage.s3.ListObjectsV2Pages(params, func(contents *s3.ListObjectsV2Output, lastPage bool) bool {
 		for _, key := range contents.Contents {
 			if storage.plusWorkaround && hidePlusWorkaround && strings.Contains(*key.Key, " ") {
 				// if we use plusWorkaround, we want to hide those duplicates
