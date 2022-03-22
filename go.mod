@@ -16,6 +16,7 @@ require (
 	github.com/h2non/filetype v1.0.5
 	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc // indirect
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
+	github.com/klauspost/compress v1.13.6
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/mattn/go-shellwords v1.0.2
