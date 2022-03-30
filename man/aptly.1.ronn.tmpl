@@ -97,7 +97,14 @@ Configuration file is stored in JSON format (default values shown below):
           "container": "repo",
           "prefix": ""
         }
-      }
+      },
+      "Auth": {
+        "authType: "",
+        "server\": "",
+        "ldapDN\": "",
+        "ldapFilter": "",
+        "secureTLS": false
+       }
     }
 
 Options:
@@ -175,6 +182,9 @@ Options:
 
   * `SwiftPublishEndpoints`:
     configuration of OpenStack Swift publishing endpoints (see below)
+
+  * `Auth`:
+    configuration of authorization for repos, only supports ldap at this time (see below)
 
 ## FILESYSTEM PUBLISHING ENDPOINTS
 
@@ -282,6 +292,26 @@ In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
 publishing prefix on the command line, e.g.:
 
   `aptly publish snapshot jessie-main swift:test:`
+
+## AUTH ENDPOINTS
+
+Authorization for repos may be configured for ldap groups (and is extensible for others),
+default is no authorization. 
+
+   * `authType`:
+     auth type, only supports ldap currently
+
+   * `server`:
+     auth server to use (eg. ldaps://ldap.example.com)
+
+   * `ldapDN`:
+     DN for ldap searches
+
+   * `ldapFilter:
+     ldap filter
+
+   * `secureTLS`:
+     enable secureTLS, default is off
 
 ## PACKAGE QUERY
 
