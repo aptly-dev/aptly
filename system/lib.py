@@ -142,6 +142,7 @@ class BaseTest(object):
         "gpgDisableSign": False,
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
+        "enableMetricsEndpoint": True,
     }
     configOverride = {}
     environmentOverride = {}

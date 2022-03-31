@@ -13,10 +13,8 @@ require (
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.1 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/h2non/filetype v1.0.5
 	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
 	github.com/klauspost/compress v1.13.6
 	github.com/mattn/go-colorable v0.1.2 // indirect
@@ -24,7 +22,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/mattn/go-shellwords v1.0.2
 	github.com/mkrautz/goar v0.0.0-20150919110319-282caa8bd9da
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
 	github.com/ncw/swift v1.0.30
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
@@ -47,5 +44,4 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/h2non/filetype.v1 v1.0.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
