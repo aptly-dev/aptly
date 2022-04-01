@@ -28,6 +28,10 @@ Configuration file is stored in JSON format (default values shown below):
 
     {
       "rootDir": "$HOME/.aptly",
+      "databaseBackend": {
+        "type": "",
+        "url": ""
+      },
       "downloadConcurrency": 4,
       "downloadSpeedLimit": 0,
       "downloadRetries": 0,
@@ -105,6 +109,9 @@ Options:
   * `rootDir`:
     is root of directory storage to store database (`rootDir`/db), downloaded packages (`rootDir`/pool) and
     the default for published repositories (`rootDir`/public)
+
+  * `databaseBackend`:
+    the database config; if this config is empty, use levledb backend by default
 
   * `downloadConcurrency`:
     is a number of parallel download threads to use when downloading packages
