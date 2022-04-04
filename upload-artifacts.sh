@@ -7,7 +7,7 @@ packages=${builds}*.deb
 folder=`mktemp -u tmp.XXXXXXXXXXXXXXX`
 aptly_user="$APTLY_USER"
 aptly_password="$APTLY_PASSWORD"
-aptly_api="https://internal.aptly.info"
+aptly_api="https://aptly-ops.aptly.info"
 version=`make version`
 
 for file in $packages; do
