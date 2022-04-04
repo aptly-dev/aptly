@@ -11,7 +11,7 @@ import (
 )
 
 type DebSuite struct {
-	debFile, debFile2, debFileWithXzControl, dscFile, dscFileNoSign string
+	debFile, debFile2, debFileWithXzControl, debFileWithZstdControl, dscFile, dscFileNoSign string
 }
 
 var _ = Suite(&DebSuite{})
@@ -21,6 +21,7 @@ func (s *DebSuite) SetUpSuite(c *C) {
 	s.debFile = filepath.Join(filepath.Dir(_File), "../system/files/libboost-program-options-dev_1.49.0.1_i386.deb")
 	s.debFile2 = filepath.Join(filepath.Dir(_File), "../system/changes/hardlink_0.2.1_amd64.deb")
 	s.debFileWithXzControl = filepath.Join(filepath.Dir(_File), "../system/changes/libqt5concurrent5-dbgsym_5.9.1+dfsg-2+18.04+bionic+build4_amd64.ddeb")
+	s.debFileWithZstdControl = filepath.Join(filepath.Dir(_File), "../system/changes/libqt5concurrent5-dbgsym_5.15.2+dfsg-12_amd64.ddeb")
 	s.dscFile = filepath.Join(filepath.Dir(_File), "../system/files/pyspi_0.6.1-1.3.dsc")
 	s.dscFileNoSign = filepath.Join(filepath.Dir(_File), "../system/files/pyspi-0.6.1-1.3.stripped.dsc")
 }
@@ -44,6 +45,14 @@ func (s *DebSuite) TestGetControlFileFromDebWithXzControl(c *C) {
 	st, err := GetControlFileFromDeb(s.debFileWithXzControl)
 	c.Check(err, IsNil)
 	c.Check(st["Version"], Equals, "5.9.1+dfsg-2+18.04+bionic+build4")
+	c.Check(st["Package"], Equals, "libqt5concurrent5-dbgsym")
+}
+
+func (s *DebSuite) TestGetControlFileFromDebWithZstdControl(c *C) {
+	// Has control.tar.zstd archive inside.
+	st, err := GetControlFileFromDeb(s.debFileWithZstdControl)
+	c.Check(err, IsNil)
+	c.Check(st["Version"], Equals, "5.15.2+dfsg-12")
 	c.Check(st["Package"], Equals, "libqt5concurrent5-dbgsym")
 }
 
