@@ -36,7 +36,7 @@ install:
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
 	rm -rf system/env
-	virtualenv system/env
+	python -m venv system/env
 	system/env/bin/pip install -r system/requirements.txt
 endif
 
