@@ -108,7 +108,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          bash upload-artefacts.sh nightly
+          bash upload-artifacts.sh nightly
 
       - name: Publish release to aptly
         if: startsWith(github.event.ref, 'refs/tags')
@@ -116,7 +116,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          bash upload-artefacts.sh release
+          bash upload-artifacts.sh release
 
       - name: Upload artifacts to GitHub Release
         if: startsWith(github.event.ref, 'refs/tags')
