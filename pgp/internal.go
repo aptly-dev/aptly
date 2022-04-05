@@ -14,11 +14,13 @@ import (
 
 	"github.com/pkg/errors"
 
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/clearsign"
-	openpgp_errors "golang.org/x/crypto/openpgp/errors"
-	"golang.org/x/crypto/openpgp/packet"
-	"golang.org/x/crypto/ssh/terminal"
+	// TODO: replace crypto/openpgp since it is deprecated
+	// https://github.com/golang/go/issues/44226
+	"golang.org/x/crypto/openpgp"                       //nolint:staticcheck
+	"golang.org/x/crypto/openpgp/clearsign"             //nolint:staticcheck
+	openpgp_errors "golang.org/x/crypto/openpgp/errors" //nolint:staticcheck
+	"golang.org/x/crypto/openpgp/packet"                //nolint:staticcheck
+	"golang.org/x/term"
 )
 
 // Test interface
@@ -174,7 +176,7 @@ func (g *GoSigner) Init() error {
 			for attempt := 0; attempt < 3; attempt++ {
 				fmt.Print("\nEnter passphrase: ")
 				var bytePassphrase []byte
-				bytePassphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+				bytePassphrase, err = term.ReadPassword(int(syscall.Stdin))
 				if err != nil {
 					return errors.Wrap(err, "error reading passphare")
 				}

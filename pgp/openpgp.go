@@ -11,10 +11,12 @@ import (
 	"strconv"
 	"time"
 
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/errors"
-	"golang.org/x/crypto/openpgp/packet"
+	// TODO: replace crypto/openpgp since it is deprecated
+	// https://github.com/golang/go/issues/44226
+	"golang.org/x/crypto/openpgp"        //nolint:staticcheck
+	"golang.org/x/crypto/openpgp/armor"  //nolint:staticcheck
+	"golang.org/x/crypto/openpgp/errors" //nolint:staticcheck
+	"golang.org/x/crypto/openpgp/packet" //nolint:staticcheck
 )
 
 // hashForSignature returns a pair of hashes that can be used to verify a

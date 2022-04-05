@@ -3,10 +3,10 @@ package console
 import (
 	"syscall"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // RunningOnTerminal checks whether stdout is terminal
 func RunningOnTerminal() bool {
-	return terminal.IsTerminal(syscall.Stdout)
+	return term.IsTerminal(syscall.Stdout)
 }
