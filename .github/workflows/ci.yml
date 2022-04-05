@@ -8,7 +8,7 @@ on:
     tags:
       - 'v*'
     branches:
-      - 'main'
+      - 'master'
 
 defaults:
   run:
