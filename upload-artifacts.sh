@@ -10,13 +10,15 @@ aptly_password="$APTLY_PASSWORD"
 aptly_api="https://aptly-ops.aptly.info"
 version=`make version`
 
+echo "Publishing version '$version' to $1..."
+
 for file in $packages; do
     echo "Uploading $file..."
     curl -fsS -X POST -F "file=@$file" -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder
     echo
 done
 
-if [[ "$1" = "nightly" ]]; then
+if [ "$1" = "nightly" ]; then
     if echo "$version" | grep -vq "+"; then
        # skip nightly when on release tag
        exit 0
@@ -37,7 +39,7 @@ if [[ "$1" = "nightly" ]]; then
     echo
 fi
 
-if [[ "$1" = "release" ]]; then
+if [ "$1" = "release" ]; then
     aptly_repository=aptly-release
     aptly_snapshot=aptly-$version
     aptly_published=s3:repo.aptly.info:./squeeze
