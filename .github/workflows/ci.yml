@@ -92,7 +92,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          # fetch the whole repot for `git describe` to
+          # work and get the nightly verion
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v2
@@ -109,7 +113,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          bash upload-artifacts.sh nightly
+          ./upload-artifacts.sh nightly
 
       - name: Publish release to aptly
         if: startsWith(github.event.ref, 'refs/tags')
@@ -117,7 +121,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          bash upload-artifacts.sh release
+          ./upload-artifacts.sh release
 
       - name: Upload artifacts to GitHub Release
         if: startsWith(github.event.ref, 'refs/tags')
