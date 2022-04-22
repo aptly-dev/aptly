@@ -124,7 +124,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"accountName\": \"\",\n"+
 		"      \"accountKey\": \"\",\n"+
 		"      \"container\": \"repo\",\n"+
-		"      \"prefix\": \"\"\n"+
+		"      \"prefix\": \"\",\n"+
+		"      \"endpoint\": \"\"\n"+
 		"    }\n"+
 		"  },\n"+
 		"  \"AsyncAPI\": false,\n"+

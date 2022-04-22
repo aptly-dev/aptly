@@ -82,6 +82,7 @@ type AzurePublishRoot struct {
 	AccountKey  string `json:"accountKey"`
 	Container   string `json:"container"`
 	Prefix      string `json:"prefix"`
+	Endpoint    string `json:"endpoint"`
 }
 
 // Config is configuration for aptly, shared by all modules
