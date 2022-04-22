@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/aptly-dev/aptly/deb"
@@ -35,6 +36,8 @@ func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
 	err = collectionFactory.PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
 		e := collectionFactory.PublishedRepoCollection().LoadComplete(repo, collectionFactory)
 		if e != nil {
+			fmt.Fprintf(os.Stderr, "Error found on one publish (prefix:%s / distribution:%s / component:%s\n)",
+				repo.StoragePrefix(), repo.Distribution, repo.Components())
 			return e
 		}
 
@@ -82,6 +85,8 @@ func aptlyPublishListJSON(cmd *commander.Command, args []string) error {
 	err = context.NewCollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
 		e := context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
 		if e != nil {
+			fmt.Fprintf(os.Stderr, "Error found on one publish (prefix:%s / distribution:%s / component:%s\n)",
+				repo.StoragePrefix(), repo.Distribution, repo.Components())
 			return e
 		}
 
