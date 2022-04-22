@@ -417,7 +417,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 
 			var err error
 			publishedStorage, err = azure.NewPublishedStorage(
-				params.AccountName, params.AccountKey, params.Container, params.Prefix)
+				params.AccountName, params.AccountKey, params.Container, params.Prefix, params.Endpoint)
 			if err != nil {
 				Fatal(err)
 			}

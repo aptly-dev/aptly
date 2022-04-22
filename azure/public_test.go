@@ -15,8 +15,8 @@ import (
 )
 
 type PublishedStorageSuite struct {
-	accountName, accountKey  string
-	storage, prefixedStorage *PublishedStorage
+	accountName, accountKey, endpoint string
+	storage, prefixedStorage          *PublishedStorage
 }
 
 var _ = Suite(&PublishedStorageSuite{})
@@ -55,6 +55,7 @@ func (s *PublishedStorageSuite) SetUpSuite(c *C) {
 		println("  2. AZURE_STORAGE_ACCESS_KEY")
 		c.Skip("AZURE_STORAGE_ACCESS_KEY not set.")
 	}
+	s.endpoint = os.Getenv("AZURE_STORAGE_ENDPOINT")
 }
 
 func (s *PublishedStorageSuite) SetUpTest(c *C) {
@@ -63,13 +64,13 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 	var err error
 
-	s.storage, err = NewPublishedStorage(s.accountName, s.accountKey, container, "")
+	s.storage, err = NewPublishedStorage(s.accountName, s.accountKey, container, "", s.endpoint)
 	c.Assert(err, IsNil)
 	cnt := s.storage.container
 	_, err = cnt.Create(context.Background(), azblob.Metadata{}, azblob.PublicAccessContainer)
 	c.Assert(err, IsNil)
 
-	s.prefixedStorage, err = NewPublishedStorage(s.accountName, s.accountKey, container, prefix)
+	s.prefixedStorage, err = NewPublishedStorage(s.accountName, s.accountKey, container, prefix, s.endpoint)
 	c.Assert(err, IsNil)
 }
 
@@ -249,7 +250,7 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlus(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c",  "lala/a b", "lala/a+b", "lala/c", "testa"})
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a b", "lala/a+b", "lala/c", "testa"})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
@@ -354,7 +355,7 @@ func (s *PublishedStorageSuite) TestSymLink(c *C) {
 	c.Check(err, IsNil)
 	c.Check(link, Equals, "a/b")
 
-	c.Skip("copy not available in s3test")
+	c.Skip("copy not available in azure test")
 }
 
 func (s *PublishedStorageSuite) TestFileExists(c *C) {
