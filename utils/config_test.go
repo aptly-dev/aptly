@@ -34,6 +34,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.DatabaseOpenAttempts = 5
 	s.config.GpgProvider = "gpg"
 
+	s.config.PackagePoolStorage.Path = "/tmp/aptly-pool"
+
 	s.config.FileSystemPublishRoots = map[string]FileSystemPublishRoot{"test": {
 		RootDir: "/opt/aptly-publish"}}
 
@@ -78,6 +80,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"gpgDisableVerify\": false,\n"+
 		"  \"gpgProvider\": \"gpg\",\n"+
 		"  \"downloadSourcePackages\": false,\n"+
+		"  \"packagePoolStorage\": {\n"+
+		"    \"path\": \"/tmp/aptly-pool\"\n"+
+		"  },\n"+
 		"  \"skipLegacyPool\": false,\n"+
 		"  \"ppaDistributorID\": \"\",\n"+
 		"  \"ppaCodename\": \"\",\n"+

@@ -361,7 +361,12 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.config().RootDir, !context.config().SkipLegacyPool)
+		poolRoot := context.config().PackagePoolStorage.Path
+		if poolRoot == "" {
+			poolRoot = filepath.Join(context.config().RootDir, "pool")
+		}
+
+		context.packagePool = files.NewPackagePool(poolRoot, !context.config().SkipLegacyPool)
 	}
 
 	return context.packagePool

@@ -24,6 +24,7 @@ type ConfigStructure struct { // nolint: maligned
 	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
 	GpgProvider            string                           `json:"gpgProvider"`
 	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
+	PackagePoolStorage     PackagePool                      `json:"packagePoolStorage"`
 	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
 	PpaCodename            string                           `json:"ppaCodename"`
@@ -38,6 +39,10 @@ type ConfigStructure struct { // nolint: maligned
 	LogLevel               string                           `json:"logLevel"`
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
+}
+
+type PackagePool struct {
+	Path string `json:"path"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -106,6 +111,7 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
+	PackagePoolStorage:     PackagePool{Path: ""},
 	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
