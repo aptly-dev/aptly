@@ -32,8 +32,7 @@ var (
 
 // NewPackagePool creates new instance of PackagePool which specified root
 func NewPackagePool(root string, supportLegacyPaths bool) *PackagePool {
-	rootPath := filepath.Join(root, "pool")
-	rootPath, err := filepath.Abs(rootPath)
+	rootPath, err := filepath.Abs(root)
 	if err != nil {
 		panic(err)
 	}

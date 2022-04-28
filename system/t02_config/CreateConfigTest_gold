@@ -15,6 +15,7 @@
   "gpgDisableVerify": false,
   "gpgProvider": "gpg",
   "downloadSourcePackages": false,
+  "packagePoolStorage": {},
   "skipLegacyPool": true,
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
