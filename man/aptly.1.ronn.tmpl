@@ -43,6 +43,9 @@ Configuration file is stored in JSON format (default values shown below):
       "gpgDisableVerify": false,
       "gpgProvider": "gpg",
       "downloadSourcePackages": false,
+      "packagePoolStorage": {
+        "path": "$ROOTDIR/pool"
+      },
       "skipLegacyPool": true,
       "ppaDistributorID": "ubuntu",
       "ppaCodename": "",
@@ -105,7 +108,8 @@ Configuration file is stored in JSON format (default values shown below):
 Options:
 
   * `rootDir`:
-    is root of directory storage to store database (`rootDir`/db), downloaded packages (`rootDir`/pool) and
+    is root of directory storage to store database (`rootDir`/db),
+    the default for downloaded packages (`rootDir`/pool) and
     the default for published repositories (`rootDir`/public)
 
   * `downloadConcurrency`:
@@ -157,6 +161,10 @@ Options:
   * `downloadSourcePackages`:
     if enabled, all mirrors created would have flag set to download source packages;
     this setting could be controlled on per-mirror basis with `-with-sources` flag
+
+  * `packagePoolStorage`:
+    is the directory to store downloaded packages into; defaults to the value of
+    `rootDir` followed by `/pool`
 
   * `skipLegacyPool`:
     in aptly up to version 1.0.0, package files were stored in internal package pool
