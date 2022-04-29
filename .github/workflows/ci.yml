@@ -76,6 +76,10 @@ jobs:
           pip install -U pip setuptools
           pip install -r system/requirements.txt
 
+      - name: Install Azurite
+        id: azuright
+        uses: potatoqualitee/azuright@v1.1
+
       - name: Get aptly version
         run: |
            make version
@@ -83,6 +87,9 @@ jobs:
       - name: Make
         env:
           RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
+          AZURE_STORAGE_ENDPOINT: "127.0.0.1:10000"
+          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
+          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
           make
 
