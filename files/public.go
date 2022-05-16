@@ -133,26 +133,37 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	baseName := filepath.Base(fileName)
 	poolPath := filepath.Join(storage.rootPath, publishedPrefix, publishedRelPath, filepath.Dir(fileName))
 
+	var localSourcePool aptly.LocalPackagePool
+	if storage.linkMethod != LinkMethodCopy {
+		pp, ok := sourcePool.(aptly.LocalPackagePool)
+		if !ok {
+			return fmt.Errorf("cannot link %s from non-local pool %s", baseName, sourcePool)
+		}
+
+		localSourcePool = pp
+	}
+
 	err := os.MkdirAll(poolPath, 0777)
 	if err != nil {
 		return err
 	}
 
-	var dstStat, srcStat os.FileInfo
+	var dstStat os.FileInfo
 
 	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
 	if err == nil {
 		// already exists, check source file
-		srcStat, err = sourcePool.Stat(sourcePath)
-		if err != nil {
-			// source file doesn't exist? problem!
-			return err
-		}
 
 		if storage.linkMethod == LinkMethodCopy {
+			srcSize, err := sourcePool.Size(sourcePath)
+			if err != nil {
+				// source file doesn't exist? problem!
+				return err
+			}
+
 			if storage.verifyMethod == VerificationMethodFileSize {
 				// if source and destination have the same size, no need to copy
-				if srcStat.Size() == dstStat.Size() {
+				if srcSize == dstStat.Size() {
 					return nil
 				}
 			} else {
@@ -169,6 +180,12 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 				}
 			}
 		} else {
+			srcStat, err := localSourcePool.Stat(sourcePath)
+			if err != nil {
+				// source file doesn't exist? problem!
+				return err
+			}
+
 			srcSys := srcStat.Sys().(*syscall.Stat_t)
 			dstSys := dstStat.Sys().(*syscall.Stat_t)
 
@@ -223,9 +240,9 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 		err = dst.Close()
 	} else if storage.linkMethod == LinkMethodSymLink {
-		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName))
+		err = localSourcePool.Symlink(sourcePath, filepath.Join(poolPath, baseName))
 	} else {
-		err = sourcePool.(aptly.LocalPackagePool).Link(sourcePath, filepath.Join(poolPath, baseName))
+		err = localSourcePool.Link(sourcePath, filepath.Join(poolPath, baseName))
 	}
 
 	return err
