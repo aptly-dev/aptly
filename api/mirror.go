@@ -2,7 +2,10 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -482,7 +485,16 @@ func apiMirrorsUpdate(c *gin.Context) {
 						var e error
 
 						// provision download location
-						task.TempDownPath, e = context.PackagePool().(aptly.LocalPackagePool).GenerateTempPath(task.File.Filename)
+						if pp, ok := context.PackagePool().(aptly.LocalPackagePool); ok {
+							task.TempDownPath, e = pp.GenerateTempPath(task.File.Filename)
+						} else {
+							var file *os.File
+							file, e = ioutil.TempFile("", task.File.Filename)
+							if e == nil {
+								task.TempDownPath = file.Name()
+								file.Close()
+							}
+						}
 						if e != nil {
 							pushError(e)
 							continue
