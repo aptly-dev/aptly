@@ -306,6 +306,18 @@ func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
 	c.Check(err, ErrorMatches, "unable to import into pool.*")
 }
 
+func (s *PackagePoolSuite) TestSize(c *C) {
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+
+	size, err := s.pool.Size(path)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(2738))
+
+	_, err = s.pool.Size("do/es/ntexist")
+	c.Assert(os.IsNotExist(err), Equals, true)
+}
+
 func (s *PackagePoolSuite) TestStat(c *C) {
 	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)

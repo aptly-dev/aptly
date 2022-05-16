@@ -379,6 +379,15 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	return poolPath, err
 }
 
+func (pool *PackagePool) Size(path string) (size int64, err error) {
+	stat, err := pool.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+
+	return stat.Size(), nil
+}
+
 // Open returns io.ReadCloser to access the file
 func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	return os.Open(filepath.Join(pool.rootPath, path))
