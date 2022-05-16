@@ -542,6 +542,18 @@ func apiMirrorsUpdate(c *gin.Context) {
 		log.Info().Msgf("%s: Background processes finished", b.Name)
 		close(taskFinished)
 
+		defer func() {
+			for _, task := range queue {
+				if task.TempDownPath == "" {
+					continue
+				}
+
+				if err := os.Remove(task.TempDownPath); err != nil && !os.IsNotExist(err) {
+					fmt.Fprintf(os.Stderr, "Failed to delete %s: %v\n", task.TempDownPath, err)
+				}
+			}
+		}()
+
 		select {
 		case <-context.Done():
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: interrupted")
