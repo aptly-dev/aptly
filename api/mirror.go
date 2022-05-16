@@ -522,6 +522,18 @@ func apiMirrorsUpdate(c *gin.Context) {
 		log.Info().Msgf("%s: Background processes finished\n", b.Name)
 		close(taskFinished)
 
+		defer func() {
+			for _, task := range queue {
+				if task.TempDownPath == "" {
+					continue
+				}
+
+				if err := os.Remove(task.TempDownPath); err != nil && !os.IsNotExist(err) {
+					fmt.Fprintf(os.Stderr, "Failed to delete %s: %v\n", task.TempDownPath, err)
+				}
+			}
+		}()
+
 		for idx := range queue {
 
 			atask := &queue[idx]
