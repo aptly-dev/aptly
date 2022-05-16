@@ -208,6 +208,18 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
+	defer func() {
+		for _, task := range queue {
+			if task.TempDownPath == "" {
+				continue
+			}
+
+			if err := os.Remove(task.TempDownPath); err != nil && !os.IsNotExist(err) {
+				fmt.Fprintf(os.Stderr, "Failed to delete %s: %v\n", task.TempDownPath, err)
+			}
+		}
+	}()
+
 	// Import downloaded files
 	context.Progress().InitBar(int64(len(queue)), false, aptly.BarMirrorUpdateImportFiles)
 
