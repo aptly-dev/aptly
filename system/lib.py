@@ -280,6 +280,8 @@ class BaseTest(object):
             proc = self._start_process(command, stdout=subprocess.PIPE)
             raw_output, _ = proc.communicate()
 
+            raw_output = raw_output.decode("utf-8")
+
             returncodes = [proc.returncode]
             is_aptly_command = False
             if isinstance(command, str):
@@ -291,13 +293,11 @@ class BaseTest(object):
             if is_aptly_command:
                 # remove the last two rows as go tests always print PASS/FAIL and coverage in those
                 # two lines. This would otherwise fail the tests as they would not match gold
-                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))
+                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output)
                 if not matches:
-                    raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
+                    raise Exception("no matches found in output '%s'" % raw_output)
 
                 output, _, returncode = matches[0]
-
-                output = output.encode()
                 returncodes.append(int(returncode))
 
             else:
