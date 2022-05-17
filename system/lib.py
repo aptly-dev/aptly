@@ -278,7 +278,7 @@ class BaseTest(object):
         environ = os.environ.copy()
         environ["LC_ALL"] = "C"
         environ.update(self.environmentOverride)
-        return subprocess.Popen(command, stderr=stderr, stdout=stdout, env=environ)
+        return subprocess.Popen(command, stderr=stderr, stdout=stdout, text=True, env=environ)
 
     def run_cmd(self, command, expected_code=0):
         try:
@@ -296,11 +296,11 @@ class BaseTest(object):
             if is_aptly_command:
                 # remove the last two rows as go tests always print PASS/FAIL and coverage in those
                 # two lines. This would otherwise fail the tests as they would not match gold
-                match = re.search(r"EXIT: (\d)\n.*\n.*coverage: .*", raw_output.decode("utf-8"))
+                match = re.search(r"EXIT: (\d)\n.*\n.*coverage: .*", raw_output)
                 if match is None:
-                    raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
+                    raise Exception("no matches found in output '%s'" % raw_output)
 
-                output = match.string[:match.start()].encode()
+                output = match.string[:match.start()]
                 returncodes.append(int(match.group(1)))
             else:
                 output = raw_output
