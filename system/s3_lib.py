@@ -76,7 +76,10 @@ class S3Test(BaseTest):
         if self.check_path(path):
             raise Exception("path %s exists" % (path, ))
 
-    def read_file(self, path):
+    def read_file(self, path, mode=''):
+        # We don't support reading as binary here.
+        assert not mode
+
         if path.startswith("public/"):
             path = path[7:]
 
