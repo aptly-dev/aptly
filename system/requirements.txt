@@ -1,3 +1,4 @@
+azure-storage-blob
 boto
 requests
 requests-unixsocket
