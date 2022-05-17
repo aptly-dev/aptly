@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +25,7 @@ type ConfigStructure struct { // nolint: maligned
 	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
 	GpgProvider            string                           `json:"gpgProvider"`
 	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
-	PackagePoolStorage     PackagePool                      `json:"packagePoolStorage"`
+	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"`
 	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
 	PpaCodename            string                           `json:"ppaCodename"`
@@ -33,7 +34,7 @@ type ConfigStructure struct { // nolint: maligned
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
-	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
+	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
 	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
 	LogLevel               string                           `json:"logLevel"`
@@ -41,8 +42,52 @@ type ConfigStructure struct { // nolint: maligned
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
 }
 
-type PackagePool struct {
-	Path string `json:"path"`
+type LocalPoolStorage struct {
+	Path string `json:"path,omitempty"`
+}
+
+type PackagePoolStorage struct {
+	Local *LocalPoolStorage
+	Azure *AzureEndpoint
+}
+
+func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
+	var discriminator struct {
+		Type string `json:"type"`
+	}
+
+	if err := json.Unmarshal(data, &discriminator); err != nil {
+		return err
+	}
+
+	switch discriminator.Type {
+	case "azure":
+		pool.Azure = &AzureEndpoint{}
+		return json.Unmarshal(data, &pool.Azure)
+	case "local", "":
+		pool.Local = &LocalPoolStorage{}
+		return json.Unmarshal(data, &pool.Local)
+	default:
+		return fmt.Errorf("unknown pool storage type: %s", discriminator.Type)
+	}
+}
+
+func (pool *PackagePoolStorage) MarshalJSON() ([]byte, error) {
+	var wrapper struct {
+		Type string `json:"type,omitempty"`
+		*LocalPoolStorage
+		*AzureEndpoint
+	}
+
+	if pool.Azure != nil {
+		wrapper.Type = "azure"
+		wrapper.AzureEndpoint = pool.Azure
+	} else if pool.Local.Path != "" {
+		wrapper.Type = "local"
+		wrapper.LocalPoolStorage = pool.Local
+	}
+
+	return json.Marshal(wrapper)
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -86,8 +131,8 @@ type SwiftPublishRoot struct {
 	Container      string `json:"container"`
 }
 
-// AzurePublishRoot describes single Azure publishing entry point
-type AzurePublishRoot struct {
+// AzureEndpoint describes single Azure publishing entry point
+type AzureEndpoint struct {
 	AccountName string `json:"accountName"`
 	AccountKey  string `json:"accountKey"`
 	Container   string `json:"container"`
@@ -111,14 +156,16 @@ var Config = ConfigStructure{
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
 	DownloadSourcePackages: false,
-	PackagePoolStorage:     PackagePool{Path: ""},
+	PackagePoolStorage: PackagePoolStorage{
+		Local: &LocalPoolStorage{Path: ""},
+	},
 	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
-	AzurePublishRoots:      map[string]AzurePublishRoot{},
+	AzurePublishRoots:      map[string]AzureEndpoint{},
 	AsyncAPI:               false,
 	EnableMetricsEndpoint:  false,
 	LogLevel:               "debug",

@@ -361,12 +361,26 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		poolRoot := context.config().PackagePoolStorage.Path
-		if poolRoot == "" {
-			poolRoot = filepath.Join(context.config().RootDir, "pool")
-		}
+		storageConfig := context.config().PackagePoolStorage
+		if storageConfig.Azure != nil {
+			var err error
+			context.packagePool, err = azure.NewPackagePool(
+				storageConfig.Azure.AccountName,
+				storageConfig.Azure.AccountKey,
+				storageConfig.Azure.Container,
+				storageConfig.Azure.Prefix,
+				storageConfig.Azure.Endpoint)
+			if err != nil {
+				Fatal(err)
+			}
+		} else {
+			poolRoot := context.config().PackagePoolStorage.Local.Path
+			if poolRoot == "" {
+				poolRoot = filepath.Join(context.config().RootDir, "pool")
+			}
 
-		context.packagePool = files.NewPackagePool(poolRoot, !context.config().SkipLegacyPool)
+			context.packagePool = files.NewPackagePool(poolRoot, !context.config().SkipLegacyPool)
+		}
 	}
 
 	return context.packagePool

@@ -44,7 +44,14 @@ Configuration file is stored in JSON format (default values shown below):
       "gpgProvider": "gpg",
       "downloadSourcePackages": false,
       "packagePoolStorage": {
-        "path": "$ROOTDIR/pool"
+        "path": "$ROOTDIR/pool",
+        "azure": {
+          "accountName": "",
+          "accountKey": "",
+          "container": "repo",
+          "prefix": "",
+          "endpoint": ""
+        }
       },
       "skipLegacyPool": true,
       "ppaDistributorID": "ubuntu",
@@ -163,8 +170,12 @@ Options:
     this setting could be controlled on per-mirror basis with `-with-sources` flag
 
   * `packagePoolStorage`:
-    is the directory to store downloaded packages into; defaults to the value of
-    `rootDir` followed by `/pool`
+    configures the location to store downloaded packages (defaults to the
+    path `$ROOTDIR/pool`), by setting the value of the `type`:
+    * `path`: store the packages in the given path
+    * `azure`: store the packages in the given Azure Blob Storage container
+      (see the section on Azure publishing below for information on the
+      configuration)
 
   * `skipLegacyPool`:
     in aptly up to version 1.0.0, package files were stored in internal package pool
@@ -188,6 +199,19 @@ Options:
 
   * `AzurePublishEndpoints`:
     configuration of Azure publishing endpoints (see below)
+
+## CUSTOM PACKAGE POOLS
+
+aptly defaults to storing downloaded packages at `rootDir/`pool. In order to
+change this, you can set the `type` key within `packagePoolStorage` to one of
+two values:
+
+  * `local`: Store the package pool locally (the default). In order to change
+    the path, additionally set the `path` key within `packagePoolStorage` to
+    the desired location.
+  * `azure`: Store the package pool in an Azure Blob Storage container. Any
+    keys in the below section on Azure publishing may be set on the
+    `packagePoolStorage` object in order to configure the Azure connection.
 
 ## FILESYSTEM PUBLISHING ENDPOINTS
 
