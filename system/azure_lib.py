@@ -60,7 +60,8 @@ class AzureTest(BaseTest):
         }
         if self.use_azure_pool:
             self.configOverride['packagePoolStorage'] = {
-                'azure': self.azure_endpoint,
+                'type': 'azure',
+                **self.azure_endpoint,
             }
 
         super(AzureTest, self).prepare()
@@ -78,7 +79,7 @@ class AzureTest(BaseTest):
             ]
 
         if path.startswith('public/'):
-            path = path[7:]
+            path = path.removeprefix('public/')
 
         if path in self.container_contents:
             return True
@@ -96,6 +97,10 @@ class AzureTest(BaseTest):
         if not self.check_path(path):
             raise Exception("path %s doesn't exist" % (path,))
 
+    def check_exists_azure_only(self, path):
+        self.check_exists(path)
+        BaseTest.check_not_exists(self, path)
+
     def check_not_exists(self, path):
         if self.check_path(path):
             raise Exception('path %s exists' % (path,))
@@ -104,7 +109,7 @@ class AzureTest(BaseTest):
         assert not mode
 
         if path.startswith('public/'):
-            path = path[7:]
+            path = path.removeprefix('public/')
 
         blob = self.container.download_blob(path)
         return blob.readall().decode('utf-8')
