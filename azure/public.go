@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,22 +29,6 @@ var (
 	_ aptly.PublishedStorage = (*PublishedStorage)(nil)
 )
 
-func isEmulatorEndpoint(endpoint string) bool {
-	if h, _, err := net.SplitHostPort(endpoint); err == nil {
-		endpoint = h
-	}
-	if endpoint == "localhost" {
-		return true
-	}
-	// For IPv6, there could be case where SplitHostPort fails for cannot finding port.
-	// In this case, eliminate the '[' and ']' in the URL.
-	// For details about IPv6 URL, please refer to https://tools.ietf.org/html/rfc2732
-	if endpoint[0] == '[' && endpoint[len(endpoint)-1] == ']' {
-		endpoint = endpoint[1 : len(endpoint)-1]
-	}
-	return net.ParseIP(endpoint) != nil
-}
-
 // NewPublishedStorage creates published storage from Azure storage credentials
 func NewPublishedStorage(accountName, accountKey, container, prefix, endpoint string) (*PublishedStorage, error) {
 	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
@@ -54,15 +37,10 @@ func NewPublishedStorage(accountName, accountKey, container, prefix, endpoint st
 	}
 
 	if endpoint == "" {
-		endpoint = "blob.core.windows.net"
+		endpoint = fmt.Sprintf("https://%s.blob.core.windows.net", accountName)
 	}
 
-	var url *url.URL
-	if isEmulatorEndpoint(endpoint) {
-		url, err = url.Parse(fmt.Sprintf("http://%s/%s/%s", endpoint, accountName, container))
-	} else {
-		url, err = url.Parse(fmt.Sprintf("https://%s.%s/%s", accountName, endpoint, container))
-	}
+	url, err := url.Parse(fmt.Sprintf("%s/%s", endpoint, container))
 	if err != nil {
 		return nil, err
 	}
