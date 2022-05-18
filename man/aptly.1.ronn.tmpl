@@ -178,6 +178,9 @@ Options:
   * `SwiftPublishEndpoints`:
     configuration of OpenStack Swift publishing endpoints (see below)
 
+  * `AzurePublishEndpoints`:
+    configuration of Azure publishing endpoints (see below)
+
 ## FILESYSTEM PUBLISHING ENDPOINTS
 
 aptly defaults to publish to a single publish directory under `rootDir`/public. For
@@ -287,6 +290,24 @@ In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
 publishing prefix on the command line, e.g.:
 
   `aptly publish snapshot jessie-main swift:test:`
+
+## AZURE PUBLISHING ENDPOINTS
+
+aptly can be configured to publish repositories directly to Microsoft Azure Blob
+Storage. First, publishing endpoints should be described in the aptly
+configuration file. Each endpoint has its name and associated settings:
+
+  * `container`:
+    container name
+  * `prefix`:
+    (optional) do publishing under specified prefix in the container, defaults to
+    no prefix (container root)
+  * `accountName`, `accountKey`:
+    Azure storage account access key to access blob storage
+  * `endpoint`:
+    endpoint URL to connect to, as described in
+    [the Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string);
+    defaults to `https://$accountName.blob.core.windows.net`
 
 ## PACKAGE QUERY
 
