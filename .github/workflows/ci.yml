@@ -71,7 +71,7 @@ jobs:
       - name: Make
         env:
           RUN_LONG_TESTS: 'yes'
-          AZURE_STORAGE_ENDPOINT: "127.0.0.1:10000"
+          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
           AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
