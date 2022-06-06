@@ -491,7 +491,7 @@ func (p *PublishedRepo) GetLabel() string {
 	return p.Label
 }
 
-// GetName returns the unique name of the repo
+// GetPath returns the unique name of the repo
 func (p *PublishedRepo) GetPath() string {
 	prefix := p.StoragePrefix()
 
