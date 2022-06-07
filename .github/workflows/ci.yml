@@ -79,6 +79,8 @@ jobs:
       - name: Install Azurite
         id: azuright
         uses: potatoqualitee/azuright@v1.1
+        with:
+          directory: ${{ runner.temp }}
 
       - name: Get aptly version
         run: |
