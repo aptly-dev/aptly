@@ -21,6 +21,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	context = c
 
 	router := gin.Default()
+	router.UseRawPath = true
 	router.Use(gin.ErrorLogger())
 
 	if c.Config().EnableMetricsEndpoint {
