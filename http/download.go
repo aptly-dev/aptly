@@ -111,6 +111,10 @@ func (downloader *downloaderImpl) GetLength(ctx context.Context, url string) (in
 	}
 
 	if resp.ContentLength < 0 {
+		// an existing, but zero-length file can be reported with ContentLength -1
+		if resp.StatusCode == 200 && resp.ContentLength == -1 {
+			return 0, nil
+		}
 		return -1, fmt.Errorf("could not determine length of %s", url)
 	}
 
