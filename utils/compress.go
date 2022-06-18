@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"compress/gzip"
 	"io"
 	"os"
 	"os/exec"
+
+	"github.com/klauspost/pgzip"
 )
 
 // CompressFile compresses file specified by source to .gz & .bz2
@@ -19,7 +20,7 @@ func CompressFile(source *os.File, onlyGzip bool) error {
 	}
 	defer gzFile.Close()
 
-	gzWriter := gzip.NewWriter(gzFile)
+	gzWriter := pgzip.NewWriter(gzFile)
 	defer gzWriter.Close()
 
 	source.Seek(0, 0)
