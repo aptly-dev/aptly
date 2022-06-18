@@ -29,8 +29,7 @@ class PublishRepo1Test(BaseTest):
 
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_exists(
-            'public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
         self.check_exists('public/dists/maverick/main/Contents-i386.gz')
         self.check_exists('public/dists/maverick/main/source/Sources')
         self.check_exists('public/dists/maverick/main/source/Sources.gz')
@@ -862,3 +861,30 @@ class PublishRepo32Test(BaseTest):
                       "--verify", os.path.join(
                           os.environ["HOME"], ".aptly", 'public/dists/maverick/Release.gpg'),
                       os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/Release')])
+
+
+class PublishRepo33Test(BaseTest):
+    """
+    publish repo: -skip-bz2
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files} ${udebs}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-bz2 local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo33Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+
+        self.check_exists('public/dists/maverick/main/binary-amd64/Release')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')

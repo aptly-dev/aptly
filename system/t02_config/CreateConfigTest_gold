@@ -19,6 +19,7 @@
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
   "skipContentsPublishing": false,
+  "skipBz2Publishing": false,
   "FileSystemPublishEndpoints": {},
   "S3PublishEndpoints": {},
   "SwiftPublishEndpoints": {},

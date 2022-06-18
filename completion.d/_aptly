@@ -446,6 +446,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                             "-passphrase-file=[GPG passphrase−file for the key (warning: could be insecure)]:passphrase file:_files"
                             "-secret-keyring=[GPG secret keyring to use (instead of default)]:secret-keyring:_files"
                             "-skip-contents=[don’t generate Contents indexes]:$bool"
+                            "-skip-bz2=[don't generate bzipped indexes]:$bool"
                             "-skip-signing=[don’t sign Release files with GPG]:$bool"
                 )
                 local components_options=(

@@ -545,3 +545,32 @@ class PublishSwitch14Test(BaseTest):
                              'main/binary-amd64/Release', 'main/binary-i386/Release', 'main/Contents-amd64.gz',
                              'main/Contents-i386.gz', 'Contents-i386.gz', 'Contents-amd64.gz']):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
+
+
+class PublishSwitch15Test(BaseTest):
+    """
+    publish switch: -skip-bz2
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-bz2 snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick snap3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch15Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')

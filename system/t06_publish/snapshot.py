@@ -1210,3 +1210,32 @@ class PublishSnapshot39Test(BaseTest):
                                  'contents_i386', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
         self.check_file_contents('public/dists/maverick/main/Contents-amd64.gz',
                                  'contents_amd64', match_prepare=ungzip_if_required, mode='b', ensure_utf8=False)
+
+
+class PublishSnapshot40Test(BaseTest):
+    """
+    publish snapshot: -skip-bz2
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap40 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -skip-bz2 snap40"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot40Test, self).check()
+
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Release')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Release')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
+        self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
+        self.check_not_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')

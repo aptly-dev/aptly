@@ -42,6 +42,7 @@ Example:
 	cmd.Flag.Bool("batch", false, "run GPG with detached tty")
 	cmd.Flag.Bool("skip-signing", false, "don't sign Release files with GPG")
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
+	cmd.Flag.Bool("skip-bz2", false, "don't generate bzipped indexes")
 	cmd.Flag.String("origin", "", "origin name to publish")
 	cmd.Flag.String("notautomatic", "", "set value for NotAutomatic field")
 	cmd.Flag.String("butautomaticupgrades", "", "set  value for ButAutomaticUpgrades field")
