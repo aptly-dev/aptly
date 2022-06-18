@@ -6,7 +6,7 @@ else
 endif
 VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
 PACKAGES=context database deb files gpg http query swift s3 utils
-PYTHON?=python
+PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
@@ -36,7 +36,7 @@ install:
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
 	rm -rf system/env
-	python -m venv system/env
+	$(PYTHON) -m venv system/env
 	system/env/bin/pip install -r system/requirements.txt
 endif
 
