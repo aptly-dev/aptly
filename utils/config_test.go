@@ -79,6 +79,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"ppaDistributorID\": \"\",\n"+
 		"  \"ppaCodename\": \"\",\n"+
 		"  \"skipContentsPublishing\": false,\n"+
+		"  \"skipBz2Publishing\": false,\n"+
 		"  \"FileSystemPublishEndpoints\": {\n"+
 		"    \"test\": {\n"+
 		"      \"rootDir\": \"/opt/aptly-publish\",\n"+

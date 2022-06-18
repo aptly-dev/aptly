@@ -96,6 +96,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		ButAutomaticUpgrades string
 		ForceOverwrite       bool
 		SkipContents         *bool
+		SkipBz2              *bool
 		Architectures        []string
 		Signing              SigningOptions
 		AcquireByHash        *bool
@@ -209,6 +210,11 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			published.SkipContents = *b.SkipContents
 		}
 
+		published.SkipBz2 = context.Config().SkipBz2Publishing
+		if b.SkipContents != nil {
+			published.SkipBz2 = *b.SkipBz2
+		}
+
 		if b.AcquireByHash != nil {
 			published.AcquireByHash = *b.AcquireByHash
 		}
@@ -243,6 +249,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		ForceOverwrite bool
 		Signing        SigningOptions
 		SkipContents   *bool
+		SkipBz2        *bool
 		SkipCleanup    *bool
 		Snapshots      []struct {
 			Component string `binding:"required"`
@@ -320,6 +327,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if b.SkipContents != nil {
 		published.SkipContents = *b.SkipContents
+	}
+
+	if b.SkipBz2 != nil {
+		published.SkipBz2 = *b.SkipBz2
 	}
 
 	if b.AcquireByHash != nil {

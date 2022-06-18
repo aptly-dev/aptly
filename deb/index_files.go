@@ -22,6 +22,7 @@ type indexFiles struct {
 	suffix           string
 	indexes          map[string]*indexFile
 	acquireByHash    bool
+	skipBz2          bool
 }
 
 type indexFile struct {
@@ -68,7 +69,7 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	}
 
 	if file.compressable {
-		err = utils.CompressFile(file.tempFile, file.onlyGzip)
+		err = utils.CompressFile(file.tempFile, file.onlyGzip || file.parent.skipBz2)
 		if err != nil {
 			file.tempFile.Close()
 			return fmt.Errorf("unable to compress index file: %s", err)
@@ -80,11 +81,15 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	exts := []string{""}
 	cksumExts := exts
 	if file.compressable {
-		exts = append(exts, ".gz", ".bz2")
-		cksumExts = exts
 		if file.onlyGzip {
 			exts = []string{".gz"}
 			cksumExts = []string{"", ".gz"}
+		} else {
+			exts = append(exts, ".gz")
+			if !file.parent.skipBz2 {
+				exts = append(exts, ".bz2")
+			}
+			cksumExts = exts
 		}
 	}
 
@@ -229,7 +234,7 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	return nil
 }
 
-func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, acquireByHash bool) *indexFiles {
+func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, acquireByHash bool, skipBz2 bool) *indexFiles {
 	return &indexFiles{
 		publishedStorage: publishedStorage,
 		basePath:         basePath,
@@ -239,6 +244,7 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 		suffix:           suffix,
 		indexes:          make(map[string]*indexFile),
 		acquireByHash:    acquireByHash,
+		skipBz2:          skipBz2,
 	}
 }
 

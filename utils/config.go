@@ -28,6 +28,7 @@ type ConfigStructure struct { // nolint: maligned
 	PpaDistributorID       string                           `json:"ppaDistributorID"`
 	PpaCodename            string                           `json:"ppaCodename"`
 	SkipContentsPublishing bool                             `json:"skipContentsPublishing"`
+	SkipBz2Publishing      bool                             `json:"skipBz2Publishing"`
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`

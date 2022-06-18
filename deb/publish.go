@@ -62,6 +62,9 @@ type PublishedRepo struct {
 	// Skip contents generation
 	SkipContents bool
 
+	// Skip bz2 compression for index files
+	SkipBz2 bool
+
 	// True if repo is being re-published
 	rePublishing bool
 
@@ -585,7 +588,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 	defer os.RemoveAll(tempDir)
 
-	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash)
+	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash, p.SkipBz2)
 
 	legacyContentIndexes := map[string]*ContentsIndex{}
 	var count int64
