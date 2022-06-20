@@ -95,6 +95,13 @@ jobs:
         run: |
           make
 
+      - name: Upload code coverage
+        if: matrix.run_long_tests
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.txt
+
   release:
     name: release
     needs: build
