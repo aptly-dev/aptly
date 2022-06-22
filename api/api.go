@@ -208,6 +208,36 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 		}
 	}
 
+	// filter packages by version
+	if c.Request.URL.Query().Get("maximumVersion") == "1" {
+		list.PrepareIndex()
+		list.ForEach(func(p *deb.Package) error {
+			versionQ, err := query.Parse(fmt.Sprintf("Name (%s), $Version (<= %s)", p.Name, p.Version))
+			if err != nil {
+				fmt.Println("filter packages by version, query string parse err: ", err)
+				c.AbortWithError(500, fmt.Errorf("unable to parse %s maximum version query string: %s", p.Name, err))
+			} else {
+				tmpList, err := list.Filter([]deb.PackageQuery{versionQ}, false,
+					nil, 0, []string{})
+
+				if err == nil {
+					if tmpList.Len() > 0 {
+						tmpList.ForEach(func(tp *deb.Package) error {
+							list.Remove(tp)
+							return nil
+						})
+						list.Add(p)
+					}
+				} else {
+					fmt.Println("filter packages by version, filter err: ", err)
+					c.AbortWithError(500, fmt.Errorf("unable to get %s maximum version: %s", p.Name, err))
+				}
+			}
+
+			return nil
+		})
+	}
+
 	if c.Request.URL.Query().Get("format") == "details" {
 		list.ForEach(func(p *deb.Package) error {
 			result = append(result, p)

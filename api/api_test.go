@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -91,6 +92,15 @@ func (s *ApiSuite) TestGetVersion(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
 	c.Check(response.Body.String(), Matches, ".*Version.*")
+}
+
+func (s *ApiSuite) TestRepoCreate(c *C) {
+	body, err := json.Marshal(gin.H{
+		"Name": "dummy",
+	})
+	c.Assert(err, IsNil)
+	_, err = s.HTTPRequest("POST", "/api/repos", bytes.NewReader(body))
+	c.Assert(err, IsNil)
 }
 
 func (s *ApiSuite) TestTruthy(c *C) {
