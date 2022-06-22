@@ -49,6 +49,8 @@ func NewPublishedStorageRaw(
 ) (*PublishedStorage, error) {
 	if defaultACL == "" {
 		defaultACL = "private"
+	} else if defaultACL == "none" {
+		defaultACL = ""
 	}
 
 	if storageClass == "STANDARD" {
