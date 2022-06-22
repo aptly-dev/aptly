@@ -238,7 +238,7 @@ bucket name
 .
 .TP
 \fBacl\fR
-(optional) assign ACL to published files (one of the canned ACLs in Amazon terminology)\. Useful values: \fBprivate\fR (default) or \fBpublic\-read\fR (public repository)\. Public repositories could be consumed by \fBapt\fR using HTTP endpoint (Amazon bucket should be configured for "website hosting"), for private repositories special apt S3 transport is required\.
+(optional) assign ACL to published files (one of the canned ACLs in Amazon terminology)\. Useful values: \fBprivate\fR (default), \fBpublic\-read\fR (public repository) or \fBnone\fR (don\(cqt set ACL)\. Public repositories could be consumed by \fBapt\fR using HTTP endpoint (Amazon bucket should be configured for "website hosting"), for private repositories special apt S3 transport is required\.
 .
 .TP
 \fBawsAccessKeyID\fR, \fBawsSecretAccessKey\fR

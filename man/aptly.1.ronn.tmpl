@@ -223,8 +223,8 @@ and associated settings:
      no prefix (bucket root)
    * `acl`:
      (optional) assign ACL to published files (one of the canned ACLs in Amazon
-     terminology). Useful values: `private` (default) or `public-read` (public
-     repository). Public repositories could be consumed by `apt` using
+     terminology). Useful values: `private` (default), `public-read` (public
+     repository) or `none` (don't set ACL). Public repositories could be consumed by `apt` using
      HTTP endpoint (Amazon bucket should be configured for "website hosting"),
      for private repositories special apt S3 transport is required.
    * `awsAccessKeyID`, `awsSecretAccessKey`:
