@@ -42,7 +42,7 @@ func (s *DownloaderSuiteBase) SetUpTest(c *C) {
 		close(s.ch)
 	}()
 
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(nil)
 	s.progress.Start()
 
 	s.d = NewDownloader(0, 1, s.progress)

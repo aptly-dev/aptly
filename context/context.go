@@ -48,6 +48,7 @@ type AptlyContext struct {
 	publishedStorages map[string]aptly.PublishedStorage
 	dependencyOptions int
 	architecturesList []string
+	Logger            *utils.Logger
 	// Debug features
 	fileCPUProfile *os.File
 	fileMemProfile *os.File
@@ -195,7 +196,7 @@ func (context *AptlyContext) Progress() aptly.Progress {
 
 func (context *AptlyContext) _progress() aptly.Progress {
 	if context.progress == nil {
-		context.progress = console.NewProgress()
+		context.progress = console.NewProgress(context.Logger)
 		context.progress.Start()
 	}
 

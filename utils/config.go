@@ -35,6 +35,8 @@ type ConfigStructure struct { // nolint: maligned
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
 	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
+	LogLevel               string                           `json:"logLevel"`
+	LogFormat              string                           `json:"logFormat"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -112,6 +114,8 @@ var Config = ConfigStructure{
 	AzurePublishRoots:      map[string]AzurePublishRoot{},
 	AsyncAPI:               false,
 	EnableMetricsEndpoint:  false,
+	LogLevel:               "debug",
+	LogFormat:              "default",
 }
 
 // LoadConfig loads configuration from json file

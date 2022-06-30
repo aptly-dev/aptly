@@ -145,6 +145,8 @@ class BaseTest(object):
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
         "enableMetricsEndpoint": True,
+        "logLevel": "debug",
+        "logFormat": "default"
     }
     configOverride = {}
     environmentOverride = {}

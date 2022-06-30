@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/cheggaaa/pb"
 	"github.com/wsxiaoys/terminal/color"
 )
@@ -34,6 +35,7 @@ type Progress struct {
 	queue    chan printTask
 	bar      *pb.ProgressBar
 	barShown bool
+	worker   ProgressWorker
 }
 
 // Check interface
@@ -42,16 +44,19 @@ var (
 )
 
 // NewProgress creates new progress instance
-func NewProgress() *Progress {
-	return &Progress{
+func NewProgress(logger *utils.Logger) *Progress {
+	p := &Progress{
 		stopped: make(chan bool),
 		queue:   make(chan printTask, 100),
 	}
+
+	p.worker = progressWorkerFactroy(logger, p)
+	return p
 }
 
 // Start makes progress start its work
 func (p *Progress) Start() {
-	go p.worker()
+	go p.worker.run()
 }
 
 // Shutdown shuts down progress display
@@ -173,42 +178,104 @@ func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
 	}
 }
 
-func (p *Progress) worker() {
+type ProgressWorker interface {
+	run()
+}
+
+func progressWorkerFactroy(logger *utils.Logger, progress *Progress) ProgressWorker {
+	if logger == nil {
+		worker := standardProgressWorker{progress: progress}
+		return &worker
+	}
+
+	switch (*logger).(type) {
+	case *utils.PlainLogger:
+		worker := standardProgressWorker{progress: progress}
+		return &worker
+	case *utils.ZeroJSONLogger:
+		worker := loggerProgressWorker{progress: progress, logger: *logger}
+		return &worker
+	}
+
+	worker := standardProgressWorker{}
+	return &worker
+}
+
+type standardProgressWorker struct {
+	progress *Progress
+}
+
+func (w *standardProgressWorker) run() {
 	hasBar := false
 
 	for {
-		task := <-p.queue
+		task := <-w.progress.queue
 		switch task.code {
 		case codeBarEnabled:
 			hasBar = true
 		case codeBarDisabled:
 			hasBar = false
 		case codePrint:
-			if p.barShown {
+			if w.progress.barShown {
 				fmt.Print("\r\033[2K")
-				p.barShown = false
+				w.progress.barShown = false
 			}
 			fmt.Print(task.message)
 		case codePrintStdErr:
-			if p.barShown {
+			if w.progress.barShown {
 				fmt.Print("\r\033[2K")
-				p.barShown = false
+				w.progress.barShown = false
 			}
 			fmt.Fprint(os.Stderr, task.message)
 		case codeProgress:
 			if hasBar {
 				fmt.Print("\r" + task.message)
-				p.barShown = true
+				w.progress.barShown = true
 			}
 		case codeHideProgress:
-			if p.barShown {
+			if w.progress.barShown {
 				fmt.Print("\r\033[2K")
-				p.barShown = false
+				w.progress.barShown = false
 			}
 		case codeFlush:
 			task.reply <- true
 		case codeStop:
-			p.stopped <- true
+			w.progress.stopped <- true
+			return
+		}
+	}
+}
+
+type loggerProgressWorker struct {
+	progress *Progress
+	logger   utils.Logger
+}
+
+func (w *loggerProgressWorker) run() {
+	hasBar := false
+
+	for {
+		task := <-w.progress.queue
+		switch task.code {
+		case codeBarEnabled:
+			hasBar = true
+		case codeBarDisabled:
+			hasBar = false
+		case codePrint, codePrintStdErr:
+			w.logger.Info(strings.TrimSuffix(task.message, "\n"))
+		case codeProgress:
+			if hasBar {
+				w.logger.Info(strings.TrimSuffix(task.message, "\n"))
+				w.progress.barShown = true
+			}
+		case codeHideProgress:
+			if w.progress.barShown {
+				w.progress.barShown = false
+			}
+		case codeFlush:
+			task.reply <- true
+		case codeStop:
+			w.progress.stopped <- true
 			return
 		}
 	}

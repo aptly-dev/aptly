@@ -3,7 +3,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -155,7 +154,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 	// Run this task in background if configured globally or per-request
 	background := truthy(c.DefaultQuery("_async", strconv.FormatBool(context.Config().AsyncAPI)))
 	if background {
-		log.Println("Executing task asynchronously")
+		logger.Info("Executing task asynchronously")
 		task, conflictErr := runTaskInBackground(name, resources, proc)
 		if conflictErr != nil {
 			AbortWithJSONError(c, 409, conflictErr)
@@ -163,7 +162,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		}
 		c.JSON(202, task)
 	} else {
-		log.Println("Executing task synchronously")
+		logger.Info("Executing task synchronously")
 		out := context.Progress()
 		detail := task.Detail{}
 		retValue, err := proc(out, &detail)

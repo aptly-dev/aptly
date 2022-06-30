@@ -41,7 +41,7 @@ func (s *GrabDownloaderSuiteBase) SetUpTest(c *C) {
 		close(s.ch)
 	}()
 
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(nil)
 	s.progress.Start()
 
 	s.d = NewGrabDownloader(0, 1, s.progress)

@@ -91,7 +91,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(nil)
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir(), false)

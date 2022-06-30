@@ -5,11 +5,13 @@ import (
 	"sync/atomic"
 
 	ctx "github.com/aptly-dev/aptly/context"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var context *ctx.AptlyContext
+var logger utils.Logger
 
 func apiMetricsGet() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -19,11 +21,15 @@ func apiMetricsGet() gin.HandlerFunc {
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
+	router := gin.New()
+	logger = utils.LoggerFactory(c.Config().LogFormat, c.Config().LogLevel)
+
+	c.Logger = &logger
 	context = c
 
-	router := gin.Default()
 	router.UseRawPath = true
-	router.Use(gin.ErrorLogger())
+	router.Use(gin.Recovery(), gin.ErrorLogger())
+	router.Use(LoggerMiddlewareFactory(logger))
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)
