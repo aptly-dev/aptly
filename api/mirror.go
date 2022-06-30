@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/aptly-dev/aptly/query"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func getVerifier(ignoreSignatures bool, keyRings []string) (pgp.Verifier, error) {
@@ -309,7 +309,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	b.Architectures = remote.Architectures
 	b.Components = remote.Components
 
-	log.Printf("%s: Starting mirror update\n", b.Name)
+	log.Info().Msgf("%s: Starting mirror update\n", b.Name)
 
 	if c.Bind(&b) != nil {
 		return
@@ -458,7 +458,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}()
 
-		log.Printf("%s: Spawning background processes...\n", b.Name)
+		log.Info().Msgf("%s: Spawning background processes...\n", b.Name)
 		var wg sync.WaitGroup
 		for i := 0; i < context.Config().DownloadConcurrency; i++ {
 			wg.Add(1)
@@ -505,9 +505,9 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		// Wait for all download goroutines to finish
-		log.Printf("%s: Waiting for background processes to finish...\n", b.Name)
+		log.Info().Msgf("%s: Waiting for background processes to finish...\n", b.Name)
 		wg.Wait()
-		log.Printf("%s: Background processes finished\n", b.Name)
+		log.Info().Msgf("%s: Background processes finished\n", b.Name)
 		close(taskFinished)
 
 		for idx := range queue {
@@ -539,18 +539,18 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		if len(errors) > 0 {
-			log.Printf("%s: Unable to update because of previous errors\n", b.Name)
+			log.Info().Msgf("%s: Unable to update because of previous errors\n", b.Name)
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 		}
 
-		log.Printf("%s: Finalizing download\n", b.Name)
+		log.Info().Msgf("%s: Finalizing download\n", b.Name)
 		remote.FinalizeDownload(collectionFactory, out)
 		err = collectionFactory.RemoteRepoCollection().Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		log.Printf("%s: Mirror updated successfully!\n", b.Name)
+		log.Info().Msgf("%s: Mirror updated successfully!\n", b.Name)
 		return &task.ProcessReturnValue{Code: http.StatusNoContent, Value: nil}, nil
 	})
 }

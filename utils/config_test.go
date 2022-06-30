@@ -47,6 +47,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.AzurePublishRoots = map[string]AzurePublishRoot{"test": {
 		Container: "repo"}}
 
+	s.config.LogLevel = "info"
+	s.config.LogFormat = "json"
+
 	err := SaveConfig(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -131,7 +134,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    }\n"+
 		"  },\n"+
 		"  \"AsyncAPI\": false,\n"+
-		"  \"enableMetricsEndpoint\": false\n"+
+		"  \"enableMetricsEndpoint\": false,\n"+
+		"  \"logLevel\": \"info\",\n"+
+		"  \"logFormat\": \"json\"\n"+
 		"}")
 }
 
