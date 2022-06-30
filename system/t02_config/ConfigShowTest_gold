@@ -25,5 +25,7 @@
     "SwiftPublishEndpoints": {},
     "AzurePublishEndpoints": {},
     "AsyncAPI": false,
-    "enableMetricsEndpoint": true
+    "enableMetricsEndpoint": true,
+    "logLevel": "debug",
+    "logFormat": "default"
 }

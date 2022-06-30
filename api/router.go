@@ -2,11 +2,14 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"sync/atomic"
 
 	ctx "github.com/aptly-dev/aptly/context"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog/log"
 )
 
 var context *ctx.AptlyContext
@@ -19,11 +22,23 @@ func apiMetricsGet() gin.HandlerFunc {
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
+	router := gin.New()
 	context = c
 
-	router := gin.Default()
 	router.UseRawPath = true
-	router.Use(gin.ErrorLogger())
+
+	if c.Config().LogFormat == "json" {
+		c.StructuredLogging(true)
+		utils.SetupJSONLogger(c.Config().LogLevel, os.Stdout)
+		gin.DefaultWriter = utils.LogWriter{Logger: log.Logger}
+		router.Use(JSONLogger())
+	} else {
+		c.StructuredLogging(false)
+		utils.SetupDefaultLogger(c.Config().LogLevel)
+		router.Use(gin.Logger())
+	}
+
+	router.Use(gin.Recovery(), gin.ErrorLogger())
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)

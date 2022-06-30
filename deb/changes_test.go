@@ -45,7 +45,7 @@ func (s *ChangesSuite) SetUpTest(c *C) {
 
 	s.checksumStorage = files.NewMockChecksumStorage()
 	s.packagePool = files.NewPackagePool(s.Dir, false)
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(false)
 	s.progress.Start()
 }
 
