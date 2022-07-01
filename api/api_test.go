@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/aptly-dev/aptly/aptly"
 	ctx "github.com/aptly-dev/aptly/context"
 	"github.com/gin-gonic/gin"
 
@@ -36,6 +38,7 @@ func createTestConfig() *os.File {
 	}
 	jsonString, err := json.Marshal(gin.H{
 		"architectures": []string{},
+		"enableMetricsEndpoint": true,
 	})
 	if err != nil {
 		return nil
@@ -45,6 +48,7 @@ func createTestConfig() *os.File {
 }
 
 func (s *ApiSuite) SetUpSuite(c *C) {
+	aptly.Version = "testVersion"
 	file := createTestConfig()
 	c.Assert(file, NotNil)
 	s.configFile = file
@@ -89,7 +93,35 @@ func (s *ApiSuite) TestGetVersion(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/version", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
-	c.Check(response.Body.String(), Matches, ".*Version.*")
+	c.Check(response.Body.String(), Matches, "{\"Version\":\"" + aptly.Version + "\"}")
+}
+
+func (s *ApiSuite) TestGetReadiness(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/ready", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+	c.Check(response.Body.String(), Matches, "{\"Status\":\"Aptly is ready\"}")
+}
+
+func (s *ApiSuite) TestGetHealthiness(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/healthy", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+	c.Check(response.Body.String(), Matches, "{\"Status\":\"Aptly is healthy\"}")
+}
+
+func (s *ApiSuite) TestGetMetrics(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/metrics", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+	b := strings.Replace(response.Body.String(), "\n", "", -1)
+	c.Check(b, Matches, ".*# TYPE aptly_api_http_requests_in_flight gauge.*")
+	c.Check(b, Matches, ".*# TYPE aptly_api_http_requests_total counter.*")
+	c.Check(b, Matches, ".*# TYPE aptly_api_http_request_size_bytes summary.*")
+	c.Check(b, Matches, ".*# TYPE aptly_api_http_response_size_bytes summary.*")
+	c.Check(b, Matches, ".*# TYPE aptly_api_http_request_duration_seconds summary.*")
+	c.Check(b, Matches, ".*# TYPE aptly_build_info gauge.*")
+	c.Check(b, Matches, ".*aptly_build_info.*version=\"testVersion\".*")
 }
 
 func (s *ApiSuite) TestTruthy(c *C) {

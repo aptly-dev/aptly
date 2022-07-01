@@ -24,3 +24,6 @@ class MetricsEnabledAPITest(APITest):
 
         apiRequestsDurationSummary = "# TYPE aptly_api_http_request_duration_seconds summary"
         self.check_in(apiRequestsDurationSummary, resp.text)
+
+        apiBuildInfoGauge = "# TYPE aptly_build_info gauge"
+        self.check_in(apiBuildInfoGauge, resp.text)

@@ -1,6 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 TAG="$(shell git describe --tags --always)"
-VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
+VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g' | tr -d '\n')
 PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=

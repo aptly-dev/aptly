@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -25,6 +26,23 @@ import (
 // GET /api/version
 func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
+}
+
+// GET /api/ready
+func apiReady(isReady *atomic.Value) func(*gin.Context) {
+	return func(c *gin.Context) {
+		if isReady == nil || !isReady.Load().(bool) {
+			c.JSON(503, gin.H{"Status": "Aptly is unavailable"})
+			return
+		}
+
+		c.JSON(200, gin.H{"Status": "Aptly is ready"})
+	}
+}
+
+// GET /api/healthy
+func apiHealthy(c *gin.Context) {
+	c.JSON(200, gin.H{"Status": "Aptly is healthy"})
 }
 
 type dbRequestKind int
