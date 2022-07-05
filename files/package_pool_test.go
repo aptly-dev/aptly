@@ -352,25 +352,28 @@ func (s *PackagePoolSuite) TestLink(c *C) {
 }
 
 func (s *PackagePoolSuite) TestSymlink(c *C) {
-	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
-	c.Check(err, IsNil)
+	// Test absolute symlink: makeRelative = false
+	// Test relative symlink: makeRelative = true
+	for _, makeRelative := range []bool{false, true} {
+		path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+		c.Check(err, IsNil)
 
-	tmpDir := c.MkDir()
-	dstPath := filepath.Join(tmpDir, filepath.Base(s.debFile))
-	c.Check(s.pool.Symlink(path, dstPath), IsNil)
+		tmpDir := c.MkDir()
+		dstPath := filepath.Join(tmpDir, filepath.Base(s.debFile))
+		c.Check(s.pool.Symlink(path, dstPath, makeRelative), IsNil)
+		info, err := os.Stat(dstPath)
+		c.Assert(err, IsNil)
+		c.Check(info.Size(), Equals, int64(2738))
+		if isSameDevice(s) {
+			c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
+		} else {
+			c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+		}
 
-	info, err := os.Stat(dstPath)
-	c.Assert(err, IsNil)
-	c.Check(info.Size(), Equals, int64(2738))
-	if isSameDevice(s) {
-		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
-	} else {
-		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+		info, err = os.Lstat(dstPath)
+		c.Assert(err, IsNil)
+		c.Check(int(info.Sys().(*syscall.Stat_t).Mode&syscall.S_IFMT), Equals, int(syscall.S_IFLNK))
 	}
-
-	info, err = os.Lstat(dstPath)
-	c.Assert(err, IsNil)
-	c.Check(int(info.Sys().(*syscall.Stat_t).Mode&syscall.S_IFMT), Equals, int(syscall.S_IFLNK))
 }
 
 func (s *PackagePoolSuite) TestGenerateRandomPath(c *C) {

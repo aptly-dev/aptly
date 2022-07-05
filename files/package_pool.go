@@ -394,8 +394,20 @@ func (pool *PackagePool) Link(path, dstPath string) error {
 }
 
 // Symlink generates symlink to destination path
-func (pool *PackagePool) Symlink(path, dstPath string) error {
-	return os.Symlink(filepath.Join(pool.rootPath, path), dstPath)
+func (pool *PackagePool) Symlink(path, dstPath string, makeRelative bool) error {
+	// Convert path to absolute path
+	path = filepath.Join(pool.rootPath, path)
+	if makeRelative {
+		// Take dir of dst
+		dstDir := filepath.Dir(dstPath)
+		// Take relative path to go from destination directory to path
+		relativePath, err := filepath.Rel(dstDir, path)
+		if err != nil {
+			return err
+		}
+		path = relativePath
+	}
+	return os.Symlink(path, dstPath)
 }
 
 // FullPath generates full path to the file in pool

@@ -28,7 +28,8 @@ var (
 // Constants defining the type of creating links
 const (
 	LinkMethodHardLink uint = iota
-	LinkMethodSymLink
+	LinkMethodAbsoluteSymLink
+	LinkMethodRelativeSymLink
 	LinkMethodCopy
 )
 
@@ -45,8 +46,11 @@ func NewPublishedStorage(root string, linkMethod string, verifyMethod string) *P
 
 	if strings.EqualFold(linkMethod, "copy") {
 		verifiedLinkMethod = LinkMethodCopy
-	} else if strings.EqualFold(linkMethod, "symlink") {
-		verifiedLinkMethod = LinkMethodSymLink
+	} else if strings.EqualFold(linkMethod, "symlink") || strings.EqualFold(linkMethod, "absoluteSymlink") {
+		// By default: symlink is absolute symlink
+		verifiedLinkMethod = LinkMethodAbsoluteSymLink
+	} else if strings.EqualFold(linkMethod, "relativeSymlink") {
+		verifiedLinkMethod = LinkMethodRelativeSymLink
 	} else {
 		verifiedLinkMethod = LinkMethodHardLink
 	}
@@ -218,8 +222,10 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 		}
 
 		err = dst.Close()
-	} else if storage.linkMethod == LinkMethodSymLink {
-		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName))
+	} else if storage.linkMethod == LinkMethodAbsoluteSymLink {
+		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName), false)
+	} else if storage.linkMethod == LinkMethodRelativeSymLink {
+		err = sourcePool.(aptly.LocalPackagePool).Symlink(sourcePath, filepath.Join(poolPath, baseName), true)
 	} else {
 		err = sourcePool.(aptly.LocalPackagePool).Link(sourcePath, filepath.Join(poolPath, baseName))
 	}

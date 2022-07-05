@@ -52,7 +52,7 @@ type LocalPackagePool interface {
 	// Link generates hardlink to destination path
 	Link(path, dstPath string) error
 	// Symlink generates symlink to destination path
-	Symlink(path, dstPath string) error
+	Symlink(path, dstPath string, makeRelative bool) error
 	// FullPath generates full path to the file in pool
 	//
 	// Please use with care: it's not supposed to be used to access files
