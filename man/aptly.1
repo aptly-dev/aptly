@@ -62,11 +62,19 @@ Configuration file is stored in JSON format (default values shown below):
     },
     "test2": {
       "rootDir": "/opt/srv2/aptly_public",
-      "linkMethod": "copy",
-      "verifyMethod": "md5"
+      "linkMethod": "absoluteSymlink"
     },
     "test3": {
       "rootDir": "/opt/srv3/aptly_public",
+      "linkMethod": "relativeSymlink"
+    },
+    "test4": {
+      "rootDir": "/opt/srv4/aptly_public",
+      "linkMethod": "copy",
+      "verifyMethod": "md5"
+    },
+    "test5": {
+      "rootDir": "/opt/srv5/aptly_public",
       "linkMethod": "hardlink"
     }
   },
@@ -205,7 +213,7 @@ The publish directory, e\.g\., \fB/opt/srv/aptly_public\fR\.
 .
 .TP
 \fBlinkMethod\fR
-This is one of \fBhardlink\fR, \fBsymlink\fR or \fBcopy\fR\. It specifies how aptly links the files from the internal pool to the published directory\. If not specified, empty or wrong, this defaults to \fBhardlink\fR\.
+This is one of \fBhardlink\fR, \fBsymlink\fR, \fBabsoluteSymlink\fR, \fBrelativeSymlink\fR or \fBcopy\fR\. It specifies how aptly links the files from the internal pool to the published directory\. The option \fBsymlink\fR will be treated as \fBabsoluteSymlink\fR\. If not specified, empty or wrong, this defaults to \fBhardlink\fR\.
 .
 .TP
 \fBverifyMethod\fR

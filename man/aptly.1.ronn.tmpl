@@ -54,11 +54,19 @@ Configuration file is stored in JSON format (default values shown below):
         },
         "test2": {
           "rootDir": "/opt/srv2/aptly_public",
-          "linkMethod": "copy",
-          "verifyMethod": "md5"
+          "linkMethod": "absoluteSymlink"
         },
         "test3": {
           "rootDir": "/opt/srv3/aptly_public",
+          "linkMethod": "relativeSymlink"
+        },
+        "test4": {
+          "rootDir": "/opt/srv4/aptly_public",
+          "linkMethod": "copy",
+          "verifyMethod": "md5"
+        },
+        "test5": {
+          "rootDir": "/opt/srv5/aptly_public",
           "linkMethod": "hardlink"
         }
       },
@@ -187,8 +195,9 @@ and the following associated settings:
    * `rootDir`:
      The publish directory, e.g., `/opt/srv/aptly_public`.
    * `linkMethod`:
-     This is one of `hardlink`, `symlink` or `copy`. It specifies how aptly links the
-     files from the internal pool to the published directory.
+     This is one of `hardlink`, `symlink`, `absoluteSymlink`, `relativeSymlink` or `copy`.
+     It specifies how aptly links the files from the internal pool to the published directory.
+     The option `symlink` will be treated as `absoluteSymlink`.
      If not specified, empty or wrong, this defaults to `hardlink`.
    * `verifyMethod`:
      This is used only when setting the `linkMethod` to `copy`. Possible values are
