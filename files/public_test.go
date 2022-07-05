@@ -13,12 +13,14 @@ import (
 )
 
 type PublishedStorageSuite struct {
-	root            string
-	storage         *PublishedStorage
-	storageSymlink  *PublishedStorage
-	storageCopy     *PublishedStorage
-	storageCopySize *PublishedStorage
-	cs              aptly.ChecksumStorage
+	root                   string
+	storage                *PublishedStorage
+	storageSymlink         *PublishedStorage
+	storageAbsoluteSymlink *PublishedStorage
+	storageRelativeSymlink *PublishedStorage
+	storageCopy            *PublishedStorage
+	storageCopySize        *PublishedStorage
+	cs                     aptly.ChecksumStorage
 }
 
 var _ = Suite(&PublishedStorageSuite{})
@@ -27,6 +29,8 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.root = c.MkDir()
 	s.storage = NewPublishedStorage(filepath.Join(s.root, "public"), "", "")
 	s.storageSymlink = NewPublishedStorage(filepath.Join(s.root, "public_symlink"), "symlink", "")
+	s.storageAbsoluteSymlink = NewPublishedStorage(filepath.Join(s.root, "public_absolute_symlink"), "absoluteSymlink", "")
+	s.storageRelativeSymlink = NewPublishedStorage(filepath.Join(s.root, "public_relative_symlink"), "relativeSymlink", "")
 	s.storageCopy = NewPublishedStorage(filepath.Join(s.root, "public_copy"), "copy", "")
 	s.storageCopySize = NewPublishedStorage(filepath.Join(s.root, "public_copysize"), "copy", "size")
 	s.cs = NewMockChecksumStorage()
@@ -34,7 +38,9 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 func (s *PublishedStorageSuite) TestLinkMethodField(c *C) {
 	c.Assert(s.storage.linkMethod, Equals, LinkMethodHardLink)
-	c.Assert(s.storageSymlink.linkMethod, Equals, LinkMethodSymLink)
+	c.Assert(s.storageSymlink.linkMethod, Equals, LinkMethodAbsoluteSymLink)
+	c.Assert(s.storageAbsoluteSymlink.linkMethod, Equals, LinkMethodAbsoluteSymLink)
+	c.Assert(s.storageRelativeSymlink.linkMethod, Equals, LinkMethodRelativeSymLink)
 	c.Assert(s.storageCopy.linkMethod, Equals, LinkMethodCopy)
 	c.Assert(s.storageCopySize.linkMethod, Equals, LinkMethodCopy)
 }
@@ -47,6 +53,8 @@ func (s *PublishedStorageSuite) TestVerifyMethodField(c *C) {
 func (s *PublishedStorageSuite) TestPublicPath(c *C) {
 	c.Assert(s.storage.PublicPath(), Equals, filepath.Join(s.root, "public"))
 	c.Assert(s.storageSymlink.PublicPath(), Equals, filepath.Join(s.root, "public_symlink"))
+	c.Assert(s.storageAbsoluteSymlink.PublicPath(), Equals, filepath.Join(s.root, "public_absolute_symlink"))
+	c.Assert(s.storageRelativeSymlink.PublicPath(), Equals, filepath.Join(s.root, "public_relative_symlink"))
 	c.Assert(s.storageCopy.PublicPath(), Equals, filepath.Join(s.root, "public_copy"))
 	c.Assert(s.storageCopySize.PublicPath(), Equals, filepath.Join(s.root, "public_copysize"))
 }
