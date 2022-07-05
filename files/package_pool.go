@@ -400,7 +400,7 @@ func (pool *PackagePool) Symlink(path, dstPath string, makeRelative bool) error 
 	if makeRelative {
 		// Take dir of dst
 		dstDir := filepath.Dir(dstPath)
-		// Take relative path to go from destination directory to path
+		// Take relative path to go from path to destination directory
 		relativePath, err := filepath.Rel(dstDir, path)
 		if err != nil {
 			return err
