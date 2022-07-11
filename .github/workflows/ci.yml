@@ -51,9 +51,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+
+      - name: Get aptly version
+        run: |
+           make version
+           go generate
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
@@ -82,9 +87,9 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: Get aptly version
+      - name: Create temp dir
         run: |
-           make version
+          echo "COVERAGE_DIR=$(mktemp -d)" >> $GITHUB_ENV
 
       - name: Make
         env:
@@ -95,8 +100,14 @@ jobs:
         run: |
           make
 
+      - name: Merge code coverage
+        if: matrix.run_long_tests == 'yes'
+        run: |
+          go install github.com/wadey/gocovmerge@latest
+          ~/go/bin/gocovmerge unit.out $COVERAGE_DIR/*.out > coverage.txt
+
       - name: Upload code coverage
-        if: matrix.run_long_tests
+        if: matrix.run_long_tests == 'yes'
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

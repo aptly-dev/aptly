@@ -7,6 +7,7 @@ import inspect
 import fnmatch
 import re
 import sys
+from tempfile import mkdtemp
 import traceback
 import random
 import subprocess
@@ -42,7 +43,7 @@ def walk_modules(package):
         yield importlib.import_module(package + "." + name)
 
 
-def run(include_long_tests=False, capture_results=False, tests=None, filters=None):
+def run(include_long_tests=False, capture_results=False, tests=None, filters=None, coverage_dir=None):
     """
     Run system test.
     """
@@ -51,6 +52,8 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     fails = []
     numTests = numFailed = numSkipped = 0
     lastBase = None
+    if not coverage_dir:
+        coverage_dir = mkdtemp(suffix="aptly-coverage")
 
     for test in tests:
         for testModule in walk_modules(test):
@@ -95,6 +98,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
                 try:
                     t.captureResults = capture_results
+                    t.coverage_dir = coverage_dir
                     t.test()
                 except Exception:
                     numFailed += 1
@@ -109,6 +113,8 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
     if lastBase is not None:
         lastBase.shutdown_class()
+
+    print("COVERAGE_RESULTS: %s" % coverage_dir)
 
     print("TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (
         numTests, numTests - numFailed, numFailed, numSkipped))
@@ -149,6 +155,7 @@ if __name__ == "__main__":
     random.seed()
     include_long_tests = False
     capture_results = False
+    coverage_dir = None
     tests = None
     args = sys.argv[1:]
 
@@ -157,6 +164,9 @@ if __name__ == "__main__":
             include_long_tests = True
         elif args[0] == "--capture":
             capture_results = True
+        elif args[0] == "--coverage-dir":
+            coverage_dir = args[1]
+            args = args[1:]
 
         args = args[1:]
 
@@ -169,4 +179,4 @@ if __name__ == "__main__":
         else:
             filters.append(arg)
 
-    run(include_long_tests, capture_results, tests, filters)
+    run(include_long_tests, capture_results, tests, filters, coverage_dir)

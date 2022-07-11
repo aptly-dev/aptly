@@ -2,14 +2,15 @@ package api
 
 import (
 	"encoding/json"
-	ctx "github.com/aptly-dev/aptly/context"
-	"github.com/gin-gonic/gin"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	ctx "github.com/aptly-dev/aptly/context"
+	"github.com/gin-gonic/gin"
 
 	"github.com/smira/flag"
 
