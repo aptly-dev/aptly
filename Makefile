@@ -1,20 +1,17 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
-ifdef TRAVIS_TAG
-	TAG=$(TRAVIS_TAG)
-else
-	TAG="$(shell git describe --tags --always)"
-endif
+TAG="$(shell git describe --tags --always)"
 VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g')
 PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
+COVERAGE_DIR?=$(shell mktemp -d)
 
 all: modules test bench check system-test
 
 prepare:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.43.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.45.0
 
 modules:
 	go mod download
@@ -31,7 +28,8 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 install:
-	go install -v -ldflags "-X main.Version=$(VERSION)"
+	go generate
+	go install -v
 
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
@@ -42,13 +40,15 @@ endif
 
 system-test: install system/env
 ifeq ($(RUN_LONG_TESTS), yes)
+	go generate
+	go test -v -coverpkg="./..." -c -tags testruncli
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS)
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR)
 endif
 
 test:
-	go test -v ./... -gocheck.v=true -race -coverprofile=coverage.txt -covermode=atomic
+	go test -v ./... -gocheck.v=true -coverprofile=unit.out
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem

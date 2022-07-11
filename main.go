@@ -7,9 +7,12 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/cmd"
+
+	_ "embed"
 )
 
-// Version variable, filled in at link time
+//go:generate sh -c "make -s version | tr -d '\n' > VERSION"
+//go:embed VERSION
 var Version string
 
 func main() {

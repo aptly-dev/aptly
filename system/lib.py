@@ -19,6 +19,8 @@ import urllib.request
 import pprint
 import socketserver
 import http.server
+from uuid import uuid4
+from pathlib import Path
 import zlib
 
 
@@ -264,6 +266,10 @@ class BaseTest(object):
             command = string.Template(command).substitute(params)
             command = shlex.split(command)
 
+        if command[0] == "aptly":
+            aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
+            command = [str(aptly_testing_bin), f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out", *command[1:]]
+
         environ = os.environ.copy()
         environ["LC_ALL"] = "C"
         environ.update(self.environmentOverride)
@@ -272,14 +278,34 @@ class BaseTest(object):
     def run_cmd(self, command, expected_code=0):
         try:
             proc = self._start_process(command, stdout=subprocess.PIPE)
-            output, _ = proc.communicate()
+            raw_output, _ = proc.communicate()
+
+            returncodes = [proc.returncode]
+            is_aptly_command = False
+            if isinstance(command, str):
+                is_aptly_command = command.startswith("aptly")
+
+            if isinstance(command, list):
+                is_aptly_command = command[0] == "aptly"
+
+            if is_aptly_command:
+                # remove the last two rows as go tests always print PASS/FAIL and coverage in those
+                # two lines. This would otherwise fail the tests as they would not match gold
+                output, _, returncode = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))[0]
+
+                output = output.encode()
+                returncodes.append(int(returncode))
+
+            else:
+                output = raw_output
+
             if expected_code is not None:
-                if proc.returncode != expected_code:
+                if expected_code not in returncodes:
                     raise Exception("exit code %d != %d (output: %s)" % (
-                        proc.returncode, expected_code, output))
+                        proc.returncode, expected_code, raw_output))
             return output
         except Exception as e:
-            raise Exception("Running command %s failed: %s" %
+            raise Exception("Running command '%s' failed: %s" %
                             (command, str(e)))
 
     def gold_processor(self, gold):

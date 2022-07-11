@@ -37,6 +37,9 @@ man/aptly.1.ronn
 system/env/
 
 # created by make build for release artifacts
+VERSION
+aptly.test
+
 build/
 
 pgp/keyrings/aptly2*.gpg
