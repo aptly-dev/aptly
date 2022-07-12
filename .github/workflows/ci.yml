@@ -87,10 +87,6 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: Create temp dir
-        run: |
-          echo "COVERAGE_DIR=$(mktemp -d)" >> $GITHUB_ENV
-
       - name: Make
         env:
           RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
@@ -98,13 +94,13 @@ jobs:
           AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
-          make
+          COVERAGE_DIR=${{ runner.temp }} make
 
       - name: Merge code coverage
         if: matrix.run_long_tests == 'yes'
         run: |
           go install github.com/wadey/gocovmerge@latest
-          ~/go/bin/gocovmerge unit.out $COVERAGE_DIR/*.out > coverage.txt
+          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
       - name: Upload code coverage
         if: matrix.run_long_tests == 'yes'
