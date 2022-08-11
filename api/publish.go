@@ -211,7 +211,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		}
 
 		published.SkipBz2 = context.Config().SkipBz2Publishing
-		if b.SkipContents != nil {
+		if b.SkipBz2 != nil {
 			published.SkipBz2 = *b.SkipBz2
 		}
 
