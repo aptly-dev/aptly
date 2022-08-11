@@ -23,7 +23,6 @@
     "Label": "Debian-Security",
     "Origin": "Debian",
     "Suite": "oldoldstable",
-    "Valid-Until": "Sat, 05 Feb 2022 10:02:07 UTC",
     "Version": "9"
   },
   "LastDownloadDate": "0001-01-01T00:00:00Z",
