@@ -39,7 +39,7 @@ class ShowMirror4Test(BaseTest):
     runCmd = "aptly mirror show mirror4"
 
     def outputMatchPrepare(self, s):
-        return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+        return re.sub(r"(Date): [,0-9:+A-Za-z -]+\n", "", s)
 
 
 class ShowMirror5Test(BaseTest):
