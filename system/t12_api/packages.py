@@ -22,9 +22,7 @@ class PackagesAPITestShow(APITest):
         self.check_equal(resp.json()['State'], 2)
 
         # get information about package
-        resp = self.get("/api/packages/" + urllib.parse.quote('Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'))
-        self.check_equal(resp.status_code, 200)
-        self.check_equal(resp.json(), {
+        pyspi_json = {
             'Architecture': 'any',
             'Binary': 'python-at-spi',
             'Build-Depends': 'debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev',  # noqa
@@ -41,7 +39,24 @@ class PackagesAPITestShow(APITest):
             'ShortKey': 'Psource pyspi 0.6.1-1.3',
             'Standards-Version': '3.7.3',
             'Vcs-Svn': 'svn://svn.tribulaciones.org/srv/svn/pyspi/trunk',
-            'Version': '0.6.1-1.3'})
+            'Version': '0.6.1-1.3'
+        }
+
+        resp = self.get("/api/packages/" + urllib.parse.quote('Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'))
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), pyspi_json)
+
+        resp = self.get("/api/packages?q=pyspi")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [pyspi_json["Key"]])
+
+        resp = self.get("/api/packages?q=pyspi&format=details")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [pyspi_json])
 
         resp = self.get("/api/packages/" + urllib.parse.quote('Pamd64 no-such-package 1.0 3a8b37cbd9a3559e'))
         self.check_equal(resp.status_code, 404)
+
+        resp = self.get("/api/packages?q=no-such-package")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [])
