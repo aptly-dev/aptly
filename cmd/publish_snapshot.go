@@ -116,6 +116,8 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	origin := context.Flags().Lookup("origin").Value.String()
 	notAutomatic := context.Flags().Lookup("notautomatic").Value.String()
 	butAutomaticUpgrades := context.Flags().Lookup("butautomaticupgrades").Value.String()
+	version := context.Flags().Lookup("version").Value.String()
+	codename := context.Flags().Lookup("codename").Value.String()
 
 	published, err := deb.NewPublishedRepo(storage, prefix, distribution, context.ArchitecturesList(), components, sources, collectionFactory)
 	if err != nil {
@@ -126,6 +128,12 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	}
 	if notAutomatic != "" {
 		published.NotAutomatic = notAutomatic
+	}
+	if version != "" {
+		published.Version = version
+	}
+	if codename != "" {
+		published.Codename = codename
 	}
 	if butAutomaticUpgrades != "" {
 		published.ButAutomaticUpgrades = butAutomaticUpgrades
@@ -239,6 +247,8 @@ Example:
 	cmd.Flag.String("butautomaticupgrades", "", "overwrite value for ButAutomaticUpgrades field")
 	cmd.Flag.String("label", "", "label to publish")
 	cmd.Flag.String("suite", "", "suite to publish (defaults to distribution)")
+	cmd.Flag.String("version", "", "version to publish")
+	cmd.Flag.String("codename", "", "codename to publish")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 	cmd.Flag.Bool("acquire-by-hash", false, "provide index files by hash")
 

@@ -459,6 +459,8 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                             "-suite=[suite to publish]:suite: "
                             "-notautomatic=[set value for NotAutomatic field]:notautomatic: "
                             "-origin=[origin name to publish]:origin: "
+                            "-version=[version to publish]:version: "
+                            "-codename=[codename to publish]:codename: "
                             ${components_options[@]}
                 )
 

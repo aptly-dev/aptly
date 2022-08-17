@@ -43,6 +43,8 @@ type PublishedRepo struct {
 	NotAutomatic         string
 	ButAutomaticUpgrades string
 	Label                string
+	Codename             string
+	Version              string
 	Suite                string
 	// Architectures is a list of all architectures published
 	Architectures []string
@@ -311,6 +313,8 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Distribution":         p.Distribution,
 		"Label":                p.Label,
 		"Origin":               p.Origin,
+		"Codename":             p.Codename,
+		"Version":              p.Version,
 		"Suite":                p.Suite,
 		"NotAutomatic":         p.NotAutomatic,
 		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
@@ -360,6 +364,14 @@ func (p *PublishedRepo) String() string {
 
 	if p.Label != "" {
 		extras = append(extras, fmt.Sprintf("label: %s", p.Label))
+	}
+
+	if p.Codename != "" {
+		extras = append(extras, fmt.Sprintf("codename: %s", p.Codename))
+	}
+
+	if p.Version != "" {
+		extras = append(extras, fmt.Sprintf("version: %s", p.Version))
 	}
 
 	if p.Suite != "" {
@@ -503,6 +515,15 @@ func (p *PublishedRepo) GetPath() string {
 	}
 
 	return fmt.Sprintf("%s/%s", prefix, p.Distribution)
+}
+
+// GetCodename returns defaul or manual Codename:
+func (p *PublishedRepo) GetCodename() string {
+	if p.Codename == "" {
+		return p.Distribution
+	}
+
+	return p.Codename
 }
 
 // GetSuite returns default or manual Suite:
@@ -793,7 +814,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 	release["Label"] = p.GetLabel()
 	release["Suite"] = p.GetSuite()
-	release["Codename"] = p.Distribution
+	release["Codename"] = p.GetCodename()
+	if p.Version != "" {
+		release["Version"] = p.Vesrion
+	}
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{ArchitectureSource}), " ")
 	if p.AcquireByHash {
