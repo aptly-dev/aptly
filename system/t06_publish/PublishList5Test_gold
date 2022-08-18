@@ -6,6 +6,7 @@
       "i386"
     ],
     "ButAutomaticUpgrades": "",
+    "Codename": "",
     "Distribution": "maverick",
     "Label": "",
     "NotAutomatic": "",
@@ -29,6 +30,7 @@
       "amd64"
     ],
     "ButAutomaticUpgrades": "",
+    "Codename": "",
     "Distribution": "wheezy",
     "Label": "",
     "NotAutomatic": "",
@@ -53,6 +55,7 @@
       "i386"
     ],
     "ButAutomaticUpgrades": "",
+    "Codename": "",
     "Distribution": "maverick",
     "Label": "",
     "NotAutomatic": "",
@@ -77,6 +80,7 @@
       "i386"
     ],
     "ButAutomaticUpgrades": "",
+    "Codename": "",
     "Distribution": "maverick",
     "Label": "label1",
     "NotAutomatic": "",
