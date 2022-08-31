@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -476,7 +478,16 @@ func apiMirrorsUpdate(c *gin.Context) {
 						var e error
 
 						// provision download location
-						task.TempDownPath, e = context.PackagePool().(aptly.LocalPackagePool).GenerateTempPath(task.File.Filename)
+						if pp, ok := context.PackagePool().(aptly.LocalPackagePool); ok {
+							task.TempDownPath, e = pp.GenerateTempPath(task.File.Filename)
+						} else {
+							var file *os.File
+							file, e = ioutil.TempFile("", task.File.Filename)
+							if e == nil {
+								task.TempDownPath = file.Name()
+								file.Close()
+							}
+						}
 						if e != nil {
 							pushError(e)
 							continue
@@ -509,6 +520,18 @@ func apiMirrorsUpdate(c *gin.Context) {
 		wg.Wait()
 		log.Printf("%s: Background processes finished\n", b.Name)
 		close(taskFinished)
+
+		defer func() {
+			for _, task := range queue {
+				if task.TempDownPath == "" {
+					continue
+				}
+
+				if err := os.Remove(task.TempDownPath); err != nil && !os.IsNotExist(err) {
+					fmt.Fprintf(os.Stderr, "Failed to delete %s: %v\n", task.TempDownPath, err)
+				}
+			}
+		}()
 
 		for idx := range queue {
 

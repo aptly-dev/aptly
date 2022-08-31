@@ -35,8 +35,8 @@ type PackagePool interface {
 	Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage ChecksumStorage) (path string, err error)
 	// LegacyPath returns legacy (pre 1.1) path to package file (relative to root)
 	LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error)
-	// Stat returns Unix stat(2) info
-	Stat(path string) (os.FileInfo, error)
+	// Size returns the size of the given file in bytes.
+	Size(path string) (size int64, err error)
 	// Open returns ReadSeekerCloser to access the file
 	Open(path string) (ReadSeekerCloser, error)
 	// FilepathList returns file paths of all the files in the pool
@@ -47,6 +47,8 @@ type PackagePool interface {
 
 // LocalPackagePool is implemented by PackagePools residing on the same filesystem
 type LocalPackagePool interface {
+	// Stat returns Unix stat(2) info
+	Stat(path string) (os.FileInfo, error)
 	// GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)
 	GenerateTempPath(filename string) (string, error)
 	// Link generates hardlink to destination path

@@ -31,8 +31,7 @@ var (
 
 // NewPackagePool creates new instance of PackagePool which specified root
 func NewPackagePool(root string, supportLegacyPaths bool) *PackagePool {
-	rootPath := filepath.Join(root, "pool")
-	rootPath, err := filepath.Abs(rootPath)
+	rootPath, err := filepath.Abs(root)
 	if err != nil {
 		panic(err)
 	}
@@ -376,6 +375,15 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	}
 
 	return poolPath, err
+}
+
+func (pool *PackagePool) Size(path string) (size int64, err error) {
+	stat, err := pool.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+
+	return stat.Size(), nil
 }
 
 // Open returns io.ReadCloser to access the file

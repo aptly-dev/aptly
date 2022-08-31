@@ -43,6 +43,16 @@ Configuration file is stored in JSON format (default values shown below):
       "gpgDisableVerify": false,
       "gpgProvider": "gpg",
       "downloadSourcePackages": false,
+      "packagePoolStorage": {
+        "path": "$ROOTDIR/pool",
+        "azure": {
+          "accountName": "",
+          "accountKey": "",
+          "container": "repo",
+          "prefix": "",
+          "endpoint": ""
+        }
+      },
       "skipLegacyPool": true,
       "ppaDistributorID": "ubuntu",
       "ppaCodename": "",
@@ -95,8 +105,8 @@ Configuration file is stored in JSON format (default values shown below):
           "accountName": "",
           "accountKey": "",
           "container": "repo",
-          "prefix": ""
-          "endpoint": "blob.core.windows.net"
+          "prefix": "",
+          "endpoint": ""
         }
       }
     }
@@ -104,7 +114,8 @@ Configuration file is stored in JSON format (default values shown below):
 Options:
 
   * `rootDir`:
-    is root of directory storage to store database (`rootDir`/db), downloaded packages (`rootDir`/pool) and
+    is root of directory storage to store database (`rootDir`/db),
+    the default for downloaded packages (`rootDir`/pool) and
     the default for published repositories (`rootDir`/public)
 
   * `downloadConcurrency`:
@@ -157,6 +168,14 @@ Options:
     if enabled, all mirrors created would have flag set to download source packages;
     this setting could be controlled on per-mirror basis with `-with-sources` flag
 
+  * `packagePoolStorage`:
+    configures the location to store downloaded packages (defaults to the
+    path `$ROOTDIR/pool`), by setting the value of the `type`:
+    * `path`: store the packages in the given path
+    * `azure`: store the packages in the given Azure Blob Storage container
+      (see the section on Azure publishing below for information on the
+      configuration)
+
   * `skipLegacyPool`:
     in aptly up to version 1.0.0, package files were stored in internal package pool
     with MD5-dervied path, since 1.1.0 package pool layout was changed;
@@ -176,6 +195,22 @@ Options:
 
   * `SwiftPublishEndpoints`:
     configuration of OpenStack Swift publishing endpoints (see below)
+
+  * `AzurePublishEndpoints`:
+    configuration of Azure publishing endpoints (see below)
+
+## CUSTOM PACKAGE POOLS
+
+aptly defaults to storing downloaded packages at `rootDir/`pool. In order to
+change this, you can set the `type` key within `packagePoolStorage` to one of
+two values:
+
+  * `local`: Store the package pool locally (the default). In order to change
+    the path, additionally set the `path` key within `packagePoolStorage` to
+    the desired location.
+  * `azure`: Store the package pool in an Azure Blob Storage container. Any
+    keys in the below section on Azure publishing may be set on the
+    `packagePoolStorage` object in order to configure the Azure connection.
 
 ## FILESYSTEM PUBLISHING ENDPOINTS
 
@@ -283,6 +318,24 @@ In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
 publishing prefix on the command line, e.g.:
 
   `aptly publish snapshot jessie-main swift:test:`
+
+## AZURE PUBLISHING ENDPOINTS
+
+aptly can be configured to publish repositories directly to Microsoft Azure Blob
+Storage. First, publishing endpoints should be described in the aptly
+configuration file. Each endpoint has its name and associated settings:
+
+  * `container`:
+    container name
+  * `prefix`:
+    (optional) do publishing under specified prefix in the container, defaults to
+    no prefix (container root)
+  * `accountName`, `accountKey`:
+    Azure storage account access key to access blob storage
+  * `endpoint`:
+    endpoint URL to connect to, as described in
+    [the Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string);
+    defaults to `https://$accountName.blob.core.windows.net`
 
 ## PACKAGE QUERY
 

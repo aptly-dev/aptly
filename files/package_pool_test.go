@@ -111,7 +111,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	// SHA256 should be automatically calculated
 	c.Check(s.checksum.SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 	// checksum storage is filled with new checksum
-	c.Check(s.cs.(*mockChecksumStorage).store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
+	c.Check(s.cs.(*MockChecksumStorage).Store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
 	info, err := s.pool.Stat(path)
 	c.Assert(err, IsNil)
@@ -128,7 +128,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	c.Check(err, IsNil)
 	c.Check(path, Equals, "c7/6b/4bd12fd92e4dfe1b55b18a67a669_some.deb")
 	// checksum storage is filled with new checksum
-	c.Check(s.cs.(*mockChecksumStorage).store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
+	c.Check(s.cs.(*MockChecksumStorage).Store[path].SHA256, Equals, "c76b4bd12fd92e4dfe1b55b18a67a669d92f62985d6a96c8a21d96120982cf12")
 
 	// double import, should be ok
 	s.checksum.SHA512 = "" // clear checksum
@@ -139,7 +139,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	c.Check(s.checksum.SHA512, Equals, "d7302241373da972aa9b9e71d2fd769b31a38f71182aa71bc0d69d090d452c69bb74b8612c002ccf8a89c279ced84ac27177c8b92d20f00023b3d268e6cec69c")
 
 	// clear checksum storage, and do double-import
-	delete(s.cs.(*mockChecksumStorage).store, path)
+	delete(s.cs.(*MockChecksumStorage).Store, path)
 	s.checksum.SHA512 = "" // clear checksum
 	path, err = s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, IsNil)
@@ -244,7 +244,7 @@ func (s *PackagePoolSuite) TestVerify(c *C) {
 	c.Check(exists, Equals, false)
 
 	// check existence, with missing checksum and no info in checksum storage
-	delete(s.cs.(*mockChecksumStorage).store, path)
+	delete(s.cs.(*MockChecksumStorage).Store, path)
 	s.checksum.SHA512 = ""
 	ppath, exists, err = s.pool.Verify("", filepath.Base(s.debFile), &s.checksum, s.cs)
 	c.Check(ppath, Equals, path)
@@ -304,6 +304,18 @@ func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
 
 	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, ErrorMatches, "unable to import into pool.*")
+}
+
+func (s *PackagePoolSuite) TestSize(c *C) {
+	path, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
+	c.Check(err, IsNil)
+
+	size, err := s.pool.Size(path)
+	c.Assert(err, IsNil)
+	c.Check(size, Equals, int64(2738))
+
+	_, err = s.pool.Size("do/es/ntexist")
+	c.Assert(os.IsNotExist(err), Equals, true)
 }
 
 func (s *PackagePoolSuite) TestStat(c *C) {

@@ -34,6 +34,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.DatabaseOpenAttempts = 5
 	s.config.GpgProvider = "gpg"
 
+	s.config.PackagePoolStorage.Local = &LocalPoolStorage{"/tmp/aptly-pool"}
+
 	s.config.FileSystemPublishRoots = map[string]FileSystemPublishRoot{"test": {
 		RootDir: "/opt/aptly-publish"}}
 
@@ -44,7 +46,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": {
 		Container: "repo"}}
 
-	s.config.AzurePublishRoots = map[string]AzurePublishRoot{"test": {
+	s.config.AzurePublishRoots = map[string]AzureEndpoint{"test": {
 		Container: "repo"}}
 
 	err := SaveConfig(configname, &s.config)
@@ -75,6 +77,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"gpgDisableVerify\": false,\n"+
 		"  \"gpgProvider\": \"gpg\",\n"+
 		"  \"downloadSourcePackages\": false,\n"+
+		"  \"packagePoolStorage\": {\n"+
+		"    \"type\": \"local\",\n"+
+		"    \"path\": \"/tmp/aptly-pool\"\n"+
+		"  },\n"+
 		"  \"skipLegacyPool\": false,\n"+
 		"  \"ppaDistributorID\": \"\",\n"+
 		"  \"ppaCodename\": \"\",\n"+

@@ -42,7 +42,21 @@ func (cksum *ChecksumInfo) Complete() bool {
 	return cksum.MD5 != "" && cksum.SHA1 != "" && cksum.SHA256 != "" && cksum.SHA512 != ""
 }
 
-// ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for given file
+// ChecksumsForReader generates size, MD5, SHA1 & SHA256 checksums for the given
+// io.Reader
+func ChecksumsForReader(rd io.Reader) (ChecksumInfo, error) {
+	w := NewChecksumWriter()
+
+	_, err := io.Copy(w, rd)
+	if err != nil {
+		return ChecksumInfo{}, err
+	}
+
+	return w.Sum(), nil
+}
+
+// ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for the file at
+// the given path
 func ChecksumsForFile(path string) (ChecksumInfo, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -50,14 +64,7 @@ func ChecksumsForFile(path string) (ChecksumInfo, error) {
 	}
 	defer file.Close()
 
-	w := NewChecksumWriter()
-
-	_, err = io.Copy(w, file)
-	if err != nil {
-		return ChecksumInfo{}, err
-	}
-
-	return w.Sum(), nil
+	return ChecksumsForReader(file)
 }
 
 // ChecksumWriter is a writer that does checksum calculation on the fly passing data

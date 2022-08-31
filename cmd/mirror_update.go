@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 
@@ -161,7 +163,16 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 					var e error
 
 					// provision download location
-					task.TempDownPath, e = context.PackagePool().(aptly.LocalPackagePool).GenerateTempPath(task.File.Filename)
+					if pp, ok := context.PackagePool().(aptly.LocalPackagePool); ok {
+						task.TempDownPath, e = pp.GenerateTempPath(task.File.Filename)
+					} else {
+						var file *os.File
+						file, e = ioutil.TempFile("", task.File.Filename)
+						if e == nil {
+							task.TempDownPath = file.Name()
+							file.Close()
+						}
+					}
 					if e != nil {
 						pushError(e)
 						continue
@@ -196,6 +207,18 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
+
+	defer func() {
+		for _, task := range queue {
+			if task.TempDownPath == "" {
+				continue
+			}
+
+			if err := os.Remove(task.TempDownPath); err != nil && !os.IsNotExist(err) {
+				fmt.Fprintf(os.Stderr, "Failed to delete %s: %v\n", task.TempDownPath, err)
+			}
+		}
+	}()
 
 	// Import downloaded files
 	context.Progress().InitBar(int64(len(queue)), false, aptly.BarMirrorUpdateImportFiles)
