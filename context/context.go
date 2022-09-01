@@ -393,7 +393,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				params.AccessKeyID, params.SecretAccessKey, params.SessionToken,
 				params.Region, params.Endpoint, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
 				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
-				params.ForceSigV2, params.Debug)
+				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug)
 			if err != nil {
 				Fatal(err)
 			}

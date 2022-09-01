@@ -84,6 +84,7 @@ Configuration file is stored in JSON format (default values shown below):
       "plusWorkaround": false,
       "disableMultiDel": false,
       "forceSigV2": false,
+      "forceVirtualHostedStyle": false,
       "debug": false
     }
   },
@@ -263,6 +264,10 @@ bucket name
 .TP
 \fBforceSigV2\fR
 (optional) disable Signature V4 support, useful with non\-AWS S3\-compatible object stores which do not support SigV4, shouldn\(cqt be enabled for AWS
+.
+.TP
+\fBforceVirtualHostedStyle\fR
+(optional) disable path style visit, useful with non\-AWS S3\-compatible object stores which only support virtual hosted style
 .
 .TP
 \fBdebug\fR
