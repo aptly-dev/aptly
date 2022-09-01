@@ -46,20 +46,21 @@ type FileSystemPublishRoot struct {
 
 // S3PublishRoot describes single S3 publishing entry point
 type S3PublishRoot struct {
-	Region           string `json:"region"`
-	Bucket           string `json:"bucket"`
-	Endpoint         string `json:"endpoint"`
-	AccessKeyID      string `json:"awsAccessKeyID"`
-	SecretAccessKey  string `json:"awsSecretAccessKey"`
-	SessionToken     string `json:"awsSessionToken"`
-	Prefix           string `json:"prefix"`
-	ACL              string `json:"acl"`
-	StorageClass     string `json:"storageClass"`
-	EncryptionMethod string `json:"encryptionMethod"`
-	PlusWorkaround   bool   `json:"plusWorkaround"`
-	DisableMultiDel  bool   `json:"disableMultiDel"`
-	ForceSigV2       bool   `json:"forceSigV2"`
-	Debug            bool   `json:"debug"`
+	Region                  string `json:"region"`
+	Bucket                  string `json:"bucket"`
+	Endpoint                string `json:"endpoint"`
+	AccessKeyID             string `json:"awsAccessKeyID"`
+	SecretAccessKey         string `json:"awsSecretAccessKey"`
+	SessionToken            string `json:"awsSessionToken"`
+	Prefix                  string `json:"prefix"`
+	ACL                     string `json:"acl"`
+	StorageClass            string `json:"storageClass"`
+	EncryptionMethod        string `json:"encryptionMethod"`
+	PlusWorkaround          bool   `json:"plusWorkaround"`
+	DisableMultiDel         bool   `json:"disableMultiDel"`
+	ForceSigV2              bool   `json:"forceSigV2"`
+	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"`
+	Debug                   bool   `json:"debug"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point

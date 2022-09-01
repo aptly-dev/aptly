@@ -102,6 +102,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"plusWorkaround\": false,\n"+
 		"      \"disableMultiDel\": false,\n"+
 		"      \"forceSigV2\": false,\n"+
+		"      \"forceVirtualHostedStyle\": false,\n"+
 		"      \"debug\": false\n"+
 		"    }\n"+
 		"  },\n"+

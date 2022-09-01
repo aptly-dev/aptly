@@ -79,15 +79,19 @@ func NewPublishedStorageRaw(
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel, forceSigV2, debug bool) (*PublishedStorage, error) {
+func NewPublishedStorage(
+	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
+	plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle, debug bool) (*PublishedStorage, error) {
 
 	config := &aws.Config{
 		Region: aws.String(region),
 	}
 
 	if endpoint != "" {
-		config = config.WithEndpoint(endpoint).WithS3ForcePathStyle(true)
+		config = config.WithEndpoint(endpoint)
+		if !forceVirtualHostedStyle {
+			config = config.WithS3ForcePathStyle(true)
+		}
 	}
 
 	if accessKey != "" {
