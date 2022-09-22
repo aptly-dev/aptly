@@ -3,7 +3,6 @@ package files
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -81,7 +80,7 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 	pool.Lock()
 	defer pool.Unlock()
 
-	dirs, err := ioutil.ReadDir(pool.rootPath)
+	dirs, err := os.ReadDir(pool.rootPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil

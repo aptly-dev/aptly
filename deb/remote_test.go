@@ -3,7 +3,6 @@ package deb
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 
@@ -38,7 +37,7 @@ func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp
 }
 
 func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
-	text, _ = ioutil.TempFile("", "aptly-test")
+	text, _ = os.CreateTemp("", "aptly-test")
 	io.Copy(text, clearsigned)
 	text.Seek(0, 0)
 	os.Remove(text.Name())

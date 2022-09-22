@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,7 +36,7 @@ func apiGPGAddKey(c *gin.Context) {
 	}
 	if len(b.GpgKeyArmor) > 0 {
 		var tempdir string
-		tempdir, err = ioutil.TempDir(os.TempDir(), "aptly")
+		tempdir, err = os.MkdirTemp(os.TempDir(), "aptly")
 		if err != nil {
 			c.AbortWithError(400, err)
 			return

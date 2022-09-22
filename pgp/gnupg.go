@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -200,7 +199,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 	args = append([]string{"--status-fd", "3"}, args...)
 	cmd := exec.Command(g.gpgv, args...)
 
-	tempf, err := ioutil.TempFile("", "aptly-gpg-status")
+	tempf, err := os.CreateTemp("", "aptly-gpg-status")
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +277,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error {
 	args := g.argsKeyrings()
 
-	sigf, err := ioutil.TempFile("", "aptly-gpg")
+	sigf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return err
 	}
@@ -290,7 +289,7 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sh
 		return err
 	}
 
-	clearf, err := ioutil.TempFile("", "aptly-gpg")
+	clearf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return err
 	}
@@ -323,7 +322,7 @@ func (g *GpgVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
 func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (*KeyInfo, error) {
 	args := g.argsKeyrings()
 
-	clearf, err := ioutil.TempFile("", "aptly-gpg")
+	clearf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +340,7 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) 
 
 // ExtractClearsigned extracts cleartext from clearsigned file WITHOUT signature verification
 func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
-	clearf, err := ioutil.TempFile("", "aptly-gpg")
+	clearf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return
 	}
@@ -353,7 +352,7 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 		return
 	}
 
-	text, err = ioutil.TempFile("", "aptly-gpg")
+	text, err = os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return
 	}

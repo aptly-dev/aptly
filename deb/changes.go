@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -39,7 +38,7 @@ func NewChanges(path string) (*Changes, error) {
 		ChangesName: filepath.Base(path),
 	}
 
-	c.TempDir, err = ioutil.TempDir(os.TempDir(), "aptly")
+	c.TempDir, err = os.MkdirTemp(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
 	}

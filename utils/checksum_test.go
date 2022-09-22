@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"io/ioutil"
 	"os"
 
 	. "gopkg.in/check.v1"
@@ -14,7 +13,7 @@ type ChecksumSuite struct {
 var _ = Suite(&ChecksumSuite{})
 
 func (s *ChecksumSuite) SetUpTest(c *C) {
-	s.tempfile, _ = ioutil.TempFile(c.MkDir(), "aptly-test")
+	s.tempfile, _ = os.CreateTemp(c.MkDir(), "aptly-test")
 	s.tempfile.WriteString(testString)
 }
 
