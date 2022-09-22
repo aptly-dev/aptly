@@ -5,11 +5,13 @@ import (
 	gocontext "context"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -21,6 +23,7 @@ import (
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/database/etcddb"
 	"github.com/aptly-dev/aptly/database/goleveldb"
+	"github.com/aptly-dev/aptly/database/ssdb"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/http"
@@ -29,6 +32,7 @@ import (
 	"github.com/aptly-dev/aptly/swift"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/seefan/gossdb/v2/conf"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -301,6 +305,21 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 			context.database, err = goleveldb.NewDB(dbPath)
 		case "etcd":
 			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
+		case "ssdb":
+			var cfg conf.Config
+			u, e := url.Parse(context.config().DatabaseBackend.URL)
+
+			if e != nil {
+				return nil, e
+			}
+			cfg.Port, e = strconv.Atoi(u.Port())
+			cfg.Host = strings.Split(u.Host, ":")[0]
+			if e != nil {
+				return nil, e
+			}
+			password, _ := u.User.Password()
+			cfg.Password = password
+			context.database, err = ssdb.NewOpenDB(&cfg)
 		default:
 			context.database, err = goleveldb.NewDB(context.dbPath())
 		}
