@@ -3,13 +3,16 @@ package context
 
 import (
 	gocontext "context"
+	"errors"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +22,7 @@ import (
 	"github.com/aptly-dev/aptly/console"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/database/goleveldb"
+	"github.com/aptly-dev/aptly/database/ssdb"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/http"
@@ -27,6 +31,7 @@ import (
 	"github.com/aptly-dev/aptly/swift"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/seefan/gossdb/v2/conf"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -287,7 +292,32 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
 
-		context.database, err = goleveldb.NewDB(context.dbPath())
+		if context.config().DatabaseBackend.Type == "leveldb" {
+			if context.config().DatabaseBackend.DbPath != "" {
+				dbPath := filepath.Join(context.config().RootDir, context.config().DatabaseBackend.DbPath)
+				context.database, err = goleveldb.NewDB(dbPath)
+			} else {
+				return nil, errors.New("leveldb databaseBackend config invalid")
+			}
+		} else if context.config().DatabaseBackend.Type == "ssdb" {
+			var cfg conf.Config
+			u, e := url.Parse(context.config().DatabaseBackend.URL)
+
+			if e != nil {
+				return nil, e
+			}
+			cfg.Port, e = strconv.Atoi(u.Port())
+			cfg.Host = strings.Split(u.Host, ":")[0]
+			if e != nil {
+				return nil, e
+			}
+			password, _ := u.User.Password()
+			cfg.Password = password
+			context.database, err = ssdb.NewOpenDB(&cfg)
+		} else {
+			context.database, err = goleveldb.NewDB(context.dbPath())
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("can't instantiate database: %s", err)
 		}

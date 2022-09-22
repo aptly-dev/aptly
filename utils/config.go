@@ -35,6 +35,14 @@ type ConfigStructure struct { // nolint: maligned
 	AzurePublishRoots      map[string]AzurePublishRoot      `json:"AzurePublishEndpoints"`
 	AsyncAPI               bool                             `json:"AsyncAPI"`
 	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
+	DatabaseBackend        DBConfig                         `json:"databaseBackend"`
+}
+
+// DBConfig
+type DBConfig struct {
+	Type   string `json:"type"`
+	URL    string `json:"url"`
+	DbPath string `json:"dbPath"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point

@@ -131,7 +131,12 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    }\n"+
 		"  },\n"+
 		"  \"AsyncAPI\": false,\n"+
-		"  \"enableMetricsEndpoint\": false\n"+
+		"  \"enableMetricsEndpoint\": false,\n"+
+		"  \"databaseBackend\": {\n"+
+		"    \"type\": \"\",\n"+
+		"    \"url\": \"\",\n"+
+		"    \"dbPath\": \"\"\n"+
+		"  }\n"+
 		"}")
 }
 
