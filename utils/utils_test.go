@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -22,7 +21,7 @@ type UtilsSuite struct {
 var _ = Suite(&UtilsSuite{})
 
 func (s *UtilsSuite) SetUpSuite(c *C) {
-	s.tempfile, _ = ioutil.TempFile(c.MkDir(), "aptly-test-inaccessible")
+	s.tempfile, _ = os.CreateTemp(c.MkDir(), "aptly-test-inaccessible")
 	if err := os.Chmod(s.tempfile.Name(), 0000); err != nil {
 		log.Fatalln(err)
 	}

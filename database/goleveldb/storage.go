@@ -3,7 +3,6 @@ package goleveldb
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"os"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -19,7 +18,7 @@ type storage struct {
 
 // CreateTemporary creates new DB of the same type in temp dir
 func (s *storage) CreateTemporary() (database.Storage, error) {
-	tempdir, err := ioutil.TempDir("", "aptly")
+	tempdir, err := os.MkdirTemp("", "aptly")
 	if err != nil {
 		return nil, err
 	}

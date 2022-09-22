@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -31,7 +30,7 @@ type ApiSuite struct {
 var _ = Suite(&ApiSuite{})
 
 func createTestConfig() *os.File {
-	file, err := ioutil.TempFile("", "aptly")
+	file, err := os.CreateTemp("", "aptly")
 	if err != nil {
 		return nil
 	}

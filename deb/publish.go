@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -596,7 +595,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 
 	var tempDir string
-	tempDir, err = ioutil.TempDir(os.TempDir(), "aptly")
+	tempDir, err = os.MkdirTemp(os.TempDir(), "aptly")
 	if err != nil {
 		return err
 	}

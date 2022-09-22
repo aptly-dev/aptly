@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,7 +35,7 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 
 	buf := bytes.NewBufferString(graph.String())
 
-	tempfile, err := ioutil.TempFile("", "aptly-graph")
+	tempfile, err := os.CreateTemp("", "aptly-graph")
 	if err != nil {
 		return err
 	}

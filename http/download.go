@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -56,7 +55,7 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 
 	progressWriter := io.Writer(progress)
 	if progress == nil {
-		progressWriter = ioutil.Discard
+		progressWriter = io.Discard
 	}
 
 	downloader.client.CheckRedirect = downloader.checkRedirect
