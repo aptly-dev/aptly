@@ -25,5 +25,10 @@
     "SwiftPublishEndpoints": {},
     "AzurePublishEndpoints": {},
     "AsyncAPI": false,
-    "enableMetricsEndpoint": true
+    "enableMetricsEndpoint": true,
+    "databaseBackend": {
+        "type": "",
+        "url": "",
+        "dbPath": ""
+    }
 }
