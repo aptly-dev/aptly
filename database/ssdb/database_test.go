@@ -2,6 +2,9 @@ package ssdb_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/aptly-dev/aptly/database"
@@ -13,6 +16,44 @@ import (
 // Launch gocheck tests
 func Test(t *testing.T) {
 	TestingT(t)
+}
+
+func setUpSsdb() error {
+	setUpStr := `
+	#!/bin/bash
+	if [ ! -e /tmp/ssdb-master/ssdb-master ]; then
+		mkdir -p /tmp/ssdb-master
+		wget --no-check-certificate https://github.com/ideawu/ssdb/archive/master.zip -O /tmp/ssdb-master/master.zip
+		cd /tmp/ssdb-master && unzip master && cd ssdb-master && make all
+	fi
+	cd /tmp/ssdb-master/ssdb-master && ./ssdb-server -d ssdb.conf -s restart
+	sleep 2`
+
+	tmpShell, err := ioutil.TempFile("/tmp", "ssdbSetup")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpShell.Name())
+
+	_, err = tmpShell.WriteString(setUpStr)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("/bin/bash", tmpShell.Name())
+	fmt.Println(cmd.String())
+	output, err := cmd.Output()
+	fmt.Println(string(output))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestMain(m *testing.M) {
+	setUpSsdb()
+	m.Run()
 }
 
 type SSDBSuite struct {
