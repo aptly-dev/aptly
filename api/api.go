@@ -158,7 +158,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		log.Println("Executing task asynchronously")
 		task, conflictErr := runTaskInBackground(name, resources, proc)
 		if conflictErr != nil {
-			c.AbortWithError(409, conflictErr)
+			AbortWithJSONError(c, 409, conflictErr)
 			return
 		}
 		c.JSON(202, task)
@@ -168,7 +168,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		detail := task.Detail{}
 		retValue, err := proc(out, &detail)
 		if err != nil {
-			c.AbortWithError(retValue.Code, err)
+			AbortWithJSONError(c, retValue.Code, err)
 			return
 		}
 		if retValue != nil {
@@ -186,7 +186,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 
 	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -194,7 +194,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	if queryS != "" {
 		q, err := query.Parse(c.Request.URL.Query().Get("q"))
 		if err != nil {
-			c.AbortWithError(400, err)
+			AbortWithJSONError(c, 400, err)
 			return
 		}
 
@@ -211,7 +211,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 			sort.Strings(architecturesList)
 
 			if len(architecturesList) == 0 {
-				c.AbortWithError(400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
+				AbortWithJSONError(c, 400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
 				return
 			}
 		}
@@ -221,7 +221,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("unable to search: %s", err))
+			AbortWithJSONError(c, 500, fmt.Errorf("unable to search: %s", err))
 			return
 		}
 	}
@@ -236,4 +236,9 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	} else {
 		c.JSON(200, list.Strings())
 	}
+}
+
+func AbortWithJSONError(c *gin.Context, code int, err error) *gin.Error {
+	c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return c.AbortWithError(code, err)
 }
