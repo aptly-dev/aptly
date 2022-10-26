@@ -45,7 +45,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 			err = <-errCh
 			if err != nil {
-				c.AbortWithError(500, err)
+				AbortWithJSONError(c, 500, err)
 				return
 			}
 
@@ -53,7 +53,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 				dbRequests <- dbRequest{releasedb, errCh}
 				err = <-errCh
 				if err != nil {
-					c.AbortWithError(500, err)
+					AbortWithJSONError(c, 500, err)
 				}
 			}()
 

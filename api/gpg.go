@@ -38,7 +38,7 @@ func apiGPGAddKey(c *gin.Context) {
 		var tempdir string
 		tempdir, err = os.MkdirTemp(os.TempDir(), "aptly")
 		if err != nil {
-			c.AbortWithError(400, err)
+			AbortWithJSONError(c, 400, err)
 			return
 		}
 		defer os.RemoveAll(tempdir)
@@ -46,11 +46,11 @@ func apiGPGAddKey(c *gin.Context) {
 		keypath := filepath.Join(tempdir, "key")
 		keyfile, e := os.Create(keypath)
 		if e != nil {
-			c.AbortWithError(400, e)
+			AbortWithJSONError(c, 400, e)
 			return
 		}
 		if _, e = keyfile.WriteString(b.GpgKeyArmor); e != nil {
-			c.AbortWithError(400, e)
+			AbortWithJSONError(c, 400, e)
 		}
 		args = append(args, "--import", keypath)
 
@@ -64,7 +64,7 @@ func apiGPGAddKey(c *gin.Context) {
 	finder := pgp.GPG1Finder()
 	gpg, _, err := finder.FindGPG()
 	if err != nil {
-		c.AbortWithError(400, err)
+		AbortWithJSONError(c, 400, err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func apiGPGAddKey(c *gin.Context) {
 	fmt.Printf("running %s %s\n", gpg, strings.Join(args, " "))
 	cmd.Stdout = os.Stdout
 	if err = cmd.Run(); err != nil {
-		c.AbortWithError(400, err)
+		AbortWithJSONError(c, 400, err)
 		return
 	}
 
