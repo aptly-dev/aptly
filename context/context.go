@@ -40,6 +40,7 @@ type AptlyContext struct {
 	flags, globalFlags *flag.FlagSet
 	configLoaded       bool
 
+	PublishMutex      sync.Mutex
 	progress          aptly.Progress
 	downloader        aptly.Downloader
 	taskList          *task.List
@@ -593,6 +594,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 	var err error
 
 	context := &AptlyContext{
+		PublishMutex:      sync.Mutex{},
 		flags:             flags,
 		globalFlags:       flags,
 		dependencyOptions: -1,
