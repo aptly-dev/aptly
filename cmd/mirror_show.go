@@ -85,9 +85,8 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 func formatYesNo(b bool) string {
 	if b {
 		return Yes
-	} else {
-		return No
 	}
+	return No
 }
 
 func aptlyMirrorShowJSON(cmd *commander.Command, args []string) error {
