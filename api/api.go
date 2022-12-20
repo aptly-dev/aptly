@@ -199,6 +199,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 		}
 
 		withDeps := c.Request.URL.Query().Get("withDeps") == "1"
+		withBuildDeps := c.Request.URL.Query().Get("withBuildDeps") == "1"
 		architecturesList := []string{}
 
 		if withDeps {
@@ -218,7 +219,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 
 		list.PrepareIndex()
 
-		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
+		list, err = list.Filter([]deb.PackageQuery{q}, withDeps, withBuildDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.AbortWithError(500, fmt.Errorf("unable to search: %s", err))

@@ -34,6 +34,8 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			repo.Filter = flag.Value.String()
 		case "filter-with-deps":
 			repo.FilterWithDeps = flag.Value.Get().(bool)
+		case "filter-with-build-deps":
+			repo.FilterWithBuildDeps = flag.Value.Get().(bool)
 		case "with-installer":
 			repo.DownloadInstaller = flag.Value.Get().(bool)
 		case "with-sources":
@@ -103,6 +105,7 @@ Example:
 	cmd.Flag.String("archive-url", "", "archive url is the root of archive")
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
+	cmd.Flag.Bool("filter-with-build-deps", false, "when filtering, include build dependencies of matching source packages as well")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("with-installer", false, "download additional not packaged installer files")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")

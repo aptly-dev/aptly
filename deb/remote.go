@@ -60,6 +60,8 @@ type RemoteRepo struct {
 	WorkerPID int
 	// FilterWithDeps to include dependencies from filter query
 	FilterWithDeps bool
+	// FilterWithBuildDeps to include build dependencies of source packages in filter query
+	FilterWithBuildDeps bool
 	// SkipComponentCheck skips component list verification
 	SkipComponentCheck bool
 	// SkipArchitectureCheck skips architecture list verification
@@ -577,7 +579,7 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 	emptyList.PrepareIndex()
 
 	oldLen = repo.packageList.Len()
-	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures, progress)
+	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, repo.FilterWithBuildDeps, emptyList, dependencyOptions, repo.Architectures, progress)
 	if repo.packageList != nil {
 		newLen = repo.packageList.Len()
 	}
@@ -722,6 +724,7 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 			repo.ReleaseFiles = repo11.ReleaseFiles
 			repo.Filter = repo11.Filter
 			repo.FilterWithDeps = repo11.FilterWithDeps
+			repo.FilterWithBuildDeps = false // property didn't exist then
 		} else if strings.Contains(err.Error(), "invalid length of bytes for decoding time") {
 			// DB created by old codec version, time.Time is not builtin type.
 			// https://github.com/ugorji/go-codec/issues/269

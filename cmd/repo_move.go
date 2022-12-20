@@ -90,6 +90,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	var architecturesList []string
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
+	withBuildDeps := context.Flags().Lookup("with-build-deps").Value.Get().(bool)
 
 	if withDeps {
 		dstList.PrepareIndex()
@@ -116,7 +117,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	toProcess, err := srcList.FilterWithProgress(queries, withDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
+	toProcess, err := srcList.FilterWithProgress(queries, withDeps, withBuildDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
@@ -188,6 +189,7 @@ Example:
 
 	cmd.Flag.Bool("dry-run", false, "don't move, just show what would be moved")
 	cmd.Flag.Bool("with-deps", false, "follow dependencies when processing package-spec")
+	cmd.Flag.Bool("with-build-deps", false, "follow build dependencies when processing package-spec")
 
 	return cmd
 }

@@ -45,7 +45,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 	}
 
 	list.PrepareIndex()
-	toRemove, err := list.Filter(queries, false, nil, 0, nil)
+	toRemove, err := list.Filter(queries, false, false, nil, 0, nil)
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}

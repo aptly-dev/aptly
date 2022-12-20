@@ -51,23 +51,12 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 	fmt.Printf("Distribution: %s\n", repo.Distribution)
 	fmt.Printf("Components: %s\n", strings.Join(repo.Components, ", "))
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, ", "))
-	downloadSources := No
-	if repo.DownloadSources {
-		downloadSources = Yes
-	}
-	fmt.Printf("Download Sources: %s\n", downloadSources)
-	downloadUdebs := No
-	if repo.DownloadUdebs {
-		downloadUdebs = Yes
-	}
-	fmt.Printf("Download .udebs: %s\n", downloadUdebs)
+	fmt.Printf("Download Sources: %s\n", formatYesNo(repo.DownloadSources))
+	fmt.Printf("Download .udebs: %s\n", formatYesNo(repo.DownloadUdebs))
 	if repo.Filter != "" {
 		fmt.Printf("Filter: %s\n", repo.Filter)
-		filterWithDeps := No
-		if repo.FilterWithDeps {
-			filterWithDeps = Yes
-		}
-		fmt.Printf("Filter With Deps: %s\n", filterWithDeps)
+		fmt.Printf("Filter With Deps: %s\n", formatYesNo(repo.FilterWithDeps))
+		fmt.Printf("Filter With Build Deps: %s\n", formatYesNo(repo.FilterWithBuildDeps))
 	}
 	if repo.LastDownloadDate.IsZero() {
 		fmt.Printf("Last update: never\n")
@@ -91,6 +80,14 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 	}
 
 	return err
+}
+
+func formatYesNo(b bool) string {
+	if b {
+		return Yes
+	} else {
+		return No
+	}
 }
 
 func aptlyMirrorShowJSON(cmd *commander.Command, args []string) error {

@@ -23,6 +23,7 @@ Example:
 
 	cmd.Flag.Bool("dry-run", false, "don't import, just show what would be imported")
 	cmd.Flag.Bool("with-deps", false, "follow dependencies when processing package-spec")
+	cmd.Flag.Bool("with-build-deps", false, "follow build dependencies when processing package-spec")
 
 	return cmd
 }

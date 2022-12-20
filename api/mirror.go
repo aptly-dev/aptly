@@ -52,19 +52,20 @@ func apiMirrorsList(c *gin.Context) {
 func apiMirrorsCreate(c *gin.Context) {
 	var err error
 	var b struct {
-		Name               string `binding:"required"`
-		ArchiveURL         string `binding:"required"`
-		Distribution       string
-		Filter             string
-		Components         []string
-		Architectures      []string
-		Keyrings           []string
-		DownloadSources    bool
-		DownloadUdebs      bool
-		DownloadInstaller  bool
-		FilterWithDeps     bool
-		SkipComponentCheck bool
-		IgnoreSignatures   bool
+		Name                string `binding:"required"`
+		ArchiveURL          string `binding:"required"`
+		Distribution        string
+		Filter              string
+		Components          []string
+		Architectures       []string
+		Keyrings            []string
+		DownloadSources     bool
+		DownloadUdebs       bool
+		DownloadInstaller   bool
+		FilterWithDeps      bool
+		FilterWithBuildDeps bool
+		SkipComponentCheck  bool
+		IgnoreSignatures    bool
 	}
 
 	b.DownloadSources = context.Config().DownloadSourcePackages
@@ -104,6 +105,7 @@ func apiMirrorsCreate(c *gin.Context) {
 
 	repo.Filter = b.Filter
 	repo.FilterWithDeps = b.FilterWithDeps
+	repo.FilterWithBuildDeps = b.FilterWithBuildDeps
 	repo.SkipComponentCheck = b.SkipComponentCheck
 	repo.DownloadSources = b.DownloadSources
 	repo.DownloadUdebs = b.DownloadUdebs
@@ -229,6 +231,7 @@ func apiMirrorsPackages(c *gin.Context) {
 		}
 
 		withDeps := c.Request.URL.Query().Get("withDeps") == "1"
+		withBuildDeps := c.Request.URL.Query().Get("withBuildDeps") == "1"
 		architecturesList := []string{}
 
 		if withDeps {
@@ -248,7 +251,7 @@ func apiMirrorsPackages(c *gin.Context) {
 
 		list.PrepareIndex()
 
-		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
+		list, err = list.Filter([]deb.PackageQuery{q}, withDeps, withBuildDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			c.AbortWithError(500, fmt.Errorf("unable to search: %s", err))
@@ -282,6 +285,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		Components           []string
 		Keyrings             []string
 		FilterWithDeps       bool
+		FilterWithBuildDeps  bool
 		DownloadSources      bool
 		DownloadUdebs        bool
 		SkipComponentCheck   bool
@@ -305,6 +309,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	b.DownloadSources = remote.DownloadSources
 	b.SkipComponentCheck = remote.SkipComponentCheck
 	b.FilterWithDeps = remote.FilterWithDeps
+	b.FilterWithBuildDeps = remote.FilterWithBuildDeps
 	b.Filter = remote.Filter
 	b.Architectures = remote.Architectures
 	b.Components = remote.Components
@@ -339,6 +344,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	remote.DownloadSources = b.DownloadSources
 	remote.SkipComponentCheck = b.SkipComponentCheck
 	remote.FilterWithDeps = b.FilterWithDeps
+	remote.FilterWithBuildDeps = b.FilterWithBuildDeps
 	remote.Filter = b.Filter
 	remote.Architectures = b.Architectures
 	remote.Components = b.Components

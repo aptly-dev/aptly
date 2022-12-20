@@ -23,6 +23,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("with-deps", false, "include dependencies into search results")
+	cmd.Flag.Bool("with-build-deps", false, "include build dependencies into search results")
 	cmd.Flag.String("format", "", "custom format for result printing")
 
 	return cmd

@@ -87,6 +87,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 	}
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
+	withBuildDeps := context.Flags().Lookup("with-build-deps").Value.Get().(bool)
 	architecturesList := []string{}
 
 	if withDeps {
@@ -103,7 +104,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		}
 	}
 
-	result, err := list.FilterWithProgress([]deb.PackageQuery{q}, withDeps,
+	result, err := list.FilterWithProgress([]deb.PackageQuery{q}, withDeps, withBuildDeps,
 		nil, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to search: %s", err)
@@ -137,6 +138,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("with-deps", false, "include dependencies into search results")
+	cmd.Flag.Bool("with-build-deps", false, "include build dependencies into search results")
 	cmd.Flag.String("format", "", "custom format for result printing")
 
 	return cmd

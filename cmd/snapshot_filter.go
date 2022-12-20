@@ -19,6 +19,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	}
 
 	withDeps := context.Flags().Lookup("with-deps").Value.Get().(bool)
+	withBuildDeps := context.Flags().Lookup("with-build-deps").Value.Get().(bool)
 	collectionFactory := context.NewCollectionFactory()
 
 	// Load <source> snapshot
@@ -67,7 +68,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	}
 
 	// Filter with dependencies as requested
-	result, err := packageList.FilterWithProgress(queries, withDeps, nil, context.DependencyOptions(), architecturesList, context.Progress())
+	result, err := packageList.FilterWithProgress(queries, withDeps, withBuildDeps, nil, context.DependencyOptions(), architecturesList, context.Progress())
 	if err != nil {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
@@ -104,6 +105,7 @@ Example:
 	}
 
 	cmd.Flag.Bool("with-deps", false, "include dependent packages as well")
+	cmd.Flag.Bool("with-build-deps", false, "include build dependencies as well")
 
 	return cmd
 }

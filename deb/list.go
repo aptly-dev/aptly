@@ -325,7 +325,10 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 				progress.AddBar(1)
 			}
 
-			if !p.MatchesArchitecture(arch) {
+			followBuildDeps := options&DepFollowBuild == DepFollowBuild
+
+			// don't skip the dependency check if it's a source package AND DepFollowBuild is enabled
+			if !p.MatchesArchitecture(arch) && (!followBuildDeps || !p.IsSource) {
 				continue
 			}
 
@@ -493,12 +496,12 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 }
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
-func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
-	return l.FilterWithProgress(queries, withDependencies, source, dependencyOptions, architecturesList, nil)
+func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, withBuildDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
+	return l.FilterWithProgress(queries, withDependencies, withBuildDependencies, source, dependencyOptions, architecturesList, nil)
 }
 
 // FilterWithProgress filters package index by specified queries (ORed together), possibly pulling dependencies and displays progress
-func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
+func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, withBuildDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
 	if !l.indexed {
 		panic("list not indexed, can't filter")
 	}
@@ -510,68 +513,85 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 	}
 
 	if withDependencies {
-		added := result.Len()
-		result.PrepareIndex()
-
-		dependencySource := NewPackageList()
-		if source != nil {
-			dependencySource.Append(source)
+		err := addTransitiveDependencies(result, source, dependencyOptions, architecturesList, progress, l)
+		if err != nil {
+			return nil, err
 		}
-		dependencySource.Append(result)
-		dependencySource.PrepareIndex()
+	}
 
-		// while some new dependencies were discovered
-		for added > 0 {
-			added = 0
-
-			// find missing dependencies
-			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
-			if err != nil {
-				return nil, err
-			}
-
-			// try to satisfy dependencies
-			for _, dep := range missing {
-				if dependencyOptions&DepFollowAllVariants == 0 {
-					// dependency might have already been satisfied
-					// with packages already been added
-					//
-					// when follow-all-variants is enabled, we need to try to expand anyway,
-					// as even if dependency is satisfied now, there might be other ways to satisfy dependency
-					if result.Search(dep, false) != nil {
-						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true))
-						}
-						continue
-					}
-				}
-
-				searchResults := l.Search(dep, true)
-				if len(searchResults) > 0 {
-					for _, p := range searchResults {
-						if result.Has(p) {
-							continue
-						}
-
-						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-							progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
-						}
-						result.Add(p)
-						dependencySource.Add(p)
-						added++
-						if dependencyOptions&DepFollowAllVariants == 0 {
-							break
-						}
-					}
-				} else {
-					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-						progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
-					}
-
-				}
-			}
+	if withBuildDependencies {
+		// disable DepFollowSource, enable DepFollowBuild
+		buildDependencyOptions := dependencyOptions&(^DepFollowSource) | DepFollowBuild
+		err := addTransitiveDependencies(result, source, buildDependencyOptions, architecturesList, progress, l)
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	return result, nil
+}
+
+func addTransitiveDependencies(result *PackageList, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress, l *PackageList) error {
+	added := result.Len()
+	result.PrepareIndex()
+
+	dependencySource := NewPackageList()
+	if source != nil {
+		dependencySource.Append(source)
+	}
+	dependencySource.Append(result)
+	dependencySource.PrepareIndex()
+
+	// while some new dependencies were discovered
+	for added > 0 {
+		added = 0
+
+		// find missing dependencies
+		missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
+		if err != nil {
+			return err
+		}
+
+		// try to satisfy dependencies
+		for _, dep := range missing {
+			if dependencyOptions&DepFollowAllVariants == 0 {
+				// dependency might have already been satisfied
+				// with packages already been added
+				//
+				// when follow-all-variants is enabled, we need to try to expand anyway,
+				// as even if dependency is satisfied now, there might be other ways to satisfy dependency
+				if result.Search(dep, false) != nil {
+					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+						progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true))
+					}
+					continue
+				}
+			}
+
+			searchResults := l.Search(dep, true)
+			if len(searchResults) > 0 {
+				for _, p := range searchResults {
+					if result.Has(p) {
+						continue
+					}
+
+					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+						progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
+					}
+					result.Add(p)
+					dependencySource.Add(p)
+					added++
+					if dependencyOptions&DepFollowAllVariants == 0 {
+						break
+					}
+				}
+			} else {
+				if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
+					progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
+				}
+
+			}
+		}
+	}
+	return nil
 }
