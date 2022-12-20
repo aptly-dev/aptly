@@ -115,6 +115,7 @@ class EditMirror10Test(BaseTest):
     fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian stretch main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"
 
+
 class EditMirror11Test(BaseTest):
     """
     edit mirror: enable filter, download sources and build dependencies
