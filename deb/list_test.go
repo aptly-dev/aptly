@@ -53,9 +53,11 @@ type PackageListSuite struct {
 	// Mocked packages in list
 	packages       []*Package
 	packages2      []*Package
+	packages3      []*Package
 	sourcePackages []*Package
 	il             *PackageList
 	il2            *PackageList
+	il3            *PackageList
 }
 
 var _ = Suite(&PackageListSuite{})
@@ -120,6 +122,26 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		{Name: "aa", Version: "2.0-1", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
 		{Name: "lib", Version: "0.9", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
 	}
+
+	s.il3 = NewPackageList()
+	s.packages3 = []*Package{
+		{Name: "dpkg", Version: "1.20.9", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{
+			BuildDepends: []string{"debhelper-compat (= 13)", "pkg-config", "gettext (>= 0.19.7)"},
+		}},
+		{Name: "pkg-config", Version: "0.29.2-1", Architecture: "amd64", deps: &PackageDependencies{Depends: []string{"libc6 (>= 2.14)", "libdpkg-perl"}}},
+		{Name: "libc6", Version: "2.31-13+deb11u4", Architecture: "amd64", deps: &PackageDependencies{}, Source: "glibc"},
+		{Name: "glibc", Version: "2.31-13+deb11u4", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{BuildDepends: []string{"xz-utils"}}},
+		{Name: "xz-utils", Version: "5.2.5-2.1~deb11u1", Architecture: "amd64", deps: &PackageDependencies{}},
+		{Name: "xz-utils", Version: "5.2.5-2.1~deb11u1", Architecture: "source", IsSource: true, deps: &PackageDependencies{BuildDepends: []string{"gettext"}}},
+		{Name: "libdpkg-perl", Version: "1.20.10", Architecture: "all", deps: &PackageDependencies{}},
+		{Name: "gettext", Version: "0.21-4", Architecture: "amd64", deps: &PackageDependencies{Depends: []string{"libc6 (>= 2.27)", "libgomp1 (>= 6)"}}},
+		{Name: "libgomp1", Version: "10.2.1-6", Architecture: "amd64", deps: &PackageDependencies{Depends: []string{"gcc-10-base (= 10.2.1-6)"}}},
+		{Name: "gcc-10-base", Version: "10.2.1-6", Architecture: "amd64", deps: &PackageDependencies{}},
+	}
+	for _, p := range s.packages3 {
+		s.il3.Add(p)
+	}
+	s.il3.PrepareIndex()
 
 }
 
@@ -393,6 +415,15 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	}}, false, false, nil, 0, nil)
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "aa_2.0-1_i386 app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 mailer_3.5.8_i386")
+
+	result, err = s.il3.Filter([]PackageQuery{&PkgQuery{"dpkg", "1.20.9", "source"}}, false, true, nil, 0, []string{"amd64"})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "dpkg_1.20.9_source gcc-10-base_10.2.1-6_amd64 gettext_0.21-4_amd64 libc6_2.31-13+deb11u4_amd64 libdpkg-perl_1.20.10_all libgomp1_10.2.1-6_amd64 pkg-config_0.29.2-1_amd64")
+
+	// make sure that the build dependencies of the build dependencies are not installed
+	result, err = s.il3.Filter([]PackageQuery{&PkgQuery{"libc6", "2.31-13+deb11u4", "amd64"}}, true, true, nil, DepFollowSource, []string{"amd64"})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "glibc_2.31-13+deb11u4_source libc6_2.31-13+deb11u4_amd64 xz-utils_5.2.5-2.1~deb11u1_amd64")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {

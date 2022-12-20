@@ -114,3 +114,14 @@ class EditMirror10Test(BaseTest):
     requiresFTP = True
     fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian stretch main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"
+
+class EditMirror11Test(BaseTest):
+    """
+    edit mirror: enable filter, download sources and build dependencies
+    """
+    fixtureDB = True
+    runCmd = "aptly mirror edit -filter=nginx -filter-with-build-deps -with-sources wheezy-main"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show wheezy-main", "mirror_show", match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
