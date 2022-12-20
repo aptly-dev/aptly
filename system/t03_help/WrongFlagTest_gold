@@ -14,6 +14,7 @@ Options:
   -dep-follow-suggests: when processing dependencies, follow Suggests
   -dep-verbose-resolve: when processing dependencies, print detailed logs
   -filter="": filter packages in mirror
+  -filter-with-build-deps: when filtering, include build dependencies of matching source packages as well
   -filter-with-deps: when filtering, include dependencies of matching packages as well
   -force-architectures: (only with architecture list) skip check that requested architectures are listed in Release file
   -force-components: (only with component list) skip check that requested components are listed in Release file

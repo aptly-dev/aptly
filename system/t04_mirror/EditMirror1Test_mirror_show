@@ -7,6 +7,7 @@ Download Sources: yes
 Download .udebs: no
 Filter: nginx
 Filter With Deps: yes
+Filter With Build Deps: no
 Number of packages: 56121
 
 Information from release file:

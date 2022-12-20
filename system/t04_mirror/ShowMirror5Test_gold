@@ -38,6 +38,7 @@
   "Status": 0,
   "WorkerPID": 0,
   "FilterWithDeps": false,
+  "FilterWithBuildDeps": false,
   "SkipComponentCheck": false,
   "SkipArchitectureCheck": false,
   "DownloadSources": false,

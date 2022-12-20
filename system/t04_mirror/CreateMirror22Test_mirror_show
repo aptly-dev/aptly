@@ -7,6 +7,7 @@ Download Sources: no
 Download .udebs: no
 Filter: nginx | Priority (required)
 Filter With Deps: no
+Filter With Build Deps: no
 Last update: never
 
 Information from release file:

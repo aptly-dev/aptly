@@ -10,20 +10,19 @@ require (
 	github.com/aws/aws-sdk-go v1.25.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/cheggaaa/pb v1.0.10
-	github.com/debber/debber-v0.3 v0.0.0-20201001103732-e53137b65bb8 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.1 // indirect
+	github.com/golang/snappy v0.0.1
 	github.com/h2non/filetype v1.0.5
-	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc // indirect
+	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
 	github.com/klauspost/compress v1.13.6
 	github.com/klauspost/pgzip v1.2.5
-	github.com/laher/argo v0.0.0-20140722103944-11d91c83cc0f // indirect
-	github.com/laher/goxc v0.18.1 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-runewidth v0.0.2 // indirect
+	github.com/mattn/go-runewidth v0.0.2
 	github.com/mattn/go-shellwords v1.0.2
 	github.com/mkrautz/goar v0.0.0-20150919110319-282caa8bd9da
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
@@ -43,9 +42,10 @@ require (
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
 	golang.org/x/sys v0.0.0-20220405052023-b1e9470b6e64
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	golang.org/x/text v0.3.7
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
-	gopkg.in/h2non/filetype.v1 v1.0.1 // indirect
+	gopkg.in/h2non/filetype.v1 v1.0.1
 )

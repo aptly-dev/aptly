@@ -102,7 +102,7 @@ Example:
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
 	cmd.Flag.String("filter", "", "filter packages in mirror")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
-	cmd.Flag.Bool("filter-with-build-deps", false, "when filtering, include dependencies of matching source packages as well")
+	cmd.Flag.Bool("filter-with-build-deps", false, "when filtering, include build dependencies of matching source packages as well")
 	cmd.Flag.Bool("force-components", false, "(only with component list) skip check that requested components are listed in Release file")
 	cmd.Flag.Bool("force-architectures", false, "(only with architecture list) skip check that requested architectures are listed in Release file")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")
