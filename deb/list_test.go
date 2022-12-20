@@ -130,8 +130,9 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		}},
 		{Name: "pkg-config", Version: "0.29.2-1", Architecture: "amd64", deps: &PackageDependencies{Depends: []string{"libc6 (>= 2.14)", "libdpkg-perl"}}},
 		{Name: "libc6", Version: "2.31-13+deb11u4", Architecture: "amd64", deps: &PackageDependencies{}, Source: "glibc"},
-		{Name: "glibc", Version: "2.31-13+deb11u4", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{BuildDepends: []string{"xz-utils"}}},
+		{Name: "glibc", Version: "2.31-13+deb11u4", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{BuildDepends: []string{"xz-utils", "variantA | variantB | variantC"}}},
 		{Name: "xz-utils", Version: "5.2.5-2.1~deb11u1", Architecture: "amd64", deps: &PackageDependencies{}},
+		{Name: "variantB", Version: "0.0.1", Architecture: "amd64", deps: &PackageDependencies{}},
 		{Name: "xz-utils", Version: "5.2.5-2.1~deb11u1", Architecture: "source", IsSource: true, deps: &PackageDependencies{BuildDepends: []string{"gettext"}}},
 		{Name: "libdpkg-perl", Version: "1.20.10", Architecture: "all", deps: &PackageDependencies{}},
 		{Name: "gettext", Version: "0.21-4", Architecture: "amd64", deps: &PackageDependencies{Depends: []string{"libc6 (>= 2.27)", "libgomp1 (>= 6)"}}},
@@ -423,7 +424,7 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	// make sure that the build dependencies of the build dependencies are not installed
 	result, err = s.il3.Filter([]PackageQuery{&PkgQuery{"libc6", "2.31-13+deb11u4", "amd64"}}, true, true, nil, DepFollowSource, []string{"amd64"})
 	c.Check(err, IsNil)
-	c.Check(plString(result), Equals, "glibc_2.31-13+deb11u4_source libc6_2.31-13+deb11u4_amd64 xz-utils_5.2.5-2.1~deb11u1_amd64")
+	c.Check(plString(result), Equals, "glibc_2.31-13+deb11u4_source libc6_2.31-13+deb11u4_amd64 variantB_0.0.1_amd64 xz-utils_5.2.5-2.1~deb11u1_amd64")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {

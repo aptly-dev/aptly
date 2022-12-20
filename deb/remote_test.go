@@ -654,6 +654,20 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 
+func (s *RemoteRepoSuite) TestApplyFilter(c *C) {
+	s.SetUpPackages()
+	s.repo.packageList = s.list
+	// add a dependency to the list
+	s.repo.packageList.Add(&Package{Name: "alien-arena-data", Version: "7.50", Architecture: "i386", deps: &PackageDependencies{}})
+	// and remove it with a filter that doesn't follow dependencies
+	s.repo.FilterWithDeps = false
+	s.repo.Architectures = []string{"i386"}
+	oldLen, newLen, err := s.repo.ApplyFilter(0, &FieldQuery{Field: "Source", Relation: VersionEqual, Value: "alien-arena"}, nil)
+	c.Assert(err, IsNil)
+	c.Assert(oldLen, Equals, 4)
+	c.Assert(newLen, Equals, 3)
+}
+
 type RemoteRepoCollectionSuite struct {
 	PackageListMixinSuite
 	db         database.Storage
