@@ -724,7 +724,6 @@ func (repo *RemoteRepo) Decode(input []byte) error {
 			repo.ReleaseFiles = repo11.ReleaseFiles
 			repo.Filter = repo11.Filter
 			repo.FilterWithDeps = repo11.FilterWithDeps
-			repo.FilterWithBuildDeps = false // property didn't exist then
 		} else if strings.Contains(err.Error(), "invalid length of bytes for decoding time") {
 			// DB created by old codec version, time.Time is not builtin type.
 			// https://github.com/ugorji/go-codec/issues/269

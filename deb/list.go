@@ -513,17 +513,14 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 	}
 
 	if withDependencies {
-		err := addTransitiveDependencies(result, source, dependencyOptions, architecturesList, progress, l)
-		if err != nil {
+		if err := addTransitiveDependencies(result, source, dependencyOptions, architecturesList, progress, l); err != nil {
 			return nil, err
 		}
 	}
 
 	if withBuildDependencies {
-		// disable DepFollowSource, enable DepFollowBuild
-		buildDependencyOptions := dependencyOptions&(^DepFollowSource) | DepFollowBuild
-		err := addTransitiveDependencies(result, source, buildDependencyOptions, architecturesList, progress, l)
-		if err != nil {
+		buildDependencyOptions := dependencyOptions&(^DepFollowSource) | DepFollowBuild // disable DepFollowSource, enable DepFollowBuild
+		if err := addTransitiveDependencies(result, source, buildDependencyOptions, architecturesList, progress, l); err != nil {
 			return nil, err
 		}
 	}
@@ -589,7 +586,6 @@ func addTransitiveDependencies(result *PackageList, source *PackageList, depende
 				if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
 					progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
 				}
-
 			}
 		}
 	}
