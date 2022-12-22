@@ -160,7 +160,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
-		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: nil}, nil
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
 	})
 }
 
