@@ -7,7 +7,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.15.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e
 	github.com/awalterschulze/gographviz v0.0.0-20160912181450-761fd5fbb34e
-	github.com/aws/aws-sdk-go v1.25.0
+	github.com/aws/aws-sdk-go v1.33.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/cheggaaa/pb v1.0.10
 	github.com/fatih/color v1.7.0 // indirect
