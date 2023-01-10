@@ -83,8 +83,8 @@ func apiReposEdit(c *gin.Context) {
 
 	if b.Name != nil {
 		_, err := collection.ByName(*b.Name)
-		if err == nil {
-			// already exists
+		if err != nil {
+			// repo does not exist
 			c.AbortWithError(404, err)
 			return
 		}
