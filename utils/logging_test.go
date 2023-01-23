@@ -83,8 +83,8 @@ func (s *LoggingSuite) TestZeroLoggerMessage(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	c.Check(jsonMap["msg"], Equals, expected)
-	c.Check(jsonMap["lvl"], Equals, "info")
+	c.Check(jsonMap["message"], Equals, expected)
+	c.Check(jsonMap["level"], Equals, "info")
 
 	if val, ok := jsonMap["ts"]; ok {
 		layout := time.RFC3339
@@ -158,7 +158,7 @@ func (s *LoggingSuite) TestZeroLoggerLowerLogLevel(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(testLog), &jsonMap)
 
-	c.Check(jsonMap["msg"], Equals, expected)
+	c.Check(jsonMap["message"], Equals, expected)
 	c.Check(len(logs), Equals, 1)
 }
 
@@ -244,8 +244,8 @@ func (s *LoggingSuite) TestZeroLoggerWriter(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	c.Check(jsonMap["lvl"], Equals, "debug")
-	c.Check(jsonMap["msg"], Equals, expected)
+	c.Check(jsonMap["level"], Equals, "debug")
+	c.Check(jsonMap["message"], Equals, expected)
 }
 
 func (s *LoggingSuite) TestPlainLoggerLogLevel(c *C) {

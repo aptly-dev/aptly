@@ -158,7 +158,7 @@ func (l *PlainLogger) Writer(levelStr string) io.Writer {
 		logLevel = &defaultLvl
 	}
 
-	return LogWriter{lvl: *logLevel, logger: l}
+	return LogWriter{level: *logLevel, logger: l}
 }
 
 func (l *PlainLogger) Debug(args ...interface{}) {
@@ -291,7 +291,7 @@ func NewZeroJSONLogger(level string) *ZeroJSONLogger {
 }
 
 // NewZeroJSONLoggerWithWriter returns an instance of ZeroJSONLogger configured with the provided
-// log level. Itwrites logs to the provided io.Writer instead of Stdout.
+// log level. It writes logs to the provided io.Writer instead of Stdout.
 // Accepted log levels are debug, info, warn, warning and error. The log level is case-insensitive.
 func NewZeroJSONLoggerWithWriter(level string, writer io.Writer) *ZeroJSONLogger {
 	logger := &ZeroJSONLogger{}
@@ -312,7 +312,7 @@ func (l *ZeroJSONLogger) Writer(levelStr string) io.Writer {
 	}
 
 	logLevel := levelFromZeroLevel(level)
-	return LogWriter{lvl: logLevel, logger: l}
+	return LogWriter{level: logLevel, logger: l}
 }
 
 func (l *ZeroJSONLogger) Debug(args ...interface{}) {
@@ -401,8 +401,8 @@ func (l *ZeroJSONLogger) initLogger(levelStr string, writer io.Writer) {
 		l.level = zerolog.DebugLevel
 	}
 
-	zerolog.MessageFieldName = "msg"
-	zerolog.LevelFieldName = "lvl"
+	zerolog.MessageFieldName = "message"
+	zerolog.LevelFieldName = "level"
 
 	var tsHook timestampHook
 	zeroLogger := zerolog.New(writer).Hook(&tsHook)
@@ -414,14 +414,14 @@ func (l *ZeroJSONLogger) initLogger(levelStr string, writer io.Writer) {
 }
 
 type LogWriter struct {
-	lvl    logLevel
+	level  logLevel
 	logger Logger
 }
 
 func (lw LogWriter) Write(bs []byte) (int, error) {
 	msg := strings.TrimSuffix(string(bs), "\n")
 
-	switch lw.lvl {
+	switch lw.level {
 	case -1:
 		lw.logger.Debug(msg)
 	case 0:

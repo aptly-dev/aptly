@@ -67,10 +67,10 @@ func (s *ProgressSuite) TestProgressLoggerWorkerPrintf(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["msg"]; ok {
+	if val, ok := jsonMap["message"]; ok {
 		c.Check(val, Equals, expected)
 	} else {
-		c.Errorf("Log message didn't have a 'msg' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'message' key, obtained %s", capturedOutput)
 	}
 }
 
@@ -103,10 +103,10 @@ func (s *ProgressSuite) TestProgressLoggerWorkerPrintfStdErr(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["msg"]; ok {
+	if val, ok := jsonMap["message"]; ok {
 		c.Check(val, Equals, expected)
 	} else {
-		c.Errorf("Log message didn't have a 'msg' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'message' key, obtained %s", capturedOutput)
 	}
 }
 
@@ -139,9 +139,9 @@ func (s *ProgressSuite) TestProgressLoggerWorkerColoredPrintf(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["msg"]; ok {
+	if val, ok := jsonMap["message"]; ok {
 		c.Check(val, Equals, expected)
 	} else {
-		c.Errorf("Log message didn't have a 'msg' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'message' key, obtained %s", capturedOutput)
 	}
 }

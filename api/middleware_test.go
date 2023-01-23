@@ -99,10 +99,10 @@ func (s *MiddlewareSuite) TestJSONMiddleware4xx(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["lvl"]; ok {
+	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "warn")
 	} else {
-		c.Errorf("Log message didn't have a 'lvl' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'level' key, obtained %s", capturedOutput)
 	}
 
 	if val, ok := jsonMap["method"]; ok {
@@ -162,10 +162,10 @@ func (s *MiddlewareSuite) TestJSONMiddleware2xx(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["lvl"]; ok {
+	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "info")
 	} else {
-		c.Errorf("Log message didn't have a 'lvl' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'level' key, obtained %s", capturedOutput)
 	}
 }
 
@@ -185,10 +185,10 @@ func (s *MiddlewareSuite) TestJSONMiddleware5xx(c *C) {
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
-	if val, ok := jsonMap["lvl"]; ok {
+	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "error")
 	} else {
-		c.Errorf("Log message didn't have a 'lvl' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'level' key, obtained %s", capturedOutput)
 	}
 }
 
@@ -210,10 +210,10 @@ func (s *MiddlewareSuite) TestJSONMiddlewareRaw(c *C) {
 
 	fmt.Println(capturedOutput)
 
-	if val, ok := jsonMap["lvl"]; ok {
+	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "info")
 	} else {
-		c.Errorf("Log message didn't have a 'lvl' key, obtained %s", capturedOutput)
+		c.Errorf("Log message didn't have a 'level' key, obtained %s", capturedOutput)
 	}
 }
 
