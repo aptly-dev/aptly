@@ -2,6 +2,8 @@ module github.com/aptly-dev/aptly
 
 go 1.16
 
+replace github.com/seefan/gossdb/v2 => github.com/hudeng-go/gossdb/v2 v2.0.1-0.20220523082930-c7fda08f33e2
+
 require (
 	github.com/AlekSi/pointer v1.0.0
 	github.com/Azure/azure-storage-blob-go v0.15.0
@@ -28,6 +30,7 @@ require (
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.1
+	github.com/seefan/gossdb/v2 v2.0.0
 	github.com/smartystreets/gunit v1.0.4 // indirect
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
