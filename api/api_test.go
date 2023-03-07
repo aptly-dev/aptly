@@ -89,6 +89,10 @@ func (s *ApiSuite) HTTPRequest(method string, url string, body io.Reader) (*http
 	return w, nil
 }
 
+func (s *ApiSuite) TestGinRunsInReleaseMode(c *C) {
+	c.Check(gin.Mode(), Equals, gin.ReleaseMode)
+}
+
 func (s *ApiSuite) TestGetVersion(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/version", nil)
 	c.Assert(err, IsNil)
