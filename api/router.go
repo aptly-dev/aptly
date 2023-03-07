@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync/atomic"
 
+	"github.com/aptly-dev/aptly/aptly"
 	ctx "github.com/aptly-dev/aptly/context"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,12 @@ func apiMetricsGet() gin.HandlerFunc {
 
 // Router returns prebuilt with routes http.Handler
 func Router(c *ctx.AptlyContext) http.Handler {
+	if aptly.EnableDebug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.New()
 	context = c
 
