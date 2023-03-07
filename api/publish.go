@@ -376,7 +376,7 @@ func apiPublishDrop(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to drop: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to drop: %s", err))
 		return
 	}
 
