@@ -22,18 +22,10 @@ jobs:
   build:
     name: test
     runs-on: ubuntu-20.04
-    continue-on-error: ${{ matrix.allow_failure }}
+    continue-on-error: false
     timeout-minutes: 30
     strategy:
       fail-fast: true
-      matrix:
-        go: ['1.18', '1.19', '1.20']
-        run_long_tests: [no]
-        allow_failure: [false]
-        include:
-          - go: '1.20'
-            run_long_tests: yes
-            allow_failure: false
 
     env:
       NO_FTP_ACCESS: yes
@@ -48,7 +40,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: '1.20'
 
       - name: Get aptly version
         run: |
@@ -86,7 +78,7 @@ jobs:
 
       - name: Make
         env:
-          RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
+          RUN_LONG_TESTS: yes
           AZURE_STORAGE_ENDPOINT: "127.0.0.1:10000"
           AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
@@ -94,13 +86,11 @@ jobs:
           COVERAGE_DIR=${{ runner.temp }} make
 
       - name: Merge code coverage
-        if: matrix.run_long_tests == 'yes'
         run: |
           go install github.com/wadey/gocovmerge@latest
           ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
       - name: Upload code coverage
-        if: matrix.run_long_tests == 'yes'
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

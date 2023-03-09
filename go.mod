@@ -1,6 +1,6 @@
 module github.com/aptly-dev/aptly
 
-go 1.19
+go 1.20
 
 require (
 	github.com/AlekSi/pointer v1.0.0
@@ -42,7 +42,6 @@ require (
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/debber/debber-v0.3 v0.0.0-20201001103732-e53137b65bb8 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -56,8 +55,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/laher/argo v0.0.0-20140722103944-11d91c83cc0f // indirect
-	github.com/laher/goxc v0.18.1 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
