@@ -27,16 +27,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go: [1.17, 1.18, 1.19]
+        go: ['1.18', '1.19', '1.20']
         run_long_tests: [no]
         allow_failure: [false]
         include:
-          # Disable this for now as it's not clear how to select the latest master branch
-          # version of go using actions/setup-go@v2.
-          # - go: master
-          #   run_long_tests: no
-          #   allow_failure: true
-          - go: 1.18
+          - go: '1.20'
             run_long_tests: yes
             allow_failure: false
 
