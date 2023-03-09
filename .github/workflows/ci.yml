@@ -58,6 +58,8 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
+          # FIXME: https://github.com/golangci/golangci-lint-action/issues/677
+          skip-pkg-cache: true
           version: v1.51.2
 
       - name: Setup Python
