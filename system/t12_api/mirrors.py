@@ -74,6 +74,39 @@ class MirrorsAPITestCreateUpdate(APITest):
         self.check_equal(resp.status_code, 200)
 
 
+class MirrorsAPITestCreateUpdateSync(APITest):
+    """
+    POST /api/mirrors, PUT /api/mirrors/:name, GET /api/mirrors/:name/packages
+    """
+    def check(self):
+        mirror_name = self.random_name()
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'https://packagecloud.io/varnishcache/varnish30/debian/',
+                       'Distribution': 'wheezy',
+                       'Components': ['main']}
+
+        mirror_desc['IgnoreSignatures'] = True
+        resp = self.post("/api/mirrors", json=mirror_desc)
+        self.check_equal(resp.status_code, 201)
+
+        resp = self.get("/api/mirrors/" + mirror_name + "/packages")
+        self.check_equal(resp.status_code, 404)
+
+        mirror_desc["Name"] = self.random_name()
+        resp = self.put("/api/mirrors/" + mirror_name, json=mirror_desc)
+
+        self.check_equal(resp.status_code, 204)
+
+        resp = self.get("/api/mirrors/" + mirror_desc["Name"])
+        self.check_equal(resp.status_code, 200)
+        self.check_subset({'Name': mirror_desc["Name"],
+                           'ArchiveRoot': 'https://packagecloud.io/varnishcache/varnish30/debian/',
+                           'Distribution': 'wheezy'}, resp.json())
+
+        resp = self.get("/api/mirrors/" + mirror_desc["Name"] + "/packages")
+        self.check_equal(resp.status_code, 200)
+
+
 class MirrorsAPITestCreateDelete(APITest):
     """
     POST /api/mirrors, DELETE /api/mirrors/:name

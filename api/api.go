@@ -154,27 +154,50 @@ func truthy(value interface{}) bool {
 func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, proc task.Process) {
 	// Run this task in background if configured globally or per-request
 	background := truthy(c.DefaultQuery("_async", strconv.FormatBool(context.Config().AsyncAPI)))
+
 	if background {
 		log.Info().Msg("Executing task asynchronously")
-		task, conflictErr := runTaskInBackground(name, resources, proc)
-		if conflictErr != nil {
-			AbortWithJSONError(c, 409, conflictErr)
-			return
-		}
-		c.JSON(202, task)
 	} else {
 		log.Info().Msg("Executing task synchronously")
-		out := context.Progress()
-		detail := task.Detail{}
-		retValue, err := proc(out, &detail)
+	}
+
+	// Always run task in background because we need to take
+	// care to not use the same resources twice.
+	// Resource management is currently only implemented for
+	// the async API. However when two API requests are made
+	// concurrently, no reseources are checked and there
+	// might be race conditions.
+	task, conflictErr := runTaskInBackground(name, resources, proc)
+	if conflictErr != nil {
+		AbortWithJSONError(c, 409, conflictErr)
+		return
+	}
+
+	if background {
+		c.JSON(202, task)
+	} else {
+		task, err := context.TaskList().WaitForTaskByID(task.ID)
 		if err != nil {
-			AbortWithJSONError(c, retValue.Code, err)
+			AbortWithJSONError(c, 500, err)
 			return
 		}
+
+		retValue, err := context.TaskList().GetTaskReturnValueByID(task.ID)
+		if err != nil {
+			AbortWithJSONError(c, 500, fmt.Errorf("error: could not get returnvalue of finished task %v: %v", task.ID, err))
+			return
+		}
+
+		detail, err := context.TaskList().GetTaskDetailByID(task.ID)
+		if err != nil {
+			AbortWithJSONError(c, 500, fmt.Errorf("error: could not get details of finished task %v: %v", task.ID, err))
+			return
+		}
+
 		if retValue != nil {
-			c.JSON(retValue.Code, retValue.Value)
+			c.JSON(retValue.Code, detail)
 		} else {
-			c.JSON(http.StatusOK, nil)
+			c.JSON(http.StatusOK, detail)
 		}
 	}
 }
