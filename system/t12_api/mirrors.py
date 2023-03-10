@@ -1,4 +1,4 @@
-from api_lib import APITest
+from api_lib import TASK_SUCCEEDED, APITest
 
 
 class MirrorsAPITestCreateShow(APITest):
@@ -56,7 +56,7 @@ class MirrorsAPITestCreateUpdate(APITest):
 
         mirror_desc["Name"] = self.random_name()
         resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
-        self.check_equal(resp.json()["State"], 2)
+        self.check_equal(resp.json()["State"], TASK_SUCCEEDED)
 
         _id = resp.json()['ID']
         resp = self.get("/api/tasks/" + str(_id) + "/detail")
@@ -90,7 +90,7 @@ class MirrorsAPITestCreateDelete(APITest):
         self.check_equal(resp.status_code, 201)
 
         resp = self.delete_task("/api/mirrors/" + mirror_name)
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
 
 class MirrorsAPITestCreateList(APITest):

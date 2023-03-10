@@ -1,16 +1,21 @@
-from lib import BaseTest
-import time
-import json
-import random
-import string
-import os
 import inspect
+import json
+import os
+import random
 import shutil
+import string
+import time
+
+from lib import BaseTest
 
 try:
     import requests
 except ImportError:
     requests = None
+
+# States for returned tasks from the API
+TASK_SUCCEEDED = 2
+TASK_FAILED = 3
 
 
 class APITest(BaseTest):

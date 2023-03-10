@@ -1,4 +1,5 @@
-from api_lib import APITest
+from api_lib import TASK_SUCCEEDED, APITest
+
 from .publish import DefaultSigningOptions
 
 
@@ -49,7 +50,7 @@ class TaskAPITestParallelTasks(APITest):
         uri = "/api/tasks/%d/wait" % int(task_id)
         resp = self.get(uri)
         self.check_equal(resp.status_code, 200)
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
     def _wait_for_all_tasks(self):
         resp = self.get("/api/tasks-wait")
@@ -103,4 +104,4 @@ class TaskAPITestParallelTasks(APITest):
         for publish_task_id in publish_task_ids:
             resp = self.get("/api/tasks/%d" % publish_task_id)
             self.check_equal(resp.status_code, 200)
-            self.check_equal(resp.json()['State'], 2)
+            self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
