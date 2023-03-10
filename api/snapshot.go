@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -396,4 +397,81 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 	}
 
 	showPackages(c, snapshot.RefList(), collectionFactory)
+}
+
+// POST /api/snapshots/merge
+func apiSnapshotsMerge(c *gin.Context) {
+	var (
+		err      error
+		snapshot *deb.Snapshot
+	)
+
+	var body struct {
+		Destination string   `binding:"required"`
+		Sources     []string `binding:"required"`
+	}
+
+	if c.Bind(&body) != nil {
+		return
+	}
+
+	if len(body.Sources) < 1 {
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("At least one source snapshot is required"))
+		return
+	}
+
+	latest := c.Request.URL.Query().Get("latest") == "1"
+	noRemove := c.Request.URL.Query().Get("no-remove") == "1"
+	overrideMatching := !latest && !noRemove
+
+	if noRemove && latest {
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("no-remove and latest are mutually exclusive"))
+		return
+	}
+
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+
+	sources := make([]*deb.Snapshot, len(body.Sources))
+	resources := make([]string, len(sources))
+	for i := range body.Sources {
+		sources[i], err = snapshotCollection.ByName(body.Sources[i])
+		if err != nil {
+			AbortWithJSONError(c, http.StatusNotFound, err)
+			return
+		}
+
+		err = snapshotCollection.LoadComplete(sources[i])
+		if err != nil {
+			AbortWithJSONError(c, http.StatusInternalServerError, err)
+			return
+		}
+		resources[i] = string(sources[i].ResourceKey())
+	}
+
+	maybeRunTaskInBackground(c, "Merge snapshot "+body.Destination, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		result := sources[0].RefList()
+		for i := 1; i < len(sources); i++ {
+			result = result.Merge(sources[i].RefList(), overrideMatching, false)
+		}
+
+		if latest {
+			result.FilterLatestRefs()
+		}
+
+		sourceDescription := make([]string, len(sources))
+		for i, s := range sources {
+			sourceDescription[i] = fmt.Sprintf("'%s'", s.Name)
+		}
+
+		snapshot = deb.NewSnapshotFromRefList(body.Destination, sources, result,
+			fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
+
+		err = collectionFactory.SnapshotCollection().Add(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
+	})
 }
