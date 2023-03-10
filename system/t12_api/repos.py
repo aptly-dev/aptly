@@ -1,4 +1,5 @@
-from api_lib import APITest
+from api_lib import TASK_FAILED, TASK_SUCCEEDED, APITest
+
 from .publish import DefaultSigningOptions
 
 
@@ -40,7 +41,7 @@ class ReposAPITestCreateIndexDelete(APITest):
         names = [repo["Name"] for repo in repos]
         assert repo_name in names
 
-        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], 2)
+        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], TASK_SUCCEEDED)
         self.check_equal(self.delete("/api/repos/" + repo_name).status_code, 404)
 
         self.check_equal(self.get("/api/repos/" + repo_name).status_code, 404)
@@ -60,25 +61,25 @@ class ReposAPITestCreateIndexDelete(APITest):
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/snapshots", json={"Name": repo_name}).json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/snapshots", json={"Name": repo_name}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(self.post_task("/api/publish",
                          json={
                              "SourceKind": "local",
                              "Sources": [{"Name": repo_name}],
                              "Signing": DefaultSigningOptions,
-                         }).json()['State'], 2)
+                         }).json()['State'], TASK_SUCCEEDED)
 
         # repo is not deletable while it is published
-        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], 3)
-        self.check_equal(self.delete_task("/api/repos/" + repo_name, params={"force": "1"}).json()['State'], 3)
+        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], TASK_FAILED)
+        self.check_equal(self.delete_task("/api/repos/" + repo_name, params={"force": "1"}).json()['State'], TASK_FAILED)
 
         # drop published
-        self.check_equal(self.delete_task("/api/publish//" + distribution).json()['State'], 2)
-        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], 3)
-        self.check_equal(self.delete_task("/api/repos/" + repo_name, params={"force": "1"}).json()['State'], 2)
+        self.check_equal(self.delete_task("/api/publish//" + distribution).json()['State'], TASK_SUCCEEDED)
+        self.check_equal(self.delete_task("/api/repos/" + repo_name).json()['State'], TASK_FAILED)
+        self.check_equal(self.delete_task("/api/repos/" + repo_name, params={"force": "1"}).json()['State'], TASK_SUCCEEDED)
         self.check_equal(self.get("/api/repos/" + repo_name).status_code, 404)
 
 
@@ -96,7 +97,7 @@ class ReposAPITestAdd(APITest):
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
@@ -124,7 +125,7 @@ class ReposAPITestAddNotFullRemove(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz", "aptly.pub").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(), ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
         self.check_exists("upload/" + d + "/aptly.pub")
@@ -144,7 +145,7 @@ class ReposAPITestAddNoRemove(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d, params={"noRemove": 1}).json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d, params={"noRemove": 1}).json()['State'], TASK_SUCCEEDED)
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages").json(), ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
         self.check_exists("upload/" + d + "/pyspi_0.6.1-1.3.dsc")
@@ -164,7 +165,7 @@ class ReposAPITestAddFile(APITest):
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/file/" + d + "/libboost-program-options-dev_1.49.0.1_i386.deb")
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
@@ -196,7 +197,7 @@ class ReposAPITestInclude(APITest):
         self.check_equal(resp.status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/include/" + d, params={"ignoreSignature": 1})
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
         resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
         self.check_equal(resp.status_code, 200)
@@ -224,7 +225,7 @@ class ReposAPITestShowQuery(APITest):
                         "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages", params={"q": "pyspi"}).json()),
                          ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
@@ -258,12 +259,12 @@ class ReposAPITestAddMultiple(APITest):
                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
 
         self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d + "/pyspi_0.6.1-1.3.dsc",
-                                        params={"noRemove": 1}).json()['State'], 2)
+                                        params={"noRemove": 1}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d + "/pyspi-0.6.1-1.3.stripped.dsc").json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d + "/pyspi-0.6.1-1.3.stripped.dsc").json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e', 'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
@@ -285,7 +286,7 @@ class ReposAPITestPackagesAddDelete(APITest):
                         "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
                         "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], 2)
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
@@ -293,7 +294,7 @@ class ReposAPITestPackagesAddDelete(APITest):
                           'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
 
         self.check_equal(self.post_task("/api/repos/" + repo_name + "/packages/",
-                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], 2)
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
@@ -302,17 +303,17 @@ class ReposAPITestPackagesAddDelete(APITest):
 
         self.check_equal(self.post_task("/api/repos/" + repo_name + "/packages/",
                          json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89',
-                                               'Psource no-such-package 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], 3)
+                                               'Psource no-such-package 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], TASK_FAILED)
 
         self.check_equal(self.delete_task("/api/repos/" + repo_name + "/packages/",
-                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], 2)
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
                           'Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'])
 
         self.check_equal(self.post_task("/api/repos/" + repo_name + "/packages/",
-                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], 2)
+                         json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
@@ -325,7 +326,7 @@ class ReposAPITestPackagesAddDelete(APITest):
 
         self.check_equal(self.post_task("/api/repos/" + repo_name2 + "/packages/",
                          json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89',
-                                               'Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378']}).json()['State'], 2)
+                                               'Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378']}).json()['State'], TASK_SUCCEEDED)
 
         self.check_equal(sorted(self.get("/api/repos/" + repo_name2 + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
