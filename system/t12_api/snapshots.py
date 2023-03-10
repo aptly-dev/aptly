@@ -262,9 +262,9 @@ class SnapshotsAPITestDiff(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+        self.check_equal(self.post_task("/api/repos/" + repos[-1] + "/file/" + d).json()['State'], TASK_SUCCEEDED)
 
-        resp = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshots[0]})
+        resp = self.post_task("/api/repos/" + repos[-1] + '/snapshots', json={'Name': snapshots[0]})
         self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
         resp = self.post_task("/api/snapshots", json={'Name': snapshots[1]})
@@ -287,3 +287,100 @@ class SnapshotsAPITestDiff(APITest):
         resp = self.get("/api/snapshots/" + snapshots[1] + "/diff/" + snapshots[1])
         self.check_equal(resp.status_code, 200)
         self.check_equal(resp.json(), [])
+
+
+class SnapshotsAPITestMerge(APITest):
+    """
+    POST /api/snapshots, GET /api/snapshots/merge, GET /api/snapshots/:name, DELETE /api/snapshots/:name
+    """
+
+    def check(self):
+        sources = [
+            {"Description": "fun snapshot", "Name": self.random_name()}
+            for _ in range(2)
+        ]
+
+        # create source snapshots
+        for source in sources:
+            resp = self.post_task("/api/snapshots", json=source)
+            self.check_equal(resp.json()["State"], TASK_SUCCEEDED)
+
+        # create merge snapshot
+        merged_name = self.random_name()
+        resp = self.post_task(
+            "/api/snapshots/merge",
+            json={
+                "Destination": merged_name,
+                "Sources": [source["Name"] for source in sources],
+            },
+        )
+        self.check_equal(resp.json()["State"], TASK_SUCCEEDED)
+
+        # check merge snapshot
+        resp = self.get(f"/api/snapshots/{merged_name}")
+        self.check_equal(resp.status_code, 200)
+        source_list = ", ".join(f"'{source['Name']}'" for source in sources)
+        self.check_subset(
+            {
+                "Name": merged_name,
+                "Description": f"Merged from sources: {source_list}",
+            },
+            resp.json(),
+        )
+
+        # remove merge snapshot
+        self.check_equal(
+            self.delete_task(f"/api/snapshots/{merged_name}").json()["State"], TASK_SUCCEEDED
+        )
+
+        # create merge snapshot without sources
+        merged_name = self.random_name()
+        resp = self.post(
+            "/api/snapshots/merge", json={"Destination": merged_name, "Sources": []}
+        )
+        self.check_equal(resp.status_code, 400)
+        self.check_equal(
+            resp.json()["error"], "At least one source snapshot is required"
+        )
+        self.check_equal(self.get(f"/api/snapshots/{merged_name}").status_code, 404)
+
+        # create merge snapshot with non-existing source
+        merged_name = self.random_name()
+        non_existing_source = self.random_name()
+        resp = self.post(
+            "/api/snapshots/merge",
+            json={"Destination": merged_name, "Sources": [non_existing_source]},
+        )
+        self.check_equal(
+            resp.json()["error"], f"snapshot with name {non_existing_source} not found"
+        )
+        self.check_equal(resp.status_code, 404)
+
+        self.check_equal(self.get(f"/api/snapshots/{merged_name}").status_code, 404)
+
+        # create merge snapshot with used name
+        merged_name = sources[0]["Name"]
+        resp = self.post(
+            "/api/snapshots/merge",
+            json={"Destination": merged_name, "Sources": [source["Name"] for source in sources]},
+        )
+        self.check_equal(
+            resp.json()["error"],
+            f"unable to create snapshot: snapshot with name {sources[0]['Name']} already exists",
+        )
+        self.check_equal(resp.status_code, 500)
+
+        # create merge snapshot with "latest" and "no-remove" flags (should fail)
+        merged_name = self.random_name()
+        resp = self.post(
+            "/api/snapshots/merge",
+            json={
+                "Destination": merged_name,
+                "Sources": [source["Name"] for source in sources],
+            },
+            params={"latest": "1", "no-remove": "1"},
+        )
+        self.check_equal(
+            resp.json()["error"], "no-remove and latest are mutually exclusive"
+        )
+        self.check_equal(resp.status_code, 400)
