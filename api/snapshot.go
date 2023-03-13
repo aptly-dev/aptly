@@ -3,11 +3,13 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/query"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
@@ -474,4 +476,166 @@ func apiSnapshotsMerge(c *gin.Context) {
 
 		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
 	})
+}
+
+// POST /api/snapshots/pull
+func apiSnapshotsPull(c *gin.Context) {
+	var (
+		err                 error
+		destinationSnapshot *deb.Snapshot
+	)
+
+	var body struct {
+		Source        string   `binding:"required"`
+		To            string   `binding:"required"`
+		Destination   string   `binding:"required"`
+		Queries       []string `binding:"required"`
+		Architectures []string
+	}
+
+	if err = c.BindJSON(&body); err != nil {
+		AbortWithJSONError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	allMatches := c.Request.URL.Query().Get("all-matches") == "1"
+	dryRun := c.Request.URL.Query().Get("dry-run") == "1"
+	noDeps := c.Request.URL.Query().Get("no-deps") == "1"
+	noRemove := c.Request.URL.Query().Get("no-remove") == "1"
+
+	collectionFactory := context.NewCollectionFactory()
+
+	// Load <To> snapshot
+	toSnapshot, err := collectionFactory.SnapshotCollection().ByName(body.To)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, err)
+		return
+	}
+	err = collectionFactory.SnapshotCollection().LoadComplete(toSnapshot)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Load <Source> snapshot
+	sourceSnapshot, err := collectionFactory.SnapshotCollection().ByName(body.Source)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, err)
+		return
+	}
+	err = collectionFactory.SnapshotCollection().LoadComplete(sourceSnapshot)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	resources := []string{string(sourceSnapshot.ResourceKey()), string(toSnapshot.ResourceKey())}
+	taskName := fmt.Sprintf("Pull snapshot %s into %s and save as %s", body.Source, body.To, body.Destination)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		// convert snapshots to package list
+		toPackageList, err := deb.NewPackageListFromRefList(toSnapshot.RefList(), collectionFactory.PackageCollection(), context.Progress())
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+		sourcePackageList, err := deb.NewPackageListFromRefList(sourceSnapshot.RefList(), collectionFactory.PackageCollection(), context.Progress())
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		toPackageList.PrepareIndex()
+		sourcePackageList.PrepareIndex()
+
+		var architecturesList []string
+
+		if len(context.ArchitecturesList()) > 0 {
+			architecturesList = context.ArchitecturesList()
+		} else {
+			architecturesList = toPackageList.Architectures(false)
+		}
+
+		architecturesList = append(architecturesList, body.Architectures...)
+		sort.Strings(architecturesList)
+
+		if len(architecturesList) == 0 {
+			err := fmt.Errorf("unable to determine list of architectures, please specify explicitly")
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		// Build architecture query: (arch == "i386" | arch == "amd64" | ...)
+		var archQuery deb.PackageQuery = &deb.FieldQuery{Field: "$Architecture", Relation: deb.VersionEqual, Value: ""}
+		for _, arch := range architecturesList {
+			archQuery = &deb.OrQuery{L: &deb.FieldQuery{Field: "$Architecture", Relation: deb.VersionEqual, Value: arch}, R: archQuery}
+		}
+
+		queries := make([]deb.PackageQuery, len(body.Queries))
+		for i, q := range body.Queries {
+			queries[i], err = query.Parse(q)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+			}
+			// Add architecture filter
+			queries[i] = &deb.AndQuery{L: queries[i], R: archQuery}
+		}
+
+		// Filter with dependencies as requested
+		destinationPackageList, err := sourcePackageList.FilterWithProgress(queries, !noDeps, toPackageList, context.DependencyOptions(), architecturesList, context.Progress())
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+		destinationPackageList.PrepareIndex()
+
+		removedPackages := []string{}
+		addedPackages := []string{}
+		alreadySeen := map[string]bool{}
+
+		destinationPackageList.ForEachIndexed(func(pkg *deb.Package) error {
+			key := pkg.Architecture + "_" + pkg.Name
+			_, seen := alreadySeen[key]
+
+			// If we haven't seen such name-architecture pair and were instructed to remove, remove it
+			if !noRemove && !seen {
+				// Remove all packages with the same name and architecture
+				packageSearchResults := toPackageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+				for _, p := range packageSearchResults {
+					toPackageList.Remove(p)
+					removedPackages = append(removedPackages, p.String())
+				}
+			}
+
+			// If !allMatches, add only first matching name-arch package
+			if !seen || allMatches {
+				toPackageList.Add(pkg)
+				addedPackages = append(addedPackages, pkg.String())
+			}
+
+			alreadySeen[key] = true
+
+			return nil
+		})
+		alreadySeen = nil
+
+		if dryRun {
+			response := struct {
+				AddedPackages   []string `json:"added_packages"`
+				RemovedPackages []string `json:"removed_packages"`
+			}{
+				AddedPackages:   addedPackages,
+				RemovedPackages: removedPackages,
+			}
+
+			return &task.ProcessReturnValue{Code: http.StatusOK, Value: response}, nil
+		}
+
+		// Create <destination> snapshot
+		destinationSnapshot = deb.NewSnapshotFromPackageList(body.Destination, []*deb.Snapshot{toSnapshot, sourceSnapshot}, toPackageList,
+			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", toSnapshot.Name, sourceSnapshot.Name, strings.Join(body.Queries, ", ")))
+
+		err = collectionFactory.SnapshotCollection().Add(destinationSnapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: destinationSnapshot}, nil
+	})
+
 }
