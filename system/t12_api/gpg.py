@@ -29,7 +29,7 @@ class GPGAPITestAddKey(APITest):
         with tempfile.NamedTemporaryFile(suffix=".pub") as keyring:
             gpgkeyid = "9E3E53F19C7DE460"
             resp = self.post("/api/gpg/key", json={
-                "Keyserver": "keyserver.ubuntu.com",
+                "Keyserver": "hkp://keyserver.ubuntu.com:80",
                 "Keyring": keyring.name,
                 "GpgKeyID": gpgkeyid
             })
