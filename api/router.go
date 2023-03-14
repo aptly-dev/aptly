@@ -160,6 +160,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		root.DELETE("/snapshots/:name", apiSnapshotsDrop)
 		root.GET("/snapshots/:name/diff/:withSnapshot", apiSnapshotsDiff)
 		root.POST("/snapshots/merge", apiSnapshotsMerge)
+		root.POST("/snapshots/pull", apiSnapshotsPull)
 	}
 
 	{
