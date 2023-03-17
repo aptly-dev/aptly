@@ -11,7 +11,7 @@ COVERAGE_DIR?=$(shell mktemp -d)
 all: modules test bench check system-test
 
 prepare:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.50.1
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.51.2
 
 modules:
 	go mod download
