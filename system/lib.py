@@ -128,9 +128,11 @@ class BaseTest(object):
     requiresDot = False
     sortOutput = False
 
+    aptlyDir = ".aptly"
+    aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
     configFile = {
-        "rootDir": "%s/.aptly" % os.environ["HOME"],
+        "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
         "downloadConcurrency": 4,
         "downloadSpeedLimit": 0,
         "downloadRetries": 5,
@@ -177,10 +179,10 @@ class BaseTest(object):
             self.teardown()
 
     def prepare_remove_all(self):
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly")):
-            shutil.rmtree(os.path.join(os.environ["HOME"], ".aptly"))
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly.conf")):
-            os.remove(os.path.join(os.environ["HOME"], ".aptly.conf"))
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir)):
+            shutil.rmtree(os.path.join(os.environ["HOME"], self.aptlyDir))
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyConfigFile)):
+            os.remove(os.path.join(os.environ["HOME"], self.aptlyConfigFile))
         if os.path.exists(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg")):
             os.remove(os.path.join(
                 os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
@@ -192,7 +194,7 @@ class BaseTest(object):
         elif self.requiresGPG2:
             cfg["gpgProvider"] = "gpg2"
         cfg.update(**self.configOverride)
-        f = open(os.path.join(os.environ["HOME"], ".aptly.conf"), "w")
+        f = open(os.path.join(os.environ["HOME"], self.aptlyConfigFile), "w")
         f.write(json.dumps(cfg))
         f.close()
 
@@ -214,18 +216,18 @@ class BaseTest(object):
 
     def prepare_fixture(self):
         if self.fixturePool:
-            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0o755)
+            os.makedirs(os.path.join(os.environ["HOME"], self.aptlyDir), 0o755)
             os.symlink(self.fixturePoolDir, os.path.join(
-                os.environ["HOME"], ".aptly", "pool"))
+                os.environ["HOME"], self.aptlyDir, "pool"))
 
         if self.fixturePoolCopy:
-            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0o755)
+            os.makedirs(os.path.join(os.environ["HOME"], self.aptlyDir), 0o755)
             shutil.copytree(self.fixturePoolDir, os.path.join(
-                os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
+                os.environ["HOME"], self.aptlyDir, "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
             shutil.copytree(self.fixtureDBDir, os.path.join(
-                os.environ["HOME"], ".aptly", "db"))
+                os.environ["HOME"], self.aptlyDir, "db"))
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
@@ -260,7 +262,7 @@ class BaseTest(object):
                 'changes': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"),
                 'udebs': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "udebs"),
                 'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
-                'aptlyroot': os.path.join(os.environ["HOME"], ".aptly"),
+                'aptlyroot': os.path.join(os.environ["HOME"], self.aptlyDir),
             }
             if self.fixtureWebServer:
                 params['url'] = self.webServerUrl
@@ -365,11 +367,11 @@ class BaseTest(object):
                 raise
 
     def read_file(self, path, mode=''):
-        with open(os.path.join(os.environ["HOME"], ".aptly", path), "r" + mode) as f:
+        with open(os.path.join(os.environ["HOME"], self.aptlyDir, path), "r" + mode) as f:
             return f.read()
 
     def delete_file(self, path):
-        os.unlink(os.path.join(os.environ["HOME"], ".aptly", path))
+        os.unlink(os.path.join(os.environ["HOME"], self.aptlyDir, path))
 
     def check_file_contents(self, path, gold_name, match_prepare=None, mode='', ensure_utf8=True):
         contents = self.read_file(path, mode=mode)
@@ -399,15 +401,15 @@ class BaseTest(object):
                 raise
 
     def check_exists(self, path):
-        if not os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+        if not os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
             raise Exception("path %s doesn't exist" % (path, ))
 
     def check_not_exists(self, path):
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
             raise Exception("path %s exists" % (path, ))
 
     def check_file_not_empty(self, path):
-        if os.stat(os.path.join(os.environ["HOME"], ".aptly", path))[6] == 0:
+        if os.stat(os.path.join(os.environ["HOME"], self.aptlyDir, path))[6] == 0:
             raise Exception("file %s is empty" % (path, ))
 
     def check_equal(self, a, b):

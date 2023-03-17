@@ -19,11 +19,8 @@ func (lw LogWriter) Write(bs []byte) (int, error) {
 }
 
 func SetupJSONLogger(levelStr string, w io.Writer) {
-	// zerolog.SetGlobalLevel(GetLogLevelOrDebug(levelStr))
-
 	zerolog.MessageFieldName = "message"
 	zerolog.LevelFieldName = "level"
-	// zerolog.TimestampFieldName= "time"
 
 	var tsHook timestampHook
 	log.Logger = zerolog.New(w).
