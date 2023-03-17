@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 	"testing"
 	"time"
@@ -55,6 +56,16 @@ func TestRunMain(t *testing.T) {
 	args := filterOutTestArgs(os.Args[1:])
 	root := cmd.RootCommand()
 	root.UsageLine = "aptly"
+
+	// start goroutine that waits for a SIGTERM or SIGKILL to exit cleanly,
+	// so that coverage data is emitted.
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
+	go func() {
+		<-c
+		fmt.Printf("EXIT: %d\n", 0)
+		os.Exit(0)
+	}()
 
 	fmt.Printf("EXIT: %d\n", cmd.Run(root, args, true))
 }
