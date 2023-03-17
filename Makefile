@@ -51,7 +51,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 test:
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out
+	GOCOVERDIR=$(COVERAGE_DIR) go test -v ./... -test.coverprofile=unit.out
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
