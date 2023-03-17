@@ -617,3 +617,91 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         self.check_equal(self.delete_task("/api/publish/" + prefix + "/wheezy", params={"SkipCleanup": "1"}).json()['State'], TASK_SUCCEEDED)
         self.check_exists("public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
         self.check_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+
+class ServePublishedTestRepo(APITest):
+    """
+    GET /repos/:storage/*pkgPath
+    """
+
+    def check(self):
+        d = self.random_name()
+        r = self.random_name()
+        f = "libboost-program-options-dev_1.62.0.1_i386.deb"
+
+        self.check_equal(self.upload("/api/files/" + d, f).status_code, 200)
+
+        self.check_equal(self.post("/api/repos", json={
+            "Name": r,
+            "Comment": "test repo",
+            "DefaultDistribution": r,
+            "DefaultComponent": "main"
+        }).status_code, 201)
+
+        self.check_equal(self.post(f"/api/repos/{r}/file/{d}").status_code, 200)
+
+        self.check_equal(self.post("/api/publish/filesystem:apiandserve:", json={
+            "SourceKind": "local",
+            "Sources": [
+                {
+                    "Component": "main",
+                    "Name": r
+                }
+            ],
+            "Distribution": r,
+            "Signing":  {
+                "Skip": True
+            }
+        }).status_code, 201)
+
+        get = self.get(f"/repos/apiandserve/pool/main/b/boost-defaults/{f}")
+        deb_content_types = [
+            "application/x-deb",
+            "application/x-debian-package",
+            "application/vnd.debian.binary-package"
+        ]
+        if get.headers['content-type'] not in deb_content_types:
+            raise Exception(f"Received content-type {get.headers['content-type']} not one of expected: {deb_content_types}")
+
+        if len(get.content) != 3428:
+            raise Exception(f"Expected file size 3428 bytes != {get.status_code} bytes")
+
+
+class ServePublishedNotFoundTestRepo(APITest):
+    """
+    GET /repos/:storage/*pkgPath
+    """
+
+    def check(self):
+        d = self.random_name()
+        r = self.random_name()
+        f = "libboost-program-options-dev_1.62.0.1_i386.deb"
+
+        self.check_equal(self.upload("/api/files/" + d, f).status_code, 200)
+
+        self.check_equal(self.post("/api/repos", json={
+            "Name": r,
+            "Comment": "test repo",
+            "DefaultDistribution": r,
+            "DefaultComponent": "main"
+        }).status_code, 201)
+
+        self.check_equal(self.post(f"/api/repos/{r}/file/{d}").status_code, 200)
+
+        self.check_equal(self.post("/api/publish/filesystem:apiandserve:", json={
+            "SourceKind": "local",
+            "Sources": [
+                {
+                    "Component": "main",
+                    "Name": r
+                }
+            ],
+            "Distribution": r,
+            "Signing":  {
+                "Skip": True
+            }
+        }).status_code, 201)
+
+        get = self.get("/repos/apiandserve/pool/main/b/boost-defaults/i-dont-exist")
+        if get.status_code != 404:
+            raise Exception(f"Expected status 404 != {get.status_code}")
