@@ -148,7 +148,8 @@ class BaseTest(object):
         "ppaCodename": "",
         "enableMetricsEndpoint": True,
         "logLevel": "debug",
-        "logFormat": "default"
+        "logFormat": "default",
+        "serveInAPIMode": True
     }
     configOverride = {}
     environmentOverride = {}

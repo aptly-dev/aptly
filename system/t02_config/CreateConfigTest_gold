@@ -27,5 +27,6 @@
   "AsyncAPI": false,
   "enableMetricsEndpoint": false,
   "logLevel": "debug",
-  "logFormat": "default"
+  "logFormat": "default",
+  "serveInAPIMode": false
 }

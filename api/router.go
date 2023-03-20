@@ -51,18 +51,19 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		MetricsCollectorRegistrar.Register(router)
 	}
 
-	router.GET("/repos/:storage/*pkgPath", func(c *gin.Context) {
-		pkgpath := c.Param("pkgPath")
+	if c.Config().ServeInAPIMode {
+		router.GET("/repos/:storage/*pkgPath", func(c *gin.Context) {
+			pkgpath := c.Param("pkgPath")
 
-		storage := c.Param("storage")
-		if storage == "-" {
-			storage = ""
-		}
+			storage := c.Param("storage")
+			if storage == "-" {
+				storage = ""
+			}
 
-		publicPath := context.GetPublishedStorage("filesystem:" + storage).(aptly.FileSystemPublishedStorage).PublicPath()
-
-		c.FileFromFS(pkgpath, http.Dir(publicPath))
-	})
+			publicPath := context.GetPublishedStorage("filesystem:" + storage).(aptly.FileSystemPublishedStorage).PublicPath()
+			c.FileFromFS(pkgpath, http.Dir(publicPath))
+		})
+	}
 
 	api := router.Group("/api")
 	if context.Flags().Lookup("no-lock").Value.Get().(bool) {
