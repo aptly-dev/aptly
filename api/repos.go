@@ -17,6 +17,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GET /repos
+func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		c.Writer.Flush()
+		c.Writer.WriteString("<pre>\n")
+		if len(localRepos) == 0 {
+			c.Writer.WriteString("<a href=\"-/\">default</a>\n")
+		}
+		for publishPrefix := range localRepos {
+			c.Writer.WriteString(fmt.Sprintf("<a href=\"%[1]s/\">%[1]s</a>\n", publishPrefix))
+		}
+		c.Writer.WriteString("</pre>")
+		c.Writer.Flush()
+	}
+}
+
+// GET /repos/:storage/*pkgPath
+func reposServeInAPIMode(c *gin.Context) {
+	pkgpath := c.Param("pkgPath")
+
+	storage := c.Param("storage")
+	if storage == "-" {
+		storage = ""
+	} else {
+		storage = "filesystem:" + storage
+	}
+
+	publicPath := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage).PublicPath()
+	c.FileFromFS(pkgpath, http.Dir(publicPath))
+}
+
 // GET /api/repos
 func apiReposList(c *gin.Context) {
 	result := []*deb.LocalRepo{}

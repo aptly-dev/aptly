@@ -423,6 +423,29 @@ func (p *PublishedRepo) Components() []string {
 	return result
 }
 
+// Components returns sorted list of published repo source names
+func (p *PublishedRepo) SourceNames() []string {
+	var sources = []string{}
+
+	for _, component := range p.Components() {
+		var source string
+
+		item := p.sourceItems[component]
+		if item.snapshot != nil {
+			source = item.snapshot.Name
+		} else if item.localRepo != nil {
+			source = item.localRepo.Name
+		} else {
+			panic("no snapshot/localRepo")
+		}
+
+		sources = append(sources, fmt.Sprintf("%s:%s", source, component))
+	}
+
+	sort.Strings(sources)
+	return sources
+}
+
 // UpdateLocalRepo updates content from local repo in component
 func (p *PublishedRepo) UpdateLocalRepo(component string) {
 	if p.SourceKind != SourceLocalRepo {

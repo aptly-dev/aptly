@@ -619,6 +619,51 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         self.check_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
 
 
+class ServePublishedListTestRepo(APITest):
+    """
+    GET /repos
+    """
+
+    def check(self):
+        d = "libboost-program-options-dev_1.62.0.1"
+        r = "bar"
+        f = "libboost-program-options-dev_1.62.0.1_i386.deb"
+
+        self.check_equal(self.upload("/api/files/" + d, f).status_code, 200)
+
+        self.check_equal(self.post("/api/repos", json={
+            "Name": r,
+            "Comment": "test repo",
+            "DefaultDistribution": r,
+            "DefaultComponent": "main"
+        }).status_code, 201)
+
+        self.check_equal(self.post(f"/api/repos/{r}/file/{d}").status_code, 200)
+
+        self.check_equal(self.post("/api/publish/filesystem:apiandserve:", json={
+            "SourceKind": "local",
+            "Sources": [
+                {
+                    "Component": "main",
+                    "Name": r
+                }
+            ],
+            "Distribution": r,
+            "Signing":  {
+                "Skip": True
+            }
+        }).status_code, 201)
+
+        get = self.get("/repos")
+        expected_content_type = "text/html; charset=utf-8"
+        if get.headers['content-type'] != expected_content_type:
+            raise Exception(f"Received content-type {get.headers['content-type']} was not: {expected_content_type}")
+
+        excepted_content = b'<pre>\n<a href="apiandserve/">apiandserve</a>\n</pre>'
+        if excepted_content != get.content:
+            raise Exception(f"Expected content {excepted_content} was not: {get.content}")
+
+
 class ServePublishedTestRepo(APITest):
     """
     GET /repos/:storage/*pkgPath
@@ -664,7 +709,7 @@ class ServePublishedTestRepo(APITest):
             raise Exception(f"Received content-type {get.headers['content-type']} not one of expected: {deb_content_types}")
 
         if len(get.content) != 3428:
-            raise Exception(f"Expected file size 3428 bytes != {get.status_code} bytes")
+            raise Exception(f"Expected file size 3428 bytes != {len(get.content)} bytes")
 
 
 class ServePublishedNotFoundTestRepo(APITest):
