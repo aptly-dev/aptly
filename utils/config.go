@@ -37,6 +37,7 @@ type ConfigStructure struct { // nolint: maligned
 	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
 	LogLevel               string                           `json:"logLevel"`
 	LogFormat              string                           `json:"logFormat"`
+	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
@@ -116,6 +117,7 @@ var Config = ConfigStructure{
 	EnableMetricsEndpoint:  false,
 	LogLevel:               "debug",
 	LogFormat:              "default",
+	ServeInAPIMode:         false,
 }
 
 // LoadConfig loads configuration from json file

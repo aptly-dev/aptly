@@ -136,7 +136,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"AsyncAPI\": false,\n"+
 		"  \"enableMetricsEndpoint\": false,\n"+
 		"  \"logLevel\": \"info\",\n"+
-		"  \"logFormat\": \"json\"\n"+
+		"  \"logFormat\": \"json\",\n"+
+		"  \"serveInAPIMode\": false\n"+
 		"}")
 }
 
