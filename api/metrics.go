@@ -1,12 +1,15 @@
 package api
 
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/deb"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -52,6 +55,20 @@ var (
 		},
 		[]string{"version", "goversion"},
 	)
+	apiFilesUploadedCounter = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "aptly_api_files_uploaded_total",
+			Help: "Total number of uploaded files labeled by upload directory.",
+		},
+		[]string{"directory"},
+	)
+	apiReposPackageCountGauge = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "aptly_repos_package_count",
+			Help: "Current number of published packages labeled by source, distribution and component.",
+		},
+		[]string{"source", "distribution", "component"},
+	)
 )
 
 type metricsCollectorRegistrar struct {
@@ -71,3 +88,29 @@ func (r *metricsCollectorRegistrar) Register(router *gin.Engine) {
 }
 
 var MetricsCollectorRegistrar = metricsCollectorRegistrar{hasRegistered: false}
+
+func countPackagesByRepos() {
+	err := context.NewCollectionFactory().PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
+		err := context.NewCollectionFactory().PublishedRepoCollection().LoadComplete(repo, context.NewCollectionFactory())
+		if err != nil {
+			msg := fmt.Sprintf(
+				"Error %s found while determining package count for metrics endpoint (prefix:%s / distribution:%s / component:%s\n).",
+				err, repo.StoragePrefix(), repo.Distribution, repo.Components())
+			log.Warn().Msg(msg)
+			return err
+		}
+
+		components := repo.Components()
+		for _, c := range components {
+			count := float64(len(repo.RefList(c).Refs))
+			apiReposPackageCountGauge.WithLabelValues(fmt.Sprintf("%s", (repo.SourceNames())), repo.Distribution, c).Set(count)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		msg := fmt.Sprintf("Error %s found while listing published repos for metrics endpoint", err)
+		log.Warn().Msg(msg)
+	}
+}

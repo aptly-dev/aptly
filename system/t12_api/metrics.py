@@ -7,6 +7,35 @@ class MetricsEnabledAPITest(APITest):
     """
 
     def check(self):
+        d = "libboost-program-options-dev_1.62.0.1"
+        r = "foo"
+        f = "libboost-program-options-dev_1.62.0.1_i386.deb"
+
+        self.check_equal(self.upload("/api/files/" + d, f).status_code, 200)
+
+        self.check_equal(self.post("/api/repos", json={
+            "Name": r,
+            "Comment": "test repo",
+            "DefaultDistribution": r,
+            "DefaultComponent": "main"
+        }).status_code, 201)
+
+        self.check_equal(self.post(f"/api/repos/{r}/file/{d}").status_code, 200)
+
+        self.check_equal(self.post("/api/publish/filesystem:apiandserve:", json={
+            "SourceKind": "local",
+            "Sources": [
+                {
+                    "Component": "main",
+                    "Name": r
+                }
+            ],
+            "Distribution": r,
+            "Signing":  {
+                "Skip": True
+            }
+        }).status_code, 201)
+
         resp = self.get("/api/metrics")
         self.check_equal(resp.status_code, 200)
 
@@ -27,3 +56,15 @@ class MetricsEnabledAPITest(APITest):
 
         apiBuildInfoGauge = "# TYPE aptly_build_info gauge"
         self.check_in(apiBuildInfoGauge, resp.text)
+
+        apiFilesUploadedCounter = "# TYPE aptly_api_files_uploaded_total counter"
+        self.check_in(apiFilesUploadedCounter, resp.text)
+
+        apiFilesUploadedCounterValue = "aptly_api_files_uploaded_total{directory=\"libboost-program-options-dev_1.62.0.1\"} 1"
+        self.check_in(apiFilesUploadedCounterValue, resp.text)
+
+        apiReposPackageCountGauge = "# TYPE aptly_repos_package_count gauge"
+        self.check_in(apiReposPackageCountGauge, resp.text)
+
+        apiReposPackageCountGaugeValue = "aptly_repos_package_count{component=\"main\",distribution=\"foo\",source=\"[foo:main]\"} 1"
+        self.check_in(apiReposPackageCountGaugeValue, resp.text)

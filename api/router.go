@@ -17,6 +17,7 @@ var context *ctx.AptlyContext
 
 func apiMetricsGet() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		countPackagesByRepos()
 		promhttp.Handler().ServeHTTP(c.Writer, c.Request)
 	}
 }
@@ -52,17 +53,8 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	if c.Config().ServeInAPIMode {
-		router.GET("/repos/:storage/*pkgPath", func(c *gin.Context) {
-			pkgpath := c.Param("pkgPath")
-
-			storage := c.Param("storage")
-			if storage == "-" {
-				storage = ""
-			}
-
-			publicPath := context.GetPublishedStorage("filesystem:" + storage).(aptly.FileSystemPublishedStorage).PublicPath()
-			c.FileFromFS(pkgpath, http.Dir(publicPath))
-		})
+		router.GET("/repos/", reposListInAPIMode(c.Config().FileSystemPublishRoots))
+		router.GET("/repos/:storage/*pkgPath", reposServeInAPIMode)
 	}
 
 	api := router.Group("/api")
