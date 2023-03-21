@@ -457,7 +457,7 @@ func (context *AptlyContext) pgpProvider() string {
 	return provider
 }
 
-func (context *AptlyContext) getGPGFinder(provider string) pgp.GPGFinder {
+func (context *AptlyContext) getGPGFinder(_ string) pgp.GPGFinder {
 	switch context.pgpProvider() {
 	case "gpg1":
 		return pgp.GPG1Finder()

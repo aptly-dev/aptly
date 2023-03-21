@@ -138,7 +138,7 @@ func (q *NotQuery) Matches(pkg PackageLike) bool {
 }
 
 // Fast is false
-func (q *NotQuery) Fast(list PackageCatalog) bool {
+func (q *NotQuery) Fast(_ PackageCatalog) bool {
 	return false
 }
 
@@ -197,7 +197,7 @@ func (q *FieldQuery) Query(list PackageCatalog) (result *PackageList) {
 }
 
 // Fast depends on the query
-func (q *FieldQuery) Fast(list PackageCatalog) bool {
+func (q *FieldQuery) Fast(_ PackageCatalog) bool {
 	return false
 }
 
@@ -265,7 +265,7 @@ func (q *PkgQuery) Matches(pkg PackageLike) bool {
 }
 
 // Fast is always true for package query
-func (q *PkgQuery) Fast(list PackageCatalog) bool {
+func (q *PkgQuery) Fast(_ PackageCatalog) bool {
 	return true
 }
 
@@ -280,12 +280,12 @@ func (q *PkgQuery) String() string {
 }
 
 // Matches on specific properties
-func (q *MatchAllQuery) Matches(pkg PackageLike) bool {
+func (q *MatchAllQuery) Matches(_ PackageLike) bool {
 	return true
 }
 
 // Fast is always true for match all query
-func (q *MatchAllQuery) Fast(list PackageCatalog) bool {
+func (q *MatchAllQuery) Fast(_ PackageCatalog) bool {
 	return true
 }
 

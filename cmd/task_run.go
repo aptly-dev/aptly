@@ -62,11 +62,11 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 			text, _ = reader.ReadString('\n')
 			if text == "\n" {
 				break
-			} else {
-				text = strings.TrimSpace(text) + ","
-				parsedArgs, _ := shellwords.Parse(text)
-				cmdArgs = append(cmdArgs, parsedArgs...)
 			}
+
+			text = strings.TrimSpace(text) + ","
+			parsedArgs, _ := shellwords.Parse(text)
+			cmdArgs = append(cmdArgs, parsedArgs...)
 		}
 
 		if len(cmdArgs) == 0 {

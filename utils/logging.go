@@ -58,7 +58,7 @@ func GetLogLevelOrDebug(levelStr string) zerolog.Level {
 
 type timestampHook struct{}
 
-func (h *timestampHook) Run(e *zerolog.Event, l zerolog.Level, msg string) {
+func (h *timestampHook) Run(e *zerolog.Event, _ zerolog.Level, _ string) {
 	t := time.Now()
 	ts := t.Format(time.RFC3339)
 	e.Str("time", ts)
