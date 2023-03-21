@@ -323,7 +323,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
-		if len(destinationMD5) != 32 {
+		if sourceMD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
+		if len(destinationMD5) != 32 || destinationMD5 != sourceMD5 {
 			// doesn’t look like a valid MD5,
 			// attempt to fetch one from the metadata
 			var err error
@@ -334,17 +338,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 			}
 			storage.pathCache[relPath] = destinationMD5
 		}
-		if sourceMD5 == "" {
-			return fmt.Errorf("unable to compare object, MD5 checksum missing")
-		}
 
 		if destinationMD5 == sourceMD5 {
 			return nil
 		}
 
-		if !force && destinationMD5 != sourceMD5 {
+		if !force {
 			return fmt.Errorf("error putting file to %s: file already exists and is different: %s", poolPath, storage)
-
 		}
 	}
 
