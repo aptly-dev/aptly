@@ -59,6 +59,12 @@ func (c *Config) send409Conflict() bool {
 	return false
 }
 
+// Request stores the method and URI of an HTTP request.
+type Request struct {
+	Method     string
+	RequestURI string
+}
+
 // Server is a fake S3 server for testing purposes.
 // All of the data for the server is kept in memory.
 type Server struct {
@@ -68,6 +74,8 @@ type Server struct {
 	mu       sync.Mutex
 	buckets  map[string]*bucket
 	config   *Config
+	// Requests holds a log of all requests received by the server.
+	Requests []Request
 }
 
 type bucket struct {
@@ -140,6 +148,7 @@ func (srv *Server) serveHTTP(w http.ResponseWriter, req *http.Request) {
 	if debug {
 		log.Printf("s3test %q %q", req.Method, req.URL)
 	}
+	srv.Requests = append(srv.Requests, Request{req.Method, req.RequestURI})
 	a := &action{
 		srv:   srv,
 		w:     w,
@@ -330,6 +339,10 @@ type Owner struct {
 	DisplayName string
 }
 
+type CommonPrefix struct {
+	Prefix string
+}
+
 // The ListResp type holds the results of a List bucket operation.
 type ListResp struct {
 	Name       string
@@ -344,7 +357,7 @@ type ListResp struct {
 	// http://goo.gl/YjQTc
 	IsTruncated    bool
 	Contents       []Key
-	CommonPrefixes []string `xml:">Prefix"`
+	CommonPrefixes []CommonPrefix
 }
 
 // The Key type represents an item stored in an S3 bucket.
@@ -403,7 +416,7 @@ func (r bucketResource) get(a *action) interface{} {
 		MaxKeys:   maxKeys,
 	}
 
-	var prefixes []string
+	var prefixes []CommonPrefix
 	for _, obj := range objs {
 		if !strings.HasPrefix(obj.name, prefix) {
 			continue
@@ -413,7 +426,7 @@ func (r bucketResource) get(a *action) interface{} {
 		if delimiter != "" {
 			if i := strings.Index(obj.name[len(prefix):], delimiter); i >= 0 {
 				name = obj.name[:len(prefix)+i+len(delimiter)]
-				if prefixes != nil && prefixes[len(prefixes)-1] == name {
+				if prefixes != nil && prefixes[len(prefixes)-1].Prefix == name {
 					continue
 				}
 				isPrefix = true
@@ -427,7 +440,7 @@ func (r bucketResource) get(a *action) interface{} {
 			break
 		}
 		if isPrefix {
-			prefixes = append(prefixes, name)
+			prefixes = append(prefixes, CommonPrefix{name})
 		} else {
 			// Contents contains only keys not found in CommonPrefixes
 			resp.Contents = append(resp.Contents, obj.s3Key())

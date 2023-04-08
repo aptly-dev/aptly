@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "January 2022" "" ""
+.TH "APTLY" "1" "April 2023" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -84,7 +84,8 @@ Configuration file is stored in JSON format (default values shown below):
       "plusWorkaround": false,
       "disableMultiDel": false,
       "forceSigV2": false,
-      "forceVirtualHostedStyle": false,
+      "forceVirtualHostedStyle": true,
+      "parallelListingRequests": 0,
       "debug": false
     }
   },
@@ -105,7 +106,7 @@ Configuration file is stored in JSON format (default values shown below):
       "accountKey": "",
       "container": "repo",
       "prefix": ""
-      "endpoint": "blob.core.windows.net"
+      "endpoint": "blob\.core\.windows\.net"
     }
   }
 }
@@ -268,6 +269,10 @@ bucket name
 .TP
 \fBforceVirtualHostedStyle\fR
 (optional) disable path style visit, useful with non\-AWS S3\-compatible object stores which only support virtual hosted style
+.
+.TP
+\fBparallelListingRequests\fR
+(optional) if greater than 1, list the content of the bucket up to this number of requests in parallel
 .
 .TP
 \fBdebug\fR
@@ -505,6 +510,10 @@ disable verification of Release file signatures
 .TP
 \-\fBkeyring\fR=
 gpg keyring to use when verifying Release file (could be specified multiple times)
+.
+.TP
+\-\fBmax\-tries\fR=1
+max download tries till process fails with download error
 .
 .TP
 \-\fBwith\-installer\fR
@@ -1009,13 +1018,13 @@ custom format for result printing
 include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORIES BASED ON \.CHANGES FILES"
-\fBaptly\fR \fBrepo\fR \fBinclude\fR <file\.changes>|\fIdirectory\fR \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBrepo\fR \fBinclude\fR
 .
 .P
 Command include looks for \.changes files in list of arguments or specified directories\. Each \.changes file is verified, parsed, referenced files are put into separate temporary directory and added into local repository\. Successfully imported files are removed by default\.
 .
 .P
-Additionally uploads could be restricted with <uploaders\.json> file\. Rules in this file control uploads based on GPG key ID of \.changes file signature and queries on \.changes file fields\.
+Additionally uploads could be restricted with
 .
 .P
 Example:
@@ -1450,6 +1459,10 @@ run GPG with detached tty
 set value for ButAutomaticUpgrades field
 .
 .TP
+\-\fBcodename\fR=
+codename to publish (defaults to distribution)
+.
+.TP
 \-\fBcomponent\fR=
 component name to publish (for multi\-component publishing, separate components with commas)
 .
@@ -1494,6 +1507,10 @@ GPG passphrase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
+\-\fBskip\-bz2\fR
+don\(cqt generate bzipped indexes
+.
+.TP
 \-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
@@ -1504,10 +1521,6 @@ don\(cqt sign Release files with GPG
 .TP
 \-\fBsuite\fR=
 suite to publish (defaults to distribution)
-.
-.TP
-\-\fBcodename\fR=
-codename to publish (defaults to distribution)
 .
 .SH "PUBLISH SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBsnapshot\fR \fIname\fR [[\fIendpoint\fR:]\fIprefix\fR]
@@ -1557,6 +1570,10 @@ run GPG with detached tty
 overwrite value for ButAutomaticUpgrades field
 .
 .TP
+\-\fBcodename\fR=
+codename to publish (defaults to distribution)
+.
+.TP
 \-\fBcomponent\fR=
 component name to publish (for multi\-component publishing, separate components with commas)
 .
@@ -1601,6 +1618,10 @@ GPG passphrase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
+\-\fBskip\-bz2\fR
+don\(cqt generate bzipped indexes
+.
+.TP
 \-\fBskip\-contents\fR
 don\(cqt generate Contents indexes
 .
@@ -1611,10 +1632,6 @@ don\(cqt sign Release files with GPG
 .TP
 \-\fBsuite\fR=
 suite to publish (defaults to distribution)
-.
-.TP
-\-\fBcodename\fR=
-codename to publish (defaults to distribution)
 .
 .SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
 \fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
@@ -1687,6 +1704,10 @@ GPG passphrase\-file for the key (warning: could be insecure)
 GPG secret keyring to use (instead of default)
 .
 .TP
+\-\fBskip\-bz2\fR
+don\(cqt generate bzipped indexes
+.
+.TP
 \-\fBskip\-cleanup\fR
 don\(cqt remove unreferenced files in prefix/component
 .
@@ -1750,6 +1771,10 @@ GPG passphrase\-file for the key (warning: could be insecure)
 .TP
 \-\fBsecret\-keyring\fR=
 GPG secret keyring to use (instead of default)
+.
+.TP
+\-\fBskip\-bz2\fR
+don\(cqt generate bzipped indexes
 .
 .TP
 \-\fBskip\-cleanup\fR
@@ -2159,6 +2184,33 @@ Lorenzo Bolla (https://github\.com/lbolla)
 .
 .IP "\[ci]" 4
 Benj Fassbind (https://github\.com/randombenj)
+.
+.IP "\[ci]" 4
+Markus Muellner (https://github\.com/mmianl)
+.
+.IP "\[ci]" 4
+Chuan Liu (https://github\.com/chuan)
+.
+.IP "\[ci]" 4
+Samuel Mutel (https://github\.com/smutel)
+.
+.IP "\[ci]" 4
+Russell Greene (https://github\.com/russelltg)
+.
+.IP "\[ci]" 4
+Wade Simmons (https://github\.com/wadey)
+.
+.IP "\[ci]" 4
+Steven Stone (https://github\.com/smstone)
+.
+.IP "\[ci]" 4
+Josh Bayfield (https://github\.com/jbayfield)
+.
+.IP "\[ci]" 4
+Boxjan (https://github\.com/boxjan)
+.
+.IP "\[ci]" 4
+Mauro Regli (https://github\.com/reglim)
 .
 .IP "" 0
 
