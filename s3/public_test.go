@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	. "gopkg.in/check.v1"
 
@@ -48,6 +50,17 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
 	s.srv.Quit()
+}
+
+func (s *PublishedStorageSuite) checkGetRequestsEqual(c *C, prefix string, expectedGetRequestUris []string) {
+	getRequests := make([]string, 0, len(s.srv.Requests))
+	for _, r := range s.srv.Requests {
+		if r.Method == "GET" && strings.HasPrefix(r.RequestURI, prefix) {
+			getRequests = append(getRequests, r.RequestURI)
+		}
+	}
+	sort.Strings(getRequests)
+	c.Check(getRequests, DeepEquals, expectedGetRequestUris)
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
@@ -301,7 +314,6 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	// 2nd link from pool, providing wrong path for source file
 	//
 	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
-	s.prefixedStorage.pathCache = nil
 	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
 	c.Check(err, IsNil)
 
@@ -335,7 +347,7 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 	c.Check(err, IsNil)
 
 	// Check only one listing request was done to the server
-	s.checkGetRequestsEqual(c, "/test?", []string{"/test?max-keys=1000&prefix="})
+	s.checkGetRequestsEqual(c, "/test?", []string{"/test?list-type=2&max-keys=1000&prefix=pool%2F"})
 
 	s.srv.Requests = nil
 	// Publish two packages at a different prefix
@@ -345,10 +357,8 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
-	// Check only one listing request was done to the server
-	s.checkGetRequestsEqual(c, "/test?", []string{
-		"/test?max-keys=1000&prefix=publish-prefix%2F",
-	})
+	// Check no listing request was done to the server (pathCache is used)
+	s.checkGetRequestsEqual(c, "/test?", []string{})
 
 	s.srv.Requests = nil
 	// Publish two packages at a prefixed storage
@@ -360,24 +370,21 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 
 	// Check only one listing request was done to the server
 	s.checkGetRequestsEqual(c, "/test?", []string{
-		"/test?max-keys=1000&prefix=lala%2F",
+		"/test?list-type=2&max-keys=1000&prefix=lala%2Flala%2Fpool%2F",
 	})
 
-	s.srv.Requests = nil
 	// Publish two packages at a prefixed storage plus a publish prefix.
+	s.srv.Requests = nil
 	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
-	// Check only one listing request was done to the server
-	s.checkGetRequestsEqual(c, "/test?", []string{
-		"/test?max-keys=1000&prefix=lala%2Fpublish-prefix%2F",
-	})
+	// Check no listing request was done to the server (pathCache is used)
+	s.checkGetRequestsEqual(c, "/test?", []string{})
 
 	// This step checks that files already exists in S3 and skip upload (which would fail if not skipped).
-	s.prefixedStorage.pathCache = nil
 	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
 	c.Check(err, IsNil)
 	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
