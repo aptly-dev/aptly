@@ -233,7 +233,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Assert(err, IsNil)
 
 		// Test using hardlinks
-		err = s.storage.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storage.LinkFromPool(t.prefix, t.publishedDirectory, t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err := os.Stat(filepath.Join(s.storage.rootPath, t.prefix, t.expectedFilename))
@@ -243,7 +243,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Nlink), Equals, 3)
 
 		// Test using symlinks
-		err = s.storageSymlink.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageSymlink.LinkFromPool(t.prefix, t.publishedDirectory, t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Lstat(filepath.Join(s.storageSymlink.rootPath, t.prefix, t.expectedFilename))
@@ -254,7 +254,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Mode&syscall.S_IFMT), Equals, int(syscall.S_IFLNK))
 
 		// Test using copy with checksum verification
-		err = s.storageCopy.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageCopy.LinkFromPool(t.prefix, t.publishedDirectory, t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Stat(filepath.Join(s.storageCopy.rootPath, t.prefix, t.expectedFilename))
@@ -264,7 +264,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		c.Check(int(info.Nlink), Equals, 1)
 
 		// Test using copy with size verification
-		err = s.storageCopySize.LinkFromPool(filepath.Join(t.prefix, t.publishedDirectory), t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
+		err = s.storageCopySize.LinkFromPool(t.prefix, t.publishedDirectory, t.sourcePath, pool, srcPoolPath, sourceChecksum, false)
 		c.Assert(err, IsNil)
 
 		st, err = os.Stat(filepath.Join(s.storageCopySize.rootPath, t.prefix, t.expectedFilename))
@@ -289,7 +289,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	nlinks := int(st.Sys().(*syscall.Stat_t).Nlink)
 
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different")
 
 	st, err = pool.Stat(srcPoolPath)
@@ -297,7 +297,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(int(st.Sys().(*syscall.Stat_t).Nlink), Equals, nlinks)
 
 	// linking with force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
 	c.Check(err, IsNil)
 
 	st, err = pool.Stat(srcPoolPath)
@@ -305,21 +305,21 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(int(st.Sys().(*syscall.Stat_t).Nlink), Equals, nlinks+1)
 
 	// Test using symlinks
-	err = s.storageSymlink.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
+	err = s.storageSymlink.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different")
 
-	err = s.storageSymlink.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
+	err = s.storageSymlink.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
 	c.Check(err, IsNil)
 
 	// Test using copy with checksum verification
-	err = s.storageCopy.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
+	err = s.storageCopy.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different")
 
-	err = s.storageCopy.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
+	err = s.storageCopy.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, true)
 	c.Check(err, IsNil)
 
 	// Test using copy with size verification (this will NOT detect the difference)
-	err = s.storageCopySize.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
+	err = s.storageCopySize.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, srcPoolPath, sourceChecksum, false)
 	c.Check(err, IsNil)
 }
 
