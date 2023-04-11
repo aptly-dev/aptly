@@ -172,7 +172,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 
 	// first link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	data, err := s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -180,7 +180,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// duplicate link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -188,7 +188,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -196,7 +196,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict and force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "pool/main/m/mars-invaders/mars-invaders_1.03.deb")
@@ -204,7 +204,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Check(data, DeepEquals, []byte("Spam"))
 
 	// link from pool with nested file name
-	err = s.storage.LinkFromPool("dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
+	err = s.storage.LinkFromPool("", "dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
 	c.Check(err, IsNil)
 
 	data, err = s.storage.conn.ObjectGetBytes("test", "dists/jessie/non-free/installer-i386/current/images/netboot/boot.img.gz")

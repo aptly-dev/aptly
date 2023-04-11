@@ -22,7 +22,7 @@ import (
 type PublishedStorage struct {
 	container azblob.ContainerURL
 	prefix    string
-	pathCache map[string]string
+	pathCache map[string]map[string]string
 }
 
 // Check interface
@@ -174,31 +174,38 @@ func (storage *PublishedStorage) Remove(path string) error {
 
 // LinkFromPool links package file from pool to dist's pool location
 //
-// publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
+// publishedPrefix is desired prefix for the location in the pool.
+// publishedRelParh is desired location in pool (like pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName string, sourcePool aptly.PackagePool,
+func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	relPath := filepath.Join(publishedDirectory, fileName)
-	poolPath := filepath.Join(storage.prefix, relPath)
+	relFilePath := filepath.Join(publishedRelPath, fileName)
+	prefixRelFilePath := filepath.Join(publishedPrefix, relFilePath)
+	poolPath := filepath.Join(storage.prefix, prefixRelFilePath)
 
 	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist("")
+		storage.pathCache = make(map[string]map[string]string)
+	}
+	pathCache := storage.pathCache[publishedPrefix]
+	if pathCache == nil {
+		paths, md5s, err := storage.internalFilelist(publishedPrefix)
 		if err != nil {
 			return fmt.Errorf("error caching paths under prefix: %s", err)
 		}
 
-		storage.pathCache = make(map[string]string, len(paths))
+		pathCache = make(map[string]string, len(paths))
 
 		for i := range paths {
-			storage.pathCache[paths[i]] = md5s[i]
+			pathCache[paths[i]] = md5s[i]
 		}
+		storage.pathCache[publishedPrefix] = pathCache
 	}
 
-	destinationMD5, exists := storage.pathCache[relPath]
+	destinationMD5, exists := pathCache[relFilePath]
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
@@ -221,9 +228,9 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 	}
 	defer source.Close()
 
-	err = storage.putFile(relPath, source, sourceMD5)
+	err = storage.putFile(prefixRelFilePath, source, sourceMD5)
 	if err == nil {
-		storage.pathCache[relPath] = sourceMD5
+		pathCache[relFilePath] = sourceMD5
 	} else {
 		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
 	}

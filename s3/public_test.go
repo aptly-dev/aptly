@@ -402,48 +402,122 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 
 	// first link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// duplicate link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict and force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Spam"))
 
 	// for prefixed storage:
 	// first link from pool
-	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	// 2nd link from pool, providing wrong path for source file
 	//
 	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
 	s.prefixedStorage.pathCache = nil
-	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "lala/pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with nested file name
-	err = s.storage.LinkFromPool("dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
+	err = s.storage.LinkFromPool("", "dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "dists/jessie/non-free/installer-i386/current/images/netboot/boot.img.gz"), DeepEquals, []byte("Contents"))
+}
+
+func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
+	root := c.MkDir()
+	pool := files.NewPackagePool(root, false)
+	cs := files.NewMockChecksumStorage()
+
+	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
+	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
+	c.Assert(err, IsNil)
+	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
+
+	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
+	c.Assert(err, IsNil)
+
+	// Publish two packages at the same publish prefix
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{"/test?max-keys=1000&prefix="})
+
+	s.srv.Requests = nil
+	// Publish two packages at a different prefix
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=publish-prefix%2F",
+	})
+
+	s.srv.Requests = nil
+	// Publish two packages at a prefixed storage
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=lala%2F",
+	})
+
+	s.srv.Requests = nil
+	// Publish two packages at a prefixed storage plus a publish prefix.
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=lala%2Fpublish-prefix%2F",
+	})
+
+	// This step checks that files already exists in S3 and skip upload (which would fail if not skipped).
+	s.prefixedStorage.pathCache = nil
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestSymLink(c *C) {

@@ -118,16 +118,17 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 
 // LinkFromPool links package file from pool to dist's pool location
 //
-// publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
+// publishedPrefix is desired prefix for the location in the pool.
+// publishedRelParh is desired location in pool (like pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
 // sourcePath is a relative path to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName string, sourcePool aptly.PackagePool,
+func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
 	baseName := filepath.Base(fileName)
-	poolPath := filepath.Join(storage.rootPath, publishedDirectory, filepath.Dir(fileName))
+	poolPath := filepath.Join(storage.rootPath, publishedPrefix, publishedRelPath, filepath.Dir(fileName))
 
 	err := os.MkdirAll(poolPath, 0777)
 	if err != nil {
