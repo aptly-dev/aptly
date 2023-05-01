@@ -71,13 +71,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		list.PrepareIndex()
 	}
 
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return nil, nil, err
-	}
-	defer transaction.Discard()
-
-	checksumStorage := checksumStorageProvider(transaction)
+	checksumStorage := checksumStorageProvider(collection.db)
 
 	for _, file := range packageFiles {
 		var (
@@ -201,7 +195,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
-		err = collection.UpdateInTransaction(p, transaction)
+		err = collection.Update(p)
 		if err != nil {
 			reporter.Warning("Unable to save package %s: %s", p, err)
 			failedFiles = append(failedFiles, file)
@@ -227,6 +221,6 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		processedFiles = append(processedFiles, candidateProcessedFiles...)
 	}
 
-	err = transaction.Commit()
+	err = nil // reset error as only failed files are reported
 	return
 }
