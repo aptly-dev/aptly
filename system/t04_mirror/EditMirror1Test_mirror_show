@@ -17,6 +17,7 @@ Date: Sat, 26 Apr 2014 09:27:11 UTC
 Description:  Debian 7.5 Released 26 April 2014
 
 Label: Debian
+No-Support-For-Architecture-All: Packages
 Origin: Debian
 Suite: stable
 Version: 7.5

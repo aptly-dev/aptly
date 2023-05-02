@@ -1,4 +1,5 @@
 import re
+
 from lib import BaseTest
 
 
@@ -48,7 +49,7 @@ class EditMirror5Test(BaseTest):
     edit mirror: remove filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ stretch/updates main",
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ bullseye-security/updates main",
     ]
     runCmd = "aptly mirror edit -filter= mirror5"
 
@@ -65,7 +66,7 @@ class EditMirror6Test(BaseTest):
     edit mirror: change architectures
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=amd64 mirror6 http://cdn-fastly.deb.debian.org/debian stretch main"
+        "aptly mirror create -ignore-signatures -architectures=amd64 mirror6 http://cdn-fastly.deb.debian.org/debian bullseye main"
     ]
     runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,i386 mirror6"
 
@@ -79,9 +80,9 @@ class EditMirror7Test(BaseTest):
     edit mirror: change architectures to missing archs
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=amd64 stretch http://cdn-fastly.deb.debian.org/debian stretch main"
+        "aptly mirror create -ignore-signatures -architectures=amd64 bullseye http://cdn-fastly.deb.debian.org/debian bullseye main"
     ]
-    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 stretch"
+    runCmd = "aptly mirror edit -ignore-signatures -architectures=amd64,x56 bullseye"
     expectedCode = 1
 
 
@@ -112,5 +113,5 @@ class EditMirror10Test(BaseTest):
     edit mirror: change archive url
     """
     requiresFTP = True
-    fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian stretch main"]
+    fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 ftp://ftp.ru.debian.org/debian bullseye main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url ftp://ftp.ch.debian.org/debian mirror10"

@@ -1,6 +1,6 @@
 Name: mirror19
 Archive Root URL: http://security.debian.org/
-Distribution: stretch/updates
+Distribution: bullseye-security/updates
 Components: main
 Architectures: i386
 Download Sources: yes
@@ -10,7 +10,7 @@ Last update: never
 Information from release file:
 Acquire-By-Hash: yes
 Architectures: amd64 arm64 armel armhf i386
-Codename: stretch
+Codename: bullseye
 Components: updates/main updates/contrib updates/non-free
 Description:  Debian 9 Security Updates
 

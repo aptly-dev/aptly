@@ -1,8 +1,9 @@
-import string
-import re
-import os
-import shutil
 import inspect
+import os
+import re
+import shutil
+import string
+
 from lib import BaseTest
 
 
@@ -172,10 +173,10 @@ class UpdateMirror11Test(BaseTest):
     requiresFTP = True
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' "
-        "-architectures=i386 stretch-main https://snapshot.debian.org/archive/debian/20220201T025006Z/ stretch main",
+        "-architectures=i386 bullseye-main https://snapshot.debian.org/archive/debian/20220201T025006Z/ bullseye main",
     ]
     outputMatchPrepare = filterOutSignature
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch-main"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg bullseye-main"
 
 
 class UpdateMirror12Test(BaseTest):
@@ -187,9 +188,9 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs bullseye http://cdn-fastly.deb.debian.org/debian/ bullseye main non-free",
     ]
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg bullseye"
     outputMatchPrepare = filterOutSignature
 
 
@@ -281,9 +282,9 @@ class UpdateMirror17Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev bullseye http://cdn-fastly.deb.debian.org/debian bullseye main",
     ]
-    runCmd = "aptly mirror update -ignore-signatures stretch"
+    runCmd = "aptly mirror update -ignore-signatures bullseye"
 
     def prepare(self):
         super(UpdateMirror17Test, self).prepare()
@@ -308,9 +309,9 @@ class UpdateMirror18Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev bullseye http://cdn-fastly.deb.debian.org/debian bullseye main",
     ]
-    runCmd = "aptly mirror update -ignore-signatures stretch"
+    runCmd = "aptly mirror update -ignore-signatures bullseye"
     configOverride = {'skipLegacyPool': True}
 
     def prepare(self):
@@ -401,9 +402,9 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer bullseye http://cdn-fastly.deb.debian.org/debian/ bullseye main non-free",
     ]
-    runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg bullseye"
     outputMatchPrepare = filterOutSignature
 
 

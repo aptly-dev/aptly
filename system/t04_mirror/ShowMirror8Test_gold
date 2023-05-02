@@ -2,7 +2,7 @@
   "UUID": "548dbdb6-75d6-42ac-80de-d6aff8012f83",
   "Name": "mirror4",
   "ArchiveRoot": "http://security.debian.org/",
-  "Distribution": "stretch/updates",
+  "Distribution": "bullseye-security/updates",
   "Components": [
     "main"
   ],
@@ -16,7 +16,7 @@
   "Meta": {
     "Acquire-By-Hash": "yes",
     "Architectures": "amd64 arm64 armel armhf i386",
-    "Codename": "stretch",
+    "Codename": "bullseye",
     "Components": "updates/main updates/contrib updates/non-free",
     "Date": "Wed, 26 Jan 2022 10:02:07 UTC",
     "Description": " Debian 9 Security Updates\n",

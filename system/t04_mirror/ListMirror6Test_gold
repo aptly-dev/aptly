@@ -2,7 +2,7 @@
   {
     "Name": "mirror1",
     "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
-    "Distribution": "stretch",
+    "Distribution": "bullseye",
     "Components": [
       "main",
       "contrib",
@@ -23,8 +23,8 @@
     "Meta": {
       "Acquire-By-Hash": "yes",
       "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
-      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
-      "Codename": "stretch",
+      "Changelogs": "https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "bullseye",
       "Components": "main contrib non-free",
       "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
       "Description": " Debian 9.13 Released 18 July 2020\n",
@@ -47,7 +47,7 @@
   {
     "Name": "mirror2",
     "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
-    "Distribution": "stretch",
+    "Distribution": "bullseye",
     "Components": [
       "contrib"
     ],
@@ -66,8 +66,8 @@
     "Meta": {
       "Acquire-By-Hash": "yes",
       "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
-      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
-      "Codename": "stretch",
+      "Changelogs": "https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "bullseye",
       "Components": "main contrib non-free",
       "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
       "Description": " Debian 9.13 Released 18 July 2020\n",
@@ -90,7 +90,7 @@
   {
     "Name": "mirror3",
     "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
-    "Distribution": "stretch",
+    "Distribution": "bullseye",
     "Components": [
       "non-free"
     ],
@@ -100,8 +100,8 @@
     "Meta": {
       "Acquire-By-Hash": "yes",
       "Architectures": "amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x",
-      "Changelogs": "http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
-      "Codename": "stretch",
+      "Changelogs": "https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog",
+      "Codename": "bullseye",
       "Components": "main contrib non-free",
       "Date": "Sat, 14 Aug 2021 07:42:00 UTC",
       "Description": " Debian 9.13 Released 18 July 2020\n",

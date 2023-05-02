@@ -1,6 +1,7 @@
-import os
 import hashlib
 import inspect
+import os
+
 from lib import BaseTest, ungzip_if_required
 
 
@@ -982,52 +983,52 @@ class PublishSnapshot35Test(BaseTest):
     configOverride = {"max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
-        "aptly mirror update -keyring=aptlytest.gpg stretch",
-        "aptly snapshot create stretch from mirror stretch",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs bullseye http://cdn-fastly.deb.debian.org/debian/ bullseye main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg bullseye",
+        "aptly snapshot create bullseye from mirror bullseye",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec bullseye"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
         super(PublishSnapshot35Test, self).check()
 
-        self.check_exists('public/dists/stretch/InRelease')
-        self.check_exists('public/dists/stretch/Release')
-        self.check_exists('public/dists/stretch/Release.gpg')
+        self.check_exists('public/dists/bullseye/InRelease')
+        self.check_exists('public/dists/bullseye/Release')
+        self.check_exists('public/dists/bullseye/Release.gpg')
 
-        self.check_exists('public/dists/stretch/main/binary-i386/Release')
-        self.check_exists('public/dists/stretch/main/binary-i386/Packages')
-        self.check_exists('public/dists/stretch/main/binary-i386/Packages.gz')
-        self.check_exists('public/dists/stretch/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/stretch/main/Contents-i386.gz')
+        self.check_exists('public/dists/bullseye/main/binary-i386/Release')
+        self.check_exists('public/dists/bullseye/main/binary-i386/Packages')
+        self.check_exists('public/dists/bullseye/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/bullseye/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/bullseye/main/Contents-i386.gz')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-i386/Release')
+            'public/dists/bullseye/main/debian-installer/binary-i386/Release')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-i386/Packages')
+            'public/dists/bullseye/main/debian-installer/binary-i386/Packages')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-i386/Packages.gz')
+            'public/dists/bullseye/main/debian-installer/binary-i386/Packages.gz')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/stretch/main/Contents-udeb-i386.gz')
-        self.check_exists('public/dists/stretch/main/binary-amd64/Release')
-        self.check_exists('public/dists/stretch/main/binary-amd64/Packages')
-        self.check_exists('public/dists/stretch/main/binary-amd64/Packages.gz')
+            'public/dists/bullseye/main/debian-installer/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/bullseye/main/Contents-udeb-i386.gz')
+        self.check_exists('public/dists/bullseye/main/binary-amd64/Release')
+        self.check_exists('public/dists/bullseye/main/binary-amd64/Packages')
+        self.check_exists('public/dists/bullseye/main/binary-amd64/Packages.gz')
         self.check_exists(
-            'public/dists/stretch/main/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/stretch/main/Contents-amd64.gz')
+            'public/dists/bullseye/main/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/bullseye/main/Contents-amd64.gz')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-amd64/Release')
+            'public/dists/bullseye/main/debian-installer/binary-amd64/Release')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-amd64/Packages')
+            'public/dists/bullseye/main/debian-installer/binary-amd64/Packages')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-amd64/Packages.gz')
+            'public/dists/bullseye/main/debian-installer/binary-amd64/Packages.gz')
         self.check_exists(
-            'public/dists/stretch/main/debian-installer/binary-amd64/Packages.bz2')
-        self.check_exists('public/dists/stretch/main/Contents-udeb-amd64.gz')
-        self.check_not_exists('public/dists/stretch/main/source/Sources')
-        self.check_not_exists('public/dists/stretch/main/source/Sources.gz')
-        self.check_not_exists('public/dists/stretch/main/source/Sources.bz2')
+            'public/dists/bullseye/main/debian-installer/binary-amd64/Packages.bz2')
+        self.check_exists('public/dists/bullseye/main/Contents-udeb-amd64.gz')
+        self.check_not_exists('public/dists/bullseye/main/source/Sources')
+        self.check_not_exists('public/dists/bullseye/main/source/Sources.gz')
+        self.check_not_exists('public/dists/bullseye/main/source/Sources.bz2')
 
         self.check_exists(
             'public/pool/main/g/gnupg2/gpgv-udeb_2.1.18-8~deb9u4_amd64.udeb')
@@ -1038,24 +1039,24 @@ class PublishSnapshot35Test(BaseTest):
         self.check_exists(
             'public/pool/main/g/gnupg2/gpgv_2.1.18-8~deb9u4_i386.deb')
 
-        self.check_file_contents('public/dists/stretch/main/binary-i386/Packages',
+        self.check_file_contents('public/dists/bullseye/main/binary-i386/Packages',
                                  'packages_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-i386/Packages',
+        self.check_file_contents('public/dists/bullseye/main/debian-installer/binary-i386/Packages',
                                  'packages_udeb_i386', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/stretch/main/binary-amd64/Packages',
+        self.check_file_contents('public/dists/bullseye/main/binary-amd64/Packages',
                                  'packages_amd64', match_prepare=sorted_processor)
-        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-amd64/Packages',
+        self.check_file_contents('public/dists/bullseye/main/debian-installer/binary-amd64/Packages',
                                  'packages_udeb_amd64', match_prepare=sorted_processor)
 
         # verify contents except of sums
         self.check_file_contents(
-            'public/dists/stretch/Release', 'release', match_prepare=strip_processor)
+            'public/dists/bullseye/Release', 'release', match_prepare=strip_processor)
 
-        self.check_file_contents('public/dists/stretch/main/debian-installer/binary-i386/Release',
+        self.check_file_contents('public/dists/bullseye/main/debian-installer/binary-i386/Release',
                                  'release_udeb_i386', match_prepare=strip_processor)
 
         # verify sums
-        release = self.read_file('public/dists/stretch/Release').split("\n")
+        release = self.read_file('public/dists/bullseye/Release').split("\n")
         release = [l for l in release if l.startswith(" ")]
         pathsSeen = set()
         for l in release:
@@ -1069,7 +1070,7 @@ class PublishSnapshot35Test(BaseTest):
             fileSize = int(fileSize)
 
             st = os.stat(os.path.join(
-                os.environ["HOME"], ".aptly", 'public/dists/stretch/', path))
+                os.environ["HOME"], ".aptly", 'public/dists/bullseye/', path))
             if fileSize != st.st_size:
                 raise Exception("file size doesn't match for %s: %d != %d" % (
                     path, fileSize, st.st_size))
@@ -1083,7 +1084,7 @@ class PublishSnapshot35Test(BaseTest):
             else:
                 h = hashlib.sha512()
 
-            h.update(self.read_file(os.path.join('public/dists/stretch', path), mode='b'))
+            h.update(self.read_file(os.path.join('public/dists/bullseye', path), mode='b'))
 
             if h.hexdigest() != fileHash:
                 raise Exception("file hash doesn't match for %s: %s != %s" % (
@@ -1139,12 +1140,12 @@ class PublishSnapshot37Test(BaseTest):
     configOverride = {"max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
-        "aptly mirror update -keyring=aptlytest.gpg stretch",
-        "aptly mirror update -keyring=aptlytest.gpg stretch",
-        "aptly snapshot create stretch from mirror stretch",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs bullseye http://cdn-fastly.deb.debian.org/debian/ bullseye main non-free",
+        "aptly mirror update -keyring=aptlytest.gpg bullseye",
+        "aptly mirror update -keyring=aptlytest.gpg bullseye",
+        "aptly snapshot create bullseye from mirror bullseye",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec bullseye"
     gold_processor = BaseTest.expand_environ
 
 
@@ -1155,25 +1156,25 @@ class PublishSnapshot38Test(BaseTest):
     configOverride = {"max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main",
-        "aptly mirror update -keyring=aptlytest.gpg stretch",
-        "aptly snapshot create stretch from mirror stretch",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer bullseye http://cdn-fastly.deb.debian.org/debian/ bullseye main",
+        "aptly mirror update -keyring=aptlytest.gpg bullseye",
+        "aptly snapshot create bullseye from mirror bullseye",
     ]
-    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec bullseye"
     gold_processor = BaseTest.expand_environ
 
     def check(self):
         super(PublishSnapshot38Test, self).check()
         self.check_exists(
-            'public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS')
+            'public/dists/bullseye/main/installer-s390x/current/images/SHA256SUMS')
         self.check_exists(
-            'public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS.gpg')
+            'public/dists/bullseye/main/installer-s390x/current/images/SHA256SUMS.gpg')
         self.check_exists(
-            'public/dists/stretch/main/installer-s390x/current/images/generic/debian.exec')
+            'public/dists/bullseye/main/installer-s390x/current/images/generic/debian.exec')
         self.check_exists(
-            'public/dists/stretch/main/installer-s390x/current/images/MANIFEST')
+            'public/dists/bullseye/main/installer-s390x/current/images/MANIFEST')
 
-        self.check_file_contents('public/dists/stretch/main/installer-s390x/current/images/SHA256SUMS',
+        self.check_file_contents('public/dists/bullseye/main/installer-s390x/current/images/SHA256SUMS',
                                  "installer_s390x", match_prepare=sorted_processor)
 
 

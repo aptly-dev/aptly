@@ -1,22 +1,23 @@
 Name: mirror1
 Archive Root URL: http://cdn-fastly.deb.debian.org/debian/
-Distribution: stretch
+Distribution: bullseye
 Components: main, contrib, non-free
-Architectures: amd64, arm64, armel, armhf, i386, mips, mips64el, mipsel, ppc64el, s390x
+Architectures: all, amd64, arm64, armel, armhf, i386, mips64el, mipsel, ppc64el, s390x
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
 Acquire-By-Hash: yes
-Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
-Changelogs: http://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
-Codename: stretch
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Changelogs: https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
+Codename: bullseye
 Components: main contrib non-free
-Date: Sat, 14 Aug 2021 07:42:00 UTC
-Description:  Debian 9.13 Released 18 July 2020
+Date: Sat, 29 Apr 2023 09:31:02 UTC
+Description:  Debian 11.7 Released 29 April 2023
 
 Label: Debian
+No-Support-For-Architecture-All: Packages
 Origin: Debian
-Suite: oldoldstable
-Version: 9.13
+Suite: stable
+Version: 11.7

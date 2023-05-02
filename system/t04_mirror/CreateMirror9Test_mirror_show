@@ -1,21 +1,23 @@
 Name: mirror9
 Archive Root URL: http://cdn-fastly.deb.debian.org/debian/
-Distribution: stretch-backports
+Distribution: bullseye-backports
 Components: main, contrib, non-free
-Architectures: amd64, arm64, armel, armhf, i386, mips, mips64el, mipsel, ppc64el, s390x
+Architectures: all, amd64, arm64, armel, armhf, i386, mips64el, mipsel, ppc64el, s390x
 Download Sources: no
 Download .udebs: no
 Last update: never
 
 Information from release file:
 Acquire-By-Hash: yes
-Architectures: amd64 arm64 armel armhf i386 mips mips64el mipsel ppc64el s390x
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
 ButAutomaticUpgrades: yes
-Codename: stretch-backports
+Changelogs: https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
+Codename: bullseye-backports
 Components: main contrib non-free
-Description:  Backports for the Stretch distribution
+Description:  Debian 11 - Backports
 
 Label: Debian Backports
+No-Support-For-Architecture-All: Packages
 NotAutomatic: yes
 Origin: Debian Backports
-Suite: stretch-backports
+Suite: bullseye-backports

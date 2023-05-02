@@ -1,7 +1,7 @@
 Origin: Debian
-Label: . stretch
-Archive: stretch
-Suite: stretch
-Codename: stretch
+Label: . bullseye
+Archive: bullseye
+Suite: bullseye
+Codename: bullseye
 Architecture: i386
 Component: main
