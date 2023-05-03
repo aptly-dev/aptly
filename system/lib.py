@@ -3,25 +3,25 @@ Test library.
 """
 
 import difflib
+import http.server
 import inspect
 import json
-import subprocess
 import os
 import posixpath
+import pprint
 import re
 import shlex
 import shutil
+import socketserver
 import string
+import subprocess
 import threading
 import urllib.error
 import urllib.parse
 import urllib.request
-import pprint
-import socketserver
-import http.server
-from uuid import uuid4
-from pathlib import Path
 import zlib
+from pathlib import Path
+from uuid import uuid4
 
 
 def ungzip_if_required(output):
@@ -462,7 +462,7 @@ class BaseTest(object):
             diff = "".join(difflib.unified_diff(
                 [l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
 
-            raise Exception("content doesn't match:\n" + diff + "\n")
+            raise Exception(f"content doesn't match:\n{diff}\nExpected:\n{a}\nReceived:\n{b}\n")
 
     check = check_output
 
