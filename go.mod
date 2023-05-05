@@ -11,8 +11,7 @@ require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/cheggaaa/pb v1.0.10
 	github.com/fatih/color v1.7.0 // indirect
-	github.com/gin-gonic/gin v1.7.7
-	github.com/go-playground/validator/v10 v10.10.1 // indirect
+	github.com/gin-gonic/gin v1.9.0
 	github.com/h2non/filetype v1.0.5
 	github.com/jlaffaye/ftp v0.0.0-20180404123514-2403248fa8cc // indirect
 	github.com/kjk/lzma v0.0.0-20161016003348-3fd93898850d
@@ -34,15 +33,13 @@ require (
 	github.com/smira/go-aws-auth v0.0.0-20180731211914-8b73995fd8d1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
 	github.com/smira/go-xz v0.0.0-20220607140411-c2a07d4bedda
-	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
-	github.com/ugorji/go/codec v1.2.7
+	github.com/ugorji/go/codec v1.2.9
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
-	golang.org/x/sys v0.3.0
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	golang.org/x/crypto v0.5.0
+	golang.org/x/sys v0.5.0
+	golang.org/x/term v0.5.0
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/h2non/filetype.v1 v1.0.1 // indirect
