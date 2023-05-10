@@ -1,7 +1,7 @@
 [
   {
     "Name": "mirror1",
-    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "main",
@@ -46,7 +46,7 @@
   },
   {
     "Name": "mirror2",
-    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "contrib"
@@ -89,7 +89,7 @@
   },
   {
     "Name": "mirror3",
-    "ArchiveRoot": "http://cdn-fastly.deb.debian.org/debian/",
+    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "non-free"

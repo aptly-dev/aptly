@@ -1,5 +1,5 @@
-Downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release...
-Success downloading http://cdn-fastly.deb.debian.org/debian/dists/stretch/Release
+Downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release...
+Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release
 
-Mirror [mirror7]: http://cdn-fastly.deb.debian.org/debian/ stretch successfully added.
+Mirror [mirror7]: http://archive.debian.org/debian-archive/debian/ stretch successfully added.
 You can run 'aptly mirror update mirror7' to download repository contents.

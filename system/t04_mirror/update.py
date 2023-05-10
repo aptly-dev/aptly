@@ -1,8 +1,9 @@
-import string
-import re
-import os
-import shutil
 import inspect
+import os
+import re
+import shutil
+import string
+
 from lib import BaseTest
 
 
@@ -187,7 +188,7 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -281,7 +282,7 @@ class UpdateMirror17Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
 
@@ -308,7 +309,7 @@ class UpdateMirror18Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
@@ -401,7 +402,7 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature

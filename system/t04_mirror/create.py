@@ -7,7 +7,7 @@ class CreateMirror1Test(BaseTest):
     """
     create mirror: all architectures + all components
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch"
 
     def check(self):
         self.check_output()
@@ -18,7 +18,7 @@ class CreateMirror2Test(BaseTest):
     """
     create mirror: all architectures and 1 component
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror2  http://cdn-fastly.deb.debian.org/debian/ stretch main"
+    runCmd = "aptly mirror create --ignore-signatures mirror2  http://archive.debian.org/debian-archive/debian/ stretch main"
 
     def check(self):
         self.check_output()
@@ -29,7 +29,7 @@ class CreateMirror3Test(BaseTest):
     """
     create mirror: some architectures and 2 components
     """
-    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror3 http://cdn-fastly.deb.debian.org/debian/ stretch main contrib"
+    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror3 http://archive.debian.org/debian-archive/debian/ stretch main contrib"
 
     def check(self):
         self.check_output()
@@ -42,7 +42,7 @@ class CreateMirror4Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror4 http://cdn-fastly.deb.debian.org/debian/ stretch life"
+    runCmd = "aptly -architectures=i386,amd64 mirror create --ignore-signatures mirror4 http://archive.debian.org/debian-archive/debian/ stretch life"
 
 
 class CreateMirror5Test(BaseTest):
@@ -51,7 +51,7 @@ class CreateMirror5Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=i386,nano68 mirror create --ignore-signatures mirror5 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly -architectures=i386,nano68 mirror create --ignore-signatures mirror5 http://archive.debian.org/debian-archive/debian/ stretch"
 
 
 class CreateMirror6Test(BaseTest):
@@ -62,14 +62,14 @@ class CreateMirror6Test(BaseTest):
     requiresGPG1 = True
 
     configOverride = {"max-tries": 1}
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://cdn-fastly.deb.debian.org/debian/ suslik"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror6 http://archive.debian.org/debian-archive/debian/ suslik"
 
 
 class CreateMirror7Test(BaseTest):
     """
     create mirror: architectures fixed via config file
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror7 http://cdn-fastly.deb.debian.org/debian/ stretch main contrib"
+    runCmd = "aptly mirror create --ignore-signatures mirror7 http://archive.debian.org/debian-archive/debian/ stretch main contrib"
     configOverride = {"architectures": ["i386", "amd64"]}
 
     def check(self):
@@ -82,9 +82,9 @@ class CreateMirror8Test(BaseTest):
     create mirror: already exists
     """
     fixtureCmds = [
-        "aptly mirror create --ignore-signatures mirror8 http://cdn-fastly.deb.debian.org/debian/ stretch main contrib"
+        "aptly mirror create --ignore-signatures mirror8 http://archive.debian.org/debian-archive/debian/ stretch main contrib"
     ]
-    runCmd = "aptly mirror create --ignore-signatures mirror8 http://cdn-fastly.deb.debian.org/debian/ stretch main contrib"
+    runCmd = "aptly mirror create --ignore-signatures mirror8 http://archive.debian.org/debian-archive/debian/ stretch main contrib"
     expectedCode = 1
 
 
@@ -92,7 +92,7 @@ class CreateMirror9Test(BaseTest):
     """
     create mirror: repo with InRelease verification
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://cdn-fastly.deb.debian.org/debian/ stretch-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://archive.debian.org/debian-archive/debian/ stretch-backports"
     fixtureGpg = True
     requiresGPG1 = True
 
@@ -112,7 +112,7 @@ class CreateMirror10Test(BaseTest):
     """
     create mirror: repo with InRelease verification, failure
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://cdn-fastly.deb.debian.org/debian/ stretch-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://archive.debian.org/debian-archive/debian/ stretch-backports"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     expectedCode = 1
@@ -126,7 +126,7 @@ class CreateMirror11Test(BaseTest):
     create mirror: repo with Release + Release.gpg verification
     """
     configOverride = {"max-tries": 1}
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://archive.debian.org/debian-archive/debian/ stretch"
     fixtureGpg = True
 
     def outputMatchPrepare(self, s):
@@ -142,7 +142,7 @@ class CreateMirror12Test(BaseTest):
     create mirror: repo with Release+Release.gpg verification, failure
     """
     configOverride = {"max-tries": 1}
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror12 http://archive.debian.org/debian-archive/debian/ stretch"
     fixtureGpg = False
     gold_processor = BaseTest.expand_environ
     expectedCode = 1
@@ -155,7 +155,7 @@ class CreateMirror13Test(BaseTest):
     """
     create mirror: skip verification using config file
     """
-    runCmd = "aptly mirror create mirror13 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create mirror13 http://archive.debian.org/debian-archive/debian/ stretch"
     configOverride = {"gpgDisableVerify": True}
 
     def check(self):
@@ -196,14 +196,14 @@ class CreateMirror16Test(BaseTest):
     """
     expectedCode = 1
 
-    runCmd = "aptly -architectures=source mirror create -ignore-signatures mirror16 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly -architectures=source mirror create -ignore-signatures mirror16 http://archive.debian.org/debian-archive/debian/ stretch"
 
 
 class CreateMirror17Test(BaseTest):
     """
     create mirror: mirror with sources enabled
     """
-    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-sources mirror17 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-sources mirror17 http://archive.debian.org/debian-archive/debian/ stretch"
 
     def check(self):
         self.check_output()
@@ -340,7 +340,7 @@ class CreateMirror25Test(BaseTest):
     """
     create mirror: mirror with udebs enabled
     """
-    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-udebs mirror25 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly -architectures=i386 mirror create -ignore-signatures -with-udebs mirror25 http://archive.debian.org/debian-archive/debian/ stretch"
 
     def check(self):
         self.check_output()
@@ -374,7 +374,7 @@ class CreateMirror29Test(BaseTest):
     """
     create mirror: repo with InRelease verification (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://cdn-fastly.deb.debian.org/debian/ stretch-backports"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror9 http://archive.debian.org/debian-archive/debian/ stretch-backports"
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
 
@@ -386,7 +386,7 @@ class CreateMirror30Test(BaseTest):
     """
     create mirror: repo with InRelease verification, failure  (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror10 http://archive.debian.org/debian-archive/debian/ stretch"
     configOverride = {"gpgProvider": "internal", "max-tries": 1}
     gold_processor = BaseTest.expand_environ
     fixtureGpg = False
@@ -400,7 +400,7 @@ class CreateMirror31Test(BaseTest):
     """
     create mirror: repo with Release + Release.gpg verification (internal GPG implementation)
     """
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror11 http://archive.debian.org/debian-archive/debian/ stretch"
     configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
 
@@ -413,7 +413,7 @@ class CreateMirror32Test(BaseTest):
     create mirror: repo with Release + Release.gpg verification (gpg2)
     """
     configOverride = {"max-tries": 1}
-    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://cdn-fastly.deb.debian.org/debian/ stretch"
+    runCmd = "aptly mirror create --keyring=aptlytest.gpg mirror32 http://archive.debian.org/debian-archive/debian/ stretch"
     fixtureGpg = True
     requiresGPG2 = True
 
