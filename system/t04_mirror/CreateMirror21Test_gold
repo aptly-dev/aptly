@@ -9,7 +9,7 @@ Success downloading http://pkg.jenkins-ci.org/debian-stable/binary/Release
 Downloading http://pkg.jenkins-ci.org/debian-stable/binary/Release.gpg...
 Following redirect to https://pkg.jenkins.io/debian-stable/binary/Release.gpg...
 Success downloading http://pkg.jenkins-ci.org/debian-stable/binary/Release.gpg
-gpgv:  RSA key ID 45F2C3D5
+gpgv:  RSA key ID EF5975CA
 gpgv: Good signature from "Jenkins Project <jenkinsci-board@googlegroups.com>"
 
 Mirror [mirror21]: http://pkg.jenkins-ci.org/debian-stable/ ./binary/ successfully added.
