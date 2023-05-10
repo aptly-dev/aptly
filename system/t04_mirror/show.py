@@ -1,12 +1,13 @@
-from lib import BaseTest
 import re
+
+from lib import BaseTest
 
 
 class ShowMirror1Test(BaseTest):
     """
     show mirror: regular mirror
     """
-    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch"]
+    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch"]
     runCmd = "aptly mirror show mirror1"
 
 
@@ -46,7 +47,7 @@ class ShowMirror5Test(BaseTest):
     """
     show mirror: regular mirror
     """
-    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch"]
+    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch"]
     runCmd = "aptly mirror show -json mirror1"
 
     def outputMatchPrepare(_, s):

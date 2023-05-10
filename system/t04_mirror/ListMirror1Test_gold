@@ -1,7 +1,7 @@
 List of mirrors:
- * [mirror1]: http://cdn-fastly.deb.debian.org/debian/ stretch
- * [mirror2]: http://cdn-fastly.deb.debian.org/debian/ stretch [src]
- * [mirror3]: http://cdn-fastly.deb.debian.org/debian/ stretch
+ * [mirror1]: http://archive.debian.org/debian-archive/debian/ stretch
+ * [mirror2]: http://archive.debian.org/debian-archive/debian/ stretch [src]
+ * [mirror3]: http://archive.debian.org/debian-archive/debian/ stretch
  * [mirror4]: http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/ ./
 
 To get more information about mirror, run `aptly mirror show <name>`.
