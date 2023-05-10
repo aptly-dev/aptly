@@ -237,7 +237,7 @@ class CreateMirror19Test(BaseTest):
     """
     fixtureGpg = True
 
-    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://security.debian.org/ stretch/updates main"
+    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://archive.debian.org/debian-security/ stretch/updates main"
 
     def outputMatchPrepare(self, s):
         return re.sub(r'Signature made .* using', '', s)
@@ -258,7 +258,7 @@ class CreateMirror20Test(BaseTest):
     fixtureGpg = True
     configOverride = {"max-tries": 1}
 
-    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://security.debian.org/ stretch/updates main"
+    runCmd = "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror20 http://archive.debian.org/debian-security/ stretch/updates main"
     environmentOverride = {"HTTP_PROXY": "127.0.0.1:3137"}
     expectedCode = 1
 
@@ -270,8 +270,8 @@ class CreateMirror20Test(BaseTest):
         ).replace(
             'proxyconnect tcp', 'http: error connecting to proxy http://127.0.0.1:3137'
         ).replace(
-            'Get http://security.debian.org/dists/stretch/updates/Release:',
-            'Get "http://security.debian.org/dists/stretch/updates/Release":'
+            'Get http://archive.debian.org/debian-security/dists/stretch/updates/Release:',
+            'Get "http://archive.debian.org/debian-security/dists/stretch/updates/Release":'
         )
 
 
@@ -302,7 +302,7 @@ class CreateMirror22Test(BaseTest):
     """
     create mirror: mirror with filter
     """
-    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror22 http://security.debian.org/ stretch/updates main"
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror22 http://archive.debian.org/debian-security/ stretch/updates main"
 
     def check(self):
         def removeDates(s):
@@ -317,7 +317,7 @@ class CreateMirror23Test(BaseTest):
     """
     create mirror: mirror with wrong filter
     """
-    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://security.debian.org/ stretch/updates main"
+    runCmd = "aptly mirror create -ignore-signatures -filter='nginx | ' mirror23 http://archive.debian.org/debian-security/ stretch/updates main"
     expectedCode = 1
 
 
@@ -325,7 +325,7 @@ class CreateMirror24Test(BaseTest):
     """
     create mirror: disable config value with option
     """
-    runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://security.debian.org/ stretch/updates main"
+    runCmd = "aptly mirror create -ignore-signatures=false -keyring=aptlytest.gpg mirror24 http://archive.debian.org/debian-security/ stretch/updates main"
     fixtureGpg = True
 
     def outputMatchPrepare(self, s):

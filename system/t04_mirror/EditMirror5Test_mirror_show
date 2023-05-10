@@ -1,5 +1,5 @@
 Name: mirror5
-Archive Root URL: http://security.debian.org/
+Archive Root URL: http://archive.debian.org/debian-security/
 Distribution: stretch/updates
 Components: main
 Architectures: amd64, arm64, armel, armhf, i386

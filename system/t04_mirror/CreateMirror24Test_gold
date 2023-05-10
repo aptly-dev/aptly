@@ -1,9 +1,9 @@
-Downloading http://security.debian.org/dists/stretch/updates/InRelease...
-Success downloading http://security.debian.org/dists/stretch/updates/InRelease
+Downloading http://archive.debian.org/debian-security/dists/stretch/updates/InRelease...
+Success downloading http://archive.debian.org/debian-security/dists/stretch/updates/InRelease
 gpgv:  RSA key ID 331F7F50
 gpgv: Good signature from "Debian Security Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
 gpgv:  RSA key ID E562B32A
 gpgv: Good signature from "Debian Security Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
 
-Mirror [mirror24]: http://security.debian.org/ stretch/updates successfully added.
+Mirror [mirror24]: http://archive.debian.org/debian-security/ stretch/updates successfully added.
 You can run 'aptly mirror update mirror24' to download repository contents.

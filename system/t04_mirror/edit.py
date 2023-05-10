@@ -49,7 +49,7 @@ class EditMirror5Test(BaseTest):
     edit mirror: remove filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://security.debian.org/ stretch/updates main",
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' mirror5 http://archive.debian.org/debian-security/ stretch/updates main",
     ]
     runCmd = "aptly mirror edit -filter= mirror5"
 

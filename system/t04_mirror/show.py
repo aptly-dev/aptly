@@ -35,7 +35,7 @@ class ShowMirror4Test(BaseTest):
     show mirror: mirror with filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://security.debian.org/ stretch/updates main"
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://archive.debian.org/debian-security/ stretch/updates main"
     ]
     runCmd = "aptly mirror show mirror4"
 
@@ -75,7 +75,7 @@ class ShowMirror8Test(BaseTest):
     show mirror: mirror with filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://security.debian.org/ stretch/updates main"
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://archive.debian.org/debian-security/ stretch/updates main"
     ]
     runCmd = "aptly mirror show -json mirror4"
 
