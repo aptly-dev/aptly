@@ -1,7 +1,7 @@
 {
   "UUID": "548dbdb6-75d6-42ac-80de-d6aff8012f83",
   "Name": "mirror4",
-  "ArchiveRoot": "http://security.debian.org/",
+  "ArchiveRoot": "http://archive.debian.org/debian-security/",
   "Distribution": "stretch/updates",
   "Components": [
     "main"
