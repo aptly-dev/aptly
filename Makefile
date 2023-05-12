@@ -1,4 +1,5 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
+GOPATH=$(shell go env GOPATH)
 TAG="$(shell git describe --tags --always)"
 VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g' | tr -d '\n')
 PACKAGES=context database deb files gpg http query swift s3 utils
@@ -19,7 +20,9 @@ modules:
 	go mod tidy -v
 
 dev:
-	go get -u github.com/laher/goxc
+	PATH=$(BINPATH)/:$(PATH)
+	go get github.com/laher/goxc
+	go install github.com/laher/goxc
 
 check: system/env
 ifeq ($(RUN_LONG_TESTS), yes)
