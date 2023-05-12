@@ -3,25 +3,25 @@ Test library.
 """
 
 import difflib
+import http.server
 import inspect
 import json
-import subprocess
 import os
 import posixpath
+import pprint
 import re
 import shlex
 import shutil
+import socketserver
 import string
+import subprocess
 import threading
 import urllib.error
 import urllib.parse
 import urllib.request
-import pprint
-import socketserver
-import http.server
-from uuid import uuid4
-from pathlib import Path
 import zlib
+from pathlib import Path
+from uuid import uuid4
 
 
 def ungzip_if_required(output):
@@ -457,6 +457,10 @@ class BaseTest(object):
         if match_prepare is not None:
             a = match_prepare(a)
             b = match_prepare(b)
+
+        # strip trailing whitespace and newlines
+        a = a.strip()
+        b = b.strip()
 
         if a != b:
             diff = "".join(difflib.unified_diff(
