@@ -296,7 +296,7 @@ class BaseTest(object):
             if is_aptly_command:
                 # remove the last two rows as go tests always print PASS/FAIL and coverage in those
                 # two lines. This would otherwise fail the tests as they would not match gold
-                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))
+                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n", raw_output.decode("utf-8"))
                 if not matches:
                     raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
 
