@@ -310,6 +310,8 @@ github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d h1:rvtR4+9N2
 github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d/go.mod h1:Jm7yHrROA5tC42gyJ5EwiR8EWp0PUy0qOc4sE7Y8Uzo=
 github.com/smira/go-xz v0.0.0-20220607140411-c2a07d4bedda h1:WWMF6Bz2r8/91uUs4ZYk10zSSflqHDE5Ot3/s1yz+x4=
 github.com/smira/go-xz v0.0.0-20220607140411-c2a07d4bedda/go.mod h1:RdN8UkuBr4amSnXBHKWkn6p1mXqYjHw+Yvxz8gQfU5A=
+github.com/smira/go-xz v0.1.0 h1:1zVLT1sITUKcWNysfHMLZWJ2Yh7yJfhREsgmUdK4zb0=
+github.com/smira/go-xz v0.1.0/go.mod h1:OmdEWnIIkuLzRLHGF4YtjDzF9VFUevEcP6YxDPRqVrs=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
