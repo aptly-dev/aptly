@@ -33,7 +33,7 @@ require (
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-aws-auth v0.0.0-20180731211914-8b73995fd8d1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
-	github.com/smira/go-xz v0.0.0-20220607140411-c2a07d4bedda
+	github.com/smira/go-xz v0.1.0
 	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go/codec v1.2.7
