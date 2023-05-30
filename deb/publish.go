@@ -773,6 +773,44 @@ func (p *PublishedRepo) GetCodename() string {
 	return p.Codename
 }
 
+// GetAddonFiles returns a map of files to be added to a repo. Key being the relative
+// path from component folder, and value being the full local FS path.
+func (p *PublishedRepo) GetAddonFiles(addonDir string, component string) (map[string]string, error) {
+	files := make(map[string]string)
+
+	if addonDir == "" {
+		return files, nil
+	}
+
+	fsPath := filepath.Join(addonDir, p.Prefix, "dists", p.Distribution, component)
+	if err := filepath.Walk(fsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !stat.Mode().IsRegular() {
+			return nil
+		}
+
+		relativePath, err := filepath.Rel(fsPath, path)
+		if err != nil {
+			return err
+		}
+
+		files[relativePath] = path
+		return nil
+	}); err != nil && !os.IsNotExist(err) {
+		return files, err
+	}
+
+	return files, nil
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
