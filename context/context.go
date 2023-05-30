@@ -527,6 +527,11 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	return pgp.NewGpgVerifier(context.getGPGFinder())
 }
 
+// AddonPath builds the local addon folder
+func (context *AptlyContext) AddonPath() string {
+	return filepath.Join(context.config().RootDir, "addon")
+}
+
 // UpdateFlags sets internal copy of flags in the context
 func (context *AptlyContext) UpdateFlags(flags *flag.FlagSet) {
 	context.Lock()
