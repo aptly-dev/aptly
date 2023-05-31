@@ -888,3 +888,61 @@ class PublishRepo33Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages')
         self.check_exists('public/dists/maverick/main/binary-amd64/Packages.gz')
         self.check_not_exists('public/dists/maverick/main/binary-amd64/Packages.bz2')
+
+
+class PublishRepo34Test(BaseTest):
+    """
+    publish repo: addon files
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}"
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-contents local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def prepare_fixture(self):
+        super(PublishRepo34Test, self).prepare_fixture()
+
+        self.write_file(os.path.join('addon', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
+
+    def check(self):
+        super(PublishRepo34Test, self).check()
+
+        self.check_exists('public/dists/maverick/main/dep11/README')
+
+        self.check_exists('public/dists/maverick/Release')
+
+        readme = self.read_file('public/dists/maverick/main/dep11/README')
+        if readme != 'README test file':
+            raise Exception("README file not copied on publish")
+
+        release = self.read_file('public/dists/maverick/Release').split("\n")
+        release = [l for l in release if l.startswith(" ")]
+        pathsSeen = set()
+        for l in release:
+            fileHash, fileSize, path = l.split()
+            pathsSeen.add(path)
+
+            fileSize = int(fileSize)
+
+            st = os.stat(os.path.join(os.environ["HOME"], ".aptly", 'public/dists/maverick/', path))
+            if fileSize != st.st_size:
+                raise Exception("file size doesn't match for %s: %d != %d" % (path, fileSize, st.st_size))
+
+            if len(fileHash) == 32:
+                h = hashlib.md5()
+            elif len(fileHash) == 40:
+                h = hashlib.sha1()
+            elif len(fileHash) == 64:
+                h = hashlib.sha256()
+            else:
+                h = hashlib.sha512()
+
+            h.update(self.read_file(os.path.join('public/dists/maverick', path), mode='b'))
+
+            if h.hexdigest() != fileHash:
+                raise Exception("file hash doesn't match for %s: %s != %s" % (path, fileHash, h.hexdigest()))
+
+        if 'main/dep11/README' not in pathsSeen:
+            raise Exception("README file not included in release file")
