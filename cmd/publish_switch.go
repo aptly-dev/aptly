@@ -100,7 +100,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		published.SkipBz2 = context.Flags().Lookup("skip-bz2").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.AddonPath(), context.Progress(), forceOverwrite)
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.SkelPath(), context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
