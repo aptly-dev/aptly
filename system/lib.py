@@ -367,6 +367,15 @@ class BaseTest(object):
             else:
                 raise
 
+    def write_file(self, path, content):
+        full_path = os.path.join(os.environ["HOME"], ".aptly", path)
+
+        if not os.path.exists(os.path.dirname(full_path)):
+            os.makedirs(os.path.dirname(full_path), 0o755)
+
+        with open(full_path, "w") as f:
+            f.write(content)
+
     def read_file(self, path, mode=''):
         with open(os.path.join(os.environ["HOME"], self.aptlyDir, path), "r" + mode) as f:
             return f.read()
