@@ -892,7 +892,7 @@ class PublishRepo33Test(BaseTest):
 
 class PublishRepo34Test(BaseTest):
     """
-    publish repo: addon files
+    publish repo: skeleton files
     """
     fixtureCmds = [
         "aptly repo create local-repo",
@@ -904,7 +904,7 @@ class PublishRepo34Test(BaseTest):
     def prepare_fixture(self):
         super(PublishRepo34Test, self).prepare_fixture()
 
-        self.write_file(os.path.join('addon', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
+        self.write_file(os.path.join('skel', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
 
     def check(self):
         super(PublishRepo34Test, self).check()

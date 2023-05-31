@@ -103,7 +103,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, context.AddonPath())
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, context.SkelPath())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
