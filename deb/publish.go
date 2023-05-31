@@ -813,7 +813,7 @@ func (p *PublishedRepo) GetAddonFiles(addonDir string, component string) (map[st
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite, addonDirectory string) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -1018,6 +1018,30 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				_, err = index.WriteTo(bufWriter)
 				if err != nil {
 					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+			}
+		}
+
+		for component := range p.sourceItems {
+			addonFiles, err := p.GetAddonFiles(addonDirectory, component)
+			if err != nil {
+				return fmt.Errorf("unable to get addon files: %v", err)
+			}
+
+			for relPath, absPath := range addonFiles {
+				bufWriter, err := indexes.AddonIndex(component, relPath).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to generate addon index: %v", err)
+				}
+
+				file, err := os.Open(absPath)
+				if err != nil {
+					return fmt.Errorf("unable to read addon file: %v", err)
+				}
+
+				_, err = bufio.NewReader(file).WriteTo(bufWriter)
+				if err != nil {
+					return fmt.Errorf("unable to write addon file: %v", err)
 				}
 			}
 		}
