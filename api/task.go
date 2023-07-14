@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -145,7 +144,7 @@ func apiTasksDelete(c *gin.Context) {
 // POST /tasks-dummy
 func apiTasksDummy(c *gin.Context) {
 	resources := []string{"dummy"}
-	taskName := fmt.Sprintf("Dummy task")
+	taskName := "Dummy task"
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		out.Printf("Dummy task started\n")
 		detail.Store([]int{1, 2, 3})
