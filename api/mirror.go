@@ -157,7 +157,7 @@ func apiMirrorsDrop(c *gin.Context) {
 			snapshots := snapshotCollection.ByRemoteRepoSource(repo)
 
 			if len(snapshots) > 0 {
-				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
+				return &task.ProcessReturnValue{Code: http.StatusForbidden, Value: nil}, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
 			}
 		}
 
