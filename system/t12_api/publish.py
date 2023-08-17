@@ -750,3 +750,43 @@ class ServePublishedNotFoundTestRepo(APITest):
         get = self.get("/repos/apiandserve/pool/main/b/boost-defaults/i-dont-exist")
         if get.status_code != 404:
             raise Exception(f"Expected status 404 != {get.status_code}")
+
+
+class PublishWithoutBadgeAndNoPassphraseShouldError(APITest):
+    """
+    POST /publish/:prefix (local repos), GET /publish
+    """
+    def check(self):
+        repo_name = self.random_name()
+        snapshot_name = self.random_name()
+        self.check_equal(
+            self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+
+        self.check_equal(self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name}).json()['State'], TASK_SUCCEEDED)
+
+        prefix = self.random_name()
+        resp = self.post(
+            "/api/publish/" + prefix,
+            json={
+                "SourceKind": "snapshot",
+                "Sources": [{"Name": snapshot_name}],
+                "Signing": {
+                    "Batch": False,
+                    "Keyring": os.path.join(os.path.dirname(inspect.getsourcefile(APITest)), "files") + "/aptly_passphrase.pub",
+                    "SecretKeyring": os.path.join(os.path.dirname(inspect.getsourcefile(APITest)), "files") + "/aptly_passphrase.sec",
+                },
+                "Distribution": "squeeze",
+                "NotAutomatic": "yes",
+                "ButAutomaticUpgrades": "yes",
+                "Origin": "earth",
+                "Label": "fun",
+            },
+            timeout=2
+        )
+        self.check_equal(resp.json()["error"], "unable to publish: unable to detached sign file: exit status 2")
