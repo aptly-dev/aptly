@@ -771,7 +771,7 @@ class PublishWithoutBadgeAndNoPassphraseShouldError(APITest):
         self.check_equal(self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name}).json()['State'], TASK_SUCCEEDED)
 
         prefix = self.random_name()
-        resp = self.post(
+        resp = self.post_task(
             "/api/publish/" + prefix,
             json={
                 "SourceKind": "snapshot",
@@ -786,7 +786,7 @@ class PublishWithoutBadgeAndNoPassphraseShouldError(APITest):
                 "ButAutomaticUpgrades": "yes",
                 "Origin": "earth",
                 "Label": "fun",
-            },
-            timeout=2
+            }
         )
+        self.check_equal(resp.json(), {})
         self.check_equal(resp.json()["error"], "unable to publish: unable to detached sign file: exit status 2")
