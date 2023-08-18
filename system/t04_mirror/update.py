@@ -385,7 +385,7 @@ class UpdateMirror22Test(BaseTest):
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 ./"
+        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
 
