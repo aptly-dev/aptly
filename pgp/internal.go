@@ -46,7 +46,8 @@ type GoSigner struct {
 	signerConfig  *packet.Config
 }
 
-// SetBatch controls whether we allowed to interact with user
+// SetBatch controls whether we allowed to interact with user, for example
+// for getting the passphrase from stdin.
 func (g *GoSigner) SetBatch(batch bool) {
 	g.batch = batch
 }
