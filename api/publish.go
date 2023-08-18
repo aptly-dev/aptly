@@ -16,7 +16,6 @@ import (
 // SigningOptions is a shared between publish API GPG options structure
 type SigningOptions struct {
 	Skip           bool
-	Batch          bool
 	GpgKey         string
 	Keyring        string
 	SecretKeyring  string
@@ -33,7 +32,9 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	signer.SetKey(options.GpgKey)
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)
-	signer.SetBatch(options.Batch)
+
+	// If Batch is false, GPG will ask for passphrase on stdin, which would block the api process
+	signer.SetBatch(true)
 
 	err := signer.Init()
 	if err != nil {
