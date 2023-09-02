@@ -553,4 +553,5 @@ func apiMirrorsUpdate(c *gin.Context) {
 		log.Info().Msgf("%s: Mirror updated successfully!\n", b.Name)
 		return &task.ProcessReturnValue{Code: http.StatusNoContent, Value: nil}, nil
 	})
+	c.JSON(204, gin.H{"task": "OK"})
 }
