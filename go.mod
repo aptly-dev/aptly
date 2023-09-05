@@ -26,6 +26,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
+	github.com/saracen/walker v0.1.3
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
@@ -91,6 +92,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -6,8 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/saracen/walker"
 )
 
 func verifyPath(path string) bool {
@@ -34,17 +36,16 @@ func verifyDir(c *gin.Context) bool {
 // GET /files
 func apiFilesListDirs(c *gin.Context) {
 	list := []string{}
+	listLock := &sync.Mutex{}
 
-	err := filepath.Walk(context.UploadPath(), func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
+	err := walker.Walk(context.UploadPath(), func(path string, info os.FileInfo) error {
 		if path == context.UploadPath() {
 			return nil
 		}
 
 		if info.IsDir() {
+			listLock.Lock()
+			defer listLock.Unlock()
 			list = append(list, filepath.Base(path))
 			return filepath.SkipDir
 		}
@@ -121,17 +122,16 @@ func apiFilesListFiles(c *gin.Context) {
 	}
 
 	list := []string{}
+	listLock := &sync.Mutex{}
 	root := filepath.Join(context.UploadPath(), c.Params.ByName("dir"))
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
+	err := walker.Walk(root, func(path string, info os.FileInfo) error {
 		if path == root {
 			return nil
 		}
 
+		listLock.Lock()
+		defer listLock.Unlock()
 		list = append(list, filepath.Base(path))
 
 		return nil
