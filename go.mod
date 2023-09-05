@@ -104,6 +104,9 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.38.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
