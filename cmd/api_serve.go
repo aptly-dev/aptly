@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	stdcontext "context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/aptly-dev/aptly/api"
 	"github.com/aptly-dev/aptly/systemd/activation"
@@ -55,6 +59,17 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	listen := context.Flags().Lookup("listen").Value.String()
 	fmt.Printf("\nStarting web server at: %s (press Ctrl+C to quit)...\n", listen)
 
+	server := http.Server{Handler: api.Router(context)}
+
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	go (func() {
+		if _, ok := <-sigchan; ok {
+			server.Shutdown(stdcontext.Background())
+		}
+	})()
+	defer close(sigchan)
+
 	listenURL, err := url.Parse(listen)
 	if err == nil && listenURL.Scheme == "unix" {
 		file := listenURL.Path
@@ -67,19 +82,17 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 		}
 		defer listener.Close()
 
-		err = http.Serve(listener, api.Router(context))
-		if err != nil {
-			return fmt.Errorf("unable to serve: %s", err)
-		}
-		return nil
+		err = server.Serve(listener)
+	} else {
+		server.Addr = listen
+		err = server.ListenAndServe()
 	}
 
-	err = http.ListenAndServe(listen, api.Router(context))
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("unable to serve: %s", err)
 	}
 
-	return err
+	return nil
 }
 
 func makeCmdAPIServe() *commander.Command {
