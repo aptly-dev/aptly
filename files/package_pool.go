@@ -5,10 +5,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 	"syscall"
 
 	"github.com/pborman/uuid"
+	"github.com/saracen/walker"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
@@ -98,13 +100,13 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 	}
 
 	result := []string{}
+	resultLock := &sync.Mutex{}
 
 	for _, dir := range dirs {
-		err = filepath.Walk(filepath.Join(pool.rootPath, dir.Name()), func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
+		err = walker.Walk(filepath.Join(pool.rootPath, dir.Name()), func(path string, info os.FileInfo) error {
 			if !info.IsDir() {
+				resultLock.Lock()
+				defer resultLock.Unlock()
 				result = append(result, path[len(pool.rootPath)+1:])
 			}
 			return nil
@@ -118,6 +120,7 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 		}
 	}
 
+	sort.Strings(result)
 	return result, nil
 }
 
