@@ -296,7 +296,7 @@ class BaseTest(object):
             if is_aptly_command:
                 # remove the last two rows as go tests always print PASS/FAIL and coverage in those
                 # two lines. This would otherwise fail the tests as they would not match gold
-                match = re.search(r"EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))
+                match = re.search(r"EXIT: (\d)\n.*\n.*coverage: .*", raw_output.decode("utf-8"))
                 if match is None:
                     raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
 
