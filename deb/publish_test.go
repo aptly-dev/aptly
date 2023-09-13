@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -450,13 +451,22 @@ type PublishedRepoCollectionSuite struct {
 var _ = Suite(&PublishedRepoCollectionSuite{})
 
 func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
+	s.SetUpPackages()
+
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.factory = NewCollectionFactory(s.db)
 
 	s.snapshotCollection = s.factory.SnapshotCollection()
 
-	s.snap1 = NewSnapshotFromPackageList("snap1", []*Snapshot{}, NewPackageList(), "desc1")
-	s.snap2 = NewSnapshotFromPackageList("snap2", []*Snapshot{}, NewPackageList(), "desc2")
+	snap1Refs := NewPackageRefList()
+	snap1Refs.Refs = [][]byte{s.p1.Key(""), s.p2.Key("")}
+	sort.Sort(snap1Refs)
+	s.snap1 = NewSnapshotFromRefList("snap1", []*Snapshot{}, snap1Refs, "desc1")
+
+	snap2Refs := NewPackageRefList()
+	snap2Refs.Refs = [][]byte{s.p3.Key("")}
+	sort.Sort(snap2Refs)
+	s.snap2 = NewSnapshotFromRefList("snap2", []*Snapshot{}, snap2Refs, "desc2")
 
 	s.snapshotCollection.Add(s.snap1)
 	s.snapshotCollection.Add(s.snap2)
@@ -534,7 +544,7 @@ func (s *PublishedRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.sourceItems["main"].snapshot, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
 	c.Assert(r.Sources["main"], Equals, s.repo1.sourceItems["main"].snapshot.UUID)
-	c.Assert(r.RefList("main").Len(), Equals, 0)
+	c.Assert(r.RefList("main").Len(), Equals, 2)
 
 	r, err = collection.ByStoragePrefixDistribution("", "ppa", "precise")
 	c.Assert(err, IsNil)
@@ -623,6 +633,51 @@ func (s *PublishedRepoCollectionSuite) TestByLocalRepo(c *C) {
 	c.Check(s.collection.Add(s.repo5), IsNil)
 
 	c.Check(s.collection.ByLocalRepo(s.localRepo), DeepEquals, []*PublishedRepo{s.repo4, s.repo5})
+}
+
+func (s *PublishedRepoCollectionSuite) TestListReferencedFiles(c *C) {
+	c.Check(s.factory.PackageCollection().Update(s.p1), IsNil)
+	c.Check(s.factory.PackageCollection().Update(s.p2), IsNil)
+	c.Check(s.factory.PackageCollection().Update(s.p3), IsNil)
+
+	c.Check(s.collection.Add(s.repo1), IsNil)
+	c.Check(s.collection.Add(s.repo2), IsNil)
+	c.Check(s.collection.Add(s.repo4), IsNil)
+	c.Check(s.collection.Add(s.repo5), IsNil)
+
+	files, err := s.collection.listReferencedFilesByComponent(".", []string{"main", "contrib"}, s.factory, nil)
+	c.Assert(err, IsNil)
+	for _, v := range files {
+		sort.Strings(v)
+	}
+	c.Check(files, DeepEquals, map[string][]string{
+		"contrib": {
+			"a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			"a/alien-arena/mars-invaders_7.40-2_i386.deb",
+		},
+		"main": {"a/alien-arena/lonely-strangers_7.40-2_i386.deb"},
+	})
+
+	snap3 := NewSnapshotFromRefList("snap3", []*Snapshot{}, s.snap2.RefList(), "desc3")
+	s.snapshotCollection.Add(snap3)
+
+	// Ensure that adding a second publish point with matching files doesn't give duplicate results.
+	repo3, err := NewPublishedRepo("", "", "anaconda-2", []string{}, []string{"main"}, []interface{}{snap3}, s.factory)
+	c.Check(err, IsNil)
+	c.Check(s.collection.Add(repo3), IsNil)
+
+	files, err = s.collection.listReferencedFilesByComponent(".", []string{"main", "contrib"}, s.factory, nil)
+	c.Assert(err, IsNil)
+	for _, v := range files {
+		sort.Strings(v)
+	}
+	c.Check(files, DeepEquals, map[string][]string{
+		"contrib": {
+			"a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			"a/alien-arena/mars-invaders_7.40-2_i386.deb",
+		},
+		"main": {"a/alien-arena/lonely-strangers_7.40-2_i386.deb"},
+	})
 }
 
 type PublishedRepoRemoveSuite struct {
