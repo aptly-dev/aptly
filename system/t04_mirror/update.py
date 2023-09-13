@@ -115,7 +115,7 @@ class UpdateMirror7Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
@@ -143,7 +143,7 @@ class UpdateMirror9Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -156,7 +156,7 @@ class UpdateMirror10Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -354,7 +354,7 @@ class UpdateMirror20Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     configOverride = {"gpgProvider": "internal"}
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"

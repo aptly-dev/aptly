@@ -167,7 +167,7 @@ class CreateMirror14Test(BaseTest):
     """
     create mirror: flat repository
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian jessie-cran35/"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian bullseye-cran40/"
     fixtureGpg = True
 
     def outputMatchPrepare(self, s):
@@ -186,7 +186,7 @@ class CreateMirror15Test(BaseTest):
     """
     create mirror: flat repository + components
     """
-    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian jessie-cran35/ main"
+    runCmd = "aptly mirror create -keyring=aptlytest.gpg mirror14  https://cloud.r-project.org/bin/linux/debian bullseye-cran40/ main"
     expectedCode = 1
 
 
