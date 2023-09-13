@@ -1141,18 +1141,10 @@ func (collection *PublishedRepoCollection) Len() int {
 	return len(collection.list)
 }
 
-// CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
-func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix string, components []string,
-	publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, progress aptly.Progress) error {
-
-	collection.loadList()
-
-	var err error
+func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix string, components []string,
+	collectionFactory *CollectionFactory, progress aptly.Progress) (map[string][]string, error) {
 	referencedFiles := map[string][]string{}
-
-	if progress != nil {
-		progress.Printf("Cleaning up prefix %#v components %s...\n", prefix, strings.Join(components, ", "))
-	}
+	processedComponentRefs := map[string]*PackageRefList{}
 
 	for _, r := range collection.list {
 		if r.Prefix == prefix {
@@ -1171,16 +1163,28 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 				continue
 			}
 
-			err = collection.LoadComplete(r, collectionFactory)
-			if err != nil {
-				return err
+			if err := collection.LoadComplete(r, collectionFactory); err != nil {
+				return nil, err
 			}
 
 			for _, component := range components {
 				if utils.StrSliceHasItem(repoComponents, component) {
-					packageList, err := NewPackageListFromRefList(r.RefList(component), collectionFactory.PackageCollection(), progress)
+					unseenRefs := r.RefList(component)
+					processedRefs := processedComponentRefs[component]
+					if processedRefs != nil {
+						unseenRefs = unseenRefs.Subtract(processedRefs)
+					} else {
+						processedRefs = NewPackageRefList()
+					}
+
+					if unseenRefs.Len() == 0 {
+						continue
+					}
+					processedComponentRefs[component] = processedRefs.Merge(unseenRefs, false, true)
+
+					packageList, err := NewPackageListFromRefList(unseenRefs, collectionFactory.PackageCollection(), progress)
 					if err != nil {
-						return err
+						return nil, err
 					}
 
 					packageList.ForEach(func(p *Package) error {
@@ -1198,6 +1202,24 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix st
 				}
 			}
 		}
+	}
+
+	return referencedFiles, nil
+}
+
+// CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
+func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(prefix string, components []string,
+	publishedStorage aptly.PublishedStorage, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+
+	collection.loadList()
+
+	if progress != nil {
+		progress.Printf("Cleaning up prefix %#v components %s...\n", prefix, strings.Join(components, ", "))
+	}
+
+	referencedFiles, err := collection.listReferencedFilesByComponent(prefix, components, collectionFactory, progress)
+	if err != nil {
+		return err
 	}
 
 	for _, component := range components {
