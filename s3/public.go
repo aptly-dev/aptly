@@ -131,7 +131,7 @@ func (storage *PublishedStorage) String() string {
 }
 
 // MkDir creates directory recursively under public path
-func (storage *PublishedStorage) MkDir(path string) error {
+func (storage *PublishedStorage) MkDir(_ string) error {
 	// no op for S3
 	return nil
 }
@@ -232,7 +232,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 }
 
 // RemoveDirs removes directory structure under public path
-func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
+func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error {
 	const page = 1000
 
 	filelist, _, err := storage.internalFilelist(path, false)

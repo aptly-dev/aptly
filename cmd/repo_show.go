@@ -25,7 +25,7 @@ func aptlyRepoShow(cmd *commander.Command, args []string) error {
 	return aptlyRepoShowTxt(cmd, args)
 }
 
-func aptlyRepoShowTxt(cmd *commander.Command, args []string) error {
+func aptlyRepoShowTxt(_ *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
@@ -58,7 +58,7 @@ func aptlyRepoShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyRepoShowJSON(cmd *commander.Command, args []string) error {
+func aptlyRepoShowJSON(_ *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]

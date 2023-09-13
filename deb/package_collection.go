@@ -317,7 +317,7 @@ func (collection *PackageCollection) Scan(q PackageQuery) (result *PackageList) 
 }
 
 // Search is not implemented
-func (collection *PackageCollection) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
+func (collection *PackageCollection) Search(_ Dependency, _ bool) (searchResults []*Package) {
 	panic("Not implemented")
 }
 

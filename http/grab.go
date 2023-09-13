@@ -114,7 +114,7 @@ func (d *GrabDownloader) maybeSetupChecksum(req *grab.Request, expected *utils.C
 	return nil
 }
 
-func (d *GrabDownloader) download(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
+func (d *GrabDownloader) download(_ context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	// TODO clean up dest dir on permanent failure
 	d.log("Download %s -> %s\n", url, destination)
 
@@ -155,7 +155,7 @@ func (d *GrabDownloader) GetProgress() aptly.Progress {
 	return d.progress
 }
 
-func (d *GrabDownloader) GetLength(ctx context.Context, url string) (int64, error) {
+func (d *GrabDownloader) GetLength(_ context.Context, url string) (int64, error) {
 	resp, err := http.Head(url)
 	if err != nil {
 		return -1, err

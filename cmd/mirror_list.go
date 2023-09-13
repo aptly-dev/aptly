@@ -24,7 +24,7 @@ func aptlyMirrorList(cmd *commander.Command, args []string) error {
 	return aptlyMirrorListTxt(cmd, args)
 }
 
-func aptlyMirrorListTxt(cmd *commander.Command, args []string) error {
+func aptlyMirrorListTxt(cmd *commander.Command, _ []string) error {
 	var err error
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
@@ -65,7 +65,7 @@ func aptlyMirrorListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyMirrorListJSON(cmd *commander.Command, args []string) error {
+func aptlyMirrorListJSON(_ *commander.Command, _ []string) error {
 	var err error
 
 	repos := make([]*deb.RemoteRepo, context.NewCollectionFactory().RemoteRepoCollection().Len())
