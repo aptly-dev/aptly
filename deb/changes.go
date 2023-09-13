@@ -220,12 +220,12 @@ func (c *Changes) GetField(field string) string {
 }
 
 // MatchesDependency implements PackageLike interface
-func (c *Changes) MatchesDependency(d Dependency) bool {
+func (c *Changes) MatchesDependency(_ Dependency) bool {
 	return false
 }
 
 // MatchesArchitecture implements PackageLike interface
-func (c *Changes) MatchesArchitecture(arch string) bool {
+func (c *Changes) MatchesArchitecture(_ string) bool {
 	return false
 }
 

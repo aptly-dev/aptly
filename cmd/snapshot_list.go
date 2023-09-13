@@ -23,7 +23,7 @@ func aptlySnapshotList(cmd *commander.Command, args []string) error {
 	return aptlySnapshotListTxt(cmd, args)
 }
 
-func aptlySnapshotListTxt(cmd *commander.Command, args []string) error {
+func aptlySnapshotListTxt(cmd *commander.Command, _ []string) error {
 	var err error
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
@@ -59,7 +59,7 @@ func aptlySnapshotListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlySnapshotListJSON(cmd *commander.Command, args []string) error {
+func aptlySnapshotListJSON(cmd *commander.Command, _ []string) error {
 	var err error
 
 	sortMethodString := cmd.Flag.Lookup("sort").Value.Get().(string)

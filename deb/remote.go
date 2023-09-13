@@ -428,7 +428,7 @@ ok:
 }
 
 // DownloadPackageIndexes downloads & parses package index files
-func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, verifier pgp.Verifier, collectionFactory *CollectionFactory,
+func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.Downloader, verifier pgp.Verifier, _ *CollectionFactory,
 	ignoreMismatch bool) error {
 	if repo.packageList != nil {
 		panic("packageList != nil")

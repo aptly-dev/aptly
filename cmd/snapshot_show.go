@@ -25,7 +25,7 @@ func aptlySnapshotShow(cmd *commander.Command, args []string) error {
 	return aptlySnapshotShowTxt(cmd, args)
 }
 
-func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
+func aptlySnapshotShowTxt(_ *commander.Command, args []string) error {
 	var err error
 	name := args[0]
 	collectionFactory := context.NewCollectionFactory()
@@ -85,7 +85,7 @@ func aptlySnapshotShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlySnapshotShowJSON(cmd *commander.Command, args []string) error {
+func aptlySnapshotShowJSON(_ *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]

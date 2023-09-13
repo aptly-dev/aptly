@@ -63,12 +63,12 @@ func (t *Output) Flush() {
 }
 
 // InitBar is needed for progress compatibility
-func (t *Output) InitBar(count int64, isBytes bool, barType aptly.BarType) {
+func (t *Output) InitBar(_ int64, _ bool, _ aptly.BarType) {
 	// Not implemented
 }
 
 // InitBar publish output specific
-func (t *PublishOutput) InitBar(count int64, isBytes bool, barType aptly.BarType) {
+func (t *PublishOutput) InitBar(count int64, _ bool, barType aptly.BarType) {
 	t.barType = &barType
 	if barType == aptly.BarPublishGeneratePackageFiles {
 		t.TotalNumberOfPackages = count
@@ -88,12 +88,12 @@ func (t *PublishOutput) ShutdownBar() {
 }
 
 // AddBar is needed for progress compatibility
-func (t *Output) AddBar(count int) {
+func (t *Output) AddBar(_ int) {
 	// Not implemented
 }
 
 // AddBar publish output specific
-func (t *PublishOutput) AddBar(count int) {
+func (t *PublishOutput) AddBar(_ int) {
 	if t.barType != nil && *t.barType == aptly.BarPublishGeneratePackageFiles {
 		t.RemainingNumberOfPackages--
 		t.Store(t)
@@ -101,7 +101,7 @@ func (t *PublishOutput) AddBar(count int) {
 }
 
 // SetBar sets current position for progress bar
-func (t *Output) SetBar(count int) {
+func (t *Output) SetBar(_ int) {
 	// Not implemented
 }
 
@@ -123,5 +123,5 @@ func (t *Output) ColoredPrintf(msg string, a ...interface{}) {
 
 // PrintfStdErr does printf but in safe manner to output
 func (t *Output) PrintfStdErr(msg string, a ...interface{}) {
-	t.WriteString(msg)
+	t.WriteString(fmt.Sprintf(msg, a...))
 }

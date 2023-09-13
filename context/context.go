@@ -457,7 +457,7 @@ func (context *AptlyContext) pgpProvider() string {
 	return provider
 }
 
-func (context *AptlyContext) getGPGFinder(provider string) pgp.GPGFinder {
+func (context *AptlyContext) getGPGFinder() pgp.GPGFinder {
 	switch context.pgpProvider() {
 	case "gpg1":
 		return pgp.GPG1Finder()
@@ -480,7 +480,7 @@ func (context *AptlyContext) GetSigner() pgp.Signer {
 		return &pgp.GoSigner{}
 	}
 
-	return pgp.NewGpgSigner(context.getGPGFinder(provider))
+	return pgp.NewGpgSigner(context.getGPGFinder())
 }
 
 // GetVerifier returns Verifier with respect to provider
@@ -493,7 +493,7 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 		return &pgp.GoVerifier{}
 	}
 
-	return pgp.NewGpgVerifier(context.getGPGFinder(provider))
+	return pgp.NewGpgVerifier(context.getGPGFinder())
 }
 
 // UpdateFlags sets internal copy of flags in the context

@@ -68,7 +68,7 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 	return downloader
 }
 
-func (downloader *downloaderImpl) checkRedirect(req *http.Request, via []*http.Request) error {
+func (downloader *downloaderImpl) checkRedirect(req *http.Request, _ []*http.Request) error {
 	if downloader.progress != nil {
 		downloader.progress.Printf("Following redirect to %s...\n", req.URL)
 	}

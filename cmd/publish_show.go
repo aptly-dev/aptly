@@ -24,7 +24,7 @@ func aptlyPublishShow(cmd *commander.Command, args []string) error {
 	return aptlyPublishShowTxt(cmd, args)
 }
 
-func aptlyPublishShowTxt(cmd *commander.Command, args []string) error {
+func aptlyPublishShowTxt(_ *commander.Command, args []string) error {
 	var err error
 
 	distribution := args[0]
@@ -76,7 +76,7 @@ func aptlyPublishShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyPublishShowJSON(cmd *commander.Command, args []string) error {
+func aptlyPublishShowJSON(_ *commander.Command, args []string) error {
 	var err error
 
 	distribution := args[0]
