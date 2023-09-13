@@ -310,37 +310,40 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConfli
 			overridenName = nil
 			overriddenArch = nil
 		} else {
-			partsL := bytes.Split(rl, []byte(" "))
-			archL, nameL, versionL := partsL[0][1:], partsL[1], partsL[2]
+			if !ignoreConflicting || overrideMatching {
+				partsL := bytes.Split(rl, []byte(" "))
+				archL, nameL, versionL := partsL[0][1:], partsL[1], partsL[2]
 
-			partsR := bytes.Split(rr, []byte(" "))
-			archR, nameR, versionR := partsR[0][1:], partsR[1], partsR[2]
+				partsR := bytes.Split(rr, []byte(" "))
+				archR, nameR, versionR := partsR[0][1:], partsR[1], partsR[2]
 
-			if !ignoreConflicting && bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) && bytes.Equal(versionL, versionR) {
-				// conflicting duplicates with same arch, name, version, but different file hash
-				result.Refs = append(result.Refs, r.Refs[ir])
-				il++
-				ir++
-				overridenName = nil
-				overriddenArch = nil
-				continue
-			}
-
-			if overrideMatching {
-				if bytes.Equal(archL, overriddenArch) && bytes.Equal(nameL, overridenName) {
-					// this package has already been overridden on the right
-					il++
-					continue
-				}
-
-				if bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) {
-					// override with package from the right
+				if !ignoreConflicting && bytes.Equal(archL, archR) &&
+					bytes.Equal(nameL, nameR) && bytes.Equal(versionL, versionR) {
+					// conflicting duplicates with same arch, name, version, but different file hash
 					result.Refs = append(result.Refs, r.Refs[ir])
 					il++
 					ir++
-					overriddenArch = archL
-					overridenName = nameL
+					overridenName = nil
+					overriddenArch = nil
 					continue
+				}
+
+				if overrideMatching {
+					if bytes.Equal(archL, overriddenArch) && bytes.Equal(nameL, overridenName) {
+						// this package has already been overridden on the right
+						il++
+						continue
+					}
+
+					if bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) {
+						// override with package from the right
+						result.Refs = append(result.Refs, r.Refs[ir])
+						il++
+						ir++
+						overriddenArch = archL
+						overridenName = nameL
+						continue
+					}
 				}
 			}
 
