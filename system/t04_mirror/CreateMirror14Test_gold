@@ -1,8 +1,7 @@
-Downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease...
-Success downloading https://cloud.r-project.org/bin/linux/debian/jessie-cran35/InRelease
-gpgv:  RSA key ID 115C3D8A
-gpgv: Good signature from "Johannes Ranke (Wissenschaftlicher Berater) <johannes.ranke@jrwb.de>"
-gpgv:                 aka "Johannes Ranke <jranke@uni-bremen.de>"
+Downloading https://cloud.r-project.org/bin/linux/debian/bullseye-cran40/InRelease...
+Success downloading https://cloud.r-project.org/bin/linux/debian/bullseye-cran40/InRelease
+gpgv:  RSA key ID 73EACF41
+gpgv: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"
 
-Mirror [mirror14]: https://cloud.r-project.org/bin/linux/debian/ ./jessie-cran35/ successfully added.
+Mirror [mirror14]: https://cloud.r-project.org/bin/linux/debian/ ./bullseye-cran40/ successfully added.
 You can run 'aptly mirror update mirror14' to download repository contents.
