@@ -1,1 +1,1 @@
-ERROR: error parsing -repo template: template: repo:1: unexpected "}" in operand; missing space?
+ERROR: error parsing -repo template: template: repo:1: bad character U+007D '}'; missing space?
