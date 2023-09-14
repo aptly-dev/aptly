@@ -28,3 +28,20 @@ func BenchmarkReflistSimpleMerge(b *testing.B) {
 		l.Merge(r, false, true)
 	}
 }
+
+func BenchmarkReflistDecode(b *testing.B) {
+	const count = 4096
+
+	r := NewPackageRefList()
+	for i := 0; i < count; i++ {
+		r.Refs = append(r.Refs, []byte(fmt.Sprintf("Pamd64 pkg%d %d", i, i)))
+	}
+
+	sort.Sort(r)
+	data := r.Encode()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		(&PackageRefList{}).Decode(data)
+	}
+}
