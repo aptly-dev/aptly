@@ -71,7 +71,9 @@ func (l *PackageRefList) Encode() []byte {
 
 // Decode decodes msgpack representation into PackageRefLit
 func (l *PackageRefList) Decode(input []byte) error {
-	decoder := codec.NewDecoderBytes(input, &codec.MsgpackHandle{})
+	handle := &codec.MsgpackHandle{}
+	handle.ZeroCopy = true
+	decoder := codec.NewDecoderBytes(input, handle)
 	return decoder.Decode(l)
 }
 
