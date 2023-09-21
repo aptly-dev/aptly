@@ -21,7 +21,6 @@ import urllib.parse
 import urllib.request
 import zlib
 from pathlib import Path
-from uuid import uuid4
 
 
 def ungzip_if_required(output):
@@ -271,12 +270,13 @@ class BaseTest(object):
             command = string.Template(command).substitute(params)
             command = shlex.split(command)
 
-        if command[0] == "aptly":
-            aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
-            command = [str(aptly_testing_bin), f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out", *command[1:]]
-
         environ = os.environ.copy()
         environ["LC_ALL"] = "C"
+        if command[0] == "aptly":
+            environ["GOCOVERDIR"] = self.coverage_dir
+            aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
+            command = [str(aptly_testing_bin), *command[1:]]
+
         environ.update(self.environmentOverride)
         return subprocess.Popen(command, stderr=stderr, stdout=stdout, env=environ)
 
@@ -296,7 +296,7 @@ class BaseTest(object):
             if is_aptly_command:
                 # remove the last two rows as go tests always print PASS/FAIL and coverage in those
                 # two lines. This would otherwise fail the tests as they would not match gold
-                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))
+                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n", raw_output.decode("utf-8"))
                 if not matches:
                     raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
 
