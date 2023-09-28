@@ -228,6 +228,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
+	delete(storage.pathCache, path)
 	if storage.plusWorkaround && strings.Contains(path, "+") {
 		// try to remove workaround version, but don't care about result
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
