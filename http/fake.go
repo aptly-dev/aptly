@@ -61,7 +61,7 @@ func (f *FakeDownloader) Empty() bool {
 }
 
 // GetLength returns content length of given url
-func (f *FakeDownloader) GetLength(ctx context.Context, url string) (int64, error) {
+func (f *FakeDownloader) GetLength(_ context.Context, url string) (int64, error) {
 	expectation, err := f.getExpectedRequest(url)
 	if err != nil {
 		return -1, err
@@ -89,7 +89,7 @@ func (f *FakeDownloader) getExpectedRequest(url string) (*expectedRequest, error
 }
 
 // DownloadWithChecksum performs fake download by matching against first expectation in the queue or any expectation, with cheksum verification
-func (f *FakeDownloader) DownloadWithChecksum(ctx context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
+func (f *FakeDownloader) DownloadWithChecksum(_ context.Context, url string, filename string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	expectation, err := f.getExpectedRequest(url)
 	if err != nil {
 		return err

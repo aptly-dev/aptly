@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,13 +34,13 @@ func apiTasksWaitForTaskByID(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	task, err := list.WaitForTaskByID(int(id))
 	if err != nil {
-		c.AbortWithError(400, err)
+		AbortWithJSONError(c, 400, err)
 		return
 	}
 
@@ -53,14 +52,14 @@ func apiTasksShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	var task task.Task
 	task, err = list.GetTaskByID(int(id))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -72,14 +71,14 @@ func apiTasksOutputShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	var output string
 	output, err = list.GetTaskOutputByID(int(id))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -91,14 +90,14 @@ func apiTasksDetailShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	var detail interface{}
 	detail, err = list.GetTaskDetailByID(int(id))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -110,13 +109,13 @@ func apiTasksReturnValueShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	output, err := list.GetTaskReturnValueByID(int(id))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -128,14 +127,14 @@ func apiTasksDelete(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	var delTask task.Task
 	delTask, err = list.DeleteTaskByID(int(id))
 	if err != nil {
-		c.AbortWithError(400, err)
+		AbortWithJSONError(c, 400, err)
 		return
 	}
 
@@ -145,7 +144,7 @@ func apiTasksDelete(c *gin.Context) {
 // POST /tasks-dummy
 func apiTasksDummy(c *gin.Context) {
 	resources := []string{"dummy"}
-	taskName := fmt.Sprintf("Dummy task")
+	taskName := "Dummy task"
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		out.Printf("Dummy task started\n")
 		detail.Store([]int{1, 2, 3})

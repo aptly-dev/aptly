@@ -2,7 +2,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from api_lib import APITest
+from api_lib import TASK_SUCCEEDED, APITest
 
 
 class PackagesAPITestShow(APITest):
@@ -19,12 +19,10 @@ class PackagesAPITestShow(APITest):
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
-        self.check_equal(resp.json()['State'], 2)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
 
         # get information about package
-        resp = self.get("/api/packages/" + urllib.parse.quote('Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'))
-        self.check_equal(resp.status_code, 200)
-        self.check_equal(resp.json(), {
+        pyspi_json = {
             'Architecture': 'any',
             'Binary': 'python-at-spi',
             'Build-Depends': 'debhelper (>= 5), cdbs, libatspi-dev, python-pyrex, python-support (>= 0.4), python-all-dev, libx11-dev',  # noqa
@@ -41,7 +39,24 @@ class PackagesAPITestShow(APITest):
             'ShortKey': 'Psource pyspi 0.6.1-1.3',
             'Standards-Version': '3.7.3',
             'Vcs-Svn': 'svn://svn.tribulaciones.org/srv/svn/pyspi/trunk',
-            'Version': '0.6.1-1.3'})
+            'Version': '0.6.1-1.3'
+        }
+
+        resp = self.get("/api/packages/" + urllib.parse.quote('Psource pyspi 0.6.1-1.3 3a8b37cbd9a3559e'))
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), pyspi_json)
+
+        resp = self.get("/api/packages?q=pyspi")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [pyspi_json["Key"]])
+
+        resp = self.get("/api/packages?q=pyspi&format=details")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [pyspi_json])
 
         resp = self.get("/api/packages/" + urllib.parse.quote('Pamd64 no-such-package 1.0 3a8b37cbd9a3559e'))
         self.check_equal(resp.status_code, 404)
+
+        resp = self.get("/api/packages?q=no-such-package")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json(), [])

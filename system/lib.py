@@ -3,23 +3,25 @@ Test library.
 """
 
 import difflib
+import http.server
 import inspect
 import json
-import subprocess
 import os
 import posixpath
+import pprint
 import re
 import shlex
 import shutil
+import socketserver
 import string
+import subprocess
 import threading
 import urllib.error
 import urllib.parse
 import urllib.request
-import pprint
-import socketserver
-import http.server
 import zlib
+from pathlib import Path
+from uuid import uuid4
 
 
 def ungzip_if_required(output):
@@ -126,9 +128,11 @@ class BaseTest(object):
     requiresDot = False
     sortOutput = False
 
+    aptlyDir = ".aptly"
+    aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
     configFile = {
-        "rootDir": "%s/.aptly" % os.environ["HOME"],
+        "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
         "downloadConcurrency": 4,
         "downloadSpeedLimit": 0,
         "downloadRetries": 5,
@@ -143,6 +147,9 @@ class BaseTest(object):
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "",
         "enableMetricsEndpoint": True,
+        "logLevel": "debug",
+        "logFormat": "default",
+        "serveInAPIMode": True
     }
     configOverride = {}
     environmentOverride = {}
@@ -173,10 +180,10 @@ class BaseTest(object):
             self.teardown()
 
     def prepare_remove_all(self):
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly")):
-            shutil.rmtree(os.path.join(os.environ["HOME"], ".aptly"))
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly.conf")):
-            os.remove(os.path.join(os.environ["HOME"], ".aptly.conf"))
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir)):
+            shutil.rmtree(os.path.join(os.environ["HOME"], self.aptlyDir))
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyConfigFile)):
+            os.remove(os.path.join(os.environ["HOME"], self.aptlyConfigFile))
         if os.path.exists(os.path.join(os.environ["HOME"], ".gnupg", "aptlytest.gpg")):
             os.remove(os.path.join(
                 os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
@@ -188,7 +195,7 @@ class BaseTest(object):
         elif self.requiresGPG2:
             cfg["gpgProvider"] = "gpg2"
         cfg.update(**self.configOverride)
-        f = open(os.path.join(os.environ["HOME"], ".aptly.conf"), "w")
+        f = open(os.path.join(os.environ["HOME"], self.aptlyConfigFile), "w")
         f.write(json.dumps(cfg))
         f.close()
 
@@ -210,18 +217,18 @@ class BaseTest(object):
 
     def prepare_fixture(self):
         if self.fixturePool:
-            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0o755)
+            os.makedirs(os.path.join(os.environ["HOME"], self.aptlyDir), 0o755)
             os.symlink(self.fixturePoolDir, os.path.join(
-                os.environ["HOME"], ".aptly", "pool"))
+                os.environ["HOME"], self.aptlyDir, "pool"))
 
         if self.fixturePoolCopy:
-            os.makedirs(os.path.join(os.environ["HOME"], ".aptly"), 0o755)
+            os.makedirs(os.path.join(os.environ["HOME"], self.aptlyDir), 0o755)
             shutil.copytree(self.fixturePoolDir, os.path.join(
-                os.environ["HOME"], ".aptly", "pool"), ignore=shutil.ignore_patterns(".git"))
+                os.environ["HOME"], self.aptlyDir, "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.fixtureDB:
             shutil.copytree(self.fixtureDBDir, os.path.join(
-                os.environ["HOME"], ".aptly", "db"))
+                os.environ["HOME"], self.aptlyDir, "db"))
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
@@ -256,13 +263,17 @@ class BaseTest(object):
                 'changes': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "changes"),
                 'udebs': os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "udebs"),
                 'testfiles': os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)), self.__class__.__name__),
-                'aptlyroot': os.path.join(os.environ["HOME"], ".aptly"),
+                'aptlyroot': os.path.join(os.environ["HOME"], self.aptlyDir),
             }
             if self.fixtureWebServer:
                 params['url'] = self.webServerUrl
 
             command = string.Template(command).substitute(params)
             command = shlex.split(command)
+
+        if command[0] == "aptly":
+            aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
+            command = [str(aptly_testing_bin), f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out", *command[1:]]
 
         environ = os.environ.copy()
         environ["LC_ALL"] = "C"
@@ -272,14 +283,38 @@ class BaseTest(object):
     def run_cmd(self, command, expected_code=0):
         try:
             proc = self._start_process(command, stdout=subprocess.PIPE)
-            output, _ = proc.communicate()
+            raw_output, _ = proc.communicate()
+
+            returncodes = [proc.returncode]
+            is_aptly_command = False
+            if isinstance(command, str):
+                is_aptly_command = command.startswith("aptly")
+
+            if isinstance(command, list):
+                is_aptly_command = command[0] == "aptly"
+
+            if is_aptly_command:
+                # remove the last two rows as go tests always print PASS/FAIL and coverage in those
+                # two lines. This would otherwise fail the tests as they would not match gold
+                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output.decode("utf-8"))
+                if not matches:
+                    raise Exception("no matches found in output '%s'" % raw_output.decode("utf-8"))
+
+                output, _, returncode = matches[0]
+
+                output = output.encode()
+                returncodes.append(int(returncode))
+
+            else:
+                output = raw_output
+
             if expected_code is not None:
-                if proc.returncode != expected_code:
+                if expected_code not in returncodes:
                     raise Exception("exit code %d != %d (output: %s)" % (
-                        proc.returncode, expected_code, output))
+                        proc.returncode, expected_code, raw_output))
             return output
         except Exception as e:
-            raise Exception("Running command %s failed: %s" %
+            raise Exception("Running command '%s' failed: %s" %
                             (command, str(e)))
 
     def gold_processor(self, gold):
@@ -333,11 +368,11 @@ class BaseTest(object):
                 raise
 
     def read_file(self, path, mode=''):
-        with open(os.path.join(os.environ["HOME"], ".aptly", path), "r" + mode) as f:
+        with open(os.path.join(os.environ["HOME"], self.aptlyDir, path), "r" + mode) as f:
             return f.read()
 
     def delete_file(self, path):
-        os.unlink(os.path.join(os.environ["HOME"], ".aptly", path))
+        os.unlink(os.path.join(os.environ["HOME"], self.aptlyDir, path))
 
     def check_file_contents(self, path, gold_name, match_prepare=None, mode='', ensure_utf8=True):
         contents = self.read_file(path, mode=mode)
@@ -367,15 +402,15 @@ class BaseTest(object):
                 raise
 
     def check_exists(self, path):
-        if not os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+        if not os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
             raise Exception("path %s doesn't exist" % (path, ))
 
     def check_not_exists(self, path):
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", path)):
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
             raise Exception("path %s exists" % (path, ))
 
     def check_file_not_empty(self, path):
-        if os.stat(os.path.join(os.environ["HOME"], ".aptly", path))[6] == 0:
+        if os.stat(os.path.join(os.environ["HOME"], self.aptlyDir, path))[6] == 0:
             raise Exception("file %s is empty" % (path, ))
 
     def check_equal(self, a, b):
@@ -422,6 +457,10 @@ class BaseTest(object):
         if match_prepare is not None:
             a = match_prepare(a)
             b = match_prepare(b)
+
+        # strip trailing whitespace and newlines
+        a = a.strip()
+        b = b.strip()
 
         if a != b:
             diff = "".join(difflib.unified_diff(

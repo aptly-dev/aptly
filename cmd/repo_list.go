@@ -24,7 +24,7 @@ func aptlyRepoList(cmd *commander.Command, args []string) error {
 	return aptlyRepoListTxt(cmd, args)
 }
 
-func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
+func aptlyRepoListTxt(cmd *commander.Command, _ []string) error {
 	var err error
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
@@ -71,7 +71,7 @@ func aptlyRepoListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyRepoListJSON(cmd *commander.Command, args []string) error {
+func aptlyRepoListJSON(_ *commander.Command, _ []string) error {
 	var err error
 
 	repos := make([]*deb.LocalRepo, context.NewCollectionFactory().LocalRepoCollection().Len())

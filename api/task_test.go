@@ -71,5 +71,5 @@ func (s *TaskSuite) TestTasksClear(c *C) {
 	c.Check(response.Code, Equals, 200)
 	response, _ = s.HTTPRequest("GET", "/api/tasks", nil)
 	c.Check(response.Code, Equals, 200)
-	c.Check(response.Body.String(), Equals, "null")
+	c.Check(response.Body.String(), Equals, "[]")
 }

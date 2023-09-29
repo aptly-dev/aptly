@@ -1,5 +1,5 @@
 Name: mirror1
-Archive Root URL: http://cdn-fastly.deb.debian.org/debian/
+Archive Root URL: http://archive.debian.org/debian-archive/debian/
 Distribution: stretch
 Components: main, contrib, non-free
 Architectures: amd64, arm64, armel, armhf, i386, mips, mips64el, mipsel, ppc64el, s390x

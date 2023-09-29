@@ -76,6 +76,7 @@ Configuration file is stored in JSON format (default values shown below):
           "plusWorkaround": false,
           "disableMultiDel": false,
           "forceSigV2": false,
+          "forceVirtualHostedStyle": true,
           "debug": false
         }
       },
@@ -251,6 +252,9 @@ and associated settings:
    * `forceSigV2`:
      (optional) disable Signature V4 support, useful with non-AWS S3-compatible object stores
      which do not support SigV4, shouldn't be enabled for AWS
+   * `forceVirtualHostedStyle`:
+     (optional) disable path style visit, useful with non-AWS S3-compatible object stores
+     which only support virtual hosted style
    * `debug`:
      (optional) enables detailed request/response dump for each S3 operation
 

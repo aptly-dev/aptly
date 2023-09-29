@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -27,7 +26,7 @@ type DownloaderSuiteBase struct {
 }
 
 func (s *DownloaderSuiteBase) SetUpTest(c *C) {
-	s.tempfile, _ = ioutil.TempFile(os.TempDir(), "aptly-test")
+	s.tempfile, _ = os.CreateTemp(os.TempDir(), "aptly-test")
 	s.l, _ = net.ListenTCP("tcp4", &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1)})
 	s.url = fmt.Sprintf("http://localhost:%d", s.l.Addr().(*net.TCPAddr).Port)
 
@@ -43,7 +42,7 @@ func (s *DownloaderSuiteBase) SetUpTest(c *C) {
 		close(s.ch)
 	}()
 
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(false)
 	s.progress.Start()
 
 	s.d = NewDownloader(0, 1, s.progress)

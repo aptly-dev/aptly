@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -55,7 +56,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 	repo, err = collection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -123,13 +124,13 @@ func apiSnapshotsCreate(c *gin.Context) {
 	for i := range b.SourceSnapshots {
 		sources[i], err = snapshotCollection.ByName(b.SourceSnapshots[i])
 		if err != nil {
-			c.AbortWithError(404, err)
+			AbortWithJSONError(c, 404, err)
 			return
 		}
 
 		err = snapshotCollection.LoadComplete(sources[i])
 		if err != nil {
-			c.AbortWithError(500, err)
+			AbortWithJSONError(c, 500, err)
 			return
 		}
 
@@ -160,7 +161,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
-		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: nil}, nil
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
 	})
 }
 
@@ -188,7 +189,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 	repo, err = collection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -240,7 +241,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 	snapshot, err = collection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -275,13 +276,13 @@ func apiSnapshotsShow(c *gin.Context) {
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(snapshot)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -299,7 +300,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 
 	snapshot, err := snapshotCollection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -336,32 +337,32 @@ func apiSnapshotsDiff(c *gin.Context) {
 
 	snapshotA, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	snapshotB, err := collection.ByName(c.Params.ByName("withSnapshot"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(snapshotA)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	err = collection.LoadComplete(snapshotB)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	// Calculate diff
 	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -385,15 +386,92 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 
 	snapshot, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(snapshot)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	showPackages(c, snapshot.RefList(), collectionFactory)
+}
+
+// POST /api/snapshots/merge
+func apiSnapshotsMerge(c *gin.Context) {
+	var (
+		err      error
+		snapshot *deb.Snapshot
+	)
+
+	var body struct {
+		Destination string   `binding:"required"`
+		Sources     []string `binding:"required"`
+	}
+
+	if c.Bind(&body) != nil {
+		return
+	}
+
+	if len(body.Sources) < 1 {
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("At least one source snapshot is required"))
+		return
+	}
+
+	latest := c.Request.URL.Query().Get("latest") == "1"
+	noRemove := c.Request.URL.Query().Get("no-remove") == "1"
+	overrideMatching := !latest && !noRemove
+
+	if noRemove && latest {
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("no-remove and latest are mutually exclusive"))
+		return
+	}
+
+	collectionFactory := context.NewCollectionFactory()
+	snapshotCollection := collectionFactory.SnapshotCollection()
+
+	sources := make([]*deb.Snapshot, len(body.Sources))
+	resources := make([]string, len(sources))
+	for i := range body.Sources {
+		sources[i], err = snapshotCollection.ByName(body.Sources[i])
+		if err != nil {
+			AbortWithJSONError(c, http.StatusNotFound, err)
+			return
+		}
+
+		err = snapshotCollection.LoadComplete(sources[i])
+		if err != nil {
+			AbortWithJSONError(c, http.StatusInternalServerError, err)
+			return
+		}
+		resources[i] = string(sources[i].ResourceKey())
+	}
+
+	maybeRunTaskInBackground(c, "Merge snapshot "+body.Destination, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		result := sources[0].RefList()
+		for i := 1; i < len(sources); i++ {
+			result = result.Merge(sources[i].RefList(), overrideMatching, false)
+		}
+
+		if latest {
+			result.FilterLatestRefs()
+		}
+
+		sourceDescription := make([]string, len(sources))
+		for i, s := range sources {
+			sourceDescription[i] = fmt.Sprintf("'%s'", s.Name)
+		}
+
+		snapshot = deb.NewSnapshotFromRefList(body.Destination, sources, result,
+			fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
+
+		err = collectionFactory.SnapshotCollection().Add(snapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to create snapshot: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: snapshot}, nil
+	})
 }

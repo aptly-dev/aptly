@@ -33,7 +33,7 @@ func NewList() *List {
 
 // GetTasks gets complete list of tasks
 func (list *List) GetTasks() []Task {
-	var tasks []Task
+	tasks := []Task{}
 	list.Lock()
 	for _, task := range list.tasks {
 		tasks = append(tasks, *task)

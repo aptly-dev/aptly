@@ -119,8 +119,8 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkolivegreen1",
-			"label": fmt.Sprintf("%sPublished %s/%s|comp: %s|arch: %s%s", labelStart,
-				repo.Prefix, repo.Distribution, strings.Join(repo.Components(), " "),
+			"label": fmt.Sprintf("%sPublished %s|comp: %s|arch: %s%s", labelStart,
+				repo.GetPath(), strings.Join(repo.Components(), " "),
 				strings.Join(repo.Architectures, ", "), labelEnd),
 		})
 

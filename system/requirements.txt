@@ -1,5 +1,5 @@
 boto
-requests
+requests==2.28.2
 requests-unixsocket
 python-swiftclient
 flake8

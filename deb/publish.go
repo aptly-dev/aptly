@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -44,6 +43,7 @@ type PublishedRepo struct {
 	ButAutomaticUpgrades string
 	Label                string
 	Suite                string
+	Codename             string
 	// Architectures is a list of all architectures published
 	Architectures []string
 	// SourceKind is "local"/"repo"
@@ -312,6 +312,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Label":                p.Label,
 		"Origin":               p.Origin,
 		"Suite":                p.Suite,
+		"Codename":             p.Codename,
 		"NotAutomatic":         p.NotAutomatic,
 		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
 		"Prefix":               p.Prefix,
@@ -366,6 +367,10 @@ func (p *PublishedRepo) String() string {
 		extras = append(extras, fmt.Sprintf("suite: %s", p.Suite))
 	}
 
+	if p.Codename != "" {
+		extras = append(extras, fmt.Sprintf("codename: %s", p.Codename))
+	}
+
 	extra = strings.Join(extras, ", ")
 
 	if extra != "" {
@@ -416,6 +421,29 @@ func (p *PublishedRepo) Components() []string {
 
 	sort.Strings(result)
 	return result
+}
+
+// Components returns sorted list of published repo source names
+func (p *PublishedRepo) SourceNames() []string {
+	var sources = []string{}
+
+	for _, component := range p.Components() {
+		var source string
+
+		item := p.sourceItems[component]
+		if item.snapshot != nil {
+			source = item.snapshot.Name
+		} else if item.localRepo != nil {
+			source = item.localRepo.Name
+		} else {
+			panic("no snapshot/localRepo")
+		}
+
+		sources = append(sources, fmt.Sprintf("%s:%s", source, component))
+	}
+
+	sort.Strings(sources)
+	return sources
 }
 
 // UpdateLocalRepo updates content from local repo in component
@@ -513,6 +541,14 @@ func (p *PublishedRepo) GetSuite() string {
 	return p.Suite
 }
 
+// GetCodename returns default or manual Codename:
+func (p *PublishedRepo) GetCodename() string {
+	if p.Codename == "" {
+		return p.Distribution
+	}
+	return p.Codename
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
@@ -582,7 +618,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 
 	var tempDir string
-	tempDir, err = ioutil.TempDir(os.TempDir(), "aptly")
+	tempDir, err = os.MkdirTemp(os.TempDir(), "aptly")
 	if err != nil {
 		return err
 	}
@@ -735,6 +771,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				release["Origin"] = p.GetOrigin()
 				release["Label"] = p.GetLabel()
 				release["Suite"] = p.GetSuite()
+				release["Codename"] = p.GetCodename()
 				if p.AcquireByHash {
 					release["Acquire-By-Hash"] = "yes"
 				}
@@ -793,7 +830,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 	release["Label"] = p.GetLabel()
 	release["Suite"] = p.GetSuite()
-	release["Codename"] = p.Distribution
+	release["Codename"] = p.GetCodename()
 	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{ArchitectureSource}), " ")
 	if p.AcquireByHash {

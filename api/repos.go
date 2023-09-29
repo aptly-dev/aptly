@@ -17,6 +17,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GET /repos
+func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		c.Writer.Flush()
+		c.Writer.WriteString("<pre>\n")
+		if len(localRepos) == 0 {
+			c.Writer.WriteString("<a href=\"-/\">default</a>\n")
+		}
+		for publishPrefix := range localRepos {
+			c.Writer.WriteString(fmt.Sprintf("<a href=\"%[1]s/\">%[1]s</a>\n", publishPrefix))
+		}
+		c.Writer.WriteString("</pre>")
+		c.Writer.Flush()
+	}
+}
+
+// GET /repos/:storage/*pkgPath
+func reposServeInAPIMode(c *gin.Context) {
+	pkgpath := c.Param("pkgPath")
+
+	storage := c.Param("storage")
+	if storage == "-" {
+		storage = ""
+	} else {
+		storage = "filesystem:" + storage
+	}
+
+	publicPath := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage).PublicPath()
+	c.FileFromFS(pkgpath, http.Dir(publicPath))
+}
+
 // GET /api/repos
 func apiReposList(c *gin.Context) {
 	result := []*deb.LocalRepo{}
@@ -52,7 +84,7 @@ func apiReposCreate(c *gin.Context) {
 	collection := collectionFactory.LocalRepoCollection()
 	err := collection.Add(repo)
 	if err != nil {
-		c.AbortWithError(400, err)
+		AbortWithJSONError(c, 400, err)
 		return
 	}
 
@@ -77,7 +109,7 @@ func apiReposEdit(c *gin.Context) {
 
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -85,7 +117,7 @@ func apiReposEdit(c *gin.Context) {
 		_, err := collection.ByName(*b.Name)
 		if err == nil {
 			// already exists
-			c.AbortWithError(404, err)
+			AbortWithJSONError(c, 404, err)
 			return
 		}
 		repo.Name = *b.Name
@@ -102,7 +134,7 @@ func apiReposEdit(c *gin.Context) {
 
 	err = collection.Update(repo)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -116,7 +148,7 @@ func apiReposShow(c *gin.Context) {
 
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -135,7 +167,7 @@ func apiReposDrop(c *gin.Context) {
 
 	repo, err := collection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -165,13 +197,13 @@ func apiReposPackagesShow(c *gin.Context) {
 
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(repo)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -193,13 +225,13 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 
 	repo, err := collection.ByName(c.Params.ByName("name"))
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(repo)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -274,7 +306,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	dirParam := c.Params.ByName("dir")
 	fileParam := c.Params.ByName("file")
 	if fileParam != "" && !verifyPath(fileParam) {
-		c.AbortWithError(400, fmt.Errorf("wrong file"))
+		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
 		return
 	}
 
@@ -284,13 +316,13 @@ func apiReposPackageFromDir(c *gin.Context) {
 	name := c.Params.ByName("name")
 	repo, err := collection.ByName(name)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
 	err = collection.LoadComplete(repo)
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -407,7 +439,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	dirParam := c.Params.ByName("dir")
 	fileParam := c.Params.ByName("file")
 	if fileParam != "" && !verifyPath(fileParam) {
-		c.AbortWithError(400, fmt.Errorf("wrong file"))
+		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
 		return
 	}
 
@@ -421,7 +453,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 
 	repoTemplate, err := template.New("repo").Parse(repoTemplateString)
 	if err != nil {
-		c.AbortWithError(400, fmt.Errorf("error parsing repo template: %s", err))
+		AbortWithJSONError(c, 400, fmt.Errorf("error parsing repo template: %s", err))
 		return
 	}
 
@@ -432,7 +464,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		// repo template string is simple text so only use resource key of specific repository
 		repo, err := collectionFactory.LocalRepoCollection().ByName(repoTemplateString)
 		if err != nil {
-			c.AbortWithError(404, err)
+			AbortWithJSONError(c, 404, err)
 			return
 		}
 

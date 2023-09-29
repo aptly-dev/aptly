@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -21,7 +20,7 @@ func DownloadTemp(ctx context.Context, downloader aptly.Downloader, url string) 
 //
 // Temporary file would be already removed, so no need to cleanup
 func DownloadTempWithChecksum(ctx context.Context, downloader aptly.Downloader, url string, expected *utils.ChecksumInfo, ignoreMismatch bool) (*os.File, error) {
-	tempdir, err := ioutil.TempDir(os.TempDir(), "aptly")
+	tempdir, err := os.MkdirTemp(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
 	}

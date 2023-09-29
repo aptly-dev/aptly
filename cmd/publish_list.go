@@ -25,7 +25,7 @@ func aptlyPublishList(cmd *commander.Command, args []string) error {
 	return aptlyPublishListTxt(cmd, args)
 }
 
-func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
+func aptlyPublishListTxt(cmd *commander.Command, _ []string) error {
 	var err error
 
 	raw := cmd.Flag.Lookup("raw").Value.Get().(bool)
@@ -77,7 +77,7 @@ func aptlyPublishListTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyPublishListJSON(cmd *commander.Command, args []string) error {
+func aptlyPublishListJSON(_ *commander.Command, _ []string) error {
 	var err error
 
 	repos := make([]*deb.PublishedRepo, 0, context.NewCollectionFactory().PublishedRepoCollection().Len())

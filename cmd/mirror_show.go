@@ -27,7 +27,7 @@ func aptlyMirrorShow(cmd *commander.Command, args []string) error {
 	return aptlyMirrorShowTxt(cmd, args)
 }
 
-func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
+func aptlyMirrorShowTxt(_ *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]
@@ -93,7 +93,7 @@ func aptlyMirrorShowTxt(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func aptlyMirrorShowJSON(cmd *commander.Command, args []string) error {
+func aptlyMirrorShowJSON(_ *commander.Command, args []string) error {
 	var err error
 
 	name := args[0]

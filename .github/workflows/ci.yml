@@ -22,48 +22,40 @@ jobs:
   build:
     name: test
     runs-on: ubuntu-20.04
-    continue-on-error: ${{ matrix.allow_failure }}
+    continue-on-error: false
     timeout-minutes: 30
-    strategy:
-      fail-fast: true
-      matrix:
-        go: [1.16, 1.17, 1.18]
-        run_long_tests: [no]
-        allow_failure: [false]
-        include:
-          # Disable this for now as it's not clear how to select the latest master branch
-          # version of go using actions/setup-go@v2.
-          # - go: master
-          #   run_long_tests: no
-          #   allow_failure: true
-          - go: 1.17
-            run_long_tests: yes
-            allow_failure: false
 
     env:
       NO_FTP_ACCESS: yes
       BOTO_CONFIG: /dev/null
       GO111MODULE: "on"
       GOPROXY: "https://proxy.golang.org"
+      GOVER: '1.21'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ env.GOVER }}
+
+      - name: Get aptly version
+        run: |
+           make version
+           go generate
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.0
+          version: v1.54.2
+          args: --timeout=5m
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.11'
 
       - name: Install O/S packages
         run: |
@@ -82,21 +74,21 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: Get aptly version
-        run: |
-           make version
-
       - name: Make
         env:
-          RUN_LONG_TESTS: ${{ matrix.run_long_tests }}
+          RUN_LONG_TESTS: 'yes' 
           AZURE_STORAGE_ENDPOINT: "127.0.0.1:10000"
           AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
-          make
+          COVERAGE_DIR=${{ runner.temp }} make
+
+      - name: Merge code coverage
+        run: |
+          go install github.com/wadey/gocovmerge@latest
+          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
       - name: Upload code coverage
-        if: matrix.run_long_tests
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -115,7 +107,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
 
       - name: Make Release
         env:

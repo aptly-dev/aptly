@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -39,7 +38,7 @@ func NewChanges(path string) (*Changes, error) {
 		ChangesName: filepath.Base(path),
 	}
 
-	c.TempDir, err = ioutil.TempDir(os.TempDir(), "aptly")
+	c.TempDir, err = os.MkdirTemp(os.TempDir(), "aptly")
 	if err != nil {
 		return nil, err
 	}
@@ -221,12 +220,12 @@ func (c *Changes) GetField(field string) string {
 }
 
 // MatchesDependency implements PackageLike interface
-func (c *Changes) MatchesDependency(d Dependency) bool {
+func (c *Changes) MatchesDependency(_ Dependency) bool {
 	return false
 }
 
 // MatchesArchitecture implements PackageLike interface
-func (c *Changes) MatchesArchitecture(arch string) bool {
+func (c *Changes) MatchesArchitecture(_ string) bool {
 	return false
 }
 

@@ -3,7 +3,6 @@ package deb
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 
@@ -38,7 +37,7 @@ func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp
 }
 
 func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
-	text, _ = ioutil.TempFile("", "aptly-test")
+	text, _ = os.CreateTemp("", "aptly-test")
 	io.Copy(text, clearsigned)
 	text.Seek(0, 0)
 	os.Remove(text.Name())
@@ -92,7 +91,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 	s.repo, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian", "squeeze", []string{"main"}, []string{}, false, false, false)
 	s.flat, _ = NewRemoteRepo("exp42", "http://repos.express42.com/virool/precise/", "./", []string{}, []string{}, false, false, false)
 	s.downloader = http.NewFakeDownloader().ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
-	s.progress = console.NewProgress()
+	s.progress = console.NewProgress(false)
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collectionFactory = NewCollectionFactory(s.db)
 	s.packagePool = files.NewPackagePool(c.MkDir(), false)

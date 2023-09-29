@@ -7,7 +7,7 @@ import (
 	"github.com/smira/commander"
 )
 
-func aptlyConfigShow(cmd *commander.Command, args []string) error {
+func aptlyConfigShow(_ *commander.Command, _ []string) error {
 
 	config := context.Config()
 	prettyJSON, err := json.MarshalIndent(config, "", "    ")

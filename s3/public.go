@@ -79,15 +79,19 @@ func NewPublishedStorageRaw(
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
-func NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
-	storageClass, encryptionMethod string, plusWorkaround, disableMultiDel, forceSigV2, debug bool) (*PublishedStorage, error) {
+func NewPublishedStorage(
+	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
+	plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle, debug bool) (*PublishedStorage, error) {
 
 	config := &aws.Config{
 		Region: aws.String(region),
 	}
 
 	if endpoint != "" {
-		config = config.WithEndpoint(endpoint).WithS3ForcePathStyle(true)
+		config = config.WithEndpoint(endpoint)
+		if !forceVirtualHostedStyle {
+			config = config.WithS3ForcePathStyle(true)
+		}
 	}
 
 	if accessKey != "" {
@@ -127,7 +131,7 @@ func (storage *PublishedStorage) String() string {
 }
 
 // MkDir creates directory recursively under public path
-func (storage *PublishedStorage) MkDir(path string) error {
+func (storage *PublishedStorage) MkDir(_ string) error {
 	// no op for S3
 	return nil
 }
@@ -229,7 +233,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 }
 
 // RemoveDirs removes directory structure under public path
-func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
+func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error {
 	const page = 1000
 
 	filelist, _, err := storage.internalFilelist(path, false)

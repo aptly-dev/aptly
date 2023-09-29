@@ -3,17 +3,18 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/query"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 // Lock order acquisition (canonical):
@@ -25,6 +26,23 @@ import (
 // GET /api/version
 func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
+}
+
+// GET /api/ready
+func apiReady(isReady *atomic.Value) func(*gin.Context) {
+	return func(c *gin.Context) {
+		if isReady == nil || !isReady.Load().(bool) {
+			c.JSON(503, gin.H{"Status": "Aptly is unavailable"})
+			return
+		}
+
+		c.JSON(200, gin.H{"Status": "Aptly is ready"})
+	}
+}
+
+// GET /api/healthy
+func apiHealthy(c *gin.Context) {
+	c.JSON(200, gin.H{"Status": "Aptly is healthy"})
 }
 
 type dbRequestKind int
@@ -137,20 +155,20 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 	// Run this task in background if configured globally or per-request
 	background := truthy(c.DefaultQuery("_async", strconv.FormatBool(context.Config().AsyncAPI)))
 	if background {
-		log.Println("Executing task asynchronously")
+		log.Info().Msg("Executing task asynchronously")
 		task, conflictErr := runTaskInBackground(name, resources, proc)
 		if conflictErr != nil {
-			c.AbortWithError(409, conflictErr)
+			AbortWithJSONError(c, 409, conflictErr)
 			return
 		}
 		c.JSON(202, task)
 	} else {
-		log.Println("Executing task synchronously")
+		log.Info().Msg("Executing task synchronously")
 		out := context.Progress()
 		detail := task.Detail{}
 		retValue, err := proc(out, &detail)
 		if err != nil {
-			c.AbortWithError(retValue.Code, err)
+			AbortWithJSONError(c, retValue.Code, err)
 			return
 		}
 		if retValue != nil {
@@ -168,7 +186,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 
 	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)
 	if err != nil {
-		c.AbortWithError(404, err)
+		AbortWithJSONError(c, 404, err)
 		return
 	}
 
@@ -176,7 +194,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	if queryS != "" {
 		q, err := query.Parse(c.Request.URL.Query().Get("q"))
 		if err != nil {
-			c.AbortWithError(400, err)
+			AbortWithJSONError(c, 400, err)
 			return
 		}
 
@@ -193,7 +211,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 			sort.Strings(architecturesList)
 
 			if len(architecturesList) == 0 {
-				c.AbortWithError(400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
+				AbortWithJSONError(c, 400, fmt.Errorf("unable to determine list of architectures, please specify explicitly"))
 				return
 			}
 		}
@@ -203,7 +221,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("unable to search: %s", err))
+			AbortWithJSONError(c, 500, fmt.Errorf("unable to search: %s", err))
 			return
 		}
 	}
@@ -218,4 +236,9 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	} else {
 		c.JSON(200, list.Strings())
 	}
+}
+
+func AbortWithJSONError(c *gin.Context, code int, err error) *gin.Error {
+	c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return c.AbortWithError(code, err)
 }

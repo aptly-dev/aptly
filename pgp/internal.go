@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -47,7 +46,8 @@ type GoSigner struct {
 	signerConfig  *packet.Config
 }
 
-// SetBatch controls whether we allowed to interact with user
+// SetBatch controls whether we allowed to interact with user, for example
+// for getting the passphrase from stdin.
 func (g *GoSigner) SetBatch(batch bool) {
 	g.batch = batch
 }
@@ -83,7 +83,7 @@ func (g *GoSigner) Init() error {
 		}
 		defer passF.Close()
 
-		contents, err := ioutil.ReadAll(passF)
+		contents, err := io.ReadAll(passF)
 		if err != nil {
 			return errors.Wrap(err, "error reading passphrase file")
 		}
@@ -400,7 +400,7 @@ func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sho
 
 // IsClearSigned returns true if file contains signature
 func (g *GoVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
-	signedBuffer, err := ioutil.ReadAll(clearsigned)
+	signedBuffer, err := io.ReadAll(clearsigned)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to read clearsigned data")
 	}
@@ -412,7 +412,7 @@ func (g *GoVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
 
 // VerifyClearsigned verifies clearsigned file using gpgv
 func (g *GoVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (*KeyInfo, error) {
-	signedBuffer, err := ioutil.ReadAll(clearsigned)
+	signedBuffer, err := io.ReadAll(clearsigned)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read clearsigned data")
 	}
@@ -451,7 +451,7 @@ func (g *GoVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (
 // ExtractClearsigned extracts cleartext from clearsigned file WITHOUT signature verification
 func (g *GoVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	var signedBuffer []byte
-	signedBuffer, err = ioutil.ReadAll(clearsigned)
+	signedBuffer, err = io.ReadAll(clearsigned)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read clearsigned data")
 	}
@@ -461,7 +461,7 @@ func (g *GoVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, e
 		return nil, errors.New("no clearsigned data found")
 	}
 
-	text, err = ioutil.TempFile("", "aptly-gpg")
+	text, err = os.CreateTemp("", "aptly-gpg")
 	if err != nil {
 		return
 	}

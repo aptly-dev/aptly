@@ -1,16 +1,21 @@
-from lib import BaseTest
-import time
-import json
-import random
-import string
-import os
 import inspect
+import json
+import os
+import random
 import shutil
+import string
+import time
+
+from lib import BaseTest
 
 try:
     import requests
 except ImportError:
     requests = None
+
+# States for returned tasks from the API
+TASK_SUCCEEDED = 2
+TASK_FAILED = 3
 
 
 class APITest(BaseTest):
@@ -19,6 +24,14 @@ class APITest(BaseTest):
     """
     aptly_server = None
     base_url = "127.0.0.1:8765"
+    configOverride = {
+        "FileSystemPublishEndpoints": {
+            "apiandserve": {
+                "rootDir": f"{os.environ['HOME']}/{BaseTest.aptlyDir}/apiandserve",
+                "linkMethod": "symlink"
+            }
+        }
+    }
 
     def fixture_available(self):
         return super(APITest, self).fixture_available() and requests is not None
@@ -27,11 +40,12 @@ class APITest(BaseTest):
         if APITest.aptly_server is None:
             super(APITest, self).prepare()
 
-            APITest.aptly_server = self._start_process("aptly api serve -no-lock -listen=%s" % (self.base_url),)
+            configPath = os.path.join(os.environ["HOME"], self.aptlyConfigFile)
+            APITest.aptly_server = self._start_process(f"aptly api serve -no-lock -config={configPath} -listen={self.base_url}",)
             time.sleep(1)
 
-        if os.path.exists(os.path.join(os.environ["HOME"], ".aptly", "upload")):
-            shutil.rmtree(os.path.join(os.environ["HOME"], ".aptly", "upload"))
+        if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, "upload")):
+            shutil.rmtree(os.path.join(os.environ["HOME"], self.aptlyDir, "upload"))
 
     def run(self):
         pass

@@ -16,7 +16,6 @@ import (
 // SigningOptions is a shared between publish API GPG options structure
 type SigningOptions struct {
 	Skip           bool
-	Batch          bool
 	GpgKey         string
 	Keyring        string
 	SecretKeyring  string
@@ -33,7 +32,9 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	signer.SetKey(options.GpgKey)
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)
-	signer.SetBatch(options.Batch)
+
+	// If Batch is false, GPG will ask for passphrase on stdin, which would block the api process
+	signer.SetBatch(true)
 
 	err := signer.Init()
 	if err != nil {
@@ -71,7 +72,7 @@ func apiPublishList(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.AbortWithError(500, err)
+		AbortWithJSONError(c, 500, err)
 		return
 	}
 
@@ -108,12 +109,12 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		AbortWithJSONError(c, 500, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
 	if len(b.Sources) == 0 {
-		c.AbortWithError(400, fmt.Errorf("unable to publish: soures are empty"))
+		AbortWithJSONError(c, 400, fmt.Errorf("unable to publish: soures are empty"))
 		return
 	}
 
@@ -134,14 +135,14 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			snapshot, err = snapshotCollection.ByName(source.Name)
 			if err != nil {
-				c.AbortWithError(404, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, 404, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			resources = append(resources, string(snapshot.ResourceKey()))
 			err = snapshotCollection.LoadComplete(snapshot)
 			if err != nil {
-				c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
@@ -158,26 +159,26 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			localRepo, err = localCollection.ByName(source.Name)
 			if err != nil {
-				c.AbortWithError(404, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, 404, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			resources = append(resources, string(localRepo.Key()))
 			err = localCollection.LoadComplete(localRepo)
 			if err != nil {
-				c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 			}
 
 			sources = append(sources, localRepo)
 		}
 	} else {
-		c.AbortWithError(400, fmt.Errorf("unknown SourceKind"))
+		AbortWithJSONError(c, 400, fmt.Errorf("unknown SourceKind"))
 		return
 	}
 
 	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to publish: %s", err))
+		AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 		return
 	}
 
@@ -211,7 +212,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		}
 
 		published.SkipBz2 = context.Config().SkipBz2Publishing
-		if b.SkipContents != nil {
+		if b.SkipBz2 != nil {
 			published.SkipBz2 = *b.SkipBz2
 		}
 
@@ -264,7 +265,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		AbortWithJSONError(c, 500, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
@@ -273,12 +274,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		c.AbortWithError(404, fmt.Errorf("unable to update: %s", err))
+		AbortWithJSONError(c, 404, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("unable to update: %s", err))
+		AbortWithJSONError(c, 500, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
@@ -288,7 +289,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
-			c.AbortWithError(400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
+			AbortWithJSONError(c, 400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
 		updatedComponents = published.Components()
@@ -299,20 +300,20 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		publishedComponents := published.Components()
 		for _, snapshotInfo := range b.Snapshots {
 			if !utils.StrSliceHasItem(publishedComponents, snapshotInfo.Component) {
-				c.AbortWithError(404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
+				AbortWithJSONError(c, 404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
 				return
 			}
 
 			snapshotCollection := collectionFactory.SnapshotCollection()
 			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err2 != nil {
-				c.AbortWithError(404, err2)
+				AbortWithJSONError(c, 404, err2)
 				return
 			}
 
 			err2 = snapshotCollection.LoadComplete(snapshot)
 			if err2 != nil {
-				c.AbortWithError(500, err2)
+				AbortWithJSONError(c, 500, err2)
 				return
 			}
 
@@ -321,7 +322,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			updatedSnapshots = append(updatedSnapshots, snapshot.Name)
 		}
 	} else {
-		c.AbortWithError(500, fmt.Errorf("unknown published repository type"))
+		AbortWithJSONError(c, 500, fmt.Errorf("unknown published repository type"))
 		return
 	}
 
@@ -376,7 +377,7 @@ func apiPublishDrop(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("unable to drop: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to drop: %s", err))
 		return
 	}
 

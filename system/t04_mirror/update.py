@@ -1,8 +1,9 @@
-import string
-import re
-import os
-import shutil
 import inspect
+import os
+import re
+import shutil
+import string
+
 from lib import BaseTest
 
 
@@ -114,7 +115,7 @@ class UpdateMirror7Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
@@ -142,7 +143,7 @@ class UpdateMirror9Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -155,7 +156,7 @@ class UpdateMirror10Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -187,7 +188,7 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -281,7 +282,7 @@ class UpdateMirror17Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
 
@@ -308,7 +309,7 @@ class UpdateMirror18Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://cdn-fastly.deb.debian.org/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
@@ -353,7 +354,7 @@ class UpdateMirror20Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian jessie-cran35/",
+        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     configOverride = {"gpgProvider": "internal"}
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
@@ -384,7 +385,7 @@ class UpdateMirror22Test(BaseTest):
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 ./"
+        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
 
@@ -401,7 +402,7 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://cdn-fastly.deb.debian.org/debian/ stretch main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature

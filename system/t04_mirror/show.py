@@ -1,12 +1,13 @@
-from lib import BaseTest
 import re
+
+from lib import BaseTest
 
 
 class ShowMirror1Test(BaseTest):
     """
     show mirror: regular mirror
     """
-    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch"]
+    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch"]
     runCmd = "aptly mirror show mirror1"
 
 
@@ -34,19 +35,19 @@ class ShowMirror4Test(BaseTest):
     show mirror: mirror with filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://security.debian.org/ stretch/updates main"
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://archive.debian.org/debian-security/ stretch/updates main"
     ]
     runCmd = "aptly mirror show mirror4"
 
     def outputMatchPrepare(self, s):
-        return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+        return re.sub(r"(Date): [,0-9:+A-Za-z -]+\n", "", s)
 
 
 class ShowMirror5Test(BaseTest):
     """
     show mirror: regular mirror
     """
-    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://cdn-fastly.deb.debian.org/debian/ stretch"]
+    fixtureCmds = ["aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch"]
     runCmd = "aptly mirror show -json mirror1"
 
     def outputMatchPrepare(_, s):
@@ -74,7 +75,7 @@ class ShowMirror8Test(BaseTest):
     show mirror: mirror with filter
     """
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://security.debian.org/ stretch/updates main"
+        "aptly mirror create -ignore-signatures -filter='nginx | Priority (required)' -filter-with-deps=true mirror4 http://archive.debian.org/debian-security/ stretch/updates main"
     ]
     runCmd = "aptly mirror show -json mirror4"
 

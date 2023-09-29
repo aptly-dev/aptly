@@ -18,7 +18,7 @@ var _ = Suite(&CompressSuite{})
 const testString = "Quick brown fox jumps over black dog and runs away... Really far away... who knows?"
 
 func (s *CompressSuite) SetUpTest(c *C) {
-	s.tempfile, _ = ioutil.TempFile(c.MkDir(), "aptly-test")
+	s.tempfile, _ = os.CreateTemp(c.MkDir(), "aptly-test")
 	s.tempfile.WriteString(testString)
 }
 
