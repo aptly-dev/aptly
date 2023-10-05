@@ -2,9 +2,12 @@ package s3
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	. "gopkg.in/check.v1"
 
@@ -24,16 +27,23 @@ type PublishedStorageSuite struct {
 var _ = Suite(&PublishedStorageSuite{})
 
 func (s *PublishedStorageSuite) SetUpTest(c *C) {
+	s.createStorageWithParallelRequests(c, 0)
+}
+
+func (s *PublishedStorageSuite) createStorageWithParallelRequests(c *C, parallelRequests int) {
 	var err error
+	if s.srv != nil {
+		s.srv.Quit()
+	}
 	s.srv, err = NewServer(&Config{})
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
 
-	s.storage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, false)
+	s.storage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, parallelRequests, false)
 	c.Assert(err, IsNil)
-	s.prefixedStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", false, true, false, false, false)
+	s.prefixedStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", false, true, false, false, parallelRequests, false)
 	c.Assert(err, IsNil)
-	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false, false)
+	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false, parallelRequests, false)
 	c.Assert(err, IsNil)
 
 	_, err = s.storage.s3.CreateBucket(&s3.CreateBucketInput{Bucket: aws.String("test")})
@@ -42,6 +52,17 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
 	s.srv.Quit()
+}
+
+func (s *PublishedStorageSuite) checkGetRequestsEqual(c *C, prefix string, expectedGetRequestUris []string) {
+	getRequests := make([]string, 0, len(s.srv.Requests))
+	for _, r := range s.srv.Requests {
+		if r.Method == "GET" && strings.HasPrefix(r.RequestURI, prefix) {
+			getRequests = append(getRequests, r.RequestURI)
+		}
+	}
+	sort.Strings(getRequests)
+	c.Check(getRequests, DeepEquals, expectedGetRequestUris)
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
@@ -109,6 +130,13 @@ func (s *PublishedStorageSuite) TestPutFilePlusWorkaround(c *C) {
 }
 
 func (s *PublishedStorageSuite) TestFilelist(c *C) {
+	for _, parallelRequests := range []int{0, 2} {
+		s.createStorageWithParallelRequests(c, parallelRequests)
+		s.testFilelist(c)
+	}
+}
+
+func (s *PublishedStorageSuite) testFilelist(c *C) {
 	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "lala/a", "lala/b", "lala/c"}
 	for _, path := range paths {
 		s.PutFile(c, path, []byte("test"))
@@ -116,6 +144,7 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
+	sort.Strings(list)
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "test/a", "test/b", "testa"})
 
 	list, err = s.storage.Filelist("test")
@@ -131,7 +160,114 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	c.Check(list, DeepEquals, []string{"a", "b", "c"})
 }
 
+func (s *PublishedStorageSuite) TestFilelistDistAndPool(c *C) {
+	for _, parallelRequests := range []int{0, 2} {
+		s.createStorageWithParallelRequests(c, parallelRequests)
+		s.testFilelistDistAndPool(c, parallelRequests)
+	}
+}
+
+func trimPrefix(s []string, prefix string) []string {
+	ret := make([]string, len(s))
+	for i, ss := range s {
+		ret[i] = strings.TrimPrefix(ss, prefix)
+	}
+	return ret
+}
+
+func (s *PublishedStorageSuite) testFilelistDistAndPool(c *C, parallelRequests int) {
+	poolPaths := []string{
+		"pool/main/a/abc/abc.deb",
+		"pool/main/a/abc/abc-dev.deb",
+		"pool/main/a/agg/agg.deb",
+		"pool/main/x/xyz/xyz.deb",
+	}
+	for _, path := range poolPaths {
+		s.PutFile(c, path, []byte("test"))
+	}
+	distPaths := make([]string, 1010)
+	for i := 0; i < 1010; i++ {
+		distPaths[i] = fmt.Sprintf("dists/dist%d/binary-amd64/Packages", i)
+	}
+	for _, path := range distPaths {
+		s.PutFile(c, path, []byte("test"))
+	}
+
+	prefixAndRequests := map[string][][]string{
+		"": {
+			append(distPaths, poolPaths...),
+			{ // parallelRequests == 0
+				"/test?marker=dists%2Fdist99%2Fbinary-amd64%2FPackages&max-keys=1000&prefix=",
+				"/test?max-keys=1000&prefix=",
+			},
+			{ // parallelRequests > 1
+				"/test?delimiter=%2F&max-keys=1000&prefix=",
+				"/test?delimiter=%2F&max-keys=1000&prefix=pool%2F",
+				"/test?delimiter=%2F&max-keys=1000&prefix=pool%2Fmain%2F",
+				"/test?marker=dists%2Fdist99%2Fbinary-amd64%2FPackages&max-keys=1000&prefix=dists%2F",
+				"/test?max-keys=1000&prefix=dists%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fa%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fx%2F",
+			},
+		},
+		"dists": {
+			trimPrefix(distPaths, "dists/"),
+			{ // parallelRequests == 0
+				"/test?marker=dists%2Fdist99%2Fbinary-amd64%2FPackages&max-keys=1000&prefix=dists%2F",
+				"/test?max-keys=1000&prefix=dists%2F",
+			},
+			{ // parallelRequests > 1
+				"/test?marker=dists%2Fdist99%2Fbinary-amd64%2FPackages&max-keys=1000&prefix=dists%2F",
+				"/test?max-keys=1000&prefix=dists%2F",
+			},
+		},
+		"pool": {
+			trimPrefix(poolPaths, "pool/"),
+			{ // parallelRequests == 0
+				"/test?max-keys=1000&prefix=pool%2F",
+			},
+			{ // parallelRequests > 1
+				"/test?delimiter=%2F&max-keys=1000&prefix=pool%2F",
+				"/test?delimiter=%2F&max-keys=1000&prefix=pool%2Fmain%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fa%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fx%2F",
+			},
+		},
+		"pool/main/": {
+			trimPrefix(poolPaths, "pool/main/"),
+			{ // parallelRequests == 0
+				"/test?max-keys=1000&prefix=pool%2Fmain%2F",
+			},
+			{ // parallelRequests > 1
+				"/test?delimiter=%2F&max-keys=1000&prefix=pool%2Fmain%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fa%2F",
+				"/test?max-keys=1000&prefix=pool%2Fmain%2Fx%2F",
+			},
+		},
+	}
+	for prefix, expectedRequests := range prefixAndRequests {
+		s.srv.Requests = nil
+		list, err := s.storage.Filelist(prefix)
+		c.Check(err, IsNil)
+		sort.Strings(list)
+		sort.Strings(expectedRequests[0])
+		c.Check(list, DeepEquals, expectedRequests[0])
+		if parallelRequests > 1 {
+			s.checkGetRequestsEqual(c, "", expectedRequests[2])
+		} else {
+			s.checkGetRequestsEqual(c, "", expectedRequests[1])
+		}
+	}
+}
+
 func (s *PublishedStorageSuite) TestFilelistPlusWorkaround(c *C) {
+	for parallelRequests := range []int{0, 2} {
+		s.createStorageWithParallelRequests(c, parallelRequests)
+		s.testFilelistPlusWorkaround(c)
+	}
+}
+
+func (s *PublishedStorageSuite) testFilelistPlusWorkaround(c *C) {
 	s.storage.plusWorkaround = true
 	s.prefixedStorage.plusWorkaround = true
 
@@ -142,6 +278,7 @@ func (s *PublishedStorageSuite) TestFilelistPlusWorkaround(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
+	sort.Strings(list)
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+b", "lala/c", "test/a+1", "testa"})
 
 	list, err = s.storage.Filelist("test")
@@ -223,6 +360,7 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
+	sort.Strings(list)
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "testa"})
 }
 
@@ -264,48 +402,122 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 
 	// first link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// duplicate link from pool
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
 	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with conflict and force
-	err = s.storage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, true)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Spam"))
 
 	// for prefixed storage:
 	// first link from pool
-	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
 	c.Check(err, IsNil)
 
 	// 2nd link from pool, providing wrong path for source file
 	//
 	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
 	s.prefixedStorage.pathCache = nil
-	err = s.prefixedStorage.LinkFromPool(filepath.Join("", "pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "lala/pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
 	// link from pool with nested file name
-	err = s.storage.LinkFromPool("dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
+	err = s.storage.LinkFromPool("", "dists/jessie/non-free/installer-i386/current/images", "netboot/boot.img.gz", pool, src3, cksum3, false)
 	c.Check(err, IsNil)
 
 	c.Check(s.GetFile(c, "dists/jessie/non-free/installer-i386/current/images/netboot/boot.img.gz"), DeepEquals, []byte("Contents"))
+}
+
+func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
+	root := c.MkDir()
+	pool := files.NewPackagePool(root, false)
+	cs := files.NewMockChecksumStorage()
+
+	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
+	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
+	c.Assert(err, IsNil)
+	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
+
+	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
+	c.Assert(err, IsNil)
+
+	// Publish two packages at the same publish prefix
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{"/test?max-keys=1000&prefix="})
+
+	s.srv.Requests = nil
+	// Publish two packages at a different prefix
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=publish-prefix%2F",
+	})
+
+	s.srv.Requests = nil
+	// Publish two packages at a prefixed storage
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=lala%2F",
+	})
+
+	s.srv.Requests = nil
+	// Publish two packages at a prefixed storage plus a publish prefix.
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "b"), "mars-invaders_1.03.deb", pool, src1, cksum1, false)
+	c.Check(err, IsNil)
+
+	// Check only one listing request was done to the server
+	s.checkGetRequestsEqual(c, "/test?", []string{
+		"/test?max-keys=1000&prefix=lala%2Fpublish-prefix%2F",
+	})
+
+	// This step checks that files already exists in S3 and skip upload (which would fail if not skipped).
+	s.prefixedStorage.pathCache = nil
+	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
+	err = s.storage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
+	c.Check(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestSymLink(c *C) {

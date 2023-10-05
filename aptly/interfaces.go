@@ -70,7 +70,7 @@ type PublishedStorage interface {
 	// Remove removes single file under public path
 	Remove(path string) error
 	// LinkFromPool links package file from pool to dist's pool location
-	LinkFromPool(publishedDirectory, fileName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
+	LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
 	// Filelist returns list of files under prefix
 	Filelist(prefix string) ([]string, error)
 	// RenameFile renames (moves) file

@@ -106,6 +106,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"disableMultiDel\": false,\n"+
 		"      \"forceSigV2\": false,\n"+
 		"      \"forceVirtualHostedStyle\": false,\n"+
+		"      \"parallelListingRequests\": 0,\n"+
 		"      \"debug\": false\n"+
 		"    }\n"+
 		"  },\n"+

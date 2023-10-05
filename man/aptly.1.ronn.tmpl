@@ -77,6 +77,7 @@ Configuration file is stored in JSON format (default values shown below):
           "disableMultiDel": false,
           "forceSigV2": false,
           "forceVirtualHostedStyle": true,
+          "parallelListingRequests": 0,
           "debug": false
         }
       },
@@ -255,6 +256,9 @@ and associated settings:
    * `forceVirtualHostedStyle`:
      (optional) disable path style visit, useful with non-AWS S3-compatible object stores
      which only support virtual hosted style
+   * `parallelListingRequests`:
+     (optional) if greater than 1, list the content of the bucket up to this number of requests
+     in parallel
    * `debug`:
      (optional) enables detailed request/response dump for each S3 operation
 

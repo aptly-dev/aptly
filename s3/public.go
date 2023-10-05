@@ -24,16 +24,17 @@ const errCodeNotFound = "NotFound"
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
 type PublishedStorage struct {
-	s3               *s3.S3
-	config           *aws.Config
-	bucket           string
-	acl              string
-	prefix           string
-	storageClass     string
-	encryptionMethod string
-	plusWorkaround   bool
-	disableMultiDel  bool
-	pathCache        map[string]string
+	s3                      *s3.S3
+	config                  *aws.Config
+	bucket                  string
+	acl                     string
+	prefix                  string
+	storageClass            string
+	encryptionMethod        string
+	plusWorkaround          bool
+	disableMultiDel         bool
+	pathCache               map[string]map[string]string
+	parallelListingRequests int
 }
 
 // Check interface
@@ -45,6 +46,7 @@ var (
 func NewPublishedStorageRaw(
 	bucket, defaultACL, prefix, storageClass, encryptionMethod string,
 	plusWorkaround, disabledMultiDel bool,
+	parallelListingRequests int,
 	config *aws.Config,
 ) (*PublishedStorage, error) {
 	if defaultACL == "" {
@@ -63,15 +65,16 @@ func NewPublishedStorageRaw(
 	}
 
 	result := &PublishedStorage{
-		s3:               s3.New(sess),
-		bucket:           bucket,
-		config:           config,
-		acl:              defaultACL,
-		prefix:           prefix,
-		storageClass:     storageClass,
-		encryptionMethod: encryptionMethod,
-		plusWorkaround:   plusWorkaround,
-		disableMultiDel:  disabledMultiDel,
+		s3:                      s3.New(sess),
+		bucket:                  bucket,
+		config:                  config,
+		acl:                     defaultACL,
+		prefix:                  prefix,
+		storageClass:            storageClass,
+		encryptionMethod:        encryptionMethod,
+		plusWorkaround:          plusWorkaround,
+		disableMultiDel:         disabledMultiDel,
+		parallelListingRequests: parallelListingRequests,
 	}
 
 	return result, nil
@@ -81,7 +84,8 @@ func NewPublishedStorageRaw(
 // keys, region and bucket name
 func NewPublishedStorage(
 	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
-	plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle, debug bool) (*PublishedStorage, error) {
+	plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle bool, parallelListingRequests int,
+	debug bool) (*PublishedStorage, error) {
 
 	config := &aws.Config{
 		Region: aws.String(region),
@@ -103,7 +107,7 @@ func NewPublishedStorage(
 	}
 
 	result, err := NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
-		encryptionMethod, plusWorkaround, disableMultiDel, config)
+		encryptionMethod, plusWorkaround, disableMultiDel, parallelListingRequests, config)
 
 	if err == nil && forceSigV2 {
 		creds := []awsauth.Credentials{}
@@ -295,31 +299,38 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 
 // LinkFromPool links package file from pool to dist's pool location
 //
-// publishedDirectory is desired location in pool (like prefix/pool/component/liba/libav/)
+// publishedPrefix is desired prefix for the location in the pool.
+// publishedRelParh is desired location in pool (like pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
 // sourcePath is filepath to package file in package pool
 //
 // LinkFromPool returns relative path for the published file to be included in package index
-func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName string, sourcePool aptly.PackagePool,
+func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool aptly.PackagePool,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
-	relPath := filepath.Join(publishedDirectory, fileName)
-	poolPath := filepath.Join(storage.prefix, relPath)
+	relFilePath := filepath.Join(publishedRelPath, fileName)
+	prefixRelFilePath := filepath.Join(publishedPrefix, relFilePath)
+	poolPath := filepath.Join(storage.prefix, prefixRelFilePath)
 
 	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist("", true)
+		storage.pathCache = make(map[string]map[string]string)
+	}
+	pathCache := storage.pathCache[publishedPrefix]
+	if pathCache == nil {
+		paths, md5s, err := storage.internalFilelist(publishedPrefix, true)
 		if err != nil {
 			return errors.Wrap(err, "error caching paths under prefix")
 		}
 
-		storage.pathCache = make(map[string]string, len(paths))
+		pathCache = make(map[string]string, len(paths))
 
 		for i := range paths {
-			storage.pathCache[paths[i]] = md5s[i]
+			pathCache[paths[i]] = md5s[i]
 		}
+		storage.pathCache[publishedPrefix] = pathCache
 	}
 
-	destinationMD5, exists := storage.pathCache[relPath]
+	destinationMD5, exists := pathCache[relFilePath]
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
@@ -327,12 +338,12 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 			// doesn’t look like a valid MD5,
 			// attempt to fetch one from the metadata
 			var err error
-			destinationMD5, err = storage.getMD5(relPath)
+			destinationMD5, err = storage.getMD5(prefixRelFilePath)
 			if err != nil {
 				err = errors.Wrap(err, fmt.Sprintf("error verifying MD5 for %s: %s", storage, poolPath))
 				return err
 			}
-			storage.pathCache[relPath] = destinationMD5
+			pathCache[relFilePath] = destinationMD5
 		}
 		if sourceMD5 == "" {
 			return fmt.Errorf("unable to compare object, MD5 checksum missing")
@@ -354,9 +365,9 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 	}
 	defer source.Close()
 
-	err = storage.putFile(relPath, source, sourceMD5)
+	err = storage.putFile(prefixRelFilePath, source, sourceMD5)
 	if err == nil {
-		storage.pathCache[relPath] = sourceMD5
+		pathCache[relFilePath] = sourceMD5
 	} else {
 		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
 	}
@@ -371,43 +382,27 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 }
 
 func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaround bool) (paths []string, md5s []string, err error) {
-	paths = make([]string, 0, 1024)
-	md5s = make([]string, 0, 1024)
 	prefix = filepath.Join(storage.prefix, prefix)
 	if prefix != "" {
 		prefix += "/"
 	}
 
-	params := &s3.ListObjectsInput{
-		Bucket:  aws.String(storage.bucket),
-		Prefix:  aws.String(prefix),
-		MaxKeys: aws.Int64(1000),
+	parallelFilelistWorkers := storage.parallelListingRequests
+	if parallelFilelistWorkers < 1 {
+		parallelFilelistWorkers = 1
 	}
+	parallelFilelister := StartNewParallelFilelister(storage.s3, storage.bucket, prefix, parallelFilelistWorkers, storage.plusWorkaround && hidePlusWorkaround)
 
-	err = storage.s3.ListObjectsPages(params, func(contents *s3.ListObjectsOutput, lastPage bool) bool {
-		for _, key := range contents.Contents {
-			if storage.plusWorkaround && hidePlusWorkaround && strings.Contains(*key.Key, " ") {
-				// if we use plusWorkaround, we want to hide those duplicates
-				/// from listing
-				continue
-			}
+	parallelFilelister.WaitForCompletion()
 
-			if prefix == "" {
-				paths = append(paths, *key.Key)
-			} else {
-				paths = append(paths, (*key.Key)[len(prefix):])
-			}
-			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
+	if len(parallelFilelister.Errs) > 0 {
+		errorStrings := make([]string, len(parallelFilelister.Errs))
+		for i, e := range parallelFilelister.Errs {
+			errorStrings[i] = e.Error()
 		}
-
-		return true
-	})
-
-	if err != nil {
-		return nil, nil, errors.WithMessagef(err, "error listing under prefix %s in %s: %s", prefix, storage, err)
+		return nil, nil, errors.WithMessagef(parallelFilelister.Errs[0], strings.Join(errorStrings, ", "))
 	}
-
-	return paths, md5s, nil
+	return parallelFilelister.Paths, parallelFilelister.Md5s, nil
 }
 
 // RenameFile renames (moves) file

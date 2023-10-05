@@ -63,6 +63,7 @@ type S3PublishRoot struct {
 	DisableMultiDel         bool   `json:"disableMultiDel"`
 	ForceSigV2              bool   `json:"forceSigV2"`
 	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"`
+	ParallelListingRequests int    `json:"parallelListingRequests"`
 	Debug                   bool   `json:"debug"`
 }
 
