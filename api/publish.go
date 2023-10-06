@@ -61,7 +61,7 @@ func apiPublishList(c *gin.Context) {
 	result := make([]*deb.PublishedRepo, 0, collection.Len())
 
 	err := collection.ForEach(func(repo *deb.PublishedRepo) error {
-		err := collection.LoadComplete(repo, collectionFactory)
+		err := collection.LoadShallow(repo, collectionFactory)
 		if err != nil {
 			return err
 		}
