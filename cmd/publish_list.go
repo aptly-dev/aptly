@@ -34,7 +34,7 @@ func aptlyPublishListTxt(cmd *commander.Command, _ []string) error {
 	published := make([]string, 0, collectionFactory.PublishedRepoCollection().Len())
 
 	err = collectionFactory.PublishedRepoCollection().ForEach(func(repo *deb.PublishedRepo) error {
-		e := collectionFactory.PublishedRepoCollection().LoadComplete(repo, collectionFactory)
+		e := collectionFactory.PublishedRepoCollection().LoadShallow(repo, collectionFactory)
 		if e != nil {
 			fmt.Fprintf(os.Stderr, "Error found on one publish (prefix:%s / distribution:%s / component:%s\n)",
 				repo.StoragePrefix(), repo.Distribution, repo.Components())
