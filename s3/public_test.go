@@ -2,14 +2,16 @@ package s3
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	. "gopkg.in/check.v1"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/utils"
@@ -36,7 +38,11 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false, false)
 	c.Assert(err, IsNil)
 
-	_, err = s.storage.s3.CreateBucket(&s3.CreateBucketInput{Bucket: aws.String("test")})
+	_, err = s.storage.s3.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+		Bucket: aws.String("test"),
+		CreateBucketConfiguration: &types.CreateBucketConfiguration{
+			LocationConstraint: "test-1",
+		}})
 	c.Assert(err, IsNil)
 }
 
@@ -45,7 +51,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
-	resp, err := s.storage.s3.GetObject(&s3.GetObjectInput{
+	resp, err := s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(s.storage.bucket),
 		Key:    aws.String(path),
 	})
@@ -59,20 +65,20 @@ func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
 }
 
 func (s *PublishedStorageSuite) AssertNoFile(c *C, path string) {
-	_, err := s.storage.s3.HeadObject(&s3.HeadObjectInput{
+	_, err := s.storage.s3.HeadObject(context.TODO(), &s3.HeadObjectInput{
 		Bucket: aws.String(s.storage.bucket),
 		Key:    aws.String(path),
 	})
-	c.Assert(err, ErrorMatches, ".*\n.*status code: 404.*")
+	c.Assert(err, ErrorMatches, ".*StatusCode: 404.*")
 }
 
 func (s *PublishedStorageSuite) PutFile(c *C, path string, data []byte) {
-	_, err := s.storage.s3.PutObject(&s3.PutObjectInput{
+	_, err := s.storage.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(s.storage.bucket),
 		Key:         aws.String(path),
 		Body:        bytes.NewReader(data),
 		ContentType: aws.String("binary/octet-stream"),
-		ACL:         aws.String("private"),
+		ACL:         types.ObjectCannedACLPrivate,
 	})
 	c.Assert(err, IsNil)
 }
@@ -228,7 +234,7 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 
 func (s *PublishedStorageSuite) TestRemoveDirsNoSuchBucket(c *C) {
 	err := s.noSuchBucketStorage.RemoveDirs("a/b", nil)
-	c.Check(err, IsNil)
+	c.Check(err, ErrorMatches, ".*StatusCode: 404.*")
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
