@@ -13,12 +13,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	// TODO: replace crypto/openpgp since it is deprecated
-	// https://github.com/golang/go/issues/44226
-	"golang.org/x/crypto/openpgp"                       //nolint:staticcheck
-	"golang.org/x/crypto/openpgp/clearsign"             //nolint:staticcheck
-	openpgp_errors "golang.org/x/crypto/openpgp/errors" //nolint:staticcheck
-	"golang.org/x/crypto/openpgp/packet"                //nolint:staticcheck
+	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/ProtonMail/go-crypto/openpgp/clearsign"
+	openpgp_errors "github.com/ProtonMail/go-crypto/openpgp/errors"
+	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"golang.org/x/term"
 )
 
