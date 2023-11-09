@@ -182,6 +182,8 @@ func pubkeyAlgorithmName(algorithm packet.PublicKeyAlgorithm) string {
 		return "EDCH"
 	case packet.PubKeyAlgoECDSA:
 		return "ECDSA"
+	case packet.PubKeyAlgoEdDSA:
+		return "EdDSA"
 	}
 
 	return "unknown"
