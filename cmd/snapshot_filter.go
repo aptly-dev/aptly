@@ -27,7 +27,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
 
-	err = collectionFactory.SnapshotCollection().LoadComplete(source)
+	err = collectionFactory.SnapshotCollection().LoadComplete(source, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to filter: %s", err)
 	}
@@ -87,7 +87,7 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	destination := deb.NewSnapshotFromPackageList(args[1], []*deb.Snapshot{source}, result,
 		fmt.Sprintf("Filtered '%s', query was: '%s'", source.Name, strings.Join(args[2:], " ")))
 
-	err = collectionFactory.SnapshotCollection().Add(destination)
+	err = collectionFactory.SnapshotCollection().Add(destination, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to create snapshot: %s", err)
 	}

@@ -55,7 +55,7 @@ func checkRepo(repo *deb.LocalRepo) error {
 	collectionFactory := context.NewCollectionFactory()
 	repos := collectionFactory.LocalRepoCollection()
 
-	err := repos.LoadComplete(repo)
+	err := repos.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("load complete repo %q: %s", repo.Name, err)
 	}
@@ -65,14 +65,15 @@ func checkRepo(repo *deb.LocalRepo) error {
 		return fmt.Errorf("find dangling references: %w", err)
 	}
 
-	if len(dangling.Refs) > 0 {
-		for _, ref := range dangling.Refs {
+	if dangling.Len() > 0 {
+		_ = dangling.ForEach(func(ref []byte) error {
 			context.Progress().Printf("Removing dangling database reference %q\n", ref)
-		}
+			return nil
+		})
 
 		repo.UpdateRefList(repo.RefList().Subtract(dangling))
 
-		if err = repos.Update(repo); err != nil {
+		if err = repos.Update(repo, collectionFactory.RefListCollection()); err != nil {
 			return fmt.Errorf("update repo: %w", err)
 		}
 	}

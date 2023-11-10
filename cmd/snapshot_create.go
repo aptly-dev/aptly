@@ -30,7 +30,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		err = collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -50,7 +50,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
 
-		err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		err = collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -71,7 +71,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	err = collectionFactory.SnapshotCollection().Add(snapshot)
+	err = collectionFactory.SnapshotCollection().Add(snapshot, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to add snapshot: %s", err)
 	}

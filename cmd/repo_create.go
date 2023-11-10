@@ -36,7 +36,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load source snapshot: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to load source snapshot: %s", err)
 		}
@@ -44,7 +44,7 @@ func aptlyRepoCreate(cmd *commander.Command, args []string) error {
 		repo.UpdateRefList(snapshot.RefList())
 	}
 
-	err = collectionFactory.LocalRepoCollection().Add(repo)
+	err = collectionFactory.LocalRepoCollection().Add(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to add local repo: %s", err)
 	}

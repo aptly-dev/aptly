@@ -9,10 +9,10 @@ import (
 
 // FindDanglingReferences finds references that exist in the given PackageRefList, but not in the given PackageCollection.
 // It returns all such references, so they can be removed from the database.
-func FindDanglingReferences(reflist *PackageRefList, packages *PackageCollection) (dangling *PackageRefList, err error) {
-	dangling = &PackageRefList{}
+func FindDanglingReferences(reflist *SplitRefList, packages *PackageCollection) (*SplitRefList, error) {
+	dangling := &PackageRefList{}
 
-	err = reflist.ForEach(func(key []byte) error {
+	err := reflist.ForEach(func(key []byte) error {
 		ok, err := isDangling(packages, key)
 		if err != nil {
 			return err
@@ -28,7 +28,7 @@ func FindDanglingReferences(reflist *PackageRefList, packages *PackageCollection
 		return nil, err
 	}
 
-	return dangling, nil
+	return NewSplitRefListFromRefList(dangling), nil
 }
 
 func isDangling(packages *PackageCollection, key []byte) (bool, error) {

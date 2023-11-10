@@ -49,7 +49,7 @@ func aptlyPublishSourceReplace(cmd *commander.Command, args []string) error {
 		sources[component] = name
 	}
 
-	err = collectionFactory.PublishedRepoCollection().Update(published)
+	err = collectionFactory.PublishedRepoCollection().Update(published, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
