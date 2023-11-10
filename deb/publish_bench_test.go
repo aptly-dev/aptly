@@ -6,31 +6,66 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/database/etcddb"
 	"github.com/aptly-dev/aptly/database/goleveldb"
 )
 
 func BenchmarkListReferencedFiles(b *testing.B) {
 	const defaultComponent = "main"
 	const repoCount = 16
-	const repoPackagesCount = 1024
-	const uniqPackagesCount = 64
+	const repoPackagesCount = 4 * 1024
+	const uniqPackagesCount = repoPackagesCount / 16
 
-	tmpDir, err := os.MkdirTemp("", "aptly-bench")
-	if err != nil {
-		b.Fatal(err)
-	}
-	defer func() { _ = os.RemoveAll(tmpDir) }()
+	var db database.Storage
+	if url := os.Getenv("APTLY_BENCH_ETCD"); len(url) > 0 {
+		fmt.Println("using etcd at", url)
 
-	db, err := goleveldb.NewOpenDB(tmpDir)
-	if err != nil {
-		b.Fatal(err)
+		var err error
+		db, err = etcddb.NewDB(url)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		err = db.ProcessByPrefix([]byte{}, func(key []byte, value []byte) error {
+			return fmt.Errorf("database is not empty, found key %s", string(key))
+		})
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		defer func() {
+			batch := db.CreateBatch()
+			_ = db.ProcessByPrefix([]byte{}, func(key []byte, value []byte) error {
+				_ = batch.Delete(key)
+				return nil
+			})
+
+			_ = batch.Write()
+			_ = db.Close()
+		}()
+	} else {
+		fmt.Println("using leveldb")
+
+		tmpDir, err := os.MkdirTemp("", "aptly-bench")
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer func() { _ = os.RemoveAll(tmpDir) }()
+
+		db, err = goleveldb.NewOpenDB(tmpDir)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		defer func() { _ = db.Close() }()
 	}
-	defer func() { _ = db.Close() }()
 
 	factory := NewCollectionFactory(db)
 	packageCollection := factory.PackageCollection()
 	repoCollection := factory.LocalRepoCollection()
 	publishCollection := factory.PublishedRepoCollection()
+	reflistCollection := factory.RefListCollection()
 
 	sharedRefs := NewPackageRefList()
 	{
@@ -49,7 +84,10 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg-shared_%d.deb", pkgIndex),
 			}})
 
-			_ = packageCollection.UpdateInTransaction(p, transaction)
+			err = packageCollection.UpdateInTransaction(p, transaction)
+			if err != nil {
+				b.Fatal(err)
+			}
 			sharedRefs.Refs = append(sharedRefs.Refs, p.Key(""))
 		}
 
@@ -78,7 +116,10 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg%d_%d.deb", repoIndex, pkgIndex),
 			}})
 
-			_ = packageCollection.UpdateInTransaction(p, transaction)
+			err = packageCollection.UpdateInTransaction(p, transaction)
+			if err != nil {
+				b.Fatal(err)
+			}
 			refs.Refs = append(refs.Refs, p.Key(""))
 		}
 
@@ -91,14 +132,20 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 		repo := NewLocalRepo(fmt.Sprintf("repo%d", repoIndex), "comment")
 		repo.DefaultDistribution = fmt.Sprintf("dist%d", repoIndex)
 		repo.DefaultComponent = defaultComponent
-		repo.UpdateRefList(refs.Merge(sharedRefs, false, true))
-		_ = repoCollection.Add(repo)
+		repo.UpdateRefList(NewSplitRefListFromRefList(refs.Merge(sharedRefs, false, true)))
+		err = repoCollection.Add(repo, reflistCollection)
+		if err != nil {
+			b.Fatal(err)
+		}
 
 		publish, err := NewPublishedRepo("", "test", "", nil, []string{defaultComponent}, []interface{}{repo}, factory, false)
 		if err != nil {
 			b.Fatal(err)
 		}
-		_ = publishCollection.Add(publish)
+		err = publishCollection.Add(publish, reflistCollection)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 
 	_ = db.CompactDB()

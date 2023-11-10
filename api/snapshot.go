@@ -34,7 +34,7 @@ func apiSnapshotsList(c *gin.Context) {
 
 	result := []snapshotResponse{}
 	err := collection.ForEachSorted(SortMethodString, func(snapshot *deb.Snapshot) error {
-		err := collection.LoadComplete(snapshot)
+		err := collection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if err != nil {
 			return err
 		}
@@ -98,6 +98,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskMirrorCollection := taskCollectionFactory.RemoteRepoCollection()
 		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		repo, err := taskMirrorCollection.ByName(name)
 		if err != nil {
@@ -109,7 +110,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, err
 		}
 
-		err = taskMirrorCollection.LoadComplete(repo)
+		err = taskMirrorCollection.LoadComplete(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -123,7 +124,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		err = taskSnapshotCollection.Add(snapshot)
+		err = taskSnapshotCollection.Add(snapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
@@ -194,6 +195,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
 		taskPackageCollection := taskCollectionFactory.PackageCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load of all sources after lock acquired
 		freshSources := make([]*deb.Snapshot, len(b.SourceSnapshots))
@@ -203,21 +205,21 @@ func apiSnapshotsCreate(c *gin.Context) {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 			}
 			// LoadComplete on fresh copy
-			err = taskSnapshotCollection.LoadComplete(freshSources[i])
+			err = taskSnapshotCollection.LoadComplete(freshSources[i], taskRefListCollection)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 			}
 		}
 
 		// Merge packages from all source snapshots
-		var refList *deb.PackageRefList
+		var refList *deb.SplitRefList
 		if len(freshSources) > 0 {
 			refList = freshSources[0].RefList()
 			for i := 1; i < len(freshSources); i++ {
 				refList = refList.Merge(freshSources[i].RefList(), true, false)
 			}
 		} else {
-			refList = deb.NewPackageRefList()
+			refList = deb.NewSplitRefList()
 		}
 
 		// Add any explicitly specified package refs on top
@@ -236,12 +238,12 @@ func apiSnapshotsCreate(c *gin.Context) {
 					return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 				}
 			}
-			refList = refList.Merge(deb.NewPackageRefListFromPackageList(list), true, false)
+			refList = refList.Merge(deb.NewSplitRefListFromPackageList(list), true, false)
 		}
 
 		snapshot = deb.NewSnapshotFromRefList(b.Name, freshSources, refList, b.Description)
 
-		err = taskSnapshotCollection.Add(snapshot)
+		err = taskSnapshotCollection.Add(snapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
@@ -297,13 +299,14 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskRepoCollection := taskCollectionFactory.LocalRepoCollection()
 		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		repo, err := taskRepoCollection.ByName(name)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
 
-		err = taskRepoCollection.LoadComplete(repo)
+		err = taskRepoCollection.LoadComplete(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -317,7 +320,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		err = taskSnapshotCollection.Add(snapshot)
+		err = taskSnapshotCollection.Add(snapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
@@ -382,6 +385,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 		// Phase 2: Inside task lock - create fresh factory
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.SnapshotCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load after lock acquired
 		snapshot, err = taskCollection.ByName(name)
@@ -406,7 +410,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		err = taskCollection.Update(snapshot)
+		err = taskCollection.Update(snapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -433,7 +437,7 @@ func apiSnapshotsShow(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(snapshot)
+	err = collection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -539,20 +543,20 @@ func apiSnapshotsDiff(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(snapshotA)
+	err = collection.LoadComplete(snapshotA, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
 	}
 
-	err = collection.LoadComplete(snapshotB)
+	err = collection.LoadComplete(snapshotB, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection(), nil)
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -595,7 +599,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(snapshot)
+	err = collection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -675,6 +679,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 		// Phase 2: Inside task lock - create fresh factory
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load of all sources inside task
 		freshSources := make([]*deb.Snapshot, len(body.Sources))
@@ -684,7 +689,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 			}
 			// LoadComplete on fresh copy
-			err = taskSnapshotCollection.LoadComplete(freshSources[i])
+			err = taskSnapshotCollection.LoadComplete(freshSources[i], taskRefListCollection)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 			}
@@ -708,7 +713,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 		snapshot = deb.NewSnapshotFromRefList(name, freshSources, result,
 			fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
 
-		err = taskCollectionFactory.SnapshotCollection().Add(snapshot)
+		err = taskCollectionFactory.SnapshotCollection().Add(snapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to create snapshot: %s", err)
 		}
@@ -794,6 +799,7 @@ func apiSnapshotsPull(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		// Phase 2: Inside task lock - create fresh factory
 		taskCollectionFactory := context.NewCollectionFactory()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load of snapshots after lock acquired
 		freshToSnapshot, err := taskCollectionFactory.SnapshotCollection().ByName(name)
@@ -804,7 +810,7 @@ func apiSnapshotsPull(c *gin.Context) {
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
-		err = taskCollectionFactory.SnapshotCollection().LoadComplete(freshSourceSnapshot)
+		err = taskCollectionFactory.SnapshotCollection().LoadComplete(freshSourceSnapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -914,7 +920,7 @@ func apiSnapshotsPull(c *gin.Context) {
 		destinationSnapshot = deb.NewSnapshotFromPackageList(body.Destination, []*deb.Snapshot{freshToSnapshot, freshSourceSnapshot}, toPackageList,
 			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", freshToSnapshot.Name, freshSourceSnapshot.Name, strings.Join(body.Queries, ", ")))
 
-		err = taskCollectionFactory.SnapshotCollection().Add(destinationSnapshot)
+		err = taskCollectionFactory.SnapshotCollection().Add(destinationSnapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}

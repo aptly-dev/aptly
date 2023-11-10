@@ -14,7 +14,7 @@ import (
 
 func printReferencesTo(p *deb.Package, collectionFactory *deb.CollectionFactory) (err error) {
 	err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
-		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
@@ -30,7 +30,7 @@ func printReferencesTo(p *deb.Package, collectionFactory *deb.CollectionFactory)
 	}
 
 	err = collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-		e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		e := collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
@@ -46,7 +46,7 @@ func printReferencesTo(p *deb.Package, collectionFactory *deb.CollectionFactory)
 	}
 
 	err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
-		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
