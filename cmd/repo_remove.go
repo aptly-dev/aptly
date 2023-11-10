@@ -24,7 +24,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
@@ -59,9 +59,9 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 	if context.Flags().Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-		err = collectionFactory.LocalRepoCollection().Update(repo)
+		err = collectionFactory.LocalRepoCollection().Update(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to save: %s", err)
 		}

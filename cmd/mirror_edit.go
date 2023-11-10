@@ -75,7 +75,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	err = collectionFactory.RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to edit: %s", err)
 	}

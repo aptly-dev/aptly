@@ -140,7 +140,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			}
 
 			resources = append(resources, string(snapshot.ResourceKey()))
-			err = snapshotCollection.LoadComplete(snapshot)
+			err = snapshotCollection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 			if err != nil {
 				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 				return
@@ -164,7 +164,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			}
 
 			resources = append(resources, string(localRepo.Key()))
-			err = localCollection.LoadComplete(localRepo)
+			err = localCollection.LoadComplete(localRepo, collectionFactory.RefListCollection())
 			if err != nil {
 				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 			}
@@ -231,7 +231,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = collection.Add(published)
+		err = collection.Add(published, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -311,7 +311,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 				return
 			}
 
-			err2 = snapshotCollection.LoadComplete(snapshot)
+			err2 = snapshotCollection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 			if err2 != nil {
 				AbortWithJSONError(c, 500, err2)
 				return
@@ -346,7 +346,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = collection.Update(published)
+		err = collection.Update(published, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}

@@ -27,7 +27,7 @@ type repoSourceItem struct {
 	// Pointer to local repo if SourceKind == "local"
 	localRepo *LocalRepo
 	// Package references is SourceKind == "local"
-	packageRefs *PackageRefList
+	packageRefs *SplitRefList
 }
 
 // PublishedRepo is a published for http/ftp representation of snapshot as Debian repository
@@ -401,7 +401,7 @@ func (p *PublishedRepo) RefKey(component string) []byte {
 }
 
 // RefList returns list of package refs in local repo
-func (p *PublishedRepo) RefList(component string) *PackageRefList {
+func (p *PublishedRepo) RefList(component string) *SplitRefList {
 	item := p.sourceItems[component]
 	if p.SourceKind == SourceLocalRepo {
 		return item.packageRefs
@@ -948,14 +948,14 @@ func (collection *PublishedRepoCollection) loadList() {
 }
 
 // Add appends new repo to collection and saves it
-func (collection *PublishedRepoCollection) Add(repo *PublishedRepo) error {
+func (collection *PublishedRepoCollection) Add(repo *PublishedRepo, reflistCollection *RefListCollection) error {
 	collection.loadList()
 
 	if collection.CheckDuplicate(repo) != nil {
 		return fmt.Errorf("published repo with storage/prefix/distribution %s/%s/%s already exists", repo.Storage, repo.Prefix, repo.Distribution)
 	}
 
-	err := collection.Update(repo)
+	err := collection.Update(repo, reflistCollection)
 	if err != nil {
 		return err
 	}
@@ -978,13 +978,14 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 }
 
 // Update stores updated information about repo in DB
-func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
+func (collection *PublishedRepoCollection) Update(repo *PublishedRepo, reflistCollection *RefListCollection) error {
 	batch := collection.db.CreateBatch()
 	batch.Put(repo.Key(), repo.Encode())
 
 	if repo.SourceKind == SourceLocalRepo {
+		rb := reflistCollection.NewBatch(batch)
 		for component, item := range repo.sourceItems {
-			batch.Put(repo.RefKey(component), item.packageRefs.Encode())
+			reflistCollection.UpdateInBatch(item.packageRefs, repo.RefKey(component), rb)
 		}
 	}
 	return batch.Write()
@@ -1017,7 +1018,7 @@ func (collection *PublishedRepoCollection) LoadShallow(repo *PublishedRepo, coll
 				return
 			}
 
-			item.packageRefs = &PackageRefList{}
+			item.packageRefs = NewSplitRefList()
 			repo.sourceItems[component] = item
 		}
 	} else {
@@ -1033,34 +1034,28 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 
 	if repo.SourceKind == SourceSnapshot {
 		for _, item := range repo.sourceItems {
-			err = collectionFactory.SnapshotCollection().LoadComplete(item.snapshot)
+			err = collectionFactory.SnapshotCollection().LoadComplete(item.snapshot, collectionFactory.RefListCollection())
 			if err != nil {
 				return
 			}
 		}
 	} else if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			err = collectionFactory.LocalRepoCollection().LoadComplete(item.localRepo)
+			err = collectionFactory.LocalRepoCollection().LoadComplete(item.localRepo, collectionFactory.RefListCollection())
 			if err != nil {
 				return
 			}
 
-			var encoded []byte
-			encoded, err = collection.db.Get(repo.RefKey(component))
+			err = collectionFactory.RefListCollection().LoadComplete(item.packageRefs, repo.RefKey(component))
 			if err != nil {
 				// < 0.6 saving w/o component name
 				if err == database.ErrNotFound && len(repo.Sources) == 1 {
-					encoded, err = collection.db.Get(repo.RefKey(""))
+					err = collectionFactory.RefListCollection().LoadComplete(item.packageRefs, repo.RefKey(""))
 				}
 
 				if err != nil {
 					return
 				}
-			}
-
-			err = item.packageRefs.Decode(encoded)
-			if err != nil {
-				return
 			}
 		}
 	} else {
@@ -1166,6 +1161,11 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 	referencedFiles := map[string][]string{}
 	processedComponentRefs := map[string]*PackageRefList{}
 
+	processedComponentBuckets := map[string]*RefListDigestSet{}
+	for _, component := range components {
+		processedComponentBuckets[component] = NewRefListDigestSet()
+	}
+
 	for _, r := range collection.list {
 		if r.Prefix == prefix {
 			matches := false
@@ -1189,36 +1189,51 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 
 			for _, component := range components {
 				if utils.StrSliceHasItem(repoComponents, component) {
-					unseenRefs := r.RefList(component)
-					processedRefs := processedComponentRefs[component]
-					if processedRefs != nil {
-						unseenRefs = unseenRefs.Subtract(processedRefs)
-					} else {
-						processedRefs = NewPackageRefList()
-					}
+					processedBuckets := processedComponentBuckets[component]
 
-					if unseenRefs.Len() == 0 {
-						continue
-					}
-					processedComponentRefs[component] = processedRefs.Merge(unseenRefs, false, true)
+					err := r.RefList(component).ForEachBucket(func(digest []byte, bucket *PackageRefList) error {
+						if processedBuckets.Has(digest) {
+							return nil
+						}
+						processedBuckets.Add(digest)
 
-					packageList, err := NewPackageListFromRefList(unseenRefs, collectionFactory.PackageCollection(), progress)
-					if err != nil {
-						return nil, err
-					}
+						unseenRefs := bucket
+						processedRefs := processedComponentRefs[component]
+						if processedRefs != nil {
+							unseenRefs = unseenRefs.Subtract(processedRefs)
+						} else {
+							processedRefs = NewPackageRefList()
+						}
 
-					packageList.ForEach(func(p *Package) error {
-						poolDir, err := p.PoolDirectory()
+						if unseenRefs.Len() == 0 {
+							return nil
+						}
+						processedComponentRefs[component] = processedRefs.Merge(unseenRefs, false, true)
+
+						packageList, err := NewPackageListFromRefList(unseenRefs, collectionFactory.PackageCollection(), progress)
 						if err != nil {
 							return err
 						}
 
-						for _, f := range p.Files() {
-							referencedFiles[component] = append(referencedFiles[component], filepath.Join(poolDir, f.Filename))
-						}
+						packageList.ForEach(func(p *Package) error {
+							poolDir, err := p.PoolDirectory()
+							if err != nil {
+								return err
+							}
+
+							for _, f := range p.Files() {
+								referencedFiles[component] = append(referencedFiles[component], filepath.Join(poolDir, f.Filename))
+							}
+
+							return nil
+						})
 
 						return nil
 					})
+
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 		}
