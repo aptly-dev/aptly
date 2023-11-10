@@ -237,6 +237,41 @@ func (s *PackageRefListSuite) TestDiff(c *C) {
 
 }
 
+func (s *PackageRefListSuite) TestDiffCompactsAtEnd(c *C) {
+	db, _ := goleveldb.NewOpenDB(c.MkDir())
+	coll := NewPackageCollection(db)
+
+	packages := []*Package{
+		{Name: "app", Version: "1.1~bp1", Architecture: "i386"},  //0
+		{Name: "app", Version: "1.1~bp2", Architecture: "i386"},  //1
+		{Name: "app", Version: "1.1~bp2", Architecture: "amd64"}, //2
+	}
+
+	for _, p := range packages {
+		coll.Update(p)
+	}
+
+	listA := NewPackageList()
+	listA.Add(packages[0])
+
+	listB := NewPackageList()
+	listB.Add(packages[1])
+	listB.Add(packages[2])
+
+	reflistA := NewPackageRefListFromPackageList(listA)
+	reflistB := NewPackageRefListFromPackageList(listB)
+
+	diffAB, err := reflistA.Diff(reflistB, coll)
+	c.Check(err, IsNil)
+	c.Check(diffAB, HasLen, 2)
+
+	c.Check(diffAB[0].Left, IsNil)
+	c.Check(diffAB[0].Right.String(), Equals, "app_1.1~bp2_amd64")
+
+	c.Check(diffAB[1].Left.String(), Equals, "app_1.1~bp1_i386")
+	c.Check(diffAB[1].Right.String(), Equals, "app_1.1~bp2_i386")
+}
+
 func (s *PackageRefListSuite) TestMerge(c *C) {
 	db, _ := goleveldb.NewOpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
