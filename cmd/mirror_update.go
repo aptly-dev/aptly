@@ -29,7 +29,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -101,12 +101,12 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		err = context.ReOpenDatabase()
 		if err == nil {
 			repo.MarkAsIdle()
-			collectionFactory.RemoteRepoCollection().Update(repo)
+			collectionFactory.RemoteRepoCollection().Update(repo, collectionFactory.RefListCollection())
 		}
 	}()
 
 	repo.MarkAsUpdating()
-	err = collectionFactory.RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -262,7 +262,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	repo.FinalizeDownload(collectionFactory, context.Progress())
-	err = collectionFactory.RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}

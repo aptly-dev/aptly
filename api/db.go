@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/aptly-dev/aptly/utils"
@@ -28,18 +29,22 @@ func apiDbCleanup(c *gin.Context) {
 
 		collectionFactory := context.NewCollectionFactory()
 
-		// collect information about referenced packages...
-		existingPackageRefs := deb.NewPackageRefList()
+		// collect information about referenced packages and their reflist buckets...
+		existingPackageRefs := deb.NewSplitRefList()
+		existingBuckets := deb.NewRefListDigestSet()
+
+		reflistMigration := collectionFactory.RefListCollection().NewMigration()
 
 		out.Printf("Loading mirrors, local repos, snapshots and published repos...")
 		err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
-			e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
-			if e != nil {
+			sl := deb.NewSplitRefList()
+			e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, repo.RefKey(), reflistMigration)
+			if e != nil && e != database.ErrNotFound {
 				return e
 			}
-			if repo.RefList() != nil {
-				existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
-			}
+
+			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			existingBuckets.AddAllInRefList(sl)
 
 			return nil
 		})
@@ -48,14 +53,14 @@ func apiDbCleanup(c *gin.Context) {
 		}
 
 		err = collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-			e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
-			if e != nil {
+			sl := deb.NewSplitRefList()
+			e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, repo.RefKey(), reflistMigration)
+			if e != nil && e != database.ErrNotFound {
 				return e
 			}
 
-			if repo.RefList() != nil {
-				existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
-			}
+			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			existingBuckets.AddAllInRefList(sl)
 
 			return nil
 		})
@@ -64,12 +69,14 @@ func apiDbCleanup(c *gin.Context) {
 		}
 
 		err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *deb.Snapshot) error {
-			e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+			sl := deb.NewSplitRefList()
+			e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, snapshot.RefKey(), reflistMigration)
 			if e != nil {
 				return e
 			}
 
-			existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false, true)
+			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			existingBuckets.AddAllInRefList(sl)
 
 			return nil
 		})
@@ -81,13 +88,16 @@ func apiDbCleanup(c *gin.Context) {
 			if published.SourceKind != deb.SourceLocalRepo {
 				return nil
 			}
-			e := collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
-			if e != nil {
-				return e
-			}
 
 			for _, component := range published.Components() {
-				existingPackageRefs = existingPackageRefs.Merge(published.RefList(component), false, true)
+				sl := deb.NewSplitRefList()
+				e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, published.RefKey(component), reflistMigration)
+				if e != nil {
+					return e
+				}
+
+				existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+				existingBuckets.AddAllInRefList(sl)
 			}
 			return nil
 		})
@@ -95,11 +105,20 @@ func apiDbCleanup(c *gin.Context) {
 			return nil, err
 		}
 
+		err = reflistMigration.Flush()
+		if err != nil {
+			return nil, err
+		}
+		if stats := reflistMigration.Stats(); stats.Reflists > 0 {
+			out.Printf("Split %d reflist(s) into %d bucket(s) (%d segment(s))",
+				stats.Reflists, stats.Buckets, stats.Segments)
+		}
+
 		// ... and compare it to the list of all packages
 		out.Printf("Loading list of all packages...")
 		allPackageRefs := collectionFactory.PackageCollection().AllPackageRefs()
 
-		toDelete := allPackageRefs.Subtract(existingPackageRefs)
+		toDelete := allPackageRefs.Subtract(existingPackageRefs.Flatten())
 
 		// delete packages that are no longer referenced
 		out.Printf("Deleting unreferenced packages (%d)...", toDelete.Len())
@@ -117,6 +136,28 @@ func apiDbCleanup(c *gin.Context) {
 			err = batch.Write()
 			if err != nil {
 				return nil, fmt.Errorf("unable to write to DB: %s", err)
+			}
+		}
+
+		bucketsToDelete, err := collectionFactory.RefListCollection().AllBucketDigests()
+		if err != nil {
+			return nil, err
+		}
+
+		bucketsToDelete.RemoveAll(existingBuckets)
+
+		out.Printf("Deleting unreferenced reflist buckets (%d)...", bucketsToDelete.Len())
+		if bucketsToDelete.Len() > 0 {
+			batch := db.CreateBatch()
+			err := bucketsToDelete.ForEach(func(digest []byte) error {
+				return collectionFactory.RefListCollection().UnsafeDropBucket(digest, batch)
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			if err := batch.Write(); err != nil {
+				return nil, err
 			}
 		}
 

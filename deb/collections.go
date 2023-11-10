@@ -16,6 +16,7 @@ type CollectionFactory struct {
 	snapshots      *SnapshotCollection
 	localRepos     *LocalRepoCollection
 	publishedRepos *PublishedRepoCollection
+	reflists       *RefListCollection
 	checksums      *ChecksumCollection
 }
 
@@ -89,6 +90,17 @@ func (factory *CollectionFactory) PublishedRepoCollection() *PublishedRepoCollec
 	}
 
 	return factory.publishedRepos
+}
+
+func (factory *CollectionFactory) RefListCollection() *RefListCollection {
+	factory.Lock()
+	defer factory.Unlock()
+
+	if factory.reflists == nil {
+		factory.reflists = NewRefListCollection(factory.db)
+	}
+
+	return factory.reflists
 }
 
 // ChecksumCollection returns (or creates) new ChecksumCollection

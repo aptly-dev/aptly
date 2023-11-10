@@ -18,10 +18,11 @@ func BenchmarkSnapshotCollectionForEach(b *testing.B) {
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)
+	reflistCollection := NewRefListCollection(db)
 
 	for i := 0; i < count; i++ {
-		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewPackageRefList(), fmt.Sprintf("Snapshot number %d", i))
-		if collection.Add(snapshot) != nil {
+		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewSplitRefList(), fmt.Sprintf("Snapshot number %d", i))
+		if collection.Add(snapshot, reflistCollection) != nil {
 			b.FailNow()
 		}
 	}
@@ -47,11 +48,12 @@ func BenchmarkSnapshotCollectionByUUID(b *testing.B) {
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)
+	reflistCollection := NewRefListCollection(db)
 
 	uuids := []string{}
 	for i := 0; i < count; i++ {
-		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewPackageRefList(), fmt.Sprintf("Snapshot number %d", i))
-		if collection.Add(snapshot) != nil {
+		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewSplitRefList(), fmt.Sprintf("Snapshot number %d", i))
+		if collection.Add(snapshot, reflistCollection) != nil {
 			b.FailNow()
 		}
 		uuids = append(uuids, snapshot.UUID)
@@ -78,10 +80,11 @@ func BenchmarkSnapshotCollectionByName(b *testing.B) {
 	defer db.Close()
 
 	collection := NewSnapshotCollection(db)
+	reflistCollection := NewRefListCollection(db)
 
 	for i := 0; i < count; i++ {
-		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewPackageRefList(), fmt.Sprintf("Snapshot number %d", i))
-		if collection.Add(snapshot) != nil {
+		snapshot := NewSnapshotFromRefList(fmt.Sprintf("snapshot%d", i), nil, NewSplitRefList(), fmt.Sprintf("Snapshot number %d", i))
+		if collection.Add(snapshot, reflistCollection) != nil {
 			b.FailNow()
 		}
 	}
