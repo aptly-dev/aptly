@@ -157,6 +157,8 @@ class BaseTest(object):
     gpgFinder = GPGFinder()
     dotFinder = DotFinder()
 
+    output: bytes | None = None
+
     def test(self):
         self.prepare()
         try:
