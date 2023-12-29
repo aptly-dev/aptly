@@ -141,6 +141,10 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	{
+		api.GET("/s3", apiS3List)
+	}
+
+	{
 		api.GET("/files", apiFilesListDirs)
 		api.POST("/files/:dir", apiFilesUpload)
 		api.GET("/files/:dir", apiFilesListFiles)
