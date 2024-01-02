@@ -66,10 +66,11 @@ func NewPublishedStorageRaw(
 	plusWorkaround, disabledMultiDel, forceVirtualHostedStyle bool,
 	config *aws.Config,
 ) (*PublishedStorage, error) {
-
 	var acl types.ObjectCannedACL
-	if defaultACL == "" {
+	if defaultACL == "" || defaultACL == "private" {
 		acl = types.ObjectCannedACLPrivate
+	} else if defaultACL == "public-read" {
+		acl = types.ObjectCannedACLPublicRead
 	} else if defaultACL == "none" {
 		acl = ""
 	}
