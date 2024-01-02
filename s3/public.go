@@ -491,6 +491,17 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 			return false, nil
 		}
 
+                // falback in case the above condidition fails
+           	var opErr *smithy.OperationError
+                if errors.As(err, &opErr) {
+                    var ae smithy.APIError
+                    if errors.As(err, &ae) {
+                        if (ae.ErrorCode() == "NotFound") {
+                            return false, nil
+                        }
+                    }
+                }
+
 		return false, err
 	}
 
