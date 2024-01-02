@@ -228,11 +228,13 @@ func (storage *PublishedStorage) Remove(path string) error {
 		return errors.Wrap(err, fmt.Sprintf("error deleting %s from %s", path, storage))
 	}
 
-	delete(storage.pathCache, path)
 	if storage.plusWorkaround && strings.Contains(path, "+") {
 		// try to remove workaround version, but don't care about result
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
 	}
+
+        delete(storage.pathCache, path)
+
 	return nil
 }
 
@@ -259,6 +261,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			if err != nil {
 				return fmt.Errorf("error deleting path %s from %s: %s", filelist[i], storage, err)
 			}
+                        delete(storage.pathCache, filepath.Join(path, filelist[i]))
 		}
 	} else {
 		numParts := (len(filelist) + page - 1) / page
@@ -289,6 +292,9 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			_, err := storage.s3.DeleteObjects(context.TODO(), params)
 			if err != nil {
 				return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
+			}
+			for i := range part {
+                                delete(storage.pathCache, filepath.Join(path, part[i]))
 			}
 		}
 	}
