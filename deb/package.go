@@ -621,9 +621,7 @@ func (p *Package) LinkFromPool(publishedStorage aptly.PublishedStorage, packageP
 			return err
 		}
 
-		publishedDirectory := filepath.Join(prefix, relPath)
-
-		err = publishedStorage.LinkFromPool(publishedDirectory, f.Filename, packagePool, sourcePoolPath, f.Checksums, force)
+		err = publishedStorage.LinkFromPool(prefix, relPath, f.Filename, packagePool, sourcePoolPath, f.Checksums, force)
 		if err != nil {
 			return err
 		}
