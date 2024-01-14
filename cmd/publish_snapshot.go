@@ -162,8 +162,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	forceOverwrite := context.Flags().Lookup("force-overwrite").Value.Get().(bool)
 	if forceOverwrite {
-		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing " +
-			"the same package pool.\n")
+		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing the same package pool.\n")
 	}
 
 	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite)

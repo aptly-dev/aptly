@@ -143,19 +143,20 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	}
 
 	if signer != nil {
+		gpgExt := ".gpg"
 		if file.detachedSign {
-			err = signer.DetachedSign(file.tempFilename, file.tempFilename+".gpg")
+			err = signer.DetachedSign(file.tempFilename, file.tempFilename+gpgExt)
 			if err != nil {
 				return fmt.Errorf("unable to detached sign file: %s", err)
 			}
 
 			if file.parent.suffix != "" {
-				file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg")] =
-					filepath.Join(file.parent.basePath, file.relativePath+".gpg")
+				file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+gpgExt)] =
+					filepath.Join(file.parent.basePath, file.relativePath+gpgExt)
 			}
 
-			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+".gpg"),
-				file.tempFilename+".gpg")
+			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+gpgExt),
+				file.tempFilename+gpgExt)
 			if err != nil {
 				return fmt.Errorf("unable to publish file: %s", err)
 			}
