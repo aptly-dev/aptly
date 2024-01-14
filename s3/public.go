@@ -234,7 +234,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
 	}
 
-        delete(storage.pathCache, path)
+	delete(storage.pathCache, path)
 
 	return nil
 }
@@ -262,7 +262,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			if err != nil {
 				return fmt.Errorf("error deleting path %s from %s: %s", filelist[i], storage, err)
 			}
-                        delete(storage.pathCache, filepath.Join(path, filelist[i]))
+			delete(storage.pathCache, filepath.Join(path, filelist[i]))
 		}
 	} else {
 		numParts := (len(filelist) + page - 1) / page
@@ -295,7 +295,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 				return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
 			}
 			for i := range part {
-                                delete(storage.pathCache, filepath.Join(path, part[i]))
+				delete(storage.pathCache, filepath.Join(path, part[i]))
 			}
 		}
 	}
@@ -498,16 +498,16 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 			return false, nil
 		}
 
-                // falback in case the above condidition fails
-           	var opErr *smithy.OperationError
-                if errors.As(err, &opErr) {
-                    var ae smithy.APIError
-                    if errors.As(err, &ae) {
-                        if (ae.ErrorCode() == "NotFound") {
-                            return false, nil
-                        }
-                    }
-                }
+		// falback in case the above condidition fails
+		var opErr *smithy.OperationError
+		if errors.As(err, &opErr) {
+			var ae smithy.APIError
+			if errors.As(err, &ae) {
+				if ae.ErrorCode() == "NotFound" {
+					return false, nil
+				}
+			}
+		}
 
 		return false, err
 	}
