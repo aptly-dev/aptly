@@ -189,7 +189,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 // LinkFromPool links package file from pool to dist's pool location
 //
 // publishedPrefix is desired prefix for the location in the pool.
-// publishedRelParh is desired location in pool (like pool/component/liba/libav/)
+// publishedRelPath is desired location in pool (like pool/component/liba/libav/)
 // sourcePool is instance of aptly.PackagePool
 // sourcePath is filepath to package file in package pool
 //
