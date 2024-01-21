@@ -10,8 +10,9 @@ class TaskAPITestParallelTasks(APITest):
     def _create_mirror(self, dist):
         mirror_name = self.random_name()
         mirror_desc = {'Name': mirror_name,
-                       'ArchiveURL': 'https://packagecloud.io/varnishcache/varnish30/debian/',
+                       'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
                        'Distribution': dist,
+                       'Architectures': ["amd64", "i386"],
                        'Components': ['main']}
         mirror_desc['IgnoreSignatures'] = True
         resp = self.post("/api/mirrors", json=mirror_desc)
@@ -76,7 +77,7 @@ class TaskAPITestParallelTasks(APITest):
     def check(self):
         publish_task_ids = []
         mirror_task_list = []
-        for mirror_dist in ['squeeze', 'jessie']:
+        for mirror_dist in ['squeeze', 'wheezy']:
             mirror_task_id, mirror_name = self._create_mirror(mirror_dist)
             mirror_task_list.append((mirror_task_id, mirror_name))
         repo_task_id, repo_name = self._create_repo()

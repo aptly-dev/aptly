@@ -6,7 +6,7 @@ class DropMirror1Test(BaseTest):
     drop mirror: regular list
     """
     fixtureCmds = [
-        "aptly mirror create --ignore-signatures mirror1 http://archive.debian.org/debian-archive/debian/ stretch",
+        "aptly mirror create --ignore-signatures mirror1 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch",
     ]
     runCmd = "aptly mirror drop mirror1"
 

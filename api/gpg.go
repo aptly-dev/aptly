@@ -61,7 +61,7 @@ func apiGPGAddKey(c *gin.Context) {
 		args = append(args, keys...)
 	}
 
-	finder := pgp.GPG1Finder()
+	finder := pgp.GPGDefaultFinder()
 	gpg, _, err := finder.FindGPG()
 	if err != nil {
 		AbortWithJSONError(c, 400, err)

@@ -33,7 +33,6 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/ugorji/go/codec v1.2.11
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/sys v0.13.0
 	golang.org/x/term v0.13.0
 	golang.org/x/time v0.3.0
@@ -90,6 +89,7 @@ require (
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.5.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

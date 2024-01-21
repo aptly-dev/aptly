@@ -22,11 +22,17 @@ Success downloading https://snapshot.debian.org/archive/debian/20220201T025006Z/
 Success downloading https://snapshot.debian.org/archive/debian/20220201T025006Z/pool/main/s/sed/sed_4.4-1_i386.deb
 Success downloading https://snapshot.debian.org/archive/debian/20220201T025006Z/pool/main/s/sensible-utils/sensible-utils_0.0.9+deb9u1_all.deb
 Success downloading https://snapshot.debian.org/archive/debian/20220201T025006Z/pool/main/s/sysvinit/sysvinit-utils_2.88dsf-59.9_i386.deb
+gpgv:                issuer "debian-release@lists.debian.org"
+gpgv:                using RSA key 0146DC6D4A0B2914BDED34DB648ACFD622F3D138
+gpgv:                using RSA key 067E3C456BAE240ACEE88F6FEF0F382A1A7B6500
+gpgv:                using RSA key 16E90B3FDF65EDE3AA7F323C04EE7237B7D453EC
+gpgv:                using RSA key A7236886F3CCCAAD148A27F80E98404D386FA1D9
 gpgv: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Archive Automatic Signing Key (11/bullseye) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
 gpgv: Good signature from "Debian Stable Release Key (9/stretch) <debian-release@lists.debian.org>"
-gpgv:  RSA key ID B7D453EC
-gpgv:  RSA key ID 22F3D138
-gpgv:  RSA key ID 1A7B6500
-gpgv:  RSA key ID 386FA1D9
+gpgv: Signature made Sat Aug 14 07:43:24 2021 UTC
+gpgv: Signature made Sat Aug 14 07:43:25 2021 UTC
+gpgv: Signature made Sat Aug 14 08:26:43 2021 UTC
+gpgv: Signature made Sat Aug 14 08:46:19 2021 UTC
+gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'

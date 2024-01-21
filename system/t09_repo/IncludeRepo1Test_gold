@@ -1,4 +1,5 @@
-gpgv: Signature made Sun Mar 15 20:36:44 2015 MSK using DSA key ID 16DB3E6D
+gpgv: Signature made Sun Mar 15 17:36:44 2015 UTC
+gpgv:                using DSA key 21DBB89C16DB3E6D
 gpgv: Good signature from "Aptly Tester (don't use it) <test@aptly.info>"
 Loading repository unstable for changes file hardlink_0.2.1_amd64.changes...
 [+] hardlink_0.2.1_source added

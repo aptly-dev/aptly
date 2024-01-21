@@ -1,5 +1,5 @@
-Downloading http://archive.debian.org/debian-security/dists/stretch/updates/Release...
-Success downloading http://archive.debian.org/debian-security/dists/stretch/updates/Release
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/Release...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/Release
 
-Mirror [mirror22]: http://archive.debian.org/debian-security/ stretch/updates successfully added.
+Mirror [mirror22]: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates successfully added.
 You can run 'aptly mirror update mirror22' to download repository contents.

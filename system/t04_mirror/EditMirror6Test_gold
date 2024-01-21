@@ -1,3 +1,3 @@
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release
-Mirror [mirror6]: http://archive.debian.org/debian-archive/debian/ stretch successfully updated.
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
+Mirror [mirror6]: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch successfully updated.

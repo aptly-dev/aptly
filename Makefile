@@ -8,6 +8,8 @@ TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
 COVERAGE_DIR?=$(shell mktemp -d)
+# Uncomment to update test outputs
+# CAPTURE := "--capture"
 
 all: modules test bench check system-test
 
@@ -47,7 +49,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	go test -v -coverpkg="./..." -c -tags testruncli
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR)
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
 test:
