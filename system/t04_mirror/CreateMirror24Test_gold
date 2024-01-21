@@ -1,9 +1,12 @@
-Downloading http://archive.debian.org/debian-security/dists/stretch/updates/InRelease...
-Success downloading http://archive.debian.org/debian-security/dists/stretch/updates/InRelease
-gpgv:  RSA key ID 331F7F50
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/InRelease...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/InRelease
+gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
+gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
+gpgv:                using RSA key 379483D8B60160B155B372DDAA8E81B4331F7F50
 gpgv: Good signature from "Debian Security Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
-gpgv:  RSA key ID E562B32A
+gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
+gpgv:                using RSA key 5237CEEEF212F3D51C74ABE0112695A0E562B32A
 gpgv: Good signature from "Debian Security Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
 
-Mirror [mirror24]: http://archive.debian.org/debian-security/ stretch/updates successfully added.
+Mirror [mirror24]: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates successfully added.
 You can run 'aptly mirror update mirror24' to download repository contents.

@@ -6,7 +6,9 @@ Downloading http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/
 Success downloading http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/Release
 Downloading http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/Release.gpg...
 Success downloading http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/Release.gpg
-gpgv:  RSA key ID 3B1F56C0
+gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
+gpgv: Signature made Mon Oct 22 13:19:50 2012 UTC
+gpgv:                using RSA key A5279A973B1F56C0
 gpgv: Good signature from "Launchpad sim"
 
 Mirror [mirror18]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick successfully added.

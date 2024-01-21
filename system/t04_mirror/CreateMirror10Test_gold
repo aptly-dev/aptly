@@ -1,17 +1,21 @@
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/InRelease...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/InRelease
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/InRelease...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/InRelease
 
-gpgv:  RSA key ID 22F3D138
+gpgv: Signature made Thu Mar 30 14:21:34 2023 UTC
+gpgv:                using RSA key 0146DC6D4A0B2914BDED34DB648ACFD622F3D138
 
-gpgv:  RSA key ID 386FA1D9
+gpgv: Signature made Thu Mar 30 14:22:13 2023 UTC
+gpgv:                using RSA key A7236886F3CCCAAD148A27F80E98404D386FA1D9
 
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/Release...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/Release
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/Release.gpg...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch-backports/Release.gpg
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/Release...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/Release
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/Release.gpg...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/Release.gpg
 
-gpgv:  RSA key ID 22F3D138
+gpgv: Signature made Thu Mar 30 14:20:54 2023 UTC
+gpgv:                using RSA key 0146DC6D4A0B2914BDED34DB648ACFD622F3D138
 
-gpgv:  RSA key ID 386FA1D9
+gpgv: Signature made Thu Mar 30 14:21:30 2023 UTC
+gpgv:                using RSA key A7236886F3CCCAAD148A27F80E98404D386FA1D9
 
 ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

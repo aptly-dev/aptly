@@ -143,13 +143,13 @@ if __name__ == "__main__":
     if sys.version_info < PYTHON_MINIMUM_VERSION:
         raise RuntimeError(f'Tests require Python {PYTHON_MINIMUM_VERSION} or higher.')
 
-    output = subprocess.check_output(['gpg1', '--version'], text=True)
-    if not output.startswith('gpg (GnuPG) 1'):
-        raise RuntimeError('Tests require gpg v1')
+    output = subprocess.check_output(['gpg', '--version'], text=True)
+    if not output.startswith('gpg (GnuPG) 2'):
+        raise RuntimeError('Tests require gpg v2')
 
-    output = subprocess.check_output(['gpgv1', '--version'], text=True)
-    if not output.startswith('gpgv (GnuPG) 1'):
-        raise RuntimeError('Tests require gpgv v1')
+    output = subprocess.check_output(['gpgv', '--version'], text=True)
+    if not output.startswith('gpgv (GnuPG) 2'):
+        raise RuntimeError('Tests require gpgv v2')
 
     os.chdir(os.path.realpath(os.path.dirname(sys.argv[0])))
     random.seed()

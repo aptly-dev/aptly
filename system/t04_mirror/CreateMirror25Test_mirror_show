@@ -1,5 +1,5 @@
 Name: mirror25
-Archive Root URL: http://archive.debian.org/debian-archive/debian/
+Archive Root URL: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/
 Distribution: stretch
 Components: main, contrib, non-free
 Architectures: i386

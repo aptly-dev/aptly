@@ -22,10 +22,10 @@ aptly mirror update wheezy-non-free-src
 aptly mirror update wheezy-updates-src
 aptly mirror update wheezy-backports-src
 
-aptly mirror create gnuplot-maverick http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+aptly mirror create gnuplot-maverick http://repo.aptly.info/system-tests/ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
 aptly mirror update gnuplot-maverick
 
-aptly mirror create -with-sources gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
+aptly mirror create -with-sources gnuplot-maverick-src http://repo.aptly.info/system-tests/ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick
 aptly mirror update gnuplot-maverick-src
 
 aptly mirror create sensu http://repos.sensuapp.org/apt sensu

@@ -1,5 +1,5 @@
 Name: mirror4
-Archive Root URL: http://archive.debian.org/debian-security/
+Archive Root URL: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/
 Distribution: stretch/updates
 Components: main
 Architectures: amd64, arm64, armel, armhf, i386

@@ -1,3 +1,3 @@
-Downloading ftp://ftp.ch.debian.org/debian/dists/stretch/Release...
-Success downloading ftp://ftp.ch.debian.org/debian/dists/stretch/Release
-Mirror [mirror10]: ftp://ftp.ch.debian.org/debian/ stretch successfully updated.
+Downloading http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/dists/bookworm/Release...
+Success downloading http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/dists/bookworm/Release
+Mirror [mirror10]: http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/ bookworm successfully updated.

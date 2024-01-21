@@ -1,3 +1,3 @@
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release
-ERROR: unable to fetch mirror: architecture nano68 not available in repo [mirror5]: http://archive.debian.org/debian-archive/debian/ stretch, use -force-architectures to override
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
+ERROR: unable to fetch mirror: architecture nano68 not available in repo [mirror5]: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch, use -force-architectures to override

@@ -1,4 +1,5 @@
-gpgv:  DSA key ID 16DB3E6D
+gpgv: Signature made Sun Mar 15 17:36:44 2015 UTC
+gpgv:                using DSA key 21DBB89C16DB3E6D
 gpgv: Good signature from "Aptly Tester (don't use it) <test@aptly.info>"
 [!] unable to process file hardlink_0.2.1_amd64.changes: open /01/hardlink_0.2.1.tar.gz: no such file or directory
 [!] Some files were skipped due to errors:

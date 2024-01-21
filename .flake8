@@ -1,5 +1,5 @@
 [flake8]
-max-line-length = 200
+max-line-length = 240
 ignore = E126,E241,E741,W504
 include =
     system

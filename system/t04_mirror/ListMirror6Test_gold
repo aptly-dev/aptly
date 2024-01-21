@@ -1,7 +1,7 @@
 [
   {
     "Name": "mirror1",
-    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
+    "ArchiveRoot": "http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "main",
@@ -46,7 +46,7 @@
   },
   {
     "Name": "mirror2",
-    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
+    "ArchiveRoot": "http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "contrib"
@@ -89,7 +89,7 @@
   },
   {
     "Name": "mirror3",
-    "ArchiveRoot": "http://archive.debian.org/debian-archive/debian/",
+    "ArchiveRoot": "http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/",
     "Distribution": "stretch",
     "Components": [
       "non-free"
@@ -123,7 +123,7 @@
   },
   {
     "Name": "mirror4",
-    "ArchiveRoot": "http://download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/",
+    "ArchiveRoot": "http://repo.aptly.info/system-tests/download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/",
     "Distribution": "./",
     "Components": null,
     "Architectures": null,

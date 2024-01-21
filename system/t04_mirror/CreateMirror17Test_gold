@@ -1,5 +1,5 @@
-Downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release...
-Success downloading http://archive.debian.org/debian-archive/debian/dists/stretch/Release
+Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release...
+Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
 
-Mirror [mirror17]: http://archive.debian.org/debian-archive/debian/ stretch [src] successfully added.
+Mirror [mirror17]: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch [src] successfully added.
 You can run 'aptly mirror update mirror17' to download repository contents.

@@ -22,7 +22,7 @@ class UpdateMirror1Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures varnish"
     outputMatchPrepare = filterOutRedirects
@@ -115,7 +115,7 @@ class UpdateMirror7Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
+            "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 flat http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
     outputMatchPrepare = filterOutSignature
@@ -130,7 +130,7 @@ class UpdateMirror8Test(BaseTest):
     fixtureGpg = True
     fixturePool = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg gnuplot-maverick-src http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
+        "aptly mirror create --keyring=aptlytest.gpg gnuplot-maverick-src http://repo.aptly.info/system-tests/ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg gnuplot-maverick-src"
     outputMatchPrepare = filterOutSignature
@@ -143,7 +143,7 @@ class UpdateMirror9Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
+        "aptly mirror create --keyring=aptlytest.gpg -with-sources flat-src http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -156,7 +156,7 @@ class UpdateMirror10Test(BaseTest):
     sortOutput = True
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
+        "aptly mirror create -keyring=aptlytest.gpg -with-sources -filter='!(Name (% r-*)), !($$PackageType (source))' flat-src http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg flat-src"
     outputMatchPrepare = filterOutSignature
@@ -188,7 +188,7 @@ class UpdateMirror12Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
+        "aptly -architectures=i386,amd64 mirror create -keyring=aptlytest.gpg -filter='$$Source (gnupg2)' -with-udebs stretch http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -201,7 +201,7 @@ class UpdateMirror13Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     outputMatchPrepare = filterOutRedirects
@@ -214,7 +214,7 @@ class UpdateMirror14Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish https://packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
         "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
     ]
     runCmd = "aptly mirror update --ignore-signatures --skip-existing-packages varnish"
@@ -282,7 +282,7 @@ class UpdateMirror17Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
 
@@ -309,7 +309,7 @@ class UpdateMirror18Test(BaseTest):
     sortOutput = True
     longTest = False
     fixtureCmds = [
-        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://archive.debian.org/debian-archive/debian stretch main",
+        "aptly mirror create -ignore-signatures -architectures=i386 -filter=libboost-program-options-dev stretch http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian stretch main",
     ]
     runCmd = "aptly mirror update -ignore-signatures stretch"
     configOverride = {'skipLegacyPool': True}
@@ -338,7 +338,7 @@ class UpdateMirror19Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg pagerduty https://packages.pagerduty.com/pdagent deb/"
+        "aptly mirror create --keyring=aptlytest.gpg pagerduty http://repo.aptly.info/system-tests/packages.pagerduty.com/pdagent deb/"
     ]
     runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
     outputMatchPrepare = filterOutSignature
@@ -353,12 +353,17 @@ class UpdateMirror20Test(BaseTest):
     """
     sortOutput = True
     fixtureGpg = True
-    fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg -architectures=amd64 --filter='r-cran-class' flat https://cloud.r-project.org/bin/linux/debian bullseye-cran40/",
-    ]
     configOverride = {"gpgProvider": "internal"}
-    runCmd = "aptly mirror update --keyring=aptlytest.gpg flat"
+    fixtureCmds = [
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+            os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
+        "aptly mirror create --keyring=aptlytest-gpg1.gpg -architectures=amd64 --filter='r-cran-class' flat http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian bullseye-cran40/",
+    ]
+    runCmd = "aptly mirror update --keyring=aptlytest-gpg1.gpg flat"
     outputMatchPrepare = filterOutSignature
+
+    def teardown(self):
+        self.run_cmd(["rm", "-f", os.path.join(os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg")])
 
 
 class UpdateMirror21Test(BaseTest):
@@ -369,13 +374,18 @@ class UpdateMirror21Test(BaseTest):
     configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg pagerduty https://packages.pagerduty.com/pdagent deb/"
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+            os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
+        "aptly mirror create --keyring=aptlytest-gpg1.gpg pagerduty http://repo.aptly.info/system-tests/packages.pagerduty.com/pdagent deb/"
     ]
-    runCmd = "aptly mirror update --keyring=aptlytest.gpg pagerduty"
+    runCmd = "aptly mirror update --keyring=aptlytest-gpg1.gpg pagerduty"
     outputMatchPrepare = filterOutSignature
 
     def output_processor(self, output):
         return "\n".join(line for line in self.ensure_utf8(output).split("\n") if ".deb" not in line)
+
+    def teardown(self):
+        self.run_cmd(["rm", "-f", os.path.join(os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg")])
 
 
 class UpdateMirror22Test(BaseTest):
@@ -385,12 +395,17 @@ class UpdateMirror22Test(BaseTest):
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
     fixtureCmds = [
-        "aptly mirror create --keyring=aptlytest.gpg --filter=nomatch libnvidia-container https://nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+            os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
+        "aptly mirror create --keyring=aptlytest-gpg1.gpg --filter=nomatch libnvidia-container http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
     ]
-    runCmd = "aptly mirror update --keyring=aptlytest.gpg libnvidia-container"
+    runCmd = "aptly mirror update --keyring=aptlytest-gpg1.gpg libnvidia-container"
 
     def outputMatchPrepare(self, s):
         return re.sub(r'Signature made .* using|Packages filtered: .* -> 0.', '', s)
+
+    def teardown(self):
+        self.run_cmd(["rm", "-f", os.path.join(os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg")])
 
 
 class UpdateMirror23Test(BaseTest):
@@ -402,7 +417,7 @@ class UpdateMirror23Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://archive.debian.org/debian-archive/debian/ stretch main non-free",
+        "aptly -architectures=s390x mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer stretch http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch main non-free",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch"
     outputMatchPrepare = filterOutSignature
@@ -417,7 +432,7 @@ class UpdateMirror24Test(BaseTest):
     longTest = False
     fixtureGpg = True
     fixtureCmds = [
-        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://us.archive.ubuntu.com/ubuntu/ trusty main restricted",
+        "aptly -architectures=amd64 mirror create -keyring=aptlytest.gpg -filter='installer' -with-installer trusty http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/ trusty main restricted",
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg trusty"
     outputMatchPrepare = filterOutSignature
