@@ -1,0 +1,13 @@
+#!/bin/sh
+
+rm -rf /tmp/aptly*
+rm -rf /home/test/.*
+rm -rf /home/test/aptly-fixture-*
+
+usermod -u `stat -c %u /app` aptly
+chown -R `stat -c %u /app` /var/lib/aptly
+
+mkdir -p /home/runner
+chown -R `stat -c %u /app` /home/runner
+
+exec su - aptly -c "cd /app; go mod tidy; HOME=/home/runner make system-test"

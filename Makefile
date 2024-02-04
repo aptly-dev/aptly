@@ -82,4 +82,10 @@ man:
 version:
 	@echo $(VERSION)
 
-.PHONY: man modules version release goxc
+docker-build:
+	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
+
+docker-system-tests:
+	docker run --rm -it -v ${PWD}:/app aptly-system-test
+
+.PHONY: man modules version release goxc docker-build docker-system-tests
