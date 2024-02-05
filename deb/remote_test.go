@@ -61,9 +61,11 @@ func (s *PackageListMixinSuite) SetUpPackages() {
 	s.p1 = NewPackageFromControlFile(packageStanza.Copy())
 	stanza := packageStanza.Copy()
 	stanza["Package"] = "mars-invaders"
+	stanza["Filename"] = "pool/contrib/m/mars-invaders/mars-invaders_7.40-2_i386.deb"
 	s.p2 = NewPackageFromControlFile(stanza)
 	stanza = packageStanza.Copy()
 	stanza["Package"] = "lonely-strangers"
+	stanza["Filename"] = "pool/contrib/l/lonely-strangers/lonely-strangers_7.40-2_i386.deb"
 	s.p3 = NewPackageFromControlFile(stanza)
 
 	s.list.Add(s.p1)

@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/saracen/walker"
 )
 
 // Changes is a result of .changes file parsing
@@ -247,6 +249,8 @@ func (c *Changes) GetArchitecture() string {
 
 // CollectChangesFiles walks filesystem collecting all .changes files
 func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (changesFiles, failedFiles []string) {
+	changesFilesLock := &sync.Mutex{}
+
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
@@ -255,15 +259,14 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 			continue
 		}
 		if info.IsDir() {
-			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
-				if err3 != nil {
-					return err3
-				}
+			err2 = walker.Walk(location, func(path string, info os.FileInfo) error {
 				if info.IsDir() {
 					return nil
 				}
 
 				if strings.HasSuffix(info.Name(), ".changes") {
+					changesFilesLock.Lock()
+					defer changesFilesLock.Unlock()
 					changesFiles = append(changesFiles, path)
 				}
 
