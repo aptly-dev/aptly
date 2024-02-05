@@ -5,11 +5,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/saracen/walker"
 )
 
 // PublishedStorage abstract file system with public dirs (published repos)
@@ -231,12 +234,12 @@ func (storage *PublishedStorage) LinkFromPool(publishedDirectory, fileName strin
 func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	root := filepath.Join(storage.rootPath, prefix)
 	result := []string{}
+	resultLock := &sync.Mutex{}
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	err := walker.Walk(root, func(path string, info os.FileInfo) error {
 		if !info.IsDir() {
+			resultLock.Lock()
+			defer resultLock.Unlock()
 			result = append(result, path[len(root)+1:])
 		}
 		return nil
@@ -247,6 +250,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		return []string{}, nil
 	}
 
+	sort.Strings(result)
 	return result, err
 }
 

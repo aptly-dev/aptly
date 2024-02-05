@@ -5,14 +5,19 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/saracen/walker"
 )
 
 // CollectPackageFiles walks filesystem collecting all candidates for package files
 func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, otherFiles, failedFiles []string) {
+	packageFilesLock := &sync.Mutex{}
+	otherFilesLock := &sync.Mutex{}
+
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
@@ -21,18 +26,19 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 			continue
 		}
 		if info.IsDir() {
-			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
-				if err3 != nil {
-					return err3
-				}
+			err2 = walker.Walk(location, func(path string, info os.FileInfo) error {
 				if info.IsDir() {
 					return nil
 				}
 
 				if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
 					strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
+					packageFilesLock.Lock()
+					defer packageFilesLock.Unlock()
 					packageFiles = append(packageFiles, path)
 				} else if strings.HasSuffix(info.Name(), ".buildinfo") {
+					otherFilesLock.Lock()
+					defer otherFilesLock.Unlock()
 					otherFiles = append(otherFiles, path)
 				}
 

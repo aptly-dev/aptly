@@ -29,7 +29,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshot, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
@@ -40,7 +40,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
 
-	err = collectionFactory.SnapshotCollection().LoadComplete(source)
+	err = collectionFactory.SnapshotCollection().LoadComplete(source, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to pull: %s", err)
 	}
@@ -138,7 +138,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		destination := deb.NewSnapshotFromPackageList(args[2], []*deb.Snapshot{snapshot, source}, packageList,
 			fmt.Sprintf("Pulled into '%s' with '%s' as source, pull request was: '%s'", snapshot.Name, source.Name, strings.Join(args[3:], " ")))
 
-		err = collectionFactory.SnapshotCollection().Add(destination)
+		err = collectionFactory.SnapshotCollection().Add(destination, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to create snapshot: %s", err)
 		}

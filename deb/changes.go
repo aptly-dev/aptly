@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/saracen/walker"
 )
 
 // Changes is a result of .changes file parsing
@@ -247,6 +249,8 @@ func (c *Changes) GetArchitecture() string {
 
 // CollectChangesFiles walks filesystem collecting all .changes files
 func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (changesFiles, failedFiles []string) {
+	changesFilesLock := &sync.Mutex{}
+
 	for _, location := range locations {
 		info, err2 := os.Stat(location)
 		if err2 != nil {
@@ -255,15 +259,14 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 			continue
 		}
 		if info.IsDir() {
-			err2 = filepath.Walk(location, func(path string, info os.FileInfo, err3 error) error {
-				if err3 != nil {
-					return err3
-				}
+			err2 = walker.Walk(location, func(path string, info os.FileInfo) error {
 				if info.IsDir() {
 					return nil
 				}
 
 				if strings.HasSuffix(info.Name(), ".changes") {
+					changesFilesLock.Lock()
+					defer changesFilesLock.Unlock()
 					changesFiles = append(changesFiles, path)
 				}
 
@@ -288,7 +291,8 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 // ImportChangesFiles imports referenced files in changes files into local repository
 func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles bool,
 	verifier pgp.Verifier, repoTemplate *template.Template, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
-	pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
+	reflistCollection *RefListCollection, pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders,
+	parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
 
 	for _, path := range changesFiles {
 		var changes *Changes
@@ -356,7 +360,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 			}
 		}
 
-		err = localRepoCollection.LoadComplete(repo)
+		err = localRepoCollection.LoadComplete(repo, reflistCollection)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to load repo: %s", err)
 		}
@@ -379,9 +383,9 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 			return nil, nil, fmt.Errorf("unable to import package files: %s", err)
 		}
 
-		repo.UpdateRefList(NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(NewSplitRefListFromPackageList(list))
 
-		err = localRepoCollection.Update(repo)
+		err = localRepoCollection.Update(repo, reflistCollection)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to save: %s", err)
 		}

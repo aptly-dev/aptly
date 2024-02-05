@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -81,6 +82,7 @@ type PublishedRepoSuite struct {
 	db                                  database.Storage
 	factory                             *CollectionFactory
 	packageCollection                   *PackageCollection
+	reflistCollection                   *RefListCollection
 }
 
 var _ = Suite(&PublishedRepoSuite{})
@@ -112,21 +114,22 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.p2.UpdateFiles(s.p1.Files())
 	s.p3.UpdateFiles(s.p1.Files())
 
-	s.reflist = NewPackageRefListFromPackageList(s.list)
+	s.reflist = NewSplitRefListFromPackageList(s.list)
+	s.reflistCollection = s.factory.RefListCollection()
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	repo.packageRefs = s.reflist
-	s.factory.RemoteRepoCollection().Add(repo)
+	s.factory.RemoteRepoCollection().Add(repo, s.reflistCollection)
 
 	s.localRepo = NewLocalRepo("local1", "comment1")
 	s.localRepo.packageRefs = s.reflist
-	s.factory.LocalRepoCollection().Add(s.localRepo)
+	s.factory.LocalRepoCollection().Add(s.localRepo, s.reflistCollection)
 
 	s.snapshot, _ = NewSnapshotFromRepository("snap", repo)
-	s.factory.SnapshotCollection().Add(s.snapshot)
+	s.factory.SnapshotCollection().Add(s.snapshot, s.reflistCollection)
 
 	s.snapshot2, _ = NewSnapshotFromRepository("snap", repo)
-	s.factory.SnapshotCollection().Add(s.snapshot2)
+	s.factory.SnapshotCollection().Add(s.snapshot2, s.reflistCollection)
 
 	s.packageCollection = s.factory.PackageCollection()
 	s.packageCollection.Update(s.p1)
@@ -283,7 +286,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 
 	s.localRepo.DefaultDistribution = "precise"
 	s.localRepo.DefaultComponent = "contrib"
-	s.factory.LocalRepoCollection().Update(s.localRepo)
+	s.factory.LocalRepoCollection().Update(s.localRepo, s.reflistCollection)
 
 	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{""}, []interface{}{s.localRepo}, s.factory)
 	c.Check(err, IsNil)
@@ -441,6 +444,7 @@ type PublishedRepoCollectionSuite struct {
 	db                                database.Storage
 	factory                           *CollectionFactory
 	snapshotCollection                *SnapshotCollection
+	reflistCollection                 *RefListCollection
 	collection                        *PublishedRepoCollection
 	snap1, snap2                      *Snapshot
 	localRepo                         *LocalRepo
@@ -450,19 +454,29 @@ type PublishedRepoCollectionSuite struct {
 var _ = Suite(&PublishedRepoCollectionSuite{})
 
 func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
+	s.SetUpPackages()
+
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.factory = NewCollectionFactory(s.db)
 
 	s.snapshotCollection = s.factory.SnapshotCollection()
+	s.reflistCollection = s.factory.RefListCollection()
 
-	s.snap1 = NewSnapshotFromPackageList("snap1", []*Snapshot{}, NewPackageList(), "desc1")
-	s.snap2 = NewSnapshotFromPackageList("snap2", []*Snapshot{}, NewPackageList(), "desc2")
+	snap1Refs := NewPackageRefList()
+	snap1Refs.Refs = [][]byte{s.p1.Key(""), s.p2.Key("")}
+	sort.Sort(snap1Refs)
+	s.snap1 = NewSnapshotFromRefList("snap1", []*Snapshot{}, NewSplitRefListFromRefList(snap1Refs), "desc1")
 
-	s.snapshotCollection.Add(s.snap1)
-	s.snapshotCollection.Add(s.snap2)
+	snap2Refs := NewPackageRefList()
+	snap2Refs.Refs = [][]byte{s.p3.Key("")}
+	sort.Sort(snap2Refs)
+	s.snap2 = NewSnapshotFromRefList("snap2", []*Snapshot{}, NewSplitRefListFromRefList(snap2Refs), "desc2")
+
+	s.snapshotCollection.Add(s.snap1, s.reflistCollection)
+	s.snapshotCollection.Add(s.snap2, s.reflistCollection)
 
 	s.localRepo = NewLocalRepo("local1", "comment1")
-	s.factory.LocalRepoCollection().Add(s.localRepo)
+	s.factory.LocalRepoCollection().Add(s.localRepo, s.reflistCollection)
 
 	s.repo1, _ = NewPublishedRepo("", "ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
 	s.repo2, _ = NewPublishedRepo("", "", "anaconda", []string{}, []string{"main", "contrib"}, []interface{}{s.snap2, s.snap1}, s.factory)
@@ -481,14 +495,14 @@ func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) 
 	_, err := s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
 	c.Assert(err, ErrorMatches, "*.not found")
 
-	c.Assert(s.collection.Add(s.repo1), IsNil)
-	c.Assert(s.collection.Add(s.repo1), ErrorMatches, ".*already exists")
+	c.Assert(s.collection.Add(s.repo1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.repo1, s.reflistCollection), ErrorMatches, ".*already exists")
 	c.Assert(s.collection.CheckDuplicate(s.repo2), IsNil)
-	c.Assert(s.collection.Add(s.repo2), IsNil)
-	c.Assert(s.collection.Add(s.repo3), ErrorMatches, ".*already exists")
+	c.Assert(s.collection.Add(s.repo2, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.repo3, s.reflistCollection), ErrorMatches, ".*already exists")
 	c.Assert(s.collection.CheckDuplicate(s.repo3), Equals, s.repo1)
-	c.Assert(s.collection.Add(s.repo4), IsNil)
-	c.Assert(s.collection.Add(s.repo5), IsNil)
+	c.Assert(s.collection.Add(s.repo4, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.repo5, s.reflistCollection), IsNil)
 
 	r, err := s.collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
 	c.Assert(err, IsNil)
@@ -514,7 +528,7 @@ func (s *PublishedRepoCollectionSuite) TestByUUID(c *C) {
 	_, err := s.collection.ByUUID(s.repo1.UUID)
 	c.Assert(err, ErrorMatches, "*.not found")
 
-	c.Assert(s.collection.Add(s.repo1), IsNil)
+	c.Assert(s.collection.Add(s.repo1, s.reflistCollection), IsNil)
 
 	r, err := s.collection.ByUUID(s.repo1.UUID)
 	c.Assert(err, IsNil)
@@ -525,8 +539,8 @@ func (s *PublishedRepoCollectionSuite) TestByUUID(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
-	c.Assert(s.collection.Update(s.repo1), IsNil)
-	c.Assert(s.collection.Update(s.repo4), IsNil)
+	c.Assert(s.collection.Update(s.repo1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Update(s.repo4, s.reflistCollection), IsNil)
 
 	collection := NewPublishedRepoCollection(s.db)
 	r, err := collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
@@ -534,7 +548,7 @@ func (s *PublishedRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.sourceItems["main"].snapshot, IsNil)
 	c.Assert(s.collection.LoadComplete(r, s.factory), IsNil)
 	c.Assert(r.Sources["main"], Equals, s.repo1.sourceItems["main"].snapshot.UUID)
-	c.Assert(r.RefList("main").Len(), Equals, 0)
+	c.Assert(r.RefList("main").Len(), Equals, 2)
 
 	r, err = collection.ByStoragePrefixDistribution("", "ppa", "precise")
 	c.Assert(err, IsNil)
@@ -574,7 +588,7 @@ func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
 	encoder.Encode(&old)
 
 	c.Assert(s.db.Put(s.repo1.Key(), buf.Bytes()), IsNil)
-	c.Assert(s.db.Put(s.repo1.RefKey(""), s.localRepo.RefList().Encode()), IsNil)
+	c.Assert(s.db.Put(s.repo1.RefKey(""), NewPackageRefList().Encode()), IsNil)
 
 	collection := NewPublishedRepoCollection(s.db)
 	repo, err := collection.ByStoragePrefixDistribution("", "ppa", "anaconda")
@@ -589,7 +603,7 @@ func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
-	s.collection.Add(s.repo1)
+	s.collection.Add(s.repo1, s.reflistCollection)
 
 	count := 0
 	err := s.collection.ForEach(func(*PublishedRepo) error {
@@ -610,19 +624,64 @@ func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TestBySnapshot(c *C) {
-	c.Check(s.collection.Add(s.repo1), IsNil)
-	c.Check(s.collection.Add(s.repo2), IsNil)
+	c.Check(s.collection.Add(s.repo1, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo2, s.reflistCollection), IsNil)
 
 	c.Check(s.collection.BySnapshot(s.snap1), DeepEquals, []*PublishedRepo{s.repo1, s.repo2})
 	c.Check(s.collection.BySnapshot(s.snap2), DeepEquals, []*PublishedRepo{s.repo2})
 }
 
 func (s *PublishedRepoCollectionSuite) TestByLocalRepo(c *C) {
-	c.Check(s.collection.Add(s.repo1), IsNil)
-	c.Check(s.collection.Add(s.repo4), IsNil)
-	c.Check(s.collection.Add(s.repo5), IsNil)
+	c.Check(s.collection.Add(s.repo1, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo4, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo5, s.reflistCollection), IsNil)
 
 	c.Check(s.collection.ByLocalRepo(s.localRepo), DeepEquals, []*PublishedRepo{s.repo4, s.repo5})
+}
+
+func (s *PublishedRepoCollectionSuite) TestListReferencedFiles(c *C) {
+	c.Check(s.factory.PackageCollection().Update(s.p1), IsNil)
+	c.Check(s.factory.PackageCollection().Update(s.p2), IsNil)
+	c.Check(s.factory.PackageCollection().Update(s.p3), IsNil)
+
+	c.Check(s.collection.Add(s.repo1, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo2, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo4, s.reflistCollection), IsNil)
+	c.Check(s.collection.Add(s.repo5, s.reflistCollection), IsNil)
+
+	files, err := s.collection.listReferencedFilesByComponent(".", []string{"main", "contrib"}, s.factory, nil)
+	c.Assert(err, IsNil)
+	for _, v := range files {
+		sort.Strings(v)
+	}
+	c.Check(files, DeepEquals, map[string][]string{
+		"contrib": {
+			"a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			"a/alien-arena/mars-invaders_7.40-2_i386.deb",
+		},
+		"main": {"a/alien-arena/lonely-strangers_7.40-2_i386.deb"},
+	})
+
+	snap3 := NewSnapshotFromRefList("snap3", []*Snapshot{}, s.snap2.RefList(), "desc3")
+	s.snapshotCollection.Add(snap3, s.reflistCollection)
+
+	// Ensure that adding a second publish point with matching files doesn't give duplicate results.
+	repo3, err := NewPublishedRepo("", "", "anaconda-2", []string{}, []string{"main"}, []interface{}{snap3}, s.factory)
+	c.Check(err, IsNil)
+	c.Check(s.collection.Add(repo3, s.reflistCollection), IsNil)
+
+	files, err = s.collection.listReferencedFilesByComponent(".", []string{"main", "contrib"}, s.factory, nil)
+	c.Assert(err, IsNil)
+	for _, v := range files {
+		sort.Strings(v)
+	}
+	c.Check(files, DeepEquals, map[string][]string{
+		"contrib": {
+			"a/alien-arena/alien-arena-common_7.40-2_i386.deb",
+			"a/alien-arena/mars-invaders_7.40-2_i386.deb",
+		},
+		"main": {"a/alien-arena/lonely-strangers_7.40-2_i386.deb"},
+	})
 }
 
 type PublishedRepoRemoveSuite struct {
@@ -630,6 +689,7 @@ type PublishedRepoRemoveSuite struct {
 	db                                  database.Storage
 	factory                             *CollectionFactory
 	snapshotCollection                  *SnapshotCollection
+	reflistCollection                   *RefListCollection
 	collection                          *PublishedRepoCollection
 	root, root2                         string
 	provider                            *FakeStorageProvider
@@ -645,10 +705,11 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.factory = NewCollectionFactory(s.db)
 
 	s.snapshotCollection = s.factory.SnapshotCollection()
+	s.reflistCollection = s.factory.RefListCollection()
 
 	s.snap1 = NewSnapshotFromPackageList("snap1", []*Snapshot{}, NewPackageList(), "desc1")
 
-	s.snapshotCollection.Add(s.snap1)
+	s.snapshotCollection.Add(s.snap1, s.reflistCollection)
 
 	s.repo1, _ = NewPublishedRepo("", "ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
 	s.repo2, _ = NewPublishedRepo("", "", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory)
@@ -657,11 +718,11 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.repo5, _ = NewPublishedRepo("files:other", "ppa", "osminog", []string{}, []string{"contrib"}, []interface{}{s.snap1}, s.factory)
 
 	s.collection = s.factory.PublishedRepoCollection()
-	s.collection.Add(s.repo1)
-	s.collection.Add(s.repo2)
-	s.collection.Add(s.repo3)
-	s.collection.Add(s.repo4)
-	s.collection.Add(s.repo5)
+	s.collection.Add(s.repo1, s.reflistCollection)
+	s.collection.Add(s.repo2, s.reflistCollection)
+	s.collection.Add(s.repo3, s.reflistCollection)
+	s.collection.Add(s.repo4, s.reflistCollection)
+	s.collection.Add(s.repo5, s.reflistCollection)
 
 	s.root = c.MkDir()
 	s.publishedStorage = files.NewPublishedStorage(s.root, "", "")

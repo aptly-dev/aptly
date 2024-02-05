@@ -36,7 +36,7 @@ func aptlyRepoListTxt(cmd *commander.Command, _ []string) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
-			e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
+			e := collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 			if e != nil {
 				return e
 			}
@@ -77,7 +77,8 @@ func aptlyRepoListJSON(_ *commander.Command, _ []string) error {
 	repos := make([]*deb.LocalRepo, context.NewCollectionFactory().LocalRepoCollection().Len())
 	i := 0
 	context.NewCollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
-		e := context.NewCollectionFactory().LocalRepoCollection().LoadComplete(repo)
+		collectionFactory := context.NewCollectionFactory()
+		e := collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
