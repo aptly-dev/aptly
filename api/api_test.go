@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -126,6 +127,15 @@ func (s *ApiSuite) TestGetMetrics(c *C) {
 	c.Check(b, Matches, ".*# TYPE aptly_api_http_request_duration_seconds summary.*")
 	c.Check(b, Matches, ".*# TYPE aptly_build_info gauge.*")
 	c.Check(b, Matches, ".*aptly_build_info.*version=\"testVersion\".*")
+}
+
+func (s *ApiSuite) TestRepoCreate(c *C) {
+	body, err := json.Marshal(gin.H{
+		"Name": "dummy",
+	})
+	c.Assert(err, IsNil)
+	_, err = s.HTTPRequest("POST", "/api/repos", bytes.NewReader(body))
+	c.Assert(err, IsNil)
 }
 
 func (s *ApiSuite) TestTruthy(c *C) {
