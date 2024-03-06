@@ -13,6 +13,11 @@ COVERAGE_DIR?=$(shell mktemp -d)
 
 all: modules test bench check system-test
 
+# Self-documenting Makefile
+# https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+help:  ## Print this help
+	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
 prepare:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.51.2
 
@@ -78,19 +83,19 @@ release: goxc
 	mkdir -p build/
 	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
 
-man:
+man:  ## Create man pages
 	make -C man
 
-version:
+version:  ## Print aptly version
 	@echo $(VERSION)
 
-docker-build:
+docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile . -t aptly-system-test
 
-docker-system-tests:
+docker-system-tests:  ## Run system tests in docker container
 	docker run -t --rm -v ${PWD}:/app aptly-system-test
 
-golangci-lint:
+golangci-lint:  ## Run golangci-line in docker container
 	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run
 
-.PHONY: man modules version release goxc docker-build docker-system-tests
+.PHONY: help man modules version release goxc docker-build docker-system-tests

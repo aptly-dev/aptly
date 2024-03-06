@@ -10,4 +10,7 @@ chown -R `stat -c %u /app` /var/lib/aptly
 mkdir -p /home/runner
 chown -R `stat -c %u /app` /home/runner
 
-exec su - aptly -c "cd /app; go mod tidy; HOME=/home/runner make system-test"
+su - aptly -c "cd /app; python3 -m venv system/env"
+su - aptly -c "cd /app; go mod tidy; HOME=/home/runner make system-test"
+
+rm -rf system/env
