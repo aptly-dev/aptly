@@ -1123,7 +1123,7 @@ func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*Publi
 
 // ForEach runs method for each repository
 func (collection *PublishedRepoCollection) ForEach(handler func(*PublishedRepo) error) error {
-	return collection.db.ProcessByPrefix([]byte("U"), func(key, blob []byte) error {
+	return collection.db.ProcessByPrefix([]byte("U"), func(_, blob []byte) error {
 		r := &PublishedRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding published repo: %s\n", err)

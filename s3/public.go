@@ -114,7 +114,7 @@ func NewPublishedStorage(
 
 	if endpoint != "" {
 		opts = append(opts, config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			func(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
 				return aws.Endpoint{URL: endpoint}, nil
 			},
 		)))

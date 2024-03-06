@@ -777,7 +777,7 @@ func (collection *RemoteRepoCollection) search(filter func(*RemoteRepo) bool, un
 		return result
 	}
 
-	collection.db.ProcessByPrefix([]byte("R"), func(key, blob []byte) error {
+	collection.db.ProcessByPrefix([]byte("R"), func(_, blob []byte) error {
 		r := &RemoteRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding remote repo: %s\n", err)
@@ -880,7 +880,7 @@ func (collection *RemoteRepoCollection) ByUUID(uuid string) (*RemoteRepo, error)
 
 // ForEach runs method for each repository
 func (collection *RemoteRepoCollection) ForEach(handler func(*RemoteRepo) error) error {
-	return collection.db.ProcessByPrefix([]byte("R"), func(key, blob []byte) error {
+	return collection.db.ProcessByPrefix([]byte("R"), func(_, blob []byte) error {
 		r := &RemoteRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding mirror: %s\n", err)

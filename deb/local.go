@@ -116,7 +116,7 @@ func (collection *LocalRepoCollection) search(filter func(*LocalRepo) bool, uniq
 		return result
 	}
 
-	collection.db.ProcessByPrefix([]byte("L"), func(key, blob []byte) error {
+	collection.db.ProcessByPrefix([]byte("L"), func(_, blob []byte) error {
 		r := &LocalRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding local repo: %s\n", err)
@@ -219,7 +219,7 @@ func (collection *LocalRepoCollection) ByUUID(uuid string) (*LocalRepo, error) {
 
 // ForEach runs method for each repository
 func (collection *LocalRepoCollection) ForEach(handler func(*LocalRepo) error) error {
-	return collection.db.ProcessByPrefix([]byte("L"), func(key, blob []byte) error {
+	return collection.db.ProcessByPrefix([]byte("L"), func(_, blob []byte) error {
 		r := &LocalRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding repo: %s\n", err)

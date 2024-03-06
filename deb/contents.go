@@ -64,7 +64,7 @@ func (index *ContentsIndex) WriteTo(w io.Writer) (int64, error) {
 		currentPkgs [][]byte
 	)
 
-	err = index.db.ProcessByPrefix(index.prefix, func(key []byte, value []byte) error {
+	err = index.db.ProcessByPrefix(index.prefix, func(key []byte, _ []byte) error {
 		// cut prefix
 		key = key[prefixLen:]
 

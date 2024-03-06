@@ -63,7 +63,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of mirror %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err := repo.CheckLock()
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, err
@@ -137,7 +137,7 @@ func apiSnapshotsCreate(c *gin.Context) {
 		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
-	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		list := deb.NewPackageList()
 
 		// verify package refs and build package list
@@ -196,7 +196,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err := collection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
@@ -247,7 +247,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey()), "S" + b.Name}
 	taskName := fmt.Sprintf("Update snapshot %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		_, err := collection.ByName(b.Name)
 		if err == nil {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
@@ -306,7 +306,7 @@ func apiSnapshotsDrop(c *gin.Context) {
 
 	resources := []string{string(snapshot.ResourceKey())}
 	taskName := fmt.Sprintf("Delete snapshot %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		published := publishedCollection.BySnapshot(snapshot)
 
 		if len(published) > 0 {
@@ -449,7 +449,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 		resources[i] = string(sources[i].ResourceKey())
 	}
 
-	maybeRunTaskInBackground(c, "Merge snapshot "+body.Destination, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, "Merge snapshot "+body.Destination, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		result := sources[0].RefList()
 		for i := 1; i < len(sources); i++ {
 			result = result.Merge(sources[i].RefList(), overrideMatching, false)

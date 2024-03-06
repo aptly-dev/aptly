@@ -173,7 +173,7 @@ func apiReposDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete repo %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		published := publishedCollection.ByLocalRepo(repo)
 		if len(published) > 0 {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to drop, local repo is published")
@@ -236,7 +236,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	}
 
 	resources := []string{string(repo.Key())}
-	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		out.Printf("Loading packages...\n")
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
@@ -338,7 +338,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	resources = append(resources, sources...)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		verifier := context.GetVerifier()
 
 		var (
@@ -472,7 +472,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	}
 	resources = append(resources, sources...)
 
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		var (
 			err                       error
 			verifier                  = context.GetVerifier()

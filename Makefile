@@ -90,4 +90,7 @@ docker-build:
 docker-system-tests:
 	docker run --rm -it -v ${PWD}:/app aptly-system-test
 
+golangci-lint:
+	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run -v
+
 .PHONY: man modules version release goxc docker-build docker-system-tests
