@@ -85,12 +85,12 @@ version:
 	@echo $(VERSION)
 
 docker-build:
-	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
+	docker build -f system/Dockerfile . -t aptly-system-test
 
 docker-system-tests:
-	docker run --rm -it -v ${PWD}:/app aptly-system-test
+	docker run -t --rm -v ${PWD}:/app aptly-system-test
 
 golangci-lint:
-	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run -v
+	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run
 
 .PHONY: man modules version release goxc docker-build docker-system-tests
