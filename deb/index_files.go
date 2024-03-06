@@ -264,7 +264,7 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool, install
 			if udeb {
 				relativePath = filepath.Join(component, "debian-installer", fmt.Sprintf("binary-%s", arch), "Packages")
 			} else if installer {
-				if distribution == "focal" {
+				if distribution == aptly.DistributionFocal {
 					relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "legacy-images", "SHA256SUMS")
 				} else {
 					relativePath = filepath.Join(component, fmt.Sprintf("installer-%s", arch), "current", "images", "SHA256SUMS")

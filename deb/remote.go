@@ -259,11 +259,10 @@ func (repo *RemoteRepo) UdebPath(component string, architecture string) string {
 // InstallerPath returns path of Packages files for given component and
 // architecture
 func (repo *RemoteRepo) InstallerPath(component string, architecture string) string {
-	if repo.Distribution == "focal" {
+	if repo.Distribution == aptly.DistributionFocal {
 		return fmt.Sprintf("%s/installer-%s/current/legacy-images/SHA256SUMS", component, architecture)
-	} else {
-		return fmt.Sprintf("%s/installer-%s/current/images/SHA256SUMS", component, architecture)
 	}
+	return fmt.Sprintf("%s/installer-%s/current/images/SHA256SUMS", component, architecture)
 }
 
 // PackageURL returns URL of package file relative to repository root
