@@ -25,7 +25,7 @@ func apiGPGAddKey(c *gin.Context) {
 	}
 
 	var err error
-	args := []string{"--no-default-keyring"}
+	args := []string{"--no-default-keyring", "--allow-non-selfsigned-uid"}
 	keyring := "trustedkeys.gpg"
 	if len(b.Keyring) > 0 {
 		keyring = b.Keyring
@@ -73,11 +73,11 @@ func apiGPGAddKey(c *gin.Context) {
 	// there is no error handling for such as gpg will do this for us
 	cmd := exec.Command(gpg, args...)
 	fmt.Printf("running %s %s\n", gpg, strings.Join(args, " "))
-	cmd.Stdout = os.Stdout
-	if err = cmd.Run(); err != nil {
-		AbortWithJSONError(c, 400, err)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		c.JSON(400, string(out))
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(200, string(out))
 }
