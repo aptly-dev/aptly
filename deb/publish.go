@@ -665,7 +665,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 						relPath = filepath.Join("pool", component, poolDir)
 					} else {
-						if p.Distribution == "focal" {
+						if p.Distribution == aptly.DistributionFocal {
 							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "legacy-images")
 						} else {
 							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
