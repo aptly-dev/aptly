@@ -171,6 +171,8 @@ class BaseTest(object):
     gpgFinder = GPGFinder()
     dotFinder = DotFinder()
 
+    output: bytes | None = None
+
     def test(self):
         self.prepare()
         try:
@@ -401,6 +403,10 @@ class BaseTest(object):
     def check_exists(self, path):
         if not os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
             raise Exception("path %s doesn't exist" % (path, ))
+
+    def check_exists_in_cwd(self, path):
+        if not os.path.exists(path):
+            raise Exception(f"path {path} doesn't exist")
 
     def check_not_exists(self, path):
         if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, path)):
