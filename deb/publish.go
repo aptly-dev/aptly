@@ -284,7 +284,7 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	return result, nil
 }
 
-// MarshalJSON requires object to be "loaded completely"
+// MarshalJSON requires object to filled by "LoadShallow" or "LoadComplete"
 func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	type sourceInfo struct {
 		Component, Name string
@@ -990,8 +990,11 @@ func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
 	return batch.Write()
 }
 
-// LoadComplete loads additional information for remote repo
-func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) (err error) {
+// LoadShallow loads basic information on the repo's sources
+//
+// This does not *fully* load in the sources themselves and their packages.
+// It's useful if you just want to use JSON serialization without loading in unnecessary things.
+func (collection *PublishedRepoCollection) LoadShallow(repo *PublishedRepo, collectionFactory *CollectionFactory) (err error) {
 	repo.sourceItems = make(map[string]repoSourceItem)
 
 	if repo.SourceKind == SourceSnapshot {
@@ -999,10 +1002,6 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 			item := repoSourceItem{}
 
 			item.snapshot, err = collectionFactory.SnapshotCollection().ByUUID(sourceUUID)
-			if err != nil {
-				return
-			}
-			err = collectionFactory.SnapshotCollection().LoadComplete(item.snapshot)
 			if err != nil {
 				return
 			}
@@ -1017,6 +1016,30 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 			if err != nil {
 				return
 			}
+
+			item.packageRefs = &PackageRefList{}
+			repo.sourceItems[component] = item
+		}
+	} else {
+		panic("unknown SourceKind")
+	}
+
+	return
+}
+
+// LoadComplete loads complete information on the sources of the repo *and* their packages
+func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) (err error) {
+	collection.LoadShallow(repo, collectionFactory)
+
+	if repo.SourceKind == SourceSnapshot {
+		for _, item := range repo.sourceItems {
+			err = collectionFactory.SnapshotCollection().LoadComplete(item.snapshot)
+			if err != nil {
+				return
+			}
+		}
+	} else if repo.SourceKind == SourceLocalRepo {
+		for component, item := range repo.sourceItems {
 			err = collectionFactory.LocalRepoCollection().LoadComplete(item.localRepo)
 			if err != nil {
 				return
@@ -1035,13 +1058,10 @@ func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, col
 				}
 			}
 
-			item.packageRefs = &PackageRefList{}
 			err = item.packageRefs.Decode(encoded)
 			if err != nil {
 				return
 			}
-
-			repo.sourceItems[component] = item
 		}
 	} else {
 		panic("unknown SourceKind")
