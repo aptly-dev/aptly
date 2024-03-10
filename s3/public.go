@@ -53,6 +53,9 @@ type PublishedStorage struct {
 	plusWorkaround   bool
 	disableMultiDel  bool
 	pathCache        map[string]string
+
+	// True if the bucket encrypts objects by default.
+	encryptByDefault bool
 }
 
 // Check interface
@@ -94,7 +97,24 @@ func NewPublishedStorageRaw(
 		disableMultiDel:  disabledMultiDel,
 	}
 
+	result.setKMSFlag()
+
 	return result, nil
+}
+
+func (storage *PublishedStorage) setKMSFlag() {
+	params := &s3.GetBucketEncryptionInput{
+		Bucket: aws.String(storage.bucket),
+	}
+	output, err := storage.s3.GetBucketEncryption(params)
+	if err != nil {
+		return
+	}
+
+	if len(output.ServerSideEncryptionConfiguration.Rules) > 0 &&
+		*output.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm == "aws:kms" {
+		storage.encryptByDefault = true
+	}
 }
 
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
@@ -335,7 +355,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
-		if len(destinationMD5) != 32 {
+		if sourceMD5 == "" {
+			return fmt.Errorf("unable to compare object, MD5 checksum missing")
+		}
+
+		if len(destinationMD5) != 32 || storage.encryptByDefault {
 			// doesn’t look like a valid MD5,
 			// attempt to fetch one from the metadata
 			var err error
@@ -346,17 +370,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 			}
 			storage.pathCache[relPath] = destinationMD5
 		}
-		if sourceMD5 == "" {
-			return fmt.Errorf("unable to compare object, MD5 checksum missing")
-		}
 
 		if destinationMD5 == sourceMD5 {
 			return nil
 		}
 
-		if !force && destinationMD5 != sourceMD5 {
+		if !force {
 			return fmt.Errorf("error putting file to %s: file already exists and is different: %s", poolPath, storage)
-
 		}
 	}
 
