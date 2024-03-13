@@ -43,14 +43,14 @@ func randString(n int) string {
 func (s *PublishedStorageSuite) SetUpSuite(c *C) {
 	s.accountName = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	if s.accountName == "" {
-		println("Please set the the following two environment variables to run the Azure storage tests.")
+		println("Please set the following two environment variables to run the Azure storage tests.")
 		println("  1. AZURE_STORAGE_ACCOUNT")
 		println("  2. AZURE_STORAGE_ACCESS_KEY")
 		c.Skip("AZURE_STORAGE_ACCOUNT not set.")
 	}
 	s.accountKey = os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 	if s.accountKey == "" {
-		println("Please set the the following two environment variables to run the Azure storage tests.")
+		println("Please set the following two environment variables to run the Azure storage tests.")
 		println("  1. AZURE_STORAGE_ACCOUNT")
 		println("  2. AZURE_STORAGE_ACCESS_KEY")
 		c.Skip("AZURE_STORAGE_ACCESS_KEY not set.")
