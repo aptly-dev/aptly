@@ -414,6 +414,11 @@ func apiReposPackageFromDir(c *gin.Context) {
 	})
 }
 
+// POST /repos/:name/copy/:src/:file
+func apiReposCopyPackage(c *gin.Context) {
+	// TODO
+}
+
 // POST /repos/:name/include/:dir/:file
 func apiReposIncludePackageFromFile(c *gin.Context) {
 	// redirect all work to dir method
