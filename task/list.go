@@ -117,19 +117,20 @@ func (list *List) GetTaskReturnValueByID(ID int) (*ProcessReturnValue, error) {
 	return task.processReturnValue, nil
 }
 
-// RunTaskInBackground creates task and runs it in background. It won't be run and an error
-// returned if there are running tasks which are using needed resources already.
+// RunTaskInBackground creates task and runs it in background. This will block until the necessary resources
+// become available.
 func (list *List) RunTaskInBackground(name string, resources []string, process Process) (Task, *ResourceConflictError) {
 	list.Lock()
 	defer list.Unlock()
 
 	tasks := list.usedResources.UsedBy(resources)
-	if len(tasks) > 0 {
-		conflictError := &ResourceConflictError{
-			Tasks:   tasks,
-			Message: "Needed resources are used by other tasks.",
+	for len(tasks) > 0 {
+		for _, task := range(tasks) {
+			list.Unlock()
+			list.wgTasks[task.ID].Wait()
+			list.Lock()
 		}
-		return Task{}, conflictError
+		tasks = list.usedResources.UsedBy(resources)
 	}
 
 	list.idCounter++
