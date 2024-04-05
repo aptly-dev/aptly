@@ -136,8 +136,9 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			return nil, nil, err
 		}
 
+		filename := strings.Replace(filepath.Base(file), "%2B", "+", -1)
 		mainPackageFile := PackageFile{
-			Filename:  filepath.Base(file),
+			Filename:  filename,
 			Checksums: checksums,
 		}
 
@@ -152,7 +153,9 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 		// go over all the other files
 		for i := range files {
-			sourceFile := filepath.Join(filepath.Dir(file), filepath.Base(files[i].Filename))
+			// convert plus to %2B, as this is how the file is stored on disk
+			filename := strings.Replace(filepath.Base(files[i].Filename), "+", "%2B", -1)
+			sourceFile := filepath.Join(filepath.Dir(file), filename)
 
 			_, err = os.Stat(sourceFile)
 			if err == nil {
