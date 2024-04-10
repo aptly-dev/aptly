@@ -1,14 +1,12 @@
-opengpg: failure opening keyring '${HOME}/.gnupg/aptlytest.gpg': open ${HOME}/.gnupg/aptlytest.gpg: no such file or directory
+opengpg: failure opening keyring '/home/runner/.gnupg/aptlytest.gpg': open /home/runner/.gnupg/aptlytest.gpg: no such file or directory
 
 Looks like your keyring with trusted keys is empty. You might consider importing some keys.
-Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease...
-Error downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease: HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease retrying...
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease...
-Giving up on http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease...
-Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release...
-Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
-Downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release.gpg...
-Success downloading http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release.gpg
+Download Error: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release.gpg
 openpgp:  RSA key ID 04EE7237B7D453EC
 openpgp: Can't check signature: public key not found
 openpgp:  RSA key ID 648ACFD622F3D138

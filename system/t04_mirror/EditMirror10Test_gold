@@ -1,3 +1,2 @@
-Downloading http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/dists/bookworm/Release...
-Success downloading http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/dists/bookworm/Release
+Downloading: http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/dists/bookworm/Release
 Mirror [mirror10]: http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/ bookworm successfully updated.

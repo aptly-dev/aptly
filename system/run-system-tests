@@ -1,16 +1,12 @@
 #!/bin/sh
 
+# cleanup
+rm -rf /app/tmp
 rm -rf /tmp/aptly*
-rm -rf /home/test/.*
-rm -rf /home/test/aptly-fixture-*
 
 usermod -u `stat -c %u /app` aptly
 chown -R `stat -c %u /app` /var/lib/aptly
 
-mkdir -p /home/runner
+# use same /home/runner dir as in github workflow
 chown -R `stat -c %u /app` /home/runner
-
-su - aptly -c "cd /app; python3 -m venv system/env"
-su - aptly -c "cd /app; go mod tidy; HOME=/home/runner make system-test"
-
-rm -rf system/env
+su - aptly -c "cd /app; export HOME=/home/runner; go mod tidy; make docker-test TEST=$@"

@@ -1,6 +1,4 @@
-Downloading https://mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/dists/wheezy/Release...
-Following redirect to https://linux.dell.com/repo/community/ubuntu/dists/wheezy/Release...
-Success downloading https://mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/dists/wheezy/Release
+Downloading: http://repo.aptly.info/system-tests/mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/dists/wheezy/Release
 
-Mirror [mirror27]: https://mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/ wheezy successfully added.
+Mirror [mirror27]: http://repo.aptly.info/system-tests/mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/ wheezy successfully added.
 You can run 'aptly mirror update mirror27' to download repository contents.

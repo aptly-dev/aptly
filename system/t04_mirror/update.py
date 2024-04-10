@@ -173,7 +173,7 @@ class UpdateMirror11Test(BaseTest):
     requiresFTP = True
     fixtureCmds = [
         "aptly mirror create -keyring=aptlytest.gpg -filter='Priority (required), Name (% s*)' "
-        "-architectures=i386 stretch-main https://snapshot.debian.org/archive/debian/20220201T025006Z/ stretch main",
+        "-architectures=i386 stretch-main http://repo.aptly.info/system-tests/snapshot.debian.org/archive/debian/20220201T025006Z/ stretch main",
     ]
     outputMatchPrepare = filterOutSignature
     runCmd = "aptly mirror update -keyring=aptlytest.gpg stretch-main"

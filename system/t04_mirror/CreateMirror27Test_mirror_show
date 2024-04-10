@@ -1,5 +1,5 @@
 Name: mirror27
-Archive Root URL: https://mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/
+Archive Root URL: http://repo.aptly.info/system-tests/mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu/
 Distribution: wheezy
 Components: openmanage/740
 Architectures: amd64, i386
