@@ -245,7 +245,10 @@ class BaseTest(object):
 
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:
-                self.run_cmd(cmd)
+                output = self.run_cmd(cmd)
+                print("\n")
+                for line in output.decode("utf-8").split("\n"):
+                    print(f"    {line}")
 
     def sort_lines(self, output):
         return "\n".join(sorted(self.ensure_utf8(output).split("\n")))

@@ -361,7 +361,7 @@ class CreateMirror27Test(BaseTest):
     """
     create mirror: component with slashes, no stripping
     """
-    runCmd = "aptly mirror create --ignore-signatures mirror27 https://mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
+    runCmd = "aptly mirror create --ignore-signatures mirror27 http://repo.aptly.info/system-tests/mirror.chpc.utah.edu/pub/linux.dell.com/repo/community/ubuntu wheezy openmanage/740"
 
     def outputMatchPrepare(self, s):
         return self.strip_retry_lines(s)

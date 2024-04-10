@@ -46,12 +46,6 @@ jobs:
            make version
            go generate
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.54.2
-          args: --timeout=5m
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:

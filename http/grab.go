@@ -59,7 +59,7 @@ func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, d
 			// Success
 			break
 		}
-		d.log("Error downloading %s: %v\n", url, err)
+		d.log("Download Error: %v\n", err)
 		if retryableError(err) {
 			maxTries--
 			d.log("Retrying download %s: %d\n", url, maxTries)

@@ -176,7 +176,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 	expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 
 	if downloader.progress != nil {
-		downloader.progress.Printf("Downloading %s...\n", url)
+		downloader.progress.Printf("Downloading: %s\n", url)
 		defer downloader.progress.Flush()
 	}
 	req, err := downloader.newRequest(ctx, "GET", url)
@@ -192,7 +192,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 		if err != nil {
 			if retryableError(err) {
 				if downloader.progress != nil {
-					downloader.progress.Printf("Error downloading %s: %s retrying...\n", url, err)
+					downloader.progress.Printf("Error (retrying): %s\n", err)
 				}
 				maxTries--
 				time.Sleep(delay)
@@ -203,15 +203,12 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 				}
 			} else {
 				if downloader.progress != nil {
-					downloader.progress.Printf("Error downloading %s: %s cannot retry...\n", url, err)
+					downloader.progress.Printf("Error: %s \n", err)
 				}
 				break
 			}
 		} else {
 			// get out of the loop
-			if downloader.progress != nil {
-				downloader.progress.Printf("Success downloading %s\n", url)
-			}
 			break
 		}
 		if downloader.progress != nil {
@@ -222,7 +219,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 	// still an error after retrying, giving up
 	if err != nil {
 		if downloader.progress != nil {
-			downloader.progress.Printf("Giving up on %s...\n", url)
+			downloader.progress.Printf("Download Error: %s\n", url)
 		}
 		return err
 	}
