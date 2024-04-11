@@ -1,0 +1,23 @@
+
+Download Error: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages
+Download Error: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.gz
+Download Error: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.xz
+Downloading & parsing package files...
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/InRelease
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.gz
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.xz
+ERROR: unable to update: HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.gz
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.xz
+Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages...
+Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.gz...
+Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/main/binary-i386/Packages.xz...
+gpgv:                using RSA key 379483D8B60160B155B372DDAA8E81B4331F7F50
+gpgv:                using RSA key 5237CEEEF212F3D51C74ABE0112695A0E562B32A
+gpgv: Good signature from "Debian Security Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"
+gpgv: Good signature from "Debian Security Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
+gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
+gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
+gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'

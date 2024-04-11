@@ -436,3 +436,18 @@ class UpdateMirror24Test(BaseTest):
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg trusty"
     outputMatchPrepare = filterOutSignature
+
+
+class UpdateMirror25Test(BaseTest):
+    """
+    update mirrors: mirror with / in distribution
+    """
+    configOverride = {"max-tries": 1}
+    sortOutput = True
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly -architectures='i386' mirror create -keyring=aptlytest.gpg -with-sources mirror19 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates main"
+    ]
+    runCmd = "aptly mirror update -keyring=aptlytest.gpg mirror19"
+    outputMatchPrepare = filterOutSignature
