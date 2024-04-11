@@ -355,7 +355,7 @@ class UpdateMirror20Test(BaseTest):
     fixtureGpg = True
     configOverride = {"gpgProvider": "internal"}
     fixtureCmds = [
-        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export -o " + os.path.join(
             os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
         "aptly mirror create --keyring=aptlytest-gpg1.gpg -architectures=amd64 --filter='r-cran-class' flat http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian bullseye-cran40/",
     ]
@@ -374,7 +374,7 @@ class UpdateMirror21Test(BaseTest):
     configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
     fixtureCmds = [
-        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export -o " + os.path.join(
             os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
         "aptly mirror create --keyring=aptlytest-gpg1.gpg pagerduty http://repo.aptly.info/system-tests/packages.pagerduty.com/pdagent deb/"
     ]
@@ -395,7 +395,7 @@ class UpdateMirror22Test(BaseTest):
     configOverride = {"gpgProvider": "internal"}
     fixtureGpg = True
     fixtureCmds = [
-        "gpg --no-default-keyring --keyring aptlytest.gpg --export-options export-minimal --export -o " + os.path.join(
+        "gpg --no-default-keyring --keyring aptlytest.gpg --export -o " + os.path.join(
             os.environ["HOME"], ".gnupg/aptlytest-gpg1.gpg"),
         "aptly mirror create --keyring=aptlytest-gpg1.gpg --filter=nomatch libnvidia-container http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
     ]
