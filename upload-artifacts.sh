@@ -10,33 +10,83 @@ aptly_password="$APTLY_PASSWORD"
 aptly_api="https://aptly-ops.aptly.info"
 version=`make version`
 
-echo "Publishing version '$version' to $1..."
+action=$1
+dist=$2
 
-for file in $packages; do
-    echo "Uploading $file..."
-    curl -fsS -X POST -F "file=@$file" -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder
+usage() {
+    echo "Usage: $0 nighly jammy|focal|bookworm" >&2
+    echo "       $0 release" >&2
+}
+
+if [ -z "$action" ]; then
+    usage
+    exit 1
+fi
+
+if [ "action" = "nightly" ] && [ -z "$dist" ]; then
+    usage
+    exit 1
+fi
+
+echo "Publishing version '$version' to $action for $dist...\n"
+
+upload()
+{
+    echo "\nUploading files:"
+    for file in $packages; do
+        echo " - $file"
+        curl -fsS -X POST -F "file=@$file" -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder
+    done
     echo
-done
+}
+cleanup() {
+    echo "\nCleanup..."
+    curl -fsS -X DELETE  -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder
+    echo
+}
+trap cleanup EXIT
 
-if [ "$1" = "nightly" ]; then
+if [ "$action" = "nightly" ]; then
     if echo "$version" | grep -vq "+"; then
        # skip nightly when on release tag
        exit 0
     fi
 
-    aptly_repository=aptly-nightly
-    aptly_published=s3:repo.aptly.info:./nightly
+    aptly_repository=aptly-nightly-$dist
+    aptly_published=s3:repo.aptly.info:nightly-$dist
 
-    echo "Adding packages to $aptly_repository..."
+    upload
+
+    echo "\nAdding packages to $aptly_repository ..."
     curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder
     echo
 
-    echo "Updating published repo..."
+    echo "\nUpdating published repo $aptly_published ..."
     curl -fsS -X PUT -H 'Content-Type: application/json' --data \
-        '{"AcquireByHash": true, "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub",
-                                             "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
-        -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published
+        '{"AcquireByHash": true,
+          "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub", "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
+        -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published/$dist
     echo
+
+    if [ $dist = "focal" ]; then
+        echo "\nUpdating legacy nightly repo..."
+
+        aptly_repository=aptly-nightly
+        aptly_published=s3:repo.aptly.info:./nightly
+
+        upload
+
+        echo "\nAdding packages to $aptly_repository ..."
+        curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder
+        echo
+
+        echo "\nUpdating published repo $aptly_published ..."
+        curl -fsS -X PUT -H 'Content-Type: application/json' --data \
+            '{"AcquireByHash": true, "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub",
+                                                 "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
+            -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published
+        echo
+    fi
 fi
 
 if [ "$1" = "release" ]; then
@@ -44,16 +94,16 @@ if [ "$1" = "release" ]; then
     aptly_snapshot=aptly-$version
     aptly_published=s3:repo.aptly.info:./squeeze
 
-    echo "Adding packages to $aptly_repository..."
+    echo "\nAdding packages to $aptly_repository..."
     curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder
     echo
 
-    echo "Creating snapshot $aptly_snapshot from repo $aptly_repository..."
+    echo "\nCreating snapshot $aptly_snapshot from repo $aptly_repository..."
     curl -fsS -X POST -u $aptly_user:$aptly_password -H 'Content-Type: application/json' --data \
         "{\"Name\":\"$aptly_snapshot\"}" ${aptly_api}/api/repos/$aptly_repository/snapshots
     echo
 
-    echo "Switching published repo to use snapshot $aptly_snapshot..."
+    echo "\nSwitching published repo $aptly_published to use snapshot $aptly_snapshot..."
     curl -fsS -X PUT -H 'Content-Type: application/json' --data \
         "{\"AcquireByHash\": true, \"Snapshots\": [{\"Component\": \"main\", \"Name\": \"$aptly_snapshot\"}],
                                    \"Signing\": {\"Batch\": true, \"Keyring\": \"aptly.repo/aptly.pub\",
@@ -62,5 +112,3 @@ if [ "$1" = "release" ]; then
     echo
 fi
 
-curl -fsS -X DELETE  -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder
-echo
