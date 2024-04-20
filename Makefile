@@ -101,4 +101,7 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 golangci-lint:  ## Run golangci-line in docker container
 	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run
 
+flake8:
+	flake8 system
+
 .PHONY: help man modules version release goxc docker-build docker-system-tests
