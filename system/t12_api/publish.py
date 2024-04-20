@@ -283,7 +283,6 @@ class PublishUpdateAPITestRepo(APITest):
         self.check_not_exists("public/" + prefix + "dists/")
 
 
-
 class PublishConcurrentUpdateAPITestRepo(APITest):
     """
     PUT /publish/:prefix/:distribution (local repos), DELETE /publish/:prefix/:distribution
