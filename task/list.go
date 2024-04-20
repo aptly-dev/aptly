@@ -125,7 +125,7 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 
 	tasks := list.usedResources.UsedBy(resources)
 	for len(tasks) > 0 {
-		for _, task := range(tasks) {
+		for _, task := range tasks {
 			list.Unlock()
 			list.wgTasks[task.ID].Wait()
 			list.Lock()
