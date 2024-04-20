@@ -29,7 +29,7 @@ type Batch struct {
 }
 
 // func internalOpenBatch...
-func internalOpenBatch(t database.Storage) *Batch {
+func internalOpenBatch(_ database.Storage) *Batch {
 	b := &Batch{
 		w: make(chan bWriteData),
 		p: make(map[string]interface{}),
