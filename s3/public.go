@@ -106,13 +106,13 @@ func (storage *PublishedStorage) setKMSFlag() {
 	params := &s3.GetBucketEncryptionInput{
 		Bucket: aws.String(storage.bucket),
 	}
-	output, err := storage.s3.GetBucketEncryption(params)
+	output, err := storage.s3.GetBucketEncryption(context.TODO(), params)
 	if err != nil {
 		return
 	}
 
 	if len(output.ServerSideEncryptionConfiguration.Rules) > 0 &&
-		*output.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm == "aws:kms" {
+		output.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm == "aws:kms" {
 		storage.encryptByDefault = true
 	}
 }
