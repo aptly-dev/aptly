@@ -347,7 +347,7 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 	c.Check(err, IsNil)
 
 	// Check only one listing request was done to the server
-	s.checkGetRequestsEqual(c, "/test?", []string{"/test?list-type=2&max-keys=1000&prefix=pool%2F"})
+	s.checkGetRequestsEqual(c, "/test?", []string{"/test?encryption=", "/test?encryption=", "/test?list-type=2&max-keys=1000&prefix=pool%2F"})
 
 	s.srv.Requests = nil
 	// Publish two packages at a different prefix
