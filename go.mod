@@ -31,7 +31,6 @@ require (
 	github.com/saracen/walker v0.1.3
 	github.com/prometheus/client_golang v1.12.1
 	github.com/seefan/gossdb/v2 v2.0.0
-	github.com/smartystreets/gunit v1.0.4 // indirect
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
@@ -94,6 +93,7 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/seefan/goerr v1.1.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
