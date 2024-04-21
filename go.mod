@@ -1,6 +1,6 @@
 module github.com/aptly-dev/aptly
 
-go 1.19
+go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
