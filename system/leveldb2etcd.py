@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import leveldb
+import plyvel
 import etcd3
 import argparse
 from termcolor import cprint
@@ -13,15 +13,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    ldb = leveldb.LevelDB(args.datadir)
+    ldb = plyvel.DB(args.datadir)
     etcd = etcd3.client(args.etcdaddr, args.etcdport)
 
-    for key, value in ldb.RangeIter():
+    for key, value in ldb:
         try:
-            keystr = str(bytes(key))
-            valuestr = str(bytes(value))
+            keystr = key
+            valuestr = value
             etcd.put(keystr, valuestr)
             # cprint("key: "+keystr+", value: "+valuestr+"put success!\n", 'green')
         except Exception as e:
-            cprint("key: " + keystr + ", value: " + valuestr + "put err: " + str(e) + "\n", 'red')
+            cprint("key: " + str(keystr) + ", value: " + str(valuestr) + "put err: " + str(e) + "\n", 'red')
             exit(1)

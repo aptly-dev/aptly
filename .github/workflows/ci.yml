@@ -75,6 +75,7 @@ jobs:
           AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
+          sudo mkdir -p /srv ; sudo chown runner /srv
           COVERAGE_DIR=${{ runner.temp }} make
 
       - name: Merge code coverage
