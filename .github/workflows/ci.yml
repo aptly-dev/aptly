@@ -88,8 +88,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.txt
 
-  release:
-    # needs: build
+  release-debian:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -97,40 +97,31 @@ jobs:
         name: [Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12]
         include:
           - name: Ubuntu-20
-            image: "ubuntu:20.04"
             suite: focal
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
+            image: "ubuntu:20.04"
           - name: Ubuntu-22
-            image: "ubuntu:22.04"
             suite: jammy
-            install: "make ca-certificates git curl golang"
+            image: "ubuntu:22.04"
           - name: Debian-10
-            image: "debian:buster"
             suite: buster
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
+            image: "debian:buster"
           - name: Debian-11
-            image: "debian:bullseye"
             suite: bullseye
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
+            image: "debian:bullseye"
           - name: Debian-12
-            image: "debian:bookworm"
             suite: bookworm
-            install: "make ca-certificates git curl golang"
+            image: "debian:bookworm"
     container:
       image: ${{ matrix.image }}
       env:
         APT_LISTCHANGES_FRONTEND: none
         DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Install O/S packages
+      - name: Install packages
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ${{ matrix.install }}
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          echo GOVER: ${{ env.GOVER }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -139,20 +130,33 @@ jobs:
           # work and get the nightly verion
           fetch-depth: 0
 
+      - name: Read go version
+        run: |
+          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+        id: goversion
+
       - name: Setup Go
-        if: ${{ matrix.GOVER != '' }}
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.GOVER }}
+          go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Make Release
+      - name: Build Debian packages
         env:
           GOBIN: /usr/local/bin
         run: |
-          make release
+          go version
+          GOPATH=$PWD/.go go generate -v
+          DEBEMAIL="runner <rubber@github.com>" dch -l +${{github.run_number}}+g`git log --pretty=format:'%h' -n 1` "ci build"
+          # dpkg-buildpackage -us -uc -b -d --host-arch=amd64
+          # dpkg-buildpackage -us -uc -b -d --host-arch=i386
+          dpkg-buildpackage -us -uc -b -d --host-arch=arm64
+          dpkg-buildpackage -us -uc -b -d --host-arch=armhf
+          mkdir -p build
+          mv ../aptly_*_*.* build
+          ls -l build
 
       - name: Publish nightly release to aptly
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
@@ -166,5 +170,3 @@ jobs:
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
-
-

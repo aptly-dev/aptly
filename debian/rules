@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+
+export GOPATH=$(PWD)/.go
+export DEB_BUILD_OPTIONS=crossbuildcanrunhostbinaries
+
+export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; elif [ $(DEB_TARGET_ARCH) = "armhf" ]; then echo "arm"; else echo  $(DEB_TARGET_ARCH); fi )
+
+override_dh_auto_install:
+	dh_auto_install -- --no-source
+
+%:
+	dh $@ --buildsystem=golang --with=golang
+
+override_dh_auto_build:
+	mkdir -p obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly
+	echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION
+	go build -o build/aptly
+
+override_dh_auto_test:
+
+# not needed with golang, fail with cross compiling
+override_dh_strip:
+override_dh_makeshlibs:
+override_dh_golang:

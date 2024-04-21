@@ -1,0 +1,11 @@
+[Unit]
+Description=Aptly REST API service
+
+[Service]
+Environment=TERM=dumb
+User=aptly
+WorkingDirectory=/var/lib/aptly
+ExecStart=/usr/bin/aptly api serve -listen localhost:3142
+
+[Install]
+WantedBy=multi-user.target
