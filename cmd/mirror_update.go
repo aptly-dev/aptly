@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -167,7 +166,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 						task.TempDownPath, e = pp.GenerateTempPath(task.File.Filename)
 					} else {
 						var file *os.File
-						file, e = ioutil.TempFile("", task.File.Filename)
+						file, e = os.CreateTemp("", task.File.Filename)
 						if e == nil {
 							task.TempDownPath = file.Name()
 							file.Close()

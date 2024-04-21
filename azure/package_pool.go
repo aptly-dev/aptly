@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -105,7 +104,7 @@ func (pool *PackagePool) Size(path string) (int64, error) {
 func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	blob := pool.az.blobURL(path)
 
-	temp, err := ioutil.TempFile("", "blob-download")
+	temp, err := os.CreateTemp("", "blob-download")
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating temporary file for blob download")
 	}
