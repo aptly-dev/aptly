@@ -142,6 +142,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"databaseBackend\": {\n"+
 		"    \"type\": \"\",\n"+
 		"    \"url\": \"\"\n"+
+                "    \"dbPath\": \"\"\n" +
 		"  }\n"+
 		"}")
 }
