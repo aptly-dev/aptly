@@ -125,7 +125,7 @@ func apiFilesListFiles(c *gin.Context) {
 	listLock := &sync.Mutex{}
 	root := filepath.Join(context.UploadPath(), c.Params.ByName("dir"))
 
-	err := walker.Walk(root, func(path string, info os.FileInfo) error {
+	err := walker.Walk(root, func(path string, _ os.FileInfo) error {
 		if path == root {
 			return nil
 		}
