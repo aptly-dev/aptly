@@ -786,7 +786,7 @@ func segmentIndexKey(prefix []byte, idx int) []byte {
 func (collection *RefListCollection) AllBucketDigests() (*RefListDigestSet, error) {
 	digests := NewRefListDigestSet()
 
-	err := collection.db.ProcessByPrefix([]byte("F"), func(key []byte, value []byte) error {
+	err := collection.db.ProcessByPrefix([]byte("F"), func(key []byte, _ []byte) error {
 		if !bytes.HasSuffix(key, []byte("-0000")) {
 			// Ignore additional segments for the same digest.
 			return nil
@@ -818,7 +818,7 @@ func (collection *RefListCollection) AllBucketDigests() (*RefListDigestSet, erro
 // the bucket is no longer referenced by any saved reflists.
 func (collection *RefListCollection) UnsafeDropBucket(digest []byte, batch database.Batch) error {
 	prefix := segmentPrefix(bucketDigestEncoding.EncodeToString(digest))
-	return collection.db.ProcessByPrefix(prefix, func(key []byte, value []byte) error {
+	return collection.db.ProcessByPrefix(prefix, func(key []byte, _ []byte) error {
 		return batch.Delete(key)
 	})
 }
@@ -866,7 +866,7 @@ func (collection *RefListCollection) loadBuckets(sl *SplitRefList) error {
 			if bucket == nil {
 				bucket = NewPackageRefList()
 				prefix := segmentPrefix(bucketDigestEncoding.EncodeToString(digest))
-				err := collection.db.ProcessByPrefix(prefix, func(digest []byte, value []byte) error {
+				err := collection.db.ProcessByPrefix(prefix, func(_ []byte, value []byte) error {
 					var l PackageRefList
 					if err := l.Decode(append([]byte{}, value...)); err != nil {
 						return err
