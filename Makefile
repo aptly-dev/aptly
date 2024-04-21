@@ -77,8 +77,8 @@ goxc: dev
 	cp completion.d/aptly root/etc/bash_completion.d/
 	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
-	go generate
-	GOPATH=. goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
+	GOPATH=$(PWD)/.go go generate
+	GOPATH=$(PWD)/.go goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
 release: GOXC_OPTS=-tasks-=go-vet,go-test,rmbin
 release: goxc

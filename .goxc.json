@@ -6,24 +6,6 @@
 		"go-test",
 		"go-vet"
 	],
-    "TaskSettings": {
-        "debs": {
-            "metadata": {
-                "maintainer": "Andre Roth",
-                "maintainer-email": "neolynx@gmail.com",
-                "description": "Debian repository management tool"
-            },
-            "metadata-deb": {
-                "License": "MIT",
-                "Homepage": "https://www.aptly.info/",
-                "Depends": "bzip2, xz-utils, gnupg, gpgv",
-				"Suggests": "graphviz"
-            },
-            "other-mapped-files": {
-                "/": "root/"
-            }
-        }
-    },
 	"ResourcesInclude": "README.rst,LICENSE,AUTHORS,man/aptly.1",
 	"BuildConstraints": "linux,386 linux,amd64 linux,arm linux,arm64 darwin,amd64 freebsd,386 freebsd,amd64",
 	"MainDirsExclude": "_man,vendor",

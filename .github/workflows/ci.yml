@@ -20,7 +20,7 @@ env:
 
 jobs:
   build:
-    name: test
+    name: System Tests (Ubuntu 22.04)
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install O/S packages
+      - name: Install packages
         run: |
           sudo apt-get update
           sudo apt-get install -y graphviz gnupg2 gpgv2 git gcc make
@@ -88,20 +88,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.txt
 
-  release-debian:
+  ci-debian:
+    name: CI Build
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        name: [Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12]
+        name: [Debian-10, Debian-11, Debian-12, Ubuntu-20.04, Ubuntu-22.04]
         include:
-          - name: Ubuntu-20
-            suite: focal
-            image: "ubuntu:20.04"
-          - name: Ubuntu-22
-            suite: jammy
-            image: "ubuntu:22.04"
           - name: Debian-10
             suite: buster
             image: "debian:buster"
@@ -111,6 +106,12 @@ jobs:
           - name: Debian-12
             suite: bookworm
             image: "debian:bookworm"
+          - name: Ubuntu-20.04
+            suite: focal
+            image: "ubuntu:20.04"
+          - name: Ubuntu-22.04
+            suite: jammy
+            image: "ubuntu:22.04"
     container:
       image: ${{ matrix.image }}
       env:
@@ -146,7 +147,7 @@ jobs:
         run: |
           go version
           GOPATH=$PWD/.go go generate -v
-          DEBEMAIL="runner <rubber@github.com>" dch -l +${{github.run_number}}+g`git log --pretty=format:'%h' -n 1` "ci build"
+          DEBEMAIL="CI <runner@github>" dch -l +${{github.run_number}}+g`git log --pretty=format:'%h' -n 1` "CI build"
           # dpkg-buildpackage -us -uc -b -d --host-arch=amd64
           # dpkg-buildpackage -us -uc -b -d --host-arch=i386
           dpkg-buildpackage -us -uc -b -d --host-arch=arm64
@@ -170,3 +171,38 @@ jobs:
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
+
+  ci-other:
+    name: CI Build (FreeBSD, MacOS, Linux)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends make ca-certificates git curl
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # fetch the whole repo for `git describe` to
+          # work and get the nightly verion
+          fetch-depth: 0
+
+      - name: Read go version
+        run: |
+          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+        id: goversion
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+
+      - name: Build goxc packages
+        env:
+          GOBIN: /usr/local/bin
+        run: |
+          go version
+          make release
