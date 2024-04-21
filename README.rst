@@ -9,7 +9,7 @@ aptly
     :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
-    :target: https://gitter.im/aptly-dev/aptly?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+    :target: https://matrix.to/#/#aptly:gitter.im
 
 .. image:: https://goreportcard.com/badge/github.com/aptly-dev/aptly
     :target: https://goreportcard.com/report/aptly-dev/aptly
