@@ -1,0 +1,42 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+
+export GOPATH=$(shell pwd)/.go
+export DEB_BUILD_OPTIONS=crossbuildcanrunhostbinaries
+
+export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; elif [ $(DEB_TARGET_ARCH) = "armhf" ]; then echo "arm"; else echo  $(DEB_TARGET_ARCH); fi)
+
+%:
+	dh $@ --buildsystem=golang --with=golang
+
+override_dh_auto_clean:
+	rm -rf build/
+	rm -rf obj-$(DEB_TARGET_GNU_TYPE)/
+	dh_auto_clean
+
+override_dh_auto_build:
+	echo $(DEB_VERSION) > VERSION
+	go build -o build/aptly
+
+	# when dependencies fully debianized:
+	# echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION
+	# dh_auto_build
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	dh_auto_install -- --no-source
+	mkdir -p debian/aptly/usr/share/man/man1/ debian/aptly/usr/share/bash-completion/completions/
+	cp man/aptly.1 debian/aptly/usr/share/man/man1
+	cp completion.d/aptly debian/aptly/usr/share/bash-completion/completions/
+	gzip debian/aptly/usr/share/man/man1/aptly.1
+
+override_dh_strip:
+	dh_strip --dbg-package=aptly-dbg
+
+# only with full debian dependencies:
+override_dh_golang:
+
+# not needed with golang, fails with cross compiling
+# override_dh_makeshlibs:

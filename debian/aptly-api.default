@@ -1,0 +1,2 @@
+# Default settings for aptly-api
+LISTEN_ADDRESS='localhost:8080'

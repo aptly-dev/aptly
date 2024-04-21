@@ -1,0 +1,69 @@
+Source: aptly
+Section: devel
+Priority: optional
+Maintainer: Debian Go Packaging Team <team+pkg-go@tracker.debian.org>
+Uploaders: TODO <admin@lepton.exnihilo>
+Build-Depends: debhelper (>= 11),
+               dh-golang,
+               golang-go,
+               golang-github-aleksi-pointer-dev,
+               golang-github-awalterschulze-gographviz-dev,
+               golang-github-aws-aws-sdk-go-dev,
+               golang-github-disposaboy-jsonconfigreader-dev,
+               golang-github-gin-gonic-gin-dev,
+               golang-github-kjk-lzma-dev,
+               golang-github-mattn-go-shellwords-dev,
+               golang-github-mkrautz-goar-dev,
+               golang-github-mxk-go-flowrate-dev,
+               golang-github-ncw-swift-dev,
+               golang-github-pkg-errors-dev,
+               golang-github-smira-commander-dev,
+               golang-github-smira-flag-dev,
+               golang-github-smira-go-aws-auth-dev,
+               golang-github-smira-go-ftp-protocol-dev,
+               golang-github-smira-go-xz-dev (>> 0.0~git20150414.0c531f0-2.1),
+               golang-github-ugorji-go-codec-dev (>> 1.1.7-2),
+               golang-github-wsxiaoys-terminal-dev,
+               golang-golang-x-crypto-dev,
+               golang-golang-x-sys-dev,
+               golang-github-syndtr-goleveldb-dev,
+               golang-gopkg-check.v1-dev,
+               golang-gopkg-cheggaaa-pb.v1-dev,
+               golang-gopkg-h2non-filetype.v1-dev,
+               golang-uuid-dev,
+               golang-github-cavaliergopher-grab-dev,
+               golang-golang-x-time-dev,
+               golang-github-azure-azure-storage-blob-go-dev,
+               golang-github-klauspost-compress-dev,
+               golang-github-klauspost-pgzip-dev,
+#               golang-github-prometheus-client-golang-dev,
+               golang-github-rs-zerolog-dev (>= 1.28.0),
+               golang-github-mattn-go-colorable-dev,
+               golang-github-aws-aws-sdk-go-v2-dev,
+               golang-github-protonmail-go-crypto-dev,
+               golang-github-saracen-walker-dev,
+               git
+Standards-Version: 4.2.1
+Homepage: https://github.com/aptly-dev/aptly
+Vcs-Browser: https://salsa.debian.org/go-team/packages/aptly
+Vcs-Git: https://salsa.debian.org/go-team/packages/aptly.git
+XS-Go-Import-Path: github.com/aptly-dev/aptly
+Testsuite: autopkgtest-pkg-go
+
+Package: aptly
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, adduser
+Description: Debian repository management tool
+ aptly is a Swiss army knife for Debian repository management.
+
+Package: aptly-dbg
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Debian repository management tool (debug files)
+ Debug symbols for aptly
+
+Package: aptly-api
+Architecture: all
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Debian repository management tool (REST API server)
+ systemd service and configuration for aptly
