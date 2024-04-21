@@ -78,13 +78,14 @@ goxc: dev
 	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
 	go generate
-	goxc -pv=$(VERSION) -max-processors=2 $(GOXC_OPTS)
+	GOPATH=. goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-release: GOXC_OPTS=-tasks-=bintray,go-vet,go-test,rmbin
+release: GOXC_OPTS=-tasks-=go-vet,go-test,rmbin
 release: goxc
 	rm -rf build/
 	mkdir -p build/
 	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
+	ls -l build/
 
 man:  ## Create man pages
 	make -C man

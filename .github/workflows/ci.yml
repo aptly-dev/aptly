@@ -89,7 +89,7 @@ jobs:
           files: coverage.txt
 
   release:
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -166,3 +166,5 @@ jobs:
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
+
+
