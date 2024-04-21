@@ -254,7 +254,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	// including snapshot resource key
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err := collection.LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
