@@ -1,0 +1,92 @@
+aptly (1.6.0~beta1) stable; urgency=medium
+
+  * upstream aptly debianization
+
+ -- André Roth <neolynx@gmail.com>  Tue, 17 Sep 2024 16:47:44 +0200
+
+aptly (1.5.0+ds1-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release (Closes: #1022721), including fix for "Order of
+    fields in Packages/Sources is unpredictable" (Closes: #907121).
+
+ -- Roland Mas <lolando@debian.org>  Tue, 31 Jan 2023 14:47:04 +0100
+
+aptly (1.4.0+ds1-7) unstable; urgency=medium
+
+  * Team upload.
+  * Add support for zstd compression (Closes: #1010465)
+
+ -- Anton Gladky <gladk@debian.org>  Tue, 17 May 2022 22:42:29 +0200
+
+aptly (1.4.0+ds1-6) unstable; urgency=medium
+
+  * Conflict on gpgv1 (Closes: #990821)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 04 Nov 2021 10:24:53 +0100
+
+aptly (1.4.0+ds1-5) unstable; urgency=medium
+
+  * Conflict on gnupg1 (Closes: #990821)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 14 Oct 2021 18:43:04 +0200
+
+aptly (1.4.0+ds1-4) unstable; urgency=medium
+
+  * Install correct bash completion snippet (Closes: #984979)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 11 Mar 2021 15:20:57 +0100
+
+aptly (1.4.0+ds1-3) unstable; urgency=medium
+
+  * Fix s3 etag issue (Closes: #983877)
+  * Bump-up d/watch version
+  * Bump-up Standards-Version
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 03 Mar 2021 10:50:51 +0100
+
+aptly (1.4.0+ds1-2) unstable; urgency=medium
+
+  * Use pipeline from salsa-ci-team
+  * Allow reprotest failure
+  * Pass version from d/rules (Closes: #968585)
+
+ -- Sebastien Delafond <seb@debian.org>  Fri, 21 Aug 2020 10:13:44 +0200
+
+aptly (1.4.0+ds1-1) unstable; urgency=medium
+
+  * New upstream version 1.4.0+ds1
+  * Rediff patches
+  * Depend on gnupg 2
+
+ -- Sebastien Delafond <seb@debian.org>  Sun, 22 Dec 2019 15:16:25 +0100
+
+aptly (1.3.0+ds1-4) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Rename obsolete path debian/tests/control.autodep8 to debian/tests/control.
+  * Use secure URI in Homepage field.
+  * Bump debhelper from old 11 to 12.
+  * Set debhelper-compat version in Build-Depends.
+
+  [ Sébastien Delafond ]
+  * Bump up Standards-Version
+
+ -- Sebastien Delafond <seb@debian.org>  Sun, 22 Dec 2019 14:10:19 +0100
+
+aptly (1.3.0+ds1-3) unstable; urgency=medium
+
+  * Build-Depend on golang-golang-x-tools-dev instead of golang-go.tools (Closes: #945884)
+  * Lintian fix
+
+ -- Sebastien Delafond <seb@debian.org>  Sat, 21 Dec 2019 10:29:09 +0100
+
+aptly (1.3.0+ds1-2.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Remove myself from uploaders.
+
+ -- Alexandre Viau <aviau@debian.org>  Sun, 15 Sep 2019 19:27:47 -0400
+
+# Older entries have been removed from this changelog.
+# To read the complete changelog use `apt changelog aptly`.

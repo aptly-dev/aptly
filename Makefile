@@ -1,7 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 GOPATH=$(shell go env GOPATH)
-TAG="$(shell git describe --tags --always)"
-VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g' | tr -d '\n')
+VERSION=$(shell make version)
 PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=
@@ -105,7 +104,15 @@ man:  ## Create man pages
 	make -C man
 
 version:  ## Print aptly version
-	@echo $(VERSION)
+	@if which dpkg-parsechangelog > /dev/null 2>&1; then \
+		if git describe --exact-match --tags HEAD >/dev/null 2>&1; then \
+			dpkg-parsechangelog -S Version; \
+		else \
+			echo `dpkg-parsechangelog -S Version`+`git describe --tags | cut -d - -f2- | sed s/-/+/g`; \
+		fi \
+	else \
+		git describe --tags --always | sed 's@^v@@' | sed 's@-@+@g'; \
+	fi
 
 build:  ## Build aptly
 	go mod tidy
