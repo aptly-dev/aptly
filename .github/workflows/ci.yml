@@ -1,5 +1,3 @@
-# Based on https://github.com/aptly-dev/aptly/blob/master/.travis.yml
-
 name: CI
 
 on:
@@ -13,14 +11,14 @@ on:
 defaults:
   run:
     # see: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
-    shell: bash --noprofile --norc -eo pipefail -x {0}
+    shell: bash --noprofile --norc -eo pipefail {0}
 
 env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
   build:
-    name: test
+    name: "System Tests (Ubuntu 22.04)"
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -30,39 +28,41 @@ jobs:
       BOTO_CONFIG: /dev/null
       GO111MODULE: "on"
       GOPROXY: "https://proxy.golang.org"
-      GOVER: '1.21'
+      GOVER: '1.19'
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: "Install packages"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts
 
-      - name: Setup Go
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          # fetch the whole repo for `git describe` to work
+          fetch-depth: 0
+
+      - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVER }}
 
-      - name: Get aptly version
+      - name: "Get aptly version"
         run: |
            make version
-           go generate
 
-      - name: Setup Python
+      - name: "Setup Python"
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install O/S packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz gnupg2 gpgv2 git gcc make
-
-      - name: Install Python packages
+      - name: "Install Python packages"
         run: |
           pip install six packaging appdirs virtualenv
           pip install -U pip setuptools
           pip install -r system/requirements.txt
 
-      - name: Install Azurite
+      - name: "Install Azurite"
         id: azuright
         uses: potatoqualitee/azuright@v1.1
         with:
@@ -94,70 +94,72 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.txt
 
-  release:
+  ci-debian:
+    name: "CI Build (Deb)"
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        name: [Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12]
+        name: ["Debian 12", "Debian 11", "Debian 10", "Ubuntu 22.04", "Ubuntu 20.04"]
         include:
-          - name: Ubuntu-20
-            image: "ubuntu:20.04"
-            suite: focal
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
-          - name: Ubuntu-22
-            image: "ubuntu:22.04"
-            suite: jammy
-            install: "make ca-certificates git curl golang"
-          - name: Debian-10
-            image: "debian:buster"
-            suite: buster
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
-          - name: Debian-11
-            image: "debian:bullseye"
-            suite: bullseye
-            GOVER: '1.21'
-            install: "make ca-certificates git curl"
-          - name: Debian-12
-            image: "debian:bookworm"
+          - name: "Debian 12"
             suite: bookworm
-            install: "make ca-certificates git curl golang"
+            image: debian:bookworm
+          - name: "Debian 10"
+            suite: buster
+            image: debian:buster
+          - name: "Debian 11"
+            suite: bullseye
+            image: debian:bullseye
+          - name: "Ubuntu 22.04"
+            suite: jammy
+            image: ubuntu:22.04
+          - name: "Ubuntu 20.04"
+            suite: focal
+            image: ubuntu:20.04
     container:
       image: ${{ matrix.image }}
       env:
         APT_LISTCHANGES_FRONTEND: none
         DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Install O/S packages
+      - name: "Install packages"
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ${{ matrix.install }}
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          echo GOVER: ${{ env.GOVER }}
 
-      - name: Checkout repository
+      - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
-          # fetch the whole repo for `git describe` to
-          # work and get the nightly verion
+          # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: Setup Go
-        if: ${{ matrix.GOVER != '' }}
+      - name: "Read go version from go.mod"
+        run: |
+          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+        id: goversion
+
+      - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.GOVER }}
+          go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Make Release
+      - name: "Build Debian packages"
         env:
           GOBIN: /usr/local/bin
         run: |
-          make release
+          GOPATH=$PWD/.go go generate -v
+          DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
+          dpkg-buildpackage -us -uc -b -d --host-arch=amd64
+          dpkg-buildpackage -us -uc -b -d --host-arch=i386
+          dpkg-buildpackage -us -uc -b -d --host-arch=arm64
+          dpkg-buildpackage -us -uc -b -d --host-arch=armhf
+          mkdir -p build && mv ../*.deb build/
+          cd build && ls -l *.deb
 
-      - name: Publish nightly release to aptly
+      - name: "Publish CI release to aptly"
         if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
@@ -165,10 +167,44 @@ jobs:
         run: |
           ./upload-artifacts.sh nightly ${{ matrix.suite }}
 
-      - name: Publish release to aptly
+      - name: "Publish release to aptly"
         if: startsWith(github.event.ref, 'refs/tags')
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
+
+  ci-other:
+    name: "CI Build (FreeBSD, MacOS, Linux)"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Install packages"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends make ca-certificates git curl devscripts
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          # fetch the whole repo for `git describe` to work
+          fetch-depth: 0
+
+      - name: "Read go version from go.mod"
+        run: |
+          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+        id: goversion
+
+      - name: "Setup Go"
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+
+      - name: "Build goxc packages"
+        env:
+          GOBIN: /usr/local/bin
+        run: |
+          go version
+          make release

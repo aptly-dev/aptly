@@ -14,12 +14,13 @@ COVERAGE_DIR?=$(shell mktemp -d)
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-all: modules test bench check system-test
+all: prepare test bench check system-test
 
-modules:  ## Install go module dependencies
+prepare:  ## Install go module dependencies
 	go mod download
 	go mod verify
 	go mod tidy -v
+	go generate
 
 dev:
 	PATH=$(BINPATH)/:$(PATH)
@@ -69,12 +70,16 @@ docker-test: ## Run system tests
 	export APTLY_VERSION=$(VERSION); \
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:  ## Run unit tests
+test: prepare  ## Run unit tests
 	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	@system/t13_etcd/start-etcd.sh &
-	@echo Running go test
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out
-	@kill `cat /tmp/etcd.pid`
+	@echo "\nStarting etcd ..."
+	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
+	@echo "\nRunning go test ..."
+	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
+	@echo "\nStopping etcd ..."
+	@pid=`cat /tmp/etcd.pid`; kill $$pid
+	@rm -f /tmp/etcd-data/etcd.log
+	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
@@ -90,14 +95,15 @@ goxc: dev
 	cp completion.d/aptly root/etc/bash_completion.d/
 	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
-	go generate
-	goxc -pv=$(VERSION) -max-processors=2 $(GOXC_OPTS)
+	GOPATH=$(PWD)/.go go generate
+	GOPATH=$(PWD)/.go goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-release: GOXC_OPTS=-tasks-=bintray,go-vet,go-test,rmbin
+release: GOXC_OPTS=-tasks-=go-vet,go-test,rmbin
 release: goxc
 	rm -rf build/
 	mkdir -p build/
 	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
+	ls -l build/
 
 man:  ## Create man pages
 	make -C man
@@ -146,4 +152,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
 	rm -rf build/ docs/ obj-x86_64-linux-gnu/
 
-.PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
+.PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
