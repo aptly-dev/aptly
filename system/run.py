@@ -69,7 +69,13 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                 orig_stdout.write(f"error importing: {test + '.' + fname}: {exc}\n")
                 continue
 
+            testignore = []
+            if hasattr(testModule, "TEST_IGNORE"):
+                testignore = testModule.TEST_IGNORE
             for name in sorted(dir(testModule), key=natural_key):
+                if name in testignore:
+                    continue
+
                 testout.clear()
 
                 o = getattr(testModule, name)

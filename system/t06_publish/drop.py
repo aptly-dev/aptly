@@ -5,6 +5,7 @@ class PublishDrop1Test(BaseTest):
     """
     publish drop: existing snapshot
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -25,6 +26,7 @@ class PublishDrop2Test(BaseTest):
     """
     publish drop: under prefix
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -46,6 +48,7 @@ class PublishDrop3Test(BaseTest):
     """
     publish drop: drop one distribution
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -68,6 +71,7 @@ class PublishDrop4Test(BaseTest):
     """
     publish drop: drop one of components
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -91,6 +95,7 @@ class PublishDrop5Test(BaseTest):
     """
     publish drop: component cleanup
     """
+    requiresGPG2 = True
     fixtureCmds = [
         "aptly repo create local1",
         "aptly repo create local2",
@@ -128,6 +133,7 @@ class PublishDrop7Test(BaseTest):
     """
     publish drop: under prefix with trailing & leading slashes
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -149,6 +155,7 @@ class PublishDrop8Test(BaseTest):
     """
     publish drop: skip component cleanup
     """
+    requiresGPG2 = True
     fixtureCmds = [
         "aptly repo create local1",
         "aptly repo create local2",
@@ -178,6 +185,7 @@ class PublishDrop9Test(BaseTest):
     """
     publish drop: component cleanup after first cleanup skipped
     """
+    requiresGPG2 = True
     fixtureCmds = [
         "aptly repo create local1",
         "aptly repo create local2",

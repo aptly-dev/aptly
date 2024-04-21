@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# cleanup
+rm -rf /app/tmp
+rm -rf /tmp/aptly*
+
+mkdir -p /srv
+
+usermod -u `stat -c %u /app` aptly >/dev/null
+chown -R `stat -c %u /app` /var/lib/aptly /srv
+
+# use same /home/runner dir as in github workflow
+chown -R `stat -c %u /app` /home/runner
+su - aptly -c "cd /app; export HOME=/home/runner; go mod tidy; make test"

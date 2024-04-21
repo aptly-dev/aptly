@@ -129,44 +129,14 @@ class BaseTest(object):
     requiresDot = False
     sortOutput = False
     debugOutput = False
+    EtcdServer = None
 
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
-    databaseType = os.environ.get("APTLY_DATABASE_TYPE")
-    databaseUrl = os.environ.get("APTLY_DATABASE_URL")
-    if databaseType is None:
-        databaseType = ""
-    if databaseUrl is None:
-        databaseUrl = ""
+    databaseType = ""
+    databaseUrl = ""
 
-    databaseBackend = {
-        "type": databaseType,
-        "url": databaseUrl,
-    }
-
-    configFile = {
-        "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
-        "downloadConcurrency": 4,
-        "downloadSpeedLimit": 0,
-        "downloadRetries": 5,
-        "databaseOpenAttempts": 10,
-        "architectures": [],
-        "dependencyFollowSuggests": False,
-        "dependencyFollowRecommends": False,
-        "dependencyFollowAllVariants": False,
-        "dependencyFollowSource": False,
-        "gpgDisableVerify": False,
-        "gpgDisableSign": False,
-        "ppaDistributorID": "ubuntu",
-        "ppaCodename": "",
-        "enableMetricsEndpoint": True,
-        "logLevel": "debug",
-        "logFormat": "default",
-        "serveInAPIMode": True,
-        "databaseEtcd": databaseEtcd,
-        "databaseBackend": databaseBackend,
-    }
     configOverride = {}
     environmentOverride = {}
 
@@ -209,7 +179,32 @@ class BaseTest(object):
                 os.environ["HOME"], ".gnupg", "aptlytest.gpg"))
 
     def prepare_default_config(self):
-        cfg = self.configFile.copy()
+        databaseBackend = {
+            "type": self.databaseType,
+            "url": self.databaseUrl,
+        }
+
+        cfg = {
+            "rootDir": f"{os.environ['HOME']}/{self.aptlyDir}",
+            "downloadConcurrency": 4,
+            "downloadSpeedLimit": 0,
+            "downloadRetries": 5,
+            "databaseOpenAttempts": 10,
+            "architectures": [],
+            "dependencyFollowSuggests": False,
+            "dependencyFollowRecommends": False,
+            "dependencyFollowAllVariants": False,
+            "dependencyFollowSource": False,
+            "gpgDisableVerify": False,
+            "gpgDisableSign": False,
+            "ppaDistributorID": "ubuntu",
+            "ppaCodename": "",
+            "enableMetricsEndpoint": True,
+            "logLevel": "debug",
+            "logFormat": "default",
+            "serveInAPIMode": True,
+            "databaseBackend": databaseBackend,
+        }
         if self.requiresGPG1:
             cfg["gpgProvider"] = "gpg1"
         elif self.requiresGPG2:
@@ -246,9 +241,27 @@ class BaseTest(object):
             shutil.copytree(self.fixturePoolDir, os.path.join(
                 os.environ["HOME"], self.aptlyDir, "pool"), ignore=shutil.ignore_patterns(".git"))
 
-        if self.fixtureDB:
-            shutil.copytree(self.fixtureDBDir, os.path.join(
-                os.environ["HOME"], self.aptlyDir, "db"))
+        if self.databaseType == "etcd":
+            if not os.path.exists("/srv/etcd"):
+                self.run_cmd([os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "t13_etcd/install-etcd.sh")])
+
+        if self.fixtureDB and self.databaseType != "etcd":
+            shutil.copytree(self.fixtureDBDir, os.path.join(os.environ["HOME"], self.aptlyDir, "db"))
+
+        if self.databaseType == "etcd":
+            if self.EtcdServer:
+                self.shutdown_etcd()
+
+            # remove existing database
+            if os.path.exists("/tmp/etcd-data"):
+                shutil.rmtree("/tmp/etcd-data")
+
+            if self.fixtureDB:
+                print("import etcd")
+                self.run_cmd(["/srv/etcd/etcdctl", "--data-dir=/tmp/etcd-data", "snapshot", "restore", os.path.join(os.environ["HOME"], "etcd.db")])
+
+            print("starting etcd")
+            self.EtcdServer = self._start_process([os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "t13_etcd/start-etcd.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if self.fixtureWebServer:
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
@@ -499,7 +512,8 @@ class BaseTest(object):
         self.prepare_fixture()
 
     def teardown(self):
-        pass
+        if self.EtcdServer:
+            self.shutdown_etcd()
 
     def start_webserver(self, directory):
         FileHTTPServerRequestHandler.rootPath = directory
@@ -515,9 +529,17 @@ class BaseTest(object):
     def shutdown(self):
         if hasattr(self, 'webserver'):
             self.shutdown_webserver()
+        if self.EtcdServer:
+            self.shutdown_etcd()
 
     def shutdown_webserver(self):
         self.webserver.shutdown()
+
+    def shutdown_etcd(self):
+        print("stopping etcd")
+        self.EtcdServer.terminate()
+        self.EtcdServer.wait()
+        self.EtcdServer = None
 
     @classmethod
     def shutdown_class(cls):
