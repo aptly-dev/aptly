@@ -87,7 +87,7 @@ func (pool *PackagePool) FilepathList(progress aptly.Progress) ([]string, error)
 	return paths, err
 }
 
-func (pool *PackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+func (pool *PackagePool) LegacyPath(_ string, _ *utils.ChecksumInfo) (string, error) {
 	return "", errors.New("Azure package pool does not support legacy paths")
 }
 
@@ -134,7 +134,7 @@ func (pool *PackagePool) Remove(path string) (int64, error) {
 	return props.ContentLength(), nil
 }
 
-func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, checksumStorage aptly.ChecksumStorage) (string, error) {
+func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, _ bool, checksumStorage aptly.ChecksumStorage) (string, error) {
 	if checksums.MD5 == "" || checksums.SHA256 == "" || checksums.SHA512 == "" {
 		// need to update checksums, MD5 and SHA256 should be always defined
 		var err error
