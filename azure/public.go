@@ -114,8 +114,8 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
 
 	relFilePath := filepath.Join(publishedRelPath, fileName)
-        // prefixRelFilePath := filepath.Join(publishedPrefix, relFilePath)
-        // FIXME: check how to integrate publishedPrefix:
+	// prefixRelFilePath := filepath.Join(publishedPrefix, relFilePath)
+	// FIXME: check how to integrate publishedPrefix:
 	poolPath := storage.az.blobPath(fileName)
 
 	if storage.pathCache == nil {
