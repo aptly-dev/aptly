@@ -1,5 +1,6 @@
-// Package azure handles publishing to Azure Storage
 package azure
+
+// Package azure handles publishing to Azure Storage
 
 import (
 	"context"
