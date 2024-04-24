@@ -552,7 +552,7 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 	}
 
 	fsPath := filepath.Join(skelDir, p.Prefix, "dists", p.Distribution, component)
-	if err := filepath.Walk(fsPath, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(fsPath, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
