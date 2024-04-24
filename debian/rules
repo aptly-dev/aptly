@@ -9,6 +9,11 @@ export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; el
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
+	mkdir -p debian/aptly/usr/share/man/man1/ debian/aptly/etc/bash_completion.d/ debian/aptly/usr/share/zsh/vendor-completions/
+	cp man/aptly.1 debian/aptly/usr/share/man/man1
+	cp completion.d/aptly debian/aptly/etc/bash_completion.d/
+	cp completion.d/_aptly debian/aptly/usr/share/zsh/vendor-completions/
+	gzip debian/aptly/usr/share/man/man1/aptly.1
 
 %:
 	dh $@ --buildsystem=golang --with=golang
