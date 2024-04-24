@@ -58,3 +58,22 @@ Architecture: any
 Depends: ${misc:Depends}, bzip2, xz-utils
 Description: aptly - Debian repository management tool
  Aptly is a swiss army knife for Debian repository management.
+
+Package: aptly-api
+Architecture: any
+Depends: ${misc:Depends}, aptly, adduser
+Built-Using: ${misc:Built-Using}
+Description: Swiss army knife for Debian repository management - API
+ It offers several features making it easy to manage Debian package
+ repositories:
+ .
+  - make mirrors of remote Debian/Ubuntu repositories, limiting by
+    components/architectures
+  - take snapshots of mirrors at any point in time, fixing state of
+    repository at some moment of time
+  - publish snapshot as Debian repository, ready to be consumed by apt
+  - controlled update of one or more packages in snapshot from upstream
+    mirror, tracking dependencies
+  - merge two or more snapshots into one
+ .
+ This package contains the aptly-api service.

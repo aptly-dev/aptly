@@ -1,0 +1,16 @@
+[Unit]
+Description=Aptly API
+After=network.target
+Documentation=man:aptly(1)
+
+[Service]
+User=aptly-api
+Group=aptly-api
+WorkingDirectory=/var/lib/aptly-api
+EnvironmentFile=/etc/default/aptly-api
+ExecStart=/usr/bin/aptly api serve \
+            -config=/etc/aptly-api.conf \
+            -listen=${LISTEN_ADDRESS}
+
+[Install]
+WantedBy=multi-user.target
