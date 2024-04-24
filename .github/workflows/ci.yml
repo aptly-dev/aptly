@@ -150,7 +150,7 @@ jobs:
           dpkg-buildpackage -us -uc -b -d --host-arch=arm64
           dpkg-buildpackage -us -uc -b -d --host-arch=armhf
           mkdir -p build
-          mv ../aptly_*_*.* build
+          mv ../*.deb ../*.buildinfo ../*.changes build/
           ls -l build
 
       - name: Publish CI release to aptly
