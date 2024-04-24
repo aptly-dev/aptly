@@ -477,13 +477,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			}
 		}
 
-<<<<<<< HEAD
 		result, err := published.Update(collectionFactory, out)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
 
-		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
+		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}

@@ -197,7 +197,7 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 func (s *PublishedRepoSuite) TestMultiDistPool(c *C) {
 	repo, err := NewPublishedRepo("", "ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory, true)
 	c.Assert(err, IsNil)
-	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false)
+	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
 	c.Assert(err, IsNil)
 
 	publishedStorage := files.NewPublishedStorage(s.root, "", "")

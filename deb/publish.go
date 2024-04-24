@@ -783,7 +783,7 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 	}
 
 	fsPath := filepath.Join(skelDir, p.Prefix, "dists", p.Distribution, component)
-	if err := filepath.Walk(fsPath, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(fsPath, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -813,7 +813,7 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite, skelDir string) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool, skelDir string) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
