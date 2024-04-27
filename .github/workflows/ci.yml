@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    name: System Tests (Ubuntu 22.04)
+    name: "System Tests (Ubuntu 22.04)"
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -87,7 +87,7 @@ jobs:
           files: coverage.txt
 
   ci-debian:
-    name: CI Build
+    name: "CI Build (Deb)"
     needs: build
     runs-on: ubuntu-latest
     strategy:
@@ -116,29 +116,29 @@ jobs:
         APT_LISTCHANGES_FRONTEND: none
         DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Install packages
+      - name: "Install packages"
         run: |
           apt-get update
           apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Checkout repository
+      - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: Read go version
+      - name: "Read go version from go.mod"
         run: |
           echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
         id: goversion
 
-      - name: Setup Go
+      - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Build Debian packages
+      - name: "Build Debian packages"
         env:
           GOBIN: /usr/local/bin
         run: |
@@ -151,7 +151,7 @@ jobs:
           mkdir -p build && mv ../*.deb build/
           cd build && ls -l *.deb
 
-      - name: Publish CI release to aptly
+      - name: "Publish CI release to aptly"
         if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
@@ -159,7 +159,7 @@ jobs:
         run: |
           ./upload-artifacts.sh nightly ${{ matrix.suite }}
 
-      - name: Publish release to aptly
+      - name: "Publish release to aptly"
         if: startsWith(github.event.ref, 'refs/tags')
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
@@ -168,33 +168,33 @@ jobs:
           ./upload-artifacts.sh release ${{ matrix.suite }}
 
   ci-other:
-    name: CI Build (FreeBSD, MacOS, Linux)
+    name: "CI Build (FreeBSD, MacOS, Linux)"
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Install packages
+      - name: "Install packages"
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends make ca-certificates git curl
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Checkout repository
+      - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: Read go version
+      - name: "Read go version from go.mod"
         run: |
           echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
         id: goversion
 
-      - name: Setup Go
+      - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Build goxc packages
+      - name: "Build goxc packages"
         env:
           GOBIN: /usr/local/bin
         run: |
