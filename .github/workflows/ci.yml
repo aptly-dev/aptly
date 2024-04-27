@@ -93,23 +93,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [Debian 12, Debian 11, Debian 10, Ubuntu-22.04, Ubuntu-20.04]
+        name: ["Debian 12", "Debian 11", "Debian 10", "Ubuntu 22.04", "Ubuntu 20.04"]
         include:
-          - name: Debian 12
+          - name: "Debian 12"
             suite: bookworm
-            image: "debian:bookworm"
-          - name: Debian 10
+            image: debian:bookworm
+          - name: "Debian 10"
             suite: buster
-            image: "debian:buster"
-          - name: Debian 11
+            image: debian:buster
+          - name: "Debian 11"
             suite: bullseye
-            image: "debian:bullseye"
-          - name: Ubuntu-22.04
+            image: debian:bullseye
+          - name: "Ubuntu 22.04"
             suite: jammy
-            image: "ubuntu:22.04"
-          - name: Ubuntu-20.04
+            image: ubuntu:22.04
+          - name: "Ubuntu 20.04"
             suite: focal
-            image: "ubuntu:20.04"
+            image: ubuntu:20.04
     container:
       image: ${{ matrix.image }}
       env:
@@ -144,12 +144,12 @@ jobs:
         run: |
           GOPATH=$PWD/.go go generate -v
           DEBEMAIL="CI <runner@github>" dch -l +${{github.run_number}}+g`git log --pretty=format:'%h' -n 1` "CI build"
-          # dpkg-buildpackage -us -uc -b -d --host-arch=amd64
-          # dpkg-buildpackage -us -uc -b -d --host-arch=i386
+          dpkg-buildpackage -us -uc -b -d --host-arch=amd64
+          dpkg-buildpackage -us -uc -b -d --host-arch=i386
           dpkg-buildpackage -us -uc -b -d --host-arch=arm64
           dpkg-buildpackage -us -uc -b -d --host-arch=armhf
           mkdir -p build && mv ../*.deb build/
-          de build && ls -l *.deb
+          cd build && ls -l *.deb
 
       - name: Publish CI release to aptly
         if: github.ref == 'refs/heads/master'
