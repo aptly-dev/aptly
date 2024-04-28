@@ -34,7 +34,7 @@ jobs:
       - name: "Install packages"
         run: |
           sudo apt-get update
-          sudo apt-get install -y graphviz gnupg2 gpgv2 git gcc make devscripts
+          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts
 
       - name: "Checkout repository"
         uses: actions/checkout@v3
@@ -178,7 +178,7 @@ jobs:
       - name: "Install packages"
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends make ca-certificates git curl
+          sudo apt-get install -y --no-install-recommends make ca-certificates git curl devscripts
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Checkout repository"
