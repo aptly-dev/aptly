@@ -91,7 +91,14 @@ man:  ## Create man pages
 	make -C man
 
 version:  ## Print aptly version
-	@echo $(VERSION)
+	@if which dpkg-parsechangelog > /dev/null 2>&1; then \
+		if git describe --exact-match --tags HEAD >/dev/null 2>&1; then \
+			dpkg-parsechangelog -S Version; \
+		else \
+			echo `dpkg-parsechangelog -S Version`+`git describe --tags | cut -d - -f2- | sed s/-/+/g`; \
+		fi \
+	else echo $(VERSION); \
+	fi
 
 docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
