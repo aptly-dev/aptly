@@ -31,36 +31,39 @@ jobs:
       GOVER: '1.21'
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: "Install packages"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz gnupg2 gpgv2 git gcc make devscripts
 
-      - name: Setup Go
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          # fetch the whole repo for `git describe` to work
+          fetch-depth: 0
+
+      - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVER }}
 
-      - name: Get aptly version
+      - name: "Get aptly version"
         run: |
            make version
            go generate
 
-      - name: Setup Python
+      - name: "Setup Python"
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz gnupg2 gpgv2 git gcc make
-
-      - name: Install Python packages
+      - name: "Install Python packages"
         run: |
           pip install six packaging appdirs virtualenv
           pip install -U pip setuptools
           pip install -r system/requirements.txt
 
-      - name: Install Azurite
+      - name: "Install Azurite"
         id: azuright
         uses: potatoqualitee/azuright@v1.1
         with:
