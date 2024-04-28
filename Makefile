@@ -1,7 +1,6 @@
 GOVERSION=$(shell go version | awk '{print $$3;}')
 GOPATH=$(shell go env GOPATH)
-TAG="$(shell git describe --tags --always)"
-VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g' | tr -d '\n')
+VERSION=$(shell make version)
 PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=
@@ -97,7 +96,8 @@ version:  ## Print aptly version
 		else \
 			echo `dpkg-parsechangelog -S Version`+`git describe --tags | cut -d - -f2- | sed s/-/+/g`; \
 		fi \
-	else echo $(VERSION); \
+	else \
+		git describe --tags --always | sed 's@^v@@' | sed 's@-@+@g'; \
 	fi
 
 docker-build-system-tests:  ## Build system-test docker image

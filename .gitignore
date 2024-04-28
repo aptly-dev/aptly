@@ -48,3 +48,13 @@ build/
 pgp/keyrings/aptly2*.gpg
 pgp/keyrings/aptly2*.gpg~
 pgp/keyrings/.#*
+
+# debian
+debian/.debhelper/
+debian/aptly.debhelper.log
+debian/aptly.postrm.debhelper
+debian/aptly.substvars
+debian/aptly/
+debian/debhelper-build-stamp
+debian/files
+

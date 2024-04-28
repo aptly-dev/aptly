@@ -143,7 +143,7 @@ jobs:
           GOBIN: /usr/local/bin
         run: |
           GOPATH=$PWD/.go go generate -v
-          DEBEMAIL="CI <runner@github>" dch -l +${{github.run_number}}+g`git log --pretty=format:'%h' -n 1` "CI build"
+          DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
           dpkg-buildpackage -us -uc -b -d --host-arch=amd64
           dpkg-buildpackage -us -uc -b -d --host-arch=i386
           dpkg-buildpackage -us -uc -b -d --host-arch=arm64
