@@ -544,7 +544,7 @@ func (p *PublishedRepo) GetCodename() string {
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite, multiDist bool) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -656,7 +656,12 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						if err2 != nil {
 							return err2
 						}
-						relPath = filepath.Join("pool", component, poolDir)
+						if multiDist {
+							relPath = filepath.Join("pool", p.Distribution, component, poolDir)
+						} else {
+							relPath = filepath.Join("pool", component, poolDir)
+						}
+
 					} else {
 						if p.Distribution == aptly.DistributionFocal {
 							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "legacy-images")

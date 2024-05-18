@@ -193,6 +193,58 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 	c.Check(err, IsNil)
 }
 
+func (s *PublishedRepoSuite) TestMultiDistPool(c *C) {
+	repo, err := NewPublishedRepo("", "ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
+	c.Assert(err, IsNil)
+	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, true)
+	c.Assert(err, IsNil)
+
+	publishedStorage := files.NewPublishedStorage(s.root, "", "")
+
+	c.Check(repo.Architectures, DeepEquals, []string{"i386"})
+
+	rf, err := os.Open(filepath.Join(publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"))
+	c.Assert(err, IsNil)
+
+	cfr := NewControlFileReader(rf, true, false)
+	st, err := cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(st["Origin"], Equals, "ppa squeeze")
+	c.Check(st["Components"], Equals, "main")
+	c.Check(st["Architectures"], Equals, "i386")
+
+	pf, err := os.Open(filepath.Join(publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Packages"))
+	c.Assert(err, IsNil)
+
+	cfr = NewControlFileReader(pf, false, false)
+
+	for i := 0; i < 3; i++ {
+		st, err = cfr.ReadStanza()
+		c.Assert(err, IsNil)
+
+		c.Check(st["Filename"], Equals, "pool/squeeze/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb")
+	}
+
+	st, err = cfr.ReadStanza()
+	c.Assert(err, IsNil)
+	c.Assert(st, IsNil)
+
+	drf, err := os.Open(filepath.Join(publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"))
+	c.Assert(err, IsNil)
+
+	cfr = NewControlFileReader(drf, true, false)
+	st, err = cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(st["Archive"], Equals, "squeeze")
+	c.Check(st["Architecture"], Equals, "i386")
+
+	_, err = os.Stat(filepath.Join(publishedStorage.PublicPath(), "ppa/pool/squeeze/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
+	c.Assert(err, IsNil)
+
+}
+
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
 
 	for _, t := range []struct {
@@ -308,7 +360,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
-	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false)
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, false)
 	c.Assert(err, IsNil)
 
 	c.Check(s.repo.Architectures, DeepEquals, []string{"i386"})
@@ -355,7 +407,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
-	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"), PathExists)
@@ -363,7 +415,7 @@ func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
-	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
+	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
@@ -371,7 +423,7 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
-	err := s.repo4.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
+	err := s.repo4.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
@@ -379,7 +431,7 @@ func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishOtherStorage(c *C) {
-	err := s.repo5.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
+	err := s.repo5.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/dists/maverick/Release"), PathExists)

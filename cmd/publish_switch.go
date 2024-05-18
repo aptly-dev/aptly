@@ -14,6 +14,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	var err error
 
 	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
+	multiDist := context.Flags().Lookup("multi-dist").Value.Get().(bool)
 
 	if len(args) < len(components)+1 || len(args) > len(components)+2 {
 		cmd.Usage()
@@ -100,7 +101,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		published.SkipBz2 = context.Flags().Lookup("skip-bz2").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite)
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, multiDist)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -161,6 +162,7 @@ This command would switch published repository (with one component) named ppa/wh
 	cmd.Flag.String("component", "", "component names to update (for multi-component publishing, separate components with commas)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 	cmd.Flag.Bool("skip-cleanup", false, "don't remove unreferenced files in prefix/component")
+	cmd.Flag.Bool("multi-dist", false, "enable multiple packages with the same filename in different distributions")
 
 	return cmd
 }
