@@ -51,6 +51,7 @@ Example:
 	cmd.Flag.String("codename", "", "codename to publish (defaults to distribution)")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 	cmd.Flag.Bool("acquire-by-hash", false, "provide index files by hash")
+	cmd.Flag.Bool("multi-dist", false, "enable multiple packages with the same filename in different distributions")
 
 	return cmd
 }
