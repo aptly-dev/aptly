@@ -312,10 +312,9 @@ func apiMirrorsUpdate(c *gin.Context) {
 	b.Filter = remote.Filter
 	b.Architectures = remote.Architectures
 	b.Components = remote.Components
-
 	b.IgnoreSignatures = context.Config().GpgDisableVerify
 
-	log.Info().Msgf("%s: Starting mirror update\n", b.Name)
+	log.Info().Msgf("%s: Starting mirror update", b.Name)
 
 	if c.Bind(&b) != nil {
 		return
@@ -465,7 +464,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}()
 
-		log.Info().Msgf("%s: Spawning background processes...\n", b.Name)
+		log.Info().Msgf("%s: Spawning background processes...", b.Name)
 		var wg sync.WaitGroup
 		for i := 0; i < context.Config().DownloadConcurrency; i++ {
 			wg.Add(1)
@@ -501,6 +500,20 @@ func apiMirrorsUpdate(c *gin.Context) {
 							continue
 						}
 
+						// and import it back to the pool
+						task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
+						if err != nil {
+							//return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import file: %s", err)
+							pushError(err)
+							continue
+						}
+
+						// update "attached" files if any
+						for _, additionalAtask := range task.Additional {
+							additionalAtask.File.PoolPath = task.File.PoolPath
+							additionalAtask.File.Checksums = task.File.Checksums
+						}
+
 						task.Done = true
 						taskFinished <- task
 					case <-context.Done():
@@ -512,32 +525,10 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		// Wait for all download goroutines to finish
-		log.Info().Msgf("%s: Waiting for background processes to finish...\n", b.Name)
+		log.Info().Msgf("%s: Waiting for background processes to finish...", b.Name)
 		wg.Wait()
-		log.Info().Msgf("%s: Background processes finished\n", b.Name)
+		log.Info().Msgf("%s: Background processes finished", b.Name)
 		close(taskFinished)
-
-		for idx := range queue {
-
-			atask := &queue[idx]
-
-			if !atask.Done {
-				// download not finished yet
-				continue
-			}
-
-			// and import it back to the pool
-			atask.File.PoolPath, err = context.PackagePool().Import(atask.TempDownPath, atask.File.Filename, &atask.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
-			if err != nil {
-				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import file: %s", err)
-			}
-
-			// update "attached" files if any
-			for _, additionalAtask := range atask.Additional {
-				additionalAtask.File.PoolPath = atask.File.PoolPath
-				additionalAtask.File.Checksums = atask.File.Checksums
-			}
-		}
 
 		select {
 		case <-context.Done():
@@ -546,18 +537,18 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		if len(errors) > 0 {
-			log.Info().Msgf("%s: Unable to update because of previous errors\n", b.Name)
+			log.Info().Msgf("%s: Unable to update because of previous errors", b.Name)
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 		}
 
-		log.Info().Msgf("%s: Finalizing download\n", b.Name)
+		log.Info().Msgf("%s: Finalizing download...", b.Name)
 		remote.FinalizeDownload(collectionFactory, out)
 		err = collectionFactory.RemoteRepoCollection().Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		log.Info().Msgf("%s: Mirror updated successfully!\n", b.Name)
+		log.Info().Msgf("%s: Mirror updated successfully", b.Name)
 		return &task.ProcessReturnValue{Code: http.StatusNoContent, Value: nil}, nil
 	})
 }
