@@ -95,6 +95,9 @@ version:  ## Print aptly version
 docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
 
+docker-unit-tests:  ## Run unit tests in docker container
+	docker run -t --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
+
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
 	docker run -t --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
 
