@@ -50,4 +50,5 @@ func (s *ListSuite) TestList(c *check.C) {
 	c.Check(detail, check.Equals, "Details")
 	_, deleteErr := list.DeleteTaskByID(task.ID)
 	c.Check(deleteErr, check.IsNil)
+        list.Stop()
 }

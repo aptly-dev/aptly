@@ -20,9 +20,9 @@ class TaskAPITestParallelTasks(APITest):
         resp = self.put("/api/mirrors/" + mirror_name, json=mirror_desc, params={'_async': True})
         self.check_equal(resp.status_code, 202)
 
-        # check that two mirror updates cannot run at the same time
+        # check that two mirror updates are queuedd
         resp2 = self.put("/api/mirrors/" + mirror_name, json=mirror_desc, params={'_async': True})
-        self.check_equal(resp2.status_code, 409)
+        self.check_equal(resp2.status_code, 202)
 
         return resp.json()['ID'], mirror_name
 
