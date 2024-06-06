@@ -567,6 +567,9 @@ func (context *AptlyContext) Shutdown() {
 			context.fileMemProfile = nil
 		}
 	}
+	if context.taskList != nil {
+		context.taskList.Stop()
+	}
 	if context.database != nil {
 		context.database.Close()
 		context.database = nil
