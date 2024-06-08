@@ -53,7 +53,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	go test -v -coverpkg="./..." -c -tags testruncli
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
 docker-test: install
@@ -96,13 +96,13 @@ docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
 
 docker-unit-tests:  ## Run unit tests in docker container
-	docker run -t --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
+	docker run -it --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
 
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
-	docker run -t --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
+	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
 
 golangci-lint:  ## Run golangci-line in docker container
-	docker run -t --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run
+	docker run -it --rm -v ~/.cache/golangci-lint/v1.56.2:/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run
 
 flake8:
 	flake8 system

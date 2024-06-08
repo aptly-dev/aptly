@@ -81,7 +81,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
-                sys.stdout.write("%s:%s... " % (test, o.__name__))
+                sys.stdout.write(colored("%s:%s... ", color="yellow", attrs=["bold"]) % (test, o.__name__))
                 sys.stdout.flush()
 
                 t = o()
@@ -105,9 +105,9 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     typ, val, tb = sys.exc_info()
                     fails.append((test, t, typ, val, tb, testModule))
                     traceback.print_exception(typ, val, tb)
-                    sys.stdout.write(colored("FAIL\n", color="red"))
+                    sys.stdout.write(colored("FAIL\n", color="red", attrs=["bold"]))
                 else:
-                    sys.stdout.write(colored("OK\n", color="green"))
+                    sys.stdout.write(colored("OK\n", color="green", attrs=["bold"]))
 
                 t.shutdown()
 
