@@ -20,6 +20,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zlib
+
 from pathlib import Path
 from uuid import uuid4
 
@@ -246,7 +247,7 @@ class BaseTest(object):
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:
                 output = self.run_cmd(cmd)
-                print("\n")
+                print("fixture Output:\n")
                 for line in output.decode("utf-8").split("\n"):
                     print(f"    {line}")
 

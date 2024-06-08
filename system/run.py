@@ -43,6 +43,23 @@ def walk_modules(package):
         yield importlib.import_module(package + "." + name)
 
 
+class TestStdout:
+    def __init__(self):
+        self.output = []
+
+    def write(self, text):
+        self.output.append(text)
+
+    def flush(self):
+        pass
+
+    def get_output(self):
+        return ''.join(self.output)
+
+    def truncate(self):
+        self.output = []
+
+
 def run(include_long_tests=False, capture_results=False, tests=None, filters=None, coverage_dir=None):
     """
     Run system test.
@@ -56,8 +73,22 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         coverage_dir = mkdtemp(suffix="aptly-coverage")
 
     for test in tests:
-        for testModule in walk_modules(test):
+        orig_stdout = sys.stdout
+        orig_stderr = sys.stderr
+
+        # importlib.import_module(test)
+        for name in sorted(glob.glob(test + "/*.py"), key=natural_key):
+            name = os.path.splitext(os.path.basename(name))[0]
+            if name == "__init__":
+                continue
+
+            testout = TestStdout()
+            sys.stdout = testout
+            sys.stderr = testout
+            testModule = importlib.import_module(test + "." + name)
+
             for name in sorted(dir(testModule), key=natural_key):
+                testout.truncate()
                 o = getattr(testModule, name)
 
                 if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
@@ -81,17 +112,18 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
-                sys.stdout.write(colored("%s:%s... ", color="yellow", attrs=["bold"]) % (test, o.__name__))
-                sys.stdout.flush()
+                orig_stdout.write(colored("%s: %s ... ", color="yellow", attrs=["bold"]) % (test, o.__name__))
+                orig_stdout.flush()
 
                 t = o()
+
                 if t.longTest and not include_long_tests or not t.fixture_available() or t.skipTest:
                     numSkipped += 1
                     msg = 'SKIP'
                     if t.skipTest and t.skipTest is not True:
                         # If we have a reason to skip, print it
                         msg += ': ' + t.skipTest
-                    sys.stdout.write(colored(msg + "\n", color="yellow"))
+                    orig_stdout.write(colored(msg + "\n", color="yellow"))
                     continue
 
                 numTests += 1
@@ -104,12 +136,17 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     numFailed += 1
                     typ, val, tb = sys.exc_info()
                     fails.append((test, t, typ, val, tb, testModule))
-                    traceback.print_exception(typ, val, tb)
-                    sys.stdout.write(colored("FAIL\n", color="red", attrs=["bold"]))
+                    orig_stdout.write(colored("\b\b\b\bFAIL\n", color="red", attrs=["bold"]))
+
+                    orig_stdout.write(testout.get_output())
+                    traceback.print_exception(typ, val, tb, file=orig_stdout)
                 else:
-                    sys.stdout.write(colored("OK\n", color="green", attrs=["bold"]))
+                    orig_stdout.write(colored("\b\b\b\bOK \n", color="green", attrs=["bold"]))
 
                 t.shutdown()
+
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
 
     if lastBase is not None:
         lastBase.shutdown_class()

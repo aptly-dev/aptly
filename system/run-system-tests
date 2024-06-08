@@ -4,7 +4,7 @@
 rm -rf /app/tmp
 rm -rf /tmp/aptly*
 
-usermod -u `stat -c %u /app` aptly
+usermod -u `stat -c %u /app` aptly >/dev/null
 chown -R `stat -c %u /app` /var/lib/aptly
 
 # use same /home/runner dir as in github workflow
