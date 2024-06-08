@@ -531,7 +531,7 @@ func apiSnapshotsPull(c *gin.Context) {
 
 	resources := []string{string(sourceSnapshot.ResourceKey()), string(toSnapshot.ResourceKey())}
 	taskName := fmt.Sprintf("Pull snapshot %s into %s and save as %s", body.Source, body.To, body.Destination)
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		// convert snapshots to package list
 		toPackageList, err := deb.NewPackageListFromRefList(toSnapshot.RefList(), collectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
