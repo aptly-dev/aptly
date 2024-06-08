@@ -47,6 +47,7 @@ type Task struct {
 	detail             *Detail
 	process            Process
 	processReturnValue *ProcessReturnValue
+	err                error
 	Name               string
 	ID                 int
 	State              State
