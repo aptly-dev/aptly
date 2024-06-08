@@ -33,16 +33,6 @@ def natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
 
 
-def walk_modules(package):
-    yield importlib.import_module(package)
-    for name in sorted(glob.glob(package + "/*.py"), key=natural_key):
-        name = os.path.splitext(os.path.basename(name))[0]
-        if name == "__init__":
-            continue
-
-        yield importlib.import_module(package + "." + name)
-
-
 class TestStdout:
     def __init__(self):
         self.output = []
@@ -112,7 +102,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
-                orig_stdout.write(colored("%s: %s ... ", color="yellow", attrs=["bold"]) % (test, o.__name__))
+                orig_stdout.write("%s: %s ... " % (test, colored(o.__name__, color="yellow", attrs=["bold"])))
                 orig_stdout.flush()
 
                 t = o()
