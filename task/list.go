@@ -56,6 +56,7 @@ func (list *List) consumer() {
 				list.Lock()
 				{
 					task.processReturnValue = retValue
+					task.err = err
 					if err != nil {
 						task.output.Printf("Task failed with error: %v", err)
 						task.State = FAILED
@@ -240,4 +241,15 @@ func (list *List) WaitForTaskByID(ID int) (Task, error) {
 
 	wgTask.Wait()
 	return list.GetTaskByID(ID)
+}
+
+// GetTaskError returns the Task error for a given id
+func (list *List) GetTaskErrorByID(ID int) (error, error) {
+	task, err := list.GetTaskByID(ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return task.err, nil
 }

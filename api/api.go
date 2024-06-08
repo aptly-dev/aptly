@@ -164,9 +164,17 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		c.JSON(202, task)
 	} else {
 		log.Debug().Msg("Executing task synchronously")
-		out := context.Progress()
-		detail := task.Detail{}
-		retValue, err := proc(out, &detail)
+		task, conflictErr := runTaskInBackground(name, resources, proc)
+		if conflictErr != nil {
+			AbortWithJSONError(c, 409, conflictErr)
+			return
+		}
+
+		// wait for task to finish
+		context.TaskList().WaitForTaskByID(task.ID)
+
+		retValue, _ := context.TaskList().GetTaskReturnValueByID(task.ID)
+		err, _ := context.TaskList().GetTaskErrorByID(task.ID)
 		if err != nil {
 			AbortWithJSONError(c, retValue.Code, err)
 			return
