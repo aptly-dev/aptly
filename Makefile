@@ -50,10 +50,11 @@ endif
 system-test: install system/env
 ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
-	go test -v -coverpkg="./..." -c -tags testruncli
+	go build -coverpkg="./..." -cover -tags testruncli -o aptly.test
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
+	ls -la $(COVERAGE_DIR)
 endif
 
 docker-test: install
@@ -61,7 +62,7 @@ docker-test: install
 	PATH=$(BINPATH)/:$(PATH) APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
 test:
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out
+	GOCOVERDIR=$(COVERAGE_DIR) go test -v ./... -test.coverprofile=unit.out
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
