@@ -32,7 +32,7 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 }
 
 // @Summary Get mirrors
-// @Description List available mirrors
+// @Description Show list of currently available mirrors. Each mirror is returned as in “show” API.
 // @Tags Mirrors
 // @Produce  json
 // @Success 200 {array} deb.RemoteRepo
@@ -51,23 +51,23 @@ func apiMirrorsList(c *gin.Context) {
 }
 
 // @Summary Create mirror
-// @Description Create a mirror
+// @Description Create empty mirror with specified parameters.
 // @Tags Mirrors
 // @Accept  json
 // @Produce  json
-// @Param Name query string true "Name"
-// @Param ArchiveURL query string true "Archive URL"
-// @Param Distribution query string false "Distribution"
-// @Param Filter query string false "Filter"
-// @Param Components query []string false "Components"
-// @Param Architectures query []string false "Architectures"
-// @Param Keyrings query []string false "Keyrings"
-// @Param DownloadSources query bool false "DownloadSources"
-// @Param DownloadUdebs query bool false "DownloadUdebs"
-// @Param DownloadInstaller query bool false "DownloadInstaller"
-// @Param FilterWithDeps query bool false "FilterWithDeps"
-// @Param SkipComponentCheck query bool false "SkipComponentCheck"
-// @Param IgnoreSignatures query bool false "IgnoreSignatures"
+// @Param Name query string true "mirror name"
+// @Param ArchiveURL query string true "url of the archive to mirror e.g. http://deb.debian.org/debian/"
+// @Param Distribution query string false "distribution name to mirror e.g. `buster`, for flat repositories use `./` instead of distribution name"
+// @Param Filter query string false "package query that is applied to packages in the mirror"
+// @Param Components query []string false "components to mirror, if not specified aptly would fetch all components"
+// @Param Architectures query []string false "limit mirror to those architectures, if not specified aptly would fetch all architectures"
+// @Param Keyrings query []string false "gpg keyring(s) to use when verifying `Release` file"
+// @Param DownloadSources query bool false "whether to mirror sources"
+// @Param DownloadUdebs query bool false "whether to mirror `.udeb` packages (Debian installer support)"
+// @Param DownloadInstaller query bool false "whether to download additional not packaged installer files"
+// @Param FilterWithDeps query bool false "when filtering, include dependencies of matching packages as well"
+// @Param SkipComponentCheck query bool false "whether to skip if the given components are in the `Release` file"
+// @Param IgnoreSignatures query bool false "whether to skip the verification of `Release` file signatures"
 // @Success 200 {object} deb.RemoteRepo
 // @Failure 400 {object} Error "Bad Request"
 // @Router /api/mirrors [post]
