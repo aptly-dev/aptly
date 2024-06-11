@@ -11,6 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
+
+	"github.com/swaggo/gin-swagger"
+	"github.com/swaggo/files"
+	_ "github.com/aptly-dev/aptly/docs"
+
 )
 
 var context *ctx.AptlyContext
@@ -22,7 +27,27 @@ func apiMetricsGet() gin.HandlerFunc {
 	}
 }
 
+func redirectSwagger(c *gin.Context) {
+    if c.Request.URL.Path == "/docs/" {
+        c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
+        return
+    }
+    c.Next()
+}
+
 // Router returns prebuilt with routes http.Handler
+// @title           Aptly API
+// @version         1.0
+// @description     Aptly REST API Documentation
+
+// @contact.name   Aptly
+// @contact.url    http://github.com/aptly-dev/aptly
+// @contact.email  support@aptly.info
+
+// @license.name  MIT License
+// @license.url   http://www.
+
+// @BasePath  /api
 func Router(c *ctx.AptlyContext) http.Handler {
 	if aptly.EnableDebug {
 		gin.SetMode(gin.DebugMode)
@@ -47,6 +72,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	router.Use(gin.Recovery(), gin.ErrorLogger())
+
+	// Register the Swagger handler
+        router.Use(redirectSwagger)
+	url := ginSwagger.URL("/docs/doc.json")
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)

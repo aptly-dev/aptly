@@ -31,7 +31,12 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	return verifier, nil
 }
 
-// GET /api/mirrors
+// @Summary Get mirrors
+// @Description List available mirrors
+// @Tags Mirrors
+// @Produce  json
+// @Success 200 {array} deb.RemoteRepo
+// @Router /api/mirrors [get]
 func apiMirrorsList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
@@ -45,7 +50,27 @@ func apiMirrorsList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /api/mirrors
+// @Summary Create mirror
+// @Description Create a mirror
+// @Tags Mirrors
+// @Accept  json
+// @Produce  json
+// @Param Name query string true "Name"
+// @Param ArchiveURL query string true "Archive URL"
+// @Param Distribution query string false "Distribution"
+// @Param Filter query string false "Filter"
+// @Param Components query []string false "Components"
+// @Param Architectures query []string false "Architectures"
+// @Param Keyrings query []string false "Keyrings"
+// @Param DownloadSources query bool false "DownloadSources"
+// @Param DownloadUdebs query bool false "DownloadUdebs"
+// @Param DownloadInstaller query bool false "DownloadInstaller"
+// @Param FilterWithDeps query bool false "FilterWithDeps"
+// @Param SkipComponentCheck query bool false "SkipComponentCheck"
+// @Param IgnoreSignatures query bool false "IgnoreSignatures"
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 400 {object} Error "Bad Request"
+// @Router /api/mirrors [post]
 func apiMirrorsCreate(c *gin.Context) {
 	var err error
 	var b struct {
