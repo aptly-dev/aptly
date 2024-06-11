@@ -17,10 +17,16 @@ RELEASE=no
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-all: prepare test bench check system-test
+all: prepare test bench check system-test  # used for system tests in ci
 
 prepare:  ## Install go module dependencies
+	# set version
+	@make version > VERSION
+	# download modules
 	go mod download
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
 	go mod verify
 	go mod tidy -v
 	go generate
@@ -46,8 +52,10 @@ endif
 system-test: install system/env  ## Run system tests in github CI
 ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
+	# install etcd
 	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
 	system/t13_etcd/start-etcd.sh &
+	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	kill `cat /tmp/etcd.pid`
 
@@ -61,6 +69,10 @@ docker-test: ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
 	go generate
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	@echo Running python tests ...
 	@test -e aws.creds && . ./aws.creds; \
@@ -112,32 +124,50 @@ releasetype:  # Print release type (ci/release)
 	echo $$reltype
 
 build:  ## Build aptly
+	# install and initialize swagger
+	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# prepare
 	go mod tidy
 	go generate
+	# build
 	go build -o build/aptly
 
 dpkg:  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
+	# go generate
 	GOPATH=$$PWD/.go go generate -v
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# set debian version
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
 		cp debian/changelog debian/changelog.dpkg-bak ; \
 		DEBEMAIL="CI <ci@aptly>" dch -v `make -s version` "CI build" ; \
 	fi
+	# Run dpkg-buildpackage
 	buildtype="any" ; \
 	if [ "$(DEBARCH)" = "amd64" ]; then  \
 	  buildtype="any,all" ; \
 	fi ; \
 	echo Building: $$buildtype ; \
 	dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)
+	# cleanup
 	@test -f debian/changelog.dpkg-bak && mv debian/changelog.dpkg-bak debian/changelog || true ; \
 	mkdir -p build && mv ../*.deb build/ ; \
 	cd build && ls -l *.deb
 
 binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
-	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
+	# set version
 	@make version > VERSION
+	# install and initialize swagger
+	GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# build aptly
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
+	# install
+	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
 	@cp man/aptly.1 build/tmp/man/
 	@cp completion.d/aptly build/tmp/completion/bash_completion.d/
 	@cp completion.d/_aptly build/tmp/completion/zsh/vendor-completions/
