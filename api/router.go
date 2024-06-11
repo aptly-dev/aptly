@@ -73,10 +73,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router.Use(gin.Recovery(), gin.ErrorLogger())
 
-	// Register the Swagger handler
-        router.Use(redirectSwagger)
-	url := ginSwagger.URL("/docs/doc.json")
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	if c.Config().EnableSwaggerEndpoint {
+            router.Use(redirectSwagger)
+            url := ginSwagger.URL("/docs/doc.json")
+            router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+        }
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)

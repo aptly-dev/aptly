@@ -68,3 +68,4 @@ debian/aptly-dbg.debhelper.log
 debian/aptly-dbg.substvars
 debian/aptly-dbg/
 
+docs/
