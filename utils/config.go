@@ -41,6 +41,7 @@ type ConfigStructure struct { // nolint: maligned
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
 	DatabaseBackend        DBConfig                         `json:"databaseBackend"`
+	EnableSwaggerEndpoint  bool                             `json:"enableSwaggerEndpoint"`
 }
 
 // DBConfig
@@ -179,6 +180,7 @@ var Config = ConfigStructure{
 	LogLevel:               "debug",
 	LogFormat:              "default",
 	ServeInAPIMode:         false,
+	EnableSwaggerEndpoint:  false,
 }
 
 // LoadConfig loads configuration from json file
