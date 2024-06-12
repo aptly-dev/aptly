@@ -12,7 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /api/snapshots
+// @Summary Get snapshots
+// @Description Get list of available snapshots. Each snapshot is returned as in “show” API.
+// @Tags Snapshots
+// @Produce  json
+// @Success 200 {array} deb.Snapshot
+// @Router /api/snapshots [get]
 func apiSnapshotsList(c *gin.Context) {
 	SortMethodString := c.Request.URL.Query().Get("sort")
 

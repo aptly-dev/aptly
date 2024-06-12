@@ -50,7 +50,12 @@ func reposServeInAPIMode(c *gin.Context) {
 	c.FileFromFS(pkgpath, http.Dir(publicPath))
 }
 
-// GET /api/repos
+// @Summary Get repos
+// @Description Get list of available repos. Each repo is returned as in “show” API.
+// @Tags Repos
+// @Produce  json
+// @Success 200 {array} deb.LocalRepo
+// @Router /api/repos [get]
 func apiReposList(c *gin.Context) {
 	result := []*deb.LocalRepo{}
 
