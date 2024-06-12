@@ -273,7 +273,7 @@ func (context *AptlyContext) DBPath() string {
 
 // DBPath builds path to database
 func (context *AptlyContext) dbPath() string {
-	return filepath.Join(context.config().RootDir, "db")
+	return filepath.Join(context.config().GetRootDir(), "db")
 }
 
 // Database opens and returns current instance of database
@@ -361,7 +361,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	defer context.Unlock()
 
 	if context.packagePool == nil {
-		context.packagePool = files.NewPackagePool(context.config().RootDir, !context.config().SkipLegacyPool)
+		context.packagePool = files.NewPackagePool(context.config().GetRootDir(), !context.config().SkipLegacyPool)
 	}
 
 	return context.packagePool
@@ -375,7 +375,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
 		if name == "" {
-			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().RootDir, "public"), "hardlink", "")
+			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
@@ -433,7 +433,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 
 // UploadPath builds path to upload storage
 func (context *AptlyContext) UploadPath() string {
-	return filepath.Join(context.Config().RootDir, "upload")
+	return filepath.Join(context.Config().GetRootDir(), "upload")
 }
 
 func (context *AptlyContext) pgpProvider() string {

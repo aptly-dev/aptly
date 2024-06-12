@@ -19,20 +19,35 @@ set -e
 # source debconf library
 . /usr/share/debconf/confmodule
 
-USER=aptly
-HOME_DIR=/var/lib/aptly
-
-# ---------------------------------------------------------------------------------------------------------------
-#   User Setup
-# ---------------------------------------------------------------------------------------------------------------
-setup_user()
-{
-  id -u $USER >/dev/null 2>&1 || adduser --system --home $HOME_DIR --shell /bin/bash $USER
-}
 
 case "$1" in
   configure)
-    setup_user
+	# create an aptly group and user
+        if ! getent passwd aptly > /dev/null; then
+	    useradd --system --user-group --shell /bin/bash --create-home --home-dir /var/lib/aptly aptly
+        fi
+
+	if [ -d /var/lib/aptly-api/ ]; then
+	    # FIXME: handle if mountpoint 
+	    # FIXME: only when rootDir configured to /var/lib/aptly-api/
+	    mkdir -p /var/lib/aptly/.aptly/
+	    cp -ar /var/lib/aptly-api/* /var/lib/aptly/.aptly/
+	    chown -R aptly:aptly /var/lib/aptly/.aptly/
+
+	    getent passwd aptly-api > /dev/null && userdel aptly-api 
+	    getent group aptly-api > /dev/null && groupdel aptly-api 
+	    mv /var/lib/aptly-api /var/lib/aptly-api.old
+	fi
+
+	if [ -f /etc/default/aptly-api ]; then
+	    cp /etc/default/aptly-api /etc/default/aptly
+	    mv /etc/default/aptly-api /etc/default/aptly-api.old
+	fi
+
+        # set config file permissions
+        # it may contain secrets so it is not world readable
+        chown root:aptly /etc/aptly.conf
+        chmod 640 /etc/aptly.conf
   ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)

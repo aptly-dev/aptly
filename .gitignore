@@ -57,4 +57,5 @@ debian/aptly.substvars
 debian/aptly/
 debian/debhelper-build-stamp
 debian/files
-
+.go/
+obj-x86_64-linux-gnu/
