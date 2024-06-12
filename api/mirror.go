@@ -52,19 +52,20 @@ func apiMirrorsList(c *gin.Context) {
 func apiMirrorsCreate(c *gin.Context) {
 	var err error
 	var b struct {
-		Name               string `binding:"required"`
-		ArchiveURL         string `binding:"required"`
-		Distribution       string
-		Filter             string
-		Components         []string
-		Architectures      []string
-		Keyrings           []string
-		DownloadSources    bool
-		DownloadUdebs      bool
-		DownloadInstaller  bool
-		FilterWithDeps     bool
-		SkipComponentCheck bool
-		IgnoreSignatures   bool
+		Name                  string `binding:"required"`
+		ArchiveURL            string `binding:"required"`
+		Distribution          string
+		Filter                string
+		Components            []string
+		Architectures         []string
+		Keyrings              []string
+		DownloadSources       bool
+		DownloadUdebs         bool
+		DownloadInstaller     bool
+		FilterWithDeps        bool
+		SkipComponentCheck    bool
+		SkipArchitectureCheck bool
+		IgnoreSignatures      bool
 	}
 
 	b.DownloadSources = context.Config().DownloadSourcePackages
@@ -105,6 +106,7 @@ func apiMirrorsCreate(c *gin.Context) {
 	repo.Filter = b.Filter
 	repo.FilterWithDeps = b.FilterWithDeps
 	repo.SkipComponentCheck = b.SkipComponentCheck
+	repo.SkipArchitectureCheck = b.SkipArchitectureCheck
 	repo.DownloadSources = b.DownloadSources
 	repo.DownloadUdebs = b.DownloadUdebs
 
@@ -275,20 +277,21 @@ func apiMirrorsUpdate(c *gin.Context) {
 	)
 
 	var b struct {
-		Name                 string
-		ArchiveURL           string
-		Filter               string
-		Architectures        []string
-		Components           []string
-		Keyrings             []string
-		FilterWithDeps       bool
-		DownloadSources      bool
-		DownloadUdebs        bool
-		SkipComponentCheck   bool
-		IgnoreChecksums      bool
-		IgnoreSignatures     bool
-		ForceUpdate          bool
-		SkipExistingPackages bool
+		Name                  string
+		ArchiveURL            string
+		Filter                string
+		Architectures         []string
+		Components            []string
+		Keyrings              []string
+		FilterWithDeps        bool
+		DownloadSources       bool
+		DownloadUdebs         bool
+		SkipComponentCheck    bool
+		SkipArchitectureCheck bool
+		IgnoreChecksums       bool
+		IgnoreSignatures      bool
+		ForceUpdate           bool
+		SkipExistingPackages  bool
 	}
 
 	collectionFactory := context.NewCollectionFactory()
@@ -304,10 +307,13 @@ func apiMirrorsUpdate(c *gin.Context) {
 	b.DownloadUdebs = remote.DownloadUdebs
 	b.DownloadSources = remote.DownloadSources
 	b.SkipComponentCheck = remote.SkipComponentCheck
+	b.SkipArchitectureCheck = remote.SkipArchitectureCheck
 	b.FilterWithDeps = remote.FilterWithDeps
 	b.Filter = remote.Filter
 	b.Architectures = remote.Architectures
 	b.Components = remote.Components
+
+	b.IgnoreSignatures = context.Config().GpgDisableVerify
 
 	log.Info().Msgf("%s: Starting mirror update\n", b.Name)
 
@@ -338,6 +344,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	remote.DownloadUdebs = b.DownloadUdebs
 	remote.DownloadSources = b.DownloadSources
 	remote.SkipComponentCheck = b.SkipComponentCheck
+	remote.SkipArchitectureCheck = b.SkipArchitectureCheck
 	remote.FilterWithDeps = b.FilterWithDeps
 	remote.Filter = b.Filter
 	remote.Architectures = b.Architectures
