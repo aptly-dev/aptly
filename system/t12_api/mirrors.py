@@ -120,3 +120,42 @@ class MirrorsAPITestCreateList(APITest):
         resp = self.get("/api/mirrors")
         self.check_equal(resp.status_code, 200)
         self.check_equal(len(resp.json()), count + 1)
+
+
+class MirrorsAPITestSkipArchitectureCheck(APITest):
+    """
+    GET /api/mirrors, POST /api/mirrors, GET /api/mirrors
+
+    This tests SkipArchitectureCheck and IgnoreSignatures via API.
+    The repo to be mirrored requires the SkipArchitectureCheck and SkipComponentCheck in order to be mirrored.
+    """
+    def check(self):
+        resp = self.get("/api/mirrors")
+        self.check_equal(resp.status_code, 200)
+        count = len(resp.json())
+
+        mirror_name = self.random_name()
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'http://repo.aptly.info/system-tests/pkg.duosecurity.com/Debian',
+                       'Architectures': ['amd64', 'i386'],
+                       'SkipArchitectureCheck': True,
+                       'SkipComponentCheck': True,
+                       'IgnoreSignatures': True,
+                       'Distribution': 'bookworm',
+                       'Components': ['main']}
+
+        resp = self.post("/api/mirrors", json=mirror_desc)
+        self.check_equal(resp.status_code, 201)
+
+        resp = self.get("/api/mirrors")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(len(resp.json()), count + 1)
+
+        mirror_desc = {'Name': mirror_name,
+                       'IgnoreSignatures': True}
+        resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
+        self.check_equal(resp.status_code, 200)
+        _id = resp.json()['ID']
+        if resp.json()["State"] != TASK_SUCCEEDED:
+            resp = self.get("/api/tasks/" + str(_id) + "/output")
+            raise Exception("task failed: " + str(resp.json()))
