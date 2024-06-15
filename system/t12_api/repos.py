@@ -331,3 +331,32 @@ class ReposAPITestPackagesAddDelete(APITest):
         self.check_equal(sorted(self.get("/api/repos/" + repo_name2 + "/packages").json()),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378',
                           'Psource pyspi 0.6.1-1.4 f8f1daa806004e89'])
+
+
+class ReposAPITestShowMaxVersion(APITest):
+    """
+    POST /api/repos/:name/file/:dir, GET /api/repos/:name/packages
+    """
+    def check(self):
+        repo_name = self.random_name()
+
+        self.check_equal(self.post("/api/repos", json={"Name": repo_name, "Comment": "fun repo"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb",
+                                     "libboost-program-options-dev_1.62.0.1_i386.deb"
+                                     ).status_code, 200)
+
+        resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+
+        resp = self.get("/api/tasks/" + str(resp.json()['ID']) + "/output")
+        self.check_equal(resp.status_code, 200)
+
+        self.check_in(b"Added: libboost-program-options-dev_1.49.0.1_i386 added, libboost-program-options-dev_1.62.0.1_i386 added", resp.content)
+        self.check_not_in(b"Removed: ", resp.content)
+        self.check_not_in(b"Failed files: ", resp.content)
+        self.check_not_in(b"Warnings: ", resp.content)
+
+        self.check_equal(self.get("/api/repos/" + repo_name + "/packages?maximumVersion=1").json(), ['Pi386 libboost-program-options-dev 1.62.0.1 7760e62f99c551cb'])
