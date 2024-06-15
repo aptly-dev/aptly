@@ -6,35 +6,8 @@
 		"go-test",
 		"go-vet"
 	],
-    "TasksAppend": [
-		"bintray"
-    ],
-    "TaskSettings": {
-        "debs": {
-            "metadata": {
-                "maintainer": "Andrey Smirnov",
-                "maintainer-email": "me@smira.ru",
-                "description": "Debian repository management tool"
-            },
-            "metadata-deb": {
-                "License": "MIT",
-                "Homepage": "https://www.aptly.info/",
-                "Depends": "bzip2, xz-utils, gnupg, gpgv",
-				"Suggests": "graphviz"
-            },
-            "other-mapped-files": {
-                "/": "root/"
-            }
-        },
-        "bintray": {
-            "repository": "aptly",
-            "subject": "smira",
-            "package": "aptly",
-            "downloadspage": "bintray.md"
-        }
-    },
 	"ResourcesInclude": "README.rst,LICENSE,AUTHORS,man/aptly.1",
-	"BuildConstraints": "linux,386 linux,amd64 darwin,amd64 freebsd,386 freebsd,amd64",
+	"BuildConstraints": "linux,386 linux,amd64 linux,arm linux,arm64 darwin,amd64 freebsd,386 freebsd,amd64",
 	"MainDirsExclude": "_man,vendor",
 	"BuildSettings": {
 		"LdFlagsXVars": {
