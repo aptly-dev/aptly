@@ -72,7 +72,7 @@ docker-test: install
 	go test -v -coverpkg="./..." -c -tags testruncli
 	PATH=$(BINPATH)/:$(PATH) APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:
+test: etcd-prepare
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
 
 system-test-etcd: install system/env
@@ -117,7 +117,7 @@ docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
 
 docker-unit-tests:  ## Run unit tests in docker container
-	docker run -it --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
+	docker run -it --rm -v ${PWD}:/app aptly-system-test make test
 
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
 	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
