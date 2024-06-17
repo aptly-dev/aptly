@@ -48,6 +48,9 @@ func (repo *LocalRepo) String() string {
 
 // NumPackages return number of packages in local repo
 func (repo *LocalRepo) NumPackages() int {
+	if repo.packageRefs == nil {
+		return 0
+	}
 	return repo.packageRefs.Len()
 }
 
