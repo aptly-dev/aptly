@@ -428,7 +428,10 @@ func bucketRefPrefix(ref []byte) []byte {
 		ref = ref[len(libPrefix):]
 	}
 
-	prefixLen := min(maxPrefixLen, len(ref))
+	prefixLen := len(ref)
+	if maxPrefixLen < prefixLen {
+		prefixLen = maxPrefixLen
+	}
 	prefix, _, _ := bytes.Cut(ref[:prefixLen], []byte{' '})
 	return prefix
 }
@@ -715,9 +718,16 @@ func (set *RefListDigestSet) ForEach(handler func(digest []byte) error) error {
 	return nil
 }
 
+// workaround for: conversion of slices to arrays requires go1.20 or later
+func newRefListArray(digest []byte) reflistDigestArray {
+	var array reflistDigestArray
+	copy(array[:], digest)
+	return array
+}
+
 // Add adds digest to set, doing nothing if the digest was already present
 func (set *RefListDigestSet) Add(digest []byte) {
-	set.items[reflistDigestArray(digest)] = struct{}{}
+	set.items[newRefListArray(digest)] = struct{}{}
 }
 
 // AddAllInRefList adds all the bucket digests in a SplitRefList to the set
@@ -731,13 +741,13 @@ func (set *RefListDigestSet) AddAllInRefList(sl *SplitRefList) {
 
 // Has checks whether a digest is part of set
 func (set *RefListDigestSet) Has(digest []byte) bool {
-	_, ok := set.items[reflistDigestArray(digest)]
+	_, ok := set.items[newRefListArray(digest)]
 	return ok
 }
 
 // Remove removes a digest from set
 func (set *RefListDigestSet) Remove(digest []byte) {
-	delete(set.items, reflistDigestArray(digest))
+	delete(set.items, newRefListArray(digest))
 }
 
 // RemoveAll removes all the digests in other from the current set
@@ -776,10 +786,20 @@ func segmentPrefix(encodedDigest string) []byte {
 	return []byte(fmt.Sprintf("F%s-", encodedDigest))
 }
 
+// workaround for go 1.19 instead of bytes.Clone
+func cloneBytes(b []byte) []byte {
+	if b == nil {
+		return nil
+	}
+	cloned := make([]byte, len(b))
+	copy(cloned, b)
+	return cloned
+}
+
 func segmentIndexKey(prefix []byte, idx int) []byte {
 	// Assume most buckets won't have more than 0xFFFF = ~65k segments (which
 	// would be an extremely large bucket!).
-	return append(bytes.Clone(prefix), []byte(fmt.Sprintf("%04x", idx))...)
+	return append(cloneBytes(prefix), []byte(fmt.Sprintf("%04x", idx))...)
 }
 
 // AllBucketDigests returns a set of all the bucket digests in the database
@@ -861,7 +881,7 @@ func (collection *RefListCollection) loadBuckets(sl *SplitRefList) error {
 		var bucket *PackageRefList
 
 		if digest := sl.Buckets[idx]; len(digest) > 0 {
-			cacheKey := reflistDigestArray(digest)
+			cacheKey := newRefListArray(digest)
 			bucket = collection.cache[cacheKey]
 			if bucket == nil {
 				bucket = NewPackageRefList()
