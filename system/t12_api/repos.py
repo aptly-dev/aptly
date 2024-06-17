@@ -360,3 +360,33 @@ class ReposAPITestShowMaxVersion(APITest):
         self.check_not_in(b"Warnings: ", resp.content)
 
         self.check_equal(self.get("/api/repos/" + repo_name + "/packages?maximumVersion=1").json(), ['Pi386 libboost-program-options-dev 1.62.0.1 7760e62f99c551cb'])
+
+
+class ReposAPITestCopyPackage(APITest):
+    """
+    POST /api/repos/:name/copy/:src/:file
+    """
+    def check(self):
+        pkg_name = "libboost-program-options-dev_1.49.0.1_i386"
+
+        # Creating origin repo
+        repo1_name = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": repo1_name, "Comment": "origin repo"}).status_code, 201)
+
+        # Uploading test package
+        d = self.random_name()
+        self.check_equal(self.upload(f"/api/files/{d}", f"{pkg_name}.deb").status_code, 200)
+        resp = self.post_task(f"/api/repos/{repo1_name}/file/{d}")
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+
+        # Creating target repo
+        repo2_name = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": repo2_name, "Comment": "target repo"}).status_code, 201)
+
+        # Copy the package
+        resp = self.post_task(f"/api/repos/{repo2_name}/copy/{repo1_name}/{pkg_name}")
+        self.check_equal(resp.status_code, 200)
+        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+
+        self.check_equal(self.get(f"/api/repos/{repo2_name}/packages").json(),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])

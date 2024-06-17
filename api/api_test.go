@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -38,7 +39,7 @@ func createTestConfig() *os.File {
 		return nil
 	}
 	jsonString, err := json.Marshal(gin.H{
-		"architectures": []string{},
+		"architectures":         []string{},
 		"enableMetricsEndpoint": true,
 	})
 	if err != nil {
@@ -48,10 +49,12 @@ func createTestConfig() *os.File {
 	return file
 }
 
-func (s *ApiSuite) SetUpSuite(c *C) {
+func (s *ApiSuite) setupContext() error {
 	aptly.Version = "testVersion"
 	file := createTestConfig()
-	c.Assert(file, NotNil)
+	if nil == file {
+		return fmt.Errorf("unable to create the test configuration file")
+	}
 	s.configFile = file
 
 	flags := flag.NewFlagSet("fakeFlags", flag.ContinueOnError)
@@ -62,10 +65,19 @@ func (s *ApiSuite) SetUpSuite(c *C) {
 	s.flags = flags
 
 	context, err := ctx.NewContext(s.flags)
-	c.Assert(err, IsNil)
+	if nil != err {
+		return err
+	}
 
 	s.context = context
 	s.router = Router(context)
+
+	return nil
+}
+
+func (s *ApiSuite) SetUpSuite(c *C) {
+	err := s.setupContext()
+	c.Assert(err, IsNil)
 }
 
 func (s *ApiSuite) TearDownSuite(c *C) {
@@ -98,7 +110,7 @@ func (s *ApiSuite) TestGetVersion(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/version", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
-	c.Check(response.Body.String(), Matches, "{\"Version\":\"" + aptly.Version + "\"}")
+	c.Check(response.Body.String(), Matches, "{\"Version\":\""+aptly.Version+"\"}")
 }
 
 func (s *ApiSuite) TestGetReadiness(c *C) {
