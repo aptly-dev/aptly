@@ -163,6 +163,9 @@ func (repo *RemoteRepo) IsFlat() bool {
 
 // NumPackages return number of packages retrieved from remote repo
 func (repo *RemoteRepo) NumPackages() int {
+	if repo.packageRefs == nil {
+		return 0
+	}
 	return repo.packageRefs.Len()
 }
 
