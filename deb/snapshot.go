@@ -114,6 +114,9 @@ func (s *Snapshot) String() string {
 
 // NumPackages returns number of packages in snapshot
 func (s *Snapshot) NumPackages() int {
+	if s.packageRefs == nil {
+		return 0
+	}
 	return s.packageRefs.Len()
 }
 
