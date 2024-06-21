@@ -29,5 +29,10 @@
     "enableMetricsEndpoint": true,
     "logLevel": "debug",
     "logFormat": "default",
-    "serveInAPIMode": true
+    "serveInAPIMode": true,
+    "databaseBackend": {
+        "type": "",
+        "url": "",
+        "dbPath": ""
+    }
 }

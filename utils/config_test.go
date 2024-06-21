@@ -143,7 +143,12 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"enableMetricsEndpoint\": false,\n"+
 		"  \"logLevel\": \"info\",\n"+
 		"  \"logFormat\": \"json\",\n"+
-		"  \"serveInAPIMode\": false\n"+
+		"  \"serveInAPIMode\": false,\n"+
+		"  \"databaseBackend\": {\n"+
+		"    \"type\": \"\",\n"+
+		"    \"url\": \"\",\n"+
+		"    \"dbPath\": \"\"\n"+
+		"  }\n"+
 		"}")
 }
 
