@@ -11,7 +11,11 @@ COVERAGE_DIR?=$(shell mktemp -d)
 # Uncomment to update test outputs
 # CAPTURE := "--capture"
 
-all: modules test bench check system-test
+# etcd test env
+ETCD_VER=v3.5.2
+DOWNLOAD_URL=https://storage.googleapis.com/etcd
+
+all: modules test bench check system-test system-test-etcd
 
 # Self-documenting Makefile
 # https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
@@ -20,6 +24,14 @@ help:  ## Print this help
 
 prepare:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.51.2
+
+etcd-prepare:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.43.0
+	# etcd test prepare
+	rm -rf /tmp/etcd-download-test/test-data && mkdir -p /tmp/etcd-download-test/test-data
+	if [ ! -e /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz ]; then curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz; fi
+	tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
+	/tmp/etcd-download-test/etcd --max-request-bytes '33554432' --data-dir /tmp/etcd-download-test/test-data &
 
 modules:
 	go mod download
@@ -60,8 +72,17 @@ docker-test: install
 	go test -v -coverpkg="./..." -c -tags testruncli
 	PATH=$(BINPATH)/:$(PATH) APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:
+test: etcd-prepare
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
+
+system-test-etcd: install system/env
+ifeq ($(RUN_LONG_TESTS), yes)
+	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
+	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
+	# TODO: maybe we can skip imgrading levledb data to etcd
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && $(PYTHON) system/leveldb2etcd.py --datadir ~/aptly-fixture-db
+	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_DATABASE_TYPE="etcd" APTLY_DATABASE_URL="127.0.0.1:2379" APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS)
+endif
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
@@ -96,7 +117,7 @@ docker-build-system-tests:  ## Build system-test docker image
 	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
 
 docker-unit-tests:  ## Run unit tests in docker container
-	docker run -it --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
+	docker run -it --rm -v ${PWD}:/app aptly-system-test make test
 
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
 	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
