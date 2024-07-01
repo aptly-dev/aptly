@@ -132,6 +132,18 @@ class BaseTest(object):
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
     expectedCode = 0
+    databaseType = os.environ.get("APTLY_DATABASE_TYPE")
+    databaseUrl = os.environ.get("APTLY_DATABASE_URL")
+    if databaseType is None:
+        databaseType = ""
+    if databaseUrl is None:
+        databaseUrl = ""
+
+    databaseBackend = {
+        "type": databaseType,
+        "url": databaseUrl,
+    }
+
     configFile = {
         "rootDir": f"{os.environ['HOME']}/{aptlyDir}",
         "downloadConcurrency": 4,
@@ -150,7 +162,9 @@ class BaseTest(object):
         "enableMetricsEndpoint": True,
         "logLevel": "debug",
         "logFormat": "default",
-        "serveInAPIMode": True
+        "serveInAPIMode": True,
+        "databaseEtcd": databaseEtcd,
+        "databaseBackend": databaseBackend,
     }
     configOverride = {}
     environmentOverride = {}
