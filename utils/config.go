@@ -40,6 +40,7 @@ type ConfigStructure struct { // nolint: maligned
 	LogLevel               string                           `json:"logLevel"`
 	LogFormat              string                           `json:"logFormat"`
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
+	EnableSwaggerEndpoint  bool                             `json:"enableSwaggerEndpoint"`
 }
 
 type LocalPoolStorage struct {
@@ -171,6 +172,7 @@ var Config = ConfigStructure{
 	LogLevel:               "debug",
 	LogFormat:              "default",
 	ServeInAPIMode:         false,
+	EnableSwaggerEndpoint:  false,
 }
 
 // LoadConfig loads configuration from json file
