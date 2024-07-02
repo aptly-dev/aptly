@@ -42,20 +42,21 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	ignoreMismatch := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
+	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
+	ignoreChecksums := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
 
 	verifier, err := getVerifier(context.Flags())
 	if err != nil {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
 
-	err = repo.Fetch(context.Downloader(), verifier)
+	err = repo.Fetch(context.Downloader(), verifier, ignoreSignatures)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	context.Progress().Printf("Downloading & parsing package files...\n")
-	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, collectionFactory, ignoreMismatch)
+        err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, collectionFactory, ignoreSignatures, ignoreChecksums)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
@@ -183,7 +184,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 						repo.PackageURL(task.File.DownloadURL()).String(),
 						task.TempDownPath,
 						&task.File.Checksums,
-						ignoreMismatch)
+						ignoreChecksums)
 					if e != nil {
 						pushError(e)
 						continue

@@ -20,6 +20,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.Flags(), "with-sources")
 	downloadUdebs := context.Flags().Lookup("with-udebs").Value.Get().(bool)
 	downloadInstaller := context.Flags().Lookup("with-installer").Value.Get().(bool)
+	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 
 	var (
 		mirrorName, archiveURL, distribution string
@@ -59,7 +60,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 	}
 
-	err = repo.Fetch(context.Downloader(), verifier)
+	err = repo.Fetch(context.Downloader(), verifier, ignoreSignatures)
 	if err != nil {
 		return fmt.Errorf("unable to fetch mirror: %s", err)
 	}

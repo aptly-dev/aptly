@@ -9,10 +9,6 @@ import (
 )
 
 func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
-	if LookupOption(context.Config().GpgDisableVerify, flags, "ignore-signatures") {
-		return nil, nil
-	}
-
 	keyRings := flags.Lookup("keyring").Value.Get().([]string)
 
 	verifier := context.GetVerifier()
