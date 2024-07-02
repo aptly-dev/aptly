@@ -42,7 +42,10 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	ignoreSignatures := context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
+        ignoreSignatures := context.Config().GpgDisableVerify
+	if context.Flags().IsSet("ignore-signatures") {
+		ignoreSignatures = context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
+	}
 	ignoreChecksums := context.Flags().Lookup("ignore-checksums").Value.Get().(bool)
 
 	verifier, err := getVerifier(context.Flags())

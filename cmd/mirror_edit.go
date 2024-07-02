@@ -28,7 +28,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	}
 
 	fetchMirror := false
-        ignoreSignatures := true
+        ignoreSignatures := context.Config().GpgDisableVerify
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
