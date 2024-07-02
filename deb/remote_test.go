@@ -197,7 +197,7 @@ func (s *RemoteRepoSuite) TestPackageURL(c *C) {
 }
 
 func (s *RemoteRepoSuite) TestFetch(c *C) {
-	err := s.repo.Fetch(s.downloader, nil, false)
+	err := s.repo.Fetch(s.downloader, nil, true)
 	c.Assert(err, IsNil)
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
@@ -218,7 +218,7 @@ func (s *RemoteRepoSuite) TestFetchNullVerifier1(c *C) {
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release", exampleReleaseFile)
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/Release.gpg", "GPG")
 
-	err := s.repo.Fetch(downloader, &NullVerifier{}, true)
+	err := s.repo.Fetch(downloader, &NullVerifier{}, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
@@ -229,7 +229,7 @@ func (s *RemoteRepoSuite) TestFetchNullVerifier2(c *C) {
 	downloader := http.NewFakeDownloader()
 	downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/InRelease", exampleReleaseFile)
 
-	err := s.repo.Fetch(downloader, &NullVerifier{}, true)
+	err := s.repo.Fetch(downloader, &NullVerifier{}, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.repo.Architectures, DeepEquals, []string{"amd64", "armel", "armhf", "i386", "powerpc"})
 	c.Assert(s.repo.Components, DeepEquals, []string{"main"})
@@ -244,7 +244,7 @@ func (s *RemoteRepoSuite) TestFetchWrongArchitecture(c *C) {
 
 func (s *RemoteRepoSuite) TestFetchWrongComponent(c *C) {
 	s.repo, _ = NewRemoteRepo("s", "http://mirror.yandex.ru/debian/", "squeeze", []string{"xyz"}, []string{"i386"}, false, false, false)
-	err := s.repo.Fetch(s.downloader, nil, false)
+	err := s.repo.Fetch(s.downloader, nil, true)
 	c.Assert(err, ErrorMatches, "component xyz not available in repo.*")
 }
 
@@ -271,14 +271,14 @@ func (s *RemoteRepoSuite) TestRefKey(c *C) {
 func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.repo.Architectures = []string{"i386"}
 
-	err := s.repo.Fetch(s.downloader, nil, false)
+	err := s.repo.Fetch(s.downloader, nil, true)
 	c.Assert(err, IsNil)
 
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.bz2", &http.Error{Code: 404})
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -305,7 +305,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -326,7 +326,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/binary-i386/Packages", examplePackagesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -353,7 +353,7 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/SHA256SUMS", exampleInstallerHashSumFile)
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/installer-i386/current/images/MANIFEST", exampleInstallerManifestFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -397,7 +397,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -441,7 +441,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
@@ -466,7 +466,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.downloader.ExpectError("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources.gz", &http.Error{Code: 404})
 	s.downloader.ExpectResponse("http://mirror.yandex.ru/debian/dists/squeeze/main/source/Sources", exampleSourcesFile)
 
-	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, false, true)
+	err = s.repo.DownloadPackageIndexes(s.progress, s.downloader, nil, s.collectionFactory, true, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
