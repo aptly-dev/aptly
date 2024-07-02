@@ -28,7 +28,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	}
 
 	fetchMirror := false
-        ignoreSignatures := context.Config().GpgDisableVerify
+	ignoreSignatures := context.Config().GpgDisableVerify
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
@@ -45,7 +45,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			repo.SetArchiveRoot(flag.Value.String())
 			fetchMirror = true
 		case "ignore-signatures":
-	                ignoreSignatures = true
+			ignoreSignatures = true
 		}
 	})
 

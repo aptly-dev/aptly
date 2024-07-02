@@ -10,7 +10,7 @@ import (
 
 func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
 	keyRings := flags.Lookup("keyring").Value.Get().([]string)
-        ignoreSignatures := context.Config().GpgDisableVerify
+	ignoreSignatures := context.Config().GpgDisableVerify
 	if context.Flags().IsSet("ignore-signatures") {
 		ignoreSignatures = context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	}
@@ -20,7 +20,7 @@ func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
 		verifier.AddKeyring(keyRing)
 	}
 
-	err := verifier.InitKeyring(ignoreSignatures == false)  // be verbose only if verifying signatures is requested
+	err := verifier.InitKeyring(ignoreSignatures == false) // be verbose only if verifying signatures is requested
 	if err != nil {
 		return nil, err
 	}

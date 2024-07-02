@@ -42,7 +42,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-        ignoreSignatures := context.Config().GpgDisableVerify
+	ignoreSignatures := context.Config().GpgDisableVerify
 	if context.Flags().IsSet("ignore-signatures") {
 		ignoreSignatures = context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	}
@@ -59,7 +59,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}
 
 	context.Progress().Printf("Downloading & parsing package files...\n")
-        err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, collectionFactory, ignoreSignatures, ignoreChecksums)
+	err = repo.DownloadPackageIndexes(context.Progress(), context.Downloader(), verifier, collectionFactory, ignoreSignatures, ignoreChecksums)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
