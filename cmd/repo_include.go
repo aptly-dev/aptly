@@ -29,7 +29,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 	acceptUnsigned := context.Flags().Lookup("accept-unsigned").Value.Get().(bool)
-        ignoreSignatures := context.Config().GpgDisableVerify
+	ignoreSignatures := context.Config().GpgDisableVerify
 	if context.Flags().IsSet("ignore-signatures") {
 		ignoreSignatures = context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	}

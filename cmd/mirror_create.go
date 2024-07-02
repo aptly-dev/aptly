@@ -20,7 +20,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	downloadSources := LookupOption(context.Config().DownloadSourcePackages, context.Flags(), "with-sources")
 	downloadUdebs := context.Flags().Lookup("with-udebs").Value.Get().(bool)
 	downloadInstaller := context.Flags().Lookup("with-installer").Value.Get().(bool)
-        ignoreSignatures := context.Config().GpgDisableVerify
+	ignoreSignatures := context.Config().GpgDisableVerify
 	if context.Flags().IsSet("ignore-signatures") {
 		ignoreSignatures = context.Flags().Lookup("ignore-signatures").Value.Get().(bool)
 	}

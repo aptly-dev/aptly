@@ -288,14 +288,14 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier, ignoreS
 			if err != nil {
 				return err
 			}
-                        if verifier == nil {
-                            return fmt.Errorf("no verifier specified")
-                        }
-                        release, err = verifier.ExtractClearsigned(inrelease)
+			if verifier == nil {
+				return fmt.Errorf("no verifier specified")
+			}
+			release, err = verifier.ExtractClearsigned(inrelease)
 			if err != nil {
 				return err
 			}
-                        goto ok
+			goto ok
 		}
 	} else {
 		// 1. try InRelease file
