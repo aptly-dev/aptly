@@ -51,7 +51,7 @@ type Signer interface {
 
 // Verifier interface describes signature verification factility
 type Verifier interface {
-	InitKeyring() error
+	InitKeyring(verbose bool) error
 	AddKeyring(keyring string)
 	VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error
 	IsClearSigned(clearsigned io.Reader) (bool, error)

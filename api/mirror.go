@@ -23,7 +23,7 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 		verifier.AddKeyring(keyRing)
 	}
 
-	err := verifier.InitKeyring()
+	err := verifier.InitKeyring(false)
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ import (
 type NullVerifier struct {
 }
 
-func (n *NullVerifier) InitKeyring() error {
+func (n *NullVerifier) InitKeyring(_ bool) error {
 	return nil
 }
 

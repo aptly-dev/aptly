@@ -14,7 +14,7 @@ func (s *GoVerifierSuite) SetUpTest(c *C) {
 	s.verifier = &GoVerifier{}
 	s.verifier.AddKeyring("./trusted.gpg")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 }
 
 type GoSignerSuite struct {
@@ -36,7 +36,7 @@ func (s *GoSignerSuite) SetUpTest(c *C) {
 	s.verifier.AddKeyring("./keyrings/aptly.pub")
 	s.verifier.AddKeyring("./keyrings/aptly_passphrase.pub")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 
 	s.SignerSuite.SetUpTest(c)
 }

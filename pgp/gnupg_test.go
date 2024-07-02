@@ -94,7 +94,7 @@ func (s *Gnupg1VerifierSuite) SetUpTest(c *C) {
 	s.verifier = NewGpgVerifier(finder)
 	s.verifier.AddKeyring("./trusted.gpg")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 }
 
 type Gnupg1SignerSuite struct {
@@ -122,7 +122,7 @@ func (s *Gnupg1SignerSuite) SetUpTest(c *C) {
 	s.verifier.AddKeyring("./keyrings/aptly.pub")
 	s.verifier.AddKeyring("./keyrings/aptly_passphrase.pub")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 
 	s.SignerSuite.SetUpTest(c)
 }
@@ -143,7 +143,7 @@ func (s *Gnupg2VerifierSuite) SetUpTest(c *C) {
 	s.verifier = NewGpgVerifier(finder)
 	s.verifier.AddKeyring("./trusted.gpg")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 }
 
 type Gnupg2SignerSuite struct {
@@ -210,7 +210,7 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 	s.verifier = &GoVerifier{}
 	s.verifier.AddKeyring("./keyrings/aptly2_trusted.pub")
 
-	c.Assert(s.verifier.InitKeyring(), IsNil)
+	c.Assert(s.verifier.InitKeyring(false), IsNil)
 
 	s.skipDefaultKey = true
 

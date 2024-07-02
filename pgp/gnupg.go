@@ -163,8 +163,8 @@ func NewGpgVerifier(finder GPGFinder) *GpgVerifier {
 }
 
 // InitKeyring verifies that gpg is installed and some keys are trusted
-func (g *GpgVerifier) InitKeyring() error {
-	if len(g.keyRings) == 0 {
+func (g *GpgVerifier) InitKeyring(verbose bool) error {
+	if len(g.keyRings) == 0 && verbose {
 		// using default keyring
 		output, err := exec.Command(g.gpg, "--no-default-keyring", "--no-auto-check-trustdb", "--keyring", "trustedkeys.gpg", "--list-keys").Output()
 		if err == nil && len(output) == 0 {

@@ -283,7 +283,7 @@ type GoVerifier struct {
 }
 
 // InitKeyring verifies that gpg is installed and some keys are trusted
-func (g *GoVerifier) InitKeyring() error {
+func (g *GoVerifier) InitKeyring(verbose bool) error {
 	var err error
 
 	if len(g.keyRingFiles) == 0 {
@@ -304,7 +304,7 @@ func (g *GoVerifier) InitKeyring() error {
 		}
 	}
 
-	if len(g.trustedKeyring) == 0 {
+	if len(g.trustedKeyring) == 0 && verbose {
 		fmt.Printf("\nLooks like your keyring with trusted keys is empty. You might consider importing some keys.\n")
 		if len(g.keyRingFiles) == 0 {
 			// using default keyring
