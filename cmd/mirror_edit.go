@@ -28,6 +28,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	}
 
 	fetchMirror := false
+        ignoreSignatures := true
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
@@ -43,6 +44,8 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		case "archive-url":
 			repo.SetArchiveRoot(flag.Value.String())
 			fetchMirror = true
+		case "ignore-signatures":
+	                ignoreSignatures = true
 		}
 	})
 
@@ -69,7 +72,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to initialize GPG verifier: %s", err)
 		}
 
-		err = repo.Fetch(context.Downloader(), verifier)
+		err = repo.Fetch(context.Downloader(), verifier, ignoreSignatures)
 		if err != nil {
 			return fmt.Errorf("unable to edit: %s", err)
 		}

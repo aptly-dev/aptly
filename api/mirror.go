@@ -17,11 +17,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func getVerifier(ignoreSignatures bool, keyRings []string) (pgp.Verifier, error) {
-	if ignoreSignatures {
-		return nil, nil
-	}
-
+func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	verifier := context.GetVerifier()
 	for _, keyRing := range keyRings {
 		verifier.AddKeyring(keyRing)
@@ -111,14 +107,14 @@ func apiMirrorsCreate(c *gin.Context) {
 	repo.DownloadSources = b.DownloadSources
 	repo.DownloadUdebs = b.DownloadUdebs
 
-	verifier, err := getVerifier(b.IgnoreSignatures, b.Keyrings)
+	verifier, err := getVerifier(b.Keyrings)
 	if err != nil {
 		AbortWithJSONError(c, 400, fmt.Errorf("unable to initialize GPG verifier: %s", err))
 		return
 	}
 
 	downloader := context.NewDownloader(nil)
-	err = repo.Fetch(downloader, verifier)
+	err = repo.Fetch(downloader, verifier, b.IgnoreSignatures)
 	if err != nil {
 		AbortWithJSONError(c, 400, fmt.Errorf("unable to fetch mirror: %s", err))
 		return
@@ -350,7 +346,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	remote.Architectures = b.Architectures
 	remote.Components = b.Components
 
-	verifier, err := getVerifier(b.IgnoreSignatures, b.Keyrings)
+	verifier, err := getVerifier(b.Keyrings)
 	if err != nil {
 		AbortWithJSONError(c, 400, fmt.Errorf("unable to initialize GPG verifier: %s", err))
 		return
@@ -360,7 +356,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 	maybeRunTaskInBackground(c, "Update mirror "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 
 		downloader := context.NewDownloader(out)
-		err := remote.Fetch(downloader, verifier)
+		err := remote.Fetch(downloader, verifier, b.IgnoreSignatures)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -372,7 +368,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.SkipComponentCheck)
+		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.IgnoreSignatures, b.SkipComponentCheck)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
