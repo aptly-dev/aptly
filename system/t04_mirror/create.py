@@ -436,3 +436,17 @@ class CreateMirror32Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror32", "mirror_show")
+
+
+class CreateMirror33Test(BaseTest):
+    """
+    create mirror: repo with only InRelease file but no verification
+    """
+    configOverride = {"max-tries": 1}
+    runCmd = "aptly mirror create -ignore-signatures mirror33 http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64 ./"
+    fixtureGpg = False
+    requiresGPG2 = False
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror33", "mirror_show")

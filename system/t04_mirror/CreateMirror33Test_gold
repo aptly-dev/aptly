@@ -1,0 +1,8 @@
+Downloading: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/Release
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/Release
+Retrying 0 http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/Release...
+Download Error: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/Release
+Downloading: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/InRelease
+
+Mirror [mirror33]: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/ ./ successfully added.
+You can run 'aptly mirror update mirror33' to download repository contents.
