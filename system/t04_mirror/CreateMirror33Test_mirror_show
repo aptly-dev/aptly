@@ -1,0 +1,20 @@
+Name: mirror33
+Archive Root URL: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/
+Distribution: ./
+Components: 
+Architectures: 
+Download Sources: no
+Download .udebs: no
+Last update: never
+
+Information from release file:
+Architectures: amd64
+Codename: xenial
+Components: main
+Date: Wed, 27 Sep 2017 23:08:53 +0000
+Description:  NVIDIA container runtime library repository
+
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: xenial
+Version: 1.0
