@@ -1,9 +1,8 @@
 Loading packages...
 Verifying...
-Missing dependencies (32):
+Missing dependencies (31):
   dpkg (>= 1.15.4) [amd64]
   dpkg (>= 1.15.4) [i386]
-  gnuplot (= 4.6.1-1~maverick2) [source]
   gnuplot (= 4.6.1-1~maverick2) [source]
   install-info [amd64]
   install-info [i386]
