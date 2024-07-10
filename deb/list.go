@@ -366,6 +366,8 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 		}
 	}
 
+	missing = depSliceDeduplicate(missing)
+
 	if progress != nil {
 		progress.ShutdownBar()
 	}
