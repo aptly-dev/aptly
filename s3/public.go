@@ -191,7 +191,7 @@ func (storage *PublishedStorage) getMD5(path string) (string, error) {
 		return "", err
 	}
 
-	return output.Metadata["Md5"], nil
+	return output.Metadata["md5"], nil
 }
 
 // putFile uploads file-like object to
@@ -431,11 +431,7 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 				continue
 			}
 
-			if prefix == "" {
-				paths = append(paths, *key.Key)
-			} else {
-				paths = append(paths, (*key.Key)[len(prefix):])
-			}
+			paths = append(paths, *key.Key)
 			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
 		}
 	}
