@@ -1,4 +1,4 @@
-from api_lib import TASK_FAILED, TASK_SUCCEEDED, APITest
+from api_lib import TASK_FAILED, APITest
 
 from .publish import DefaultSigningOptions
 
@@ -13,8 +13,8 @@ class SnapshotsAPITestCreateShowEmpty(APITest):
                          'Name': snapshot_name}
 
         # create empty snapshot
-        resp = self.post_task("/api/snapshots", json=snapshot_desc)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json=snapshot_desc)
+        self.check_task(task)
 
         self.check_subset(snapshot_desc, self.get("/api/snapshots/" + snapshot_name).json())
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
@@ -47,8 +47,8 @@ class SnapshotsAPITestCreateFromRefs(APITest):
 
         # create empty snapshot
         empty_snapshot_name = self.random_name()
-        resp = self.post_task("/api/snapshots", json={"Name": empty_snapshot_name})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json={"Name": empty_snapshot_name})
+        self.check_task(task)
         self.check_equal(
             self.get("/api/snapshots/" + empty_snapshot_name).json()['Description'], "Created as empty"
         )
@@ -59,14 +59,15 @@ class SnapshotsAPITestCreateFromRefs(APITest):
         d = self.random_name()
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
 
         # create snapshot with empty snapshot as source and package
         snapshot = snapshot_desc.copy()
         snapshot['PackageRefs'] = ["Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378"]
         snapshot['SourceSnapshots'] = [empty_snapshot_name]
-        resp = self.post_task("/api/snapshots", json=snapshot)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json=snapshot)
+        self.check_task(task)
         snapshot.pop('SourceSnapshots')
         snapshot.pop('PackageRefs')
         resp = self.get("/api/snapshots/" + snapshot_name)
@@ -100,8 +101,8 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         snapshot_name = self.random_name()
         self.check_equal(self.post("/api/repos", json={"Name": repo_name}).status_code, 201)
 
-        resp = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_task(task)
         self.check_equal([],
                          self.get("/api/snapshots/" + snapshot_name + "/packages", params={"format": "details"}).json())
 
@@ -110,10 +111,11 @@ class SnapshotsAPITestCreateFromRepo(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
 
-        resp = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_task(task)
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
 
         self.check_subset({'Architecture': 'i386',
@@ -143,13 +145,13 @@ class SnapshotsAPITestCreateUpdate(APITest):
         snapshot_desc = {'Description': 'fun snapshot',
                          'Name': snapshot_name}
 
-        resp = self.post_task("/api/snapshots", json=snapshot_desc)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json=snapshot_desc)
+        self.check_task(task)
 
         new_snapshot_name = self.random_name()
-        resp = self.put_task("/api/snapshots/" + snapshot_name, json={'Name': new_snapshot_name,
+        task = self.put_task("/api/snapshots/" + snapshot_name, json={'Name': new_snapshot_name,
                                                                       'Description': 'New description'})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        self.check_task(task)
 
         resp = self.get("/api/snapshots/" + new_snapshot_name)
         self.check_equal(resp.status_code, 200)
@@ -176,16 +178,18 @@ class SnapshotsAPITestCreateDelete(APITest):
                          'Name': snapshot_name}
 
         # deleting unreferenced snapshot
-        resp = self.post_task("/api/snapshots", json=snapshot_desc)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json=snapshot_desc)
+        self.check_task(task)
 
-        self.check_equal(self.delete_task("/api/snapshots/" + snapshot_name).json()['State'], TASK_SUCCEEDED)
+        task = self.delete_task("/api/snapshots/" + snapshot_name)
+        self.check_task(task)
 
         self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 404)
 
         # deleting referenced snapshot
         snap1, snap2 = self.random_name(), self.random_name()
-        self.check_equal(self.post_task("/api/snapshots", json={"Name": snap1}).json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json={"Name": snap1})
+        self.check_task(task)
         self.check_equal(
             self.post_task(
                 "/api/snapshots", json={"Name": snap2, "SourceSnapshots": [snap1]}
@@ -194,11 +198,12 @@ class SnapshotsAPITestCreateDelete(APITest):
 
         self.check_equal(self.delete_task("/api/snapshots/" + snap1).json()['State'], TASK_FAILED)
         self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 200)
-        self.check_equal(self.delete_task("/api/snapshots/" + snap1, params={"force": "1"}).json()['State'], TASK_SUCCEEDED)
+        task = self.delete_task("/api/snapshots/" + snap1, params={"force": "1"})
+        self.check_task(task)
         self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 404)
 
         # deleting published snapshot
-        resp = self.post_task(
+        task = self.post_task(
             "/api/publish",
             json={
                  "SourceKind": "snapshot",
@@ -208,7 +213,7 @@ class SnapshotsAPITestCreateDelete(APITest):
                  "Signing": DefaultSigningOptions,
             }
         )
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        self.check_task(task)
 
         self.check_equal(self.delete_task("/api/snapshots/" + snap2).json()['State'], TASK_FAILED)
         self.check_equal(self.delete_task("/api/snapshots/" + snap2, params={"force": "1"}).json()['State'], TASK_FAILED)
@@ -228,10 +233,11 @@ class SnapshotsAPITestSearch(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repo_name + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
 
-        resp = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_task(task)
 
         resp = self.get("/api/snapshots/" + snapshot_name + "/packages",
                         params={"q": "libboost-program-options-dev", "format": "details"})
@@ -262,13 +268,14 @@ class SnapshotsAPITestDiff(APITest):
         self.check_equal(self.upload("/api/files/" + d,
                          "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
 
-        self.check_equal(self.post_task("/api/repos/" + repos[-1] + "/file/" + d).json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repos[-1] + "/file/" + d)
+        self.check_task(task)
 
-        resp = self.post_task("/api/repos/" + repos[-1] + '/snapshots', json={'Name': snapshots[0]})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/repos/" + repos[-1] + '/snapshots', json={'Name': snapshots[0]})
+        self.check_task(task)
 
-        resp = self.post_task("/api/snapshots", json={'Name': snapshots[1]})
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        task = self.post_task("/api/snapshots", json={'Name': snapshots[1]})
+        self.check_task(task)
 
         resp = self.get("/api/snapshots/" + snapshots[0] + "/diff/" + snapshots[1])
         self.check_equal(resp.status_code, 200)
@@ -302,19 +309,19 @@ class SnapshotsAPITestMerge(APITest):
 
         # create source snapshots
         for source in sources:
-            resp = self.post_task("/api/snapshots", json=source)
-            self.check_equal(resp.json()["State"], TASK_SUCCEEDED)
+            task = self.post_task("/api/snapshots", json=source)
+            self.check_task(task)
 
         # create merge snapshot
         merged_name = self.random_name()
-        resp = self.post_task(
+        task = self.post_task(
             "/api/snapshots/merge",
             json={
                 "Destination": merged_name,
                 "Sources": [source["Name"] for source in sources],
             },
         )
-        self.check_equal(resp.json()["State"], TASK_SUCCEEDED)
+        self.check_task(task)
 
         # check merge snapshot
         resp = self.get(f"/api/snapshots/{merged_name}")
@@ -329,9 +336,8 @@ class SnapshotsAPITestMerge(APITest):
         )
 
         # remove merge snapshot
-        self.check_equal(
-            self.delete_task(f"/api/snapshots/{merged_name}").json()["State"], TASK_SUCCEEDED
-        )
+        task = self.delete_task(f"/api/snapshots/{merged_name}")
+        self.check_task(task)
 
         # create merge snapshot without sources
         merged_name = self.random_name()

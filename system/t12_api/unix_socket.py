@@ -6,18 +6,27 @@ import urllib.parse
 import urllib.request
 
 from lib import BaseTest
+from api_lib import AptlyStream
 
 
 class UnixSocketAPITest(BaseTest):
     aptly_server = None
     socket_path = "/tmp/_aptly_test.sock"
     base_url = ("unix://%s" % socket_path)
+    aptly_out = None
+    debugOutput = True
 
     def prepare(self):
         if self.aptly_server is None:
-            self.aptly_server = self._start_process("aptly api serve -no-lock -listen=%s" % (self.base_url),)
+            UnixSocketAPITest.aptly_out = AptlyStream()
+            self.aptly_server = self._start_process("aptly api serve -no-lock -listen=%s" % (self.base_url), stdout=UnixSocketAPITest.aptly_out, stderr=UnixSocketAPITest.aptly_out)
             time.sleep(1)
+        else:
+            UnixSocketAPITest.aptly_out.clear()
         super(UnixSocketAPITest, self).prepare()
+
+    def debug_output(self):
+        return UnixSocketAPITest.aptly_out.get_contents()
 
     def shutdown(self):
         if self.aptly_server is not None:
