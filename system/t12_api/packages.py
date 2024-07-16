@@ -2,7 +2,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from api_lib import TASK_SUCCEEDED, APITest
+from api_lib import APITest
 
 
 class PackagesAPITestShow(APITest):
@@ -19,7 +19,7 @@ class PackagesAPITestShow(APITest):
                          "pyspi_0.6.1-1.3.dsc", "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz").status_code, 200)
 
         resp = self.post_task("/api/repos/" + repo_name + "/file/" + d)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        self.check_task(resp)
 
         # get information about package
         pyspi_json = {

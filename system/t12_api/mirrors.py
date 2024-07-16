@@ -1,4 +1,4 @@
-from api_lib import TASK_SUCCEEDED, APITest
+from api_lib import APITest
 
 
 class MirrorsAPITestCreateShow(APITest):
@@ -58,11 +58,8 @@ class MirrorsAPITestCreateUpdate(APITest):
 
         mirror_desc["Name"] = self.random_name()
         resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
-        self.check_equal(resp.status_code, 200)
+        self.check_task(resp)
         _id = resp.json()['ID']
-        if resp.json()["State"] != TASK_SUCCEEDED:
-            resp = self.get("/api/tasks/" + str(_id) + "/output")
-            raise Exception("task failed: " + str(resp.json()))
 
         resp = self.get("/api/tasks/" + str(_id) + "/detail")
         self.check_equal(resp.status_code, 200)
@@ -95,7 +92,7 @@ class MirrorsAPITestCreateDelete(APITest):
         self.check_equal(resp.status_code, 201)
 
         resp = self.delete_task("/api/mirrors/" + mirror_name)
-        self.check_equal(resp.json()['State'], TASK_SUCCEEDED)
+        self.check_task(resp)
 
 
 class MirrorsAPITestCreateList(APITest):
@@ -154,8 +151,4 @@ class MirrorsAPITestSkipArchitectureCheck(APITest):
         mirror_desc = {'Name': mirror_name,
                        'IgnoreSignatures': True}
         resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
-        self.check_equal(resp.status_code, 200)
-        _id = resp.json()['ID']
-        if resp.json()["State"] != TASK_SUCCEEDED:
-            resp = self.get("/api/tasks/" + str(_id) + "/output")
-            raise Exception("task failed: " + str(resp.json()))
+        self.check_task(resp)

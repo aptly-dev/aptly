@@ -128,6 +128,7 @@ class BaseTest(object):
     requiresGPG2 = False
     requiresDot = False
     sortOutput = False
+    debugOutput = False
 
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
@@ -177,6 +178,10 @@ class BaseTest(object):
         try:
             self.run()
             self.check()
+        except Exception as exc:
+            if self.debugOutput:
+                print(f"API log:\n{self.debug_output()}")
+            raise exc
         finally:
             self.teardown()
 
