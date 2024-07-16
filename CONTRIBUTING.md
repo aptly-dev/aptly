@@ -74,7 +74,7 @@ This section describes local setup to start contributing to aptly source.
 
 ### Go & Python
 
-You would need `Go` (latest version is recommended) and `Python` 2.7.x (3.x is not supported yet).
+You would need `Go` (latest version is recommended) and `Python` 3.9 (or newer, the CI currently tests against 3.11).
 
 If you're new to Go, follow [getting started guide](https://golang.org/doc/install) to install it and perform
 initial setup. With Go 1.8+, default `$GOPATH` is `$HOME/go`, so rest of this document assumes that.
