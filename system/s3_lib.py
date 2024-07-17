@@ -8,7 +8,7 @@ try:
     if 'AWS_SECRET_ACCESS_KEY' in os.environ and 'AWS_ACCESS_KEY_ID' in os.environ:
         s3_conn = boto.connect_s3()
     else:
-        print("S3 tests disabled: AWS creds not found in the environment")
+        print("S3 tests disabled: AWS creds not found in the environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)")
         s3_conn = None
 except ImportError as e:
     print("S3 tests disabled: can't import boto", e)
@@ -32,6 +32,8 @@ class S3Test(BaseTest):
             "test1": {
                 "region": "us-east-1",
                 "bucket": self.bucket_name,
+                "awsAccessKeyID": os.environ["AWS_ACCESS_KEY_ID"],
+                "awsSecretAccessKey": os.environ["AWS_SECRET_ACCESS_KEY"]
             }
         }}
 
