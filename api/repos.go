@@ -419,6 +419,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 func apiReposCopyPackage(c *gin.Context) {
 	dstRepoName := c.Params.ByName("name")
 	srcRepoName := c.Params.ByName("src")
+	fileName := c.Params.ByName("file")
 
 	jsonBody := struct {
 		WithDeps bool `json:"with-deps,omitempty"`
@@ -513,9 +514,9 @@ func apiReposCopyPackage(c *gin.Context) {
 
 		// srcList.Filter|FilterWithProgress only accept query list
 		queries := make([]deb.PackageQuery, 1)
-		queries[0], err = query.Parse(c.Params.ByName("file"))
+		queries[0], err = query.Parse(fileName)
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusUnprocessableEntity, Value: nil}, fmt.Errorf("unable to parse query: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusUnprocessableEntity, Value: nil}, fmt.Errorf("unable to parse query '%s': %s", fileName, err)
 		}
 
 		toProcess, err := srcList.FilterWithProgress(queries, jsonBody.WithDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
