@@ -66,6 +66,7 @@ docker-test: install
 	@rm -f aptly.test
 	go test -v -coverpkg="./..." -c -tags testruncli
 	@echo Running python tests ...
+	@test -e aws.creds && . ./aws.creds; \
 	export PATH=$(BINPATH)/:$(PATH); \
 	export APTLY_VERSION=$(VERSION); \
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
