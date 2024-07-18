@@ -300,6 +300,14 @@ func (s *PackageListSuite) TestSearch(c *C) {
 	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}, true), Contains, []*Package{s.packages2[4], s.packages2[5]})
 	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
 	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "5.0"}, true), IsNil)
+
+	// Provides with version number
+	python3CFFIBackend := &Package{Name: "python3-cffi-backend", Version: "1.15.1-5+b1", Architecture: "amd64", Provides: []string{"python3-cffi-backend-api-9729", "python3-cffi-backend-api-max (= 10495)", "python3-cffi-backend-api-min (= 9729)"}}
+	err := s.il2.Add(python3CFFIBackend)
+	c.Check(err, IsNil)
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionGreaterOrEqual, Version: "9729"}, false), DeepEquals, []*Package{python3CFFIBackend})
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionLess, Version: "9729"}, false), IsNil)
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionDontCare}, false), DeepEquals, []*Package{python3CFFIBackend})
 }
 
 func (s *PackageListSuite) TestFilter(c *C) {
