@@ -524,6 +524,10 @@ func apiReposCopyPackage(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("filter error: %s", err)
 		}
 
+		if toProcess.Len() == 0 {
+			return &task.ProcessReturnValue{Code: http.StatusUnprocessableEntity, Value: nil}, fmt.Errorf("no package found for filter: '%s'", fileName)
+		}
+
 		err = toProcess.ForEach(func(p *deb.Package) error {
 			err = dstList.Add(p)
 			if err != nil {

@@ -120,7 +120,7 @@ class APITest(BaseTest):
             raise Exception("task expected to fail")
         if expected_output:
             resp = self.get("/api/tasks/" + str(task.json()['ID']) + "/output")
-            self.check_equal(resp.text, expected_output)
+            self.check_equal(resp.json(), expected_output)
 
     def put(self, uri, *args, **kwargs):
         if "json" in kwargs:
