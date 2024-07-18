@@ -145,7 +145,7 @@ func (l *PackageList) Add(p *Package) error {
 	l.packages[key] = p
 
 	if l.indexed {
-		for _, provides := range p.Provides {
+		for _, provides := range p.ProvidedPackages() {
 			l.providesIndex[provides] = append(l.providesIndex[provides], p)
 		}
 
@@ -215,7 +215,7 @@ func (l *PackageList) Append(pl *PackageList) error {
 func (l *PackageList) Remove(p *Package) {
 	delete(l.packages, l.keyFunc(p))
 	if l.indexed {
-		for _, provides := range p.Provides {
+		for _, provides := range p.ProvidedPackages() {
 			for i, pkg := range l.providesIndex[provides] {
 				if pkg.Equals(p) {
 					// remove l.ProvidesIndex[provides][i] w/o preserving order
@@ -419,7 +419,7 @@ func (l *PackageList) PrepareIndex() {
 		l.packagesIndex[i] = p
 		i++
 
-		for _, provides := range p.Provides {
+		for _, provides := range p.ProvidedPackages() {
 			l.providesIndex[provides] = append(l.providesIndex[provides], p)
 		}
 	}
@@ -472,21 +472,25 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 			searchResults = append(searchResults, p)
 
 			if !allMatches {
-				break
+				return
 			}
 		}
 
 		i++
 	}
 
-	if dep.Relation == VersionDontCare {
-		for _, p := range l.providesIndex[dep.Pkg] {
-			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
+	providers, ok := l.providesIndex[dep.Pkg]
+	if !ok {
+		return
+	}
+	for _, p := range providers {
+		if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
+			if p.MatchesDependency(dep) {
 				searchResults = append(searchResults, p)
+			}
 
-				if !allMatches {
-					break
-				}
+			if !allMatches {
+				return
 			}
 		}
 	}
