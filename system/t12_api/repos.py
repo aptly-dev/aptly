@@ -406,9 +406,13 @@ class ReposAPITestCopyPackage(APITest):
         resp = self.post_task(f"/api/repos/{repo2_name}/copy/{repo1_name}/{pkg_name}")
         self.check_task(resp)
 
+        # Test bad query
+        resp = self.post_task(f"/api/repos/{repo2_name}/copy/{repo1_name}/lalala%20%3E%3E")
+        self.check_task_fail(resp, expected_output="Task failed with error: unable to parse query 'lalala >>': parsing failed: unexpected token >>: expecting end of query")
+
         # Test non-existing package
-        resp = self.post_task(f"/api/repos/{repo2_name}/copy/{repo1_name}/la<la>la")
-        self.check_task_fail(resp)
+        resp = self.post_task(f"/api/repos/{repo2_name}/copy/{repo1_name}/lalala")
+        self.check_task_fail(resp, expected_output="Task failed with error: no package found for filter: 'lalala'")
 
         self.check_equal(self.get(f"/api/repos/{repo2_name}/packages").json(),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
