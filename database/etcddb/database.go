@@ -14,8 +14,8 @@ func internalOpen(url string) (*clientv3.Client, error) {
 	cfg := clientv3.Config{
 		Endpoints:            []string{url},
 		DialTimeout:          30 * time.Second,
-		MaxCallSendMsgSize:   2048 * 1024 * 1024,
-		MaxCallRecvMsgSize:   2048 * 1024 * 1024,
+		MaxCallSendMsgSize:   (2048 * 1024 * 1024) - 1,
+		MaxCallRecvMsgSize:   (2048 * 1024 * 1024) - 1,
 		DialKeepAliveTimeout: 7200 * time.Second,
 	}
 
