@@ -18,6 +18,7 @@ from swift_lib import SwiftTest
 from azure_lib import AzureTest
 from api_lib import APITest
 from fs_endpoint_lib import FileSystemEndpointTest
+from testout import TestOut
 
 try:
     from termcolor import colored
@@ -34,27 +35,12 @@ def natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
 
 
-class TestStdout:
-    def __init__(self):
-        self.output = []
-
-    def write(self, text):
-        self.output.append(text)
-
-    def flush(self):
-        pass
-
-    def get_output(self):
-        return ''.join(self.output)
-
-    def truncate(self):
-        self.output = []
-
-
 def run(include_long_tests=False, capture_results=False, tests=None, filters=None, coverage_dir=None):
     """
     Run system test.
     """
+    print(colored("\n Aptly System Tests\n====================\n", color="green", attrs=["bold"]))
+
     if not tests:
         tests = sorted(glob.glob("t*_*"), key=natural_key)
     fails = []
@@ -68,18 +54,24 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
         orig_stderr = sys.stderr
 
         # importlib.import_module(test)
-        for name in sorted(glob.glob(test + "/*.py"), key=natural_key):
-            name = os.path.splitext(os.path.basename(name))[0]
-            if name == "__init__":
+        for fname in sorted(glob.glob(test + "/*.py"), key=natural_key):
+            fname = os.path.splitext(os.path.basename(fname))[0]
+            if fname == "__init__":
                 continue
 
-            testout = TestStdout()
+            testout = TestOut()
             sys.stdout = testout
             sys.stderr = testout
-            testModule = importlib.import_module(test + "." + name)
+
+            try:
+                testModule = importlib.import_module(test + "." + fname)
+            except Exception as exc:
+                orig_stdout.write(f"error importing: {test + '.' + fname}: {exc}\n")
+                continue
 
             for name in sorted(dir(testModule), key=natural_key):
-                testout.truncate()
+                testout.clear()
+
                 o = getattr(testModule, name)
 
                 if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
@@ -130,7 +122,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     fails.append((test, t, typ, val, tb, testModule))
                     orig_stdout.write(colored("\b\b\b\bFAIL\n", color="red", attrs=["bold"]))
 
-                    orig_stdout.write(testout.get_output())
+                    orig_stdout.write(testout.get_contents())
                     traceback.print_exception(typ, val, tb, file=orig_stdout)
                 else:
                     orig_stdout.write(colored("\b\b\b\bOK \n", color="green", attrs=["bold"]))
@@ -143,19 +135,23 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     if lastBase is not None:
         lastBase.shutdown_class()
 
-    print("COVERAGE_RESULTS: %s" % coverage_dir)
+    print("\nCOVERAGE_RESULTS: %s" % coverage_dir)
 
-    print("TESTS: %d SUCCESS: %d FAIL: %d SKIP: %d" % (
-        numTests, numTests - numFailed, numFailed, numSkipped))
+    print(f"TESTS: {numTests}    ",
+          colored(f"SUCCESS: {numTests - numFailed}    ", color="green", attrs=["bold"]) if numFailed == 0 else
+          f"SUCCESS: {numTests - numFailed}    ",
+          colored(f"FAIL: {numFailed}    ", color="red", attrs=["bold"]) if numFailed > 0 else "FAIL: 0    ",
+          colored(f"SKIP: {numSkipped}", color="yellow", attrs=["bold"]) if numSkipped > 0 else "SKIP: 0")
+    print()
 
     if len(fails) > 0:
-        print("\nFAILURES (%d):" % (len(fails), ))
+        print(colored("FAILURES (%d):" % (len(fails), ), color="red", attrs=["bold"]))
 
         for (test, t, typ, val, tb, testModule) in fails:
             doc = t.__doc__ or ''
-            print(" - %s:%s %s" % (test, t.__class__.__name__,
-                                   testModule.__name__ + ": " + doc.strip()))
-
+            print(" - %s: %s %s" % (test, colored(t.__class__.__name__, color="yellow", attrs=["bold"]),
+                                    testModule.__name__ + ": " + doc.strip()))
+        print()
         sys.exit(1)
 
 

@@ -12,6 +12,7 @@ class PublishList2Test(BaseTest):
     """
     publish list: several repos list
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -30,6 +31,7 @@ class PublishList3Test(BaseTest):
     """
     publish list: several repos list, raw
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [
@@ -54,6 +56,7 @@ class PublishList5Test(BaseTest):
     """
     publish list json: several repos list
     """
+    requiresGPG2 = True
     fixtureDB = True
     fixturePool = True
     fixtureCmds = [

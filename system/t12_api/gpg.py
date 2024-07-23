@@ -23,6 +23,7 @@ class GPGAPITestAddKey(APITest):
     """
     POST /gpg/key
     """
+    requiresGPG2 = True
 
     def check(self):
         with tempfile.NamedTemporaryFile(suffix=".pub") as keyring:

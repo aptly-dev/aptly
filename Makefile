@@ -37,8 +37,10 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 install:
+	@echo Building aptly ...
 	go generate
-	go install -v
+	@echo go install -v
+	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
 system/env: system/requirements.txt
 ifeq ($(RUN_LONG_TESTS), yes)
@@ -57,8 +59,13 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 docker-test: install
+	@echo Building aptly.test ...
+	@rm -f aptly.test
 	go test -v -coverpkg="./..." -c -tags testruncli
-	PATH=$(BINPATH)/:$(PATH) APTLY_VERSION=$(VERSION) $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
+	@echo Running python tests ...
+	export PATH=$(BINPATH)/:$(PATH); \
+	export APTLY_VERSION=$(VERSION); \
+	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
 test:
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
@@ -93,7 +100,7 @@ version:  ## Print aptly version
 	@echo $(VERSION)
 
 docker-build-system-tests:  ## Build system-test docker image
-	docker build -f system/Dockerfile --no-cache . -t aptly-system-test
+	docker build -f system/Dockerfile . -t aptly-system-test
 
 docker-unit-tests:  ## Run unit tests in docker container
 	docker run -it --rm -v ${PWD}:/app aptly-system-test go test -v ./... -gocheck.v=true
