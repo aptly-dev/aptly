@@ -1,4 +1,4 @@
-from api_lib import TASK_FAILED, APITest
+from api_lib import APITest
 
 from .publish import DefaultSigningOptions
 
@@ -26,8 +26,8 @@ class SnapshotsAPITestCreateShowEmpty(APITest):
         self.check_equal(self.get("/api/snapshots/" + self.random_name()).status_code, 404)
 
         # create snapshot with duplicate name
-        resp = self.post_task("/api/snapshots", json=snapshot_desc)
-        self.check_equal(resp.json()['State'], TASK_FAILED)
+        task = self.post_task("/api/snapshots", json=snapshot_desc)
+        self.check_task_fail(task)
 
 
 class SnapshotsAPITestCreateFromRefs(APITest):
@@ -80,10 +80,10 @@ class SnapshotsAPITestCreateFromRefs(APITest):
         self.check_equal(resp.json(), ["Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378"])
 
         # create snapshot with unreferenced package
-        resp = self.post_task("/api/snapshots", json={
+        task = self.post_task("/api/snapshots", json={
             "Name": self.random_name(),
             "PackageRefs": ["Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378", "Pamd64 no-such-package 1.2 91"]})
-        self.check_equal(resp.json()['State'], TASK_FAILED)
+        self.check_task_fail(task)
 
         # list snapshots
         resp = self.get("/api/snapshots", params={"sort": "time"})
@@ -132,8 +132,8 @@ class SnapshotsAPITestCreateFromRepo(APITest):
                                    params={"format": "details", "q": "Version (> 0.6.1-1.4)"}).json()[0])
 
         # duplicate snapshot name
-        resp = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
-        self.check_equal(resp.json()['State'], TASK_FAILED)
+        task = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot_name})
+        self.check_task_fail(task)
 
 
 class SnapshotsAPITestCreateUpdate(APITest):
@@ -159,9 +159,9 @@ class SnapshotsAPITestCreateUpdate(APITest):
                            "Description": "New description"}, resp.json())
 
         # duplicate name
-        resp = self.put_task("/api/snapshots/" + new_snapshot_name, json={'Name': new_snapshot_name,
+        task = self.put_task("/api/snapshots/" + new_snapshot_name, json={'Name': new_snapshot_name,
                                                                           'Description': 'New description'})
-        self.check_equal(resp.json()['State'], TASK_FAILED)
+        self.check_task_fail(task)
 
         # missing snapshot
         resp = self.put("/api/snapshots/" + snapshot_name, json={})
@@ -196,7 +196,8 @@ class SnapshotsAPITestCreateDelete(APITest):
             ).json()['State'], 2
         )
 
-        self.check_equal(self.delete_task("/api/snapshots/" + snap1).json()['State'], TASK_FAILED)
+        task = self.delete_task("/api/snapshots/" + snap1)
+        self.check_task_fail(task)
         self.check_equal(self.get("/api/snapshots/" + snap1).status_code, 200)
         task = self.delete_task("/api/snapshots/" + snap1, params={"force": "1"})
         self.check_task(task)
@@ -215,8 +216,10 @@ class SnapshotsAPITestCreateDelete(APITest):
         )
         self.check_task(task)
 
-        self.check_equal(self.delete_task("/api/snapshots/" + snap2).json()['State'], TASK_FAILED)
-        self.check_equal(self.delete_task("/api/snapshots/" + snap2, params={"force": "1"}).json()['State'], TASK_FAILED)
+        task = self.delete_task("/api/snapshots/" + snap2)
+        self.check_task_fail(task)
+        task = self.delete_task("/api/snapshots/" + snap2, params={"force": "1"})
+        self.check_task_fail(task)
 
 
 class SnapshotsAPITestSearch(APITest):
