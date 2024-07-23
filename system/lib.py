@@ -278,6 +278,7 @@ class BaseTest(object):
                 params['url'] = self.webServerUrl
 
             command = string.Template(command).substitute(params)
+            print(f"running command: {command}\n")
             command = shlex.split(command)
 
         if command[0] == "aptly":
@@ -294,7 +295,7 @@ class BaseTest(object):
             proc = self._start_process(command, stdout=subprocess.PIPE)
             raw_output, _ = proc.communicate()
 
-            raw_output = raw_output.decode("utf-8")
+            raw_output = raw_output.decode("utf-8", errors='replace')
 
             returncodes = [proc.returncode]
             is_aptly_command = False

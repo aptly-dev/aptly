@@ -5,9 +5,9 @@ import random
 import shutil
 import string
 import time
-import tempfile
 
 from lib import BaseTest
+from testout import TestOut
 
 try:
     import requests
@@ -17,25 +17,6 @@ except ImportError:
 # States for returned tasks from the API
 TASK_SUCCEEDED = 2
 TASK_FAILED = 3
-
-
-class AptlyStream:
-    def __init__(self):
-        self.tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        self.read_pos = 0
-
-    def fileno(self):
-        return self.tmp_file.fileno()
-
-    def get_contents(self):
-        self.tmp_file.seek(self.read_pos, 0)
-        return self.tmp_file.read().decode("utf-8")
-
-    def close(self):
-        self.tmp_file.close()
-
-    def clear(self):
-        self.read_pos = self.tmp_file.tell()
 
 
 class APITest(BaseTest):
@@ -62,7 +43,7 @@ class APITest(BaseTest):
         if APITest.aptly_server is None:
             super(APITest, self).prepare()
 
-            APITest.aptly_out = AptlyStream()
+            APITest.aptly_out = TestOut()
 
             configPath = os.path.join(os.environ["HOME"], self.aptlyConfigFile)
             APITest.aptly_server = self._start_process(f"aptly api serve -no-lock -config={configPath} -listen={self.base_url}", stdout=APITest.aptly_out, stderr=APITest.aptly_out)
