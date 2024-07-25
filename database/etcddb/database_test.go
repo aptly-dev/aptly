@@ -132,7 +132,8 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 	transaction.Put(key2, value2)
 	v, err := s.db.Get(key)
 	c.Check(v, DeepEquals, value)
-	transaction.Delete(key)
+        err = transaction.Delete(key)
+	c.Assert(err, IsNil)
 
 	_, err = transaction.Get(key2)
 	c.Assert(err, IsNil)
@@ -152,5 +153,5 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 	c.Check(v2, DeepEquals, value2)
 
 	_, err = transaction.Get(key)
-	c.Assert(err, IsNil)
+	c.Assert(err, NotNil)
 }

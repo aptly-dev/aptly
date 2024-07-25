@@ -40,6 +40,7 @@ func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
 	}
 	for _, kv := range getResp.Kvs {
 		value = kv.Value
+		break
 	}
 	if len(value) == 0 {
 		err = database.ErrNotFound
@@ -169,12 +170,11 @@ func (s *EtcDStorage) CreateBatch() database.Batch {
 
 // OpenTransaction creates new transaction.
 func (s *EtcDStorage) OpenTransaction() (database.Transaction, error) {
-	cli, err := internalOpen(s.url)
+	tmpdb, err := s.CreateTemporary()
 	if err != nil {
 		return nil, err
 	}
-	kvc := clientv3.NewKV(cli)
-	return &transaction{t: kvc}, nil
+	return &transaction{s: s, tmpdb: tmpdb}, nil
 }
 
 // CompactDB does nothing for etcd
