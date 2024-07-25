@@ -6,7 +6,8 @@ import (
 )
 
 type EtcDBatch struct {
-	db *clientv3.Client
+	s   *EtcDStorage
+	ops []clientv3.Op
 }
 
 type WriteOptions struct {
@@ -14,17 +15,35 @@ type WriteOptions struct {
 	Sync         bool
 }
 
-func (b *EtcDBatch) Put(key, value []byte) (err error) {
-	_, err = b.db.Put(Ctx, string(key), string(value))
+func (b *EtcDBatch) Put(key []byte, value []byte) (err error) {
+	b.ops = append(b.ops, clientv3.OpPut(string(key), string(value)))
 	return
 }
 
 func (b *EtcDBatch) Delete(key []byte) (err error) {
-	_, err = b.db.Delete(Ctx, string(key))
+	b.ops = append(b.ops, clientv3.OpDelete(string(key)))
 	return
 }
 
 func (b *EtcDBatch) Write() (err error) {
+	kv := clientv3.NewKV(b.s.db)
+
+	batchSize := 128
+	for i := 0; i < len(b.ops); i += batchSize {
+		txn := kv.Txn(Ctx)
+		end := i + batchSize
+		if end > len(b.ops) {
+			end = len(b.ops)
+		}
+
+		batch := b.ops[i:end]
+		txn.Then(batch...)
+		_, err = txn.Commit()
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return
 }
 

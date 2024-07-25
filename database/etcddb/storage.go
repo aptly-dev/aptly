@@ -163,7 +163,7 @@ func (s *EtcDStorage) CreateBatch() database.Batch {
 		return nil
 	}
 	return &EtcDBatch{
-		db: s.db,
+		s: s,
 	}
 }
 
