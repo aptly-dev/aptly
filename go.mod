@@ -29,7 +29,6 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
 	github.com/saracen/walker v0.1.3
-	github.com/prometheus/client_golang v1.12.1
 	github.com/seefan/gossdb/v2 v2.0.0
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76

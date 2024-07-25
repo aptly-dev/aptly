@@ -184,6 +184,8 @@ github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+l
 github.com/hashicorp/go-multierror v1.1.1/go.mod h1:iw975J/qwKPdAO1clOe2L8331t/9/fmwbPZ6JB6eMoM=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
+github.com/hudeng-go/gossdb/v2 v2.0.1-0.20220523082930-c7fda08f33e2 h1:kYWIESmn3yHaGVyYcIGxFdVxhFNlAkol02xnRjQU3yU=
+github.com/hudeng-go/gossdb/v2 v2.0.1-0.20220523082930-c7fda08f33e2/go.mod h1:YBb10QYLQSC0/14z1Y5jam9u7qKhhzTsxwdjTvzFEW0=
 github.com/jlaffaye/ftp v0.2.0 h1:lXNvW7cBu7R/68bknOX3MrRIIqZ61zELs1P2RAiA3lg=
 github.com/jlaffaye/ftp v0.2.0/go.mod h1:is2Ds5qkhceAPy2xD6RLI6hmp/qysSoymZ+Z2uTnspI=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
@@ -300,6 +302,8 @@ github.com/rs/zerolog v1.30.0 h1:SymVODrcRsaRaSInD9yQtKbtWqwsfoPcRff/oRXLj4c=
 github.com/rs/zerolog v1.30.0/go.mod h1:/tk+P47gFdPXq4QYjvCmT5/Gsug2nagsFWBWhAiSi1w=
 github.com/saracen/walker v0.1.3 h1:YtcKKmpRPy6XJTHJ75J2QYXXZYWnZNQxPCVqZSHVV/g=
 github.com/saracen/walker v0.1.3/go.mod h1:FU+7qU8DeQQgSZDmmThMJi93kPkLFgy0oVAcLxurjIk=
+github.com/seefan/goerr v1.1.2 h1:rLUrQeJY1FRYd2WIsZDr7mr0F58gKPSnCvtBjj00b3Q=
+github.com/seefan/goerr v1.1.2/go.mod h1:gipDsSn2T2Jwf0q9bl6K0CGyhvfNZiI8/Bi0MfsS258=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5 h1:jLFwP6SDEUHmb6QSu5n2FHseWzMio1ou1FV9p7W6p7I=
