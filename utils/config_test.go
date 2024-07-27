@@ -144,10 +144,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"logLevel\": \"info\",\n"+
 		"  \"logFormat\": \"json\",\n"+
 		"  \"serveInAPIMode\": false,\n"+
-		"  \"databaseEtcd\": \"\",\n"+
 		"  \"databaseBackend\": {\n"+
 		"    \"type\": \"\",\n"+
-		"    \"url\": \"\"\n"+
+		"    \"url\": \"\",\n"+
+                "    \"dbPath\": \"\"\n" +
 		"  }\n"+
 		"}")
 }
