@@ -32,7 +32,7 @@ func NewDB(url string) (database.Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &EtcDStorage{url, cli}, nil
+	return &EtcDStorage{url, cli, ""}, nil
 }
 
 func NewOpenDB(url string) (database.Storage, error) {
