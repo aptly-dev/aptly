@@ -10,21 +10,17 @@ import (
 
 var Ctx = context.TODO()
 
-func internalOpen(url string) (*clientv3.Client, error) {
+func internalOpen(url string) (cli *clientv3.Client, err error) {
 	cfg := clientv3.Config{
 		Endpoints:            []string{url},
 		DialTimeout:          30 * time.Second,
-		MaxCallSendMsgSize:   (2048 * 1024 * 1024) - 1,
-		MaxCallRecvMsgSize:   (2048 * 1024 * 1024) - 1,
+		MaxCallSendMsgSize:   2147483647, // (2048 * 1024 * 1024) - 1
+		MaxCallRecvMsgSize:   2147483647,
 		DialKeepAliveTimeout: 7200 * time.Second,
 	}
 
-	cli, err := clientv3.New(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return cli, nil
+	cli, err = clientv3.New(cfg)
+	return
 }
 
 func NewDB(url string) (database.Storage, error) {
@@ -33,13 +29,4 @@ func NewDB(url string) (database.Storage, error) {
 		return nil, err
 	}
 	return &EtcDStorage{url, cli, ""}, nil
-}
-
-func NewOpenDB(url string) (database.Storage, error) {
-	db, err := NewDB(url)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

@@ -22,13 +22,13 @@ var _ = Suite(&EtcDDBSuite{})
 
 func (s *EtcDDBSuite) SetUpTest(c *C) {
 	var err error
-	s.db, err = etcddb.NewOpenDB("127.0.0.1:2379")
+	s.db, err = etcddb.NewDB("127.0.0.1:2379")
 	c.Assert(err, IsNil)
 }
 
 func (s *EtcDDBSuite) TestSetUpTest(c *C) {
 	var err error
-	s.db, err = etcddb.NewOpenDB("127.0.0.1:2379")
+	s.db, err = etcddb.NewDB("127.0.0.1:2379")
 	c.Assert(err, IsNil)
 }
 
@@ -155,3 +155,4 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 	_, err = transaction.Get(key)
 	c.Assert(err, NotNil)
 }
+
