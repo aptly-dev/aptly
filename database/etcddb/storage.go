@@ -33,8 +33,8 @@ func (s *EtcDStorage) applyPrefix(key []byte) []byte {
 
 // Get key value from etcd
 func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
-	key = s.applyPrefix(key)
-	getResp, err := s.db.Get(Ctx, string(key))
+	realKey := s.applyPrefix(key)
+	getResp, err := s.db.Get(Ctx, string(realKey))
 	if err != nil {
 		return
 	}
@@ -51,8 +51,8 @@ func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
 
 // Put saves key to etcd, if key has the same value in DB already, it is not saved
 func (s *EtcDStorage) Put(key []byte, value []byte) (err error) {
-	key = s.applyPrefix(key)
-	_, err = s.db.Put(Ctx, string(key), string(value))
+	realKey := s.applyPrefix(key)
+	_, err = s.db.Put(Ctx, string(realKey), string(value))
 	if err != nil {
 		return
 	}
@@ -61,8 +61,8 @@ func (s *EtcDStorage) Put(key []byte, value []byte) (err error) {
 
 // Delete removes key from etcd
 func (s *EtcDStorage) Delete(key []byte) (err error) {
-	key = s.applyPrefix(key)
-	_, err = s.db.Delete(Ctx, string(key))
+	realKey := s.applyPrefix(key)
+	_, err = s.db.Delete(Ctx, string(realKey))
 	if err != nil {
 		return
 	}
@@ -71,9 +71,9 @@ func (s *EtcDStorage) Delete(key []byte) (err error) {
 
 // KeysByPrefix returns all keys that start with prefix
 func (s *EtcDStorage) KeysByPrefix(prefix []byte) [][]byte {
-	prefix = s.applyPrefix(prefix)
+	realPrefix := s.applyPrefix(prefix)
 	result := make([][]byte, 0, 20)
-	getResp, err := s.db.Get(Ctx, string(prefix), clientv3.WithPrefix())
+	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
 		return nil
 	}
@@ -88,9 +88,9 @@ func (s *EtcDStorage) KeysByPrefix(prefix []byte) [][]byte {
 
 // FetchByPrefix returns all values with keys that start with prefix
 func (s *EtcDStorage) FetchByPrefix(prefix []byte) [][]byte {
-	prefix = s.applyPrefix(prefix)
+	realPrefix := s.applyPrefix(prefix)
 	result := make([][]byte, 0, 20)
-	getResp, err := s.db.Get(Ctx, string(prefix), clientv3.WithPrefix())
+	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
 		return nil
 	}
@@ -105,22 +105,19 @@ func (s *EtcDStorage) FetchByPrefix(prefix []byte) [][]byte {
 
 // HasPrefix checks whether it can find any key with given prefix and returns true if one exists
 func (s *EtcDStorage) HasPrefix(prefix []byte) bool {
-	prefix = s.applyPrefix(prefix)
-	getResp, err := s.db.Get(Ctx, string(prefix), clientv3.WithPrefix())
+	realPrefix := s.applyPrefix(prefix)
+	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
 		return false
 	}
-	if getResp.Count != 0 {
-		return true
-	}
-	return false
+	return getResp.Count > 0
 }
 
 // ProcessByPrefix iterates through all entries where key starts with prefix and calls
 // StorageProcessor on key value pair
 func (s *EtcDStorage) ProcessByPrefix(prefix []byte, proc database.StorageProcessor) error {
-	prefix = s.applyPrefix(prefix)
-	getResp, err := s.db.Get(Ctx, string(prefix), clientv3.WithPrefix())
+	realPrefix := s.applyPrefix(prefix)
+	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
 		return err
 	}

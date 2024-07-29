@@ -289,20 +289,18 @@ func (context *AptlyContext) Database() (database.Storage, error) {
 func (context *AptlyContext) _database() (database.Storage, error) {
 	if context.database == nil {
 		var err error
-
-		if context.config().DatabaseBackend.Type == "etcd" {
-			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
-		} else if context.config().DatabaseBackend.Type == "leveldb" {
-			if context.config().DatabaseBackend.DbPath != "" {
-				dbPath := filepath.Join(context.config().RootDir, context.config().DatabaseBackend.DbPath)
-				context.database, err = goleveldb.NewDB(dbPath)
-			} else {
+		switch context.config().DatabaseBackend.Type {
+		case "leveldb":
+			if len(context.config().DatabaseBackend.DbPath) == 0 {
 				return nil, errors.New("leveldb databaseBackend config invalid")
 			}
-		} else {
+			dbPath := filepath.Join(context.config().RootDir, context.config().DatabaseBackend.DbPath)
+			context.database, err = goleveldb.NewDB(dbPath)
+		case "etcd":
+			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
+		default:
 			context.database, err = goleveldb.NewDB(context.dbPath())
 		}
-
 		if err != nil {
 			return nil, fmt.Errorf("can't instantiate database: %s", err)
 		}

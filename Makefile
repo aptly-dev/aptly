@@ -73,7 +73,7 @@ docker-test: install
 test:
 	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
 	system/t13_etcd/start-etcd.sh &
-	echo Running go test
+	@echo Running go test
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
 	kill `cat /tmp/etcd.pid`
 
