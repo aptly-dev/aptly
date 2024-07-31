@@ -83,7 +83,7 @@ func apiReposCreate(c *gin.Context) {
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
-	err := collection.Add(repo)
+	err := collection.Add(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 400, err)
 		return
@@ -133,7 +133,7 @@ func apiReposEdit(c *gin.Context) {
 		repo.DefaultComponent = *b.DefaultComponent
 	}
 
-	err = collection.Update(repo)
+	err = collection.Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -202,7 +202,7 @@ func apiReposPackagesShow(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -230,7 +230,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -262,9 +262,9 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 			}
 		}
 
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-		err = collectionFactory.LocalRepoCollection().Update(repo)
+		err = collectionFactory.LocalRepoCollection().Update(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -321,7 +321,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -370,9 +370,9 @@ func apiReposPackageFromDir(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import package files: %s", err)
 		}
 
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-		err = collectionFactory.LocalRepoCollection().Update(repo)
+		err = collectionFactory.LocalRepoCollection().Update(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -634,7 +634,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		_, failedFiles2, err = deb.ImportChangesFiles(
 			changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
 			repoTemplate, context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
-			context.PackagePool(), collectionFactory.ChecksumCollection, nil, query.Parse)
+			collectionFactory.RefListCollection(), context.PackagePool(), collectionFactory.ChecksumCollection, nil, query.Parse)
 		failedFiles = append(failedFiles, failedFiles2...)
 
 		if err != nil {
