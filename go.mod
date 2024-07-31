@@ -2,6 +2,8 @@ module github.com/aptly-dev/aptly
 
 go 1.19
 
+replace github.com/seefan/gossdb/v2 => github.com/hudeng-go/gossdb/v2 v2.0.1-0.20220523082930-c7fda08f33e2
+
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/Azure/azure-storage-blob-go v0.15.0
@@ -27,6 +29,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
 	github.com/saracen/walker v0.1.3
+	github.com/seefan/gossdb/v2 v2.0.0
 	github.com/smira/commander v0.0.0-20140515201010-f408b00e68d5
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
@@ -92,6 +95,7 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/seefan/goerr v1.1.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.0-rc.0 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0-rc.0 // indirect
