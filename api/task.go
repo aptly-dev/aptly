@@ -9,7 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /tasks
+// @Summary Get tasks
+// @Description Get list of available tasks. Each task is returned as in “show” API.
+// @Tags Tasks
+// @Produce  json
+// @Success 200 {array} task.Task
+// @Router /api/tasks [get]
 func apiTasksList(c *gin.Context) {
 	list := context.TaskList()
 	c.JSON(200, list.GetTasks())
