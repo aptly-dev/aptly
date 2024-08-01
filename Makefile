@@ -117,7 +117,7 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
 
 golangci-lint:  ## Run golangci-line in docker container
-	docker run -it --rm -v ~/.cache/golangci-lint/$(GOLANGCI_LINT_VERSION):/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) golangci-lint run
+	docker run -it --rm -v ~/.cache/golangci-lint/$(GOLANGCI_LINT_VERSION):/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) sh -c "go mod tidy; go generate; golangci-lint run"
 
 flake8:
 	flake8 system
