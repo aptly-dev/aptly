@@ -67,7 +67,7 @@ var (
 func NewPublishedStorageRaw(
 	bucket, defaultACL, prefix, storageClass, encryptionMethod string,
 	plusWorkaround, disabledMultiDel, forceVirtualHostedStyle bool,
-	config *aws.Config,
+	config *aws.Config, endpoint string,
 ) (*PublishedStorage, error) {
 	var acl types.ObjectCannedACL
 	if defaultACL == "" || defaultACL == "private" {
@@ -82,10 +82,16 @@ func NewPublishedStorageRaw(
 		storageClass = ""
 	}
 
+	var baseEndpoint *string
+	if endpoint != "" {
+		baseEndpoint = aws.String(endpoint)
+	}
+
 	result := &PublishedStorage{
 		s3: s3.NewFromConfig(*config, func(o *s3.Options) {
 			o.UsePathStyle = !forceVirtualHostedStyle
 			o.HTTPSignerV4 = v4.NewSigner()
+			o.BaseEndpoint = baseEndpoint
 		}),
 		bucket:           bucket,
 		config:           config,
@@ -132,21 +138,13 @@ func NewPublishedStorage(
 		opts = append(opts, config.WithLogger(&logger{}))
 	}
 
-	if endpoint != "" {
-		opts = append(opts, config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-			func(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: endpoint}, nil
-			},
-		)))
-	}
-
 	config, err := config.LoadDefaultConfig(context.TODO(), opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	result, err := NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
-		encryptionMethod, plusWorkaround, disableMultiDel, forceVirtualHostedStyle, &config)
+		encryptionMethod, plusWorkaround, disableMultiDel, forceVirtualHostedStyle, &config, endpoint)
 
 	return result, err
 }
