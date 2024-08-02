@@ -50,3 +50,5 @@ pgp/keyrings/aptly2*.gpg~
 pgp/keyrings/.#*
 
 *.creds
+
+.go/

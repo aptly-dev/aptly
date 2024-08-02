@@ -7,7 +7,7 @@ PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
 RUN_LONG_TESTS?=yes
-GOLANGCI_LINT_VERSION=v1.56.2
+GOLANGCI_LINT_VERSION=v1.54.1  # version supporting go 1.19
 COVERAGE_DIR?=$(shell mktemp -d)
 # Uncomment to update test outputs
 # CAPTURE := "--capture"
@@ -128,9 +128,13 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-system-tests $(TEST)
 
 docker-lint:  ## Run golangci-lint in docker container
-	@docker run -it --rm -v ~/.cache/golangci-lint/$(GOLANGCI_LINT_VERSION):/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) sh -c "go mod tidy; go generate; golangci-lint run"
+	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
-flake8:
+flake8:  ## run flak8 on system tests
 	flake8 system
 
-.PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly
+clean:  ## remove local build and module cache
+	test -f .go/ && chmod u+w -R .go/; rm -rf .go/
+	rm -rf build/
+
+.PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
