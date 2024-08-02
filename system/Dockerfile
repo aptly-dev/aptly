@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg apg bzip2 xz-utils ca-certificates golang golang-go golang-doc golang-src make git python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage g++ python3-etcd3 python3-plyvel && \
+RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg apg bzip2 xz-utils ca-certificates golang golang-go golang-doc golang-src make git python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage g++ python3-etcd3 python3-plyvel graphviz && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m --shell /bin/sh --home-dir /var/lib/aptly aptly
