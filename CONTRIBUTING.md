@@ -11,7 +11,7 @@ These are just guidelines, not rules. Use your best judgment, and feel free to p
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
-Please report unacceptable behavior to [team@aptly.info](mailto:team@aptly.info).
+Please report unacceptable behavior to [aptlypublic@gmail.com](mailto:aptlypublic@gmail.com).
 
 ### List of Repositories
 
@@ -60,27 +60,13 @@ If you want to update website, please follow steps below:
 We're always looking for new contributions to [FAQ](https://www.aptly.info/doc/faq/), [tutorials](https://www.aptly.info/tutorial/),
 general fixes, clarifications, misspellings, grammar mistakes!
 
-### Your First Code Contribution
+### Code Contribution
 
 Please follow [next section](#development-setup) on development process. When change is ready, please submit PR
 following [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 
 Make sure that purpose of your change is clear, all the tests and checks pass, and all new code is covered with tests
 if that is possible.
-
-## Development Setup
-
-This section describes local setup to start contributing to aptly source.
-
-### Go & Python
-
-You would need `Go` (latest version is recommended) and `Python` 3.9 (or newer, the CI currently tests against 3.11).
-
-If you're new to Go, follow [getting started guide](https://golang.org/doc/install) to install it and perform
-initial setup. With Go 1.8+, default `$GOPATH` is `$HOME/go`, so rest of this document assumes that.
-
-Usually `$GOPATH/bin` is appended to your `$PATH` to make it easier to run built binaries, but you might choose
-to prepend it or to skip this test if you're security conscious.
 
 ### Forking and Cloning
 
@@ -98,7 +84,90 @@ to specify your remote name when pushing branches:
 
     git push <user> <your-branch>
 
-### Dependencies
+
+## Development Setup
+
+Working on aptly code can be done locally on the development machine, or for convenience by using docker. The next sections describe the setup process.
+
+### Docker Development Setup
+
+This section describes the docker setup to start contributing to aptly.
+
+#### Dependencies
+
+Install the following on your development machine:
+- docker
+- make
+- git
+
+
+#### Create docker container
+
+To build the development docker container, run:
+```
+make docker-build-aptly-dev
+```
+
+#### Build aptly
+
+To build the aptly in the development docker container, run:
+```
+make docker-build
+```
+
+#### Running aptly commands
+
+To run aptly commands in the development docker container, run:
+```
+make docker-aptly
+```
+
+Example:
+```
+$ make docker-aptly
+bash: cannot set terminal process group (16): Inappropriate ioctl for device
+bash: no job control in this shell
+aptly@b43e8473ef81:/app$ aptly version
+aptly version: 1.5.0+189+g0fc90dff
+```
+
+#### Running unit tests
+
+In order to run aptly unit tests, enter the following:
+```
+make docker-unit-tests
+```
+
+#### Running system tests
+
+In order to run aptly system tests, enter the following:
+```
+make docker-system-tests
+```
+
+#### Running golangci-lint
+
+In order to run aptly unit tests, run:
+```
+make docker-lint
+```
+
+
+### Local Development Setup
+
+This section describes local setup to start contributing to aptly.
+
+#### Go & Python
+
+You would need `Go` (latest version is recommended) and `Python` 3.9 (or newer, the CI currently tests against 3.11).
+
+If you're new to Go, follow [getting started guide](https://golang.org/doc/install) to install it and perform
+initial setup. With Go 1.8+, default `$GOPATH` is `$HOME/go`, so rest of this document assumes that.
+
+Usually `$GOPATH/bin` is appended to your `$PATH` to make it easier to run built binaries, but you might choose
+to prepend it or to skip this test if you're security conscious.
+
+#### Dependencies
 
 You would need some additional tools and Python virtual environment to run tests and checks, install them with:
 
@@ -110,7 +179,7 @@ Aptly is using Go modules to manage dependencies, download modules using:
 
     make modules
 
-### Building
+#### Building
 
 If you want to build aptly binary from your current source tree, run:
 
@@ -124,7 +193,7 @@ Or, if it's not on your path:
 
     ~/go/bin/aptly
 
-### Unit-tests
+#### Unit-tests
 
 aptly has two kinds of tests: unit-tests and functional (system) tests. Functional tests are preferred way to test any
 feature, but some features are much easier to test with unit-tests (e.g. algorithms, failure scenarios, ...)
@@ -133,7 +202,7 @@ aptly is using standard Go unit-test infrastructure plus [gocheck](http://labix.
 
     make test
 
-### Functional Tests
+#### Functional Tests
 
 Functional tests are implemented in Python, and they use custom test runner which is similar to Python unit-test
 runner. Most of the tests start with clean aptly state, run some aptly commands to prepare environment, and finally
@@ -180,7 +249,7 @@ There are some packages available under `system/files/` directory which are used
 this default location. You can run aptly under different user or by using non-default config location with non-default
 aptly root directory.
 
-### Style Checks
+#### Style Checks
 
 Style checks could be run with:
 
@@ -191,7 +260,7 @@ for the linter could be found in [.golangci.yml](.golangci.yml) file.
 
 Python code (system tests) are linted with [flake8 tool](https://pypi.python.org/pypi/flake8).
 
-### Vendored Code
+#### Vendored Code
 
 aptly is using Go vendoring for all the libraries aptly depends upon. `vendor/` directory is checked into the source
 repository to avoid any problems if source repositories go away. Go build process will automatically prefer vendored
@@ -217,25 +286,3 @@ Bash and Zsh completion for aptly reside in the same repo under in [completion.d
 When new option or command is introduced, bash completion should be updated to reflect that change.
 
 When aptly package is being built, it automatically pulls bash completion and man page into the package.
-
-## Design
-
-This section requires future work.
-
-*TBD*
-
-### Database
-
-### Package Pool
-
-### Package
-
-### PackageList, PackageRefList
-
-### LocalRepo, RemoteRepo, Snapshot
-
-### PublishedRepository
-
-### Context
-
-### Collections, CollectionFactory
