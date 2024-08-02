@@ -223,7 +223,8 @@ class CreateMirror18Test(BaseTest):
     }
 
     fixtureCmds = [
-        "gpg --no-default-keyring --keyring=ppa.gpg --keyserver=hkp://keyserver.ubuntu.com:80 --recv-keys 5BFCD481D86D5824470E469F9000B1C3A01F726C 02219381E9161C78A46CB2BFA5279A973B1F56C0"
+        "gpg --no-default-keyring --keyring=ppa.gpg --keyserver=hkp://keyserver.ubuntu.com:80 --recv-keys 5BFCD481D86D5824470E469F9000B1C3A01F726C 02219381E9161C78A46CB2BFA5279A973B1F56C0",
+        f"chmod 400 {os.path.join(os.environ['HOME'], '.gnupg/ppa.gpg')}"
     ]
     runCmd = "aptly mirror create -keyring=ppa.gpg mirror18 ppa:gladky-anton/gnuplot"
 

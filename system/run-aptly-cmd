@@ -1,17 +1,10 @@
 #!/bin/sh
 
-# cleanup
-rm -rf /app/tmp
-rm -rf /tmp/aptly*
-
-usermod -u `stat -c %u /app` aptly >/dev/null
-chown -R `stat -c %u /app` /var/lib/aptly
-
-# use same /home/runner dir as in github workflow
-chown -R `stat -c %u /app` /home/runner
-
 cmd=$@
-if [ -z "$cmd" ]; then
-    cmd="bash"
-fi
-su aptly -c "cd /app; export HOME=/home/runner; export PATH=\$PATH:/app/build; $cmd"
+test -z "$cmd" && cmd="bash"
+
+usermod -u `stat -c %u /work/src` aptly >/dev/null
+chown -R `stat -c %u /work/src` /var/lib/aptly
+
+cd /work/src
+exec sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go $cmd
