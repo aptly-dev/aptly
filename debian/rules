@@ -19,6 +19,10 @@ override_dh_auto_build:
 	echo $(DEB_VERSION) > VERSION
 	go build -o build/aptly
 
+	# when dependencies fully debianized:
+	# echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION
+	# dh_auto_build
+
 override_dh_auto_test:
 
 override_dh_auto_install:
@@ -28,7 +32,11 @@ override_dh_auto_install:
 	cp completion.d/aptly debian/aptly/usr/share/bash-completion/completions/
 	gzip debian/aptly/usr/share/man/man1/aptly.1
 
-# not needed with golang, fail with cross compiling
-#override_dh_strip:
-override_dh_makeshlibs:
+override_dh_strip:
+	dh_strip --dbg-package=aptly-dbg
+
+# only with full debian dependencies:
 override_dh_golang:
+
+# not needed with golang, fails with cross compiling
+# override_dh_makeshlibs:
