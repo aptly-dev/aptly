@@ -72,11 +72,11 @@ docker-test: install
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
 test:
-	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	system/t13_etcd/start-etcd.sh &
+	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
+	@system/t13_etcd/start-etcd.sh &
 	@echo Running go test
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out
-	kill `cat /tmp/etcd.pid`
+	@kill `cat /tmp/etcd.pid`
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
@@ -107,19 +107,30 @@ man:  ## Create man pages
 version:  ## Print aptly version
 	@echo $(VERSION)
 
-docker-build-system-tests:  ## Build system-test docker image
-	docker build -f system/Dockerfile . -t aptly-system-test
+build:
+	go mod tidy
+	go generate
+	go build -o build/aptly
+
+docker-build-aptly-dev:  ## Build aptly-dev docker image
+	@docker build -f system/Dockerfile . -t aptly-dev
+
+docker-build:  ## Build aptly in docker container
+	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd make build
+
+docker-aptly:  ## Build and run aptly commands in docker container
+	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd
 
 docker-unit-tests:  ## Run unit tests in docker container
-	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-unit-tests
+	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
 
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
-	docker run -it --rm -v ${PWD}:/app aptly-system-test /app/system/run-system-tests $(TEST)
+	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-system-tests $(TEST)
 
-golangci-lint:  ## Run golangci-line in docker container
-	docker run -it --rm -v ~/.cache/golangci-lint/$(GOLANGCI_LINT_VERSION):/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) sh -c "go mod tidy; go generate; golangci-lint run"
+docker-lint:  ## Run golangci-lint in docker container
+	@docker run -it --rm -v ~/.cache/golangci-lint/$(GOLANGCI_LINT_VERSION):/root/.cache -v ${PWD}:/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) sh -c "go mod tidy; go generate; golangci-lint run"
 
 flake8:
 	flake8 system
 
-.PHONY: help man modules version release goxc docker-build docker-system-tests
+.PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly
