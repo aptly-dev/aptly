@@ -1,7 +1,5 @@
-GOVERSION=$(shell go version | awk '{print $$3;}')
 GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make version)
-PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
@@ -143,7 +141,7 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
-flake8:  ## run flak8 on system tests
+flake8:  ## run flake8 on system tests
 	flake8 system
 
 clean:  ## remove local build and module cache
