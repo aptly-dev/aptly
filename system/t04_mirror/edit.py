@@ -112,6 +112,5 @@ class EditMirror10Test(BaseTest):
     """
     edit mirror: change archive url
     """
-    requiresFTP = True
     fixtureCmds = ["aptly mirror create -ignore-signatures mirror10 http://repo.aptly.info/system-tests/ftp.ru.debian.org/debian bookworm main"]
     runCmd = "aptly mirror edit -ignore-signatures -archive-url http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian mirror10"
