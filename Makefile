@@ -47,7 +47,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	system/env/bin/pip install -r system/requirements.txt
 endif
 
-system-test: install system/env
+system-test: install system/env  ## Run system tests in github CI
 ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
 	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
@@ -61,7 +61,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
-docker-test: install
+docker-test: install  ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
 	go test -v -coverpkg="./..." -c -tags testruncli
@@ -71,7 +71,7 @@ docker-test: install
 	export APTLY_VERSION=$(VERSION); \
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:
+test:  ## Run unit tests
 	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
 	@system/t13_etcd/start-etcd.sh &
 	@echo Running go test
@@ -107,7 +107,7 @@ man:  ## Create man pages
 version:  ## Print aptly version
 	@echo $(VERSION)
 
-build:
+build:  ## Build aptly
 	go mod tidy
 	go generate
 	go build -o build/aptly
