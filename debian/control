@@ -56,8 +56,14 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, adduser
 Description: Debian repository management tool
  aptly is a Swiss army knife for Debian repository management.
 
+Package: aptly-dbg
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Debian repository management tool (debug files)
+ Debug symbols for aptly
+
 Package: aptly-api
 Architecture: all
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: aptly Debian repository management server
+Description: Debian repository management tool (REST API server)
  systemd service and configuration for aptly
