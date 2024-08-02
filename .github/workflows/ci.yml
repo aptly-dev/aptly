@@ -76,7 +76,7 @@ jobs:
           AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
         run: |
           sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make
+          COVERAGE_DIR=${{ runner.temp }} make all
 
       - name: Merge code coverage
         run: |
