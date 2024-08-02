@@ -2,7 +2,7 @@
 
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
 
-The following is a set of guidelines for contributing to [aptly](https://github.com/smira/aplty) and related repositories, which are hosted in the [aptly-dev Organization](https://github.com/aptly-dev) on GitHub.
+The following is a set of guidelines for contributing to [aptly](https://github.com/aptly-dev/aplty) and related repositories, which are hosted in the [aptly-dev Organization](https://github.com/aptly-dev) on GitHub.
 These are just guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 ## What should I know before I get started?
@@ -11,7 +11,7 @@ These are just guidelines, not rules. Use your best judgment, and feel free to p
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
-Please report unacceptable behavior to [aptlypublic@gmail.com](mailto:aptlypublic@gmail.com).
+Please report unacceptable behavior on [https://github.com/aptly-dev/aptly/discussions](https://github.com/aptly-dev/aptly/discussions)
 
 ### List of Repositories
 
