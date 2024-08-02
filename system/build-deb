@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+usermod -u `stat -c %u /work/src` aptly >/dev/null
+chown -R `stat -c %u /work/src` /var/lib/aptly
+
+
+su aptly -c 'set -e; cd /work/src;
+GOPATH=$PWD/.go go generate -v
+DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
+dpkg-buildpackage -us -uc -b -d --host-arch=amd64
+dpkg-buildpackage -us -uc -b -d --host-arch=i386
+dpkg-buildpackage -us -uc -b -d --host-arch=arm64
+dpkg-buildpackage -us -uc -b -d --host-arch=armhf
+mkdir -p build && mv ../*.deb build/
+cd build && ls -l *.deb
+'

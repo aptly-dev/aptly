@@ -1,7 +1,5 @@
-GOVERSION=$(shell go version | awk '{print $$3;}')
 GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make version)
-PACKAGES=context database deb files gpg http query swift s3 utils
 PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
@@ -60,9 +58,10 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
-docker-test: install  ## Run system tests
+docker-test: ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
+	go generate
 	go test -v -coverpkg="./..." -c -tags testruncli
 	@echo Running python tests ...
 	@test -e aws.creds && . ./aws.creds; \
@@ -119,14 +118,17 @@ build:  ## Build aptly
 	go generate
 	go build -o build/aptly
 
-docker-build-aptly-dev:  ## Build aptly-dev docker image
+docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd make build
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd make build
 
 docker-aptly:  ## Build and run aptly commands in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
+
+docker-deb:  ## Build debian packages in docker container
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/build-deb
 
 docker-unit-tests:  ## Run unit tests in docker container
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
@@ -137,11 +139,11 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
-flake8:  ## run flak8 on system tests
+flake8:  ## run flake8 on system tests
 	flake8 system
 
 clean:  ## remove local build and module cache
-	test -f .go/ && chmod u+w -R .go/; rm -rf .go/
-	rm -rf build/
+	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
+	rm -rf build/ docs/ obj-x86_64-linux-gnu/
 
 .PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
