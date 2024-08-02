@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // ConfigStructure is structure of main configuration
@@ -208,4 +209,9 @@ func SaveConfig(filename string, config *ConfigStructure) error {
 
 	_, err = f.Write(encoded)
 	return err
+}
+
+// GetRootDir returns the RootDir with expanded ~ as home directory
+func (conf *ConfigStructure) GetRootDir() string {
+	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
 }

@@ -29,7 +29,7 @@ func aptlyServe(cmd *commander.Command, args []string) error {
 	// anything else must fail.
 	// E.g.: Running the service under a different user may lead to a rootDir
 	// that exists but is not usable due to access permissions.
-	err = utils.DirIsAccessible(context.Config().RootDir)
+	err = utils.DirIsAccessible(context.Config().GetRootDir())
 	if err != nil {
 		return err
 	}
