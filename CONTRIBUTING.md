@@ -152,6 +152,10 @@ In order to run aptly unit tests, run:
 make docker-lint
 ```
 
+#### More info
+
+Run `make help` for more information.
+
 
 ### Local Development Setup
 
