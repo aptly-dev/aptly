@@ -66,3 +66,7 @@ debian/aptly-api/
 debian/aptly-api.debhelper.log
 debian/aptly-api.postrm.debhelper
 debian/aptly-api.substvars
+debian/aptly-dbg.debhelper.log
+debian/aptly-dbg.substvars
+debian/aptly-dbg/
+
