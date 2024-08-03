@@ -96,12 +96,11 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 				Fatal(err)
 			}
 		} else {
-			configLocations := []string{
-				filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
-				"/etc/aptly.conf",
-			}
+			homeLocation := filepath.Join(os.Getenv("HOME"), ".aptly.conf")
+			configLocations := []string{ homeLocation, "/etc/aptly.conf", }
 
 			for _, configLocation := range configLocations {
+				// FIXME: check if exists, check if readable
 				err = utils.LoadConfig(configLocation, &utils.Config)
 				if err == nil {
 					break
@@ -112,7 +111,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
+				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", homeLocation)
 
 				// as this is fresh aptly installation, we don't need to support legacy pool locations
 				utils.Config.SkipLegacyPool = true

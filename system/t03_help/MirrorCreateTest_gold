@@ -5,7 +5,7 @@ aptly mirror create - create new mirror
 
 Options:
   -architectures="": list of architectures to consider during (comma-separated), default to all available
-  -config="": location of configuration file (default locations are /etc/aptly.conf, ~/.aptly.conf)
+  -config="": location of configuration file (default locations in order: ~/.aptly.conf, /usr/local/etc/aptly.conf, /etc/aptly.conf)
   -db-open-attempts=10: number of attempts to open DB if it's locked by other instance
   -dep-follow-all-variants: when processing dependencies, follow a & b if dependency is 'a|b'
   -dep-follow-recommends: when processing dependencies, follow Recommends
