@@ -175,6 +175,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 
 		retValue, _ := context.TaskList().GetTaskReturnValueByID(task.ID)
 		err, _ := context.TaskList().GetTaskErrorByID(task.ID)
+		context.TaskList().DeleteTaskByID(task.ID)
 		if err != nil {
 			AbortWithJSONError(c, retValue.Code, err)
 			return
