@@ -304,7 +304,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 				Bucket: aws.String(storage.bucket),
 				Delete: &types.Delete{
 					Objects: paths,
-					Quiet:   aws.Bool(true),
+					Quiet:   true,
 				},
 			}
 
@@ -408,11 +408,10 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 		prefix += "/"
 	}
 
-	maxKeys := int32(1000)
 	params := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(storage.bucket),
 		Prefix:  aws.String(prefix),
-		MaxKeys: &maxKeys,
+		MaxKeys: 1000,
 	}
 
 	p := s3.NewListObjectsV2Paginator(storage.s3, params)
