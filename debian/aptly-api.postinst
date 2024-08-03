@@ -28,8 +28,15 @@ case "$1" in
         fi
 
         # set config file permissions not world readable as it may contain secrets
-        chown root:aptly /etc/aptly.conf
+        chown root:aptly-api /etc/aptly.conf
         chmod 640 /etc/aptly.conf
+
+	# move existing aptly files in /var/lib/aptly-api/* to /var/lib/aptly-api/.aptly/
+	if [ ! -e /var/lib/aptly-api/.aptly ]; then
+            mkdir -p /var/lib/aptly-api/.aptly
+	    chown aptly-api:aptly-api /var/lib/aptly-api/.aptly
+            test -d /var/lib/aptly-api/db && mv /var/lib/aptly-api/db /var/lib/aptly-api/.aptly/db
+	fi
   ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
