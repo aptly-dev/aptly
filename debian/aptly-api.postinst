@@ -35,7 +35,8 @@ case "$1" in
 	if [ ! -e /var/lib/aptly-api/.aptly ]; then
             mkdir -p /var/lib/aptly-api/.aptly
 	    chown aptly-api:aptly-api /var/lib/aptly-api/.aptly
-            test -d /var/lib/aptly-api/db && mv /var/lib/aptly-api/db /var/lib/aptly-api/.aptly/db
+            test -d /var/lib/aptly-api/db && mv /var/lib/aptly-api/db /var/lib/aptly-api/.aptly/
+            test -d /var/lib/aptly-api/pool && mv /var/lib/aptly-api/pool /var/lib/aptly-api/.aptly/
 	fi
   ;;
 
