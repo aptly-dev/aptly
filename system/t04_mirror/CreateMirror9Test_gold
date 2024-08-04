@@ -1,5 +1,4 @@
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch-backports/InRelease
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
 gpgv: Signature made Thu Mar 30 14:21:34 2023 UTC
 gpgv:                using RSA key 0146DC6D4A0B2914BDED34DB648ACFD622F3D138
 gpgv: Good signature from "Debian Archive Automatic Signing Key (10/buster) <ftpmaster@debian.org>"

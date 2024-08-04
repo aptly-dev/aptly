@@ -39,6 +39,7 @@ upload()
     done
     echo
 }
+
 cleanup() {
     echo "\nCleanup..."
     curl -fsS -X DELETE  -u $aptly_user:$aptly_password ${aptly_api}/api/files/$folder

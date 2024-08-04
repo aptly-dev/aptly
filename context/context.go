@@ -96,12 +96,11 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 				Fatal(err)
 			}
 		} else {
-			configLocations := []string{
-				filepath.Join(os.Getenv("HOME"), ".aptly.conf"),
-				"/etc/aptly.conf",
-			}
+			homeLocation := filepath.Join(os.Getenv("HOME"), ".aptly.conf")
+			configLocations := []string{homeLocation, "/etc/aptly.conf"}
 
 			for _, configLocation := range configLocations {
+				// FIXME: check if exists, check if readable
 				err = utils.LoadConfig(configLocation, &utils.Config)
 				if err == nil {
 					break
@@ -112,7 +111,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", configLocations[0])
+				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", homeLocation)
 
 				// as this is fresh aptly installation, we don't need to support legacy pool locations
 				utils.Config.SkipLegacyPool = true
@@ -275,7 +274,7 @@ func (context *AptlyContext) DBPath() string {
 
 // DBPath builds path to database
 func (context *AptlyContext) dbPath() string {
-	return filepath.Join(context.config().RootDir, "db")
+	return filepath.Join(context.config().GetRootDir(), "db")
 }
 
 // Database opens and returns current instance of database
@@ -406,7 +405,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 	publishedStorage, ok := context.publishedStorages[name]
 	if !ok {
 		if name == "" {
-			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().RootDir, "public"), "hardlink", "")
+			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
@@ -464,7 +463,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 
 // UploadPath builds path to upload storage
 func (context *AptlyContext) UploadPath() string {
-	return filepath.Join(context.Config().RootDir, "upload")
+	return filepath.Join(context.Config().GetRootDir(), "upload")
 }
 
 func (context *AptlyContext) pgpProvider() string {

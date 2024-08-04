@@ -1,8 +1,5 @@
-GOVERSION=$(shell go version | awk '{print $$3;}')
 GOPATH=$(shell go env GOPATH)
-TAG="$(shell git describe --tags --always)"
-VERSION=$(shell echo $(TAG) | sed 's@^v@@' | sed 's@-@+@g' | tr -d '\n')
-PACKAGES=context database deb files gpg http query swift s3 utils
+VERSION=$(shell make version)
 PYTHON?=python3
 TESTS?=
 BINPATH?=$(GOPATH)/bin
@@ -17,12 +14,13 @@ COVERAGE_DIR?=$(shell mktemp -d)
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-all: modules test bench check system-test
+all: prepare test bench check system-test
 
-modules:  ## Install go module dependencies
+prepare:  ## Install go module dependencies
 	go mod download
 	go mod verify
 	go mod tidy -v
+	go generate
 
 dev:
 	PATH=$(BINPATH)/:$(PATH)
@@ -61,7 +59,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
-docker-test: install  ## Run system tests
+docker-test: ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
 	go test -v -coverpkg="./..." -c -tags testruncli
@@ -71,12 +69,16 @@ docker-test: install  ## Run system tests
 	export APTLY_VERSION=$(VERSION); \
 	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
-test:  ## Run unit tests
+test: prepare  ## Run unit tests
 	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	@system/t13_etcd/start-etcd.sh &
-	@echo Running go test
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out
-	@kill `cat /tmp/etcd.pid`
+	@echo "\nStarting etcd ..."
+	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
+	@echo "\nRunning go test ..."
+	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
+	@echo "\nStopping etcd ..."
+	@pid=`cat /tmp/etcd.pid`; kill $$pid
+	@rm -f /tmp/etcd-data/etcd.log
+	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
 
 bench:
 	go test -v ./deb -run=nothing -bench=. -benchmem
@@ -92,34 +94,43 @@ goxc: dev
 	cp completion.d/aptly root/etc/bash_completion.d/
 	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
 	gzip root/usr/share/man/man1/aptly.1
-	go generate
-	goxc -pv=$(VERSION) -max-processors=2 $(GOXC_OPTS)
+	GOPATH=$(PWD)/.go go generate
+	GOPATH=$(PWD)/.go goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
 
-release: GOXC_OPTS=-tasks-=bintray,go-vet,go-test,rmbin
+release: GOXC_OPTS=-tasks-=go-vet,go-test,rmbin
 release: goxc
 	rm -rf build/
 	mkdir -p build/
 	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
+	ls -l build/
 
 man:  ## Create man pages
 	make -C man
 
 version:  ## Print aptly version
-	@echo $(VERSION)
+	@if which dpkg-parsechangelog > /dev/null 2>&1; then \
+		if git describe --exact-match --tags HEAD >/dev/null 2>&1; then \
+			dpkg-parsechangelog -S Version; \
+		else \
+			echo `dpkg-parsechangelog -S Version`+`git describe --tags | cut -d - -f2- | sed s/-/+/g`; \
+		fi \
+	else \
+		git describe --tags --always | sed 's@^v@@' | sed 's@-@+@g'; \
+	fi
 
 build:  ## Build aptly
 	go mod tidy
 	go generate
 	go build -o build/aptly
 
-docker-build-aptly-dev:  ## Build aptly-dev docker image
+docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd make build
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd make build
 
 docker-aptly:  ## Build and run aptly commands in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
 
 docker-unit-tests:  ## Run unit tests in docker container
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
@@ -130,11 +141,11 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
-flake8:  ## run flak8 on system tests
+flake8:  ## run flake8 on system tests
 	flake8 system
 
 clean:  ## remove local build and module cache
-	test -f .go/ && chmod u+w -R .go/; rm -rf .go/
-	rm -rf build/
+	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
+	rm -rf build/ docs/ obj-x86_64-linux-gnu/
 
-.PHONY: help man modules version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
+.PHONY: help man prepare version release goxc docker-image docker-system-tests docker-unit-tests docker-lint docker-build docker-aptly clean build

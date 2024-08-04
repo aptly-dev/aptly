@@ -23,4 +23,3 @@ Packages filtered: 110 -> 11.
 gpgv:                using RSA key 7BA040A510E4E66ED3743EC1B8F25A8A73EACF41
 gpgv: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"
 gpgv: Signature made Thu Nov  2 07:43:52 2023 UTC
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'

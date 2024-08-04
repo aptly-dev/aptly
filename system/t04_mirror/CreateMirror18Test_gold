@@ -1,5 +1,4 @@
 Downloading: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/InRelease
-gpgv: can't allocate lock for '/home/runner/.gnupg/ppa.gpg'
 gpgv: Signature made Sun Jul 28 07:57:01 2024 UTC
 gpgv:                using RSA key 5BFCD481D86D5824470E469F9000B1C3A01F726C
 gpgv: Good signature from "Launchpad PPA for Anton Gladky"
