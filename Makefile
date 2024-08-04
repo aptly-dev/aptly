@@ -59,7 +59,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
-docker-test: install  ## Run system tests
+docker-test: ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
 	go test -v -coverpkg="./..." -c -tags testruncli
