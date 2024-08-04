@@ -123,7 +123,7 @@ build:  ## Build aptly
 	go generate
 	go build -o build/aptly
 
-docker-build-aptly-dev:  ## Build aptly-dev docker image
+docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
@@ -148,4 +148,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
 	rm -rf build/ docs/ obj-x86_64-linux-gnu/
 
-.PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build docker-aptly clean build
+.PHONY: help man prepare version release goxc docker-image docker-system-tests docker-unit-tests docker-lint docker-build docker-aptly clean build

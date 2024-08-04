@@ -103,9 +103,9 @@ Install the following on your development machine:
 
 #### Create docker container
 
-To build the development docker container, run:
+To build the development docker image, run:
 ```
-make docker-build-aptly-dev
+make docker-image
 ```
 
 #### Build aptly
