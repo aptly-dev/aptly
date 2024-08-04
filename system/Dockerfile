@@ -9,15 +9,13 @@ RUN mkdir /work
 WORKDIR /work
 RUN chown aptly /work
 
-RUN mkdir /home/runner
-RUN chown aptly /home/runner
-RUN cd /home/runner; git clone https://github.com/aptly-dev/aptly-fixture-db.git
-RUN cd /home/runner; git clone https://github.com/aptly-dev/aptly-fixture-pool.git
-RUN cd /home/runner; curl -O http://repo.aptly.info/system-tests/etcd.db
+RUN cd /var/lib/aptly; git clone https://github.com/aptly-dev/aptly-fixture-db.git
+RUN cd /var/lib/aptly; git clone https://github.com/aptly-dev/aptly-fixture-pool.git
+RUN cd /var/lib/aptly; curl -O http://repo.aptly.info/system-tests/etcd.db
 RUN echo "aptly ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/aptly
 ADD . /src
 RUN chown aptly -R /src
-RUN cd /src; su aptly -c "HOME=/home/runner go mod tidy"
+RUN cd /src; su aptly -c "go mod download"
 RUN /src/system/t13_etcd/install-etcd.sh
 RUN rm -rf /src
 
