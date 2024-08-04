@@ -29,4 +29,3 @@ gpgv: Signature made Sat Aug 14 07:43:24 2021 UTC
 gpgv: Signature made Sat Aug 14 07:43:25 2021 UTC
 gpgv: Signature made Sat Aug 14 08:26:43 2021 UTC
 gpgv: Signature made Sat Aug 14 08:46:19 2021 UTC
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
