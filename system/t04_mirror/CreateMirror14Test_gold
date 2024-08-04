@@ -1,5 +1,4 @@
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/InRelease
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
 gpgv: Signature made Thu Nov  2 07:43:52 2023 UTC
 gpgv:                using RSA key 7BA040A510E4E66ED3743EC1B8F25A8A73EACF41
 gpgv: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"

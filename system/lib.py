@@ -275,6 +275,7 @@ class BaseTest(object):
         if self.fixtureGpg:
             self.run_cmd([self.gpgFinder.gpg, "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +
                          [os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files", key) for key in self.fixtureGpgKeys])
+            self.run_cmd(["chmod", "400", "/home/runner/.gnupg/aptlytest.gpg"])
 
         if hasattr(self, "fixtureCmds"):
             for cmd in self.fixtureCmds:
