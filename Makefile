@@ -127,7 +127,7 @@ docker-build-aptly-dev:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-aptly-cmd make build
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd make build
 
 docker-aptly:  ## Build and run aptly commands in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
@@ -145,7 +145,7 @@ flake8:  ## run flake8 on system tests
 	flake8 system
 
 clean:  ## remove local build and module cache
-	test -f .go/ && chmod u+w -R .go/; rm -rf .go/
+	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
 	rm -rf build/
 
-.PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
+.PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build docker-aptly clean build
