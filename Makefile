@@ -146,6 +146,6 @@ flake8:  ## run flake8 on system tests
 
 clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/
-	rm -rf build/
+	rm -rf build/ docs/
 
 .PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build docker-aptly clean build
