@@ -4,7 +4,6 @@ Retrying 0 http://repo.aptly.info/system-tests/pkg.jenkins.io/debian-stable/bina
 Download Error: http://repo.aptly.info/system-tests/pkg.jenkins.io/debian-stable/binary/InRelease
 Downloading: http://repo.aptly.info/system-tests/pkg.jenkins.io/debian-stable/binary/Release
 Downloading: http://repo.aptly.info/system-tests/pkg.jenkins.io/debian-stable/binary/Release.gpg
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
 gpgv: Signature made Wed Dec 13 17:19:55 2023 UTC
 gpgv:                using RSA key 63667EE74BBA1F0A08A698725BA31D57EF5975CA
 gpgv: Good signature from "Jenkins Project <jenkinsci-board@googlegroups.com>"

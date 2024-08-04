@@ -20,4 +20,3 @@ gpgv: Good signature from "Debian Security Archive Automatic Signing Key (10/bus
 gpgv: Good signature from "Debian Security Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"
 gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
 gpgv: Signature made Sat Feb 18 04:22:45 2023 UTC
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'

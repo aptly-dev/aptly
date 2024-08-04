@@ -4,7 +4,6 @@ Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive
 Download Error: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release.gpg
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
 gpgv: Signature made Sat Aug 14 07:43:24 2021 UTC
 gpgv:                using RSA key 16E90B3FDF65EDE3AA7F323C04EE7237B7D453EC
 gpgv: Good signature from "Debian Archive Automatic Signing Key (9/stretch) <ftpmaster@debian.org>"

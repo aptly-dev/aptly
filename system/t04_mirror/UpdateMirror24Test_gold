@@ -69,5 +69,3 @@ gpgv: Signature made Thu May  8 14:20:33 2014 UTC
 gpgv: Signature made Thu May  8 14:20:33 2014 UTC
 gpgv: Signature made Tue Apr 15 22:05:21 2014 UTC
 gpgv: Signature made Tue Apr 15 22:05:21 2014 UTC
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
-gpgv: can't allocate lock for '/home/runner/.gnupg/aptlytest.gpg'
