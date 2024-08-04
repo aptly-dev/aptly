@@ -1,4 +1,4 @@
-opengpg: failure opening keyring '/home/runner/.gnupg/aptlytest.gpg': open /home/runner/.gnupg/aptlytest.gpg: no such file or directory
+opengpg: failure opening keyring '${HOME}/.gnupg/aptlytest.gpg': open ${HOME}/.gnupg/aptlytest.gpg: no such file or directory
 
 Looks like your keyring with trusted keys is empty. You might consider importing some keys.
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
