@@ -3,7 +3,6 @@ package deb
 import (
 	gocontext "context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -339,6 +338,20 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 	return p.Architecture == arch
 }
 
+func JoinErrors(errs ...error) error {
+	var combinedErr error
+	for _, err := range errs {
+		if err != nil {
+			if combinedErr == nil {
+				combinedErr = err
+			} else {
+				combinedErr = fmt.Errorf("%w\n%v", combinedErr, err)
+			}
+		}
+	}
+	return combinedErr
+}
+
 // providesDependency checks if the package `Provide:`s the dependency, assuming that the architecture matches.
 // If the `Provides:` entry includes a version number, it will be considered when checking the dependency.
 func (p *Package) providesDependency(dep Dependency) (bool, error) {
@@ -368,7 +381,7 @@ func (p *Package) providesDependency(dep Dependency) (bool, error) {
 			errs = append(errs, fmt.Errorf("unsupported relation in Provides: %s", providedDep.String()))
 		}
 	}
-	return false, errors.Join(errs...)
+	return false, JoinErrors(errs...)
 }
 
 // MatchesDependency checks whether package matches specified dependency
