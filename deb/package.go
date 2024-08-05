@@ -3,6 +3,7 @@ package deb
 import (
 	gocontext "context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -341,10 +342,11 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 // providesDependency checks if the package `Provide:`s the dependency, assuming that the architecture matches.
 // If the `Provides:` entry includes a version number, it will be considered when checking the dependency.
 func (p *Package) providesDependency(dep Dependency) (bool, error) {
+	var errs []error // won't cause an allocation in case of no errors
 	for _, provided := range p.Provides {
 		providedDep, err := ParseDependency(provided)
 		if err != nil {
-			return false, err
+			errs = append(errs, err)
 		}
 		// The only relation allowed here is `=`.
 		// > The relations allowed are [...]. The exception is the Provides field, for which only = is allowed.
@@ -363,10 +365,10 @@ func (p *Package) providesDependency(dep Dependency) (bool, error) {
 				return true, nil
 			}
 		default:
-			return false, fmt.Errorf("unsupported relation in Provides: %s", providedDep.String())
+			errs = append(errs, fmt.Errorf("unsupported relation in Provides: %s", providedDep.String()))
 		}
 	}
-	return false, nil
+	return false, errors.Join(errs...)
 }
 
 // MatchesDependency checks whether package matches specified dependency
