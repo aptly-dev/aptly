@@ -333,9 +333,12 @@ func (s *PackageSuite) TestMatchesDependency(c *C) {
 
 	// Provides
 	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Relation: VersionDontCare}), Equals, false)
-	p.Provides = []string{"fun", "game"}
+	p.Provides = []string{"fun (= 42)", "game"}
 	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Relation: VersionDontCare}), Equals, true)
 	c.Check(p.MatchesDependency(Dependency{Pkg: "game", Architecture: "amd64", Relation: VersionDontCare}), Equals, false)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "fun", Relation: VersionDontCare}), Equals, true)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "fun", Relation: VersionGreaterOrEqual, Version: "42"}), Equals, true)
+	c.Check(p.MatchesDependency(Dependency{Pkg: "fun", Relation: VersionLess, Version: "42"}), Equals, false)
 }
 
 func (s *PackageSuite) TestGetDependencies(c *C) {
