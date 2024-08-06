@@ -10,6 +10,7 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
+	"github.com/rs/zerolog/log"
 )
 
 // Package is single instance of Debian package
@@ -390,7 +391,11 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 		return false
 	}
 
-	if providesDep, _ := p.providesDependency(dep); providesDep { // Is ignoring errors the right thing to do here?
+	providesDep, err := p.providesDependency(dep)
+	if err != nil {
+		log.Warn().Err(err).Msg("Error while checking if package provides dependency")
+	}
+	if providesDep {
 		return true
 	}
 
