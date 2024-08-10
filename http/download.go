@@ -46,24 +46,22 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 	transport.RegisterProtocol("ftp", &protocol.FTPRoundTripper{})
 
 	downloader := &downloaderImpl{
-		progress: progress,
-		maxTries: maxTries,
+		progress:  progress,
+		maxTries:  maxTries,
+		aggWriter: io.Writer(progress),
 		client: &http.Client{
 			Transport: &transport,
 		},
 	}
 
-	progressWriter := io.Writer(progress)
 	if progress == nil {
-		progressWriter = io.Discard
+		downloader.aggWriter = io.Discard
+	}
+	if downLimit > 0 {
+		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
 	}
 
 	downloader.client.CheckRedirect = downloader.checkRedirect
-	if downLimit > 0 {
-		downloader.aggWriter = flowrate.NewWriter(progressWriter, downLimit)
-	} else {
-		downloader.aggWriter = progressWriter
-	}
 
 	return downloader
 }
@@ -260,11 +258,7 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 	defer outfile.Close()
 
 	checksummer := utils.NewChecksumWriter()
-	writers := []io.Writer{outfile}
-
-	if downloader.progress != nil {
-		writers = append(writers, downloader.progress)
-	}
+	writers := []io.Writer{outfile, downloader.aggWriter}
 
 	if expected != nil {
 		writers = append(writers, checksummer)
