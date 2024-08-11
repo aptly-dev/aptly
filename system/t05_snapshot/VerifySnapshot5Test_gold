@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (1622):
+Missing dependencies (1621):
   915resolution [i386]
   9fonts [i386]
   abakus [i386]
@@ -627,7 +627,6 @@ Missing dependencies (1622):
   libdeal.ii-dev [i386]
   libdigest-cmac-perl [i386]
   libdrmaa1.0 [i386]
-  libdspam7-drv (= 3.10.1+dfsg-11) [i386]
   libdvdcss [i386]
   libdvdcss-dev [i386]
   libdvdcss2 [i386]
