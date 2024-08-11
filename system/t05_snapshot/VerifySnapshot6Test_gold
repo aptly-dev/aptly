@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (3797):
+Missing dependencies (3787):
   915resolution [amd64]
   915resolution [i386]
   9fonts [amd64]
@@ -1213,8 +1213,6 @@ Missing dependencies (3797):
   jabber [i386]
   jamnntpd [amd64]
   jamnntpd [i386]
-  java-gcj-compat (>= 1.0.69) [amd64]
-  java-gcj-compat (>= 1.0.69) [i386]
   jbibtex [amd64]
   jbibtex [i386]
   jbibtex-bin [amd64]
@@ -1526,8 +1524,6 @@ Missing dependencies (3797):
   libdigest-cmac-perl [i386]
   libdrmaa1.0 [amd64]
   libdrmaa1.0 [i386]
-  libdspam7-drv (= 3.10.1+dfsg-11) [amd64]
-  libdspam7-drv (= 3.10.1+dfsg-11) [i386]
   libdvdcss [amd64]
   libdvdcss [i386]
   libdvdcss-dev [amd64]
@@ -1606,8 +1602,6 @@ Missing dependencies (3797):
   libint [i386]
   libjai-imageio-core-java [amd64]
   libjai-imageio-core-java [i386]
-  libjakarta-poi-java (>= 3.2) [amd64]
-  libjakarta-poi-java (>= 3.2) [i386]
   libjavascript-perl [amd64]
   libjavascript-perl [i386]
   libjdom-java [amd64]
@@ -2311,8 +2305,6 @@ Missing dependencies (3797):
   mummergpu [i386]
   murasaki [amd64]
   murasaki [i386]
-  musixlyr (>= 1.10-4) [amd64]
-  musixlyr (>= 1.10-4) [i386]
   musmap [amd64]
   musmap [i386]
   mview [amd64]
@@ -2958,8 +2950,6 @@ Missing dependencies (3797):
   python-celementtree [i386]
   python-clips [amd64]
   python-clips [i386]
-  python-ctypes (>= 1.0.1) [amd64]
-  python-ctypes (>= 1.0.1) [i386]
   python-dev-all (>= 2.6) [amd64]
   python-dev-all (>= 2.6) [i386]
   python-elemental [amd64]
