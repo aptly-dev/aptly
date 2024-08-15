@@ -58,7 +58,7 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 		downloader.aggWriter = io.Discard
 	}
 	if downLimit > 0 {
-		downloader.aggWriter = flowrate.NewWriter(progress, downLimit)
+		downloader.aggWriter = flowrate.NewWriter(downloader.aggWriter, downLimit)
 	}
 
 	downloader.client.CheckRedirect = downloader.checkRedirect
