@@ -24,7 +24,7 @@ case "$1" in
   configure)
 	# create an aptly group and user
         if ! getent passwd aptly-api > /dev/null; then
-	    useradd --system --user-group --shell /bin/bash --create-home --home-dir /var/lib/aptly-api aptly-api
+	    useradd --system --user-group --create-home --home-dir /var/lib/aptly-api aptly-api
         fi
 
         # set config file permissions not world readable as it may contain secrets
