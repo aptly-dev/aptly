@@ -78,6 +78,11 @@ jobs:
           sudo mkdir -p /srv ; sudo chown runner /srv
           COVERAGE_DIR=${{ runner.temp }} make all
 
+      - name: "Install Go 1.22 for merging coverage"
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.22
+
       - name: Merge code coverage
         run: |
           go install github.com/wadey/gocovmerge@latest
