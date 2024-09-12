@@ -133,6 +133,9 @@ docker-build:  ## Build aptly in docker container
 docker-aptly:  ## Build and run aptly commands in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
 
+docker-deb:  ## Build debian packages in docker container
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/build-deb
+
 docker-unit-tests:  ## Run unit tests in docker container
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
 
