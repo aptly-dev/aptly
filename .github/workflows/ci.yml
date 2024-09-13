@@ -165,7 +165,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          ./upload-artifacts.sh nightly ${{ matrix.suite }}
+          ./upload-artifacts.sh ci ${{ matrix.suite }}
 
       - name: "Publish release to aptly"
         if: startsWith(github.event.ref, 'refs/tags')
