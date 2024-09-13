@@ -18,12 +18,25 @@ usage() {
     echo "       $0 release" >&2
 }
 
+# repos and publish must be created before using this script:
+#!/bin/sh
+#
+#for dist in buster bullseye bookworm focal jammy
+#do
+#    aptly repo create -distribution=$dist -component=main aptly-ci-$dist
+#    aptly publish repo -multi-dist -architectures="amd64,i386,arm64,armhf" -acquire-by-hash \
+#                       -component=main -distribution=$dist -batch -keyring=aptly.pub aptly-ci-$dist \
+#                       s3:repo.aptly.info:ci
+#done
+
+
+
 if [ -z "$action" ]; then
     usage
     exit 1
 fi
 
-if [ "action" = "nightly" ] && [ -z "$dist" ]; then
+if [ "action" = "ci" ] && [ -z "$dist" ]; then
     usage
     exit 1
 fi
@@ -47,14 +60,38 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ "$action" = "nightly" ]; then
+if [ "$action" = "ci" ]; then
     if echo "$version" | grep -vq "+"; then
-       # skip nightly when on release tag
+       # skip ci when on release tag
        exit 0
     fi
 
-    aptly_repository=aptly-nightly-$dist
-    aptly_published=s3:repo.aptly.info:nightly-$dist
+    aptly_repository=aptly-ci-$dist
+    aptly_published=s3:repo.aptly.info:ci
+
+elif [ "$action" = "release" ]; then
+    aptly_repository=aptly-release-$dist
+    aptly_published=s3:repo.aptly.info:release
+fi
+
+upload
+
+echo "\nAdding packages to $aptly_repository ..."
+curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder
+echo
+
+echo "\nUpdating published repo $aptly_published ..."
+curl -fsS -X PUT -H 'Content-Type: application/json' --data \
+    '{"AcquireByHash": true, "MultiDist": true,
+      "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub", "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
+    -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published/$dist
+echo
+
+if [ $dist = "focal" ]; then
+    echo "\nUpdating legacy nightly repo..."
+
+    aptly_repository=aptly-nightly
+    aptly_published=s3:repo.aptly.info:./nightly
 
     upload
 
@@ -64,33 +101,13 @@ if [ "$action" = "nightly" ]; then
 
     echo "\nUpdating published repo $aptly_published ..."
     curl -fsS -X PUT -H 'Content-Type: application/json' --data \
-        '{"AcquireByHash": true,
-          "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub", "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
-        -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published/$dist
+        '{"AcquireByHash": true, "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub",
+                                             "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
+        -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published
     echo
-
-    if [ $dist = "focal" ]; then
-        echo "\nUpdating legacy nightly repo..."
-
-        aptly_repository=aptly-nightly
-        aptly_published=s3:repo.aptly.info:./nightly
-
-        upload
-
-        echo "\nAdding packages to $aptly_repository ..."
-        curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder
-        echo
-
-        echo "\nUpdating published repo $aptly_published ..."
-        curl -fsS -X PUT -H 'Content-Type: application/json' --data \
-            '{"AcquireByHash": true, "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub",
-                                                 "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
-            -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$aptly_published
-        echo
-    fi
 fi
 
-if [ "$1" = "release" ]; then
+if [ "$action" = "OBSOLETErelease" ]; then
     aptly_repository=aptly-release
     aptly_snapshot=aptly-$version
     aptly_published=s3:repo.aptly.info:./squeeze
