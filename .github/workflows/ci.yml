@@ -131,7 +131,7 @@ jobs:
       - name: "Install packages"
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Checkout repository"
@@ -164,7 +164,7 @@ jobs:
           cd build && ls -l *.deb
 
       - name: "Publish CI release to aptly"
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
