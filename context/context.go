@@ -97,7 +97,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 		} else {
 			homeLocation := filepath.Join(os.Getenv("HOME"), ".aptly.conf")
-			configLocations := []string{ homeLocation, "/etc/aptly.conf", }
+			configLocations := []string{homeLocation, "/usr/local/etc/aptly.conf", "/etc/aptly.conf"}
 
 			for _, configLocation := range configLocations {
 				// FIXME: check if exists, check if readable
