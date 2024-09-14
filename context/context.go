@@ -102,6 +102,9 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			for _, configLocation := range configLocations {
 				// FIXME: check if exists, check if readable
 				err = utils.LoadConfig(configLocation, &utils.Config)
+				if os.IsPermission(err) || os.IsNotExist(err) {
+					continue
+				}
 				if err == nil {
 					break
 				}
