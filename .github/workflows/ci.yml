@@ -94,23 +94,26 @@ jobs:
           files: coverage.txt
 
   ci-debian:
-    name: "CI Build (Deb)"
+    name: "CI Build"
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        name: ["Debian 12", "Debian 11", "Debian 10", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
+        name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
         include:
-          - name: "Debian 12"
+          - name: "Debian 13/testing"
+            suite: trixie
+            image: debian:trixie-slim
+          - name: "Debian 12/bookworm"
             suite: bookworm
-            image: debian:bookworm
-          - name: "Debian 10"
-            suite: buster
-            image: debian:buster
-          - name: "Debian 11"
+            image: debian:bookworm-slim
+          - name: "Debian 11/bullseye"
             suite: bullseye
-            image: debian:bullseye
+            image: debian:bullseye-slim
+          - name: "Debian 10/buster"
+            suite: buster
+            image: debian:buster-slim
           - name: "Ubuntu 24.04"
             suite: noble
             image: ubuntu:24.04
