@@ -28,7 +28,6 @@ jobs:
       BOTO_CONFIG: /dev/null
       GO111MODULE: "on"
       GOPROXY: "https://proxy.golang.org"
-      GOVER: '1.19'
 
     steps:
       - name: "Install packages"
@@ -42,10 +41,15 @@ jobs:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
+      - name: "Read go version from go.mod"
+        run: |
+          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+        id: goversion
+
       - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GOVER }}
+          go-version: ${{ steps.goversion.outputs.GOVER }}
 
       - name: "Get aptly version"
         run: |
@@ -101,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: ["Debian 12", "Debian 11", "Debian 10", "Ubuntu 22.04", "Ubuntu 20.04"]
+        name: ["Debian 12", "Debian 11", "Debian 10", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
         include:
           - name: "Debian 12"
             suite: bookworm
