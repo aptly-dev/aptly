@@ -14,7 +14,7 @@ action=$1
 dist=$2
 
 usage() {
-    echo "Usage: $0 ci buster|bullseye|bookworm|focal|jammy" >&2
+    echo "Usage: $0 ci buster|bullseye|bookworm|focal|jammy|noble" >&2
     echo "       $0 release" >&2
 }
 

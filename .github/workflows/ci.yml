@@ -116,6 +116,9 @@ jobs:
           - name: "Debian 11"
             suite: bullseye
             image: debian:bullseye
+          - name: "Ubuntu 24.04"
+            suite: noble
+            image: ubuntu:24.04
           - name: "Ubuntu 22.04"
             suite: jammy
             image: ubuntu:22.04
