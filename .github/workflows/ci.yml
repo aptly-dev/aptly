@@ -17,7 +17,7 @@ env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
-  build:
+  test:
     name: "System Tests (Ubuntu 22.04)"
     runs-on: ubuntu-22.04
     continue-on-error: false
@@ -93,9 +93,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.txt
 
-  ci-debian:
+  ci-debian-build:
     name: "CI Build"
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -180,17 +180,20 @@ jobs:
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
 
-  ci-other:
-    name: "CI Build (FreeBSD, MacOS, Linux)"
-    needs: build
+  ci-release-build:
+    name: "CI Build (Binary)"
+    needs: test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, freebsd, darwin]
+        goarch: ["386", "amd64", "arm", "arm64"]
+        exclude:
+          - goos: darwin
+            goarch: 386
+          - goos: darwin
+            goarch: arm
     steps:
-      - name: "Install packages"
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends make ca-certificates git curl devscripts
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
@@ -207,9 +210,40 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: "Build goxc packages"
+      - name: "Build packages for ${{ matrix.goos }} ${{ matrix.goarch }}"
         env:
           GOBIN: /usr/local/bin
         run: |
+          mkdir -p tmp/man tmp/completion/bash_completion.d tmp/completion/zsh/vendor-completions
           go version
-          make release
+          echo ${{ github.ref_name }} > VERSION
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o tmp/aptly -ldflags='-extldflags=-static'
+          cp man/aptly.1 tmp/man/
+          cp completion.d/aptly tmp/completion/bash_completion.d/
+          cp completion.d/_aptly tmp/completion/zsh/vendor-completions/
+          gzip tmp/man/aptly.1
+          path="aptly_${{ matrix.goos }}_${{ matrix.goarch }}"
+          mkdir -p $path
+          mv tmp "$path"
+          zip -r "$path" . -i "$path/*"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aptly_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          path: aptly_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+
+  gh-release:
+    name: "Github Release: ${{ github.ref_name }}"
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    needs: ci-release-build
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out/
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "out/**/aptly_*.zip"

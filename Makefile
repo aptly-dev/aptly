@@ -22,11 +22,6 @@ prepare:  ## Install go module dependencies
 	go mod tidy -v
 	go generate
 
-dev:
-	PATH=$(BINPATH)/:$(PATH)
-	go get github.com/laher/goxc
-	go install github.com/laher/goxc
-
 check: system/env
 ifeq ($(RUN_LONG_TESTS), yes)
 	system/env/bin/flake8
@@ -88,23 +83,6 @@ mem.png: mem.dat mem.gp
 	gnuplot mem.gp
 	open mem.png
 
-goxc: dev
-	rm -rf root/
-	mkdir -p root/usr/share/man/man1/ root/etc/bash_completion.d/ root/usr/share/zsh/vendor-completions/
-	cp man/aptly.1 root/usr/share/man/man1
-	cp completion.d/aptly root/etc/bash_completion.d/
-	cp completion.d/_aptly root/usr/share/zsh/vendor-completions/
-	gzip root/usr/share/man/man1/aptly.1
-	GOPATH=$(PWD)/.go go generate
-	GOPATH=$(PWD)/.go goxc -pv=$(VERSION) -max-processors=4 $(GOXC_OPTS)
-
-release: GOXC_OPTS=-tasks-=go-vet,go-test,rmbin
-release: goxc
-	rm -rf build/
-	mkdir -p build/
-	mv xc-out/$(VERSION)/aptly_$(VERSION)_* build/
-	ls -l build/
-
 man:  ## Create man pages
 	make -C man
 
@@ -153,4 +131,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
 
-.PHONY: help man prepare version release goxc docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
+.PHONY: help man prepare version release docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
