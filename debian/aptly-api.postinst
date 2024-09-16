@@ -30,6 +30,15 @@ case "$1" in
         # set config file permissions not world readable as it may contain secrets
         chown root:aptly-api /etc/aptly.conf
         chmod 640 /etc/aptly.conf
+
+        if [ -f /etc/aptly-api.conf.migrate ]; then
+            rootDir=`grep rootDir /etc/aptly-api.conf.migrate | sed 's_/var/lib/aptly-api_~_' | sed -n 's/.\+: "\([^"]\+\)".*/\1/p'`
+            if [ -n "$rootDir" ]; then
+                sed -i 's/\(.*"rootDir": "\)[^"]*\(".*\)/\1'$rootDir'\2/' /etc/aptly.conf
+            fi
+            echo "backing up /etc/aptly-api.conf to /etc/aptly-api.conf.old..."
+            mv /etc/aptly-api.conf.migrate /etc/aptly-api.conf.old
+        fi
   ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)

@@ -16,10 +16,8 @@ set -e
 case "$1" in
     install|upgrade)
 	if [ -f /etc/aptly-api.conf ]; then
-            echo "migrating /etc/aptly-api.conf to /etc/aptly.conf ..."
-	    cp /etc/aptly-api.conf /etc/aptly.conf
-	    mv /etc/aptly-api.conf /etc/aptly-api.conf.old
-	    sed -i 's_/var/lib/aptly-api_~/.aptly_' /etc/aptly.conf
+            echo "migrating /etc/aptly-api.conf ..."
+	    mv /etc/aptly-api.conf /etc/aptly-api.conf.migrate
 	fi
     ;;
 
