@@ -69,15 +69,25 @@ update_publish() {
           "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub", "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
         -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$_publish/$_dist?_async=true`
     _task_id=`echo $jsonret | jq .ID`
+    _success=0
     for t in `seq 180`
     do
         jsonret=`curl -fsS -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_task_id`
         _state=`echo $jsonret | jq .State`
         if [ "$_state" = "2" ]; then
+            _success=1
             break
+        fi
+        if [ "$_state" = "3" ]; then
+            echo Error: publish failed
+            exit 1
         fi
         sleep 1
     done
+    if [ "$_success" -ne 1 ]; then
+        echo "Error: publish failed (timeout)"
+        exit 1
+    fi
 }
 
 if [ "$action" = "ci" ]; then
