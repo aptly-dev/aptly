@@ -165,7 +165,7 @@ jobs:
           cd build && ls -l *.deb
 
       - name: "Publish CI release to aptly"
-        # if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
