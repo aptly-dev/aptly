@@ -109,11 +109,12 @@ man:  ## Create man pages
 	make -C man
 
 version:  ## Print aptly version
-	@if which dpkg-parsechangelog > /dev/null 2>&1; then \
-		if git describe --exact-match --tags HEAD >/dev/null 2>&1; then \
+	@ts=`TZ=UTC git show -s --format='%cd.%h' --date=format-local:'%Y%m%d%H%M%S'`; \
+	if which dpkg-parsechangelog > /dev/null 2>&1; then \
+		if [ -z "$$ts" ]; then \
 			dpkg-parsechangelog -S Version; \
 		else \
-			echo `dpkg-parsechangelog -S Version`+`git describe --tags | cut -d - -f2- | sed s/-/+/g`; \
+			echo `dpkg-parsechangelog -S Version`+$$ts; \
 		fi \
 	else \
 		git describe --tags --always | sed 's@^v@@' | sed 's@-@+@g'; \
