@@ -53,7 +53,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	cd /home/runner; curl -O http://repo.aptly.info/system-tests/etcd.db
+	cd /home/runner; curl -O http://repo.aptly.info/system-tests/etcd.db.xz; xz -d etcd.db.xz
 	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
