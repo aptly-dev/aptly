@@ -15,7 +15,7 @@ RUN chown aptly /work
 
 RUN cd /var/lib/aptly; git clone https://github.com/aptly-dev/aptly-fixture-db.git
 RUN cd /var/lib/aptly; git clone https://github.com/aptly-dev/aptly-fixture-pool.git
-RUN cd /var/lib/aptly; curl -O http://repo.aptly.info/system-tests/etcd.db
+RUN cd /var/lib/aptly; curl -O http://repo.aptly.info/system-tests/etcd.db.xz; xz -d etcd.db.xz
 RUN echo "aptly ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/aptly
 ADD system/t13_etcd/install-etcd.sh /src/
 RUN /src/install-etcd.sh
