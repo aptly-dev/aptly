@@ -94,13 +94,14 @@ jobs:
           files: coverage.txt
 
   ci-debian-build:
-    name: "CI Build"
+    name: "Build"
     needs: test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
+        arch: ["amd64", "i386" , "arm64" , "armhf"]
         include:
           - name: "Debian 13/testing"
             suite: trixie
@@ -151,16 +152,29 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
+      - name: Check is CI or Release
+        run: |
+          if [ -z "`git tag --points-at HEAD`" ]; then
+            releasetype=ci
+          else
+            releasetype=release
+          fi
+          echo RELEASETYPE=$releasetype >> $GITHUB_OUTPUT
+        id: releasetype
+
       - name: "Build Debian packages"
         env:
           GOBIN: /usr/local/bin
         run: |
           GOPATH=$PWD/.go go generate -v
-          DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
-          dpkg-buildpackage -us -uc -b -d --host-arch=amd64
-          dpkg-buildpackage -us -uc -b -d --host-arch=i386
-          dpkg-buildpackage -us -uc -b -d --host-arch=arm64
-          dpkg-buildpackage -us -uc -b -d --host-arch=armhf
+          if [ "${{ steps.releasetype.outputs.RELEASETYPE }}" = "ci" ]; then
+            DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
+          fi
+          buildtype="any"
+          if [ "${{ matrix.arch }}" = "amd64" ]; then  # build 'all' type package only on amd64
+            buildtype="any,all"
+          fi
+          dpkg-buildpackage -us -uc --build=$buildtype -d --host-arch=${{ matrix.arch }}
           mkdir -p build && mv ../*.deb build/
           cd build && ls -l *.deb
 
@@ -173,15 +187,15 @@ jobs:
           ./upload-artifacts.sh ci ${{ matrix.suite }}
 
       - name: "Publish release to aptly"
-        if: startsWith(github.event.ref, 'refs/tags')
+        if: steps.releasetype.outputs.RELEASETYPE == 'release' && github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
           ./upload-artifacts.sh release ${{ matrix.suite }}
 
-  ci-release-build:
-    name: "CI Build (Binary)"
+  ci-binary-build:
+    name: "Build"
     needs: test
     runs-on: ubuntu-latest
     strategy:
@@ -207,8 +221,7 @@ jobs:
 
       - name: "Get aptly version"
         run: |
-           # Because dpkg-parsechangelog is not installed, will return the latest git tag
-           echo "VERSION=$(make version RELEASE=yes)" >> $GITHUB_OUTPUT
+           echo "VERSION=$(make version)" >> $GITHUB_OUTPUT
         id: releaseversion
 
       - name: "Setup Go"
@@ -216,23 +229,25 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: "Build packages for ${{ matrix.goos }} ${{ matrix.goarch }}"
+      - name: "Build aptly ${{ matrix.goos }}/${{ matrix.goarch }}"
         env:
           GOBIN: /usr/local/bin
         run: |
-          echo ${{ steps.releaseversion.outputs.VERSION }} > VERSION
-          make release GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
+          make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
+          cd build; unzip aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          rm -f aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
 
       - uses: actions/upload-artifact@v4
         with:
-          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: build/*
+          retention-days: 90
 
   gh-release:
-    name: "Github Release: ${{ github.ref_name }}"
+    name: "Github Release"
     runs-on: ubuntu-latest
     continue-on-error: false
-    needs: ci-release-build
+    needs: ci-binary-build
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download Artifacts
