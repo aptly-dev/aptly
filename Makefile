@@ -90,15 +90,14 @@ man:  ## Create man pages
 	make -C man
 
 version:  ## Print aptly version
-	@ts=`TZ=UTC git show -s --format='%cd.%h' --date=format-local:'%Y%m%d%H%M%S'`; \
+	@ci="" ; \
+	if [ -z "`git tag --points-at HEAD`" ]; then \
+		ci=`TZ=UTC git show -s --format='+%cd.%h' --date=format-local:'%Y%m%d%H%M%S'`; \
+	fi ; \
 	if which dpkg-parsechangelog > /dev/null 2>&1; then \
-		if [ -z "$$ts" ]; then \
-			dpkg-parsechangelog -S Version; \
-		else \
-			echo `dpkg-parsechangelog -S Version`+$$ts; \
-		fi \
+		echo `dpkg-parsechangelog -S Version`$$ci; \
 	else \
-		git describe --tags --always | sed 's@^v@@' | sed 's@-@+@g'; \
+		echo `grep ^aptly -m1  debian/changelog | sed 's/.*(\([^)]\+\)).*/\1/'`$$ci ; \
 	fi
 
 build:  ## Build aptly
@@ -106,12 +105,14 @@ build:  ## Build aptly
 	go generate
 	go build -o build/aptly
 
-release: version ## build release archive in build/ for GOOS and GOARCH
+binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
+	@make version > VERSION
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
 	@cp man/aptly.1 build/tmp/man/
 	@cp completion.d/aptly build/tmp/completion/bash_completion.d/
 	@cp completion.d/_aptly build/tmp/completion/zsh/vendor-completions/
+	@cp README.rst LICENSE AUTHORS build/tmp/
 	@gzip -f build/tmp/man/aptly.1
 	@path="aptly_$(VERSION)_$(GOOS)_$(GOARCH)"; \
 	rm -rf "build/$$path"; \
@@ -143,8 +144,8 @@ docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirr
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
-docker-release:
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-release
+docker-binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar) in docker container
+	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/build-binaries
 
 flake8:  ## run flake8 on system tests
 	flake8 system
@@ -153,4 +154,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
 
-.PHONY: help man prepare version release docker-build-aptly-dev docker-system-tests docker-unit-tests docker-lint docker-build build docker-aptly clean
+.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean
