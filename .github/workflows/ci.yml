@@ -205,6 +205,12 @@ jobs:
           echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
         id: goversion
 
+      - name: "Get aptly version"
+        run: |
+           # Because dpkg-parsechangelog is not installed, will return the latest git tag
+           echo "VERSION=$(make version RELEASE=yes)" >> $GITHUB_OUTPUT
+        id: releaseversion
+
       - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
@@ -214,23 +220,13 @@ jobs:
         env:
           GOBIN: /usr/local/bin
         run: |
-          mkdir -p tmp/man tmp/completion/bash_completion.d tmp/completion/zsh/vendor-completions
-          go version
-          echo ${{ github.ref_name }} > VERSION
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o tmp/aptly -ldflags='-extldflags=-static'
-          cp man/aptly.1 tmp/man/
-          cp completion.d/aptly tmp/completion/bash_completion.d/
-          cp completion.d/_aptly tmp/completion/zsh/vendor-completions/
-          gzip tmp/man/aptly.1
-          path="aptly_${{ matrix.goos }}_${{ matrix.goarch }}"
-          mkdir -p $path
-          mv tmp "$path"
-          zip -r "$path" . -i "$path/*"
+          echo ${{ steps.releaseversion.outputs.VERSION }} > VERSION
+          make release GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: aptly_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          path: aptly_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
 
   gh-release:
     name: "Github Release: ${{ github.ref_name }}"
