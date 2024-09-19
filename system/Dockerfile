@@ -4,7 +4,7 @@ RUN echo deb http://deb.debian.org/debian bookworm-backports main > /etc/apt/sou
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg apg bzip2 xz-utils ca-certificates \
         golang/bookworm-backports golang-go/bookworm-backports golang-doc/bookworm-backports golang-src/bookworm-backports \
-        make git python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage g++ python3-etcd3 python3-plyvel graphviz devscripts sudo dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf bash-completion && \
+        make git python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage g++ python3-etcd3 python3-plyvel graphviz devscripts sudo dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf bash-completion zip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m --shell /bin/sh --home-dir /var/lib/aptly aptly
