@@ -458,7 +458,10 @@ func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
 		panic("not snapshot publish")
 	}
 
-	item := p.sourceItems[component]
+	item, exists := p.sourceItems[component]
+	if !exists {
+		item = repoSourceItem{}
+	}
 	item.snapshot = snapshot
 	p.sourceItems[component] = item
 
