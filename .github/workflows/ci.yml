@@ -234,13 +234,11 @@ jobs:
           GOBIN: /usr/local/bin
         run: |
           make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
-          cd build; unzip aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          rm -f aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: build/*
+          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
           retention-days: 90
 
   gh-release:
