@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/deb"
-	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
@@ -65,10 +64,6 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	}
 
 	for i, component := range components {
-		if !utils.StrSliceHasItem(publishedComponents, component) {
-			return fmt.Errorf("unable to switch: component %s is not in published repository", component)
-		}
-
 		snapshot, err = collectionFactory.SnapshotCollection().ByName(names[i])
 		if err != nil {
 			return fmt.Errorf("unable to switch: %s", err)

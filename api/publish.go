@@ -9,7 +9,6 @@ import (
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/task"
-	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -299,13 +298,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			published.UpdateLocalRepo(component)
 		}
 	} else if published.SourceKind == "snapshot" {
-		publishedComponents := published.Components()
 		for _, snapshotInfo := range b.Snapshots {
-			if !utils.StrSliceHasItem(publishedComponents, snapshotInfo.Component) {
-				AbortWithJSONError(c, 404, fmt.Errorf("component %s is not in published repository", snapshotInfo.Component))
-				return
-			}
-
 			snapshotCollection := collectionFactory.SnapshotCollection()
 			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err2 != nil {

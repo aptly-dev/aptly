@@ -424,15 +424,22 @@ class PublishSwitch11Test(BaseTest):
 
 class PublishSwitch12Test(BaseTest):
     """
-    publish switch: wrong component names
+    publish switch: add new component to publish
     """
     fixtureCmds = [
         "aptly snapshot create snap1 empty",
         "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 empty",
         "aptly publish snapshot -architectures=i386 -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=a,b snap1 snap2",
     ]
-    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick snap2 snap1"
-    expectedCode = 1
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick snap2 snap3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch12Test, self).check()
+
+        self.check_exists('public/dists/maverick/a/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/c/binary-i386/Packages')
 
 
 class PublishSwitch13Test(BaseTest):
