@@ -2,7 +2,6 @@
 aptly
 =====
 
-
 .. image:: https://github.com/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
     :target: https://github.com/aptly-dev/aptly/actions
 
