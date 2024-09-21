@@ -44,6 +44,12 @@ if [ "action" = "ci" ] && [ -z "$dist" ]; then
     exit 1
 fi
 
+if [ -z "$aptly_user" ] || [ -z "$aptly_password" ]; then
+    usage
+    echo Error: please set APTLY_USER and APTLY_PASSWORD
+    exit 1
+fi
+
 echo "Publishing version '$version' to $action for $dist...\n"
 
 upload()
