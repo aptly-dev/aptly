@@ -222,7 +222,9 @@ jobs:
 
       - name: "Get aptly version"
         run: |
-           echo "VERSION=$(make version)" >> $GITHUB_OUTPUT
+           aptlyver=$(make -s version)
+           echo "Aptly Version: $aptlyver"
+           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
         id: releaseversion
 
       - name: "Build aptly ${{ matrix.goos }}/${{ matrix.goarch }}"
