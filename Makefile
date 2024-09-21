@@ -101,11 +101,15 @@ version:  ## Print aptly version
 	fi
 
 releasetype:  # Print release type (ci/release)
-	@if [ -z "`git tag --points-at HEAD`" ]; then \
-		echo ci ; \
-	else \
-		echo release ; \
-	fi
+	@reltype=ci ; \
+	gitbranch=`git rev-parse --abbrev-ref HEAD` ; \
+	if [ "$$gitbranch" = "HEAD" ]; then \
+		gittag=`git describe --tags --exact-match` ;\
+		if echo "$$gittag" | grep -q '^v[0-9]'; then \
+			reltype=release ; \
+		fi ; \
+	fi ; \
+	echo $$reltype
 
 build:  ## Build aptly
 	go mod tidy

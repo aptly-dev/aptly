@@ -154,13 +154,6 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Check if CI or Release
-        run: |
-          releasetype=$(make releasetype)
-          echo "Release Type: $releasetype"
-          echo "RELEASETYPE=$releasetype" >> $GITHUB_OUTPUT
-        id: releasetype
-
       - name: "Build Debian packages"
         env:
           GOBIN: /usr/local/bin
@@ -168,7 +161,7 @@ jobs:
           make dpkg DEBARCH=${{ matrix.arch }}
 
       - name: "Publish CI release to aptly"
-        if: steps.releasetype.outputs.RELEASETYPE == 'ci' && github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
@@ -176,7 +169,7 @@ jobs:
           ./upload-artifacts.sh ci ${{ matrix.suite }}
 
       - name: "Publish release to aptly"
-        if: steps.releasetype.outputs.RELEASETYPE == 'release' && github.ref == 'refs/heads/master'
+        if: startsWith(github.event.ref, 'refs/tags')
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
@@ -203,13 +196,6 @@ jobs:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: "Check if CI or Release"
-        run: |
-          releasetype=$(make releasetype)
-          echo "Release Type: $releasetype"
-          echo "RELEASETYPE=$releasetype" >> $GITHUB_OUTPUT
-        id: releasetype
-
       - name: "Read go version from go.mod"
         run: |
           echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
@@ -234,39 +220,25 @@ jobs:
           make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
 
       - uses: actions/upload-artifact@v4
-        if: steps.releasetype.outputs.RELEASETYPE == 'release' && github.ref == 'refs/heads/master'
+        if: startsWith(github.event.ref, 'refs/tags')
         with:
           name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
           path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          retention-days: 90
+          compression-level: 0 # no compression
 
   gh-release:
     name: "Github Release"
     runs-on: ubuntu-latest
     continue-on-error: false
     needs: ci-binary-build
+    if: startsWith(github.event.ref, 'refs/tags')
     steps:
-      - name: "Checkout repository"
-        uses: actions/checkout@v3
-        with:
-          # fetch the whole repo for `git describe` to work
-          fetch-depth: 0
-
-      - name: "Check if CI or Release"
-        run: |
-          releasetype=$(make releasetype)
-          echo "Release Type: $releasetype"
-          echo "RELEASETYPE=$releasetype" >> $GITHUB_OUTPUT
-        id: releasetype
-
       - name: "Download Artifacts"
-        if: steps.releasetype.outputs.RELEASETYPE == 'release' && github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
           path: out/
 
       - name: "Release"
-        if: steps.releasetype.outputs.RELEASETYPE == 'release' && github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           files: "out/**/aptly_*.zip"
