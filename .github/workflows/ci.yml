@@ -160,8 +160,20 @@ jobs:
         run: |
           make dpkg DEBARCH=${{ matrix.arch }}
 
+      - name: "Check aptly credentials"
+        env:
+          APTLY_USER: ${{ secrets.APTLY_USER }}
+          APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
+        run: |
+          found=no
+          if [ -n "$APTLY_USER" ] && [ -n "$APTLY_PASSWORD" ]; then
+            found=yes
+          fi
+          echo "FOUND=$found" >> $GITHUB_OUTPUT
+        id: aptlycreds
+
       - name: "Publish CI release to aptly"
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && steps.aptlycreds.outputs.FOUND == 'yes'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
@@ -169,7 +181,7 @@ jobs:
           ./upload-artifacts.sh ci ${{ matrix.suite }}
 
       - name: "Publish release to aptly"
-        if: startsWith(github.event.ref, 'refs/tags')
+        if: startsWith(github.event.ref, 'refs/tags') && steps.aptlycreds.outputs.FOUND == 'yes'
         env:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
