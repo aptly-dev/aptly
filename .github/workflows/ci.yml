@@ -30,6 +30,11 @@ jobs:
       GOPROXY: "https://proxy.golang.org"
 
     steps:
+      - name: "Debug github ref"
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github.event.ref }}
+
       - name: "Install packages"
         run: |
           sudo apt-get update
