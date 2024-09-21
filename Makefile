@@ -100,10 +100,35 @@ version:  ## Print aptly version
 		echo `grep ^aptly -m1  debian/changelog | sed 's/.*(\([^)]\+\)).*/\1/'`$$ci ; \
 	fi
 
+releasetype:  # Print release type (ci/release)
+	@if [ -z "`git tag --points-at HEAD`" ]; then \
+		echo ci ; \
+	else \
+		echo release ; \
+	fi
+
 build:  ## Build aptly
 	go mod tidy
 	go generate
 	go build -o build/aptly
+
+dpkg:  ## Build debian packages
+	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
+	GOPATH=$$PWD/.go go generate -v
+	@if [ "`make -s releasetype`" = "ci" ]; then  \
+		echo CI Build, setting version... ; \
+		cp debian/changelog debian/changelog.dpkg-bak ; \
+		DEBEMAIL="CI <ci@aptly>" dch -v `make -s version` "CI build" ; \
+	fi
+	buildtype="any" ; \
+	if [ "$(DEBARCH)" = "amd64" ]; then  \
+	  buildtype="any,all" ; \
+	fi ; \
+	echo Building: $$buildtype ; \
+	dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)
+	@test -f debian/changelog.dpkg-bak && mv debian/changelog.dpkg-bak debian/changelog || true ; \
+	mkdir -p build && mv ../*.deb build/ ; \
+	cd build && ls -l *.deb
 
 binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
@@ -154,4 +179,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
 
-.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean
+.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean releasetype dpkg

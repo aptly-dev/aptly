@@ -43,17 +43,15 @@ jobs:
 
       - name: "Read go version from go.mod"
         run: |
-          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
         id: goversion
 
       - name: "Setup Go"
         uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
-
-      - name: "Get aptly version"
-        run: |
-           make version
 
       - name: "Setup Python"
         uses: actions/setup-python@v4
@@ -144,7 +142,9 @@ jobs:
 
       - name: "Read go version from go.mod"
         run: |
-          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
         id: goversion
 
       - name: "Setup Go"
@@ -152,31 +152,18 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: Check is CI or Release
+      - name: Check if CI or Release
         run: |
-          if [ -z "`git tag --points-at HEAD`" ]; then
-            releasetype=ci
-          else
-            releasetype=release
-          fi
-          echo RELEASETYPE=$releasetype >> $GITHUB_OUTPUT
+          releasetype=$(make releasetype)
+          echo "Release Type: $releasetype"
+          echo "RELEASETYPE=$releasetype" >> $GITHUB_OUTPUT
         id: releasetype
 
       - name: "Build Debian packages"
         env:
           GOBIN: /usr/local/bin
         run: |
-          GOPATH=$PWD/.go go generate -v
-          if [ "${{ steps.releasetype.outputs.RELEASETYPE }}" = "ci" ]; then
-            DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
-          fi
-          buildtype="any"
-          if [ "${{ matrix.arch }}" = "amd64" ]; then  # build 'all' type package only on amd64
-            buildtype="any,all"
-          fi
-          dpkg-buildpackage -us -uc --build=$buildtype -d --host-arch=${{ matrix.arch }}
-          mkdir -p build && mv ../*.deb build/
-          cd build && ls -l *.deb
+          make dpkg DEBARCH=${{ matrix.arch }}
 
       - name: "Publish CI release to aptly"
         if: github.ref == 'refs/heads/master'
