@@ -64,6 +64,6 @@ Description: Debian repository management tool (debug files)
 
 Package: aptly-api
 Architecture: all
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, aptly
 Description: Debian repository management tool (REST API server)
  systemd service and configuration for aptly

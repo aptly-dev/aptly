@@ -2,5 +2,4 @@ build/aptly usr/bin/
 README.rst usr/share/aptly/
 LICENSE usr/share/aptly/
 AUTHORS usr/share/aptly/
-debian/aptly.conf etc/
 completion.d/_aptly usr/share/zsh/vendor-completions/
