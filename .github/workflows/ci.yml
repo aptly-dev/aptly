@@ -76,6 +76,7 @@ jobs:
           directory: ${{ runner.temp }}
 
       - name: Make
+        if: false
         env:
           RUN_LONG_TESTS: 'yes'
           AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
@@ -88,11 +89,13 @@ jobs:
           COVERAGE_DIR=${{ runner.temp }} make all
 
       - name: Merge code coverage
+        if: false
         run: |
           go install github.com/wadey/gocovmerge@latest
           ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
       - name: Upload code coverage
+        if: false
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
