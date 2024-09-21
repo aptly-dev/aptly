@@ -154,9 +154,15 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
+      - name: "Ensure CI build"
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "FORCE_CI=true" >> $GITHUB_OUTPUT
+        id: force_ci
+
       - name: "Build Debian packages"
         env:
-          GOBIN: /usr/local/bin
+          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
         run: |
           make dpkg DEBARCH=${{ matrix.arch }}
 
@@ -169,6 +175,7 @@ jobs:
           if [ -n "$APTLY_USER" ] && [ -n "$APTLY_PASSWORD" ]; then
             found=yes
           fi
+          echo "Aptly credentials available: $found"
           echo "FOUND=$found" >> $GITHUB_OUTPUT
         id: aptlycreds
 
@@ -218,7 +225,15 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
+      - name: "Ensure CI build"
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "FORCE_CI=true" >> $GITHUB_OUTPUT
+        id: force_ci
+
       - name: "Get aptly version"
+        env:
+          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
         run: |
            aptlyver=$(make -s version)
            echo "Aptly Version: $aptlyver"
@@ -228,6 +243,7 @@ jobs:
       - name: "Build aptly ${{ matrix.goos }}/${{ matrix.goarch }}"
         env:
           GOBIN: /usr/local/bin
+          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
         run: |
           make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
 

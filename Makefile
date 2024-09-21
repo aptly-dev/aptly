@@ -91,7 +91,7 @@ man:  ## Create man pages
 
 version:  ## Print aptly version
 	@ci="" ; \
-	if [ -z "`git tag --points-at HEAD`" ]; then \
+	if [ "`make -s releasetype`" = "ci" ]; then \
 		ci=`TZ=UTC git show -s --format='+%cd.%h' --date=format-local:'%Y%m%d%H%M%S'`; \
 	fi ; \
 	if which dpkg-parsechangelog > /dev/null 2>&1; then \
@@ -103,7 +103,7 @@ version:  ## Print aptly version
 releasetype:  # Print release type (ci/release)
 	@reltype=ci ; \
 	gitbranch=`git rev-parse --abbrev-ref HEAD` ; \
-	if [ "$$gitbranch" = "HEAD" ]; then \
+	if [ "$$gitbranch" = "HEAD" ] && [ "$$FORCE_CI" != "true" ]; then \
 		gittag=`git describe --tags --exact-match` ;\
 		if echo "$$gittag" | grep -q '^v[0-9]'; then \
 			reltype=release ; \
