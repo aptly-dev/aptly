@@ -19,10 +19,10 @@ aptly has integrated help that matches contents of this manual page, to get help
 ## CONFIGURATION
 
 aptly looks for configuration file first in `~/.aptly.conf` then
-in `/etc/aptly.conf` and, if no config file found, new one is created in
+in `/usr/local/etc/aptly.conf` and `/etc/aptly.conf`. If no config file found (or they are not readable), a new one is created in the
 home directory. If `-config=` flag is specified, aptly would use config file at specified
 location. Also aptly needs root directory for database, package and published repository storage.
-If not specified, directory defaults to `~/.aptly`, it will be created if missing.
+If not specified, directory defaults to `~/.aptly/`, it will be created if missing.
 
 Configuration file is stored in JSON format (default values shown below):
 
