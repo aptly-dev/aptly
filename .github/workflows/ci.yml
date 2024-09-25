@@ -132,8 +132,9 @@ jobs:
     steps:
       - name: "Install packages"
         run: |
+          env
           apt-get update
-          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq gcc-aarch64-linux-gnu gcc-i686-linux-gnu gcc-arm-linux-gnueabihf
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Checkout repository"
@@ -149,7 +150,11 @@ jobs:
           echo "GOVER=$gover" >> $GITHUB_OUTPUT
         id: goversion
 
+      - name: "Check build type"
+        run: echo "SUITE=${{ matrix.suite }}" >> $GITHUB_ENV
+
       - name: "Setup Go"
+        if: env.SUITE != 'trixie'
         uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
@@ -159,6 +164,16 @@ jobs:
         run: |
           echo "FORCE_CI=true" >> $GITHUB_OUTPUT
         id: force_ci
+
+      - name: "Install dependencies"
+        run: |
+          if [ "${{ matrix.suite }}" = "trixie" ]; then
+            echo "Installing debian package dependencies ..."
+            apt build-dep -y .
+          else
+            echo "Installing go module dependencies ..."
+            GOPATH=$PWD/.go go generate -v
+          fi
 
       - name: "Build Debian packages"
         env:

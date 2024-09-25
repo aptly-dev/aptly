@@ -118,7 +118,6 @@ build:  ## Build aptly
 
 dpkg:  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
-	GOPATH=$$PWD/.go go generate -v
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
 		cp debian/changelog debian/changelog.dpkg-bak ; \
