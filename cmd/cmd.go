@@ -7,6 +7,9 @@ import (
 	"os"
 	"text/template"
 	"time"
+	"bufio"
+	"io/ioutil"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -128,4 +131,36 @@ package environment to new version.`,
 		cmd.Flag.Duration("meminterval", 100*time.Millisecond, "memory stats dump interval")
 	}
 	return cmd
+}
+
+// Reads the content of a file. If the file is "-", reads from stdin.
+func getContent(filterarg string) (string, error) {
+	var err error
+	// Check if filterarg starts with '@'
+	if strings.HasPrefix(filterarg, "@") {
+		// Remove the '@' character from filterarg
+		filterarg = strings.TrimPrefix(filterarg, "@")
+        if filterarg == "-" {
+			// If filterarg is "-", read from stdin
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Split(bufio.ScanLines)
+			scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
+			var content strings.Builder
+			for scanner.Scan() {
+				content.WriteString(scanner.Text() + "\n")
+			}
+			err = scanner.Err()
+			if err == nil {
+				filterarg = content.String()
+			}
+		} else {
+			// Read the file content into a byte slice
+			var data []byte
+			data, err = ioutil.ReadFile(filterarg)
+			if err == nil {
+				filterarg = string(data)
+			}
+		}
+	}
+	return filterarg, err
 }

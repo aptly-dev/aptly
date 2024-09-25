@@ -88,7 +88,12 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	// Initial queries out of arguments
 	queries := make([]deb.PackageQuery, len(args)-3)
 	for i, arg := range args[3:] {
-		queries[i], err = query.Parse(arg)
+		var q string
+		q, err = getContent(arg)
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", arg, err)
+		}
+		queries[i], err = query.Parse(q)
 		if err != nil {
 			return fmt.Errorf("unable to parse query: %s", err)
 		}

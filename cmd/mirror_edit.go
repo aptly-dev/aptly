@@ -2,47 +2,12 @@ package cmd
 
 import (
 	"fmt"
-        "bufio"
-        "io/ioutil"
-        "os"
-        "strings"
 
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/query"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
-
-func getContent(filterarg string) (string, error) {
-	var err error
-        // Check if filterarg starts with '@'
-        if strings.HasPrefix(filterarg, "@") {
-                // Remove the '@' character from filterarg
-                filterarg = strings.TrimPrefix(filterarg, "@")
-                if filterarg == "-" {
-                	// If filterarg is "-", read from stdin
-                        scanner := bufio.NewScanner(os.Stdin)
-						scanner.Split(bufio.ScanLines)
-						scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
-                        var content strings.Builder
-                        for scanner.Scan() {
-                                content.WriteString(scanner.Text() + "\n")
-                        }
-                        err = scanner.Err()
-			if err == nil {
-                                filterarg = content.String()
-                        }
-                } else {
-                	// Read the file content into a byte slice
-			var data []byte
-                	data, err = ioutil.ReadFile(filterarg)
-                	if err == nil {
-                        	filterarg = string(data)
-                	}
-		}
-        }
-        return filterarg, err
-}
 
 func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	var err error
@@ -63,13 +28,13 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	}
 
 	fetchMirror := false
-	filter := false
 	ignoreSignatures := context.Config().GpgDisableVerify
+	var f string
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
 			repo.Filter, err = getContent(flag.Value.String())
-			filter = true
+			f = flag.Value.String()
 		case "filter-with-deps":
 			repo.FilterWithDeps = flag.Value.Get().(bool)
 		case "with-installer":
@@ -86,8 +51,8 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 		}
 	})
 
-	if filter && err != nil {
-		return fmt.Errorf("unable to read package query from file %s: %w", repo.Filter, err)
+	if repo.Filter != "" && err != nil {
+		return fmt.Errorf("unable to read package query from file %s: %w", f, err)
 	}
 
 	if repo.IsFlat() && repo.DownloadUdebs {
