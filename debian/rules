@@ -6,6 +6,7 @@ export GOPATH=$(shell pwd)/.go
 export DEB_BUILD_OPTIONS=crossbuildcanrunhostbinaries
 
 export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; elif [ $(DEB_TARGET_ARCH) = "armhf" ]; then echo "arm"; else echo  $(DEB_TARGET_ARCH); fi)
+export DEBIAN_DEPS := $(shell . /etc/os-release; if [ "$$ID" = "debian" ]; then f [ -n "$$VERSION_ID" ] && [ "$$VERSION_ID" -ge 13 ] || [ "$$VERSION_CODENAME" = "trixie" ]; then echo 1; fi; fi)
 
 %:
 	dh $@ --buildsystem=golang --with=golang
@@ -16,12 +17,7 @@ override_dh_auto_clean:
 	dh_auto_clean
 
 override_dh_auto_build:
-	@native=0; . /etc/os-release; if [ "$$ID" = "debian" ]; then \
-		if [ -n "$$VERSION_ID" ] && [ "$$VERSION_ID" -ge 13 ] || [ "$$VERSION_CODENAME" = "trixie" ] ; then \
-			native=1 ; \
-		fi ; \
-	fi ; \
-	if [ $$native -eq 1 ]; then \
+	if [ $$DEBIAN_DEPS -eq 1 ]; then \
 		echo "Running debian build ..." ; \
 		echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION ; \
 		dh_auto_build ; \
@@ -46,15 +42,13 @@ override_dh_strip:
 	dh_strip --dbg-package=aptly-dbg
 
 override_dh_golang:
-	@native=0; . /etc/os-release; if [ "$$ID" = "debian" ]; then \
-		if [ -n "$$VERSION_ID" ] && [ "$$VERSION_ID" -ge 13 ] || [ "$$VERSION_CODENAME" = "trixie" ] ; then \
-			native=1 ; \
-		fi ; \
-	fi ; \
-	if [ $$native -eq 1 ]; then \
+	if [ $$DEBIAN_DEPS -eq 1 ]; then \
 		echo "Running dh_golang ..." ; \
 		dh_golang ; \
 	fi
 
-# not needed with golang, fails with cross compiling
-#override_dh_makeshlibs:
+override_dh_makeshlibs: # fails when cross compiling
+	if [ $$DEBIAN_DEPS -ne 1 ]; then \
+		echo "Running dh_makeshlibs ..." ; \
+		dh_makeshlibs ; \
+	fi
