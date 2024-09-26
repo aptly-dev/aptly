@@ -48,7 +48,8 @@ override_dh_golang:
 	fi
 
 override_dh_makeshlibs: # fails when cross compiling
-	if [ $$DEBIAN_DEPS -ne 1 ]; then \
+	env
+	if [ $(DEB_TARGET_ARCH) == "amd64" ]; then \
 		echo "Running dh_makeshlibs ..." ; \
 		dh_makeshlibs ; \
 	fi
