@@ -52,3 +52,9 @@ override_dh_makeshlibs: # fails when cross compiling
 		echo "Running dh_makeshlibs ..." ; \
 		dh_makeshlibs ; \
 	fi
+
+override_dh_shlibdeps: # fails when cross compiling
+	if [ "$(DEB_BUILD_ARCH_CPU)" = "$(DEB_HOST_ARCH_CPU)" ]; then \
+		echo "Running dh_shlibdeps ..." ; \
+		dh_shlibdeps ; \
+	fi
