@@ -6,7 +6,7 @@ export GOPATH=$(shell pwd)/.go
 export DEB_BUILD_OPTIONS=crossbuildcanrunhostbinaries
 
 export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; elif [ $(DEB_TARGET_ARCH) = "armhf" ]; then echo "arm"; else echo  $(DEB_TARGET_ARCH); fi)
-export DEBIAN_DEPS := $(shell . /etc/os-release; if [ "$$ID" = "debian" ]; then f [ -n "$$VERSION_ID" ] && [ "$$VERSION_ID" -ge 13 ] || [ "$$VERSION_CODENAME" = "trixie" ]; then echo 1; fi; fi)
+export DEBIAN_DEPS := $(shell . /etc/os-release; if [ "$$ID" = "debian" ]; then if [ -n "$$VERSION_ID" ] && [ "$$VERSION_ID" -ge 13 ] || [ "$$VERSION_CODENAME" = "trixie" ]; then echo 1; fi; fi)
 
 %:
 	dh $@ --buildsystem=golang --with=golang
