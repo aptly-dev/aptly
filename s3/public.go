@@ -67,7 +67,7 @@ var (
 func NewPublishedStorageRaw(
 	bucket, defaultACL, prefix, storageClass, encryptionMethod string,
 	plusWorkaround, disabledMultiDel, forceVirtualHostedStyle bool,
-	config *aws.Config, endpoint string,
+	config *aws.Config, /* endpoint */ _ string,
 ) (*PublishedStorage, error) {
 	var acl types.ObjectCannedACL
 	if defaultACL == "" || defaultACL == "private" {
@@ -82,16 +82,16 @@ func NewPublishedStorageRaw(
 		storageClass = ""
 	}
 
-	var baseEndpoint *string
-	if endpoint != "" {
-		baseEndpoint = aws.String(endpoint)
-	}
+	// var baseEndpoint *string
+	// if endpoint != "" {
+	// 	baseEndpoint = aws.String(endpoint)
+	// }
 
 	result := &PublishedStorage{
 		s3: s3.NewFromConfig(*config, func(o *s3.Options) {
 			o.UsePathStyle = !forceVirtualHostedStyle
 			o.HTTPSignerV4 = v4.NewSigner()
-			o.BaseEndpoint = baseEndpoint
+			// o.BaseEndpoint = baseEndpoint
 		}),
 		bucket:           bucket,
 		config:           config,
@@ -300,12 +300,11 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 				}
 			}
 
-			quiet := true
 			params := &s3.DeleteObjectsInput{
 				Bucket: aws.String(storage.bucket),
 				Delete: &types.Delete{
 					Objects: paths,
-					Quiet:   &quiet,
+					Quiet:   true,
 				},
 			}
 
@@ -409,11 +408,10 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 		prefix += "/"
 	}
 
-	maxKeys := int32(1000)
 	params := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(storage.bucket),
 		Prefix:  aws.String(prefix),
-		MaxKeys: &maxKeys,
+		MaxKeys: 1000,
 	}
 
 	p := s3.NewListObjectsV2Paginator(storage.s3, params)
