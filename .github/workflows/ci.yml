@@ -134,7 +134,7 @@ jobs:
         run: |
           env
           apt-get update
-          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq gcc-aarch64-linux-gnu gcc-i686-linux-gnu gcc-arm-linux-gnueabihf
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq gcc-aarch64-linux-gnu gcc-i686-linux-gnu gcc-arm-linux-gnueabihf libc6-dev-arm64-cross libc6-dev-i386-cross libc6-dev-armhf-cross
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Checkout repository"
