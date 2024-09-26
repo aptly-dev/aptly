@@ -27,9 +27,10 @@ override_dh_auto_test:
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
-	mkdir -p debian/aptly/usr/share/man/man1/ debian/aptly/usr/share/bash-completion/completions/
+	mkdir -p build
+	test -f debian/tmp/usr/bin/aptly && mv debian/tmp/usr/bin/aptly build/ || true
+	mkdir -p debian/aptly/usr/share/man/man1/
 	cp man/aptly.1 debian/aptly/usr/share/man/man1
-	cp completion.d/aptly debian/aptly/usr/share/bash-completion/completions/
 	gzip debian/aptly/usr/share/man/man1/aptly.1
 
 override_dh_strip:

@@ -3,3 +3,4 @@ README.rst usr/share/aptly/
 LICENSE usr/share/aptly/
 AUTHORS usr/share/aptly/
 completion.d/_aptly usr/share/zsh/vendor-completions/
+completion.d/aptly usr/share/bash-completion/completions/
