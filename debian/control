@@ -76,7 +76,6 @@ Build-Depends: debhelper (>= 11),
                golang-gopkg-yaml.v2-dev,
                golang-go.uber-multierr-dev,
                golang-go.uber-zap-dev,
-               golang-etcd-server-dev (>= 3.5.15-7),
                git
 Standards-Version: 4.2.1
 Homepage: https://github.com/aptly-dev/aptly
