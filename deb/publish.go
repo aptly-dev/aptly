@@ -439,6 +439,14 @@ func (p *PublishedRepo) SourceNames() []string {
 	return sources
 }
 
+// DropComponent removes component from published repo
+func (p *PublishedRepo) DropComponent(component string) {
+	delete(p.Sources, component)
+	delete(p.sourceItems, component)
+
+	p.rePublishing = true
+}
+
 // UpdateLocalRepo updates content from local repo in component
 func (p *PublishedRepo) UpdateLocalRepo(component string) {
 	if p.SourceKind != SourceLocalRepo {

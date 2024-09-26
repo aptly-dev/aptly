@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -390,6 +391,89 @@ func apiPublishDrop(c *gin.Context) {
 			collectionFactory, out, force, skipCleanup)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
+	})
+}
+
+// POST /publish/:prefix/:distribution/remove
+func apiPublishRemove(c *gin.Context) {
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := c.Params.ByName("distribution")
+
+	var b struct {
+		ForceOverwrite bool
+		Signing        SigningOptions
+		SkipCleanup    *bool
+		Components     []string `binding:"required"`
+		MultiDist      bool
+	}
+
+	if c.Bind(&b) != nil {
+		return
+	}
+
+	signer, err := getSigner(&b.Signing)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		return
+	}
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+
+	components := b.Components
+
+	for _, component := range components {
+		_, exists := published.Sources[component]
+		if !exists {
+			AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: '%s' is not a published component", component))
+			return
+		}
+		published.DropComponent(component)
+	}
+
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Remove components '%s' from publish %s (%s)", strings.Join(components, ","), prefix, distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, b.MultiDist)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		if b.SkipCleanup == nil || !*b.SkipCleanup {
+			publishedStorage := context.GetPublishedStorage(storage)
+
+			err = collection.CleanupPrefixComponentFiles(published.Prefix, components, publishedStorage, collectionFactory, out)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+
+			for _, component := range components {
+				err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
+				if err != nil {
+					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+				}
+			}
 		}
 
 		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil

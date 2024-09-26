@@ -873,3 +873,71 @@ class ServePublishedNotFoundTestRepo(APITest):
         get = self.get("/repos/apiandserve/pool/main/b/boost-defaults/i-dont-exist")
         if get.status_code != 404:
             raise Exception(f"Expected status 404 != {get.status_code}")
+
+
+class PublishRemoveAPITestRepo(APITest):
+    """
+    POST /publish/:prefix/:distribution/remove
+    """
+    fixtureGpg = True
+
+    def check(self):
+        snapshot1_name = self.random_name()
+        snapshot2_name = self.random_name()
+        snapshot3_name = self.random_name()
+
+        self.check_equal(
+            self.post("/api/snapshots", json={"Name": snapshot1_name}).status_code, 201)
+        self.check_equal(
+            self.post("/api/snapshots", json={"Name": snapshot2_name}).status_code, 201)
+        self.check_equal(
+            self.post("/api/snapshots", json={"Name": snapshot3_name}).status_code, 201)
+
+        prefix = self.random_name()
+        distribution = "stable"
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                "AcquireByHash": True,
+                "Architectures": ["i386"],
+                "SourceKind": "snapshot",
+                "Sources": [{"Component": "A", "Name": snapshot1_name}, {"Component": "B", "Name": snapshot2_name}, {"Component": "C", "Name": snapshot3_name}],
+                "Signing": DefaultSigningOptions,
+                "Distribution": distribution,
+                "NotAutomatic": "yes",
+                "ButAutomaticUpgrades": "yes",
+                "Origin": "earth",
+                "Label": "fun",
+                "SkipContents": True,
+            }
+        )
+
+        task = self.post_task("/api/publish/" + prefix + '/' + distribution + '/remove', json={"Components": ["B", "C"]})
+        self.check_task(task)
+
+        repo_expected = {
+            "AcquireByHash": True,
+            "Architectures": ["i386"],
+            "Codename": "",
+            "Distribution": distribution,
+            "Label": "fun",
+            "Origin": "earth",
+            "NotAutomatic": "yes",
+            "ButAutomaticUpgrades": "yes",
+            "Path": prefix + '/' + distribution,
+            "Prefix": prefix,
+            "SkipContents": True,
+            "SourceKind": "snapshot",
+            "Sources": [{"Component": "A", "Name": snapshot1_name}],
+            "Storage": "",
+            "Suite": "",
+        }
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_exists("public/" + prefix + "/dists/" + distribution + "/Release")
+        self.check_exists("public/" + prefix + "/dists/" + distribution + "/A/binary-i386/Packages")
+        self.check_not_exists("public/" + prefix + "/dists/" + distribution + "/B/binary-i386/Packages")
+        self.check_not_exists("public/" + prefix + "/dists/" + distribution + "/C/binary-i386/Packages")
