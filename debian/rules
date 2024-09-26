@@ -48,7 +48,7 @@ override_dh_golang:
 	fi
 
 override_dh_makeshlibs: # fails when cross compiling
-	if [ $(DEB_TARGET_ARCH) == $(DEB_HOST_ARCH) ]; then \
+	if [ "$(DEB_TARGET_ARCH)" = "$(DEB_HOST_ARCH)" ]; then \
 		echo "Running dh_makeshlibs ..." ; \
 		dh_makeshlibs ; \
 	fi
