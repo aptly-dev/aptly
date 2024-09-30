@@ -13,8 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	_ "github.com/aptly-dev/aptly/docs" // import docs
-	"github.com/swaggo/files"
-	"github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var context *ctx.AptlyContext
