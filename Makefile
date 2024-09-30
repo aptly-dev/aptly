@@ -156,9 +156,15 @@ dpkg:  ## Build debian packages
 	cd build && ls -l *.deb
 
 binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
-	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
+	# set version
 	@make version > VERSION
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# build aprlt
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
+	# install
+	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
 	@cp man/aptly.1 build/tmp/man/
 	@cp completion.d/aptly build/tmp/completion/bash_completion.d/
 	@cp completion.d/_aptly build/tmp/completion/zsh/vendor-completions/
