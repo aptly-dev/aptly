@@ -166,7 +166,7 @@ binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	# install and initialize swagger
 	GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
 	PATH=$(BINPATH)/:$(PATH) swag init
-	# build aprlt
+	# build aptly
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
 	# install
 	@mkdir -p build/tmp/man build/tmp/completion/bash_completion.d build/tmp/completion/zsh/vendor-completions
