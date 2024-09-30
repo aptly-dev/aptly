@@ -132,18 +132,25 @@ dev-server: prepare  ## Run dev-server
 
 dpkg:  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
+	# go generate
 	GOPATH=$$PWD/.go go generate -v
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# set debian version
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
 		cp debian/changelog debian/changelog.dpkg-bak ; \
 		DEBEMAIL="CI <ci@aptly>" dch -v `make -s version` "CI build" ; \
 	fi
+	# Run dpkg-buildpackage
 	buildtype="any" ; \
 	if [ "$(DEBARCH)" = "amd64" ]; then  \
 	  buildtype="any,all" ; \
 	fi ; \
 	echo Building: $$buildtype ; \
 	dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)
+	# cleanup
 	@test -f debian/changelog.dpkg-bak && mv debian/changelog.dpkg-bak debian/changelog || true ; \
 	mkdir -p build && mv ../*.deb build/ ; \
 	cd build && ls -l *.deb
