@@ -148,7 +148,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    \"type\": \"\",\n"+
 		"    \"url\": \"\",\n"+
                 "    \"dbPath\": \"\"\n" +
-		"  }\n"+
+		"  },\n"+
+                "  \"enableSwaggerEndpoint\": false\n" +
 		"}")
 }
 
