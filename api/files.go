@@ -33,7 +33,12 @@ func verifyDir(c *gin.Context) bool {
 	return true
 }
 
-// GET /files
+// @Summary Get files
+// @Description Get list of uploaded files.
+// @Tags Files
+// @Produce  json
+// @Success 200 {array} string "List of files"
+// @Router /api/files [get]
 func apiFilesListDirs(c *gin.Context) {
 	list := []string{}
 	listLock := &sync.Mutex{}
