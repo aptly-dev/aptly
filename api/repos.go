@@ -319,7 +319,22 @@ func apiReposPackageFromFile(c *gin.Context) {
 	apiReposPackageFromDir(c)
 }
 
-// POST /repos/:name/file/:dir
+// @Summary Add packages from uploaded file/directory
+// @Description Import packages from files (uploaded using File Upload API) to the local repository. If directory specified, aptly would discover package files automatically.
+// @Description Adding same package to local repository is not an error.
+// @Description By default aptly would try to remove every successfully processed file and directory `dir` (if it becomes empty after import).
+// @Tags Repos
+// @Param name path string true "Repository name"
+// @Param dir path string true "Directory to add"
+// @Consume  json
+// @Param noRemove query string false "when value is set to 1, don’t remove any files"
+// @Param forceReplace query string false "when value is set to 1, remove packages conflicting with package being added (in local repository)"
+// @Produce  json
+// @Success 200 {string} string "OK"
+// @Failure 400 {object} Error "wrong file"
+// @Failure 404 {object} Error "Repository not found"
+// @Failure 500 {object} Error "Error adding files"
+// @Router /api/repos/{name}/{dir} [post]
 func apiReposPackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemove := c.Request.URL.Query().Get("noRemove") == "1"
