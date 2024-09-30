@@ -165,7 +165,8 @@ binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	@make version > VERSION
 	# install and initialize swagger
 	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
-	ls $(BINPATH)
+	env
+	ls $(BINPATH)/linux_386
 	PATH=$(BINPATH)/:$(PATH) swag init
 	# build aprlt
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
