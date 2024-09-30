@@ -120,8 +120,13 @@ releasetype:  # Print release type (ci/release)
 	echo $$reltype
 
 build:  ## Build aptly
+	# install and initialize swagger
+	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# prepare
 	go mod tidy
 	go generate
+	# build
 	go build -o build/aptly
 
 dev-server: prepare  ## Run dev-server
