@@ -124,6 +124,12 @@ build:  ## Build aptly
 	go generate
 	go build -o build/aptly
 
+dev-server: prepare  ## Run dev-server
+	go install github.com/air-verse/air@v1.52.3
+	cp debian/aptly.conf /var/lib/aptly/.aptly.conf
+	sed -i /enableSwaggerEndpoint/s/false/true/ /var/lib/aptly/.aptly.conf
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init' -build.exclude_dir system -build.exclude_dir debian -build.exclude_dir docs -- api serve -listen 0.0.0.0:3142
+
 dpkg:  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
 	GOPATH=$$PWD/.go go generate -v
@@ -178,6 +184,9 @@ docker-unit-tests:  ## Run unit tests in docker container
 docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-system-tests $(TEST)
 
+docker-dev-server:  ## Run development server (auto recompiling) on http://localhost:3142
+	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dev-server
+
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
 
@@ -191,4 +200,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
 
-.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean releasetype dpkg
+.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean releasetype dpkg dev-server docker-dev-server
