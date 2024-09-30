@@ -69,7 +69,18 @@ func apiReposList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /api/repos
+// @Summary Create repository
+// @Description Create a local repository.
+// @Tags Repos
+// @Produce  json
+// @Consume  json
+// @Param Name query string false "Name of repository to be created."
+// @Param Comment query string false "Text describing local repository, for the user"
+// @Param DefaultDistribution query string false "Default distribution when publishing from this local repo"
+// @Param DefaultComponent query string false "Default component when publishing from this local repo"
+// @Success 201 {object} deb.LocalRepo
+// @Failure 400 {object} Error "Repository already exists"
+// @Router /api/repos [post]
 func apiReposCreate(c *gin.Context) {
 	var b struct {
 		Name                string `binding:"required"`
@@ -148,6 +159,14 @@ func apiReposEdit(c *gin.Context) {
 }
 
 // GET /api/repos/:name
+// @Summary Get repository info by name
+// @Description Returns basic information about local repository.
+// @Tags Repos
+// @Produce  json
+// @Param name path string true "Repository name"
+// @Success 200 {object} deb.LocalRepo
+// @Failure 404 {object} Error "Repository not found"
+// @Router /api/repos/{name} [get]
 func apiReposShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
