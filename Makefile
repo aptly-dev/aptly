@@ -48,6 +48,10 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
 	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
 	system/t13_etcd/start-etcd.sh &
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	kill `cat /tmp/etcd.pid`
 
@@ -61,6 +65,10 @@ docker-test: ## Run system tests
 	@echo Building aptly.test ...
 	@rm -f aptly.test
 	go generate
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
+	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	@echo Running python tests ...
 	@test -e aws.creds && . ./aws.creds; \
