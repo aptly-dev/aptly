@@ -164,7 +164,7 @@ binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	# set version
 	@make version > VERSION
 	# install and initialize swagger
-	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
+	GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
 	env
 	ls $(BINPATH)/linux_386
 	PATH=$(BINPATH)/:$(PATH) swag init
