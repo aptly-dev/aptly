@@ -21,6 +21,9 @@ all: prepare test bench check system-test
 
 prepare:  ## Install go module dependencies
 	go mod download
+	# install and initialize swagger
+	go install github.com/swaggo/swag/cmd/swag@latest
+	PATH=$(BINPATH)/:$(PATH) swag init
 	go mod verify
 	go mod tidy -v
 	go generate
@@ -48,9 +51,6 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
 	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
 	system/t13_etcd/start-etcd.sh &
-	# install and initialize swagger
-	go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	kill `cat /tmp/etcd.pid`
