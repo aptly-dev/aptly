@@ -52,7 +52,12 @@ func parseEscapedPath(path string) string {
 	return result
 }
 
-// GET /publish
+// @Summary Get publish points
+// @Description Get list of available publish points. Each publish point is returned as in “show” API.
+// @Tags Publish
+// @Produce  json
+// @Success 200 {array} deb.PublishedRepo
+// @Router /api/publish [get]
 func apiPublishList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()

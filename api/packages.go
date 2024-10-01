@@ -16,7 +16,15 @@ func apiPackagesShow(c *gin.Context) {
 	c.JSON(200, p)
 }
 
-// GET /api/packages
+// @Summary Get packages
+// @Description Get list of packages.
+// @Tags Packages
+// @Consume  json
+// @Produce  json
+// @Param q query string false "search query"
+// @Param format query string false "format: `details` for more detailed information"
+// @Success 200 {array} string "List of packages"
+// @Router /api/packages [get]
 func apiPackages(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PackageCollection()

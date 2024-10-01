@@ -33,7 +33,8 @@ class APITest(BaseTest):
                 "rootDir": f"{os.environ['HOME']}/{BaseTest.aptlyDir}/apiandserve",
                 "linkMethod": "symlink"
             }
-        }
+        },
+        "enableSwaggerEndpoint": True
     }
 
     def fixture_available(self):

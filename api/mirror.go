@@ -31,7 +31,12 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	return verifier, nil
 }
 
-// GET /api/mirrors
+// @Summary Get mirrors
+// @Description Show list of currently available mirrors. Each mirror is returned as in “show” API.
+// @Tags Mirrors
+// @Produce  json
+// @Success 200 {array} deb.RemoteRepo
+// @Router /api/mirrors [get]
 func apiMirrorsList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
@@ -45,7 +50,27 @@ func apiMirrorsList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /api/mirrors
+// @Summary Create mirror
+// @Description Create empty mirror with specified parameters.
+// @Tags Mirrors
+// @Accept  json
+// @Produce  json
+// @Param Name query string true "mirror name"
+// @Param ArchiveURL query string true "url of the archive to mirror e.g. http://deb.debian.org/debian/"
+// @Param Distribution query string false "distribution name to mirror e.g. `buster`, for flat repositories use `./` instead of distribution name"
+// @Param Filter query string false "package query that is applied to packages in the mirror"
+// @Param Components query []string false "components to mirror, if not specified aptly would fetch all components"
+// @Param Architectures query []string false "limit mirror to those architectures, if not specified aptly would fetch all architectures"
+// @Param Keyrings query []string false "gpg keyring(s) to use when verifying `Release` file"
+// @Param DownloadSources query bool false "whether to mirror sources"
+// @Param DownloadUdebs query bool false "whether to mirror `.udeb` packages (Debian installer support)"
+// @Param DownloadInstaller query bool false "whether to download additional not packaged installer files"
+// @Param FilterWithDeps query bool false "when filtering, include dependencies of matching packages as well"
+// @Param SkipComponentCheck query bool false "whether to skip if the given components are in the `Release` file"
+// @Param IgnoreSignatures query bool false "whether to skip the verification of `Release` file signatures"
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 400 {object} Error "Bad Request"
+// @Router /api/mirrors [post]
 func apiMirrorsCreate(c *gin.Context) {
 	var err error
 	var b struct {
@@ -129,7 +154,18 @@ func apiMirrorsCreate(c *gin.Context) {
 	c.JSON(201, repo)
 }
 
-// DELETE /api/mirrors/:name
+// @Summary Delete Mirror
+// @Description Delete a mirror
+// @Tags Mirrors
+// @Consume  json
+// @Produce  json
+// @Param name path string true "mirror name"
+// @Param force query int true "force: 1 to enable"
+// @Success 200 {object} task.ProcessReturnValue
+// @Failure 404 {object} Error "Mirror not found"
+// @Failure 403 {object} Error "Unable to delete mirror with snapshots"
+// @Failure 500 {object} Error "Unable to delete"
+// @Router /api/mirrors/{name} [delete]
 func apiMirrorsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
@@ -168,7 +204,16 @@ func apiMirrorsDrop(c *gin.Context) {
 	})
 }
 
-// GET /api/mirrors/:name
+// @Summary Show Mirror
+// @Description Get mirror information by name
+// @Tags Mirrors
+// @Consume  json
+// @Produce  json
+// @Param name path string true "mirror name"
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 404 {object} Error "Mirror not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/mirrors/{name} [get]
 func apiMirrorsShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
@@ -188,7 +233,19 @@ func apiMirrorsShow(c *gin.Context) {
 	c.JSON(200, repo)
 }
 
-// GET /api/mirrors/:name/packages
+// @Summary List Mirror Packages
+// @Description Get a list of packages from a mirror
+// @Tags Mirrors
+// @Consume  json
+// @Produce  json
+// @Param name path string true "mirror name"
+// @Param q query string false "search query"
+// @Param format query string false "format: `details` for more detailed information"
+// @Success 200 {array} deb.Package "List of Packages"
+// @Failure 400 {object} Error "Unable to determine list of architectures"
+// @Failure 404 {object} Error "Mirror not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/mirrors/{name}/packages [get]
 func apiMirrorsPackages(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
@@ -266,7 +323,32 @@ func apiMirrorsPackages(c *gin.Context) {
 	}
 }
 
-// PUT /api/mirrors/:name
+// @Summary Update Mirror
+// @Description Update Mirror and download packages
+// @Tags Mirrors
+// @Consume  json
+// @Produce  json
+// @Param name path string true "mirror name to update"
+// @Param Name query string false "change mirror name"
+// @Param ArchiveURL query string false "ArchiveURL"
+// @Param Filter query string false "Filter"
+// @Param Architectures query []string false "Architectures"
+// @Param Components query []string false "Components"
+// @Param Keyrings query []string false "Keyrings"
+// @Param FilterWithDeps query bool false "FilterWithDeps"
+// @Param DownloadSources query bool false "DownloadSources"
+// @Param DownloadUdebs query bool false "DownloadUdebs"
+// @Param SkipComponentCheck query bool false "SkipComponentCheck"
+// @Param IgnoreChecksums query bool false "IgnoreChecksums"
+// @Param IgnoreSignatures query bool false "IgnoreSignatures"
+// @Param ForceUpdate query bool false "ForceUpdate"
+// @Param SkipExistingPackages query bool false "SkipExistingPackages"
+// @Success 200 {object} task.ProcessReturnValue "Mirror was updated successfully"
+// @Success 202 {object} task.Task "Mirror is being updated"
+// @Failure 400 {object} Error "Unable to determine list of architectures"
+// @Failure 404 {object} Error "Mirror not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/mirrors/{name} [put]
 func apiMirrorsUpdate(c *gin.Context) {
 	var (
 		err    error
