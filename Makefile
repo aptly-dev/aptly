@@ -194,7 +194,7 @@ docker-image:  ## Build aptly-dev docker image
 docker-build:  ## Build aptly in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd make build
 
-docker-aptly:  ## Build and run aptly commands in docker container
+docker-shell:  ## Run aptly and other commands in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
 
 docker-deb:  ## Build debian packages in docker container
@@ -222,4 +222,4 @@ clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
 
-.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean releasetype dpkg dev-server docker-dev-server
+.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-shell clean releasetype dpkg dev-server docker-dev-server
