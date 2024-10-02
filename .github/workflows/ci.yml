@@ -185,7 +185,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          ./upload-artifacts.sh ci ${{ matrix.suite }}
+          .github/workflows/scripts/upload-artifacts.sh ci ${{ matrix.suite }}
 
       - name: "Publish release to aptly"
         if: startsWith(github.event.ref, 'refs/tags') && steps.aptlycreds.outputs.FOUND == 'yes'
@@ -193,7 +193,7 @@ jobs:
           APTLY_USER: ${{ secrets.APTLY_USER }}
           APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
         run: |
-          ./upload-artifacts.sh release ${{ matrix.suite }}
+          .github/workflows/scripts/upload-artifacts.sh release ${{ matrix.suite }}
 
   ci-binary-build:
     name: "Build"
