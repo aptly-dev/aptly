@@ -162,7 +162,7 @@ class UpdateMirror10Test(BaseTest):
     outputMatchPrepare = filterOutSignature
 
 
-class UpdateMirror11Test(BaseTest):
+class UpdateMirror11FTPTest(BaseTest):
     """
     update mirrors: update over FTP
     """

@@ -9,7 +9,6 @@ from t04_mirror.update import UpdateMirror1Test, \
         UpdateMirror8Test, \
         UpdateMirror9Test, \
         UpdateMirror10Test, \
-        UpdateMirror11Test, \
         UpdateMirror12Test, \
         UpdateMirror13Test, \
         UpdateMirror14Test, \
@@ -34,7 +33,6 @@ TEST_IGNORE = ["UpdateMirror1Test",
                "UpdateMirror8Test",
                "UpdateMirror9Test",
                "UpdateMirror10Test",
-               "UpdateMirror11Test",
                "UpdateMirror12Test",
                "UpdateMirror13Test",
                "UpdateMirror14Test",
@@ -125,14 +123,6 @@ class UpdateMirror9TestEtcd(UpdateMirror9Test):
 class UpdateMirror10TestEtcd(UpdateMirror10Test):
     """
     update mirrors: filtered
-    """
-    databaseType = "etcd"
-    databaseUrl = "127.0.0.1:2379"
-
-
-class UpdateMirror11TestEtcd(UpdateMirror11Test):
-    """
-    update mirrors: update over FTP
     """
     databaseType = "etcd"
     databaseUrl = "127.0.0.1:2379"
