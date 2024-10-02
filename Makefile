@@ -221,5 +221,6 @@ flake8:  ## run flake8 on system tests
 clean:  ## remove local build and module cache
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
 	rm -rf build/ docs/ obj-*-linux-gnu*
+	rm -f unit.out aptly.test
 
 .PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-aptly clean releasetype dpkg dev-server docker-dev-server
