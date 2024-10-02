@@ -671,12 +671,12 @@ class PublishRepo26Test(BaseTest):
     """
     publish repo: sign with passphrase
     """
-    skipTest = "Failing on CI"
     fixtureCmds = [
         "aptly repo create local-repo",
         "aptly repo add local-repo ${files}",
+        "gpg --import --batch --passphrase verysecret ${files}/aptly_passphrase.sec"
     ]
-    runCmd = "aptly publish repo -keyring=${files}/aptly_passphrase.pub -secret-keyring=${files}/aptly_passphrase.sec -passphrase=verysecret -distribution=maverick local-repo"
+    runCmd = "aptly publish repo -batch -keyring=${files}/aptly_passphrase.pub -passphrase=verysecret -distribution=maverick local-repo"
     gold_processor = BaseTest.expand_environ
 
     def outputMatchPrepare(_, s):
