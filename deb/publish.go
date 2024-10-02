@@ -284,7 +284,8 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	}
 
 	sources := []sourceInfo{}
-	for component, item := range p.sourceItems {
+	for _, component := range p.Components() {
+		item := p.sourceItems[component]
 		name := ""
 		if item.snapshot != nil {
 			name = item.snapshot.Name
@@ -452,8 +453,26 @@ func (p *PublishedRepo) UpdateLocalRepo(component string) {
 	p.rePublishing = true
 }
 
-// UpdateSnapshot switches snapshot for component
-func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
+// SwitchLocalRepo switches local repo for component
+func (p *PublishedRepo) SwitchLocalRepo(component string, localRepo *LocalRepo) {
+	if p.SourceKind != SourceLocalRepo {
+		panic("not local repo publish")
+	}
+
+	item, exists := p.sourceItems[component]
+	if !exists {
+		item = repoSourceItem{}
+	}
+	item.localRepo = localRepo
+	item.packageRefs = localRepo.RefList()
+	p.sourceItems[component] = item
+
+	p.Sources[component] = localRepo.UUID
+	p.rePublishing = true
+}
+
+// SwitchSnapshot switches snapshot for component
+func (p *PublishedRepo) SwitchSnapshot(component string, snapshot *Snapshot) {
 	if p.SourceKind != SourceSnapshot {
 		panic("not snapshot publish")
 	}

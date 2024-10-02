@@ -185,6 +185,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		api.GET("/publish", apiPublishList)
+		api.GET("/publish/:prefix/:distribution", apiPublishShow)
 		api.POST("/publish", apiPublishRepoOrSnapshot)
 		api.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
 		api.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)

@@ -84,7 +84,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	context.Progress().Printf("\nPublish for local repo %s has been successfully updated.\n", published.String())
+	context.Progress().Printf("\nPublished local repository %s has been successfully updated.\n", published.String())
 
 	return err
 }

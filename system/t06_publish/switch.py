@@ -424,7 +424,7 @@ class PublishSwitch11Test(BaseTest):
 
 class PublishSwitch12Test(BaseTest):
     """
-    publish switch: add new component to publish
+    publish switch: add new component to snapshot publish
     """
     fixtureCmds = [
         "aptly snapshot create snap1 empty",
@@ -439,10 +439,32 @@ class PublishSwitch12Test(BaseTest):
         super(PublishSwitch12Test, self).check()
 
         self.check_exists('public/dists/maverick/a/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/b/binary-i386/Packages')
         self.check_exists('public/dists/maverick/c/binary-i386/Packages')
 
 
 class PublishSwitch13Test(BaseTest):
+    """
+    publish switch: add new component to local repo publish
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo1",
+        "aptly repo create local-repo2",
+        "aptly repo create local-repo3",
+        "aptly publish repo -architectures=i386 -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=a,b local-repo1 local-repo2",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=a,c maverick local-repo2 local-repo3"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch13Test, self).check()
+
+        self.check_exists('public/dists/maverick/a/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/b/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/c/binary-i386/Packages')
+
+
+class PublishSwitch14Test(BaseTest):
     """
     publish switch: -skip-contents
     """
@@ -458,7 +480,7 @@ class PublishSwitch13Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishSwitch13Test, self).check()
+        super(PublishSwitch14Test, self).check()
 
         self.check_exists('public/dists/maverick/Release')
 
@@ -468,7 +490,7 @@ class PublishSwitch13Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-amd64.gz')
 
 
-class PublishSwitch14Test(BaseTest):
+class PublishSwitch15Test(BaseTest):
     """
     publish switch: removed some packages skipping cleanup
     """
@@ -484,7 +506,7 @@ class PublishSwitch14Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishSwitch14Test, self).check()
+        super(PublishSwitch15Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -554,7 +576,7 @@ class PublishSwitch14Test(BaseTest):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
-class PublishSwitch15Test(BaseTest):
+class PublishSwitch16Test(BaseTest):
     """
     publish switch: -skip-bz2
     """
@@ -570,7 +592,7 @@ class PublishSwitch15Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishSwitch15Test, self).check()
+        super(PublishSwitch16Test, self).check()
 
         self.check_exists('public/dists/maverick/Release')
 

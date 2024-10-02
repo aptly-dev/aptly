@@ -10,7 +10,10 @@ import (
 )
 
 func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
-	var err error
+	var (
+		err   error
+		names []string
+	)
 
 	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
 	multiDist := context.Flags().Lookup("multi-dist").Value.Get().(bool)
@@ -22,11 +25,6 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 
 	distribution := args[0]
 	param := "."
-
-	var (
-		names    []string
-		snapshot *deb.Snapshot
-	)
 
 	if len(args) == len(components)+2 {
 		param = args[1]
@@ -42,16 +40,12 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	collectionFactory := context.NewCollectionFactory()
 	published, err = collectionFactory.PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		return fmt.Errorf("unable to update: %s", err)
-	}
-
-	if published.SourceKind != deb.SourceSnapshot {
-		return fmt.Errorf("unable to update: not a snapshot publish")
+		return fmt.Errorf("unable to switch: %s", err)
 	}
 
 	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
-		return fmt.Errorf("unable to update: %s", err)
+		return fmt.Errorf("unable to switch: %s", err)
 	}
 
 	publishedComponents := published.Components()
@@ -60,21 +54,45 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	}
 
 	if len(names) != len(components) {
-		return fmt.Errorf("mismatch in number of components (%d) and snapshots (%d)", len(components), len(names))
+		return fmt.Errorf("mismatch in number of components (%d) and sources (%d)", len(components), len(names))
 	}
 
-	for i, component := range components {
-		snapshot, err = collectionFactory.SnapshotCollection().ByName(names[i])
-		if err != nil {
-			return fmt.Errorf("unable to switch: %s", err)
-		}
+	if published.SourceKind == deb.SourceLocalRepo {
+		localRepoCollection := collectionFactory.LocalRepoCollection()
+		for i, component := range components {
+			localRepo, err := localRepoCollection.ByName(names[i])
+			if err != nil {
+				return fmt.Errorf("unable to switch: %s", err)
+			}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
-		if err != nil {
-			return fmt.Errorf("unable to switch: %s", err)
-		}
+			err = localRepoCollection.LoadComplete(localRepo)
+			if err != nil {
+				return fmt.Errorf("unable to switch: %s", err)
+			}
 
-		published.UpdateSnapshot(component, snapshot)
+			context.Progress().Printf("Preparing to switch package source of component %q to local repository %q...\n",
+				component, localRepo.Name)
+			published.SwitchLocalRepo(component, localRepo)
+		}
+	} else if published.SourceKind == "snapshot" {
+		snapshotCollection := collectionFactory.SnapshotCollection()
+		for i, component := range components {
+			snapshot, err := snapshotCollection.ByName(names[i])
+			if err != nil {
+				return fmt.Errorf("unable to switch: %s", err)
+			}
+
+			err = snapshotCollection.LoadComplete(snapshot)
+			if err != nil {
+				return fmt.Errorf("unable to switch: %s", err)
+			}
+
+			context.Progress().Printf("Preparing to switch package source of component %q to snapshot %q...\n",
+				component, snapshot.Name)
+			published.SwitchSnapshot(component, snapshot)
+		}
+	} else {
+		return fmt.Errorf("unknown published repository type")
 	}
 
 	signer, err := getSigner(context.Flags())
@@ -115,7 +133,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	context.Progress().Printf("\nPublish for snapshot %s has been successfully switched to new snapshot.\n", published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been successfully switched to new source.\n", published.SourceKind, published.String())
 
 	return err
 }
@@ -123,10 +141,10 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 func makeCmdPublishSwitch() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSwitch,
-		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-snapshot>",
-		Short:     "update published repository by switching to new snapshot",
+		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-source>",
+		Short:     "update published repository by switching to new source",
 		Long: `
-Command switches in-place published snapshots with new snapshot contents. All
+Command switches in-place published snapshots with new source contents. All
 publishing parameters are preserved (architecture list, distribution,
 component).
 
