@@ -26,7 +26,7 @@ prepare:  ## Install go module dependencies
 	go mod download
 	# install and initialize swagger
 	go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
+	PATH=$(BINPATH)/:$(PATH) swag init -q
 	go mod verify
 	go mod tidy -v
 	go generate
@@ -71,7 +71,7 @@ docker-test: ## Run system tests
 	go generate
 	# install and initialize swagger
 	test -f $(BINPATH)/swag || go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
+	PATH=$(BINPATH)/:$(PATH) swag init -q
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
 	@echo Running python tests ...
@@ -126,7 +126,7 @@ releasetype:  # Print release type (ci/release)
 build:  ## Build aptly
 	# install and initialize swagger
 	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
+	PATH=$(BINPATH)/:$(PATH) swag init -q
 	# prepare
 	go mod tidy
 	go generate
@@ -137,7 +137,7 @@ dev-server: prepare  ## Run dev-server
 	go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf /var/lib/aptly/.aptly.conf
 	sed -i /enableSwaggerEndpoint/s/false/true/ /var/lib/aptly/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init' -build.exclude_dir system -build.exclude_dir debian -build.exclude_dir docs -- api serve -listen 0.0.0.0:3142
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q' -build.exclude_dir system -build.exclude_dir debian -build.exclude_dir docs -- api serve -listen 0.0.0.0:3142
 
 dpkg:  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
@@ -145,7 +145,7 @@ dpkg:  ## Build debian packages
 	GOPATH=$$PWD/.go go generate -v
 	# install and initialize swagger
 	go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
+	PATH=$(BINPATH)/:$(PATH) swag init -q
 	# set debian version
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
@@ -169,7 +169,7 @@ binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	@make version > VERSION
 	# install and initialize swagger
 	GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init
+	PATH=$(BINPATH)/:$(PATH) swag init -q
 	# build aptly
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
 	# install
