@@ -70,7 +70,7 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: Make
+      - name: "Run System Tests"
         env:
           RUN_LONG_TESTS: 'yes'
           AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
@@ -82,12 +82,12 @@ jobs:
           sudo mkdir -p /srv ; sudo chown runner /srv
           COVERAGE_DIR=${{ runner.temp }} make all
 
-      - name: Merge code coverage
+      - name: "Merge code coverage"
         run: |
           go install github.com/wadey/gocovmerge@latest
           ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
-      - name: Upload code coverage
+      - name: "Upload code coverage"
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -247,7 +247,8 @@ jobs:
         run: |
           make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
 
-      - uses: actions/upload-artifact@v4
+      - name: "Upload Artifacts"
+        uses: actions/upload-artifact@v4
         if: startsWith(github.event.ref, 'refs/tags')
         with:
           name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}

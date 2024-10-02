@@ -102,7 +102,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
-                orig_stdout.write("%s: %s ... " % (test, colored(o.__name__, color="yellow", attrs=["bold"])))
+                orig_stdout.write("· %-13s ➔ %-48s ... " % (test, colored(o.__name__, color="yellow", attrs=["bold"])))
                 orig_stdout.flush()
 
                 t = o()
