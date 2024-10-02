@@ -70,7 +70,7 @@ docker-test: ## Run system tests
 	@rm -f aptly.test
 	go generate
 	# install and initialize swagger
-	go install github.com/swaggo/swag/cmd/swag@latest
+	test -f $(BINPATH)/swag || go install github.com/swaggo/swag/cmd/swag@latest
 	PATH=$(BINPATH)/:$(PATH) swag init
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
