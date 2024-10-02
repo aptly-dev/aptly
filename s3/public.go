@@ -430,8 +430,11 @@ func (storage *PublishedStorage) internalFilelist(prefix string, hidePlusWorkaro
 				/// from listing
 				continue
 			}
-
-			paths = append(paths, *key.Key)
+			if prefix == "" {
+				paths = append(paths, *key.Key)
+			} else {
+				paths = append(paths, (*key.Key)[len(prefix):])
+			}
 			md5s = append(md5s, strings.Replace(*key.ETag, "\"", "", -1))
 		}
 	}
