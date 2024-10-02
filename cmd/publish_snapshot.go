@@ -116,7 +116,6 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 	origin := context.Flags().Lookup("origin").Value.String()
 	notAutomatic := context.Flags().Lookup("notautomatic").Value.String()
 	butAutomaticUpgrades := context.Flags().Lookup("butautomaticupgrades").Value.String()
-	multiDist := context.Flags().Lookup("multi-dist").Value.Get().(bool)
 
 	published, err := deb.NewPublishedRepo(storage, prefix, distribution, context.ArchitecturesList(), components, sources, collectionFactory)
 	if err != nil {
@@ -150,6 +149,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		published.AcquireByHash = context.Flags().Lookup("acquire-by-hash").Value.Get().(bool)
 	}
 
+	if context.Flags().IsSet("multi-dist") {
+		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
+	}
+
 	duplicate := collectionFactory.PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
 		collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
@@ -166,7 +169,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		context.Progress().ColoredPrintf("@rWARNING@|: force overwrite mode enabled, aptly might corrupt other published repositories sharing the same package pool.\n")
 	}
 
-	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, multiDist)
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}

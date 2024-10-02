@@ -92,7 +92,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                     "list[list published repositories]" \
                     "repo[publish local repository]" \
                     "snapshot[publish snapshot]" \
-                    "switch[update published repository by switching to new snapshot]" \
+                    "switch[update published repository by switching to new source]" \
                     "update[update published local repository]" \
                     "show[shows details of published repository]"
                 ret=0 ;;
