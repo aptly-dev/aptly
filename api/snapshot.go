@@ -408,7 +408,7 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 
 type snapshotsMergeParams struct {
 	// List of snapshot names to be merged
-	Sources []string `binding:"required"`
+	Sources []string `binding:"required" json:"Sources"     example:"snapshot1"`
 }
 
 // @Summary Snapshot Merge
@@ -418,11 +418,11 @@ type snapshotsMergeParams struct {
 // @Description
 // @Description If only one snapshot is specified, merge copies source into destination.
 // @Tags Snapshots
+// @Param name path string true "Name of the snapshot to be created"
 // @Param latest query int false "merge only the latest version of each package"
 // @Param no-remove query int false "all versions of packages are preserved during merge"
-// @Accept  json
-// @Param name path string true "Name of the snapshot to be created"
-// @Param request body snapshotsMergeParams true "json parameters"
+// @Consume json
+// @Param request body snapshotsMergeParams true "Parameters"
 // @Produce  json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
@@ -526,14 +526,14 @@ type snapshotsPullParams struct {
 // @Description
 // @Description Aptly pulls first package matching each of package queries, but with flag -all-matches all matching packages would be pulled.
 // @Tags Snapshots
+// @Param name path string true "Name of the snapshot to be created"
 // @Param all-matches query int false "pull all the packages that satisfy the dependency version requirements (default is to pull first matching package): 1 to enable"
 // @Param dry-run query int false "don’t create destination snapshot, just show what would be pulled: 1 to enable"
 // @Param no-deps query int false "don’t process dependencies, just pull listed packages: 1 to enable"
 // @Param no-remove query int false "don’t remove other package versions when pulling package: 1 to enable"
-// @Accept  json
-// @Param name path string true "Name of the snapshot to be created"
-// @Param request body snapshotsPullParams true "json parameters"
-// @Produce  json
+// @Consume json
+// @Param request body snapshotsPullParams true "Parameters"
+// @Produce json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
