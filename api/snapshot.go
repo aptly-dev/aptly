@@ -39,7 +39,14 @@ func apiSnapshotsList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /api/mirrors/:name/snapshots/
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/mirrors/{name}/snapshots [post]
 func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	var (
 		err      error
@@ -98,7 +105,14 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	})
 }
 
-// POST /api/snapshots
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots [post]
 func apiSnapshotsCreate(c *gin.Context) {
 	var (
 		err      error
@@ -172,7 +186,14 @@ func apiSnapshotsCreate(c *gin.Context) {
 	})
 }
 
-// POST /api/repos/:name/snapshots
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/snapshots [post]
 func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	var (
 		err      error
@@ -226,7 +247,14 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	})
 }
 
-// PUT /api/snapshots/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots/{name} [put]
 func apiSnapshotsUpdate(c *gin.Context) {
 	var (
 		err      error
@@ -276,7 +304,14 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	})
 }
 
-// GET /api/snapshots/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots/{name} [get]
 func apiSnapshotsShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.SnapshotCollection()
@@ -296,7 +331,14 @@ func apiSnapshotsShow(c *gin.Context) {
 	c.JSON(200, snapshot)
 }
 
-// DELETE /api/snapshots/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots/{name} [delete]
 func apiSnapshotsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
@@ -335,7 +377,14 @@ func apiSnapshotsDrop(c *gin.Context) {
 	})
 }
 
-// GET /api/snapshots/:name/diff/:withSnapshot
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots/{name}/diff/{withSnapshot} [get]
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
 
@@ -386,7 +435,14 @@ func apiSnapshotsDiff(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// GET /api/snapshots/:name/packages
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Snapshots
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/snapshots/{name}/packages [get]
 func apiSnapshotsSearchPackages(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.SnapshotCollection()
