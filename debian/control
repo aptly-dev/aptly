@@ -87,7 +87,7 @@ Testsuite: autopkgtest-pkg-go
 
 Package: aptly
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, adduser
+Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, adduser, gpg (>= 2.2.12)
 Built-Using: ${misc:Static-Built-Using}, ${misc:Built-Using}
 Description: Debian repository management tool
  aptly is a Swiss army knife for Debian repository management.
