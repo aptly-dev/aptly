@@ -406,17 +406,37 @@ func apiSnapshotsSearchPackages(c *gin.Context) {
 	showPackages(c, snapshot.RefList(), collectionFactory)
 }
 
-// POST /api/snapshots/merge
+type snapshotsMergeParams struct {
+	// List of snapshot names to be merged
+	Sources []string `binding:"required"`
+}
+
+// @Summary Snapshot Merge
+// @Description **Merge several source snapshots into a new snapshot**
+// @Description
+// @Description Merge happens from left to right. By default, packages with the same name-architecture pair are replaced during merge (package from latest snapshot on the list wins).
+// @Description
+// @Description If only one snapshot is specified, merge copies source into destination.
+// @Tags Snapshots
+// @Param latest query int false "merge only the latest version of each package"
+// @Param no-remove query int false "all versions of packages are preserved during merge"
+// @Accept  json
+// @Param name path string true "Name of the snapshot to be created"
+// @Param request body snapshotsMergeParams true "json parameters"
+// @Produce  json
+// @Success 200
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/snapshots/{name}/merge [post]
 func apiSnapshotsMerge(c *gin.Context) {
 	var (
 		err      error
 		snapshot *deb.Snapshot
+		body     snapshotsMergeParams
 	)
 
-	var body struct {
-		Destination string   `binding:"required"`
-		Sources     []string `binding:"required"`
-	}
+	name := c.Params.ByName("name")
 
 	if c.Bind(&body) != nil {
 		return
@@ -456,7 +476,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 		resources[i] = string(sources[i].ResourceKey())
 	}
 
-	maybeRunTaskInBackground(c, "Merge snapshot "+body.Destination, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+	maybeRunTaskInBackground(c, "Merge snapshot "+name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		result := sources[0].RefList()
 		for i := 1; i < len(sources); i++ {
 			result = result.Merge(sources[i].RefList(), overrideMatching, false)
@@ -471,7 +491,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 			sourceDescription[i] = fmt.Sprintf("'%s'", s.Name)
 		}
 
-		snapshot = deb.NewSnapshotFromRefList(body.Destination, sources, result,
+		snapshot = deb.NewSnapshotFromRefList(name, sources, result,
 			fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
 
 		err = collectionFactory.SnapshotCollection().Add(snapshot)
@@ -483,27 +503,36 @@ func apiSnapshotsMerge(c *gin.Context) {
 	})
 }
 
-type snapshotsPullBody struct {
-	// Source name where packages and dependencies will be searched
+type snapshotsPullParams struct {
+	// Source name to be searched for packages and dependencies
 	Source string `binding:"required"      json:"Source"            example:"source-snapshot"`
-	// Name of the snapshot that will be created
+	// Name of the snapshot to be created
 	Destination string `binding:"required" json:"Destination"       example:"idestination-snapshot"`
-	// List of package queries, in the simplest form, name of package to be pulled from
+	// List of package queries (i.e. name of package to be pulled from `Source`)
 	Queries []string `binding:"required"   json:"Queries"           example:"xserver-xorg"`
 	// List of architectures (optional)
 	Architectures []string `               json:"Architectures"     example:"amd64, armhf"`
 }
 
 // @Summary Snapshot Pull
-// @Description Pulls new packages (along with its dependencies) to name snapshot from source snapshot. Also pull command can upgrade package versions if name snapshot already contains packages being pulled. New snapshot destination is created as result of this process.
+// @Description **Pulls new packages and dependencies from a source snapshot into a new snapshot**
+// @Description
+// @Description May also upgrade package versions if name snapshot already contains packages being pulled. New snapshot `Destination` is created as result of this process.
+// @Description If architectures are limited (with config architectures or parameter `Architectures`, only mentioned architectures are processed, otherwise aptly will process all architectures in the snapshot.
+// @Description If following dependencies by source is enabled (using dependencyFollowSource config), pulling binary packages would also pull corresponding source packages as well.
+// @Description By default aptly would remove packages matching name and architecture while importing: e.g. when importing software_1.3_amd64, package software_1.2.9_amd64 would be removed.
+// @Description
+// @Description With flag `no-remove` both package versions would stay in the snapshot.
+// @Description
+// @Description Aptly pulls first package matching each of package queries, but with flag -all-matches all matching packages would be pulled.
 // @Tags Snapshots
-// @Param all-matches query int false "all-matches: 1 to enable"
-// @Param dry-run query int false "dry-run: 1 to enable"
-// @Param no-deps query int false "no-deps: 1 to enable"
-// @Param no-remove query int false "no-remove: 1 to enable"
+// @Param all-matches query int false "pull all the packages that satisfy the dependency version requirements (default is to pull first matching package): 1 to enable"
+// @Param dry-run query int false "don’t create destination snapshot, just show what would be pulled: 1 to enable"
+// @Param no-deps query int false "don’t process dependencies, just pull listed packages: 1 to enable"
+// @Param no-remove query int false "don’t remove other package versions when pulling package: 1 to enable"
 // @Accept  json
-// @Param name path string true "Snapshot where packages and dependencies will be pulled to"
-// @Param request body snapshotsPullBody true "See api.snapshotsPullBody"
+// @Param name path string true "Name of the snapshot to be created"
+// @Param request body snapshotsPullParams true "json parameters"
 // @Produce  json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
@@ -514,7 +543,7 @@ func apiSnapshotsPull(c *gin.Context) {
 	var (
 		err                 error
 		destinationSnapshot *deb.Snapshot
-		body                snapshotsPullBody
+		body                snapshotsPullParams
 	)
 
 	name := c.Params.ByName("name")

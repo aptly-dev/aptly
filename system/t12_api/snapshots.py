@@ -308,7 +308,7 @@ class SnapshotsAPITestDiff(APITest):
 
 class SnapshotsAPITestMerge(APITest):
     """
-    POST /api/snapshots, POST /api/snapshots/merge, GET /api/snapshots/:name, DELETE /api/snapshots/:name
+    POST /api/snapshots, POST /api/snapshots/:name/merge, GET /api/snapshots/:name, DELETE /api/snapshots/:name
     """
 
     def check(self):
@@ -325,9 +325,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot
         merged_name = self.random_name()
         task = self.post_task(
-            "/api/snapshots/merge",
+            f"/api/snapshots/{merged_name}/merge",
             json={
-                "Destination": merged_name,
                 "Sources": [source["Name"] for source in sources],
             },
         )
@@ -352,7 +351,7 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot without sources
         merged_name = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge", json={"Destination": merged_name, "Sources": []}
+            f"/api/snapshots/{merged_name}/merge", json={"Sources": []}
         )
         self.check_equal(resp.status_code, 400)
         self.check_equal(
@@ -364,8 +363,8 @@ class SnapshotsAPITestMerge(APITest):
         merged_name = self.random_name()
         non_existing_source = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge",
-            json={"Destination": merged_name, "Sources": [non_existing_source]},
+            f"/api/snapshots/{merged_name}/merge",
+            json={"Sources": [non_existing_source]},
         )
         self.check_equal(
             resp.json()["error"], f"snapshot with name {non_existing_source} not found"
@@ -377,8 +376,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot with used name
         merged_name = sources[0]["Name"]
         resp = self.post(
-            "/api/snapshots/merge",
-            json={"Destination": merged_name, "Sources": [source["Name"] for source in sources]},
+            f"/api/snapshots/{merged_name}/merge",
+            json={"Sources": [source["Name"] for source in sources]},
         )
         self.check_equal(
             resp.json()["error"],
@@ -389,9 +388,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot with "latest" and "no-remove" flags (should fail)
         merged_name = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge",
+            f"/api/snapshots/{merged_name}/merge",
             json={
-                "Destination": merged_name,
                 "Sources": [source["Name"] for source in sources],
             },
             params={"latest": "1", "no-remove": "1"},
@@ -404,7 +402,7 @@ class SnapshotsAPITestMerge(APITest):
 
 class SnapshotsAPITestPull(APITest):
     """
-    POST /api/snapshots/pull, POST /api/snapshots, GET /api/snapshots/:name/packages?name=:package_name
+    POST /api/snapshots/:name/pull, POST /api/snapshots, GET /api/snapshots/:name/packages?name=:package_name
     """
 
     def check(self):
@@ -448,7 +446,7 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 200)
 
         # dry run, all-matches
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1&all-matches=1", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1&all-matches=1", json={
             'Source': snapshot_repo_with_libboost,
             'Destination': snapshot_pull_libboost,
             'Queries': [
@@ -462,14 +460,14 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 200)
 
         # missing argument
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': snapshot_repo_with_libboost,
             'Destination': snapshot_pull_libboost,
         })
         self.check_equal(resp.status_code, 400)
 
         # dry run, emtpy architectures
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
             'Source': snapshot_repo_with_libboost,
             'Destination': snapshot_pull_libboost,
             'Queries': [
@@ -490,7 +488,7 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 404)
 
         # dry run, non-existing source
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
             'Source': "asd123",
             'Destination': snapshot_pull_libboost,
             'Queries': [
@@ -500,7 +498,7 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 404)
 
         # snapshot pull
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': snapshot_repo_with_libboost,
             'Destination': snapshot_pull_libboost,
             'Queries': [
@@ -525,7 +523,7 @@ class SnapshotsAPITestPull(APITest):
         # pull from non-existing source
         non_existing_source = self.random_name()
         destination = self.random_name()
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': non_existing_source,
             'Destination': destination,
             'Queries': [
@@ -541,7 +539,7 @@ class SnapshotsAPITestPull(APITest):
         # pull to non-existing snapshot
         non_existing_snapshot = self.random_name()
         destination = self.random_name()
-        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': non_existing_snapshot,
             'Destination': destination,
             'Queries': [
