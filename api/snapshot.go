@@ -483,20 +483,40 @@ func apiSnapshotsMerge(c *gin.Context) {
 	})
 }
 
-// POST /api/snapshots/pull
+type snapshotsPullBody struct {
+	// Source name where packages and dependencies will be searched
+	Source string `binding:"required"      json:"Source"            example:"source-snapshot"`
+	// Snapshot where packages and dependencies will be pulled to
+	To string `binding:"required"          json:"To"                example:"to-snapshot"`
+	// Name of the snapshot that will be created
+	Destination string `binding:"required" json:"Destination"       example:"idestination-snapshot"`
+	// List of package queries, in the simplest form, name of package to be pulled from
+	Queries []string `binding:"required"   json:"Queries"           example:"xserver-xorg"`
+	// List of architectures (optional)
+	Architectures []string `               json:"Architectures"     example:"amd64, armhf"`
+}
+
+// @Summary Snapshot Pull
+// @Description Pulls new packages (along with its dependencies) to name snapshot from source snapshot. Also pull command can upgrade package versions if name snapshot already contains packages being pulled. New snapshot destination is created as result of this process.
+// @Tags Snapshots
+// @Param all-matches query int false "all-matches: 1 to enable"
+// @Param dry-run query int false "dry-run: 1 to enable"
+// @Param no-deps query int false "no-deps: 1 to enable"
+// @Param no-remove query int false "no-remove: 1 to enable"
+// @Accept  json
+// @Param request body snapshotsPullBody true "See api.snapshotsPullBody"
+// @Produce  json
+// @Success 200
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/snapshots/pull [post]
 func apiSnapshotsPull(c *gin.Context) {
 	var (
 		err                 error
 		destinationSnapshot *deb.Snapshot
+		body                snapshotsPullBody
 	)
-
-	var body struct {
-		Source        string   `binding:"required"`
-		To            string   `binding:"required"`
-		Destination   string   `binding:"required"`
-		Queries       []string `binding:"required"`
-		Architectures []string
-	}
 
 	if err = c.BindJSON(&body); err != nil {
 		AbortWithJSONError(c, http.StatusBadRequest, err)
@@ -642,5 +662,4 @@ func apiSnapshotsPull(c *gin.Context) {
 
 		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: destinationSnapshot}, nil
 	})
-
 }
