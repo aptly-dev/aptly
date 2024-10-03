@@ -37,9 +37,8 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 install:
-	@echo Building aptly ...
+	@echo "\e[33m\e[1mBuilding aptly ...\e[0m"
 	go generate
-	@echo go install -v
 	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
 system/env: system/requirements.txt
@@ -66,7 +65,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 endif
 
 docker-test: ## Run system tests
-	@echo Building aptly.test ...
+	@echo "\e[33m\e[1mBuilding aptly.test ...\e[0m"
 	@rm -f aptly.test
 	go generate
 	# install and initialize swagger
@@ -74,7 +73,7 @@ docker-test: ## Run system tests
 	PATH=$(BINPATH)/:$(PATH) swag init
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
-	@echo Running python tests ...
+	@echo "\e[33m\e[1mRunning python tests ...\e[0m"
 	@test -e aws.creds && . ./aws.creds; \
 	export PATH=$(BINPATH)/:$(PATH); \
 	export APTLY_VERSION=$(VERSION); \
@@ -82,16 +81,17 @@ docker-test: ## Run system tests
 
 test: prepare  ## Run unit tests
 	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	@echo "\nStarting etcd ..."
+	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
 	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
-	@echo "\nRunning go test ..."
+	@echo "\e[33m\e[1mRunning go test ...\e[0m"
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
-	@echo "\nStopping etcd ..."
+	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
 	@rm -f /tmp/etcd-data/etcd.log
 	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
 
 bench:
+	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
 	go test -v ./deb -run=nothing -bench=. -benchmem
 
 mem.png: mem.dat mem.gp
@@ -157,7 +157,7 @@ dpkg:  ## Build debian packages
 	if [ "$(DEBARCH)" = "amd64" ]; then  \
 	  buildtype="any,all" ; \
 	fi ; \
-	echo Building: $$buildtype ; \
+	echo "\e[33m\e[1mBuilding: $$buildtype\e[0m" ; \
 	dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)
 	# cleanup
 	@test -f debian/changelog.dpkg-bak && mv debian/changelog.dpkg-bak debian/changelog || true ; \
