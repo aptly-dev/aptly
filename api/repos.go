@@ -18,7 +18,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /repos
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos [get]
 func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -35,7 +42,16 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 	}
 }
 
-// GET /repos/:storage/*pkgPath
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Param storage path string true "Storage"
+// @Param pkgPath path string true "Package Path" allowReserved=true
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/{storage}/{pkgPath} [get]
 func reposServeInAPIMode(c *gin.Context) {
 	pkgpath := c.Param("pkgPath")
 
@@ -51,7 +67,8 @@ func reposServeInAPIMode(c *gin.Context) {
 }
 
 // @Summary Get repos
-// @Description Get list of available repos. Each repo is returned as in “show” API.
+// @Description **Get list of available repos**
+// @Description Each repo is returned as in “show” API.
 // @Tags Repos
 // @Produce  json
 // @Success 200 {array} deb.LocalRepo
@@ -142,7 +159,14 @@ func apiReposCreate(c *gin.Context) {
 	c.JSON(http.StatusCreated, repo)
 }
 
-// PUT /api/repos/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name} [put]
 func apiReposEdit(c *gin.Context) {
 	var b struct {
 		Name                *string
@@ -214,7 +238,14 @@ func apiReposShow(c *gin.Context) {
 	c.JSON(200, repo)
 }
 
-// DELETE /api/repos/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name} [delete]
 func apiReposDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	name := c.Params.ByName("name")
@@ -249,7 +280,14 @@ func apiReposDrop(c *gin.Context) {
 	})
 }
 
-// GET /api/repos/:name/packages
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/packages [get]
 func apiReposPackagesShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
@@ -330,7 +368,14 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	})
 }
 
-// POST /repos/:name/packages
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/packages [post]
 func apiReposPackagesAdd(c *gin.Context) {
 	apiReposPackagesAddDelete(c, "Add packages to repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Adding package %s\n", p.Name)
@@ -338,7 +383,14 @@ func apiReposPackagesAdd(c *gin.Context) {
 	})
 }
 
-// DELETE /repos/:name/packages
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/packages [delete]
 func apiReposPackagesDelete(c *gin.Context) {
 	apiReposPackagesAddDelete(c, "Delete packages from repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Removing package %s\n", p.Name)
@@ -347,7 +399,14 @@ func apiReposPackagesDelete(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/file/:dir/:file
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/file/{dir}/{file} [post]
 func apiReposPackageFromFile(c *gin.Context) {
 	// redirect all work to dir method
 	apiReposPackageFromDir(c)
@@ -487,7 +546,14 @@ func apiReposPackageFromDir(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/copy/:src/:file
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/copy/{src}/{file} [post]
 func apiReposCopyPackage(c *gin.Context) {
 	dstRepoName := c.Params.ByName("name")
 	srcRepoName := c.Params.ByName("src")
@@ -626,13 +692,27 @@ func apiReposCopyPackage(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/include/:dir/:file
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/include/{dir}/{file} [post]
 func apiReposIncludePackageFromFile(c *gin.Context) {
 	// redirect all work to dir method
 	apiReposIncludePackageFromDir(c)
 }
 
-// POST /repos/:name/include/:dir
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Repos
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/include/{dir} [post]
 func apiReposIncludePackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemoveFiles := c.Request.URL.Query().Get("noRemoveFiles") == "1"
