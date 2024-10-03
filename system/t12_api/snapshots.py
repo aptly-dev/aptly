@@ -434,9 +434,8 @@ class SnapshotsAPITestPull(APITest):
         snapshot_pull_libboost = self.random_name()
 
         # dry run first
-        resp = self.post("/api/snapshots/pull?dry-run=1", json={
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
             'Source': snapshot_repo_with_libboost,
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -449,9 +448,8 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 200)
 
         # dry run, all-matches
-        resp = self.post("/api/snapshots/pull?dry-run=1&all-matches=1", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1&all-matches=1", json={
             'Source': snapshot_repo_with_libboost,
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -464,17 +462,15 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 200)
 
         # missing argument
-        resp = self.post("/api/snapshots/pull", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': snapshot_repo_with_libboost,
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
         })
         self.check_equal(resp.status_code, 400)
 
         # dry run, emtpy architectures
-        resp = self.post("/api/snapshots/pull?dry-run=1", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
             'Source': snapshot_repo_with_libboost,
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -484,9 +480,8 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 500)
 
         # dry run, non-existing To
-        resp = self.post("/api/snapshots/pull", json={
+        resp = self.post("/api/snapshots/asd123/pull", json={
             'Source': snapshot_repo_with_libboost,
-            'To': "asd123",
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -495,9 +490,8 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 404)
 
         # dry run, non-existing source
-        resp = self.post("/api/snapshots/pull?dry-run=1", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
             'Source': "asd123",
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -506,9 +500,8 @@ class SnapshotsAPITestPull(APITest):
         self.check_equal(resp.status_code, 404)
 
         # snapshot pull
-        resp = self.post("/api/snapshots/pull", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': snapshot_repo_with_libboost,
-            'To': snapshot_empty_repo,
             'Destination': snapshot_pull_libboost,
             'Queries': [
                 'libboost-program-options-dev'
@@ -532,9 +525,8 @@ class SnapshotsAPITestPull(APITest):
         # pull from non-existing source
         non_existing_source = self.random_name()
         destination = self.random_name()
-        resp = self.post("/api/snapshots/pull", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': non_existing_source,
-            'To': snapshot_empty_repo,
             'Destination': destination,
             'Queries': [
                 'Name (~ *)'
@@ -549,9 +541,8 @@ class SnapshotsAPITestPull(APITest):
         # pull to non-existing snapshot
         non_existing_snapshot = self.random_name()
         destination = self.random_name()
-        resp = self.post("/api/snapshots/pull", json={
+        resp = self.post("/api/snapshots/{snapshot_empty_repo}/pull", json={
             'Source': non_existing_snapshot,
-            'To': snapshot_empty_repo,
             'Destination': destination,
             'Queries': [
                 'Name (~ *)'

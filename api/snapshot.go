@@ -486,8 +486,6 @@ func apiSnapshotsMerge(c *gin.Context) {
 type snapshotsPullBody struct {
 	// Source name where packages and dependencies will be searched
 	Source string `binding:"required"      json:"Source"            example:"source-snapshot"`
-	// Snapshot where packages and dependencies will be pulled to
-	To string `binding:"required"          json:"To"                example:"to-snapshot"`
 	// Name of the snapshot that will be created
 	Destination string `binding:"required" json:"Destination"       example:"idestination-snapshot"`
 	// List of package queries, in the simplest form, name of package to be pulled from
@@ -504,19 +502,22 @@ type snapshotsPullBody struct {
 // @Param no-deps query int false "no-deps: 1 to enable"
 // @Param no-remove query int false "no-remove: 1 to enable"
 // @Accept  json
+// @Param name path string true "Snapshot where packages and dependencies will be pulled to"
 // @Param request body snapshotsPullBody true "See api.snapshotsPullBody"
 // @Produce  json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Error"
-// @Router /api/snapshots/pull [post]
+// @Router /api/snapshots/{name}/pull [post]
 func apiSnapshotsPull(c *gin.Context) {
 	var (
 		err                 error
 		destinationSnapshot *deb.Snapshot
 		body                snapshotsPullBody
 	)
+
+	name := c.Params.ByName("name")
 
 	if err = c.BindJSON(&body); err != nil {
 		AbortWithJSONError(c, http.StatusBadRequest, err)
@@ -530,8 +531,8 @@ func apiSnapshotsPull(c *gin.Context) {
 
 	collectionFactory := context.NewCollectionFactory()
 
-	// Load <To> snapshot
-	toSnapshot, err := collectionFactory.SnapshotCollection().ByName(body.To)
+	// Load <name> snapshot
+	toSnapshot, err := collectionFactory.SnapshotCollection().ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusNotFound, err)
 		return
@@ -555,7 +556,7 @@ func apiSnapshotsPull(c *gin.Context) {
 	}
 
 	resources := []string{string(sourceSnapshot.ResourceKey()), string(toSnapshot.ResourceKey())}
-	taskName := fmt.Sprintf("Pull snapshot %s into %s and save as %s", body.Source, body.To, body.Destination)
+	taskName := fmt.Sprintf("Pull snapshot %s into %s and save as %s", body.Source, name, body.Destination)
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		// convert snapshots to package list
 		toPackageList, err := deb.NewPackageListFromRefList(toSnapshot.RefList(), collectionFactory.PackageCollection(), context.Progress())
