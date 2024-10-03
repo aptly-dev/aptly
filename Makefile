@@ -1,91 +1,35 @@
 GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make -s version)
 PYTHON?=python3
-TESTS?=
 BINPATH?=$(GOPATH)/bin
-RUN_LONG_TESTS?=yes
 GOLANGCI_LINT_VERSION=v1.54.1  # version supporting go 1.19
 COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
-RELEASE=no
+
 # Uncomment to update test outputs
 # CAPTURE := "--capture"
 
-# Self-documenting Makefile
-# https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 prepare:  ## Install go module dependencies
-	# set version
-	@make version > VERSION
-	# download modules
-	go mod download
-	# install and initialize swagger
-	go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init -q
+	# Prepare go modules
 	go mod verify
 	go mod tidy -v
+	# Generate VERSION file
 	go generate
 
-install:
-	@echo "\e[33m\e[1mBuilding aptly ...\e[0m"
-	go generate
-	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
-
-system-test: install ## Run system tests in github CI
-ifeq ($(RUN_LONG_TESTS), yes)
-	go generate
-	# install etcd
-	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	system/t13_etcd/start-etcd.sh &
-	# build coverage binary
-	go test -v -coverpkg="./..." -c -tags testruncli
-	kill `cat /tmp/etcd.pid`
-
-	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
-	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	cd /home/runner; curl -O http://repo.aptly.info/system-tests/etcd.db.xz; xz -d etcd.db.xz
-	PATH=$(BINPATH)/:$(PATH) && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
-endif
-
-docker-test: ## Run system tests
-	@echo "\e[33m\e[1mBuilding aptly.test ...\e[0m"
-	@rm -f aptly.test
-	go generate
-	# install and initialize swagger
-	test -f $(BINPATH)/swag || go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init -q
-	# build coverage binary
-	go test -v -coverpkg="./..." -c -tags testruncli
-	@echo "\e[33m\e[1mRunning python tests ...\e[0m"
-	@test -e aws.creds && . ./aws.creds; \
-	export PATH=$(BINPATH)/:$(PATH); \
-	export APTLY_VERSION=$(VERSION); \
-	$(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
-
-test: prepare  ## Run unit tests
-	@test -d /srv/etcd || system/t13_etcd/install-etcd.sh
-	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
-	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
-	@echo "\e[33m\e[1mRunning go test ...\e[0m"
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
-	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
-	@pid=`cat /tmp/etcd.pid`; kill $$pid
-	@rm -f /tmp/etcd-data/etcd.log
-	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
-
-bench:
-	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
-	go test -v ./deb -run=nothing -bench=. -benchmem
-
-mem.png: mem.dat mem.gp
-	gnuplot mem.gp
-	open mem.png
-
-man:  ## Create man pages
-	make -C man
+releasetype:  # Print release type: ci (on any branch/commit), release (on a tag)
+	@reltype=ci ; \
+	gitbranch=`git rev-parse --abbrev-ref HEAD` ; \
+	if [ "$$gitbranch" = "HEAD" ] && [ "$$FORCE_CI" != "true" ]; then \
+		gittag=`git describe --tags --exact-match 2>/dev/null` ;\
+		if echo "$$gittag" | grep -q '^v[0-9]'; then \
+			reltype=release ; \
+		fi ; \
+	fi ; \
+	echo $$reltype
 
 version:  ## Print aptly version
 	@ci="" ; \
@@ -98,40 +42,68 @@ version:  ## Print aptly version
 		echo `grep ^aptly -m1  debian/changelog | sed 's/.*(\([^)]\+\)).*/\1/'`$$ci ; \
 	fi
 
-releasetype:  # Print release type (ci/release)
-	@reltype=ci ; \
-	gitbranch=`git rev-parse --abbrev-ref HEAD` ; \
-	if [ "$$gitbranch" = "HEAD" ] && [ "$$FORCE_CI" != "true" ]; then \
-		gittag=`git describe --tags --exact-match` ;\
-		if echo "$$gittag" | grep -q '^v[0-9]'; then \
-			reltype=release ; \
-		fi ; \
-	fi ; \
-	echo $$reltype
+swagger-install:
+	# Install swag
+	@test -f $(BINPATH)/swag || GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
 
-build:  ## Build aptly
-	# install and initialize swagger
-	unset GOBIN; go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init -q
-	# prepare
-	go mod tidy
-	go generate
-	# build
+swagger: swagger-install
+	# Generate swagger docs
+	@PATH=$(BINPATH)/:$(PATH) swag init --markdownFiles docs
+
+etcd-install:
+	# Install etcd
+	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
+
+flake8:  ## run flake8 on system test python files
+	flake8 system/
+
+lint:
+	# Install golangci-lint
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	# Running lint
+	@PATH=$(BINPATH)/:$(PATH) golangci-lint run
+
+
+build: prepare swagger  ## Build aptly
 	go build -o build/aptly
 
-dev-server: prepare  ## Run dev-server
-	go install github.com/air-verse/air@v1.52.3
-	cp debian/aptly.conf /var/lib/aptly/.aptly.conf
-	sed -i /enableSwaggerEndpoint/s/false/true/ /var/lib/aptly/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q' -build.exclude_dir system -build.exclude_dir debian -build.exclude_dir docs -- api serve -listen 0.0.0.0:3142
+install:
+	@echo "\e[33m\e[1mBuilding aptly ...\e[0m"
+	go generate
+	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
-dpkg:  ## Build debian packages
+test: prepare swagger etcd-install  ## Run unit tests
+	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
+	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
+	@echo "\e[33m\e[1mRunning go test ...\e[0m"
+	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
+	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
+	@pid=`cat /tmp/etcd.pid`; kill $$pid
+	@rm -f /tmp/etcd-data/etcd.log
+	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
+
+system-test: prepare swagger etcd-install  ## Run system tests
+	# build coverage binary
+	go test -v -coverpkg="./..." -c -tags testruncli
+	# Download fixture-db, fixture-pool, etcd.db
+	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
+	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
+	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
+	# Run system tests
+	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
+
+bench:
+	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
+	go test -v ./deb -run=nothing -bench=. -benchmem
+
+serve: prepare swagger-install  ## Run development server (auto recompiling)
+	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
+	cp debian/aptly.conf ~/.aptly.conf
+	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd -- api serve -listen 0.0.0.0:3142
+
+dpkg: prepare swagger  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
-	# go generate
-	GOPATH=$$PWD/.go go generate -v
-	# install and initialize swagger
-	go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init -q
 	# set debian version
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
@@ -150,12 +122,7 @@ dpkg:  ## Build debian packages
 	mkdir -p build && mv ../*.deb build/ ; \
 	cd build && ls -l *.deb
 
-binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar)
-	# set version
-	@make version > VERSION
-	# install and initialize swagger
-	GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
-	PATH=$(BINPATH)/:$(PATH) swag init -q
+binaries: prepare swagger  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	# build aptly
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
 	# install
@@ -178,35 +145,44 @@ docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd make build
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
 
 docker-shell:  ## Run aptly and other commands in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/run-aptly-cmd
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
 
 docker-deb:  ## Build debian packages in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/build-deb
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
-docker-unit-tests:  ## Run unit tests in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
+docker-unit-test:  ## Run unit tests in docker container
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper test
 
-docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-system-tests $(TEST)
+docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper system-test TEST=$(TEST)
 
-docker-dev-server:  ## Run development server (auto recompiling) on http://localhost:3142
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dev-server
+docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
+	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper serve || true
 
 docker-lint:  ## Run golangci-lint in docker container
-	@docker run -it --rm -v ${PWD}:/app -e GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION) aptly-dev /app/system/run-golangci-lint
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint
 
 docker-binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar) in docker container
-	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/build-binaries
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper binaries
 
-flake8:  ## run flake8 on system tests
-	flake8 system
+docker-man:  ## Create man page in docker container
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper man
+
+mem.png: mem.dat mem.gp
+	gnuplot mem.gp
+	open mem.png
+
+man:  ## Create man pages
+	make -C man
 
 clean:  ## remove local build and module cache
+	# Clean all generated and build files
 	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
-	rm -rf build/ docs/ obj-*-linux-gnu*
-	rm -f unit.out aptly.test
+	rm -rf build/ obj-*-linux-gnu* tmp/
+	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
+	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
-.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-shell clean releasetype dpkg dev-server docker-dev-server flake8
+.PHONY: help man prepare swagger version binaries docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image build docker-shell clean releasetype dpkg serve docker-serve flake8

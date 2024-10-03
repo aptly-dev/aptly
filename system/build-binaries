@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# cleanup
-rm -rf /app/build/tmp
-
-usermod -u `stat -c %u /app` aptly >/dev/null
-chown -R `stat -c %u /app` /var/lib/aptly
-
-su - aptly -c "cd /app; export GOPATH=/app/.go; make binaries"

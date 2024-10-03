@@ -184,12 +184,10 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
 
 if __name__ == "__main__":
-    if 'APTLY_VERSION' not in os.environ:
-        try:
-            os.environ['APTLY_VERSION'] = os.popen(
-                "make version").read().strip()
-        except BaseException as e:
-            print("Failed to capture current version: ", e)
+    try:
+        os.environ['APTLY_VERSION'] = os.popen("make -s version").read().strip()
+    except BaseException as e:
+        print("Failed to capture current version: ", e)
 
     if sys.version_info < PYTHON_MINIMUM_VERSION:
         raise RuntimeError(f'Tests require Python {PYTHON_MINIMUM_VERSION} or higher.')

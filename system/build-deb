@@ -7,7 +7,7 @@ su aptly -c 'set -e; cd /work/src;
 GOPATH=$PWD/.go go generate -v
 # install and initialize swagger
 GOPATH=$PWD/.go go install github.com/swaggo/swag/cmd/swag@latest
-PATH=$PWD/.go/bin:$PATH swag init
+PATH=$PWD/.go/bin:$PATH swag init -q --markdownFiles docs
 git checkout debian/changelog
 DEBEMAIL="CI <runner@github>" dch -v `make version` "CI build"
 dpkg-buildpackage -us -uc -b -d

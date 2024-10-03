@@ -1,12 +1,15 @@
 #!/bin/sh -e
 
+# make sure files are written with correct user ownership
 usermod -u `stat -c %u /work/src` aptly >/dev/null
 chown -R `stat -c %u /work/src` /var/lib/aptly
 
-if [ -z "$@" ]; then
-    echo Error: no make target specified
-    exit 1
+args="$@"
+if [ -z "$args" ]; then
+    cmd="bash"
+else
+    cmd="make $@"
 fi
 
 cd /work/src
-su aptly -c "GOPATH=$PWD/.go make $@"
+sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go $cmd
