@@ -57,6 +57,7 @@ func parseEscapedPath(path string) string {
 // @Tags Publish
 // @Produce  json
 // @Success 200 {array} deb.PublishedRepo
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish [get]
 func apiPublishList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()

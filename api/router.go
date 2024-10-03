@@ -125,6 +125,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 			api.GET("/metrics", apiMetricsGet())
 		}
 		api.GET("/version", apiVersion)
+		api.GET("/storage", apiDiskFree)
 
 		isReady := &atomic.Value{}
 		isReady.Store(false)

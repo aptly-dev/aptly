@@ -11,6 +11,7 @@ from tempfile import mkdtemp
 import traceback
 import random
 import subprocess
+import time
 
 from lib import BaseTest
 from s3_lib import S3Test
@@ -76,14 +77,14 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                 if name in testignore:
                     continue
 
-                testout.clear()
-
                 o = getattr(testModule, name)
-
                 if not (inspect.isclass(o) and issubclass(o, BaseTest) and o is not BaseTest and
                         o is not SwiftTest and o is not S3Test and o is not AzureTest and
                         o is not APITest and o is not FileSystemEndpointTest):
                     continue
+
+                testout.clear()
+                start_time = time.time()
 
                 newBase = o.__bases__[0]
                 if lastBase is not None and lastBase is not newBase:
@@ -102,7 +103,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     if not matches:
                         continue
 
-                orig_stdout.write("%s: %s ... " % (test, colored(o.__name__, color="yellow", attrs=["bold"])))
+                orig_stdout.write("· %-13s ➔ %-48s ... " % (test, colored(o.__name__, color="yellow", attrs=["bold"])))
                 orig_stdout.flush()
 
                 t = o()
@@ -118,20 +119,41 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
                 numTests += 1
 
+                failed = False
+                t.captureResults = capture_results
+                t.coverage_dir = coverage_dir
+                typ = None
+                val = None
+                tb = None
                 try:
-                    t.captureResults = capture_results
-                    t.coverage_dir = coverage_dir
                     t.test()
                 except Exception:
-                    numFailed += 1
                     typ, val, tb = sys.exc_info()
+                    failed = True
+
+                end_time = time.time()
+                execution_time = int(end_time - start_time) + 1
+                minutes = execution_time // 60
+                seconds = execution_time % 60
+                if minutes > 0:
+                    minutes = f"{minutes}m"
+                    if seconds < 10:
+                        seconds = f"0{seconds}"
+                else:
+                    minutes = "  "
+                    if seconds < 10:
+                        seconds = f" {seconds}"
+                duration = f"{minutes}{seconds}s"
+
+                if failed:
+                    numFailed += 1
                     fails.append((test, t, typ, val, tb, testModule))
-                    orig_stdout.write(colored("\b\b\b\bFAIL\n", color="red", attrs=["bold"]))
+                    orig_stdout.write(colored("\b\b\b\bFAIL", color="red", attrs=["bold"]) + f"   {duration}\n")
 
                     orig_stdout.write(testout.get_contents())
                     traceback.print_exception(typ, val, tb, file=orig_stdout)
                 else:
-                    orig_stdout.write(colored("\b\b\b\bOK \n", color="green", attrs=["bold"]))
+                    orig_stdout.write(colored("\b\b\b\bOK", color="green", attrs=["bold"]) + f"   {duration}\n")
 
                 t.shutdown()
 
