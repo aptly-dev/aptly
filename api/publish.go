@@ -102,6 +102,7 @@ func apiPublishList(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
+<<<<<<< HEAD
 // @Summary Show Published Repository
 // @Description **Get published repository information**
 // @Description
@@ -117,6 +118,17 @@ func apiPublishList(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution} [get]
 func apiPublishShow(c *gin.Context) {
+=======
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Publish
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/publish/{prefix} [post]
+func apiPublishRepoOrSnapshot(c *gin.Context) {
+>>>>>>> d237283f (add api documentation stubs)
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))

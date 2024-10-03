@@ -12,6 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Graph
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/graph [get]
 // GET /api/graph.:ext?layout=[vertical|horizontal(default)]
 func apiGraph(c *gin.Context) {
 	var (

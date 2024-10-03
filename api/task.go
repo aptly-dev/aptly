@@ -20,21 +20,41 @@ func apiTasksList(c *gin.Context) {
 	c.JSON(200, list.GetTasks())
 }
 
-// POST /tasks-clear
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Router /api/tasks-clear [post]
 func apiTasksClear(c *gin.Context) {
 	list := context.TaskList()
 	list.Clear()
 	c.JSON(200, gin.H{})
 }
 
-// GET /tasks-wait
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks-wait [get]
 func apiTasksWait(c *gin.Context) {
 	list := context.TaskList()
 	list.Wait()
 	c.JSON(200, gin.H{})
 }
 
-// GET /tasks/:id/wait
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id}/wait [get]
 func apiTasksWaitForTaskByID(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -52,7 +72,14 @@ func apiTasksWaitForTaskByID(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// GET /tasks/:id
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id} [get]
 func apiTasksShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -71,7 +98,14 @@ func apiTasksShow(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// GET /tasks/:id/output
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id}/output [get]
 func apiTasksOutputShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -90,7 +124,14 @@ func apiTasksOutputShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// GET /tasks/:id/detail
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id}/detail [get]
 func apiTasksDetailShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -109,7 +150,14 @@ func apiTasksDetailShow(c *gin.Context) {
 	c.JSON(200, detail)
 }
 
-// GET /tasks/:id/return_value
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id}/return_value [get]
 func apiTasksReturnValueShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -127,7 +175,14 @@ func apiTasksReturnValueShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// DELETE /tasks/:id
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id} [delete]
 func apiTasksDelete(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -146,7 +201,16 @@ func apiTasksDelete(c *gin.Context) {
 	c.JSON(200, delTask)
 }
 
-// POST /tasks-dummy
+// FIXME: used for testing only, remove:
+
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Tasks
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks-dummy [post]
 func apiTasksDummy(c *gin.Context) {
 	resources := []string{"dummy"}
 	taskName := "Dummy task"
