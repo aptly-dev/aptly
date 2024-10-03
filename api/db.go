@@ -11,7 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// POST /api/db/cleanup
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Database
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/db/cleanup [post]
 func apiDbCleanup(c *gin.Context) {
 
 	resources := []string{string(task.AllResourcesKey)}

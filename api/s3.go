@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Get S3 buckets
-// @Description Get list of S3 buckets.
+// @Summary S3 buckets
+// @Description **Get list of S3 buckets**
 // @Tags S3
 // @Produce  json
 // @Success 200 {array} string "List of S3 buckets"
