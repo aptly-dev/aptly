@@ -7,6 +7,7 @@ class SnapshotsAPITestCreateShowEmpty(APITest):
     """
     GET /api/snapshots/:name, POST /api/snapshots, GET /api/snapshots/:name/packages
     """
+
     def check(self):
         snapshot_name = self.random_name()
         snapshot_desc = {'Description': 'fun snapshot',
@@ -35,6 +36,7 @@ class SnapshotsAPITestCreateFromRefs(APITest):
     GET /api/snapshots/:name, POST /api/snapshots, GET /api/snapshots/:name/packages,
     GET /api/snapshots
     """
+
     def check(self):
         snapshot_name = self.random_name()
         snapshot_desc = {'Description': 'fun snapshot',
@@ -96,6 +98,7 @@ class SnapshotsAPITestCreateFromRepo(APITest):
     """
     POST /api/repos, POST /api/repos/:name/snapshots, GET /api/snapshots/:name
     """
+
     def check(self):
         repo_name = self.random_name()
         snapshot_name = self.random_name()
@@ -140,6 +143,7 @@ class SnapshotsAPITestCreateUpdate(APITest):
     """
     POST /api/snapshots, PUT /api/snapshots/:name, GET /api/snapshots/:name
     """
+
     def check(self):
         snapshot_name = self.random_name()
         snapshot_desc = {'Description': 'fun snapshot',
@@ -172,6 +176,7 @@ class SnapshotsAPITestCreateDelete(APITest):
     """
     POST /api/snapshots, DELETE /api/snapshots/:name, GET /api/snapshots/:name
     """
+
     def check(self):
         snapshot_name = self.random_name()
         snapshot_desc = {'Description': 'fun snapshot',
@@ -226,6 +231,7 @@ class SnapshotsAPITestSearch(APITest):
     """
     POST /api/snapshots, GET /api/snapshots?sort=name, GET /api/snapshots/:name
     """
+
     def check(self):
 
         repo_name = self.random_name()
@@ -260,6 +266,7 @@ class SnapshotsAPITestDiff(APITest):
     """
     GET /api/snapshot/:name/diff/:name2
     """
+
     def check(self):
         repos = [self.random_name() for x in range(2)]
         snapshots = [self.random_name() for x in range(2)]
@@ -301,7 +308,7 @@ class SnapshotsAPITestDiff(APITest):
 
 class SnapshotsAPITestMerge(APITest):
     """
-    POST /api/snapshots, GET /api/snapshots/merge, GET /api/snapshots/:name, DELETE /api/snapshots/:name
+    POST /api/snapshots, POST /api/snapshots/:name/merge, GET /api/snapshots/:name, DELETE /api/snapshots/:name
     """
 
     def check(self):
@@ -318,9 +325,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot
         merged_name = self.random_name()
         task = self.post_task(
-            "/api/snapshots/merge",
+            f"/api/snapshots/{merged_name}/merge",
             json={
-                "Destination": merged_name,
                 "Sources": [source["Name"] for source in sources],
             },
         )
@@ -345,7 +351,7 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot without sources
         merged_name = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge", json={"Destination": merged_name, "Sources": []}
+            f"/api/snapshots/{merged_name}/merge", json={"Sources": []}
         )
         self.check_equal(resp.status_code, 400)
         self.check_equal(
@@ -357,8 +363,8 @@ class SnapshotsAPITestMerge(APITest):
         merged_name = self.random_name()
         non_existing_source = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge",
-            json={"Destination": merged_name, "Sources": [non_existing_source]},
+            f"/api/snapshots/{merged_name}/merge",
+            json={"Sources": [non_existing_source]},
         )
         self.check_equal(
             resp.json()["error"], f"snapshot with name {non_existing_source} not found"
@@ -370,8 +376,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot with used name
         merged_name = sources[0]["Name"]
         resp = self.post(
-            "/api/snapshots/merge",
-            json={"Destination": merged_name, "Sources": [source["Name"] for source in sources]},
+            f"/api/snapshots/{merged_name}/merge",
+            json={"Sources": [source["Name"] for source in sources]},
         )
         self.check_equal(
             resp.json()["error"],
@@ -382,9 +388,8 @@ class SnapshotsAPITestMerge(APITest):
         # create merge snapshot with "latest" and "no-remove" flags (should fail)
         merged_name = self.random_name()
         resp = self.post(
-            "/api/snapshots/merge",
+            f"/api/snapshots/{merged_name}/merge",
             json={
-                "Destination": merged_name,
                 "Sources": [source["Name"] for source in sources],
             },
             params={"latest": "1", "no-remove": "1"},
@@ -393,3 +398,156 @@ class SnapshotsAPITestMerge(APITest):
             resp.json()["error"], "no-remove and latest are mutually exclusive"
         )
         self.check_equal(resp.status_code, 400)
+
+
+class SnapshotsAPITestPull(APITest):
+    """
+    POST /api/snapshots/:name/pull, POST /api/snapshots, GET /api/snapshots/:name/packages?name=:package_name
+    """
+
+    def check(self):
+        repo_with_libboost = self.random_name()
+        empty_repo = self.random_name()
+        snapshot_repo_with_libboost = self.random_name()
+        snapshot_empty_repo = self.random_name()
+
+        # create repo with file in it and snapshot of it
+        self.check_equal(self.post("/api/repos", json={"Name": repo_with_libboost}).status_code, 201)
+
+        dir_name = self.random_name()
+        self.check_equal(self.upload(f"/api/files/{dir_name}",
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+        self.check_equal(self.post(f"/api/repos/{repo_with_libboost}/file/{dir_name}").status_code, 200)
+
+        resp = self.post(f"/api/repos/{repo_with_libboost}/snapshots", json={'Name': snapshot_repo_with_libboost})
+        self.check_equal(resp.status_code, 201)
+
+        # create empty repo and snapshot of it
+        self.check_equal(self.post("/api/repos", json={"Name": empty_repo}).status_code, 201)
+
+        resp = self.post(f"/api/repos/{empty_repo}/snapshots", json={'Name': snapshot_empty_repo})
+        self.check_equal(resp.status_code, 201)
+
+        # pull libboost from repo_with_libboost to empty_repo, save into snapshot_pull_libboost
+        snapshot_pull_libboost = self.random_name()
+
+        # dry run first
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ],
+            'Architectures': [
+                'amd64'
+                'i386'
+            ]
+        })
+        self.check_equal(resp.status_code, 200)
+
+        # dry run, all-matches
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1&all-matches=1", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ],
+            'Architectures': [
+                'amd64'
+                'i386'
+            ]
+        })
+        self.check_equal(resp.status_code, 200)
+
+        # missing argument
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+        })
+        self.check_equal(resp.status_code, 400)
+
+        # dry run, emtpy architectures
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ],
+            'Architectures': []
+        })
+        self.check_equal(resp.status_code, 500)
+
+        # dry run, non-existing To
+        resp = self.post("/api/snapshots/asd123/pull", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ]
+        })
+        self.check_equal(resp.status_code, 404)
+
+        # dry run, non-existing source
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull?dry-run=1", json={
+            'Source': "asd123",
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ]
+        })
+        self.check_equal(resp.status_code, 404)
+
+        # snapshot pull
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
+            'Source': snapshot_repo_with_libboost,
+            'Destination': snapshot_pull_libboost,
+            'Queries': [
+                'libboost-program-options-dev'
+            ],
+            'Architectures': [
+                'amd64'
+                'i386'
+            ]
+        })
+        self.check_equal(resp.status_code, 201)
+        self.check_subset({
+            'Name': snapshot_pull_libboost,
+            'SourceKind': 'snapshot',
+            'Description': f"Pulled into '{snapshot_empty_repo}' with '{snapshot_repo_with_libboost}' as source, pull request was: 'libboost-program-options-dev'",
+        }, resp.json())
+
+        # check that snapshot_pull_libboost contains libboost
+        resp = self.get(f"/api/snapshots/{snapshot_pull_libboost}/packages?name=libboost-program-options-dev")
+        self.check_equal(resp.status_code, 200)
+
+        # pull from non-existing source
+        non_existing_source = self.random_name()
+        destination = self.random_name()
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
+            'Source': non_existing_source,
+            'Destination': destination,
+            'Queries': [
+                'Name (~ *)'
+            ],
+            'Architectures': [
+                'all',
+            ]
+        })
+        self.check_equal(resp.status_code, 404)
+        self.check_equal(resp.json()['error'], f"snapshot with name {non_existing_source} not found")
+
+        # pull to non-existing snapshot
+        non_existing_snapshot = self.random_name()
+        destination = self.random_name()
+        resp = self.post(f"/api/snapshots/{snapshot_empty_repo}/pull", json={
+            'Source': non_existing_snapshot,
+            'Destination': destination,
+            'Queries': [
+                'Name (~ *)'
+            ],
+            'Architectures': [
+                'all',
+            ]
+        })
+        self.check_equal(resp.status_code, 404)
+        self.check_equal(resp.json()['error'], f"snapshot with name {non_existing_snapshot} not found")
