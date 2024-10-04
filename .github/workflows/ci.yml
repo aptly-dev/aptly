@@ -18,7 +18,7 @@ env:
 
 jobs:
   test:
-    name: "System Tests (Ubuntu 22.04)"
+    name: "Test (Ubuntu 22.04)"
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -33,13 +33,17 @@ jobs:
       - name: "Install packages"
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts
+          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage python3-etcd3 python3-plyvel flake8
 
       - name: "Checkout repository"
         uses: actions/checkout@v4
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
+
+      - name: "Run flake8"
+        run: |
+          make flake8
 
       - name: "Read go version from go.mod"
         run: |
@@ -53,22 +57,27 @@ jobs:
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
-      - name: "Setup Python"
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: "Install Python packages"
-        run: |
-          pip install six packaging appdirs virtualenv
-          pip install -U pip setuptools
-          pip install -r system/requirements.txt
-
       - name: "Install Azurite"
         id: azuright
         uses: potatoqualitee/azuright@v1.1
         with:
           directory: ${{ runner.temp }}
+
+      - name: "Run Unit Tests"
+        env:
+          RUN_LONG_TESTS: 'yes'
+          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
+          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
+          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          sudo mkdir -p /srv ; sudo chown runner /srv
+          COVERAGE_DIR=${{ runner.temp }} make test
+
+      - name: "Run Benchmark"
+        run: |
+          COVERAGE_DIR=${{ runner.temp }} make bench
 
       - name: "Run System Tests"
         env:
@@ -80,7 +89,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make all
+          COVERAGE_DIR=${{ runner.temp }} make system-test
 
       - name: "Merge code coverage"
         run: |

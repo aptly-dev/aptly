@@ -17,8 +17,6 @@ RELEASE=no
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-all: prepare test bench check system-test  # used for system tests in ci
-
 prepare:  ## Install go module dependencies
 	# set version
 	@make version > VERSION
@@ -31,24 +29,12 @@ prepare:  ## Install go module dependencies
 	go mod tidy -v
 	go generate
 
-check: system/env
-ifeq ($(RUN_LONG_TESTS), yes)
-	system/env/bin/flake8
-endif
-
 install:
 	@echo "\e[33m\e[1mBuilding aptly ...\e[0m"
 	go generate
 	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
-system/env: system/requirements.txt
-ifeq ($(RUN_LONG_TESTS), yes)
-	rm -rf system/env
-	$(PYTHON) -m venv system/env
-	system/env/bin/pip install -r system/requirements.txt
-endif
-
-system-test: install system/env  ## Run system tests in github CI
+system-test: install ## Run system tests in github CI
 ifeq ($(RUN_LONG_TESTS), yes)
 	go generate
 	# install etcd
@@ -61,7 +47,7 @@ ifeq ($(RUN_LONG_TESTS), yes)
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	cd /home/runner; curl -O http://repo.aptly.info/system-tests/etcd.db.xz; xz -d etcd.db.xz
-	PATH=$(BINPATH)/:$(PATH) && . system/env/bin/activate && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
+	PATH=$(BINPATH)/:$(PATH) && APTLY_VERSION=$(VERSION) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(TESTS) --coverage-dir $(COVERAGE_DIR) $(CAPTURE)
 endif
 
 docker-test: ## Run system tests
@@ -203,7 +189,7 @@ docker-deb:  ## Build debian packages in docker container
 docker-unit-tests:  ## Run unit tests in docker container
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-unit-tests
 
-docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror to run only specific tests)
+docker-system-tests:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
 	@docker run -it --rm -v ${PWD}:/app aptly-dev /app/system/run-system-tests $(TEST)
 
 docker-dev-server:  ## Run development server (auto recompiling) on http://localhost:3142
@@ -223,4 +209,4 @@ clean:  ## remove local build and module cache
 	rm -rf build/ docs/ obj-*-linux-gnu*
 	rm -f unit.out aptly.test
 
-.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-shell clean releasetype dpkg dev-server docker-dev-server
+.PHONY: help man prepare version binaries docker-release docker-system-tests docker-unit-tests docker-lint docker-build docker-image build docker-shell clean releasetype dpkg dev-server docker-dev-server flake8
