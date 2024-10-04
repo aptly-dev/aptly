@@ -451,3 +451,34 @@ class UpdateMirror25Test(BaseTest):
     ]
     runCmd = "aptly mirror update -keyring=aptlytest.gpg mirror19"
     outputMatchPrepare = filterOutSignature
+
+
+class UpdateMirror26Test(BaseTest):
+    """
+    update mirrors: regular update, grab downloader
+    """
+    configOverride = {"downloader": "grab"}
+    sortOutput = True
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create -architectures=i386 -keyring=aptlytest.gpg -filter=libboost-program-options-dev grab http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian stretch main",
+    ]
+    runCmd = "aptly mirror update -downloader=grab -keyring=aptlytest.gpg grab"
+    outputMatchPrepare = filterOutRedirects
+
+
+class UpdateMirror27Test(BaseTest):
+    """
+    update mirrors: failing update, grab downloader
+    """
+    configOverride = {"downloader": "grab"}
+    sortOutput = True
+    longTest = False
+    fixtureGpg = True
+    fixtureCmds = [
+        "aptly mirror create -architectures=amd64,i386 -keyring=aptlytest.gpg -filter=libboost-program-options-dev grab-fail http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian stretch main",
+    ]
+    runCmd = "aptly mirror update -downloader=grab -keyring=aptlytest.gpg grab-fail"
+    outputMatchPrepare = filterOutRedirects
+    expectedCode = 1

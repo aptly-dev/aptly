@@ -59,14 +59,13 @@ func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, d
 			// Success
 			break
 		}
-		d.log("Download Error: %v\n", err)
 		if retryableError(err) {
 			maxTries--
-			d.log("Retrying download %s: %d\n", url, maxTries)
+			d.log("Retrying %d %s\n", maxTries, url)
 			time.Sleep(delay)
 		} else {
 			// Can't retry
-			d.log("Cannot retry download %s\n", url)
+			d.log("Error (retrying): HTTP code %s while fetching %s\n", err, url)
 			break
 		}
 	}
@@ -115,8 +114,7 @@ func (d *GrabDownloader) maybeSetupChecksum(req *grab.Request, expected *utils.C
 }
 
 func (d *GrabDownloader) download(_ context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
-	// TODO clean up dest dir on permanent failure
-	d.log("Download %s -> %s\n", url, destination)
+	d.log("Downloading: %s\n", url)
 
 	req, err := grab.NewRequest(destination, url)
 	if err != nil {
