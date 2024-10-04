@@ -24,6 +24,7 @@ mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discu
 
 Aptly features: ("+" means planned features)
 
+
 * make mirrors of remote Debian/Ubuntu repositories, limiting by components/architectures
 * take snapshots of mirrors at any point in time, fixing state of repository at some moment of time
 * publish snapshot as Debian repository, ready to be consumed by apt
