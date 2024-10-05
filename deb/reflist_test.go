@@ -65,7 +65,7 @@ func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
 	list, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, IsNil)
 	c.Check(list.Len(), Equals, 4)
-	c.Check(list.Add(s.p4), ErrorMatches, "conflict in package.*")
+        c.Check(list.Add(s.p4), ErrorMatches, "package already exists and is different: .*")
 
 	list, err = NewPackageListFromRefList(nil, coll, nil)
 	c.Assert(err, IsNil)
