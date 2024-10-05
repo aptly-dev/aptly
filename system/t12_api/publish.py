@@ -6,7 +6,6 @@ from api_lib import TASK_SUCCEEDED, APITest
 
 DefaultSigningOptions = {
     "Keyring": os.path.join(os.path.dirname(inspect.getsourcefile(APITest)), "files") + "/aptly.pub",
-    "SecretKeyring": os.path.join(os.path.dirname(inspect.getsourcefile(APITest)), "files") + "/aptly.sec",
 }
 
 

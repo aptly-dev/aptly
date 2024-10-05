@@ -110,8 +110,8 @@ func (s *Gnupg1SignerSuite) SetUpTest(c *C) {
 		c.Skip(err.Error())
 	}
 
-	s.keyringNoPassphrase = [2]string{"keyrings/aptly.pub", "keyrings/aptly.sec"}
-	s.keyringPassphrase = [2]string{"keyrings/aptly_passphrase.pub", "keyrings/aptly_passphrase.sec"}
+	s.keyringNoPassphrase = [2]string{"../system/files/aptly.pub", "../system/files/aptly.sec"}
+	s.keyringPassphrase = [2]string{"../system/files/aptly_passphrase.pub", "../system/files/aptly_passphrase.sec"}
 	s.passphraseKey = "F30E8CB9CDDE2AF8"
 	s.noPassphraseKey = "21DBB89C16DB3E6D"
 
@@ -119,8 +119,8 @@ func (s *Gnupg1SignerSuite) SetUpTest(c *C) {
 	s.signer.SetBatch(true)
 
 	s.verifier = &GoVerifier{}
-	s.verifier.AddKeyring("./keyrings/aptly.pub")
-	s.verifier.AddKeyring("./keyrings/aptly_passphrase.pub")
+	s.verifier.AddKeyring("../system/files/aptly.pub")
+	s.verifier.AddKeyring("../system/files/aptly_passphrase.pub")
 
 	c.Assert(s.verifier.InitKeyring(false), IsNil)
 
@@ -183,7 +183,7 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 				args = append(args, "--pinentry-mode", "loopback")
 			}
 		}
-		args = append(args, "keyrings/aptly2"+item.suffix+".sec.armor")
+		args = append(args, "../system/files/aptly2"+item.suffix+".sec.armor")
 
 		output, err := exec.Command(gpg, args...).CombinedOutput()
 		c.Log(string(output))
@@ -193,14 +193,14 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 	// import public keys into gpg2
 	// we can't use pre-built keyrings as gpg 2.0.x and 2.1+ have different keyring formats
 	for _, suffix := range []string{"", "_passphrase"} {
-		output, err := exec.Command(gpg, "--no-default-keyring", "--batch", "--keyring", "./keyrings/aptly2"+suffix+".gpg",
-			"--import", "keyrings/aptly2"+suffix+".pub.armor").CombinedOutput()
+		output, err := exec.Command(gpg, "--no-default-keyring", "--batch", "--keyring", "../system/files/aptly2"+suffix+".gpg",
+			"--import", "../system/files/aptly2"+suffix+".pub.armor").CombinedOutput()
 		c.Log(string(output))
 		c.Check(err, IsNil)
 	}
 
-	s.keyringNoPassphrase = [2]string{"./keyrings/aptly2.gpg", ""}
-	s.keyringPassphrase = [2]string{"./keyrings/aptly2_passphrase.gpg", ""}
+	s.keyringNoPassphrase = [2]string{"../system/files/aptly2.gpg", ""}
+	s.keyringPassphrase = [2]string{"../system/files/aptly2_passphrase.gpg", ""}
 	s.noPassphraseKey = "751DF85C2B220D45"
 	s.passphraseKey = "6656CD181E92D2D5"
 
@@ -208,7 +208,7 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 	s.signer.SetBatch(true)
 
 	s.verifier = &GoVerifier{}
-	s.verifier.AddKeyring("./keyrings/aptly2_trusted.pub")
+	s.verifier.AddKeyring("../system/files/aptly2_trusted.pub")
 
 	c.Assert(s.verifier.InitKeyring(false), IsNil)
 
@@ -220,6 +220,6 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 func (s *Gnupg2SignerSuite) TearDownTest(c *C) {
 	s.SignerSuite.TearDownTest(c)
 
-	os.Remove("./keyrings/aptly2.gpg")
-	os.Remove("./keyrings/aptly2_passphrase.gpg")
+	os.Remove("../system/files/aptly2.gpg")
+	os.Remove("../system/files/aptly2_passphrase.gpg")
 }

@@ -43,9 +43,8 @@ aptly.test
 
 build/
 
-pgp/keyrings/aptly2*.gpg
-pgp/keyrings/aptly2*.gpg~
-pgp/keyrings/.#*
+system/files/aptly2.gpg~
+system/files/aptly2_passphrase.gpg~
 
 *.creds
 
