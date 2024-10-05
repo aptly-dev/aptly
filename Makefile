@@ -45,6 +45,9 @@ version:  ## Print aptly version
 swagger-install:
 	# Install swag
 	@test -f $(BINPATH)/swag || GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
+	# Generate swagger.conf
+	cp docs/swagger.conf.tpl docs/swagger.conf
+	echo "// @version $(VERSION)" >> docs/swagger.conf
 
 azurite-start:
 	azurite & \
@@ -55,7 +58,7 @@ azurite-stop:
 
 swagger: swagger-install
 	# Generate swagger docs
-	@PATH=$(BINPATH)/:$(PATH) swag init --markdownFiles docs
+	@PATH=$(BINPATH)/:$(PATH) swag init --markdownFiles docs --generalInfo docs/swagger.conf
 
 etcd-install:
 	# Install etcd
@@ -107,7 +110,7 @@ serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
 	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs --generalInfo docs/swagger.conf' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
@@ -205,7 +208,8 @@ man:  ## Create man pages
 
 clean:  ## remove local build and module cache
 	# Clean all generated and build files
-	test -d .go/ && chmod u+w -R .go/ && rm -rf .go/ || true
+	find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
+	rm -rf .go/
 	rm -rf build/ obj-*-linux-gnu* tmp/
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true

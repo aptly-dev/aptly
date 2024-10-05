@@ -70,4 +70,7 @@ usr/bin/aptly
 dpkgs/
 debian/changelog.dpkg-bak
 
-docs/
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+docs/swagger.conf
