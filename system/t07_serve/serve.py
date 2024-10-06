@@ -41,7 +41,7 @@ class Serve1Test(BaseTest):
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap2 debian",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=main,contrib snap1 snap2 multi",
     ]
-    runCmd = "aptly serve -listen=127.0.0.1:8765"
+    runCmd = "../aptly.test serve -listen=127.0.0.1:8765"
 
     def run(self):
         try:
