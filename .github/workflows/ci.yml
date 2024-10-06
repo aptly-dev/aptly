@@ -44,6 +44,10 @@ jobs:
       - name: "Run flake8"
         run: |
           make flake8
+          echo "The commit hash on master is $GITHUB_SHA"
+          echo "The commit hash on master is $GITHUB_REF"
+          env
+          git show
 
       - name: "Read go version from go.mod"
         run: |
