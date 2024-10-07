@@ -5,4 +5,4 @@ Signing file 'Release' with gpg, please enter your passphrase when prompted:
 Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
 Cleaning up prefix "." components main...
 
-Publish for local repo s3:test1:./maverick [i386, source] publishes {main: [local-repo]} has been successfully updated.
+Published local repository s3:test1:./maverick [i386, source] publishes {main: [local-repo]} has been successfully updated.

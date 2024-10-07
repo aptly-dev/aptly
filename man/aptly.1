@@ -1616,14 +1616,14 @@ suite to publish (defaults to distribution)
 \-\fBcodename\fR=
 codename to publish (defaults to distribution)
 .
-.SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SNAPSHOT"
-\fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-snapshot\fR
+.SH "UPDATE PUBLISHED REPOSITORY BY SWITCHING TO NEW SOURCE"
+\fBaptly\fR \fBpublish\fR \fBswitch\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fInew\-source\fR
 .
 .P
-Command switches in\-place published snapshots with new snapshot contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
+Command switches in\-place published sources with new source contents\. All publishing parameters are preserved (architecture list, distribution, component)\.
 .
 .P
-For multiple component repositories, flag \-component should be given with list of components to update\. Corresponding snapshots should be given in the same order, e\.g\.:
+For multiple component repositories, flag \-component should be given with list of components to update\. Corresponding sources should be given in the same order, e\.g\.:
 .
 .IP "" 4
 .

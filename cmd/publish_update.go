@@ -17,7 +17,6 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	distribution := args[0]
 	param := "."
-	multiDist := context.Flags().Lookup("multi-dist").Value.Get().(bool)
 
 	if len(args) == 2 {
 		param = args[1]
@@ -65,7 +64,11 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.SkipBz2 = context.Flags().Lookup("skip-bz2").Value.Get().(bool)
 	}
 
-	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, multiDist)
+	if context.Flags().IsSet("multi-dist") {
+		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
+	}
+
+	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite)
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
@@ -84,7 +87,7 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	context.Progress().Printf("\nPublish for local repo %s has been successfully updated.\n", published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been successfully updated.\n", published.SourceKind, published.String())
 
 	return err
 }

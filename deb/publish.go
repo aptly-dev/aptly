@@ -46,7 +46,7 @@ type PublishedRepo struct {
 	Codename             string
 	// Architectures is a list of all architectures published
 	Architectures []string
-	// SourceKind is "local"/"repo"
+	// SourceKind is "local"/"snapshot"
 	SourceKind string
 
 	// Map of sources by each component: component name -> source UUID
@@ -70,6 +70,9 @@ type PublishedRepo struct {
 
 	// Provide index files per hash also
 	AcquireByHash bool
+
+	// Enable multiple packages with same filename in different distributions
+	MultiDist bool
 }
 
 // ParsePrefix splits [storage:]prefix into components
@@ -284,7 +287,8 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	}
 
 	sources := []sourceInfo{}
-	for component, item := range p.sourceItems {
+	for _, component := range p.Components() {
+		item := p.sourceItems[component]
 		name := ""
 		if item.snapshot != nil {
 			name = item.snapshot.Name
@@ -300,21 +304,21 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(map[string]interface{}{
+		"AcquireByHash":        p.AcquireByHash,
 		"Architectures":        p.Architectures,
+		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
+		"Codename":             p.Codename,
 		"Distribution":         p.Distribution,
 		"Label":                p.Label,
-		"Origin":               p.Origin,
-		"Suite":                p.Suite,
-		"Codename":             p.Codename,
 		"NotAutomatic":         p.NotAutomatic,
-		"ButAutomaticUpgrades": p.ButAutomaticUpgrades,
-		"Prefix":               p.Prefix,
+		"Origin":               p.Origin,
 		"Path":                 p.GetPath(),
+		"Prefix":               p.Prefix,
+		"SkipContents":         p.SkipContents,
 		"SourceKind":           p.SourceKind,
 		"Sources":              sources,
 		"Storage":              p.Storage,
-		"SkipContents":         p.SkipContents,
-		"AcquireByHash":        p.AcquireByHash,
+		"Suite":                p.Suite,
 	})
 }
 
@@ -452,8 +456,26 @@ func (p *PublishedRepo) UpdateLocalRepo(component string) {
 	p.rePublishing = true
 }
 
-// UpdateSnapshot switches snapshot for component
-func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
+// UpsertLocalRepo inserts/updates local repository source for component
+func (p *PublishedRepo) UpsertLocalRepo(component string, localRepo *LocalRepo) {
+	if p.SourceKind != SourceLocalRepo {
+		panic("not local repo publish")
+	}
+
+	item, exists := p.sourceItems[component]
+	if !exists {
+		item = repoSourceItem{}
+	}
+	item.localRepo = localRepo
+	item.packageRefs = localRepo.RefList()
+	p.sourceItems[component] = item
+
+	p.Sources[component] = localRepo.UUID
+	p.rePublishing = true
+}
+
+// UpsertSnapshot inserts/updates snapshot source for component
+func (p *PublishedRepo) UpsertSnapshot(component string, snapshot *Snapshot) {
 	if p.SourceKind != SourceSnapshot {
 		panic("not snapshot publish")
 	}
@@ -466,6 +488,14 @@ func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
 	p.sourceItems[component] = item
 
 	p.Sources[component] = snapshot.UUID
+	p.rePublishing = true
+}
+
+// RemoveComponent removes component from published repository
+func (p *PublishedRepo) RemoveComponent(component string) {
+	delete(p.Sources, component)
+	delete(p.sourceItems, component)
+
 	p.rePublishing = true
 }
 
@@ -547,7 +577,7 @@ func (p *PublishedRepo) GetCodename() string {
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite, multiDist bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -659,7 +689,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						if err2 != nil {
 							return err2
 						}
-						if multiDist {
+						if p.MultiDist {
 							relPath = filepath.Join("pool", p.Distribution, component, poolDir)
 						} else {
 							relPath = filepath.Join("pool", component, poolDir)

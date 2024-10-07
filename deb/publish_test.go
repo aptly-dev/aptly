@@ -196,7 +196,8 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 func (s *PublishedRepoSuite) TestMultiDistPool(c *C) {
 	repo, err := NewPublishedRepo("", "ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory)
 	c.Assert(err, IsNil)
-	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, true)
+	repo.MultiDist = true
+	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false)
 	c.Assert(err, IsNil)
 
 	publishedStorage := files.NewPublishedStorage(s.root, "", "")
@@ -360,7 +361,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublish(c *C) {
-	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, false)
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false)
 	c.Assert(err, IsNil)
 
 	c.Check(s.repo.Architectures, DeepEquals, []string{"i386"})
@@ -407,7 +408,7 @@ func (s *PublishedRepoSuite) TestPublish(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
-	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"), PathExists)
@@ -415,7 +416,7 @@ func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
-	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
+	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
@@ -423,7 +424,7 @@ func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
-	err := s.repo4.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
+	err := s.repo4.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
@@ -431,7 +432,7 @@ func (s *PublishedRepoSuite) TestPublishLocalSourceRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestPublishOtherStorage(c *C) {
-	err := s.repo5.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, false)
+	err := s.repo5.Publish(s.packagePool, s.provider, s.factory, nil, nil, false)
 	c.Assert(err, IsNil)
 
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/dists/maverick/Release"), PathExists)
