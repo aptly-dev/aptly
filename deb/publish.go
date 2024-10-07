@@ -70,6 +70,9 @@ type PublishedRepo struct {
 
 	// Provide index files per hash also
 	AcquireByHash bool
+
+	// Support multiple distributions
+	MultiDist bool
 }
 
 // ParsePrefix splits [storage:]prefix into components
@@ -153,13 +156,14 @@ func walkUpTree(source interface{}, collectionFactory *CollectionFactory) (rootD
 // distribution and architectures are user-defined properties
 // components & sources are lists of component to source mapping (*Snapshot or *LocalRepo)
 func NewPublishedRepo(storage, prefix, distribution string, architectures []string,
-	components []string, sources []interface{}, collectionFactory *CollectionFactory) (*PublishedRepo, error) {
+	components []string, sources []interface{}, collectionFactory *CollectionFactory, multiDist bool) (*PublishedRepo, error) {
 	result := &PublishedRepo{
 		UUID:          uuid.New(),
 		Storage:       storage,
 		Architectures: architectures,
 		Sources:       make(map[string]string),
 		sourceItems:   make(map[string]repoSourceItem),
+		MultiDist:     multiDist,
 	}
 
 	if len(sources) == 0 {
@@ -315,6 +319,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		"Storage":              p.Storage,
 		"SkipContents":         p.SkipContents,
 		"AcquireByHash":        p.AcquireByHash,
+		"MultiDist":            p.MultiDist,
 	})
 }
 
@@ -547,7 +552,7 @@ func (p *PublishedRepo) GetCodename() string {
 
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite, multiDist bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -659,7 +664,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						if err2 != nil {
 							return err2
 						}
-						if multiDist {
+						if p.MultiDist {
 							relPath = filepath.Join("pool", p.Distribution, component, poolDir)
 						} else {
 							relPath = filepath.Join("pool", component, poolDir)

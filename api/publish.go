@@ -130,7 +130,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	var resources []string
 	collectionFactory := context.NewCollectionFactory()
 
-	if b.SourceKind == "snapshot" {
+	if b.SourceKind == deb.SourceSnapshot {
 		var snapshot *deb.Snapshot
 
 		snapshotCollection := collectionFactory.SnapshotCollection()
@@ -182,7 +182,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory)
+	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, b.MultiDist)
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
 		return
@@ -232,7 +232,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
-		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite, b.MultiDist)
+		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
@@ -263,7 +263,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			Name      string `binding:"required"`
 		}
 		AcquireByHash *bool
-		MultiDist     bool
+		MultiDist     *bool
 	}
 
 	if c.Bind(&b) != nil {
@@ -339,10 +339,14 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.AcquireByHash = *b.AcquireByHash
 	}
 
+	if b.MultiDist != nil {
+		published.MultiDist = *b.MultiDist
+	}
+
 	resources = append(resources, string(published.Key()))
 	taskName := fmt.Sprintf("Update published %s (%s): %s", published.SourceKind, strings.Join(updatedComponents, " "), strings.Join(updatedSnapshots, ", "))
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, b.MultiDist)
+		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
