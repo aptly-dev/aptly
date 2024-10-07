@@ -9,7 +9,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg b
         binutils-arm-linux-gnueabihf bash-completion zip ruby3.1-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m --shell /bin/sh --home-dir /var/lib/aptly aptly
+RUN useradd -m --shell /bin/bash --home-dir /var/lib/aptly aptly
 RUN sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/' /var/lib/aptly/.bashrc
 
 RUN mkdir /work
