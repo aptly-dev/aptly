@@ -55,6 +55,8 @@ class APITest(BaseTest):
         if os.path.exists(os.path.join(os.environ["HOME"], self.aptlyDir, "upload")):
             shutil.rmtree(os.path.join(os.environ["HOME"], self.aptlyDir, "upload"))
 
+        self.prepare_fixture()
+
     def debug_output(self):
         return APITest.aptly_out.get_contents()
 

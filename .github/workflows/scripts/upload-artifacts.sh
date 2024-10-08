@@ -82,6 +82,7 @@ update_publish() {
         _state=`echo $jsonret | jq .State`
         if [ "$_state" = "2" ]; then
             _success=1
+            curl -fsS -X DELETE -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_task_id
             break
         fi
         if [ "$_state" = "3" ]; then
