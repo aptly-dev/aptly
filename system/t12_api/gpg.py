@@ -2,6 +2,7 @@ import inspect
 import os
 import subprocess
 import tempfile
+import json
 
 from api_lib import APITest
 
@@ -25,6 +26,12 @@ class GPGAPITestAddKey(APITest):
     """
     requiresGPG2 = True
 
+    fixtureCmds = [
+        "gpgconf --kill dirmngr",
+        "gpgconf --launch dirmngr",
+        "sleep 2"
+    ]
+
     def check(self):
         with tempfile.NamedTemporaryFile(suffix=".pub") as keyring:
             gpgkeyid = "9E3E53F19C7DE460"
@@ -33,7 +40,9 @@ class GPGAPITestAddKey(APITest):
                 "Keyring": keyring.name,
                 "GpgKeyID": gpgkeyid
             })
-
+            if resp.status_code != 200:
+                output = json.loads(resp.text)
+                print(f"{output}\n")
             self.check_equal(resp.status_code, 200)
             check_gpgkey_exists(gpgkeyid, keyring.name)
 

@@ -267,7 +267,7 @@ class BaseTest(object):
             self.webServerUrl = self.start_webserver(os.path.join(os.path.dirname(inspect.getsourcefile(self.__class__)),
                                                                   self.fixtureWebServer))
 
-        if self.requiresGPG2:
+        if self.requiresGPG2 or self.gpgFinder.gpg2:
             self.run_cmd([
                 self.gpgFinder.gpg2, "--import",
                 os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files") + "/aptly.sec"], expected_code=None)
