@@ -1,0 +1,27 @@
+Usage: aptly publish remove <distribution> <component>...
+
+aptly publish remove - remove component from published repository
+
+
+Options:
+  -architectures="": list of architectures to consider during (comma-separated), default to all available
+  -batch: run GPG with detached tty
+  -config="": location of configuration file (default locations in order: ~/.aptly.conf, /usr/local/etc/aptly.conf, /etc/aptly.conf)
+  -db-open-attempts=10: number of attempts to open DB if it's locked by other instance
+  -dep-follow-all-variants: when processing dependencies, follow a & b if dependency is 'a|b'
+  -dep-follow-recommends: when processing dependencies, follow Recommends
+  -dep-follow-source: when processing dependencies, follow from binary to Source packages
+  -dep-follow-suggests: when processing dependencies, follow Suggests
+  -dep-verbose-resolve: when processing dependencies, print detailed logs
+  -force-overwrite: overwrite files in package pool in case of mismatch
+  -gpg-key="": GPG key ID to use when signing the release
+  -gpg-provider="": PGP implementation ("gpg", "gpg1", "gpg2" for external gpg or "internal" for Go internal implementation)
+  -keyring=: GPG keyring to use (instead of default)
+  -multi-dist: enable multiple packages with the same filename in different distributions
+  -passphrase="": GPG passphrase for the key (warning: could be insecure)
+  -passphrase-file="": GPG passphrase-file for the key (warning: could be insecure)
+  -prefix="": publishing prefix in the form of [<endpoint>:]<prefix>
+  -secret-keyring="": GPG secret keyring to use (instead of default)
+  -skip-cleanup: don't remove unreferenced files in prefix/component
+  -skip-signing: don't sign Release files with GPG
+ERROR: unable to parse command

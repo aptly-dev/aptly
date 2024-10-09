@@ -38,6 +38,7 @@ func makeCmdPublish() *commander.Command {
 			makeCmdPublishSwitch(),
 			makeCmdPublishUpdate(),
 			makeCmdPublishShow(),
+			makeCmdPublishRemove(),
 		},
 	}
 }

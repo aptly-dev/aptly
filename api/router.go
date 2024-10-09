@@ -191,6 +191,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		api.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
 		api.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
 		api.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
+		api.POST("/publish/:prefix/:distribution/remove", apiPublishRemove)
 	}
 
 	{
