@@ -179,11 +179,10 @@ type publishedRepoCreateParams struct {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix} [post]
 func apiPublishRepoOrSnapshot(c *gin.Context) {
-	var b publishedRepoCreateParams
-
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 
+	var b publishedRepoCreateParams
 	if c.Bind(&b) != nil {
 		return
 	}
@@ -259,7 +258,11 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, *b.MultiDist)
+	multiDist := false
+	if b.MultiDist != nil {
+		multiDist = *b.MultiDist
+	}
+	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, multiDist)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err))
 		return
@@ -751,6 +754,10 @@ func apiPublishUpdate(c *gin.Context) {
 
 	if b.AcquireByHash != nil {
 		published.AcquireByHash = *b.AcquireByHash
+	}
+
+	if b.MultiDist != nil {
+		published.MultiDist = *b.MultiDist
 	}
 
 	resources := []string{string(published.Key())}
