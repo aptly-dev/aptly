@@ -11,6 +11,8 @@ import (
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
 	RootDir                string                           `json:"rootDir"`
+	LogFile                string                           `json:"logFile"`
+	UseAuth                bool                             `json:"useAuth"`
 	DownloadConcurrency    int                              `json:"downloadConcurrency"`
 	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
 	DownloadRetries        int                              `json:"downloadRetries"`
@@ -43,6 +45,7 @@ type ConfigStructure struct { // nolint: maligned
 	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
 	DatabaseBackend        DBConfig                         `json:"databaseBackend"`
 	EnableSwaggerEndpoint  bool                             `json:"enableSwaggerEndpoint"`
+	Auth                   AAuth                            `json:"Auth"`
 }
 
 // DBConfig
@@ -150,9 +153,19 @@ type AzureEndpoint struct {
 	Endpoint    string `json:"endpoint"`
 }
 
+type AAuth struct {
+	Type       string `json:"authType"`
+	Server     string `json:"server"`
+	LdapDN     string `json:"ldapDN"`
+	LdapFilter string `json:"ldapFilter"`
+	SecureTLS  bool   `json:"secureTLS"`
+}
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	LogFile:                "",
+	UseAuth:                false, // should we enable auth
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
@@ -182,6 +195,7 @@ var Config = ConfigStructure{
 	LogFormat:              "default",
 	ServeInAPIMode:         false,
 	EnableSwaggerEndpoint:  false,
+	Auth:                   AAuth{},
 }
 
 // LoadConfig loads configuration from json file
