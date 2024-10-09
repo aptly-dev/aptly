@@ -8,6 +8,7 @@
   "Codename": "",
   "Distribution": "maverick",
   "Label": "",
+  "MultiDist": false,
   "NotAutomatic": "",
   "Origin": "LP-PPA-gladky-anton-gnuplot",
   "Path": "./maverick",

@@ -94,7 +94,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 		repo.UpdateRefList(refs.Merge(sharedRefs, false, true))
 		repoCollection.Add(repo)
 
-		publish, err := NewPublishedRepo("", "test", "", nil, []string{defaultComponent}, []interface{}{repo}, factory)
+		publish, err := NewPublishedRepo("", "test", "", nil, []string{defaultComponent}, []interface{}{repo}, factory, false)
 		if err != nil {
 			b.Fatal(err)
 		}

@@ -462,3 +462,28 @@ class PublishUpdate13Test(BaseTest):
         self.check_exists('public/dists/maverick/main/binary-i386/Packages')
         self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
         self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+
+
+class PublishUpdate14Test(BaseTest):
+    """
+    publish update: -multi-dist
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}/",
+        "aptly publish repo -keyring=${files}/aptly.pub -distribution=bookworm local-repo",
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -multi-dist bookworm"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate14Test, self).check()
+
+        self.check_exists('public/dists/bookworm/InRelease')
+        self.check_exists('public/dists/bookworm/Release')
+        self.check_exists('public/dists/bookworm/Release.gpg')
+
+        self.check_exists('public/dists/bookworm/main/binary-i386/Packages')
+        self.check_exists('public/dists/bookworm/main/binary-i386/Packages.gz')
+
+        self.check_exists('public/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')

@@ -52,6 +52,7 @@ class PublishAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': '',
@@ -96,6 +97,7 @@ class PublishAPITestRepo(APITest):
             'Path': './' + distribution,
             'Prefix': ".",
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': '',
@@ -120,6 +122,71 @@ class PublishAPITestRepo(APITest):
         self.check_equal(all_repos.status_code, 200)
         self.check_in(repo_expected, all_repos.json())
         self.check_in(repo2_expected, all_repos.json())
+
+
+class PublishAPITestRepoMultiDist(APITest):
+    """
+    Test MultiDist publishing to subdirectory
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo_name, "DefaultDistribution": "bookworm"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "MultiDist": True,
+                 "Sources": [{"Name": repo_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        )
+        self.check_task(task)
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'bookworm',
+            'Label': '',
+            'Origin': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'bookworm',
+            'Prefix': prefix,
+            'SkipContents': False,
+            'MultiDist': True,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_exists("public/" + prefix + "/dists/bookworm/Release")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/Contents-i386.gz")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/source/Sources")
+        self.check_exists(
+            "public/" + prefix + "/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
 
 class PublishSnapshotAPITest(APITest):
@@ -172,6 +239,7 @@ class PublishSnapshotAPITest(APITest):
             'Distribution': 'squeeze',
             'Label': 'fun',
             'Origin': 'earth',
+            'MultiDist': False,
             'NotAutomatic': 'yes',
             'ButAutomaticUpgrades': 'yes',
             'Path': prefix + '/' + 'squeeze',
@@ -265,6 +333,7 @@ class PublishUpdateAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': '',
@@ -283,6 +352,94 @@ class PublishUpdateAPITestRepo(APITest):
             "public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
 
         task = self.delete_task("/api/publish/" + prefix + "/wheezy")
+        self.check_task(task)
+        self.check_not_exists("public/" + prefix + "dists/")
+
+
+class PublishUpdateAPIMultiDist(APITest):
+    """
+    Test MultiDist publishing to subdirectory
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo_name, "DefaultDistribution": "bookworm"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(
+            self.upload("/api/files/" + d,
+                        "pyspi_0.6.1-1.3.dsc",
+                        "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                        "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                "Architectures": ["i386", "source"],
+                "SourceKind": "local",
+                "Sources": [{"Name": repo_name}],
+                "Signing": DefaultSigningOptions,
+            }
+        )
+        self.check_task(task)
+
+        self.check_not_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists("public/" + prefix +
+                          "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        task = self.delete_task("/api/repos/" + repo_name + "/packages/",
+                                json={"PackageRefs": ['Psource pyspi 0.6.1-1.4 f8f1daa806004e89']})
+        self.check_task(task)
+
+        # Update and switch MultiDist on.
+        task = self.put_task(
+            "/api/publish/" + prefix + "/bookworm",
+            json={
+                "MultiDist": True,
+                "Signing": DefaultSigningOptions,
+            }
+        )
+        self.check_task(task)
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'bookworm',
+            'Label': '',
+            'Origin': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'bookworm',
+            'Prefix': prefix,
+            'SkipContents': False,
+            'MultiDist': True,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_exists(
+            "public/" + prefix + "/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_not_exists(
+            "public/" + prefix + "/pool/bookworm/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        task = self.delete_task("/api/publish/" + prefix + "/bookworm")
         self.check_task(task)
         self.check_not_exists("public/" + prefix + "dists/")
 
@@ -368,6 +525,7 @@ class PublishConcurrentUpdateAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': '',
@@ -465,6 +623,7 @@ class PublishUpdateSkipCleanupAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'local',
             'Sources': [{'Component': 'main', 'Name': repo_name}],
             'Storage': '',
@@ -532,6 +691,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': '',
@@ -579,6 +739,7 @@ class PublishSwitchAPITestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': True,
+            'MultiDist': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
             'Storage': '',
@@ -644,6 +805,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': '',
@@ -681,6 +843,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'Path': prefix + '/' + 'otherdist',
             'Prefix': prefix,
             'SkipContents': False,
+            'MultiDist': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
             'Storage': '',
@@ -723,6 +886,7 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
             'SkipContents': True,
+            'MultiDist': False,
             'SourceKind': 'snapshot',
             'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
             'Storage': '',
