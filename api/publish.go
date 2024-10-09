@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -12,17 +13,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SigningOptions is a shared between publish API GPG options structure
-type SigningOptions struct {
-	Skip           bool
-	GpgKey         string
-	Keyring        string
-	SecretKeyring  string
-	Passphrase     string
-	PassphraseFile string
+type signingParams struct {
+	// Don't sign published repository
+	Skip bool `                json:"Skip"`
+	// GPG key ID to use when signing the release, if not specified default key is used
+	GpgKey string `            json:"GpgKey"`
+	// GPG keyring to use (instead of default)
+	Keyring string `           json:"Keyring"`
+	// GPG secret keyring to use (instead of default)
+	SecretKeyring string `    json:"SecretKeyring"`
+	// GPG passphrase to unlock private key (possibly insecure)
+	Passphrase string `       json:"Passphrase"`
+	// GPG passphrase file to unlock private key (possibly insecure)
+	PassphraseFile string `    json:"PassphraseFile"`
 }
 
-func getSigner(options *SigningOptions) (pgp.Signer, error) {
+type sourceParams struct {
+	// Name of the component
+	Component string `binding:"required"   json:"Component"   example:"contrib"`
+	// Name of the local repository/snapshot
+	Name string `binding:"required"        json:"Name"        example:"snap1"`
+}
+
+func getSigner(options *signingParams) (pgp.Signer, error) {
 	if options.Skip {
 		return nil, nil
 	}
@@ -52,10 +65,10 @@ func parseEscapedPath(path string) string {
 	return result
 }
 
-// @Summary Get publish points
-// @Description Get list of available publish points. Each publish point is returned as in “show” API.
+// @Summary List published repositories
+// @Description **Get a list of all published repositories**
 // @Tags Publish
-// @Produce  json
+// @Produce json
 // @Success 200 {array} deb.PublishedRepo
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish [get]
@@ -77,37 +90,97 @@ func apiPublishList(c *gin.Context) {
 	})
 
 	if err != nil {
-		AbortWithJSONError(c, 500, err)
+		AbortWithJSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(200, result)
+	c.JSON(http.StatusOK, result)
 }
 
-// POST /publish/:prefix
-func apiPublishRepoOrSnapshot(c *gin.Context) {
+// @Summary Show published repository
+// @Description **Get published repository by name**
+// @Tags Publish
+// @Consume json
+// @Produce json
+// @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambigious in URLs"
+// @Param distribution path string true "distribution name"
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/publish/{prefix}/{distribution} [get]
+func apiPublishShow(c *gin.Context) {
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
 
-	var b struct {
-		SourceKind string `binding:"required"`
-		Sources    []struct {
-			Component string
-			Name      string `binding:"required"`
-		} `binding:"required"`
-		Distribution         string
-		Label                string
-		Origin               string
-		NotAutomatic         string
-		ButAutomaticUpgrades string
-		ForceOverwrite       bool
-		SkipContents         *bool
-		SkipBz2              *bool
-		Architectures        []string
-		Signing              SigningOptions
-		AcquireByHash        *bool
-		MultiDist            bool
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
 	}
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, published)
+}
+
+type publishedRepoCreateParams struct {
+	// 'local' for local repositories and 'snapshot' for snapshots
+	SourceKind string `binding:"required"    json:"SourceKind"    example:"snapshot"`
+	// List of 'Component/Name' objects, 'Name' is either local repository or snapshot name
+	Sources []sourceParams `binding:"required"    json:"Sources"`
+	// Distribution name, if missing Aptly would try to guess from sources
+	Distribution string `                         json:"Distribution"`
+	// Value of Label: field in published repository stanza
+	Label string `                                json:"Label"`
+	// Value of Origin: field in published repository stanza
+	Origin string `                               json:"Origin"`
+	// when publishing, overwrite files in pool/ directory without notice
+	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	// Override list of published architectures
+	Architectures []string `                      json:"Architectures"`
+	// GPG options
+	Signing signingParams `                       json:"Signing"`
+	// Setting to yes indicates to the package manager to not install or upgrade packages from the repository without user consent
+	NotAutomatic string `                         json:"NotAutomatic"`
+	// setting to yes excludes upgrades from the NotAutomic setting
+	ButAutomaticUpgrades string `                 json:"ButAutomaticUpgrades"`
+	// Don't generate contents indexes
+	SkipContents *bool `                          json:"SkipContents"`
+	// Don't remove unreferenced files in prefix/component
+	SkipCleanup *bool `                           json:"SkipCleanup"`
+	// Skip bz2 compression for index files
+	SkipBz2 *bool `                               json:"SkipBz2"`
+	// Provide index files by hash
+	AcquireByHash *bool `                         json:"AcquireByHash"`
+	// Enable multiple packages with the same filename in different distributions
+	MultiDist *bool `                             json:"MultiDist"`
+}
+
+// @Summary Create published repository
+// @Description Publish local repository or snapshot under specified prefix. Storage might be passed in prefix as well, e.g. `s3:packages/`.
+// @Description To supply empty prefix, just remove last part (`POST /api/publish`).
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Consume json
+// @Param request body publishedRepoCreateParams true "Parameters"
+// @Produce json
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Source not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/publish/{prefix} [post]
+func apiPublishRepoOrSnapshot(c *gin.Context) {
+	var b publishedRepoCreateParams
+
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
 
 	if c.Bind(&b) != nil {
 		return
@@ -115,12 +188,12 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		AbortWithJSONError(c, 500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
 	if len(b.Sources) == 0 {
-		AbortWithJSONError(c, 400, fmt.Errorf("unable to publish: soures are empty"))
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unable to publish: soures are empty"))
 		return
 	}
 
@@ -141,14 +214,14 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			snapshot, err = snapshotCollection.ByName(source.Name)
 			if err != nil {
-				AbortWithJSONError(c, 404, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			resources = append(resources, string(snapshot.ResourceKey()))
 			err = snapshotCollection.LoadComplete(snapshot)
 			if err != nil {
-				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
@@ -165,33 +238,34 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 			localRepo, err = localCollection.ByName(source.Name)
 			if err != nil {
-				AbortWithJSONError(c, 404, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
 				return
 			}
 
 			resources = append(resources, string(localRepo.Key()))
 			err = localCollection.LoadComplete(localRepo)
 			if err != nil {
-				AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
+				AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err))
 			}
 
 			sources = append(sources, localRepo)
 		}
 	} else {
-		AbortWithJSONError(c, 400, fmt.Errorf("unknown SourceKind"))
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unknown SourceKind"))
 		return
 	}
 
-	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, b.MultiDist)
+	published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, *b.MultiDist)
 	if err != nil {
-		AbortWithJSONError(c, 500, fmt.Errorf("unable to publish: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to publish: %s", err))
 		return
 	}
 
 	resources = append(resources, string(published.Key()))
 	collection := collectionFactory.PublishedRepoCollection()
 
-	taskName := fmt.Sprintf("Publish %s: %s", b.SourceKind, strings.Join(names, ", "))
+	taskName := fmt.Sprintf("Publish %s repository %s/%s with components \"%s\" and sources \"%s\"",
+		b.SourceKind, published.StoragePrefix(), published.Distribution, strings.Join(components, `", "`), strings.Join(names, `", "`))
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		taskDetail := task.PublishDetail{
 			Detail: detail,
@@ -226,6 +300,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			published.AcquireByHash = *b.AcquireByHash
 		}
 
+		if b.MultiDist != nil {
+			published.MultiDist = *b.MultiDist
+		}
+
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
@@ -246,15 +324,26 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	})
 }
 
-// PUT /publish/:prefix/:distribution
+// @Summary Update published repository
+// @Description Update a published repository.
+// @Tags Publish
+// @Accept json
+// @Produce json
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Success 200 {object} deb.RemoteRepo
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository or source not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/publish/{prefix}/{distribution} [put]
 func apiPublishUpdateSwitch(c *gin.Context) {
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := c.Params.ByName("distribution")
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
 
 	var b struct {
 		ForceOverwrite bool
-		Signing        SigningOptions
+		Signing        signingParams
 		SkipContents   *bool
 		SkipBz2        *bool
 		SkipCleanup    *bool
@@ -272,7 +361,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
-		AbortWithJSONError(c, 500, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to initialize GPG signer: %s", err))
 		return
 	}
 
@@ -281,50 +370,20 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		AbortWithJSONError(c, 404, fmt.Errorf("unable to update: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
-		AbortWithJSONError(c, 500, fmt.Errorf("unable to update: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err))
 		return
 	}
-
-	var updatedComponents []string
-	var updatedSnapshots []string
-	var resources []string
 
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			AbortWithJSONError(c, 400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
-		updatedComponents = published.Components()
-		for _, component := range updatedComponents {
-			published.UpdateLocalRepo(component)
-		}
-	} else if published.SourceKind == "snapshot" {
-		for _, snapshotInfo := range b.Snapshots {
-			snapshotCollection := collectionFactory.SnapshotCollection()
-			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
-			if err2 != nil {
-				AbortWithJSONError(c, 404, err2)
-				return
-			}
-
-			err2 = snapshotCollection.LoadComplete(snapshot)
-			if err2 != nil {
-				AbortWithJSONError(c, 500, err2)
-				return
-			}
-
-			published.UpdateSnapshot(snapshotInfo.Component, snapshot)
-			updatedComponents = append(updatedComponents, snapshotInfo.Component)
-			updatedSnapshots = append(updatedSnapshots, snapshot.Name)
-		}
-	} else {
-		AbortWithJSONError(c, 500, fmt.Errorf("unknown published repository type"))
-		return
 	}
 
 	if b.SkipContents != nil {
@@ -343,10 +402,16 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.MultiDist = *b.MultiDist
 	}
 
-	resources = append(resources, string(published.Key()))
-	taskName := fmt.Sprintf("Update published %s (%s): %s", published.SourceKind, strings.Join(updatedComponents, " "), strings.Join(updatedSnapshots, ", "))
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
+		result, err := published.Update(collectionFactory, out)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -356,11 +421,25 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
+		updatedComponents := result.UpdatedComponents()
+		removedComponents := result.RemovedComponents()
+
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents,
-				context.GetPublishedStorage(storage), collectionFactory, out)
+			publishedStorage := context.GetPublishedStorage(storage)
+
+			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents, publishedStorage, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+
+			if len(removedComponents) > 0 {
+				// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
+				for _, component := range removedComponents {
+					err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
+					if err != nil {
+						return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+					}
+				}
 			}
 		}
 
@@ -368,14 +447,27 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	})
 }
 
-// DELETE /publish/:prefix/:distribution
+// @Summary Delete published repository
+// @Description Delete a published repository.
+// @Tags Publish
+// @Accept json
+// @Produce json
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Param force query int true "force: 1 to enable"
+// @Param skipCleanup query int true "skipCleanup: 1 to enable"
+// @Success 200 {object} task.ProcessReturnValue
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
+// @Router /api/publish/{prefix}/{distribution} [delete]
 func apiPublishDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"
 
 	param := parseEscapedPath(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := c.Params.ByName("distribution")
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -388,7 +480,7 @@ func apiPublishDrop(c *gin.Context) {
 
 	resources := []string{string(published.Key())}
 
-	taskName := fmt.Sprintf("Delete published %s (%s)", prefix, distribution)
+	taskName := fmt.Sprintf("Delete published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err := collection.Remove(context, storage, prefix, distribution,
 			collectionFactory, out, force, skipCleanup)
@@ -397,5 +489,306 @@ func apiPublishDrop(c *gin.Context) {
 		}
 
 		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
+	})
+}
+
+// @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
+func apiPublishSourceUpdate(c *gin.Context) {
+	var (
+		err error
+		b   sourceParams
+	)
+
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	component := parseEscapedPath(c.Params.ByName("component"))
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	revision := published.ObtainRevision()
+	sources := revision.Sources
+
+	b.Component = component
+	b.Name = revision.Sources[component]
+
+	if c.Bind(&b) != nil {
+		return
+	}
+
+	if b.Component != component {
+		delete(sources, component)
+	}
+	sources[b.Component] = b.Name
+
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+	})
+}
+
+// @Router /api/publish/{prefix}/{distribution}/sources [put]
+func apiPublishSourcesUpdate(c *gin.Context) {
+	var (
+		err error
+		b   []sourceParams
+	)
+
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	if c.Bind(&b) != nil {
+		return
+	}
+
+	revision := published.ObtainRevision()
+	sources := make(map[string]string, len(b))
+	revision.Sources = sources
+
+	for _, source := range b {
+		component := source.Component
+		name := source.Name
+		sources[component] = name
+	}
+
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+	})
+}
+
+// @Router /api/publish/{prefix}/{distribution}/sources [get]
+func apiPublishSourceList(c *gin.Context) {
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	revision := published.Revision
+	if revision == nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: No source changes exist"))
+		return
+	}
+
+	c.JSON(http.StatusOK, revision.ToJSON()["Sources"])
+}
+
+// @Router /api/publish/{prefix}/{distribution}/sources/{component} [delete]
+func apiPublishSourceDelete(c *gin.Context) {
+	var err error
+
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	component := parseEscapedPath(c.Params.ByName("component"))
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	revision := published.ObtainRevision()
+	sources := revision.Sources
+
+	delete(sources, component)
+
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+	})
+}
+
+// @Router /api/publish/{prefix}/{distribution}/sources [delete]
+func apiPublishSourcesDelete(c *gin.Context) {
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		return
+	}
+
+	published.DropRevision()
+}
+
+// @Router /api/publish/{prefix}/{distribution}/update [post]
+func apiPublishUpdate(c *gin.Context) {
+	param := parseEscapedPath(c.Params.ByName("prefix"))
+	storage, prefix := deb.ParsePrefix(param)
+	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+
+	var b struct {
+		AcquireByHash  *bool
+		ForceOverwrite bool
+		Signing        signingParams
+		SkipBz2        *bool
+		SkipCleanup    *bool
+		SkipContents   *bool
+	}
+
+	if c.Bind(&b) != nil {
+		return
+	}
+
+	signer, err := getSigner(&b.Signing)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to initialize GPG signer: %s", err))
+		return
+	}
+
+	collectionFactory := context.NewCollectionFactory()
+	collection := collectionFactory.PublishedRepoCollection()
+
+	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+
+	err = collection.LoadComplete(published, collectionFactory)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err))
+		return
+	}
+
+	if b.SkipContents != nil {
+		published.SkipContents = *b.SkipContents
+	}
+
+	if b.SkipBz2 != nil {
+		published.SkipBz2 = *b.SkipBz2
+	}
+
+	if b.AcquireByHash != nil {
+		published.AcquireByHash = *b.AcquireByHash
+	}
+
+	resources := []string{string(published.Key())}
+
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		result, err := published.Update(collectionFactory, out)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		updatedComponents := result.UpdatedComponents()
+		removedComponents := result.RemovedComponents()
+
+		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		if b.SkipCleanup == nil || !*b.SkipCleanup {
+			publishedStorage := context.GetPublishedStorage(storage)
+
+			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents, publishedStorage, collectionFactory, out)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+
+			if len(removedComponents) > 0 {
+				// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
+				for _, component := range removedComponents {
+					err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
+					if err != nil {
+						return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+					}
+				}
+			}
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
 	})
 }
