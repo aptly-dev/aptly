@@ -408,12 +408,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		result, err := published.Update(collectionFactory, out)
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
 
 		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
 
 		err = collection.Update(published)
@@ -709,6 +709,7 @@ func apiPublishUpdate(c *gin.Context) {
 		SkipBz2        *bool
 		SkipCleanup    *bool
 		SkipContents   *bool
+		MultiDist      *bool
 	}
 
 	if c.Bind(&b) != nil {
