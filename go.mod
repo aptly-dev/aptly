@@ -125,6 +125,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.3
 	github.com/aws/smithy-go v1.20.3
+	github.com/folbricht/tpmk v0.1.2-0.20210411225238-7061339773c3
+	github.com/google/go-tpm v0.1.2-0.20190306182045-7a7fe86fbbf2
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
