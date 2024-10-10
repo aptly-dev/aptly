@@ -114,7 +114,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
-
 	b.Distribution = utils.PathEscape(b.Distribution)
 
 	signer, err := getSigner(&b.Signing)
@@ -273,6 +272,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
+	b.Distribution = utils.PathEscape(b.Distribution)
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
