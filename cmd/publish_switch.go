@@ -43,6 +43,10 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to switch: %s", err)
 	}
 
+	if published.SourceKind != deb.SourceSnapshot {
+		return fmt.Errorf("unable to switch: not a published snapshot repository")
+	}
+
 	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to switch: %s", err)
@@ -57,46 +61,23 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("mismatch in number of components (%d) and snapshots (%d)", len(components), len(names))
 	}
 
-	if published.SourceKind == deb.SourceLocalRepo {
-		localRepoCollection := collectionFactory.LocalRepoCollection()
-		for i, component := range components {
-			if !utils.StrSliceHasItem(publishedComponents, component) {
-				return fmt.Errorf("unable to switch: component %s does not exist in published repository", component)
-			}
-
-			localRepo, err := localRepoCollection.ByName(names[i])
-			if err != nil {
-				return fmt.Errorf("unable to switch: %s", err)
-			}
-
-			err = localRepoCollection.LoadComplete(localRepo)
-			if err != nil {
-				return fmt.Errorf("unable to switch: %s", err)
-			}
-
-			published.UpdateLocalRepo(component, localRepo)
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	for i, component := range components {
+		if !utils.StrSliceHasItem(publishedComponents, component) {
+			return fmt.Errorf("unable to switch: component %s does not exist in published repository", component)
 		}
-	} else if published.SourceKind == deb.SourceSnapshot {
-		snapshotCollection := collectionFactory.SnapshotCollection()
-		for i, component := range components {
-			if !utils.StrSliceHasItem(publishedComponents, component) {
-				return fmt.Errorf("unable to switch: component %s does not exist in published repository", component)
-			}
 
-			snapshot, err := snapshotCollection.ByName(names[i])
-			if err != nil {
-				return fmt.Errorf("unable to switch: %s", err)
-			}
-
-			err = snapshotCollection.LoadComplete(snapshot)
-			if err != nil {
-				return fmt.Errorf("unable to switch: %s", err)
-			}
-
-			published.UpdateSnapshot(component, snapshot)
+		snapshot, err := snapshotCollection.ByName(names[i])
+		if err != nil {
+			return fmt.Errorf("unable to switch: %s", err)
 		}
-	} else {
-		return fmt.Errorf("unknown published repository type")
+
+		err = snapshotCollection.LoadComplete(snapshot)
+		if err != nil {
+			return fmt.Errorf("unable to switch: %s", err)
+		}
+
+		published.UpdateSnapshot(component, snapshot)
 	}
 
 	signer, err := getSigner(context.Flags())
