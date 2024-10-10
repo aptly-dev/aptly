@@ -59,7 +59,7 @@ flake8:  ## run flake8 on system test python files
 
 lint:
 	# Install golangci-lint
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
 	@PATH=$(BINPATH)/:$(PATH) golangci-lint run
 

@@ -34,10 +34,25 @@ func makeCmdPublish() *commander.Command {
 			makeCmdPublishDrop(),
 			makeCmdPublishList(),
 			makeCmdPublishRepo(),
+			makeCmdPublishShow(),
 			makeCmdPublishSnapshot(),
+			makeCmdPublishSource(),
 			makeCmdPublishSwitch(),
 			makeCmdPublishUpdate(),
-			makeCmdPublishShow(),
+		},
+	}
+}
+
+func makeCmdPublishSource() *commander.Command {
+	return &commander.Command{
+		UsageLine: "source",
+		Short:     "manage sources of published repository",
+		Subcommands: []*commander.Command{
+			makeCmdPublishSourceAdd(),
+			makeCmdPublishSourceDrop(),
+			makeCmdPublishSourceList(),
+			makeCmdPublishSourceRemove(),
+			makeCmdPublishSourceUpdate(),
 		},
 	}
 }

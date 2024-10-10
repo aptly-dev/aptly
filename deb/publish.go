@@ -21,6 +21,16 @@ import (
 	"github.com/aptly-dev/aptly/utils"
 )
 
+type SourceEntry struct {
+	Component, Name string
+}
+
+type PublishedRepoUpdateResult struct {
+	AddedSources   map[string]string
+	UpdatedSources map[string]string
+	RemovedSources map[string]string
+}
+
 type repoSourceItem struct {
 	// Pointer to snapshot if SourceKind == "snapshot"
 	snapshot *Snapshot
@@ -73,6 +83,183 @@ type PublishedRepo struct {
 
 	// Support multiple distributions
 	MultiDist bool
+
+	// Revision
+	Revision *PublishedRepoRevision
+}
+
+type PublishedRepoRevision struct {
+	// Map of sources: component name -> snapshot name/local repo Name
+	Sources map[string]string
+}
+
+func (result *PublishedRepoUpdateResult) AddedComponents() []string {
+	components := make([]string, 0, len(result.AddedSources))
+	for component := range result.AddedSources {
+		components = append(components, component)
+	}
+	sort.Strings(components)
+
+	return components
+}
+
+func (result *PublishedRepoUpdateResult) UpdatedComponents() []string {
+	components := make([]string, 0, len(result.UpdatedSources))
+	for component := range result.UpdatedSources {
+		components = append(components, component)
+	}
+	sort.Strings(components)
+
+	return components
+}
+
+func (result *PublishedRepoUpdateResult) RemovedComponents() []string {
+	components := make([]string, 0, len(result.RemovedSources))
+	for component := range result.RemovedSources {
+		components = append(components, component)
+	}
+	sort.Strings(components)
+
+	return components
+}
+
+func (revision *PublishedRepoRevision) Components() []string {
+	components := make([]string, 0, len(revision.Sources))
+	for component := range revision.Sources {
+		components = append(components, component)
+	}
+	sort.Strings(components)
+
+	return components
+}
+
+func (revision *PublishedRepoRevision) SourceList() []SourceEntry {
+	sources := revision.Sources
+	components := revision.Components()
+	sourceList := make([]SourceEntry, 0, len(sources))
+	for _, component := range components {
+		name := sources[component]
+		sourceList = append(sourceList, SourceEntry{
+			Component: component,
+			Name:      name,
+		})
+	}
+
+	return sourceList
+}
+
+func (revision *PublishedRepoRevision) SourceNames() []string {
+	sources := revision.Sources
+	names := make([]string, 0, len(sources))
+	for _, component := range revision.Components() {
+		names = append(names, sources[component])
+	}
+
+	return names
+}
+
+func (p *PublishedRepo) DropRevision() *PublishedRepoRevision {
+	revision := p.Revision
+	p.Revision = nil
+
+	return revision
+}
+
+func (p *PublishedRepo) ObtainRevision() *PublishedRepoRevision {
+	revision := p.Revision
+	if revision == nil {
+		sources := make(map[string]string, len(p.Sources))
+		for _, component := range p.Components() {
+			item := p.sourceItems[component]
+			if item.snapshot != nil {
+				sources[component] = item.snapshot.Name
+			} else if item.localRepo != nil {
+				sources[component] = item.localRepo.Name
+			} else {
+				panic("no snapshot/localRepo")
+			}
+		}
+		revision = &PublishedRepoRevision{
+			Sources: sources,
+		}
+		p.Revision = revision
+	}
+	return revision
+}
+
+func (p *PublishedRepo) Update(collectionFactory *CollectionFactory, _ aptly.Progress) (*PublishedRepoUpdateResult, error) {
+	result := &PublishedRepoUpdateResult{
+		AddedSources:   map[string]string{},
+		UpdatedSources: map[string]string{},
+		RemovedSources: map[string]string{},
+	}
+
+	revision := p.ObtainRevision()
+	p.DropRevision()
+
+	publishedComponents := p.Components()
+
+	for _, component := range publishedComponents {
+		name, exists := revision.Sources[component]
+		if !exists {
+			p.RemoveComponent(component)
+			result.RemovedSources[component] = name
+		}
+	}
+
+	if p.SourceKind == SourceLocalRepo {
+		localRepoCollection := collectionFactory.LocalRepoCollection()
+		for component, name := range revision.Sources {
+			localRepo, err := localRepoCollection.ByName(name)
+			if err != nil {
+				return result, fmt.Errorf("unable to update: %s", err)
+			}
+
+			err = localRepoCollection.LoadComplete(localRepo)
+			if err != nil {
+				return result, fmt.Errorf("unable to update: %s", err)
+			}
+
+			_, exists := p.Sources[component]
+			if exists {
+				// Even in the case, when the local repository has not been changed as package source,
+				// it may contain a modified set of packages that requires (re-)publication.
+				p.UpdateLocalRepo(component, localRepo)
+				result.UpdatedSources[component] = name
+			} else {
+				p.UpdateLocalRepo(component, localRepo)
+				result.AddedSources[component] = name
+			}
+		}
+	} else if p.SourceKind == SourceSnapshot {
+		snapshotCollection := collectionFactory.SnapshotCollection()
+		for component, name := range revision.Sources {
+			snapshot, err := snapshotCollection.ByName(name)
+			if err != nil {
+				return result, fmt.Errorf("unable to update: %s", err)
+			}
+
+			err = snapshotCollection.LoadComplete(snapshot)
+			if err != nil {
+				return result, fmt.Errorf("unable to update: %s", err)
+			}
+
+			sourceUUID, exists := p.Sources[component]
+			if exists {
+				if snapshot.UUID != sourceUUID {
+					p.UpdateSnapshot(component, snapshot)
+					result.UpdatedSources[component] = name
+				}
+			} else {
+				p.UpdateSnapshot(component, snapshot)
+				result.AddedSources[component] = name
+			}
+		}
+	} else {
+		return result, fmt.Errorf("unknown published repository type")
+	}
+
+	return result, nil
 }
 
 // ParsePrefix splits [storage:]prefix into components
@@ -281,14 +468,28 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	return result, nil
 }
 
-// MarshalJSON requires object to filled by "LoadShallow" or "LoadComplete"
-func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
-	type sourceInfo struct {
-		Component, Name string
+func (revision *PublishedRepoRevision) MarshalJSON() ([]byte, error) {
+	sources := revision.Sources
+	components := revision.Components()
+	sourceList := make([]SourceEntry, 0, len(sources))
+	for _, component := range components {
+		name := sources[component]
+		sourceList = append(sourceList, SourceEntry{
+			Component: component,
+			Name:      name,
+		})
 	}
 
-	sources := []sourceInfo{}
-	for component, item := range p.sourceItems {
+	return json.Marshal(map[string]interface{}{
+		"Sources": sourceList,
+	})
+}
+
+// MarshalJSON requires object to filled by "LoadShallow" or "LoadComplete"
+func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
+	sources := []SourceEntry{}
+	for _, component := range p.Components() {
+		item := p.sourceItems[component]
 		name := ""
 		if item.snapshot != nil {
 			name = item.snapshot.Name
@@ -297,7 +498,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		} else {
 			panic("no snapshot/local repo")
 		}
-		sources = append(sources, sourceInfo{
+		sources = append(sources, SourceEntry{
 			Component: component,
 			Name:      name,
 		})
@@ -444,20 +645,25 @@ func (p *PublishedRepo) SourceNames() []string {
 	return sources
 }
 
-// UpdateLocalRepo updates content from local repo in component
-func (p *PublishedRepo) UpdateLocalRepo(component string) {
+// UpdateLocalRepo inserts/updates local repository source for component
+func (p *PublishedRepo) UpdateLocalRepo(component string, localRepo *LocalRepo) {
 	if p.SourceKind != SourceLocalRepo {
 		panic("not local repo publish")
 	}
 
-	item := p.sourceItems[component]
-	item.packageRefs = item.localRepo.RefList()
+	item, exists := p.sourceItems[component]
+	if !exists {
+		item = repoSourceItem{}
+	}
+	item.localRepo = localRepo
+	item.packageRefs = localRepo.RefList()
 	p.sourceItems[component] = item
 
+	p.Sources[component] = localRepo.UUID
 	p.rePublishing = true
 }
 
-// UpdateSnapshot switches snapshot for component
+// UpdateSnapshot inserts/updates snapshot source for component
 func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
 	if p.SourceKind != SourceSnapshot {
 		panic("not snapshot publish")
@@ -471,6 +677,14 @@ func (p *PublishedRepo) UpdateSnapshot(component string, snapshot *Snapshot) {
 	p.sourceItems[component] = item
 
 	p.Sources[component] = snapshot.UUID
+	p.rePublishing = true
+}
+
+// RemoveComponent removes component from published repository
+func (p *PublishedRepo) RemoveComponent(component string) {
+	delete(p.Sources, component)
+	delete(p.sourceItems, component)
+
 	p.rePublishing = true
 }
 
