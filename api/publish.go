@@ -43,9 +43,11 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	return signer, nil
 }
 
-// Replace '_' with '/' and double '__' with single '_'
+// Replace '_' with '/' and double '__' with single '_', remove leading '/', remove '..'
 func parseEscapedPath(path string) string {
 	result := strings.Replace(strings.Replace(path, "_", "/", -1), "//", "_", -1)
+	result = strings.Replace(result, "..", "", -1)
+        result = strings.TrimPrefix(result, "/")
 	if result == "" {
 		result = "."
 	}
