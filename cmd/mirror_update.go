@@ -67,14 +67,50 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	if repo.Filter != "" {
 		context.Progress().Printf("Applying filter...\n")
 		var filterQuery deb.PackageQuery
+		var packagesWithExtraDeps *deb.PackageList
 
 		filterQuery, err = query.Parse(repo.Filter)
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
 
+		if len(repo.DepsFromMirrors)+len(repo.DepsFromRepos) > 0 {
+			packagesWithExtraDeps = deb.NewPackageList()
+			for _, mirrorName := range repo.DepsFromMirrors {
+				extraMirror, lerr := context.CollectionFactory().RemoteRepoCollection().ByName(mirrorName)
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				lerr = context.CollectionFactory().RemoteRepoCollection().LoadComplete(extraMirror)
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				packageList, lerr := deb.NewPackageListFromRefList(extraMirror.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				packagesWithExtraDeps.Append(packageList)
+			}
+			for _, repoName := range repo.DepsFromRepos {
+				extraRepo, lerr := context.CollectionFactory().LocalRepoCollection().ByName(repoName)
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				lerr = context.CollectionFactory().LocalRepoCollection().LoadComplete(extraRepo)
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				packageList, lerr := deb.NewPackageListFromRefList(extraRepo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+				if lerr != nil {
+					return fmt.Errorf("unable to update: %s", lerr)
+				}
+				packagesWithExtraDeps.Append(packageList)
+			}
+			context.Progress().Printf("Extra packages with deps: %d\n", packagesWithExtraDeps.Len())
+		}
+
 		var oldLen, newLen int
-		oldLen, newLen, err = repo.ApplyFilter(context.DependencyOptions(), filterQuery, context.Progress())
+		oldLen, newLen, err = repo.ApplyFilter(context.DependencyOptions(), filterQuery, packagesWithExtraDeps, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}

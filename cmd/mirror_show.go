@@ -68,6 +68,14 @@ func aptlyMirrorShowTxt(_ *commander.Command, args []string) error {
 			filterWithDeps = Yes
 		}
 		fmt.Printf("Filter With Deps: %s\n", filterWithDeps)
+		if repo.FilterWithDeps {
+			if len(repo.DepsFromMirrors) > 0 {
+				fmt.Printf("Include Dependencies Of Mirrors: %s\n", strings.Join(repo.DepsFromMirrors, ", "))
+			}
+			if len(repo.DepsFromRepos) > 0 {
+				fmt.Printf("Include Dependencies Of Repositories: %s\n", strings.Join(repo.DepsFromRepos, ", "))
+			}
+		}
 	}
 	if repo.LastDownloadDate.IsZero() {
 		fmt.Printf("Last update: never\n")

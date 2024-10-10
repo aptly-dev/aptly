@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/query"
@@ -46,6 +47,20 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 			fetchMirror = true
 		case "ignore-signatures":
 			ignoreSignatures = true
+		case "deps-from-repos":
+			repoNames := flag.Value.String()
+			if repoNames != "" {
+				repo.DepsFromRepos = strings.Split(repoNames, ",")
+			} else {
+				repo.DepsFromRepos = make([]string, 0)
+			}
+		case "deps-from-mirrors":
+			mirrorNames := flag.Value.String()
+			if mirrorNames != "" {
+				repo.DepsFromMirrors = strings.Split(mirrorNames, ",")
+			} else {
+				repo.DepsFromMirrors = make([]string, 0)
+			}
 		}
 	})
 
@@ -111,6 +126,8 @@ Example:
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
+	cmd.Flag.String("deps-from-mirrors", "", "list of mirrors thats packages's dependencies should be fulfilled (comma-separated), default to none")
+	cmd.Flag.String("deps-from-repos", "", "list of repositories thats packages's dependencies should be fulfilled (comma-separated), default to none")
 
 	return cmd
 }
