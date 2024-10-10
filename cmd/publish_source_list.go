@@ -57,7 +57,7 @@ func aptlyPublishSourceListTxt(published *deb.PublishedRepo) error {
 func aptlyPublishSourceListJSON(published *deb.PublishedRepo) error {
 	revision := published.Revision
 
-	output, err := json.MarshalIndent(revision.ToJSON()["Sources"], "", "  ")
+	output, err := json.MarshalIndent(revision.SourceList(), "", "  ")
 	if err != nil {
 		return fmt.Errorf("unable to list: %s", err)
 	}
