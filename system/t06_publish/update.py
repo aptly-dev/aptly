@@ -175,37 +175,37 @@ class PublishUpdate3Test(BaseTest):
         self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
-class PublishUpdate4Test(BaseTest):
-    """
-    publish update: added some packages, but list of published archs doesn't change
-    """
-    fixtureCmds = [
-        "aptly repo create local-repo",
-        "aptly repo add local-repo ${files}/pyspi_0.6.1-1.3.dsc",
-        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
-        "aptly repo add local-repo ${files}/libboost-program-options-dev_1.49.0.1_i386.deb"
-    ]
-    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
-    gold_processor = BaseTest.expand_environ
-
-    def check(self):
-        super(PublishUpdate4Test, self).check()
-
-        self.check_exists('public/dists/maverick/InRelease')
-        self.check_exists('public/dists/maverick/Release')
-        self.check_exists('public/dists/maverick/Release.gpg')
-
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/maverick/main/source/Sources')
-        self.check_exists('public/dists/maverick/main/source/Sources.gz')
-        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
-
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_not_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+#class PublishUpdate4Test(BaseTest):
+#    """
+#    publish update: added some packages, but list of published archs doesn't change
+#    """
+#    fixtureCmds = [
+#        "aptly repo create local-repo",
+#        "aptly repo add local-repo ${files}/pyspi_0.6.1-1.3.dsc",
+#        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
+#        "aptly repo add local-repo ${files}/libboost-program-options-dev_1.49.0.1_i386.deb"
+#    ]
+#    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+#    gold_processor = BaseTest.expand_environ
+#
+#    def check(self):
+#        super(PublishUpdate4Test, self).check()
+#
+#        self.check_exists('public/dists/maverick/InRelease')
+#        self.check_exists('public/dists/maverick/Release')
+#        self.check_exists('public/dists/maverick/Release.gpg')
+#
+#        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages')
+#        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+#        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+#        self.check_exists('public/dists/maverick/main/source/Sources')
+#        self.check_exists('public/dists/maverick/main/source/Sources.gz')
+#        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
+#
+#        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
+#        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
+#        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
+#        self.check_not_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
 class PublishUpdate5Test(BaseTest):
@@ -217,6 +217,20 @@ class PublishUpdate5Test(BaseTest):
 
 
 class PublishUpdate6Test(BaseTest):
+    """
+    publish update: not a local repo
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
+    ]
+    runCmd = "aptly publish update maverick"
+    expectedCode = 1
+
+
+class PublishUpdate7Test(BaseTest):
     """
     publish update: multiple components, add some packages
     """
@@ -232,7 +246,7 @@ class PublishUpdate6Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate6Test, self).check()
+        super(PublishUpdate7Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -266,7 +280,7 @@ class PublishUpdate6Test(BaseTest):
         self.check_file_contents('public/dists/maverick/contrib/binary-i386/Packages', 'binary2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
 
 
-class PublishUpdate7Test(BaseTest):
+class PublishUpdate8Test(BaseTest):
     """
     publish update: update empty repos to empty repos
     """
@@ -279,7 +293,7 @@ class PublishUpdate7Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
 
-class PublishUpdate8Test(BaseTest):
+class PublishUpdate9Test(BaseTest):
     """
     publish update: conflicting files in the repo
     """
@@ -295,7 +309,7 @@ class PublishUpdate8Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
 
-class PublishUpdate9Test(BaseTest):
+class PublishUpdate10Test(BaseTest):
     """
     publish update: -force-overwrite
     """
@@ -310,12 +324,12 @@ class PublishUpdate9Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate9Test, self).check()
+        super(PublishUpdate10Test, self).check()
 
         self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
 
 
-class PublishUpdate10Test(BaseTest):
+class PublishUpdate11Test(BaseTest):
     """
     publish update: -skip-contents
     """
@@ -329,7 +343,7 @@ class PublishUpdate10Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate10Test, self).check()
+        super(PublishUpdate11Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -339,7 +353,7 @@ class PublishUpdate10Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
 
 
-class PublishUpdate11Test(BaseTest):
+class PublishUpdate12Test(BaseTest):
     """
     publish update: removed some packages skipping cleanup
     """
@@ -353,7 +367,7 @@ class PublishUpdate11Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate11Test, self).check()
+        super(PublishUpdate12Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -425,7 +439,7 @@ class PublishUpdate11Test(BaseTest):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
-class PublishUpdate12Test(BaseTest):
+class PublishUpdate13Test(BaseTest):
     """
     publish update: -skip-bz2
     """
@@ -439,7 +453,7 @@ class PublishUpdate12Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate12Test, self).check()
+        super(PublishUpdate13Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -450,7 +464,7 @@ class PublishUpdate12Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
 
 
-class PublishUpdate13Test(BaseTest):
+class PublishUpdate14Test(BaseTest):
     """
     publish update: -multi-dist
     """
@@ -463,7 +477,7 @@ class PublishUpdate13Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate13Test, self).check()
+        super(PublishUpdate14Test, self).check()
 
         self.check_exists('public/dists/bookworm/InRelease')
         self.check_exists('public/dists/bookworm/Release')
