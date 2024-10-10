@@ -45,13 +45,13 @@ func makeCmdPublishSourceDrop() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceDrop,
 		UsageLine: "drop <distribution>",
-		Short:     "drops revision of published repository",
+		Short:     "drops staged source changes of published repository",
 		Long: `
-Command drops revision of a published repository.
+Command drops the staged source changes of the published repository.
 
 Example:
 
-    $ aptly publish revision drop wheezy
+    $ aptly publish source drop wheezy
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-revision-create", flag.ExitOnError),
 	}

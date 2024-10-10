@@ -42,7 +42,7 @@ func aptlyPublishSourceRemove(cmd *commander.Command, args []string) error {
 	for _, component := range components {
 		name, exists := sources[component]
 		if !exists {
-			return fmt.Errorf("unable to remove: Component %q is not part of revision", component)
+			return fmt.Errorf("unable to remove: component %q does not exist", component)
 		}
 		context.Progress().Printf("Removing component %q with source %q [%s]...\n", component, name, published.SourceKind)
 
@@ -54,6 +54,9 @@ func aptlyPublishSourceRemove(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
+	context.Progress().Printf("\nYou can run 'aptly publish update %s %s' to update the content of the published repository.\n",
+		distribution, published.StoragePrefix())
+
 	return err
 }
 
@@ -61,9 +64,9 @@ func makeCmdPublishSourceRemove() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceRemove,
 		UsageLine: "remove <distribution> [[<endpoint>:]<prefix>] <source>",
-		Short:     "remove package source to published repository",
+		Short:     "remove source from staged source list of published repository",
 		Long: `
-The command removes one or multiple components from a published repository.
+The command removes sources from the staged source list of the published repository.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be removed, e.g.:

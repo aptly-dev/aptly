@@ -56,6 +56,9 @@ func aptlyPublishSourceUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
+	context.Progress().Printf("\nYou can run 'aptly publish update %s %s' to update the content of the published repository.\n",
+		distribution, published.StoragePrefix())
+
 	return err
 }
 
@@ -63,9 +66,9 @@ func makeCmdPublishSourceUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceUpdate,
 		UsageLine: "update <distribution> <source>",
-		Short:     "update package source to published repository",
+		Short:     "update source in staged source list of published repository",
 		Long: `
-The command updates one or multiple components in a published repository.
+The command updates sources in the staged source list of the published repository.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be
