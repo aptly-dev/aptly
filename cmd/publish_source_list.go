@@ -30,7 +30,7 @@ func aptlyPublishSourceList(cmd *commander.Command, args []string) error {
 	}
 
 	if published.Revision == nil {
-		return fmt.Errorf("unable to list: No source changes exist")
+		return fmt.Errorf("unable to list: no source changes exist")
 	}
 
 	jsonFlag := cmd.Flag.Lookup("json").Value.Get().(bool)
