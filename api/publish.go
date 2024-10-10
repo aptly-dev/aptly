@@ -429,6 +429,17 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.MultiDist = *b.MultiDist
 	}
 
+	revision := published.ObtainRevision()
+	sources := revision.Sources
+
+	if published.SourceKind == deb.SourceSnapshot {
+		for _, snapshotInfo := range b.Snapshots {
+			component := snapshotInfo.Component
+			name := snapshotInfo.Name
+			sources[component] = name
+		}
+	}
+
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
@@ -625,7 +636,7 @@ func apiPublishSourcesList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, revision.ToJSON()["Sources"])
+	c.JSON(http.StatusOK, revision.SourceList())
 }
 
 // @Router /api/publish/{prefix}/{distribution}/sources [put]
