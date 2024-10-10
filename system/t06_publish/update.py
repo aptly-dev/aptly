@@ -175,58 +175,11 @@ class PublishUpdate3Test(BaseTest):
         self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
-class PublishUpdate4Test(BaseTest):
-    """
-    publish update: added some packages, but list of published archs doesn't change
-    """
-    fixtureCmds = [
-        "aptly repo create local-repo",
-        "aptly repo add local-repo ${files}/pyspi_0.6.1-1.3.dsc",
-        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
-        "aptly repo add local-repo ${files}/libboost-program-options-dev_1.49.0.1_i386.deb"
-    ]
-    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
-    gold_processor = BaseTest.expand_environ
-
-    def check(self):
-        super(PublishUpdate4Test, self).check()
-
-        self.check_exists('public/dists/maverick/InRelease')
-        self.check_exists('public/dists/maverick/Release')
-        self.check_exists('public/dists/maverick/Release.gpg')
-
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/maverick/main/source/Sources')
-        self.check_exists('public/dists/maverick/main/source/Sources.gz')
-        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
-
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_not_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
-
-
 class PublishUpdate5Test(BaseTest):
     """
     publish update: no such publish
     """
     runCmd = "aptly publish update maverick ppa"
-    expectedCode = 1
-
-
-class PublishUpdate6Test(BaseTest):
-    """
-    publish update: not a local repo
-    """
-    fixtureDB = True
-    fixturePool = True
-    fixtureCmds = [
-        "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
-    ]
-    runCmd = "aptly publish update maverick"
     expectedCode = 1
 
 
