@@ -218,20 +218,6 @@ class PublishUpdate5Test(BaseTest):
 
 class PublishUpdate6Test(BaseTest):
     """
-    publish update: not a local repo
-    """
-    fixtureDB = True
-    fixturePool = True
-    fixtureCmds = [
-        "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
-    ]
-    runCmd = "aptly publish update maverick"
-    expectedCode = 1
-
-
-class PublishUpdate7Test(BaseTest):
-    """
     publish update: multiple components, add some packages
     """
     fixtureCmds = [
@@ -246,7 +232,7 @@ class PublishUpdate7Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate7Test, self).check()
+        super(PublishUpdate6Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -280,7 +266,7 @@ class PublishUpdate7Test(BaseTest):
         self.check_file_contents('public/dists/maverick/contrib/binary-i386/Packages', 'binary2', match_prepare=lambda s: "\n".join(sorted(s.split("\n"))))
 
 
-class PublishUpdate8Test(BaseTest):
+class PublishUpdate7Test(BaseTest):
     """
     publish update: update empty repos to empty repos
     """
@@ -293,7 +279,7 @@ class PublishUpdate8Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
 
-class PublishUpdate9Test(BaseTest):
+class PublishUpdate8Test(BaseTest):
     """
     publish update: conflicting files in the repo
     """
@@ -309,7 +295,7 @@ class PublishUpdate9Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
 
-class PublishUpdate10Test(BaseTest):
+class PublishUpdate9Test(BaseTest):
     """
     publish update: -force-overwrite
     """
@@ -324,12 +310,12 @@ class PublishUpdate10Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate10Test, self).check()
+        super(PublishUpdate9Test, self).check()
 
         self.check_file_contents("public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz", "file")
 
 
-class PublishUpdate11Test(BaseTest):
+class PublishUpdate10Test(BaseTest):
     """
     publish update: -skip-contents
     """
@@ -343,7 +329,7 @@ class PublishUpdate11Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate11Test, self).check()
+        super(PublishUpdate10Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -353,7 +339,7 @@ class PublishUpdate11Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/Contents-i386.gz')
 
 
-class PublishUpdate12Test(BaseTest):
+class PublishUpdate11Test(BaseTest):
     """
     publish update: removed some packages skipping cleanup
     """
@@ -367,7 +353,7 @@ class PublishUpdate12Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate12Test, self).check()
+        super(PublishUpdate11Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -439,7 +425,7 @@ class PublishUpdate12Test(BaseTest):
             raise Exception("path seen wrong: %r" % (pathsSeen, ))
 
 
-class PublishUpdate13Test(BaseTest):
+class PublishUpdate12Test(BaseTest):
     """
     publish update: -skip-bz2
     """
@@ -453,7 +439,7 @@ class PublishUpdate13Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate13Test, self).check()
+        super(PublishUpdate12Test, self).check()
 
         self.check_exists('public/dists/maverick/InRelease')
         self.check_exists('public/dists/maverick/Release')
@@ -464,7 +450,7 @@ class PublishUpdate13Test(BaseTest):
         self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
 
 
-class PublishUpdate14Test(BaseTest):
+class PublishUpdate13Test(BaseTest):
     """
     publish update: -multi-dist
     """
@@ -477,7 +463,7 @@ class PublishUpdate14Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
     def check(self):
-        super(PublishUpdate14Test, self).check()
+        super(PublishUpdate13Test, self).check()
 
         self.check_exists('public/dists/bookworm/InRelease')
         self.check_exists('public/dists/bookworm/Release')

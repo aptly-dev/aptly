@@ -21,6 +21,10 @@ import (
 	"github.com/aptly-dev/aptly/utils"
 )
 
+type SourceEntry struct {
+	Component, Name string
+}
+
 type PublishedRepoUpdateResult struct {
 	AddedSources   map[string]string
 	UpdatedSources map[string]string
@@ -127,6 +131,21 @@ func (revision *PublishedRepoRevision) Components() []string {
 	sort.Strings(components)
 
 	return components
+}
+
+func (revision *PublishedRepoRevision) SourceList() []SourceEntry {
+	sources := revision.Sources
+	components := revision.Components()
+	sourceList := make([]SourceEntry, 0, len(sources))
+	for _, component := range components {
+		name := sources[component]
+		sourceList = append(sourceList, SourceEntry{
+			Component: component,
+			Name:      name,
+		})
+	}
+
+	return sourceList
 }
 
 func (revision *PublishedRepoRevision) SourceNames() []string {
@@ -449,40 +468,26 @@ func NewPublishedRepo(storage, prefix, distribution string, architectures []stri
 	return result, nil
 }
 
-type sourceInfo struct {
-	Component, Name string
-}
-
-func (revision *PublishedRepoRevision) ToJSON() map[string]any {
-	sources := []sourceInfo{}
-	for _, component := range revision.Components() {
-		name := revision.Sources[component]
-		sources = append(sources, sourceInfo{
-			Component: component,
-			Name:      name,
-		})
-	}
-	return map[string]any{"Sources": sources}
-}
-
 func (revision *PublishedRepoRevision) MarshalJSON() ([]byte, error) {
-	sources := []sourceInfo{}
-	for _, component := range revision.Components() {
-		name := revision.Sources[component]
-		sources = append(sources, sourceInfo{
+	sources := revision.Sources
+	components := revision.Components()
+	sourceList := make([]SourceEntry, 0, len(sources))
+	for _, component := range components {
+		name := sources[component]
+		sourceList = append(sourceList, SourceEntry{
 			Component: component,
 			Name:      name,
 		})
 	}
 
 	return json.Marshal(map[string]interface{}{
-		"Sources": sources,
+		"Sources": sourceList,
 	})
 }
 
 // MarshalJSON requires object to filled by "LoadShallow" or "LoadComplete"
 func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
-	sources := []sourceInfo{}
+	sources := []SourceEntry{}
 	for _, component := range p.Components() {
 		item := p.sourceItems[component]
 		name := ""
@@ -493,7 +498,7 @@ func (p *PublishedRepo) MarshalJSON() ([]byte, error) {
 		} else {
 			panic("no snapshot/local repo")
 		}
-		sources = append(sources, sourceInfo{
+		sources = append(sources, SourceEntry{
 			Component: component,
 			Name:      name,
 		})
