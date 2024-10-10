@@ -19,7 +19,7 @@ func aptlyPublishSourceRemove(cmd *commander.Command, args []string) error {
 	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
 
 	if len(components) == 0 {
-		return fmt.Errorf("unable to remove: Missing components, specify at least one component")
+		return fmt.Errorf("unable to remove: missing components, specify at least one component")
 	}
 
 	prefix := context.Flags().Lookup("prefix").Value.String()
