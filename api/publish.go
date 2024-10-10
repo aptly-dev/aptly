@@ -9,6 +9,7 @@ import (
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/task"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,9 +44,10 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	return signer, nil
 }
 
-// Replace '_' with '/' and double '__' with single '_'
-func parseEscapedPath(path string) string {
+// Replace '_' with '/' and double '__' with single '_', PathSanitize
+func slashEscape(path string) string {
 	result := strings.Replace(strings.Replace(path, "_", "/", -1), "//", "_", -1)
+	result = utils.PathSanitize(result)
 	if result == "" {
 		result = "."
 	}
@@ -86,7 +88,7 @@ func apiPublishList(c *gin.Context) {
 
 // POST /publish/:prefix
 func apiPublishRepoOrSnapshot(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 
 	var b struct {
@@ -112,6 +114,8 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
+
+	b.Distribution = utils.PathSanitize(b.Distribution)
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
@@ -248,9 +252,9 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 // PUT /publish/:prefix/:distribution
 func apiPublishUpdateSwitch(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := c.Params.ByName("distribution")
+	distribution := utils.PathSanitize(c.Params.ByName("distribution"))
 
 	var b struct {
 		ForceOverwrite bool
@@ -373,7 +377,7 @@ func apiPublishDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"
 
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := c.Params.ByName("distribution")
 

@@ -4,6 +4,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"golang.org/x/sys/unix"
 )
@@ -21,4 +22,11 @@ func DirIsAccessible(filename string) error {
 		}
 	}
 	return nil
+}
+
+// Remove leading '/', remove '..'
+func PathSanitize(path string) (result string) {
+	result = strings.Replace(path, "..", "", -1)
+	result = strings.TrimLeft(result, "/")
+	return
 }
