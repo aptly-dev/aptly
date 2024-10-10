@@ -56,6 +56,9 @@ func aptlyPublishSourceAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
 
+	context.Progress().Printf("\nYou can run 'aptly publish update %s %s' to update the content of the published repository.\n",
+		distribution, published.StoragePrefix())
+
 	return err
 }
 
@@ -63,9 +66,9 @@ func makeCmdPublishSourceAdd() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceAdd,
 		UsageLine: "add <distribution> <source>",
-		Short:     "add package source to published repository",
+		Short:     "add source to staged source list of published repository",
 		Long: `
-The command adds (in place) one or multiple package sources to a published repository.
+The command adds sources to the staged source list of the published repository.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be

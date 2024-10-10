@@ -194,69 +194,78 @@ func (p *PublishedRepo) Update(collectionFactory *CollectionFactory, _ aptly.Pro
 		RemovedSources: map[string]string{},
 	}
 
-	revision := p.ObtainRevision()
-	p.DropRevision()
-
-	publishedComponents := p.Components()
-
-	for _, component := range publishedComponents {
-		name, exists := revision.Sources[component]
-		if !exists {
-			p.RemoveComponent(component)
-			result.RemovedSources[component] = name
-		}
-	}
-
-	if p.SourceKind == SourceLocalRepo {
-		localRepoCollection := collectionFactory.LocalRepoCollection()
-		for component, name := range revision.Sources {
-			localRepo, err := localRepoCollection.ByName(name)
-			if err != nil {
-				return result, fmt.Errorf("unable to update: %s", err)
-			}
-
-			err = localRepoCollection.LoadComplete(localRepo)
-			if err != nil {
-				return result, fmt.Errorf("unable to update: %s", err)
-			}
-
-			_, exists := p.Sources[component]
-			if exists {
-				// Even in the case, when the local repository has not been changed as package source,
-				// it may contain a modified set of packages that requires (re-)publication.
-				p.UpdateLocalRepo(component, localRepo)
-				result.UpdatedSources[component] = name
-			} else {
-				p.UpdateLocalRepo(component, localRepo)
-				result.AddedSources[component] = name
-			}
-		}
-	} else if p.SourceKind == SourceSnapshot {
-		snapshotCollection := collectionFactory.SnapshotCollection()
-		for component, name := range revision.Sources {
-			snapshot, err := snapshotCollection.ByName(name)
-			if err != nil {
-				return result, fmt.Errorf("unable to update: %s", err)
-			}
-
-			err = snapshotCollection.LoadComplete(snapshot)
-			if err != nil {
-				return result, fmt.Errorf("unable to update: %s", err)
-			}
-
-			sourceUUID, exists := p.Sources[component]
-			if exists {
-				if snapshot.UUID != sourceUUID {
-					p.UpdateSnapshot(component, snapshot)
-					result.UpdatedSources[component] = name
+	revision := p.DropRevision()
+	if revision == nil {
+		if p.SourceKind == SourceLocalRepo {
+			// Re-fetch packages from local repository
+			for component, item := range p.sourceItems {
+				localRepo := item.localRepo
+				if localRepo != nil {
+					p.UpdateLocalRepo(component, localRepo)
+					result.UpdatedSources[component] = localRepo.Name
 				}
-			} else {
-				p.UpdateSnapshot(component, snapshot)
-				result.AddedSources[component] = name
 			}
 		}
 	} else {
-		return result, fmt.Errorf("unknown published repository type")
+		for _, component := range p.Components() {
+			name, exists := revision.Sources[component]
+			if !exists {
+				p.RemoveComponent(component)
+				result.RemovedSources[component] = name
+			}
+		}
+
+		if p.SourceKind == SourceLocalRepo {
+			localRepoCollection := collectionFactory.LocalRepoCollection()
+			for component, name := range revision.Sources {
+				localRepo, err := localRepoCollection.ByName(name)
+				if err != nil {
+					return result, fmt.Errorf("unable to update: %s", err)
+				}
+
+				err = localRepoCollection.LoadComplete(localRepo)
+				if err != nil {
+					return result, fmt.Errorf("unable to update: %s", err)
+				}
+
+				_, exists := p.Sources[component]
+				if exists {
+					// Even in the case, when the local repository has not been changed as package source,
+					// it may contain a modified set of packages that requires (re-)publication.
+					p.UpdateLocalRepo(component, localRepo)
+					result.UpdatedSources[component] = name
+				} else {
+					p.UpdateLocalRepo(component, localRepo)
+					result.AddedSources[component] = name
+				}
+			}
+		} else if p.SourceKind == SourceSnapshot {
+			snapshotCollection := collectionFactory.SnapshotCollection()
+			for component, name := range revision.Sources {
+				snapshot, err := snapshotCollection.ByName(name)
+				if err != nil {
+					return result, fmt.Errorf("unable to update: %s", err)
+				}
+
+				err = snapshotCollection.LoadComplete(snapshot)
+				if err != nil {
+					return result, fmt.Errorf("unable to update: %s", err)
+				}
+
+				sourceUUID, exists := p.Sources[component]
+				if exists {
+					if snapshot.UUID != sourceUUID {
+						p.UpdateSnapshot(component, snapshot)
+						result.UpdatedSources[component] = name
+					}
+				} else {
+					p.UpdateSnapshot(component, snapshot)
+					result.AddedSources[component] = name
+				}
+			}
+		} else {
+			return result, fmt.Errorf("unknown published repository type")
+		}
 	}
 
 	return result, nil
