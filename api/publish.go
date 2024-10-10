@@ -113,7 +113,7 @@ func apiPublishList(c *gin.Context) {
 func apiPublishShow(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -179,7 +179,7 @@ type publishedRepoCreateParams struct {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix} [post]
 func apiPublishRepoOrSnapshot(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 
 	var b publishedRepoCreateParams
@@ -196,7 +196,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	}
 
 	if len(b.Sources) == 0 {
-		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unable to publish: soures are empty"))
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unable to publish: sources are empty"))
 		return
 	}
 
@@ -346,7 +346,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 func apiPublishUpdateSwitch(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := utils.SanitizePath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	var b struct {
 		ForceOverwrite bool
@@ -438,24 +438,19 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		updatedComponents := result.UpdatedComponents()
-		removedComponents := result.RemovedComponents()
-
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			publishedStorage := context.GetPublishedStorage(storage)
 
-			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents, publishedStorage, collectionFactory, out)
+			err = collection.CleanupPrefixComponentFiles(published.Prefix, result.UpdatedComponents(), publishedStorage, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
 
-			if len(removedComponents) > 0 {
-				// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
-				for _, component := range removedComponents {
-					err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
-					if err != nil {
-						return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
-					}
+			// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
+			for _, component := range result.RemovedComponents() {
+				err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
+				if err != nil {
+					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 				}
 			}
 		}
@@ -484,7 +479,7 @@ func apiPublishDrop(c *gin.Context) {
 
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -515,9 +510,9 @@ func apiPublishSourcesCreate(c *gin.Context) {
 		b   sourceParams
 	)
 
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -560,15 +555,15 @@ func apiPublishSourcesCreate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: published}, nil
 	})
 }
 
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
 func apiPublishSourcesList(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -601,9 +596,9 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 		b   []sourceParams
 	)
 
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -648,26 +643,37 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 
 // @Router /api/publish/{prefix}/{distribution}/sources [delete]
 func apiPublishSourcesDelete(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to delete: %s", err))
 		return
 	}
 
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to delete: %s", err))
 		return
 	}
 
 	published.DropRevision()
+
+	resources := []string{string(published.Key())}
+	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
+	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.Update(published)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+	})
 }
 
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
@@ -677,10 +683,10 @@ func apiPublishSourceUpdate(c *gin.Context) {
 		b   sourceParams
 	)
 
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
-	component := parseEscapedPath(c.Params.ByName("component"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
+	component := slashEscape(c.Params.ByName("component"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -737,10 +743,10 @@ func apiPublishSourceUpdate(c *gin.Context) {
 func apiPublishSourceDelete(c *gin.Context) {
 	var err error
 
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
-	component := parseEscapedPath(c.Params.ByName("component"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
+	component := slashEscape(c.Params.ByName("component"))
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -776,9 +782,9 @@ func apiPublishSourceDelete(c *gin.Context) {
 
 // @Router /api/publish/{prefix}/{distribution}/update [post]
 func apiPublishUpdate(c *gin.Context) {
-	param := parseEscapedPath(c.Params.ByName("prefix"))
+	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := parseEscapedPath(c.Params.ByName("distribution"))
+	distribution := slashEscape(c.Params.ByName("distribution"))
 
 	var b struct {
 		AcquireByHash  *bool
