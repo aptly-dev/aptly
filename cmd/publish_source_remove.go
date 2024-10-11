@@ -42,9 +42,9 @@ func aptlyPublishSourceRemove(cmd *commander.Command, args []string) error {
 	for _, component := range components {
 		name, exists := sources[component]
 		if !exists {
-			return fmt.Errorf("unable to remove: component %q does not exist", component)
+			return fmt.Errorf("unable to remove: component '%s' does not exist", component)
 		}
-		context.Progress().Printf("Removing component %q with source %q [%s]...\n", component, name, published.SourceKind)
+		context.Progress().Printf("Removing component '%s' with source '%s' [%s]...\n", component, name, published.SourceKind)
 
 		delete(sources, component)
 	}

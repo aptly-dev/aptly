@@ -30,9 +30,9 @@ type signingParams struct {
 
 type sourceParams struct {
 	// Name of the component
-	Component string `binding:"required"   json:"Component"   example:"contrib"`
+	Component string `binding:"required"   json:"Component"`
 	// Name of the local repository/snapshot
-	Name string `binding:"required"        json:"Name"        example:"snap1"`
+	Name string `binding:"required"        json:"Name"`
 }
 
 func getSigner(options *signingParams) (pgp.Signer, error) {
@@ -77,7 +77,7 @@ func apiPublishList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
 
-	result := make([]*deb.PublishedRepo, 0, collection.Len())
+	repos := make([]*deb.PublishedRepo, 0, collection.Len())
 
 	err := collection.ForEach(func(repo *deb.PublishedRepo) error {
 		err := collection.LoadShallow(repo, collectionFactory)
@@ -85,7 +85,7 @@ func apiPublishList(c *gin.Context) {
 			return err
 		}
 
-		result = append(result, repo)
+		repos = append(repos, repo)
 
 		return nil
 	})
@@ -95,17 +95,16 @@ func apiPublishList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, repos)
 }
 
 // @Summary Show published repository
-// @Description **Get published repository by name**
+// @Description **Get details of a published repository**
 // @Tags Publish
-// @Consume json
 // @Produce json
 // @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambigious in URLs"
 // @Param distribution path string true "distribution name"
-// @Success 200 {object} deb.RemoteRepo
+// @Success 200 {object} deb.PublishedRepo
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution} [get]
@@ -165,14 +164,15 @@ type publishedRepoCreateParams struct {
 }
 
 // @Summary Create published repository
-// @Description Publish local repository or snapshot under specified prefix. Storage might be passed in prefix as well, e.g. `s3:packages/`.
-// @Description To supply empty prefix, just remove last part (`POST /api/publish`).
+// @Description **Publish local repository or snapshot under specified prefix**
+// @Description
+// @Description Storage might be passed in prefix as well, e.g. `s3:packages/`. To supply empty prefix, just remove last part (`POST /api/publish`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Consume json
 // @Param request body publishedRepoCreateParams true "Parameters"
 // @Produce json
-// @Success 200 {object} deb.RemoteRepo
+// @Success 200 {object} deb.PublishedRepo
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Source not found"
 // @Failure 500 {object} Error "Internal Error"
@@ -330,14 +330,40 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	})
 }
 
+type publishedRepoUpdateSwitchParams struct {
+	// when publishing, overwrite files in pool/ directory without notice
+	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	// GPG options
+	Signing signingParams `                       json:"Signing"`
+	// Don't generate contents indexes
+	SkipContents *bool `                          json:"SkipContents"`
+	// Skip bz2 compression for index files
+	SkipBz2 *bool `                               json:"SkipBz2"`
+	// Don't remove unreferenced files in prefix/component
+	SkipCleanup *bool `                           json:"SkipCleanup"`
+	// only when updating published snapshots, list of objects 'Component/Name'
+	Snapshots []sourceParams `binding:"required"    json:"Snapshots"`
+	// Provide index files by hash
+	AcquireByHash *bool `                         json:"AcquireByHash"`
+	// Enable multiple packages with the same filename in different distributions
+	MultiDist *bool `                             json:"MultiDist"`
+}
+
 // @Summary Update published repository
-// @Description Update a published repository.
+// @Description **Update a published local repository or switch published snapshot**
+// @Description
+// @Description API action depends on published repository contents:
+// @Description * if local repository has been published, published repository would be updated to match local repository contents
+// @Description * if snapshots have been been published, it is possible to switch each component to new snapshot
 // @Tags Publish
 // @Accept json
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
-// @Success 200 {object} deb.RemoteRepo
+// @Consume json
+// @Param request body publishedRepoUpdateSwitchParams true "Parameters"
+// @Produce json
+// @Success 200 {object} deb.PublishedRepo
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository or source not found"
 // @Failure 500 {object} Error "Internal Error"
@@ -347,20 +373,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
 
-	var b struct {
-		ForceOverwrite bool
-		Signing        signingParams
-		SkipContents   *bool
-		SkipBz2        *bool
-		SkipCleanup    *bool
-		Snapshots      []struct {
-			Component string `binding:"required"`
-			Name      string `binding:"required"`
-		}
-		AcquireByHash *bool
-		MultiDist     *bool
-	}
-
+	var b publishedRepoUpdateSwitchParams
 	if c.Bind(&b) != nil {
 		return
 	}
@@ -387,7 +400,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
-			AbortWithJSONError(c, 400, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
+			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
 	}
@@ -438,8 +451,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			err = collection.CleanupPrefixComponentFiles(context, published, result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(),
-				collectionFactory, out)
+			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
@@ -450,7 +464,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 }
 
 // @Summary Delete published repository
-// @Description Delete a published repository.
+// @Description **Delete a published repository**
+// @Description
+// @Description Delete published repository, clean up files in published directory.
 // @Tags Publish
 // @Accept json
 // @Produce json
@@ -458,7 +474,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Param distribution path string true "distribution name"
 // @Param force query int true "force: 1 to enable"
 // @Param skipCleanup query int true "skipCleanup: 1 to enable"
-// @Success 200 {object} task.ProcessReturnValue
+// @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
@@ -493,6 +509,16 @@ func apiPublishDrop(c *gin.Context) {
 	})
 }
 
+// @Summary Add staged source
+// @Description **Create and add a staged source**
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Produce json
+// @Success 200 {object} sourceParams
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [post]
 func apiPublishSourcesCreate(c *gin.Context) {
 	var (
@@ -531,7 +557,7 @@ func apiPublishSourcesCreate(c *gin.Context) {
 
 	_, exists := sources[component]
 	if exists {
-		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unable to create: Component %q already exists", component))
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("unable to create: Component '%s' already exists", component))
 		return
 	}
 
@@ -549,6 +575,16 @@ func apiPublishSourcesCreate(c *gin.Context) {
 	})
 }
 
+// @Summary Get staged sources
+// @Description **Get the staged source list**
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Produce json
+// @Success 200 {array} sourceParams
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found or no source changes exist"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
 func apiPublishSourcesList(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -579,6 +615,18 @@ func apiPublishSourcesList(c *gin.Context) {
 	c.JSON(http.StatusOK, revision.SourceList())
 }
 
+// @Summary Set staged sources
+// @Description **Set the staged source list**
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Consume json
+// @Param request body publishedRepoUpdateParams true "Parameters"
+// @Produce json
+// @Success 200 {array} sourceParams
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [put]
 func apiPublishSourcesUpdate(c *gin.Context) {
 	var (
@@ -595,13 +643,13 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
@@ -627,10 +675,22 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: revision.SourceList()}, nil
 	})
 }
 
+// @Summary Delete staged sources
+// @Description **Delete the staged source list**
+// @Description
+// @Description Delete staged sources and keep existing sources of published repository.
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Produce json
+// @Success 200
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [delete]
 func apiPublishSourcesDelete(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -662,10 +722,21 @@ func apiPublishSourcesDelete(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
 	})
 }
 
+// @Summary Update staged source
+// @Description **Update the staged source of a component**
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Param component path string true "component name"
+// @Produce json
+// @Success 200
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository/component not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
 func apiPublishSourceUpdate(c *gin.Context) {
 	var (
@@ -698,7 +769,7 @@ func apiPublishSourceUpdate(c *gin.Context) {
 
 	_, exists := sources[component]
 	if !exists {
-		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: Component %q does not exist", component))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: Component '%s' does not exist", component))
 		return
 	}
 
@@ -725,10 +796,21 @@ func apiPublishSourceUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
 	})
 }
 
+// @Summary Delete staged source
+// @Description **Delete the staged source**
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Param component path string true "component name"
+// @Produce json
+// @Success 200
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [delete]
 func apiPublishSourceDelete(c *gin.Context) {
 	var err error
@@ -743,18 +825,24 @@ func apiPublishSourceDelete(c *gin.Context) {
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to delete: %s", err))
 		return
 	}
 
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to delete: %s", err))
 		return
 	}
 
 	revision := published.ObtainRevision()
 	sources := revision.Sources
+
+	_, exists := sources[component]
+	if !exists {
+		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to delete: Component '%s' does not exist", component))
+		return
+	}
 
 	delete(sources, component)
 
@@ -766,10 +854,41 @@ func apiPublishSourceDelete(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, nil
 	})
 }
 
+type publishedRepoUpdateParams struct {
+	// when publishing, overwrite files in pool/ directory without notice
+	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	// GPG options
+	Signing signingParams `                       json:"Signing"`
+	// Don't generate contents indexes
+	SkipContents *bool `                          json:"SkipContents"`
+	// Skip bz2 compression for index files
+	SkipBz2 *bool `                               json:"SkipBz2"`
+	// Don't remove unreferenced files in prefix/component
+	SkipCleanup *bool `                           json:"SkipCleanup"`
+	// Provide index files by hash
+	AcquireByHash *bool `                         json:"AcquireByHash"`
+	// Enable multiple packages with the same filename in different distributions
+	MultiDist *bool `                             json:"MultiDist"`
+}
+
+// @Summary Update content of published repository
+// @Description **Update the content of a published repository**
+// @Description
+// @Description Replace the sources of the published repository (if available) and (re-)publish new content.
+// @Tags Publish
+// @Param prefix path string true "publishing prefix"
+// @Param distribution path string true "distribution name"
+// @Consume json
+// @Param request body publishedRepoUpdateParams true "Parameters"
+// @Produce json
+// @Success 200 {object} deb.PublishedRepo
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Published repository/component not found"
+// @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/update [post]
 func apiPublishUpdate(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -846,8 +965,9 @@ func apiPublishUpdate(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			err = collection.CleanupPrefixComponentFiles(context, published,
-				result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(), collectionFactory, out)
+			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}

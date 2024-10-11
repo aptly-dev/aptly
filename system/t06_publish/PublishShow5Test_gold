@@ -1,0 +1,5 @@
+Prefix: .
+Distribution: wheezy
+Architectures: i386
+Sources:
+  main: local-repo [local]

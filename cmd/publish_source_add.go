@@ -44,9 +44,9 @@ func aptlyPublishSourceAdd(cmd *commander.Command, args []string) error {
 		name := names[i]
 		_, exists := sources[component]
 		if exists {
-			return fmt.Errorf("unable to add: component %q has already been added", component)
+			return fmt.Errorf("unable to add: component '%s' has already been added", component)
 		}
-		context.Progress().Printf("Adding component %q with source %q [%s]...\n", component, name, published.SourceKind)
+		context.Progress().Printf("Adding component '%s' with source '%s' [%s]...\n", component, name, published.SourceKind)
 
 		sources[component] = names[i]
 	}
