@@ -73,7 +73,7 @@ func apiFilesUpload(c *gin.Context) {
 		return
 	}
 
-	path := filepath.Join(context.UploadPath(), utils.PathSanitize(c.Params.ByName("dir")))
+	path := filepath.Join(context.UploadPath(), utils.SanitizePath(c.Params.ByName("dir")))
 	err := os.MkdirAll(path, 0777)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func apiFilesListFiles(c *gin.Context) {
 
 	list := []string{}
 	listLock := &sync.Mutex{}
-	root := filepath.Join(context.UploadPath(), utils.PathSanitize(c.Params.ByName("dir")))
+	root := filepath.Join(context.UploadPath(), utils.SanitizePath(c.Params.ByName("dir")))
 
 	err := filepath.Walk(root, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
@@ -165,7 +165,7 @@ func apiFilesDeleteDir(c *gin.Context) {
 		return
 	}
 
-	err := os.RemoveAll(filepath.Join(context.UploadPath(), utils.PathSanitize(c.Params.ByName("dir"))))
+	err := os.RemoveAll(filepath.Join(context.UploadPath(), utils.SanitizePath(c.Params.ByName("dir"))))
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -180,8 +180,8 @@ func apiFilesDeleteFile(c *gin.Context) {
 		return
 	}
 
-	dir := utils.PathSanitize(c.Params.ByName("dir"))
-	name := utils.PathSanitize(c.Params.ByName("name"))
+	dir := utils.SanitizePath(c.Params.ByName("dir"))
+	name := utils.SanitizePath(c.Params.ByName("name"))
 	if !verifyPath(name) {
 		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
 		return

@@ -44,10 +44,10 @@ func getSigner(options *SigningOptions) (pgp.Signer, error) {
 	return signer, nil
 }
 
-// Replace '_' with '/' and double '__' with single '_', PathSanitize
+// Replace '_' with '/' and double '__' with single '_', SanitizePath
 func slashEscape(path string) string {
 	result := strings.Replace(strings.Replace(path, "_", "/", -1), "//", "_", -1)
-	result = utils.PathSanitize(result)
+	result = utils.SanitizePath(result)
 	if result == "" {
 		result = "."
 	}
@@ -115,7 +115,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	b.Distribution = utils.PathSanitize(b.Distribution)
+	b.Distribution = utils.SanitizePath(b.Distribution)
 
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
@@ -254,7 +254,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 func apiPublishUpdateSwitch(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
-	distribution := utils.PathSanitize(c.Params.ByName("distribution"))
+	distribution := utils.SanitizePath(c.Params.ByName("distribution"))
 
 	var b struct {
 		ForceOverwrite bool

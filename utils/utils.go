@@ -24,9 +24,11 @@ func DirIsAccessible(filename string) error {
 	return nil
 }
 
-// Remove leading '/', remove '..'
-func PathSanitize(path string) (result string) {
+// Remove leading '/', remove '..', '$' and '`'
+func SanitizePath(path string) (result string) {
 	result = strings.Replace(path, "..", "", -1)
+	result = strings.Replace(result, "$", "", -1)
+	result = strings.Replace(result, "`", "", -1)
 	result = strings.TrimLeft(result, "/")
 	return
 }
