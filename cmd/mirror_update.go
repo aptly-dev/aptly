@@ -74,33 +74,34 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to update: %s", err)
 		}
 
+		collectionFactory := context.NewCollectionFactory()
 		if len(repo.DepsFromMirrors)+len(repo.DepsFromRepos) > 0 {
 			packagesWithExtraDeps = deb.NewPackageList()
 			for _, mirrorName := range repo.DepsFromMirrors {
-				extraMirror, lerr := context.CollectionFactory().RemoteRepoCollection().ByName(mirrorName)
+				extraMirror, lerr := collectionFactory.RemoteRepoCollection().ByName(mirrorName)
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
-				lerr = context.CollectionFactory().RemoteRepoCollection().LoadComplete(extraMirror)
+				lerr = collectionFactory.RemoteRepoCollection().LoadComplete(extraMirror)
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
-				packageList, lerr := deb.NewPackageListFromRefList(extraMirror.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+				packageList, lerr := deb.NewPackageListFromRefList(extraMirror.RefList(), collectionFactory.PackageCollection(), context.Progress())
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
 				packagesWithExtraDeps.Append(packageList)
 			}
 			for _, repoName := range repo.DepsFromRepos {
-				extraRepo, lerr := context.CollectionFactory().LocalRepoCollection().ByName(repoName)
+				extraRepo, lerr := collectionFactory.LocalRepoCollection().ByName(repoName)
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
-				lerr = context.CollectionFactory().LocalRepoCollection().LoadComplete(extraRepo)
+				lerr = collectionFactory.LocalRepoCollection().LoadComplete(extraRepo)
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
-				packageList, lerr := deb.NewPackageListFromRefList(extraRepo.RefList(), context.CollectionFactory().PackageCollection(), context.Progress())
+				packageList, lerr := deb.NewPackageListFromRefList(extraRepo.RefList(), collectionFactory.PackageCollection(), context.Progress())
 				if lerr != nil {
 					return fmt.Errorf("unable to update: %s", lerr)
 				}
