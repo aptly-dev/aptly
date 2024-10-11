@@ -157,7 +157,7 @@ Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/d
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/survival_3.5-7-1~bullseyecran.0.debian.tar.xz
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/survival_3.5-7-1~bullseyecran.0.dsc
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/survival_3.5-7.orig.tar.gz
-Mirror `flat-src` has been successfully updated.
+Mirror `flat-src` has been updated successfully.
 gpgv:                using RSA key 7BA040A510E4E66ED3743EC1B8F25A8A73EACF41
 gpgv: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"
 gpgv: Signature made Thu Nov  2 07:43:52 2023 UTC

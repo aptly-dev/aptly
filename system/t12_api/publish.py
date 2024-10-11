@@ -1402,6 +1402,58 @@ class PublishSourcesListAPITestRepo(APITest):
         self.check_equal(sources_expected, sources.json())
 
 
+class PublishSourceReplaceAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution/sources/main
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        # Actual test
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources/main",
+            json={"Component": "test", "Name": repo2_name}
+        ).status_code, 200)
+
+        sources_expected = [{"Component": "test", "Name": repo2_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
 class PublishUpdateSourcesAPITestRepo(APITest):
     """
     POST /publish/:prefix/:distribution/update

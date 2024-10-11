@@ -76,14 +76,15 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published,
-			result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(), collectionFactory, context.Progress())
+		cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+		cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
 	}
 
-	context.Progress().Printf("\nPublished %s repository %s has been successfully updated.\n", published.SourceKind, published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been updated successfully.\n", published.SourceKind, published.String())
 
 	return err
 }
