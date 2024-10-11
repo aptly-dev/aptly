@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/smira/commander"
@@ -77,19 +76,10 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		publishedStorage := context.GetPublishedStorage(storage)
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, result.UpdatedComponents(),
-			publishedStorage, collectionFactory, context.Progress())
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published,
+			result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(), collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
-		}
-
-		// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
-		for _, component := range result.RemovedComponents() {
-			err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), context.Progress())
-			if err != nil {
-				return fmt.Errorf("unable to update: %s", err)
-			}
 		}
 	}
 
