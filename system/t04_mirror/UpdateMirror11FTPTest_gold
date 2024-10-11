@@ -13,7 +13,7 @@ Downloading: http://repo.aptly.info/system-tests/snapshot.debian.org/archive/deb
 Downloading: http://repo.aptly.info/system-tests/snapshot.debian.org/archive/debian/20220201T025006Z/pool/main/s/sensible-utils/sensible-utils_0.0.9+deb9u1_all.deb
 Downloading: http://repo.aptly.info/system-tests/snapshot.debian.org/archive/debian/20220201T025006Z/pool/main/s/sysvinit/sysvinit-utils_2.88dsf-59.9_i386.deb
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/snapshot.debian.org/archive/debian/20220201T025006Z/dists/stretch/InRelease
-Mirror `stretch-main` has been successfully updated.
+Mirror `stretch-main` has been updated successfully.
 Packages filtered: 50604 -> 3.
 Retrying 0 http://repo.aptly.info/system-tests/snapshot.debian.org/archive/debian/20220201T025006Z/dists/stretch/InRelease...
 gpgv:                issuer "debian-release@lists.debian.org"

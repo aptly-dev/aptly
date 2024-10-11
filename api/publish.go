@@ -438,8 +438,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			err = collection.CleanupPrefixComponentFiles(context, published, result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(),
-				collectionFactory, out)
+			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
@@ -846,8 +847,9 @@ func apiPublishUpdate(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			err = collection.CleanupPrefixComponentFiles(context, published,
-				result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(), collectionFactory, out)
+			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}

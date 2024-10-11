@@ -2,6 +2,7 @@ package deb
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -359,6 +360,25 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 	c.Check(err, ErrorMatches, "duplicate component name: main")
 }
 
+func (s *PublishedRepoSuite) TestUpdate(c *C) {
+	revision := s.repo2.ObtainRevision()
+	sources := revision.Sources
+	sources["test"] = "local1"
+
+	result, err := s.repo2.Update(s.factory, nil)
+	c.Assert(err, IsNil)
+	c.Assert(result, NotNil)
+	c.Assert(s.repo2.Revision, IsNil)
+
+	c.Assert(result.AddedSources, DeepEquals, map[string]string{"test": "local1"})
+	c.Assert(result.UpdatedSources, DeepEquals, map[string]string{"main": "local1"})
+	c.Assert(result.RemovedSources, DeepEquals, map[string]string{})
+
+	c.Assert(result.AddedComponents(), DeepEquals, []string{"test"})
+	c.Assert(result.UpdatedComponents(), DeepEquals, []string{"main"})
+	c.Assert(result.RemovedComponents(), DeepEquals, []string{})
+}
+
 func (s *PublishedRepoSuite) TestPublish(c *C) {
 	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false)
 	c.Assert(err, IsNil)
@@ -487,6 +507,30 @@ func (s *PublishedRepoSuite) TestEncodeDecode(c *C) {
 	s.repo2.sourceItems = nil
 	c.Assert(err, IsNil)
 	c.Assert(repo2, DeepEquals, s.repo2)
+}
+
+func (s *PublishedRepoSuite) TestPublishedRepoRevision(c *C) {
+	revision := s.repo2.ObtainRevision()
+	c.Assert(revision, NotNil)
+
+	sources := revision.Sources
+	c.Assert(sources, NotNil)
+	c.Assert(sources, DeepEquals, map[string]string{"main": "local1"})
+
+	sources["test1"] = "snap1"
+	sources["test2"] = "snap2"
+
+	c.Assert(revision.Components(), DeepEquals, []string{"main", "test1", "test2"})
+	c.Assert(revision.SourceNames(), DeepEquals, []string{"local1", "snap1", "snap2"})
+
+	bytes, err := json.Marshal(revision)
+	c.Assert(err, IsNil)
+
+	json_expected := `{"Sources":[{"Component":"main","Name":"local1"},{"Component":"test1","Name":"snap1"},{"Component":"test2","Name":"snap2"}]}`
+	c.Assert(string(bytes), Equals, json_expected)
+
+	c.Assert(s.repo2.DropRevision(), DeepEquals, revision)
+	c.Assert(s.repo2.Revision, IsNil)
 }
 
 type PublishedRepoCollectionSuite struct {
