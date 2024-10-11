@@ -343,8 +343,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	dirParam := c.Params.ByName("dir")
-	fileParam := c.Params.ByName("file")
+	dirParam := utils.SanitizePath(c.Params.ByName("dir"))
+	fileParam := utils.SanitizePath(c.Params.ByName("file"))
 	if fileParam != "" && !verifyPath(fileParam) {
 		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
 		return
@@ -620,8 +620,8 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 
 	var sources []string
 	var taskName string
-	dirParam := c.Params.ByName("dir")
-	fileParam := c.Params.ByName("file")
+	dirParam := utils.SanitizePath(c.Params.ByName("dir"))
+	fileParam := utils.SanitizePath(c.Params.ByName("file"))
 	if fileParam != "" && !verifyPath(fileParam) {
 		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
 		return

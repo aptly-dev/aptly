@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/pgp"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,6 +24,10 @@ func apiGPGAddKey(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
+	b.Keyserver = utils.SanitizePath(b.Keyserver)
+	b.GpgKeyID = utils.SanitizePath(b.GpgKeyID)
+	b.GpgKeyArmor = utils.SanitizePath(b.GpgKeyArmor)
+	// b.Keyring can be an absolute path
 
 	var err error
 	args := []string{"--no-default-keyring", "--allow-non-selfsigned-uid"}
