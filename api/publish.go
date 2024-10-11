@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -439,19 +438,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			publishedStorage := context.GetPublishedStorage(storage)
-
-			err = collection.CleanupPrefixComponentFiles(published.Prefix, result.UpdatedComponents(), publishedStorage, collectionFactory, out)
+			err = collection.CleanupPrefixComponentFiles(context, published, result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(),
+				collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
-			}
-
-			// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
-			for _, component := range result.RemovedComponents() {
-				err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
-				if err != nil {
-					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
-				}
 			}
 		}
 
@@ -845,9 +835,6 @@ func apiPublishUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		updatedComponents := result.UpdatedComponents()
-		removedComponents := result.RemovedComponents()
-
 		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
@@ -859,21 +846,10 @@ func apiPublishUpdate(c *gin.Context) {
 		}
 
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
-			publishedStorage := context.GetPublishedStorage(storage)
-
-			err = collection.CleanupPrefixComponentFiles(published.Prefix, updatedComponents, publishedStorage, collectionFactory, out)
+			err = collection.CleanupPrefixComponentFiles(context, published,
+				result.AddedComponents(), result.UpdatedComponents(), result.RemovedComponents(), collectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
-			}
-
-			if len(removedComponents) > 0 {
-				// Cleanup files belonging to a removed component by dropping the component directory from the storage backend.
-				for _, component := range removedComponents {
-					err = publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), out)
-					if err != nil {
-						return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
-					}
-				}
 			}
 		}
 

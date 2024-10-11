@@ -115,8 +115,8 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-			context.GetPublishedStorage(storage), collectionFactory, context.Progress())
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published,
+			[]string{}, components, []string{}, collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to switch: %s", err)
 		}
