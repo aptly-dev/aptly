@@ -1462,73 +1462,127 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 
 // CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
 func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(publishedStorageProvider aptly.PublishedStorageProvider,
-	published *PublishedRepo, addedComponents, updatedComponents, removedComponents []string,
-	collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	published *PublishedRepo, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+
+	var err error
 
 	collection.loadList()
 
+	storage := published.Storage
 	prefix := published.Prefix
 	distribution := published.Distribution
-	multiDist := published.MultiDist
+
+	rootPath := filepath.Join(prefix, "dists", distribution)
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(published.Storage)
 
-	components := make([]string, 0, len(addedComponents)+len(updatedComponents)+len(removedComponents))
-	components = append(append(append(components, addedComponents...), updatedComponents...), removedComponents...)
-	sort.Strings(components)
+	sort.Strings(cleanComponents)
+	publishedComponents := published.Components()
+	removedComponents := utils.StrSlicesSubstract(cleanComponents, publishedComponents)
+	updatedComponents := utils.StrSlicesSubstract(cleanComponents, removedComponents)
+
+	if progress != nil {
+		progress.Printf("Cleaning up published repository %s/%s...\n", published.StoragePrefix(), distribution)
+	}
 
 	for _, component := range removedComponents {
 		if progress != nil {
-			progress.Printf("Removing component %q from prefix %q...\n", component, prefix)
+			progress.Printf("Removing component '%s'...\n", component)
 		}
 
-		err := publishedStorage.RemoveDirs(filepath.Join(prefix, "dists", distribution, component), progress)
+		err = publishedStorage.RemoveDirs(filepath.Join(rootPath, component), progress)
 		if err != nil {
 			return err
 		}
 
-		if multiDist {
-			for _, component := range removedComponents {
-				err = publishedStorage.RemoveDirs(filepath.Join(prefix, "pool", distribution, component), progress)
+		// Ensure that component does not exist in multi distribution pool
+		err = publishedStorage.RemoveDirs(filepath.Join(prefix, "pool", distribution, component), nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	referencedFiles := map[string][]string{}
+
+	if published.MultiDist {
+		rootPath = filepath.Join(prefix, "pool", distribution)
+
+		// Get all referenced files by component for determining orphaned pool files.
+		for _, component := range publishedComponents {
+			packageList, err := NewPackageListFromRefList(published.RefList(component), collectionFactory.PackageCollection(), progress)
+			if err != nil {
+				return err
+			}
+
+			packageList.ForEach(func(p *Package) error {
+				poolDir, err := p.PoolDirectory()
+				if err != nil {
+					return err
+				}
+
+				for _, file := range p.Files() {
+					referencedFiles[component] = append(referencedFiles[component], filepath.Join(poolDir, file.Filename))
+				}
+
+				return nil
+			})
+		}
+	} else {
+		rootPath = filepath.Join(prefix, "pool")
+
+		// In case of a shared component pool directory, we must check, if a component is no longer referenced by any other
+		// published repository within the same prefix.
+		referencedComponents := map[string]struct{}{}
+		for _, p := range collection.list {
+			if p.Prefix == prefix && p.Storage == storage && !p.MultiDist {
+				for _, component := range p.Components() {
+					referencedComponents[component] = struct{}{}
+				}
+			}
+		}
+
+		// Remove orphaned component pool directories in the prefix.
+		for _, component := range removedComponents {
+			_, exists := referencedComponents[component]
+			if !exists {
+				err := publishedStorage.RemoveDirs(filepath.Join(rootPath, component), progress)
 				if err != nil {
 					return err
 				}
 			}
 		}
+
+		// Get all referenced files by component for determining orphaned pool files.
+		referencedFiles, err = collection.listReferencedFilesByComponent(prefix, publishedComponents, collectionFactory, progress)
+		if err != nil {
+			return err
+		}
 	}
 
-	components = make([]string, 0, len(updatedComponents)+len(removedComponents))
-	components = append(append(components, addedComponents...), updatedComponents...)
-
-	referencedFiles, err := collection.listReferencedFilesByComponent(prefix, components, collectionFactory, progress)
-	if err != nil {
-		return err
-	}
-
-	for _, component := range components {
+	for _, component := range updatedComponents {
 		if progress != nil {
-			progress.Printf("Cleaning up component %q in prefix %q...\n", component, prefix)
+			progress.Printf("Cleaning up component '%s'...\n", component)
 		}
 		sort.Strings(referencedFiles[component])
 
-		rootPath := filepath.Join(prefix, "pool", component)
-		existingFiles, err := publishedStorage.Filelist(rootPath)
+		path := filepath.Join(rootPath, component)
+		existingFiles, err := publishedStorage.Filelist(path)
 		if err != nil {
 			return err
 		}
 
 		sort.Strings(existingFiles)
 
-		filesToDelete := utils.StrSlicesSubstract(existingFiles, referencedFiles[component])
+		orphanedFiles := utils.StrSlicesSubstract(existingFiles, referencedFiles[component])
 
-		for _, file := range filesToDelete {
-			err = publishedStorage.Remove(filepath.Join(rootPath, file))
+		for _, file := range orphanedFiles {
+			err = publishedStorage.Remove(filepath.Join(path, file))
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return nil
+	return err
 }
 
 // Remove removes published repository, cleaning up directories, files
@@ -1579,8 +1633,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
 	if !skipCleanup && len(cleanComponents) > 0 {
-		err = collection.CleanupPrefixComponentFiles(publishedStorageProvider, repo, []string{}, cleanComponents, []string{},
-			collectionFactory, progress)
+		err = collection.CleanupPrefixComponentFiles(publishedStorageProvider, repo, cleanComponents, collectionFactory, progress)
 		if err != nil {
 			if !force {
 				return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)

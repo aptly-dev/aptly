@@ -8,7 +8,7 @@ Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/d
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/Packages.bz2
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/r-cran-class_7.3-22-2~bullseyecran.0_amd64.deb
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/r-cran-class_7.3-22-2~bullseyecran.0_i386.deb
-Mirror `flat` has been successfully updated.
+Mirror `flat` has been updated successfully.
 Packages filtered: 89 -> 2.
 openpgp: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"
 openpgp:  RSA key ID B8F25A8A73EACF41

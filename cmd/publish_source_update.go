@@ -44,9 +44,9 @@ func aptlyPublishSourceUpdate(cmd *commander.Command, args []string) error {
 		name := names[i]
 		_, exists := sources[component]
 		if !exists {
-			return fmt.Errorf("unable to update: component %q does not exist", component)
+			return fmt.Errorf("unable to update: component '%s' does not exist", component)
 		}
-		context.Progress().Printf("Updating component %q with source %q [%s]...\n", component, name, published.SourceKind)
+		context.Progress().Printf("Updating component '%s' with source '%s' [%s]...\n", component, name, published.SourceKind)
 
 		sources[component] = name
 	}

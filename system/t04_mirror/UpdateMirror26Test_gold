@@ -14,7 +14,7 @@ Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archi
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/main/binary-i386/Packages.gz
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/pool/main/b/boost-defaults/libboost-program-options-dev_1.62.0.1_i386.deb
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/pool/main/b/boost-defaults/libboost-program-options-dev_1.62.0.1_i386.deb
-Mirror `grab` has been successfully updated.
+Mirror `grab` has been updated successfully.
 Packages filtered: 50604 -> 1.
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
