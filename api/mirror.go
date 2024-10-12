@@ -306,7 +306,7 @@ func apiMirrorsPackages(c *gin.Context) {
 
 		list.PrepareIndex()
 
-		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
+		list, err = list.Filter([]deb.PackageQuery{q}, withDeps, nil,
 			nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			AbortWithJSONError(c, 500, fmt.Errorf("unable to search: %s", err))
@@ -468,7 +468,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
 
-			_, _, err = remote.ApplyFilter(context.DependencyOptions(), filterQuery, out)
+			_, _, err = remote.ApplyFilter(context.DependencyOptions(), filterQuery, nil, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}

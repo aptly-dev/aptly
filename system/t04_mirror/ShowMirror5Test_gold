@@ -41,5 +41,7 @@
   "SkipArchitectureCheck": false,
   "DownloadSources": false,
   "DownloadUdebs": false,
-  "DownloadInstaller": false
+  "DownloadInstaller": false,
+  "DepsFromMirrors": null,
+  "DepsFromRepos": null
 }

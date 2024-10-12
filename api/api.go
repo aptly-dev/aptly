@@ -228,7 +228,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 		list.PrepareIndex()
 
 		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
-			nil, context.DependencyOptions(), architecturesList)
+			nil, nil, context.DependencyOptions(), architecturesList)
 		if err != nil {
 			AbortWithJSONError(c, 500, fmt.Errorf("unable to search: %s", err))
 			return
@@ -244,7 +244,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 				fmt.Println("filter packages by version, query string parse err: ", err)
 				c.AbortWithError(500, fmt.Errorf("unable to parse %s maximum version query string: %s", p.Name, err))
 			} else {
-				tmpList, err := list.Filter([]deb.PackageQuery{versionQ}, false,
+				tmpList, err := list.Filter([]deb.PackageQuery{versionQ}, false, nil,
 					nil, 0, []string{})
 
 				if err == nil {
