@@ -65,6 +65,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	c.Check(string(buf), Equals, ""+
 		"{\n"+
 		"  \"rootDir\": \"/tmp/aptly\",\n"+
+		"  \"logFile\": \"\",\n"+
+		"  \"useAuth\": false,\n"+
 		"  \"downloadConcurrency\": 5,\n"+
 		"  \"downloadSpeedLimit\": 0,\n"+
 		"  \"downloadRetries\": 0,\n"+
@@ -149,7 +151,14 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"    \"url\": \"\",\n"+
                 "    \"dbPath\": \"\"\n" +
 		"  },\n"+
-                "  \"enableSwaggerEndpoint\": false\n" +
+                "  \"enableSwaggerEndpoint\": false,\n" +
+		"  \"Auth\": {\n"+
+		"    \"authType\": \"\",\n"+
+		"    \"server\": \"\",\n"+
+		"    \"ldapDN\": \"\",\n"+
+		"    \"ldapFilter\": \"\",\n"+
+		"    \"secureTLS\": false\n"+
+		"  }\n"+
 		"}")
 }
 

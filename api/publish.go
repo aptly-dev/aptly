@@ -173,6 +173,11 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 				return
 			}
 
+			err = CheckGroup(c, localRepo.LdapGroup)
+			if err != nil {
+				c.AbortWithError(403, err)
+			}
+
 			resources = append(resources, string(localRepo.Key()))
 			err = localCollection.LoadComplete(localRepo)
 			if err != nil {
