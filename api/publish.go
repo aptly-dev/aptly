@@ -342,7 +342,7 @@ type publishedRepoUpdateSwitchParams struct {
 	// Don't remove unreferenced files in prefix/component
 	SkipCleanup *bool `                           json:"SkipCleanup"`
 	// only when updating published snapshots, list of objects 'Component/Name'
-	Snapshots []sourceParams `binding:"required"    json:"Snapshots"`
+	Snapshots []sourceParams `                    json:"Snapshots"`
 	// Provide index files by hash
 	AcquireByHash *bool `                         json:"AcquireByHash"`
 	// Enable multiple packages with the same filename in different distributions
