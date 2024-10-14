@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
@@ -79,36 +78,26 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	defer func() {
-		_ = os.Remove(tempfilename)
-	}()
-
 	if output != "" {
 		err = utils.CopyFile(tempfilename, output)
+		_ = os.Remove(tempfilename)
 		if err != nil {
 			return fmt.Errorf("unable to copy %s -> %s: %s", tempfilename, output, err)
 		}
 
 		fmt.Printf("Output saved to %s\n", output)
-	} else {
-		command := getOpenCommand()
-		fmt.Printf("Rendered to %s file: %s, trying to open it with: %s %s...\n", format, tempfilename, command, tempfilename)
-
-		args := strings.Split(command, " ")
-
-		viewer := exec.Command(args[0], append(args[1:], tempfilename)...)
-		viewer.Stderr = os.Stderr
-		if err = viewer.Start(); err == nil {
-			// Wait for a second so that the visualizer has a chance to
-			// open the input file. This needs to be done even if we're
-			// waiting for the visualizer as it can be just a wrapper that
-			// spawns a browser tab and returns right away.
-			defer func(t <-chan time.Time) {
-				<-t
-			}(time.After(time.Second))
-		}
+		return nil
 	}
 
+	openCommand := getOpenCommand()
+	fmt.Printf("Rendered to %s file: %s, trying to open it with: %s %s...\n", format, tempfilename, openCommand, tempfilename)
+
+	openCommandArgs := strings.Split(openCommand, " ")
+
+	// The process will continue running even after aptly has exited.
+	viewer := exec.Command(openCommandArgs[0], append(openCommandArgs[1:], tempfilename)...)
+	viewer.Stderr = os.Stderr
+	err = viewer.Start()
 	return err
 }
 
