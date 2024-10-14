@@ -200,6 +200,12 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	b.Distribution = utils.SanitizePath(b.Distribution)
 
+	var archs []string
+	for _, arch := range b.Architectures {
+		archs = append(archs, utils.SanitizePath(arch))
+	}
+	b.Architectures = archs
+
 	signer, err := getSigner(&b.Signing)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to initialize GPG signer: %s", err))
