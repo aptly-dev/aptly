@@ -373,7 +373,6 @@ type publishedRepoUpdateSwitchParams struct {
 // @Description * if local repository has been published, published repository would be updated to match local repository contents
 // @Description * if snapshots have been been published, it is possible to switch each component to new snapshot
 // @Tags Publish
-// @Accept json
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -524,7 +523,6 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Description
 // @Description Delete published repository and clean up files in published directory. Aptly tries to remove as many files belonging to this repository as possible. For example, if no other published repositories share the same prefix, all files inside the prefix will be removed.
 // @Tags Publish
-// @Accept json
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -786,6 +784,8 @@ func apiPublishSourcesDelete(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Param component path string true "component name"
+// @Consume json
+// @Param request body sourceParams true "Parameters"
 // @Produce json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
