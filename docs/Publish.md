@@ -26,4 +26,12 @@ repositories.
 Signing releases is highly recommended, but if you want to skip it, you
 can either use `gpgDisableSign` configuration option or `--skip-signing`
 flag.
+
+#### Parameters
+
+Publish APIs use following convention to identify published repositories: `/api/publish/:prefix/:distribution`.
+`:distribution` is distribution name, while `:prefix` is `[<storage>:]<prefix>` (storage is optional, it defaults
+to empty string), if publishing prefix contains slashes `/`, they should be replaced with underscores (`_`) and underscores
+should be replaced with double underscore (`__`). To specify root `:prefix`, use `:.`, as `.` is ambigious in URLs.
+
 </div>
