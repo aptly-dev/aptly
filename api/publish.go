@@ -15,24 +15,24 @@ import (
 
 type signingParams struct {
 	// Don't sign published repository
-        Skip bool `                json:"Skip"           example:"false"`
+	Skip bool `                json:"Skip"           example:"false"`
 	// GPG key ID to use when signing the release, if not specified default key is used
 	GpgKey string `            json:"GpgKey"         example:"A0546A43624A8331"`
 	// GPG keyring to use (instead of default)
-        Keyring string `           json:"Keyring"        example:"trustedkeys.gpg"`
-        // GPG secret keyring to use (instead of default) Note: depreciated with gpg2
-        SecretKeyring string `     json:"SecretKeyring"  example:""`
+	Keyring string `           json:"Keyring"        example:"trustedkeys.gpg"`
+	// GPG secret keyring to use (instead of default) Note: depreciated with gpg2
+	SecretKeyring string `     json:"SecretKeyring"  example:""`
 	// GPG passphrase to unlock private key (possibly insecure)
-        Passphrase string `        json:"Passphrase"     example:"verysecure"`
+	Passphrase string `        json:"Passphrase"     example:"verysecure"`
 	// GPG passphrase file to unlock private key (possibly insecure)
-        PassphraseFile string `    json:"PassphraseFile" example:"/etc/aptly.passphrase"`
+	PassphraseFile string `    json:"PassphraseFile" example:"/etc/aptly.passphrase"`
 }
 
 type sourceParams struct {
 	// Name of the component
 	Component string `binding:"required"   json:"Component"  example:"main"`
 	// Name of the local repository/snapshot
-        Name string `binding:"required"        json:"Name"       example:"snap1"`
+	Name string `binding:"required"        json:"Name"       example:"snap1"`
 }
 
 func getSigner(options *signingParams) (pgp.Signer, error) {
@@ -141,31 +141,31 @@ type publishedRepoCreateParams struct {
 	// List of 'Component/Name' objects, 'Name' is either local repository or snapshot name
 	Sources []sourceParams `binding:"required"    json:"Sources"`
 	// Distribution name, if missing Aptly would try to guess from sources
-        Distribution string `                         json:"Distribution"          example:"bookworm"`
+	Distribution string `                         json:"Distribution"          example:"bookworm"`
 	// Value of Label: field in published repository stanza
-        Label string `                                json:"Label"                 example:""`
+	Label string `                                json:"Label"                 example:""`
 	// Value of Origin: field in published repository stanza
-        Origin string `                               json:"Origin"                example:""`
+	Origin string `                               json:"Origin"                example:""`
 	// when publishing, overwrite files in pool/ directory without notice
-        ForceOverwrite bool `                         json:"ForceOverwrite"        example:"false"`
+	ForceOverwrite bool `                         json:"ForceOverwrite"        example:"false"`
 	// Override list of published architectures
-        Architectures []string `                      json:"Architectures"         example:"amd64,armhf"`
+	Architectures []string `                      json:"Architectures"         example:"amd64,armhf"`
 	// GPG options
-        Signing signingParams `                       json:"Signing"`
+	Signing signingParams `                       json:"Signing"`
 	// Setting to yes indicates to the package manager to not install or upgrade packages from the repository without user consent
-        NotAutomatic string `                         json:"NotAutomatic"          example:""`
+	NotAutomatic string `                         json:"NotAutomatic"          example:""`
 	// setting to yes excludes upgrades from the NotAutomic setting
-        ButAutomaticUpgrades string `                 json:"ButAutomaticUpgrades"  example:""`
+	ButAutomaticUpgrades string `                 json:"ButAutomaticUpgrades"  example:""`
 	// Don't generate contents indexes
-        SkipContents *bool `                          json:"SkipContents"          example:"false"`
+	SkipContents *bool `                          json:"SkipContents"          example:"false"`
 	// Don't remove unreferenced files in prefix/component
-        SkipCleanup *bool `                           json:"SkipCleanup"           example:"false"`
+	SkipCleanup *bool `                           json:"SkipCleanup"           example:"false"`
 	// Skip bz2 compression for index files
-        SkipBz2 *bool `                               json:"SkipBz2"               example:"false"`
+	SkipBz2 *bool `                               json:"SkipBz2"               example:"false"`
 	// Provide index files by hash
-        AcquireByHash *bool `                         json:"AcquireByHash"         example:"false"`
+	AcquireByHash *bool `                         json:"AcquireByHash"         example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-        MultiDist *bool `                             json:"MultiDist"             example:"false"`
+	MultiDist *bool `                             json:"MultiDist"             example:"false"`
 }
 
 // @Summary Create published repository
@@ -351,19 +351,19 @@ type publishedRepoUpdateSwitchParams struct {
 	// when publishing, overwrite files in pool/ directory without notice
 	ForceOverwrite bool `                         json:"ForceOverwrite" example:"false"`
 	// GPG options
-        Signing signingParams `                       json:"Signing"`
+	Signing signingParams `                       json:"Signing"`
 	// Don't generate contents indexes
-        SkipContents *bool `                          json:"SkipContents"   example:"false"`
+	SkipContents *bool `                          json:"SkipContents"   example:"false"`
 	// Skip bz2 compression for index files
-        SkipBz2 *bool `                               json:"SkipBz2"        example:"false"`
+	SkipBz2 *bool `                               json:"SkipBz2"        example:"false"`
 	// Don't remove unreferenced files in prefix/component
-        SkipCleanup *bool `                           json:"SkipCleanup"    example:"false"`
+	SkipCleanup *bool `                           json:"SkipCleanup"    example:"false"`
 	// only when updating published snapshots, list of objects 'Component/Name'
-        Snapshots []sourceParams `                    json:"Snapshots"`
+	Snapshots []sourceParams `                    json:"Snapshots"`
 	// Provide index files by hash
-        AcquireByHash *bool `                         json:"AcquireByHash"  example:"false"`
+	AcquireByHash *bool `                         json:"AcquireByHash"  example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-        MultiDist *bool `                             json:"MultiDist"      example:"false"`
+	MultiDist *bool `                             json:"MultiDist"      example:"false"`
 }
 
 // @Summary Update published repository
@@ -911,19 +911,19 @@ func apiPublishSourceDelete(c *gin.Context) {
 
 type publishedRepoUpdateParams struct {
 	// when publishing, overwrite files in pool/ directory without notice
-        ForceOverwrite bool `                         json:"ForceOverwrite"  example:"false"`
+	ForceOverwrite bool `                         json:"ForceOverwrite"  example:"false"`
 	// GPG options
 	Signing signingParams `                       json:"Signing"`
 	// Don't generate contents indexes
-        SkipContents *bool `                          json:"SkipContents"    example:"false"`
+	SkipContents *bool `                          json:"SkipContents"    example:"false"`
 	// Skip bz2 compression for index files
-        SkipBz2 *bool `                               json:"SkipBz2"         example:"false"`
+	SkipBz2 *bool `                               json:"SkipBz2"         example:"false"`
 	// Don't remove unreferenced files in prefix/component
-        SkipCleanup *bool `                           json:"SkipCleanup"     example:"false"`
+	SkipCleanup *bool `                           json:"SkipCleanup"     example:"false"`
 	// Provide index files by hash
-        AcquireByHash *bool `                         json:"AcquireByHash"   example:"false"`
+	AcquireByHash *bool `                         json:"AcquireByHash"   example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-        MultiDist *bool `                             json:"MultiDist"       example:"false"`
+	MultiDist *bool `                             json:"MultiDist"       example:"false"`
 }
 
 // @Summary Update content of published repository
