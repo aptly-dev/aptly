@@ -12,9 +12,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 
-	_ "github.com/aptly-dev/aptly/docs" // import docs
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	// _ "github.com/aptly-dev/aptly/docs" // import docs
+	// swaggerFiles "github.com/swaggo/files"
+	// ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var context *ctx.AptlyContext
@@ -72,11 +72,11 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	router.Use(gin.Recovery(), gin.ErrorLogger())
 
-	if c.Config().EnableSwaggerEndpoint {
-		router.Use(redirectSwagger)
-		url := ginSwagger.URL("/docs/doc.json")
-		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-	}
+	// if c.Config().EnableSwaggerEndpoint {
+	// 	router.Use(redirectSwagger)
+	// 	url := ginSwagger.URL("/docs/doc.json")
+	// 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	// }
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)
