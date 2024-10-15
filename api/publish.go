@@ -86,7 +86,14 @@ func apiPublishList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// POST /publish/:prefix
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Publish
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/publish/{prefix} [post]
 func apiPublishRepoOrSnapshot(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -250,7 +257,14 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	})
 }
 
-// PUT /publish/:prefix/:distribution
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Publish
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/publish/{prefix}/{distribution} [put]
 func apiPublishUpdateSwitch(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -372,7 +386,14 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	})
 }
 
-// DELETE /publish/:prefix/:distribution
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Publish
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/publish/{prefix}/{distribution} [delete]
 func apiPublishDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"

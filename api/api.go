@@ -23,12 +23,38 @@ import (
 //  3. SnapshotCollection
 //  4. PublishedRepoCollection
 
-// GET /api/version
+type aptlyVersion struct {
+	// Aptly Version
+	Version string `json:"Version"`
+}
+
+// @Summary Aptly version
+// @Description **Get aptly version**
+// @Description Returns the aptly version
+// @Tags Status
+// @Produce json
+// @Success 200 {object} aptlyVersion
+// @Router /api/version [get]
 func apiVersion(c *gin.Context) {
 	c.JSON(200, gin.H{"Version": aptly.Version})
 }
 
-// GET /api/ready
+type aptlyStatus struct {
+	// Aptly Status
+	Status string `json:"Status" example:"'Aptly is ready', 'Aptly is unavailable', 'Aptly is healthy'"`
+}
+
+// @Summary Ready State
+// @Description **Get aptly ready state**
+// @Description
+// @Description Return aptly ready state:
+// @Description - `Aptly is ready` (HTTP 200)
+// @Description - `Aptly is unavailable` (HTTP 503)
+// @Tags Status
+// @Produce json
+// @Success 200 {object} aptlyStatus "Aptly is ready"
+// @Failure 503 {object} aptlyStatus "Aptly is unavailable"
+// @Router /api/ready [get]
 func apiReady(isReady *atomic.Value) func(*gin.Context) {
 	return func(c *gin.Context) {
 		if isReady == nil || !isReady.Load().(bool) {
@@ -40,7 +66,15 @@ func apiReady(isReady *atomic.Value) func(*gin.Context) {
 	}
 }
 
-// GET /api/healthy
+// @Summary Health State
+// @Description **Get aptly health state**
+// @Description
+// @Description Return aptly health state:
+// @Description - `Aptly is healthy` (HTTP 200)
+// @Tags Status
+// @Produce json
+// @Success 200 {object} aptlyStatus
+// @Router /api/healthy [get]
 func apiHealthy(c *gin.Context) {
 	c.JSON(200, gin.H{"Status": "Aptly is healthy"})
 }
