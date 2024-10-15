@@ -67,7 +67,9 @@ func slashEscape(path string) string {
 }
 
 // @Summary List published repositories
-// @Description **Get a list of all published repositories**
+// @Description **List published repositories**
+// @Description
+// @Description Lists repositories that have been published based on local repositories or snapshots. For each repository information about `endpoint`, `prefix` and `distribution` is listed along with `component` and architecture list. Information about snapshot or local repo being published is appended to published repository description.
 // @Tags Publish
 // @Produce json
 // @Success 200 {array} deb.PublishedRepo
@@ -99,7 +101,9 @@ func apiPublishList(c *gin.Context) {
 }
 
 // @Summary Show published repository
-// @Description **Get details of a published repository**
+// @Description **Show published repository**
+// @Description
+// @Description Show detailed information of published repository.
 // @Tags Publish
 // @Produce json
 // @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambigious in URLs"
@@ -121,6 +125,7 @@ func apiPublishShow(c *gin.Context) {
 		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to show: %s", err))
 		return
 	}
+
 	err = collection.LoadComplete(published, collectionFactory)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to show: %s", err))
@@ -178,10 +183,17 @@ type publishedRepoCreateParams struct {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix} [post]
 func apiPublishRepoOrSnapshot(c *gin.Context) {
+	var (
+		b publishedRepoCreateParams
+		components []string
+		names []string
+		sources []interface{}
+		resources []string
+	)
+
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 
-	var b publishedRepoCreateParams
 	if c.Bind(&b) != nil {
 		return
 	}
@@ -199,10 +211,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		return
 	}
 
-	var components []string
-	var names []string
-	var sources []interface{}
-	var resources []string
 	collectionFactory := context.NewCollectionFactory()
 
 	if b.SourceKind == deb.SourceSnapshot {
@@ -306,10 +314,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			published.AcquireByHash = *b.AcquireByHash
 		}
 
-		if b.MultiDist != nil {
-			published.MultiDist = *b.MultiDist
-		}
-
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
@@ -369,11 +373,12 @@ type publishedRepoUpdateSwitchParams struct {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution} [put]
 func apiPublishUpdateSwitch(c *gin.Context) {
+	var b publishedRepoUpdateSwitchParams
+
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
 
-	var b publishedRepoUpdateSwitchParams
 	if c.Bind(&b) != nil {
 		return
 	}
@@ -466,7 +471,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Summary Delete published repository
 // @Description **Delete a published repository**
 // @Description
-// @Description Delete published repository, clean up files in published directory.
+// @Description Delete published repository and clean up files in published directory. Aptly tries to remove as many files belonging to this repository as possible. For example, if no other published repositories share the same prefix, all files inside the prefix will be removed.
 // @Tags Publish
 // @Accept json
 // @Produce json
@@ -480,12 +485,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution} [delete]
 func apiPublishDrop(c *gin.Context) {
-	force := c.Request.URL.Query().Get("force") == "1"
-	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"
-
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
+
+	force := c.Request.URL.Query().Get("force") == "1"
+	skipCleanup := c.Request.URL.Query().Get("SkipCleanup") == "1"
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
@@ -509,8 +514,10 @@ func apiPublishDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Add staged source
-// @Description **Create and add a staged source**
+// @Summary Add source to staged source list
+// @Description **Add a source to the staged source list**
+// @Description
+// @Description The staged source list exists independently of the current source list of the published repository. It can be modified in multiple steps by adding, removing and updating sources. A source is a tuple of two elements comprising the name of the component and the name of the local repository or snapshot. The staged source list exists as long as it gets discarded via `drop` or applied to the published repository via `update`.
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -521,10 +528,7 @@ func apiPublishDrop(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [post]
 func apiPublishSourcesCreate(c *gin.Context) {
-	var (
-		err error
-		b   sourceParams
-	)
+	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -575,7 +579,7 @@ func apiPublishSourcesCreate(c *gin.Context) {
 	})
 }
 
-// @Summary Get staged sources
+// @Summary Get staged source list
 // @Description **Get the staged source list**
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
@@ -583,7 +587,7 @@ func apiPublishSourcesCreate(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} sourceParams
 // @Failure 400 {object} Error "Bad Request"
-// @Failure 404 {object} Error "Published repository not found or no source changes exist"
+// @Failure 404 {object} Error "Published repository not found or staged source list does not exist"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
 func apiPublishSourcesList(c *gin.Context) {
@@ -615,8 +619,10 @@ func apiPublishSourcesList(c *gin.Context) {
 	c.JSON(http.StatusOK, revision.SourceList())
 }
 
-// @Summary Set staged sources
+// @Summary Set staged source list
 // @Description **Set the staged source list**
+// @Description
+// @Description If the staged source list is known in advance, it can set via this method in a single call. All modifications done before are lost and the staged source list get replaced by the one given in the request body.
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -629,10 +635,7 @@ func apiPublishSourcesList(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [put]
 func apiPublishSourcesUpdate(c *gin.Context) {
-	var (
-		err error
-		b   []sourceParams
-	)
+	var b []sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -658,7 +661,7 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 	}
 
 	revision := published.ObtainRevision()
-	sources := make(map[string]string, len(b))
+	sources := make(map[string]string, 0, len(b))
 	revision.Sources = sources
 
 	for _, source := range b {
@@ -679,10 +682,10 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary Delete staged sources
+// @Summary Delete staged source list
 // @Description **Delete the staged source list**
 // @Description
-// @Description Delete staged sources and keep existing sources of published repository.
+// @Description Delete/Discard the staged sources and keep existing sources of published repository.
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -739,10 +742,7 @@ func apiPublishSourcesDelete(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
 func apiPublishSourceUpdate(c *gin.Context) {
-	var (
-		err error
-		b   sourceParams
-	)
+	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
@@ -800,8 +800,8 @@ func apiPublishSourceUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary Delete staged source
-// @Description **Delete the staged source**
+// @Summary Delete source from staged source list
+// @Description **Delete a single source from the staged source list**
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -813,8 +813,6 @@ func apiPublishSourceUpdate(c *gin.Context) {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [delete]
 func apiPublishSourceDelete(c *gin.Context) {
-	var err error
-
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -878,7 +876,7 @@ type publishedRepoUpdateParams struct {
 // @Summary Update content of published repository
 // @Description **Update the content of a published repository**
 // @Description
-// @Description Replace the sources of the published repository (if available) and (re-)publish new content.
+// @Description Replace the current source list of the published repository by the staged one (if available) and (re-)publish the new content.
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -891,19 +889,11 @@ type publishedRepoUpdateParams struct {
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/update [post]
 func apiPublishUpdate(c *gin.Context) {
+	var b publishedRepoUpdateParams
+
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
-
-	var b struct {
-		AcquireByHash  *bool
-		ForceOverwrite bool
-		Signing        signingParams
-		SkipBz2        *bool
-		SkipCleanup    *bool
-		SkipContents   *bool
-		MultiDist      *bool
-	}
 
 	if c.Bind(&b) != nil {
 		return
