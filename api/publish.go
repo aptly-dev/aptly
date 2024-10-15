@@ -184,11 +184,11 @@ type publishedRepoCreateParams struct {
 // @Router /api/publish/{prefix} [post]
 func apiPublishRepoOrSnapshot(c *gin.Context) {
 	var (
-		b publishedRepoCreateParams
+		b          publishedRepoCreateParams
 		components []string
-		names []string
-		sources []interface{}
-		resources []string
+		names      []string
+		sources    []interface{}
+		resources  []string
 	)
 
 	param := slashEscape(c.Params.ByName("prefix"))
