@@ -712,7 +712,7 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 	}
 
 	revision := published.ObtainRevision()
-	sources := make(map[string]string, 0, len(b))
+	sources := make(map[string]string, len(b))
 	revision.Sources = sources
 
 	for _, source := range b {
