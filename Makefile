@@ -100,7 +100,7 @@ serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
 	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd -- api serve -listen 0.0.0.0:3142
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)

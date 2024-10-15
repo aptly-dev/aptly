@@ -191,12 +191,12 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		api.POST("/publish/:prefix", apiPublishRepoOrSnapshot)
 		api.PUT("/publish/:prefix/:distribution", apiPublishUpdateSwitch)
 		api.DELETE("/publish/:prefix/:distribution", apiPublishDrop)
-		api.POST("/publish/:prefix/:distribution/sources", apiPublishSourcesCreate)
-		api.GET("/publish/:prefix/:distribution/sources", apiPublishSourcesList)
-		api.PUT("/publish/:prefix/:distribution/sources", apiPublishSourcesUpdate)
-		api.DELETE("/publish/:prefix/:distribution/sources", apiPublishSourcesDelete)
-		api.PUT("/publish/:prefix/:distribution/sources/:component", apiPublishSourceUpdate)
-		api.DELETE("/publish/:prefix/:distribution/sources/:component", apiPublishSourceDelete)
+		api.POST("/publish/:prefix/:distribution/sources", apiPublishAddSource)
+		api.GET("/publish/:prefix/:distribution/sources", apiPublishListChanges)
+		api.PUT("/publish/:prefix/:distribution/sources", apiPublishSetSources)
+		api.DELETE("/publish/:prefix/:distribution/sources", apiPublishDropChanges)
+		api.PUT("/publish/:prefix/:distribution/sources/:component", apiPublishUpdateSource)
+		api.DELETE("/publish/:prefix/:distribution/sources/:component", apiPublishRemoveSource)
 		api.POST("/publish/:prefix/:distribution/update", apiPublishUpdate)
 	}
 

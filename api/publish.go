@@ -15,24 +15,24 @@ import (
 
 type signingParams struct {
 	// Don't sign published repository
-	Skip bool `                json:"Skip"`
+	Skip bool `                json:"Skip"           example:"false"`
 	// GPG key ID to use when signing the release, if not specified default key is used
-	GpgKey string `            json:"GpgKey"`
+	GpgKey string `            json:"GpgKey"         example:"A0546A43624A8331"`
 	// GPG keyring to use (instead of default)
-	Keyring string `           json:"Keyring"`
-	// GPG secret keyring to use (instead of default)
-	SecretKeyring string `    json:"SecretKeyring"`
+	Keyring string `           json:"Keyring"        example:"trustedkeys.gpg"`
+	// GPG secret keyring to use (instead of default) Note: depreciated with gpg2
+	SecretKeyring string `     json:"SecretKeyring"  example:""`
 	// GPG passphrase to unlock private key (possibly insecure)
-	Passphrase string `       json:"Passphrase"`
+	Passphrase string `        json:"Passphrase"     example:"verysecure"`
 	// GPG passphrase file to unlock private key (possibly insecure)
-	PassphraseFile string `    json:"PassphraseFile"`
+	PassphraseFile string `    json:"PassphraseFile" example:"/etc/aptly.passphrase"`
 }
 
 type sourceParams struct {
 	// Name of the component
-	Component string `binding:"required"   json:"Component"`
+	Component string `binding:"required"   json:"Component"  example:"main"`
 	// Name of the local repository/snapshot
-	Name string `binding:"required"        json:"Name"`
+	Name string `binding:"required"        json:"Name"       example:"snap1"`
 }
 
 func getSigner(options *signingParams) (pgp.Signer, error) {
@@ -67,7 +67,7 @@ func slashEscape(path string) string {
 }
 
 // @Summary List published repositories
-// @Description **List published repositories**
+// @Description **Get list of published repositories**
 // @Description
 // @Description Lists repositories that have been published based on local repositories or snapshots. For each repository information about `endpoint`, `prefix` and `distribution` is listed along with `component` and architecture list. Information about snapshot or local repo being published is appended to published repository description.
 // @Tags Publish
@@ -101,7 +101,7 @@ func apiPublishList(c *gin.Context) {
 }
 
 // @Summary Show published repository
-// @Description **Show published repository**
+// @Description **Get published repository information**
 // @Description
 // @Description Show detailed information of published repository.
 // @Tags Publish
@@ -137,35 +137,35 @@ func apiPublishShow(c *gin.Context) {
 
 type publishedRepoCreateParams struct {
 	// 'local' for local repositories and 'snapshot' for snapshots
-	SourceKind string `binding:"required"    json:"SourceKind"    example:"snapshot"`
+	SourceKind string `binding:"required"         json:"SourceKind"    example:"snapshot"`
 	// List of 'Component/Name' objects, 'Name' is either local repository or snapshot name
 	Sources []sourceParams `binding:"required"    json:"Sources"`
 	// Distribution name, if missing Aptly would try to guess from sources
-	Distribution string `                         json:"Distribution"`
+	Distribution string `                         json:"Distribution"          example:"bookworm"`
 	// Value of Label: field in published repository stanza
-	Label string `                                json:"Label"`
+	Label string `                                json:"Label"                 example:""`
 	// Value of Origin: field in published repository stanza
-	Origin string `                               json:"Origin"`
+	Origin string `                               json:"Origin"                example:""`
 	// when publishing, overwrite files in pool/ directory without notice
-	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	ForceOverwrite bool `                         json:"ForceOverwrite"        example:"false"`
 	// Override list of published architectures
-	Architectures []string `                      json:"Architectures"`
+	Architectures []string `                      json:"Architectures"         example:"amd64,armhf"`
 	// GPG options
 	Signing signingParams `                       json:"Signing"`
 	// Setting to yes indicates to the package manager to not install or upgrade packages from the repository without user consent
-	NotAutomatic string `                         json:"NotAutomatic"`
+	NotAutomatic string `                         json:"NotAutomatic"          example:""`
 	// setting to yes excludes upgrades from the NotAutomic setting
-	ButAutomaticUpgrades string `                 json:"ButAutomaticUpgrades"`
+	ButAutomaticUpgrades string `                 json:"ButAutomaticUpgrades"  example:""`
 	// Don't generate contents indexes
-	SkipContents *bool `                          json:"SkipContents"`
+	SkipContents *bool `                          json:"SkipContents"          example:"false"`
 	// Don't remove unreferenced files in prefix/component
-	SkipCleanup *bool `                           json:"SkipCleanup"`
+	SkipCleanup *bool `                           json:"SkipCleanup"           example:"false"`
 	// Skip bz2 compression for index files
-	SkipBz2 *bool `                               json:"SkipBz2"`
+	SkipBz2 *bool `                               json:"SkipBz2"               example:"false"`
 	// Provide index files by hash
-	AcquireByHash *bool `                         json:"AcquireByHash"`
+	AcquireByHash *bool `                         json:"AcquireByHash"         example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-	MultiDist *bool `                             json:"MultiDist"`
+	MultiDist *bool `                             json:"MultiDist"             example:"false"`
 }
 
 // @Summary Create published repository
@@ -349,21 +349,21 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 type publishedRepoUpdateSwitchParams struct {
 	// when publishing, overwrite files in pool/ directory without notice
-	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	ForceOverwrite bool `                         json:"ForceOverwrite" example:"false"`
 	// GPG options
 	Signing signingParams `                       json:"Signing"`
 	// Don't generate contents indexes
-	SkipContents *bool `                          json:"SkipContents"`
+	SkipContents *bool `                          json:"SkipContents"   example:"false"`
 	// Skip bz2 compression for index files
-	SkipBz2 *bool `                               json:"SkipBz2"`
+	SkipBz2 *bool `                               json:"SkipBz2"        example:"false"`
 	// Don't remove unreferenced files in prefix/component
-	SkipCleanup *bool `                           json:"SkipCleanup"`
+	SkipCleanup *bool `                           json:"SkipCleanup"    example:"false"`
 	// only when updating published snapshots, list of objects 'Component/Name'
 	Snapshots []sourceParams `                    json:"Snapshots"`
 	// Provide index files by hash
-	AcquireByHash *bool `                         json:"AcquireByHash"`
+	AcquireByHash *bool `                         json:"AcquireByHash"  example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-	MultiDist *bool `                             json:"MultiDist"`
+	MultiDist *bool `                             json:"MultiDist"      example:"false"`
 }
 
 // @Summary Update published repository
@@ -373,7 +373,6 @@ type publishedRepoUpdateSwitchParams struct {
 // @Description * if local repository has been published, published repository would be updated to match local repository contents
 // @Description * if snapshots have been been published, it is possible to switch each component to new snapshot
 // @Tags Publish
-// @Accept json
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -524,7 +523,6 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Description
 // @Description Delete published repository and clean up files in published directory. Aptly tries to remove as many files belonging to this repository as possible. For example, if no other published repositories share the same prefix, all files inside the prefix will be removed.
 // @Tags Publish
-// @Accept json
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -565,20 +563,24 @@ func apiPublishDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Add source to staged source list
-// @Description **Add a source to the staged source list**
+// @Summary Add Source
+// @Description **Add a source to published repo**
 // @Description
-// @Description The staged source list exists independently of the current source list of the published repository. It can be modified in multiple steps by adding, removing and updating sources. A source is a tuple of two elements comprising the name of the component and the name of the local repository or snapshot. The staged source list exists as long as it gets discarded via `drop` or applied to the published repository via `update`.
+// @Description Adds a component of a snapshot or local repository to be published.
+// @Description
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Consume json
+// @Param request body sourceParams true "Parameters"
 // @Produce json
-// @Success 200 {object} sourceParams
+// @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [post]
-func apiPublishSourcesCreate(c *gin.Context) {
+func apiPublishAddSource(c *gin.Context) {
 	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -630,18 +632,22 @@ func apiPublishSourcesCreate(c *gin.Context) {
 	})
 }
 
-// @Summary Get staged source list
-// @Description **Get the staged source list**
+// @Summary List pending changes
+// @Description **List changes to be applied**
+// @Description
+// @Description Returns added, removed or changed components of snapshots or local repository to be published.
+// @Description
+// @Description The changes will be applied by a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Produce json
-// @Success 200 {array} sourceParams
+// @Success 200 {array} []deb.PublishedRepoRevision
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found or staged source list does not exist"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
-func apiPublishSourcesList(c *gin.Context) {
+func apiPublishListChanges(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -670,22 +676,23 @@ func apiPublishSourcesList(c *gin.Context) {
 	c.JSON(http.StatusOK, revision.SourceList())
 }
 
-// @Summary Set staged source list
-// @Description **Set the staged source list**
+// @Summary Set Sources
+// @Description **Set the sources of a published repository**
 // @Description
-// @Description If the staged source list is known in advance, it can set via this method in a single call. All modifications done before are lost and the staged source list get replaced by the one given in the request body.
-// @Tags Publish
+// @Description Sets the components of snapshots or local repositories to be published. Existing Sourced will be replaced.
+// @Description
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Consume json
-// @Param request body publishedRepoUpdateParams true "Parameters"
+// @Param request body []sourceParams true "Parameters"
 // @Produce json
-// @Success 200 {array} sourceParams
+// @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [put]
-func apiPublishSourcesUpdate(c *gin.Context) {
+func apiPublishSetSources(c *gin.Context) {
 	var b []sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -733,10 +740,10 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary Delete staged source list
-// @Description **Delete the staged source list**
+// @Summary Drop Changes
+// @Description **Drop pending source changes in a published repository**
 // @Description
-// @Description Delete/Discard the staged sources and keep existing sources of published repository.
+// @Description Removes all pending changes what would be applied with a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -746,7 +753,7 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [delete]
-func apiPublishSourcesDelete(c *gin.Context) {
+func apiPublishDropChanges(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -786,13 +793,15 @@ func apiPublishSourcesDelete(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Param component path string true "component name"
+// @Consume json
+// @Param request body sourceParams true "Parameters"
 // @Produce json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository/component not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
-func apiPublishSourceUpdate(c *gin.Context) {
+func apiPublishUpdateSource(c *gin.Context) {
 	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -863,7 +872,7 @@ func apiPublishSourceUpdate(c *gin.Context) {
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [delete]
-func apiPublishSourceDelete(c *gin.Context) {
+func apiPublishRemoveSource(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -909,19 +918,19 @@ func apiPublishSourceDelete(c *gin.Context) {
 
 type publishedRepoUpdateParams struct {
 	// when publishing, overwrite files in pool/ directory without notice
-	ForceOverwrite bool `                         json:"ForceOverwrite"`
+	ForceOverwrite bool `                         json:"ForceOverwrite"  example:"false"`
 	// GPG options
 	Signing signingParams `                       json:"Signing"`
 	// Don't generate contents indexes
-	SkipContents *bool `                          json:"SkipContents"`
+	SkipContents *bool `                          json:"SkipContents"    example:"false"`
 	// Skip bz2 compression for index files
-	SkipBz2 *bool `                               json:"SkipBz2"`
+	SkipBz2 *bool `                               json:"SkipBz2"         example:"false"`
 	// Don't remove unreferenced files in prefix/component
-	SkipCleanup *bool `                           json:"SkipCleanup"`
+	SkipCleanup *bool `                           json:"SkipCleanup"     example:"false"`
 	// Provide index files by hash
-	AcquireByHash *bool `                         json:"AcquireByHash"`
+	AcquireByHash *bool `                         json:"AcquireByHash"   example:"false"`
 	// Enable multiple packages with the same filename in different distributions
-	MultiDist *bool `                             json:"MultiDist"`
+	MultiDist *bool `                             json:"MultiDist"       example:"false"`
 }
 
 // @Summary Update content of published repository
