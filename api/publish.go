@@ -525,6 +525,8 @@ func apiPublishDrop(c *gin.Context) {
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Consume json
+// @Param request body sourceParams true "Parameters"
 // @Produce json
 // @Success 200 {object} sourceParams
 // @Failure 400 {object} Error "Bad Request"
@@ -631,7 +633,7 @@ func apiPublishSourcesList(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Consume json
-// @Param request body publishedRepoUpdateParams true "Parameters"
+// @Param request body []sourceParams true "Parameters"
 // @Produce json
 // @Success 200 {array} sourceParams
 // @Failure 400 {object} Error "Bad Request"
