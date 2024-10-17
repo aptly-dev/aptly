@@ -31,18 +31,14 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	if published.SourceKind != deb.SourceLocalRepo {
-		return fmt.Errorf("unable to update: not a local repository publish")
-	}
-
 	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	components := published.Components()
-	for _, component := range components {
-		published.UpdateLocalRepo(component)
+	result, err := published.Update(collectionFactory, context.Progress())
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	signer, err := getSigner(context.Flags())
@@ -80,14 +76,15 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-			context.GetPublishedStorage(storage), collectionFactory, context.Progress())
+		cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+		cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
 	}
 
-	context.Progress().Printf("\nPublish for local repo %s has been successfully updated.\n", published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been updated successfully.\n", published.SourceKind, published.String())
 
 	return err
 }

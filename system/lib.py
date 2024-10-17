@@ -319,40 +319,36 @@ class BaseTest(object):
         return subprocess.Popen(command, stderr=stderr, stdout=stdout, env=environ)
 
     def run_cmd(self, command, expected_code=0):
-        try:
-            proc = self._start_process(command, stdout=subprocess.PIPE)
-            raw_output, _ = proc.communicate()
+        proc = self._start_process(command, stdout=subprocess.PIPE)
+        raw_output, _ = proc.communicate()
 
-            raw_output = raw_output.decode("utf-8", errors='replace')
+        raw_output = raw_output.decode("utf-8", errors='replace')
 
-            returncodes = [proc.returncode]
-            is_aptly_command = False
-            if isinstance(command, str):
-                is_aptly_command = command.startswith("aptly")
+        returncodes = [proc.returncode]
+        is_aptly_command = False
+        if isinstance(command, str):
+            is_aptly_command = command.startswith("aptly")
 
-            if isinstance(command, list):
-                is_aptly_command = command[0] == "aptly"
+        if isinstance(command, list):
+            is_aptly_command = command[0] == "aptly"
 
-            if is_aptly_command:
-                # remove the last two rows as go tests always print PASS/FAIL and coverage in those
-                # two lines. This would otherwise fail the tests as they would not match gold
-                matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output)
-                if not matches:
-                    raise Exception("no matches found in output '%s'" % raw_output)
+        if is_aptly_command:
+            # remove the last two rows as go tests always print PASS/FAIL and coverage in those
+            # two lines. This would otherwise fail the tests as they would not match gold
+            matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output)
+            if not matches:
+                raise Exception("no matches found in command output '%s'" % raw_output)
 
-                output, _, returncode = matches[0]
-                returncodes.append(int(returncode))
-            else:
-                output = raw_output
+            output, _, returncode = matches[0]
+            returncodes.append(int(returncode))
+        else:
+            output = raw_output
 
-            if expected_code is not None:
-                if expected_code not in returncodes:
-                    raise Exception("exit code %d != %d (output: %s)" % (
-                        proc.returncode, expected_code, raw_output))
-            return output
-        except Exception as e:
-            raise Exception("Running command '%s' failed: %s" %
-                            (command, str(e)))
+        if expected_code is not None:
+            if expected_code not in returncodes:
+                raise Exception("command expected to return %d, but returned %d: \n%s" % (
+                    expected_code, proc.returncode, raw_output))
+        return output
 
     def gold_processor(self, gold):
         return gold
@@ -379,6 +375,8 @@ class BaseTest(object):
         return s
 
     def check_output(self):
+        gold_file = self.get_gold_filename()
+        print(f"Verifying gold file: {gold_file}")
         try:
             self.verify_match(self.get_gold(), self.output,
                               match_prepare=self.outputMatchPrepare)
@@ -464,11 +462,11 @@ class BaseTest(object):
 
     def check_in(self, item, l):
         if item not in l:
-            raise Exception("item %r not in %r", item, l)
+            raise Exception("expected item: %r\nnot found in: %r" % (item, l))
 
     def check_not_in(self, item, l):
         if item in l:
-            raise Exception("item %r in %r", item, l)
+            raise Exception("unexpected item: %r\n found in: %r" % (item, l))
 
     def check_subset(self, a, b):
         diff = ''
