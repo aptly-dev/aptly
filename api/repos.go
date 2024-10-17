@@ -87,6 +87,7 @@ func apiReposCreate(c *gin.Context) {
 		Comment             string
 		DefaultDistribution string
 		DefaultComponent    string
+		FromSnapshot        string
 	}
 
 	if c.Bind(&b) != nil {
@@ -98,8 +99,28 @@ func apiReposCreate(c *gin.Context) {
 	repo.DefaultDistribution = b.DefaultDistribution
 
 	collectionFactory := context.NewCollectionFactory()
-	collection := collectionFactory.LocalRepoCollection()
-	err := collection.Add(repo)
+
+	if b.FromSnapshot != "" {
+		var snapshot *deb.Snapshot
+
+		snapshotCollection := collectionFactory.SnapshotCollection()
+
+		snapshot, err := snapshotCollection.ByName(b.FromSnapshot)
+		if err != nil {
+			AbortWithJSONError(c, 400, fmt.Errorf("unable to load source snapshot: %s", err))
+			return
+		}
+
+		err = snapshotCollection.LoadComplete(snapshot)
+		if err != nil {
+			AbortWithJSONError(c, 400, fmt.Errorf("unable to load source snapshot: %s", err))
+			return
+		}
+
+		repo.UpdateRefList(snapshot.RefList())
+	}
+
+	err := collectionFactory.LocalRepoCollection().Add(repo)
 	if err != nil {
 		AbortWithJSONError(c, 400, err)
 		return
