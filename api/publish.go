@@ -67,7 +67,7 @@ func slashEscape(path string) string {
 }
 
 // @Summary List published repositories
-// @Description **List published repositories**
+// @Description **Get list of published repositories**
 // @Description
 // @Description Lists repositories that have been published based on local repositories or snapshots. For each repository information about `endpoint`, `prefix` and `distribution` is listed along with `component` and architecture list. Information about snapshot or local repo being published is appended to published repository description.
 // @Tags Publish
@@ -101,7 +101,7 @@ func apiPublishList(c *gin.Context) {
 }
 
 // @Summary Show published repository
-// @Description **Show published repository**
+// @Description **Get published repository information**
 // @Description
 // @Description Show detailed information of published repository.
 // @Tags Publish
@@ -563,22 +563,24 @@ func apiPublishDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Add source to staged source list
-// @Description **Add a source to the staged source list**
+// @Summary Add Source
+// @Description **Add a source to published repo**
 // @Description
-// @Description The staged source list exists independently of the current source list of the published repository. It can be modified in multiple steps by adding, removing and updating sources. A source is a tuple of two elements comprising the name of the component and the name of the local repository or snapshot. The staged source list exists as long as it gets discarded via `drop` or applied to the published repository via `update`.
+// @Description Adds a component of a snapshot or local repository to be published.
+// @Description
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Consume json
 // @Param request body sourceParams true "Parameters"
 // @Produce json
-// @Success 200 {object} sourceParams
+// @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [post]
-func apiPublishSourcesCreate(c *gin.Context) {
+func apiPublishAddSource(c *gin.Context) {
 	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -630,18 +632,22 @@ func apiPublishSourcesCreate(c *gin.Context) {
 	})
 }
 
-// @Summary Get staged source list
-// @Description **Get the staged source list**
+// @Summary List pending changes
+// @Description **List changes to be applied**
+// @Description
+// @Description Returns added, removed or changed components of snapshots or local repository to be published.
+// @Description
+// @Description The changes will be applied by a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Produce json
-// @Success 200 {array} sourceParams
+// @Success 200 {array} []deb.PublishedRepoRevision
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found or staged source list does not exist"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
-func apiPublishSourcesList(c *gin.Context) {
+func apiPublishListChanges(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -670,22 +676,23 @@ func apiPublishSourcesList(c *gin.Context) {
 	c.JSON(http.StatusOK, revision.SourceList())
 }
 
-// @Summary Set staged source list
-// @Description **Set the staged source list**
+// @Summary Set Sources
+// @Description **Set the sources of a published repository**
 // @Description
-// @Description If the staged source list is known in advance, it can set via this method in a single call. All modifications done before are lost and the staged source list get replaced by the one given in the request body.
-// @Tags Publish
+// @Description Sets the components of snapshots or local repositories to be published. Existing Sourced will be replaced.
+// @Description
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Consume json
 // @Param request body []sourceParams true "Parameters"
 // @Produce json
-// @Success 200 {array} sourceParams
+// @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [put]
-func apiPublishSourcesUpdate(c *gin.Context) {
+func apiPublishSetSources(c *gin.Context) {
 	var b []sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -733,10 +740,10 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary Delete staged source list
-// @Description **Delete the staged source list**
+// @Summary Drop Changes
+// @Description **Drop pending source changes in a published repository**
 // @Description
-// @Description Delete/Discard the staged sources and keep existing sources of published repository.
+// @Description Removes all pending changes what would be applied with a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -746,7 +753,7 @@ func apiPublishSourcesUpdate(c *gin.Context) {
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [delete]
-func apiPublishSourcesDelete(c *gin.Context) {
+func apiPublishDropChanges(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
@@ -794,7 +801,7 @@ func apiPublishSourcesDelete(c *gin.Context) {
 // @Failure 404 {object} Error "Published repository/component not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [put]
-func apiPublishSourceUpdate(c *gin.Context) {
+func apiPublishUpdateSource(c *gin.Context) {
 	var b sourceParams
 
 	param := slashEscape(c.Params.ByName("prefix"))
@@ -865,7 +872,7 @@ func apiPublishSourceUpdate(c *gin.Context) {
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources/{component} [delete]
-func apiPublishSourceDelete(c *gin.Context) {
+func apiPublishRemoveSource(c *gin.Context) {
 	param := slashEscape(c.Params.ByName("prefix"))
 	storage, prefix := deb.ParsePrefix(param)
 	distribution := slashEscape(c.Params.ByName("distribution"))
