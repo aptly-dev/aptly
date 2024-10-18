@@ -73,9 +73,9 @@ multiple components should be removed, e.g.:
 
 Example:
 
-	$ aptly publish remove -component=contrib,non-free wheezy filesystem:symlink:debian
+	$ aptly publish source remove -component=contrib,non-free wheezy filesystem:symlink:debian
 `,
-		Flag: *flag.NewFlagSet("aptly-publish-remove", flag.ExitOnError),
+		Flag: *flag.NewFlagSet("aptly-publish-source-remove", flag.ExitOnError),
 	}
 	cmd.Flag.String("prefix", ".", "publishing prefix in the form of [<endpoint>:]<prefix>")
 	cmd.Flag.String("component", "", "component names to remove (for multi-component publishing, separate components with commas)")

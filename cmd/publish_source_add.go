@@ -74,16 +74,16 @@ The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be
 equal to the number of given sources, e.g.:
 
-	aptly publish add -component=main,contrib wheezy wheezy-main wheezy-contrib
+	aptly publish source add -component=main,contrib wheezy wheezy-main wheezy-contrib
 
 Example:
 
-	$ aptly publish add -component=contrib wheezy ppa wheezy-contrib
+	$ aptly publish source add -component=contrib wheezy ppa wheezy-contrib
 
 This command assigns the snapshot wheezy-contrib to the component contrib and
 adds it to published repository revision of ppa/wheezy.
 `,
-		Flag: *flag.NewFlagSet("aptly-publish-add", flag.ExitOnError),
+		Flag: *flag.NewFlagSet("aptly-publish-source-add", flag.ExitOnError),
 	}
 	cmd.Flag.String("prefix", ".", "publishing prefix in the form of [<endpoint>:]<prefix>")
 	cmd.Flag.String("component", "", "component names to add (for multi-component publishing, separate components with commas)")

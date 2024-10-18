@@ -53,7 +53,7 @@ Example:
 
     $ aptly publish source drop wheezy
 `,
-		Flag: *flag.NewFlagSet("aptly-publish-revision-create", flag.ExitOnError),
+		Flag: *flag.NewFlagSet("aptly-publish-source-drop", flag.ExitOnError),
 	}
 	cmd.Flag.String("prefix", ".", "publishing prefix in the form of [<endpoint>:]<prefix>")
 	cmd.Flag.String("component", "", "component names to add (for multi-component publishing, separate components with commas)")
