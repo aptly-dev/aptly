@@ -177,7 +177,7 @@ type publishedRepoCreateParams struct {
 // @Consume json
 // @Param request body publishedRepoCreateParams true "Parameters"
 // @Produce json
-// @Success 200 {object} deb.PublishedRepo
+// @Success 201 {object} deb.PublishedRepo
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Source not found"
 // @Failure 500 {object} Error "Internal Error"
@@ -575,7 +575,7 @@ func apiPublishDrop(c *gin.Context) {
 // @Consume json
 // @Param request body sourceParams true "Parameters"
 // @Produce json
-// @Success 200
+// @Success 201
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
 // @Failure 500 {object} Error "Internal Error"
@@ -628,7 +628,7 @@ func apiPublishAddSource(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: published}, nil
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: gin.H{}}, nil
 	})
 }
 
