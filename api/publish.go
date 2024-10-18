@@ -597,7 +597,7 @@ func apiPublishAddSource(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Produce json
-// @Success 200 {array} []deb.PublishedRepoRevision
+// @Success 200 {array} []deb.SourceEntry
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found or staged source list does not exist"
 // @Failure 500 {object} Error "Internal Error"
