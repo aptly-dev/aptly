@@ -74,13 +74,13 @@ The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be
 equal to the number of given sources, e.g.:
 
-	aptly publish update -component=main,contrib wheezy wheezy-main wheezy-contrib
+	aptly publish source update -component=main,contrib wheezy wheezy-main wheezy-contrib
 
 Example:
 
-	$ aptly publish update -component=contrib wheezy ppa wheezy-contrib
+	$ aptly publish source update -component=contrib wheezy ppa wheezy-contrib
 `,
-		Flag: *flag.NewFlagSet("aptly-publish-revision-source-update", flag.ExitOnError),
+		Flag: *flag.NewFlagSet("aptly-publish-source-update", flag.ExitOnError),
 	}
 	cmd.Flag.String("prefix", ".", "publishing prefix in the form of [<endpoint>:]<prefix>")
 	cmd.Flag.String("component", "", "component names to add (for multi-component publishing, separate components with commas)")
