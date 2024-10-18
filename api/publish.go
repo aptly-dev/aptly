@@ -66,10 +66,12 @@ func slashEscape(path string) string {
 	return result
 }
 
-// @Summary List published repositories
+// @Summary List Published Repositories
 // @Description **Get list of published repositories**
 // @Description
 // @Description Lists repositories that have been published based on local repositories or snapshots. For each repository information about `endpoint`, `prefix` and `distribution` is listed along with `component` and architecture list. Information about snapshot or local repo being published is appended to published repository description.
+// @Description
+// @Description See also: `aptly publish list`
 // @Tags Publish
 // @Produce json
 // @Success 200 {array} deb.PublishedRepo
@@ -100,10 +102,12 @@ func apiPublishList(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
-// @Summary Show published repository
+// @Summary Show Published Repository
 // @Description **Get published repository information**
 // @Description
-// @Description Show detailed information of published repository.
+// @Description Show detailed information of a published repository.
+// @Description
+// @Description See also: `aptly publish show`
 // @Tags Publish
 // @Produce json
 // @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambigious in URLs"
@@ -168,10 +172,12 @@ type publishedRepoCreateParams struct {
 	MultiDist *bool `                             json:"MultiDist"             example:"false"`
 }
 
-// @Summary Create published repository
-// @Description **Publish local repository or snapshot under specified prefix**
+// @Summary Create Published Repository
+// @Description **Publish a local repository or snapshot**
 // @Description
 // @Description Storage might be passed in prefix as well, e.g. `s3:packages/`. To supply empty prefix, just remove last part (`POST /api/publish`).
+// @Description
+// @Description See also: `aptly publish create`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Consume json
@@ -366,12 +372,14 @@ type publishedRepoUpdateSwitchParams struct {
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
 }
 
-// @Summary Update published repository
-// @Description **Update a published local repository or switch published snapshot**
+// @Summary Update Published Repository
+// @Description **Update a published local repository or switch snapshot**
 // @Description
 // @Description API action depends on published repository contents:
 // @Description * if local repository has been published, published repository would be updated to match local repository contents
 // @Description * if snapshots have been been published, it is possible to switch each component to new snapshot
+// @Description
+// @Description See also: `aptly publish update` / `aptly publish switch`
 // @Tags Publish
 // @Produce json
 // @Param prefix path string true "publishing prefix"
@@ -518,10 +526,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	})
 }
 
-// @Summary Delete published repository
+// @Summary Delete Published Repository
 // @Description **Delete a published repository**
 // @Description
 // @Description Delete published repository and clean up files in published directory. Aptly tries to remove as many files belonging to this repository as possible. For example, if no other published repositories share the same prefix, all files inside the prefix will be removed.
+// @Description
+// @Description See also: `aptly publish drop`
 // @Tags Publish
 // @Produce json
 // @Param prefix path string true "publishing prefix"
@@ -563,12 +573,14 @@ func apiPublishDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Add Source
-// @Description **Add a source to published repo**
+// @Summary Add Source Component
+// @Description **Add a source component to a published repo**
 // @Description
 // @Description Adds a component of a snapshot or local repository to be published.
 // @Description
 // @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description
+// @Description See also: `aptly publish source add`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -633,18 +645,20 @@ func apiPublishAddSource(c *gin.Context) {
 }
 
 // @Summary List pending changes
-// @Description **List changes to be applied**
+// @Description **List source component changes to be applied**
 // @Description
 // @Description Returns added, removed or changed components of snapshots or local repository to be published.
 // @Description
 // @Description The changes will be applied by a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description
+// @Description See also: `aptly publish source list`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Produce json
-// @Success 200 {array} []deb.PublishedRepoRevision
+// @Success 200 {array} []deb.SourceEntry
 // @Failure 400 {object} Error "Bad Request"
-// @Failure 404 {object} Error "Published repository not found or staged source list does not exist"
+// @Failure 404 {object} Error "Published repository pending changes not found"
 // @Failure 500 {object} Error "Internal Error"
 // @Router /api/publish/{prefix}/{distribution}/sources [get]
 func apiPublishListChanges(c *gin.Context) {
@@ -676,12 +690,15 @@ func apiPublishListChanges(c *gin.Context) {
 	c.JSON(http.StatusOK, revision.SourceList())
 }
 
-// @Summary Set Sources
-// @Description **Set the sources of a published repository**
+// @Summary Replace Source Components
+// @Description **Replace the source components of a published repository**
 // @Description
 // @Description Sets the components of snapshots or local repositories to be published. Existing Sourced will be replaced.
 // @Description
 // @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description
+// @Description See also: `aptly publish source replace`
+// @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Consume json
@@ -740,10 +757,12 @@ func apiPublishSetSources(c *gin.Context) {
 	})
 }
 
-// @Summary Drop Changes
-// @Description **Drop pending source changes in a published repository**
+// @Summary Drop pending changes
+// @Description **Drop pending source component changes of a published repository**
 // @Description
 // @Description Removes all pending changes what would be applied with a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description
+// @Description See also: `aptly publish source drop`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -787,8 +806,12 @@ func apiPublishDropChanges(c *gin.Context) {
 	})
 }
 
-// @Summary Update staged source
-// @Description **Update the staged source of a component**
+// @Summary Update Source Component
+// @Description **Update the source component of a published repository**
+// @Description
+// @Description Publish pending source component changes which were added with `Add/Remove/Replace Source Components`
+// @Description
+// @Description See also: `aptly publish update` / `aptly publish switch`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -860,8 +883,12 @@ func apiPublishUpdateSource(c *gin.Context) {
 	})
 }
 
-// @Summary Delete source from staged source list
-// @Description **Delete a single source from the staged source list**
+// @Summary Remove Source Component
+// @Description **Remove a source component from a published repo**
+// @Description
+// @Description Remove a source (snapshot / local repo) component from a published repository.
+// @Description
+// @Description See also: `aptly publish source remove`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -933,10 +960,12 @@ type publishedRepoUpdateParams struct {
 	MultiDist *bool `                             json:"MultiDist"       example:"false"`
 }
 
-// @Summary Update content of published repository
-// @Description **Update the content of a published repository**
+// @Summary Update Published Repository
+// @Description **Update a published repository**
 // @Description
-// @Description Replace the current source list of the published repository by the staged one (if available) and (re-)publish the new content.
+// @Description Apply pending changes and republish
+// @Description
+// @Description See also: `aptly publish update` / `aptly publish switch`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
