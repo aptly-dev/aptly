@@ -150,6 +150,10 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 		published.AcquireByHash = context.Flags().Lookup("acquire-by-hash").Value.Get().(bool)
 	}
 
+	if context.Flags().IsSet("multi-dist") {
+		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
+	}
+
 	duplicate := collectionFactory.PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
 		collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)

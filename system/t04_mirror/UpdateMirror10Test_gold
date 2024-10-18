@@ -18,7 +18,7 @@ Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/d
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/rkward-dbgsym_0.7.5-1~bullseyecran.0_i386.deb
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/rkward_0.7.5-1~bullseyecran.0_amd64.deb
 Downloading: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/bullseye-cran40/rkward_0.7.5-1~bullseyecran.0_i386.deb
-Mirror `flat-src` has been successfully updated.
+Mirror `flat-src` has been updated successfully.
 Packages filtered: 110 -> 11.
 gpgv:                using RSA key 7BA040A510E4E66ED3743EC1B8F25A8A73EACF41
 gpgv: Good signature from "Johannes Ranke <johannes.ranke@jrwb.de>"

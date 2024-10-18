@@ -53,7 +53,7 @@ Downloading: http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/di
 Downloading: http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/dists/trusty/restricted/installer-amd64/current/images/SHA256SUMS
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/dists/trusty/InRelease
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/dists/trusty/restricted/installer-amd64/current/images/SHA256SUMS
-Mirror `trusty` has been successfully updated.
+Mirror `trusty` has been updated successfully.
 Packages filtered: 8616 -> 1.
 Retrying 0 http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/dists/trusty/InRelease...
 Retrying 0 http://repo.aptly.info/system-tests/us.archive.ubuntu.com/ubuntu/dists/trusty/restricted/installer-amd64/current/images/SHA256SUMS...
