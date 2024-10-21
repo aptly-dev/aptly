@@ -176,7 +176,7 @@ func (p *PublishedRepo) ObtainRevision() *PublishedRepoRevision {
 			} else if item.localRepo != nil {
 				sources[component] = item.localRepo.Name
 			} else {
-				panic("no snapshot/localRepo")
+				panic(fmt.Sprintf("no snapshot/localRepo for component: %s", component))
 			}
 		}
 		revision = &PublishedRepoRevision{
