@@ -70,16 +70,16 @@ func apiReposList(c *gin.Context) {
 }
 
 type repoCreateParams struct {
-	// local repository name
-	Name string `binding:"required"`
-	// text describing local repository, for the user
-	Comment string
-	// default distribution when publishing from this local repo
-	DefaultDistribution string
-	// default component when publishing from this local repo
-	DefaultComponent string
-	// snapshot name to create repo from
-	FromSnapshot string
+	// Name of repository to create
+	Name string `binding:"required"  json:"Name"                 example:"repo1"`
+	// Text describing the repository (optional)
+	Comment string `                 json:"Comment"              example:"this is a repo"`
+	// Default distribution when publishing from this local repo
+	DefaultDistribution string `     json:"DefaultDistribution"  example:"stable"`
+	// Default component when publishing from this local repo
+	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
+	// Snapshot name to create repoitory from (optional)
+	FromSnapshot string `            json:"FromSnapshot"         example:"snapshot1"`
 }
 
 // @Summary Create repository
