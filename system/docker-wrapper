@@ -6,6 +6,7 @@ chown -R `stat -c %u /work/src` /var/lib/aptly
 
 args="$@"
 if [ -z "$args" ]; then
+    cp /work/src/completion.d/aptly /usr/share/bash-completion/completions/
     cmd="bash"
 else
     cmd="make $@"
