@@ -67,6 +67,44 @@ cleanup() {
 }
 trap cleanup EXIT
 
+wait_task()
+{
+    _id=$1
+    _success=0
+    for t in `seq 180`
+    do
+        jsonret=`curl -fsS -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_id`
+        _state=`echo $jsonret | jq .State`
+        if [ "$_state" = "2" ]; then
+            _success=1
+            curl -fsS -X DELETE -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_id
+            break
+        fi
+        if [ "$_state" = "3" ]; then
+            echo Error: task failed
+            return 1
+        fi
+        sleep 1
+    done
+    if [ "$_success" -ne 1 ]; then
+        echo Error: task timeout
+        return 1
+    fi
+    return 0
+}
+
+add_packages() {
+    _aptly_repository=$1
+    _folder=$2
+    jsonret=`curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$_aptly_repository/file/$_folder?_async=true`
+    _task_id=`echo $jsonret | jq .ID`
+    wait_task $_task_id
+    if [ "$?" -ne 0 ]; then
+        echo "Error: adding packages to $_aptly_repository failed"
+        exit 1
+    fi
+}
+
 update_publish() {
     _publish=$1
     _dist=$2
@@ -75,24 +113,9 @@ update_publish() {
           "Signing": {"Batch": true, "Keyring": "aptly.repo/aptly.pub", "secretKeyring": "aptly.repo/aptly.sec", "PassphraseFile": "aptly.repo/passphrase"}}' \
         -u $aptly_user:$aptly_password ${aptly_api}/api/publish/$_publish/$_dist?_async=true`
     _task_id=`echo $jsonret | jq .ID`
-    _success=0
-    for t in `seq 180`
-    do
-        jsonret=`curl -fsS -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_task_id`
-        _state=`echo $jsonret | jq .State`
-        if [ "$_state" = "2" ]; then
-            _success=1
-            curl -fsS -X DELETE -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_task_id
-            break
-        fi
-        if [ "$_state" = "3" ]; then
-            echo Error: publish failed
-            exit 1
-        fi
-        sleep 1
-    done
-    if [ "$_success" -ne 1 ]; then
-        echo "Error: publish failed (timeout)"
+    wait_task $_task_id
+    if [ "$?" -ne 0 ]; then
+        echo "Error: publish failed"
         exit 1
     fi
 }
@@ -114,7 +137,7 @@ fi
 upload
 
 echo "\nAdding packages to $aptly_repository ..."
-jsonret=`curl -fsS -X POST -u $aptly_user:$aptly_password ${aptly_api}/api/repos/$aptly_repository/file/$folder`
+add_packages $aptly_repository $folder
 
 echo "\nUpdating published repo $aptly_published ..."
 update_publish $aptly_published $dist
