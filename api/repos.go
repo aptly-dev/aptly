@@ -288,14 +288,14 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		return
 	}
 
-	err = collection.LoadComplete(repo)
-	if err != nil {
-		AbortWithJSONError(c, 500, err)
-		return
-	}
-
 	resources := []string{string(repo.Key())}
+
 	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.LoadComplete(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
 		out.Printf("Loading packages...\n")
 		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
 		if err != nil {
@@ -394,12 +394,6 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
-	if err != nil {
-		AbortWithJSONError(c, 500, err)
-		return
-	}
-
 	var taskName string
 	var sources []string
 	if fileParam == "" {
@@ -413,6 +407,11 @@ func apiReposPackageFromDir(c *gin.Context) {
 	resources := []string{string(repo.Key())}
 	resources = append(resources, sources...)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collection.LoadComplete(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
 		verifier := context.GetVerifier()
 
 		var (
@@ -514,17 +513,7 @@ func apiReposCopyPackage(c *gin.Context) {
 		return
 	}
 
-	err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("dest repo error: %s", err))
-		return
-	}
-
-	var (
-		srcRefList *deb.PackageRefList
-		srcRepo    *deb.LocalRepo
-	)
-
+	var srcRepo *deb.LocalRepo
 	srcRepo, err = collectionFactory.LocalRepoCollection().ByName(srcRepoName)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("src repo error: %s", err))
@@ -536,17 +525,22 @@ func apiReposCopyPackage(c *gin.Context) {
 		return
 	}
 
-	err = collectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("src repo error: %s", err))
-		return
-	}
-
-	srcRefList = srcRepo.RefList()
 	taskName := fmt.Sprintf("Copy packages from repo %s to repo %s", srcRepoName, dstRepoName)
 	resources := []string{string(dstRepo.Key()), string(srcRepo.Key())}
 
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("dest repo error: %s", err)
+		}
+
+		err = collectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("src repo error: %s", err)
+		}
+
+		srcRefList := srcRepo.RefList()
+
 		reporter := &aptly.RecordingResultReporter{
 			Warnings:     []string{},
 			AddedLines:   []string{},

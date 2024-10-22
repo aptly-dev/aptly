@@ -135,16 +135,17 @@ func apiSnapshotsCreate(c *gin.Context) {
 			return
 		}
 
-		err = snapshotCollection.LoadComplete(sources[i])
-		if err != nil {
-			AbortWithJSONError(c, 500, err)
-			return
-		}
-
 		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
 	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		for i := range sources {
+			err = snapshotCollection.LoadComplete(sources[i])
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+			}
+		}
+
 		list := deb.NewPackageList()
 
 		// verify package refs and build package list
@@ -468,17 +469,20 @@ func apiSnapshotsMerge(c *gin.Context) {
 			return
 		}
 
-		err = snapshotCollection.LoadComplete(sources[i])
-		if err != nil {
-			AbortWithJSONError(c, http.StatusInternalServerError, err)
-			return
-		}
 		resources[i] = string(sources[i].ResourceKey())
 	}
 
 	maybeRunTaskInBackground(c, "Merge snapshot "+name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = snapshotCollection.LoadComplete(sources[0])
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
 		result := sources[0].RefList()
 		for i := 1; i < len(sources); i++ {
+			err = snapshotCollection.LoadComplete(sources[i])
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+			}
 			result = result.Merge(sources[i].RefList(), overrideMatching, false)
 		}
 
@@ -566,11 +570,6 @@ func apiSnapshotsPull(c *gin.Context) {
 		AbortWithJSONError(c, http.StatusNotFound, err)
 		return
 	}
-	err = collectionFactory.SnapshotCollection().LoadComplete(toSnapshot)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, err)
-		return
-	}
 
 	// Load <Source> snapshot
 	sourceSnapshot, err := collectionFactory.SnapshotCollection().ByName(body.Source)
@@ -578,15 +577,19 @@ func apiSnapshotsPull(c *gin.Context) {
 		AbortWithJSONError(c, http.StatusNotFound, err)
 		return
 	}
-	err = collectionFactory.SnapshotCollection().LoadComplete(sourceSnapshot)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, err)
-		return
-	}
 
 	resources := []string{string(sourceSnapshot.ResourceKey()), string(toSnapshot.ResourceKey())}
 	taskName := fmt.Sprintf("Pull snapshot %s into %s and save as %s", body.Source, name, body.Destination)
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		err = collectionFactory.SnapshotCollection().LoadComplete(toSnapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+		err = collectionFactory.SnapshotCollection().LoadComplete(sourceSnapshot)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
 		// convert snapshots to package list
 		toPackageList, err := deb.NewPackageListFromRefList(toSnapshot.RefList(), collectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
