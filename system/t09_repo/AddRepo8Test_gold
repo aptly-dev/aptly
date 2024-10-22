@@ -1,5 +1,5 @@
 Loading packages...
-[!] Unable to add package to repo pyspi_0.6.1-1.3_source: conflict in package pyspi_0.6.1-1.3_source
+[!] Unable to add package: package already exists and is different: pyspi_0.6.1-1.3_source
 [!] Some files were skipped due to errors:
   /pyspi_0.6.1-1.3.conflict.dsc
 ERROR: some files failed to be added

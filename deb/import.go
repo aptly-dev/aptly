@@ -218,7 +218,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 		err = list.Add(p)
 		if err != nil {
-			reporter.Warning("Unable to add package to repo %s: %s", p, err)
+			reporter.Warning("Unable to add package: %s", err)
 			failedFiles = append(failedFiles, file)
 			continue
 		}

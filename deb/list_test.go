@@ -131,7 +131,7 @@ func (s *PackageListSuite) TestAddLen(c *C) {
 	c.Check(s.list.Len(), Equals, 1)
 	c.Check(s.list.Add(s.p3), IsNil)
 	c.Check(s.list.Len(), Equals, 2)
-	c.Check(s.list.Add(s.p4), ErrorMatches, "conflict in package.*")
+        c.Check(s.list.Add(s.p4), ErrorMatches, "package already exists and is different: .*")
 }
 
 func (s *PackageListSuite) TestRemove(c *C) {
@@ -243,7 +243,7 @@ func (s *PackageListSuite) TestAppend(c *C) {
 	list.Add(s.p4)
 
 	err = s.list.Append(list)
-	c.Check(err, ErrorMatches, "conflict.*")
+	c.Check(err, ErrorMatches, "package already exists and is different: .*")
 
 	s.list.PrepareIndex()
 	c.Check(func() { s.list.Append(s.il) }, Panics, "Append not supported when indexed")

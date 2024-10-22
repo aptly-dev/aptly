@@ -138,7 +138,7 @@ func (l *PackageList) Add(p *Package) error {
 	existing, ok := l.packages[key]
 	if ok {
 		if !existing.Equals(p) {
-			return &PackageConflictError{fmt.Errorf("conflict in package %s", p)}
+			return &PackageConflictError{fmt.Errorf("package already exists and is different: %s", p)}
 		}
 		return nil
 	}
@@ -201,7 +201,7 @@ func (l *PackageList) Append(pl *PackageList) error {
 		existing, ok := l.packages[k]
 		if ok {
 			if !existing.Equals(p) {
-				return fmt.Errorf("conflict in package %s", p)
+				return fmt.Errorf("package already exists and is different: %s", p)
 			}
 		} else {
 			l.packages[k] = p
