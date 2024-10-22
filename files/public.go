@@ -119,6 +119,26 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 	return os.RemoveAll(filepath)
 }
 
+// Cleans up PublishedStorage tree towards the root up to first non-empty directory
+func (storage *PublishedStorage) CleanupPublishTree(path string) {
+	/*
+		Say, `path` is "a/b/c/d", let's remove all empty dirs:
+		 storage.rootPath + "a/b/c/d"
+		 storage.rootPath + "a/b/c"
+		 storage.rootPath + "a/b"
+		 ... and so on, up to first non-empty directory (or any other os.Remove error)
+	*/
+	segments := strings.Split(path, "/")
+
+	for segmentsCount := len(segments); segmentsCount > 0; segmentsCount-- {
+		err := os.Remove(filepath.Join(storage.rootPath, strings.Join(segments[:segmentsCount], "/")))
+
+		if err != nil {
+			break
+		}
+	}
+}
+
 // LinkFromPool links package file from pool to dist's pool location
 //
 // publishedPrefix is desired prefix for the location in the pool.
