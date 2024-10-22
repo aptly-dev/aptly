@@ -12,7 +12,7 @@ import (
 type LocalRepoSuite struct {
 	db      database.Storage
 	list    *PackageList
-	reflist *PackageRefList
+	reflist *SplitRefList
 	repo    *LocalRepo
 }
 
@@ -24,7 +24,7 @@ func (s *LocalRepoSuite) SetUpTest(c *C) {
 	s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
 	s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
 
-	s.reflist = NewPackageRefListFromPackageList(s.list)
+	s.reflist = NewSplitRefListFromPackageList(s.list)
 
 	s.repo = NewLocalRepo("lrepo", "Super repo")
 	s.repo.packageRefs = s.reflist
@@ -75,10 +75,11 @@ func (s *LocalRepoSuite) TestRefKey(c *C) {
 }
 
 type LocalRepoCollectionSuite struct {
-	db         database.Storage
-	collection *LocalRepoCollection
-	list       *PackageList
-	reflist    *PackageRefList
+	db                database.Storage
+	collection        *LocalRepoCollection
+	reflistCollection *RefListCollection
+	list              *PackageList
+	reflist           *SplitRefList
 }
 
 var _ = Suite(&LocalRepoCollectionSuite{})
@@ -86,12 +87,13 @@ var _ = Suite(&LocalRepoCollectionSuite{})
 func (s *LocalRepoCollectionSuite) SetUpTest(c *C) {
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewLocalRepoCollection(s.db)
+	s.reflistCollection = NewRefListCollection(s.db)
 
 	s.list = NewPackageList()
 	s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
 	s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
 
-	s.reflist = NewPackageRefListFromPackageList(s.list)
+	s.reflist = NewSplitRefListFromRefList(NewPackageRefListFromPackageList(s.list))
 }
 
 func (s *LocalRepoCollectionSuite) TearDownTest(c *C) {
@@ -103,8 +105,8 @@ func (s *LocalRepoCollectionSuite) TestAddByName(c *C) {
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo := NewLocalRepo("local1", "Comment 1")
-	c.Assert(s.collection.Add(repo), IsNil)
-	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
+	c.Assert(s.collection.Add(repo, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(repo, s.reflistCollection), ErrorMatches, ".*already exists")
 
 	r, err := s.collection.ByName("local1")
 	c.Assert(err, IsNil)
@@ -121,7 +123,7 @@ func (s *LocalRepoCollectionSuite) TestByUUID(c *C) {
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo := NewLocalRepo("local1", "Comment 1")
-	c.Assert(s.collection.Add(repo), IsNil)
+	c.Assert(s.collection.Add(repo, s.reflistCollection), IsNil)
 
 	r, err := s.collection.ByUUID(repo.UUID)
 	c.Assert(err, IsNil)
@@ -135,7 +137,7 @@ func (s *LocalRepoCollectionSuite) TestByUUID(c *C) {
 
 func (s *LocalRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	repo := NewLocalRepo("local1", "Comment 1")
-	c.Assert(s.collection.Update(repo), IsNil)
+	c.Assert(s.collection.Update(repo, s.reflistCollection), IsNil)
 
 	collection := NewLocalRepoCollection(s.db)
 	r, err := collection.ByName("local1")
@@ -143,20 +145,20 @@ func (s *LocalRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.packageRefs, IsNil)
 
 	repo.packageRefs = s.reflist
-	c.Assert(s.collection.Update(repo), IsNil)
+	c.Assert(s.collection.Update(repo, s.reflistCollection), IsNil)
 
 	collection = NewLocalRepoCollection(s.db)
 	r, err = collection.ByName("local1")
 	c.Assert(err, IsNil)
 	c.Assert(r.packageRefs, IsNil)
 	c.Assert(r.NumPackages(), Equals, 0)
-	c.Assert(s.collection.LoadComplete(r), IsNil)
+	c.Assert(s.collection.LoadComplete(r, s.reflistCollection), IsNil)
 	c.Assert(r.NumPackages(), Equals, 2)
 }
 
 func (s *LocalRepoCollectionSuite) TestForEachAndLen(c *C) {
 	repo := NewLocalRepo("local1", "Comment 1")
-	s.collection.Add(repo)
+	s.collection.Add(repo, s.reflistCollection)
 
 	count := 0
 	err := s.collection.ForEach(func(*LocalRepo) error {
@@ -178,10 +180,10 @@ func (s *LocalRepoCollectionSuite) TestForEachAndLen(c *C) {
 
 func (s *LocalRepoCollectionSuite) TestDrop(c *C) {
 	repo1 := NewLocalRepo("local1", "Comment 1")
-	s.collection.Add(repo1)
+	s.collection.Add(repo1, s.reflistCollection)
 
 	repo2 := NewLocalRepo("local2", "Comment 2")
-	s.collection.Add(repo2)
+	s.collection.Add(repo2, s.reflistCollection)
 
 	r1, _ := s.collection.ByUUID(repo1.UUID)
 	c.Check(r1, Equals, repo1)

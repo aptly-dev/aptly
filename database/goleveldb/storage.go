@@ -16,6 +16,17 @@ type storage struct {
 	db   *leveldb.DB
 }
 
+func (s *storage) GetRecommendedMaxKVSize() int {
+	// The block size configured is not actually a *set* block size, but rather a
+	// *minimum*. LevelDB only checks if a block is full after a new key/value pair is
+	// written, meaning that blocks will tend to overflow a bit.
+	// Therefore, using the default block size as the max value size will ensure
+	// that a new block will only contain a single value and that the size will
+	// only ever be as large as around double the block size (if the block was
+	// nearly full before the new items were added).
+	return blockSize
+}
+
 // CreateTemporary creates new DB of the same type in temp dir
 func (s *storage) CreateTemporary() (database.Storage, error) {
 	tempdir, err := os.MkdirTemp("", "aptly")
