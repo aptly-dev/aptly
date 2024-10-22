@@ -28,6 +28,51 @@ class ReposAPITestCreateShow(APITest):
         self.check_equal(self.get("/api/repos/" + self.random_name()).status_code, 404)
 
 
+class ReposAPITestCreateFromSnapshot(APITest):
+    """
+    Create repo from snapshot
+    """
+    def check(self):
+        initial_repo = self.random_name()
+        self.check_equal(self.post("/api/repos", json={"Name": initial_repo}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                         "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        task = self.post_task("/api/repos/" + initial_repo + "/file/" + d)
+        self.check_task(task)
+
+        snapshot_name = self.random_name()
+        task = self.post_task("/api/repos/" + initial_repo + '/snapshots', json={'Name': snapshot_name})
+        self.check_task(task)
+        self.check_equal(self.get("/api/snapshots/" + snapshot_name).status_code, 200)
+
+        repo_from_snapshot = self.random_name()
+        new_repo = {'Name': repo_from_snapshot,
+                    'FromSnapshot': snapshot_name}
+
+        resp = self.post("/api/repos", json=new_repo)
+        self.check_equal(resp.status_code, 201)
+
+        self.check_equal(self.get("/api/repos/" + repo_from_snapshot + "/packages").json(),
+                         ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
+
+
+class ReposAPITestCreateFromWrongSnapshot(APITest):
+    """
+    Create repo from snapshot
+    """
+    def check(self):
+        snapshot_name = self.random_name()  # non-existing snapshot
+        repo_from_snapshot = self.random_name()
+        new_repo = {'Name': repo_from_snapshot,
+                    'FromSnapshot': snapshot_name}
+
+        resp = self.post("/api/repos", json=new_repo)
+        self.check_equal(resp.status_code, 404)
+
+
 class ReposAPITestCreateIndexDelete(APITest):
     """
     GET /api/repos, POST /api/repos, DELETE /api/repos/:name

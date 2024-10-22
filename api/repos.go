@@ -69,25 +69,32 @@ func apiReposList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
+type repoCreateParams struct {
+	// Name of repository to create
+	Name string `binding:"required"  json:"Name"                 example:"repo1"`
+	// Text describing the repository (optional)
+	Comment string `                 json:"Comment"              example:"this is a repo"`
+	// Default distribution when publishing from this local repo
+	DefaultDistribution string `     json:"DefaultDistribution"  example:"stable"`
+	// Default component when publishing from this local repo
+	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
+	// Snapshot name to create repoitory from (optional)
+	FromSnapshot string `            json:"FromSnapshot"         example:"snapshot1"`
+}
+
 // @Summary Create repository
 // @Description Create a local repository.
 // @Tags Repos
 // @Produce  json
 // @Consume  json
-// @Param Name query string false "Name of repository to be created."
-// @Param Comment query string false "Text describing local repository, for the user"
-// @Param DefaultDistribution query string false "Default distribution when publishing from this local repo"
-// @Param DefaultComponent query string false "Default component when publishing from this local repo"
+// @Param request body repoCreateParams true "Parameters"
 // @Success 201 {object} deb.LocalRepo
-// @Failure 400 {object} Error "Repository already exists"
+// @Failure 404 {object} Error "Source snapshot not found"
+// @Failure 409 {object} Error "Local repo already exists"
+// @Failure 500 {object} Error "Internal error"
 // @Router /api/repos [post]
 func apiReposCreate(c *gin.Context) {
-	var b struct {
-		Name                string `binding:"required"`
-		Comment             string
-		DefaultDistribution string
-		DefaultComponent    string
-	}
+	var b repoCreateParams
 
 	if c.Bind(&b) != nil {
 		return
@@ -98,14 +105,41 @@ func apiReposCreate(c *gin.Context) {
 	repo.DefaultDistribution = b.DefaultDistribution
 
 	collectionFactory := context.NewCollectionFactory()
-	collection := collectionFactory.LocalRepoCollection()
-	err := collection.Add(repo)
-	if err != nil {
-		AbortWithJSONError(c, 400, err)
+
+	if b.FromSnapshot != "" {
+		var snapshot *deb.Snapshot
+
+		snapshotCollection := collectionFactory.SnapshotCollection()
+
+		snapshot, err := snapshotCollection.ByName(b.FromSnapshot)
+		if err != nil {
+			AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("source snapshot not found: %s", err))
+			return
+		}
+
+		err = snapshotCollection.LoadComplete(snapshot)
+		if err != nil {
+			AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to load source snapshot: %s", err))
+			return
+		}
+
+		repo.UpdateRefList(snapshot.RefList())
+	}
+
+	localRepoCollection := collectionFactory.LocalRepoCollection()
+
+	if _, err := localRepoCollection.ByName(b.Name); err == nil {
+		AbortWithJSONError(c, http.StatusConflict, fmt.Errorf("local repo with name %s already exists", b.Name))
 		return
 	}
 
-	c.JSON(201, repo)
+	err := localRepoCollection.Add(repo)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, repo)
 }
 
 // PUT /api/repos/:name
