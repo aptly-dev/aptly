@@ -4,7 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /api/packages/:key
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Packages
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/packages/{key} [get]
 func apiPackagesShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	p, err := collectionFactory.PackageCollection().ByKey([]byte(c.Params.ByName("key")))

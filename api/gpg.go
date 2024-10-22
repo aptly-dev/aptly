@@ -12,7 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// POST /api/gpg
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags GPG
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/gpg [post]
 func apiGPGAddKey(c *gin.Context) {
 	var b struct {
 		Keyserver   string

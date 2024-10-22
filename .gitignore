@@ -67,4 +67,7 @@ debian/aptly-dbg.debhelper.log
 debian/aptly-dbg.substvars
 debian/aptly-dbg/
 
-docs/
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+docs/swagger.conf

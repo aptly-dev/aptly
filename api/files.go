@@ -34,10 +34,10 @@ func verifyDir(c *gin.Context) bool {
 	return true
 }
 
-// @Summary Get files
-// @Description Get list of uploaded files.
+// @Summary List Files
+// @Description **Get list of uploaded files**
 // @Tags Files
-// @Produce  json
+// @Produce json
 // @Success 200 {array} string "List of files"
 // @Router /api/files [get]
 func apiFilesListDirs(c *gin.Context) {
@@ -67,7 +67,14 @@ func apiFilesListDirs(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// POST /files/:dir/
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Files
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/files/{dir} [post]
 func apiFilesUpload(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -121,7 +128,14 @@ func apiFilesUpload(c *gin.Context) {
 
 }
 
-// GET /files/:dir
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Files
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/files/{dir} [get]
 func apiFilesListFiles(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -159,7 +173,14 @@ func apiFilesListFiles(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// DELETE /files/:dir
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Files
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/files/{dir} [delete]
 func apiFilesDeleteDir(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -174,7 +195,14 @@ func apiFilesDeleteDir(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// DELETE /files/:dir/:name
+// @Summary TODO
+// @Description **ToDo**
+// @Description To Do
+// @Tags Files
+// @Produce json
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/files/{dir}/{name} [delete]
 func apiFilesDeleteFile(c *gin.Context) {
 	if !verifyDir(c) {
 		return

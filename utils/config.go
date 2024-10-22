@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/DisposaBoy/JsonConfigReader"
 )
 
 // ConfigStructure is structure of main configuration
@@ -192,7 +194,7 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	}
 	defer f.Close()
 
-	dec := json.NewDecoder(f)
+	dec := json.NewDecoder(JsonConfigReader.New(f))
 	return dec.Decode(&config)
 }
 
