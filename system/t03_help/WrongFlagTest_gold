@@ -13,6 +13,8 @@ Options:
   -dep-follow-source: when processing dependencies, follow from binary to Source packages
   -dep-follow-suggests: when processing dependencies, follow Suggests
   -dep-verbose-resolve: when processing dependencies, print detailed logs
+  -deps-from-mirrors="": list of mirrors thats packages's dependencies should be fulfilled (comma-separated), default to none
+  -deps-from-repos="": list of repositories thats packages's dependencies should be fulfilled (comma-separated), default to none
   -filter="": filter packages in mirror
   -filter-with-deps: when filtering, include dependencies of matching packages as well
   -force-architectures: (only with architecture list) skip check that requested architectures are listed in Release file

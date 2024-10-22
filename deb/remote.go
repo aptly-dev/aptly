@@ -72,6 +72,10 @@ type RemoteRepo struct {
 	DownloadInstaller bool
 	// Packages for json output
 	Packages []string `codec:"-" json:",omitempty"`
+	// List of mirror names with additional dependencies
+	DepsFromMirrors []string
+	// List of repository names with additional dependencies
+	DepsFromRepos []string
 	// "Snapshot" of current list of packages
 	packageRefs *PackageRefList
 	// Parsed archived root
@@ -584,14 +588,15 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 }
 
 // ApplyFilter applies filtering to already built PackageList
-func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery, progress aptly.Progress) (oldLen, newLen int, err error) {
+func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQuery, extraDeps *PackageList, progress aptly.Progress) (oldLen, newLen int, err error) {
 	repo.packageList.PrepareIndex()
 
-	emptyList := NewPackageList()
-	emptyList.PrepareIndex()
+	if extraDeps != nil {
+		extraDeps.PrepareIndex()
+	}
 
 	oldLen = repo.packageList.Len()
-	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures, progress)
+	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, nil, extraDeps, dependencyOptions, repo.Architectures, progress)
 	if repo.packageList != nil {
 		newLen = repo.packageList.Len()
 	}

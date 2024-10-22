@@ -357,5 +357,7 @@
     "xvba-va-driver_0.8.0-5_i386",
     "ydpdict_1.0.0-2_amd64",
     "ydpdict_1.0.0-2_i386"
-  ]
+  ],
+  "DepsFromMirrors": null,
+  "DepsFromRepos": null
 }

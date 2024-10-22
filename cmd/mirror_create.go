@@ -51,6 +51,15 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	repo.SkipComponentCheck = context.Flags().Lookup("force-components").Value.Get().(bool)
 	repo.SkipArchitectureCheck = context.Flags().Lookup("force-architectures").Value.Get().(bool)
 
+	extraDepsFromMirrors := context.Flags().Lookup("deps-from-mirrors").Value.String()
+	if extraDepsFromMirrors != "" {
+		repo.DepsFromMirrors = strings.Split(extraDepsFromMirrors, ",")
+	}
+	extraDepsFromRepos := context.Flags().Lookup("deps-from-repos").Value.String()
+	if extraDepsFromRepos != "" {
+		repo.DepsFromRepos = strings.Split(extraDepsFromRepos, ",")
+	}
+
 	if repo.Filter != "" {
 		_, err = query.Parse(repo.Filter)
 		if err != nil {
@@ -109,6 +118,8 @@ Example:
 	cmd.Flag.Bool("force-architectures", false, "(only with architecture list) skip check that requested architectures are listed in Release file")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "gpg keyring to use when verifying Release file (could be specified multiple times)")
+	cmd.Flag.String("deps-from-mirrors", "", "list of mirrors thats packages's dependencies should be fulfilled (comma-separated), default to none")
+	cmd.Flag.String("deps-from-repos", "", "list of repositories thats packages's dependencies should be fulfilled (comma-separated), default to none")
 
 	return cmd
 }
