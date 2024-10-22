@@ -273,9 +273,8 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	collection := collectionFactory.PublishedRepoCollection()
 
-	resources = append(resources, string(published.Key()))
 	taskName := fmt.Sprintf("Publish %s repository %s/%s with components \"%s\" and sources \"%s\"",
-		b.SourceKind, published.StoragePrefix(), published.Distribution, strings.Join(components, `", "`), strings.Join(names, `", "`))
+		b.SourceKind, param, b.Distribution, strings.Join(components, `", "`), strings.Join(names, `", "`))
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		taskDetail := task.PublishDetail{
 			Detail: detail,
@@ -419,27 +418,21 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
-	var updatedComponents []string
-	var updatedSnapshots []string
-
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
-		updatedComponents = published.Components()
-	} else if published.SourceKind == "snapshot" {
+	} else if published.SourceKind == deb.SourceSnapshot {
 		for _, snapshotInfo := range b.Snapshots {
-			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
+			_, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err2 != nil {
 				AbortWithJSONError(c, http.StatusNotFound, err2)
 				return
 			}
-			updatedComponents = append(updatedComponents, snapshotInfo.Component)
-			updatedSnapshots = append(updatedSnapshots, snapshot.Name)
 		}
 	} else {
-		AbortWithJSONError(c, 500, fmt.Errorf("unknown published repository type"))
+		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unknown published repository type"))
 		return
 	}
 
@@ -459,17 +452,6 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.MultiDist = *b.MultiDist
 	}
 
-	revision := published.ObtainRevision()
-	sources := revision.Sources
-
-	if published.SourceKind == deb.SourceSnapshot {
-		for _, snapshotInfo := range b.Snapshots {
-			component := snapshotInfo.Component
-			name := snapshotInfo.Name
-			sources[component] = name
-		}
-	}
-
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
@@ -478,23 +460,14 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
 
-		if published.SourceKind == deb.SourceLocalRepo {
-			for _, component := range updatedComponents {
-				published.UpdateLocalRepo(component)
-			}
-		} else if published.SourceKind == "snapshot" {
+		revision := published.ObtainRevision()
+		sources := revision.Sources
+
+		if published.SourceKind == deb.SourceSnapshot {
 			for _, snapshotInfo := range b.Snapshots {
-				snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
-				if err2 != nil {
-					return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err2
-				}
-
-				err2 = snapshotCollection.LoadComplete(snapshot)
-				if err2 != nil {
-					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err2
-				}
-
-				published.UpdateSnapshot(snapshotInfo.Component, snapshot)
+				component := snapshotInfo.Component
+				name := snapshotInfo.Name
+				sources[component] = name
 			}
 		}
 
