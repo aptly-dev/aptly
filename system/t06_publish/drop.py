@@ -1,3 +1,4 @@
+import re
 from lib import BaseTest
 
 
@@ -25,6 +26,7 @@ class PublishDrop1Test(BaseTest):
 class PublishDrop2Test(BaseTest):
     """
     publish drop: under prefix
+    if remaining tree is empty, it is now removed
     """
     requiresGPG2 = True
     fixtureDB = True
@@ -39,9 +41,38 @@ class PublishDrop2Test(BaseTest):
     def check(self):
         super(PublishDrop2Test, self).check()
 
-        self.check_not_exists('public/ppa/smira/dists/')
-        self.check_not_exists('public/ppa/smira/pool/')
-        self.check_exists('public/ppa/smira/')
+        self.check_not_exists('public/ppa/')
+        self.check_exists('public/')
+
+
+class PublishDrop21Test(BaseTest):
+    """
+    publish drop: under prefix
+    if some publishes have common part of the prefix, only empty parts are cleared
+    """
+    requiresGPG2 = True
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1 ppa/smira",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap2 ppa/another",
+    ]
+    runCmd = "aptly publish drop maverick ppa/smira"
+    gold_processor = BaseTest.expand_environ
+
+    def outputMatchPrepare(_, s):
+        """
+        remove timestamp from log output
+        """
+        return re.sub(r'"time":".[^\"]+"', '"time":"now"', s, flags=re.MULTILINE)
+
+    def check(self):
+        super(PublishDrop21Test, self).check()
+
+        self.check_not_exists('public/ppa/smira/')
+        self.check_exists('public/ppa/another')
 
 
 class PublishDrop3Test(BaseTest):
@@ -132,6 +163,7 @@ class PublishDrop6Test(BaseTest):
 class PublishDrop7Test(BaseTest):
     """
     publish drop: under prefix with trailing & leading slashes
+    see comment in PublishDrop2Test
     """
     requiresGPG2 = True
     fixtureDB = True
@@ -148,7 +180,8 @@ class PublishDrop7Test(BaseTest):
 
         self.check_not_exists('public/ppa/smira/dists/')
         self.check_not_exists('public/ppa/smira/pool/')
-        self.check_exists('public/ppa/smira/')
+        self.check_not_exists('public/ppa/smira/')
+        self.check_exists('public/')
 
 
 class PublishDrop8Test(BaseTest):
