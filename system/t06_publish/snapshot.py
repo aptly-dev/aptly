@@ -1344,3 +1344,23 @@ class PublishSnapshot41Test(BaseTest):
         self.check_exists('public/pool/main/libx/libxslt/libxslt1.1_1.1.32-2.2~deb10u2_i386.deb')
         self.check_exists('public/pool/main/libz/libzstd/libzstd1_1.3.8+dfsg-3+deb10u2_i386.deb')
         self.check_exists('public/pool/main/z/zlib/zlib1g_1.2.11.dfsg-1+deb10u2_i386.deb')
+
+
+class PublishSnapshot42Test(BaseTest):
+    """
+    publish snapshot: mirror with multi-dist
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+    ]
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -multi-dist snap1"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot42Test, self).check()
+        self.check_not_exists(
+            'public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
+        self.check_exists(
+            'public/pool/maverick/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')

@@ -52,7 +52,8 @@ func aptlyPublishShowTxt(_ *commander.Command, args []string) error {
 	fmt.Printf("Architectures: %s\n", strings.Join(repo.Architectures, " "))
 
 	fmt.Printf("Sources:\n")
-	for component, sourceID := range repo.Sources {
+	for _, component := range repo.Components() {
+		sourceID := repo.Sources[component]
 		var name string
 		if repo.SourceKind == deb.SourceSnapshot {
 			source, e := collectionFactory.SnapshotCollection().ByUUID(sourceID)

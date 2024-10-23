@@ -37,7 +37,7 @@ Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archi
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/pool/main/g/gnupg2/scdaemon_2.1.18-8~deb9u4_amd64.deb
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/pool/main/g/gnupg2/scdaemon_2.1.18-8~deb9u4_i386.deb
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
-Mirror `stretch` has been successfully updated.
+Mirror `stretch` has been updated successfully.
 Packages filtered: 78248 -> 20.
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease...
 gpgv:                issuer "debian-release@lists.debian.org"

@@ -1,0 +1,3 @@
+Updating component 'main' with source 'snap2' [snapshot]...
+
+You can run 'aptly publish update maverick .' to update the content of the published repository.

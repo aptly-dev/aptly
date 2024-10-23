@@ -6,5 +6,5 @@ Download queue: 0 items (0 B)
 Downloading & parsing package files...
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/Release
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/main/binary-i386/Packages.gz
-Mirror `stretch` has been successfully updated.
+Mirror `stretch` has been updated successfully.
 Packages filtered: 50604 -> 1.
