@@ -156,6 +156,22 @@ class PublishSourceUpdate3Test(BaseTest):
     gold_processor = BaseTest.expand_environ
 
 
+class PublishSourceReplace1Test(BaseTest):
+    """
+    publish source replace: Replace existing sources
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 empty",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=main,test snap1 snap2",
+    ]
+    runCmd = "aptly publish source replace -component=main-new,test-new maverick snap2 snap3"
+    gold_processor = BaseTest.expand_environ
+
+
 class PublishSourceRemove1Test(BaseTest):
     """
     publish source remove: Remove single source

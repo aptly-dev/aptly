@@ -9,7 +9,7 @@ import (
 	"github.com/smira/flag"
 )
 
-func aptlyPublishSourceAdd(cmd *commander.Command, args []string) error {
+func aptlyPublishSourceReplace(cmd *commander.Command, args []string) error {
 	if len(args) < 2 {
 		cmd.Usage()
 		return commander.ErrCommandError
@@ -39,13 +39,11 @@ func aptlyPublishSourceAdd(cmd *commander.Command, args []string) error {
 
 	revision := published.ObtainRevision()
 	sources := revision.Sources
+	context.Progress().Printf("Clearing staged source list...\n")
+	clear(sources)
 
 	for i, component := range components {
 		name := names[i]
-		_, exists := sources[component]
-		if exists {
-			return fmt.Errorf("unable to add: component '%s' has already been added", component)
-		}
 		context.Progress().Printf("Adding component '%s' with source '%s' [%s]...\n", component, name, published.SourceKind)
 
 		sources[component] = name
@@ -62,26 +60,24 @@ func aptlyPublishSourceAdd(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func makeCmdPublishSourceAdd() *commander.Command {
+func makeCmdPublishSourceReplace() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyPublishSourceAdd,
-		UsageLine: "add <distribution> <source>",
-		Short:     "add source to staged source list of published repository",
+		Run:       aptlyPublishSourceReplace,
+		UsageLine: "replace <distribution> <source>",
+		Short:     "replace staged source list of published repository",
 		Long: `
-The command adds sources to the staged source list of the published repository.
+The command replaces the staged source list of the published repository.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be
 equal to the number of given sources, e.g.:
 
-	aptly publish source add -component=main,contrib wheezy wheezy-main wheezy-contrib
+	aptly publish source replace -component=main,contrib wheezy wheezy-main wheezy-contrib
 
 Example:
 
-	$ aptly publish source add -component=contrib wheezy ppa wheezy-contrib
+	$ aptly publish source replace -component=contrib wheezy ppa wheezy-contrib
 
-This command assigns the snapshot wheezy-contrib to the component contrib and
-adds it to published repository revision of ppa/wheezy.
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-source-add", flag.ExitOnError),
 	}

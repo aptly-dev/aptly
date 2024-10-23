@@ -52,6 +52,7 @@ func makeCmdPublishSource() *commander.Command {
 			makeCmdPublishSourceDrop(),
 			makeCmdPublishSourceList(),
 			makeCmdPublishSourceRemove(),
+			makeCmdPublishSourceReplace(),
 			makeCmdPublishSourceUpdate(),
 		},
 	}
