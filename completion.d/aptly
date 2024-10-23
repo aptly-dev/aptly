@@ -61,7 +61,7 @@ _aptly()
     db_subcommands="cleanup recover"
     mirror_subcommands="create drop edit show list rename search update"
     publish_subcommands="drop list repo snapshot switch update source"
-    publish_source_subcommands="drop list add remove update"
+    publish_source_subcommands="drop list add remove update replace"
     snapshot_subcommands="create diff drop filter list merge pull rename search show verify"
     repo_subcommands="add copy create drop edit import include list move remove rename search show"
     package_subcommands="search show"
