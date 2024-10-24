@@ -119,6 +119,38 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 	return os.RemoveAll(filepath)
 }
 
+// Cleans up PublishedStorage tree towards the publish storage root up to first non-empty directory
+func (storage *PublishedStorage) CleanupPublishTree(path string, progress aptly.Progress) {
+	path = strings.TrimLeft(path, "./")
+	if path == "" {
+		return
+	}
+	/*
+		Say, `path` is "a/b/c/d", let's remove all empty dirs:
+		 storage.rootPath + "a/b/c/d"
+		 storage.rootPath + "a/b/c"
+		 storage.rootPath + "a/b"
+		 ... and so on, up to storage.rootPath, first non-empty directory or any other os.Remove error, whichever comes first
+	*/
+
+	segments := strings.Split(path, "/")
+
+	for segmentsCount := len(segments); segmentsCount > 0; segmentsCount-- {
+		fullPath := filepath.Join(storage.rootPath, strings.Join(segments[:segmentsCount], "/"))
+
+		if err := os.Remove(fullPath); err != nil {
+			// We stop crawling the tree on any os.Remove error.
+			// Among all of the return values there might be 'directory not empty',
+			// which means, we reached non-empty dir, which is okay.
+			// Any other errors are logged for informational reasons.
+			if progress != nil {
+				progress.Printf("CleanupPublishTree: %s. '%s' not removed\n", err, fullPath)
+			}
+			break
+		}
+	}
+}
+
 // LinkFromPool links package file from pool to dist's pool location
 //
 // publishedPrefix is desired prefix for the location in the pool.

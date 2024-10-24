@@ -17,6 +17,7 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
+	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
 )
@@ -1323,13 +1324,19 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
-	if !skipCleanup && len(cleanComponents) > 0 {
-		err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents,
-			publishedStorageProvider.GetPublishedStorage(storage), collectionFactory, progress)
-		if err != nil {
-			if !force {
-				return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)
+	if !skipCleanup {
+		publishedStorage := publishedStorageProvider.GetPublishedStorage(storage)
+		if len(cleanComponents) > 0 {
+			err = collection.CleanupPrefixComponentFiles(repo.Prefix, cleanComponents, publishedStorage, collectionFactory, progress)
+			if err != nil {
+				if !force {
+					return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)
+				}
 			}
+		}
+
+		if localStorage, ok := publishedStorage.(*files.PublishedStorage); ok {
+			localStorage.CleanupPublishTree(repo.Prefix, progress)
 		}
 	}
 
