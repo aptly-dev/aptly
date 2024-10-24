@@ -7,8 +7,9 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
-# Uncomment to update test outputs
-# CAPTURE := "--capture"
+ifdef CAPTURE
+	CAPTURE_ARGS := --capture
+endif
 
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -90,7 +91,7 @@ system-test: prepare swagger etcd-install  ## Run system tests
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARGS) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -142,34 +143,17 @@ binaries: prepare swagger  ## Build binary releases (FreeBSD, MacOS, Linux tar)
 	rm -rf "$$path"
 
 docker-image:  ## Build aptly-dev docker image
-	@docker build -f system/Dockerfile . -t aptly-dev
-
-docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
+	@docker build --build-arg USER_ID=$(shell id -u) --build-arg GROUP_ID=$(shell id -g) -f system/Dockerfile . -t aptly-dev
 
 docker-shell:  ## Run aptly and other commands in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev
+
+docker-%: ## All available makefile targets, but run inside docker container
+	@echo Executilg `make $*` inside docker
+	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev $* TEST=$(TEST) CAPTURE=$(CAPTURE)
 
 docker-deb:  ## Build debian packages in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
-
-docker-unit-test:  ## Run unit tests in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper test
-
-docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper system-test TEST=$(TEST)
-
-docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper serve || true
-
-docker-lint:  ## Run golangci-lint in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint
-
-docker-binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar) in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper binaries
-
-docker-man:  ## Create man page in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper man
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev dpkg DEBARCH=amd64
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp
@@ -185,4 +169,4 @@ clean:  ## remove local build and module cache
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
-.PHONY: help man prepare swagger version binaries docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image build docker-shell clean releasetype dpkg serve docker-serve flake8
+.PHONY: help man prepare swagger version binaries build clean releasetype dpkg serve flake8 docker-image docker-shell

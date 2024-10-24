@@ -1,11 +1,5 @@
 #!/bin/sh -e
 
-# make sure files are written with correct user ownership
-if [ `stat -c %u /work/src` -ne 0 ]; then
-    usermod -u `stat -c %u /work/src` aptly >/dev/null
-    chown -R `stat -c %u /work/src` /var/lib/aptly
-fi
-
 args="$@"
 if [ -z "$args" ]; then
     cp /work/src/completion.d/aptly /usr/share/bash-completion/completions/
@@ -14,5 +8,7 @@ else
     cmd="make $@"
 fi
 
-cd /work/src
-sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go $cmd
+export PATH=$PATH:/work/src/build
+export GOPATH=/work/src/.go
+
+exec $cmd
