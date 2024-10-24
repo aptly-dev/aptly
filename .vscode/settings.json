@@ -1,0 +1,15 @@
+{
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "editor.formatOnSave": true,
+    "rewrap.reformat": true,
+    "rewrap.autoWrap.enabled": true,
+    "go.toolsManagement.autoUpdate": true,
+    "go.testFlags": [
+        "-v"
+    ],
+    "go.survey.prompt": false,
+    "gopls": {
+        "ui.semanticTokens": true
+    }
+}

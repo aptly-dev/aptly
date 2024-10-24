@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "aaron-bond.better-comments",
+        "jeff-hykin.better-go-syntax",
+        "ms-azuretools.vscode-docker",
+        "golang.go",
+        "stkb.rewrap",
+        "gruntfuggly.todo-tree",
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "ms-python.debugpy"
+    ]
+}

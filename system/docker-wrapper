@@ -1,9 +1,5 @@
 #!/bin/sh -e
 
-# make sure files are written with correct user ownership
-usermod -u `stat -c %u /work/src` aptly >/dev/null
-chown -R `stat -c %u /work/src` /var/lib/aptly
-
 args="$@"
 if [ -z "$args" ]; then
     cmd="bash"
@@ -11,5 +7,7 @@ else
     cmd="make $@"
 fi
 
-cd /work/src
-sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go $cmd
+export PATH=$PATH:/work/src/build
+export GOPATH=/work/src/.go
+
+exec $cmd
