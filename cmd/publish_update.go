@@ -93,15 +93,21 @@ func makeCmdPublishUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishUpdate,
 		UsageLine: "update <distribution> [[<endpoint>:]<prefix>]",
-		Short:     "update published local repository",
+		Short:     "update published repository",
 		Long: `
-Command re-publishes (updates) published local repository. <distribution>
-and <prefix> should be occupied with local repository published
-using command aptly publish repo. Update happens in-place with
-minimum possible downtime for published repository.
+The command updates updates a published repository after applying pending changes to the sources.
 
-For multiple component published repositories, all local repositories
-are updated.
+For published local repositories:
+
+    * update to match local repository contents
+
+For published snapshots:
+
+    * switch components to new snapshot
+
+The update happens in-place with minimum possible downtime for published repository.
+
+For multiple component published repositories, all local repositories are updated.
 
 Example:
 

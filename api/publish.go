@@ -69,7 +69,7 @@ func slashEscape(path string) string {
 // @Summary List Published Repositories
 // @Description **Get list of published repositories**
 // @Description
-// @Description Lists repositories that have been published based on local repositories or snapshots. For each repository information about `endpoint`, `prefix` and `distribution` is listed along with `component` and architecture list. Information about snapshot or local repo being published is appended to published repository description.
+// @Description Return list of published repositories including detailed information.
 // @Description
 // @Description See also: `aptly publish list`
 // @Tags Publish
@@ -175,7 +175,9 @@ type publishedRepoCreateParams struct {
 // @Summary Create Published Repository
 // @Description **Publish a local repository or snapshot**
 // @Description
-// @Description Storage might be passed in prefix as well, e.g. `s3:packages/`. To supply empty prefix, just remove last part (`POST /api/publish`).
+// @Description Create a published repository.
+// @Description
+// @Description The prefix may contain a storage specifier, e.g. `s3:packages/`, or it may also be empty to publish to the root directory.
 // @Description
 // @Description See also: `aptly publish create`
 // @Tags Publish
@@ -372,11 +374,15 @@ type publishedRepoUpdateSwitchParams struct {
 }
 
 // @Summary Update Published Repository
-// @Description **Update a published local repository or switch snapshot**
+// @Description **Update a published repository**
 // @Description
-// @Description API action depends on published repository contents:
-// @Description * if local repository has been published, published repository would be updated to match local repository contents
-// @Description * if snapshots have been been published, it is possible to switch each component to new snapshot
+// @Description Update a published local repository or switch snapshot.
+// @Description
+// @Description For published local repositories:
+// @Description * update to match local repository contents
+// @Description
+// @Description For published snapshots:
+// @Description * switch components to new snapshot
 // @Description
 // @Description See also: `aptly publish update` / `aptly publish switch`
 // @Tags Publish
@@ -502,7 +508,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Summary Delete Published Repository
 // @Description **Delete a published repository**
 // @Description
-// @Description Delete published repository and clean up files in published directory. Aptly tries to remove as many files belonging to this repository as possible. For example, if no other published repositories share the same prefix, all files inside the prefix will be removed.
+// @Description Delete a distribution of a published repository and remove associated files.
+// @Description
+// @Description If no other published repositories share the same prefix, all files inside the prefix will be removed.
 // @Description
 // @Description See also: `aptly publish drop`
 // @Tags Publish
@@ -549,9 +557,9 @@ func apiPublishDrop(c *gin.Context) {
 // @Summary Add Source Component
 // @Description **Add a source component to a published repo**
 // @Description
-// @Description Adds a component of a snapshot or local repository to be published.
+// @Description Add a component of a snapshot or local repository to be published.
 // @Description
-// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (i.e `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description
 // @Description See also: `aptly publish source add`
 // @Tags Publish
@@ -620,9 +628,9 @@ func apiPublishAddSource(c *gin.Context) {
 // @Summary List pending changes
 // @Description **List source component changes to be applied**
 // @Description
-// @Description Returns added, removed or changed components of snapshots or local repository to be published.
+// @Description Return added, removed or changed components of snapshots or local repository to be published.
 // @Description
-// @Description The changes will be applied by a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description The changes will be applied by a subsequent publish update call (i.e. `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description
 // @Description See also: `aptly publish source list`
 // @Tags Publish
@@ -668,7 +676,7 @@ func apiPublishListChanges(c *gin.Context) {
 // @Description
 // @Description Sets the components of snapshots or local repositories to be published. Existing Sourced will be replaced.
 // @Description
-// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (i.e `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description
 // @Description See also: `aptly publish source replace`
 // @Tags Publish
@@ -733,7 +741,7 @@ func apiPublishSetSources(c *gin.Context) {
 // @Summary Drop pending changes
 // @Description **Drop pending source component changes of a published repository**
 // @Description
-// @Description Removes all pending changes what would be applied with a subsequent publish update call (See `PUT /api/publish/{prefix}/{distribution}`).
+// @Description Remove all pending changes what would be applied with a subsequent publish update call (i.e. `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description
 // @Description See also: `aptly publish source drop`
 // @Tags Publish
@@ -782,9 +790,11 @@ func apiPublishDropChanges(c *gin.Context) {
 // @Summary Update Source Component
 // @Description **Update the source component of a published repository**
 // @Description
-// @Description Publish pending source component changes which were added with `Add/Remove/Replace Source Components`
+// @Description Update a component of a snapshot or local repository to be published.
 // @Description
-// @Description See also: `aptly publish update` / `aptly publish switch`
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (i.e `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
+// @Description
+// @Description See also: `aptly publish source update`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
@@ -859,7 +869,9 @@ func apiPublishUpdateSource(c *gin.Context) {
 // @Summary Remove Source Component
 // @Description **Remove a source component from a published repo**
 // @Description
-// @Description Remove a source (snapshot / local repo) component from a published repository.
+// @Description Remove a source component (snapshot / local repo) from a published repository.
+// @Description
+// @Description This call does not publish the changes, but rather schedules them for a subsequent publish update call (i.e `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description
 // @Description See also: `aptly publish source remove`
 // @Tags Publish
@@ -936,9 +948,9 @@ type publishedRepoUpdateParams struct {
 // @Summary Update Published Repository
 // @Description **Update a published repository**
 // @Description
-// @Description Apply pending changes and republish
+// @Description Publish pending source component changes which were added with `Add/Remove/Replace Source Components`
 // @Description
-// @Description See also: `aptly publish update` / `aptly publish switch`
+// @Description See also: `aptly publish update`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"

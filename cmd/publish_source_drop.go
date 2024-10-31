@@ -45,9 +45,9 @@ func makeCmdPublishSourceDrop() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceDrop,
 		UsageLine: "drop <distribution>",
-		Short:     "drops staged source changes of published repository",
+		Short:     "drop pending source component changes of a published repository",
 		Long: `
-Command drops the staged source changes of the published repository.
+Remove all pending changes what would be applied with a subsequent 'aptly publish update'.
 
 Example:
 

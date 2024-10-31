@@ -66,9 +66,11 @@ func makeCmdPublishSourceAdd() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceAdd,
 		UsageLine: "add <distribution> <source>",
-		Short:     "add source to staged source list of published repository",
+		Short:     "add source components to a published repo",
 		Long: `
-The command adds sources to the staged source list of the published repository.
+The command adds components of a snapshot or local repository to be published.
+
+This does not publish the changes directly, but rather schedules them for a subsequent 'aptly publish update'.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be

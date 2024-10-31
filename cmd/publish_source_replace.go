@@ -64,9 +64,11 @@ func makeCmdPublishSourceReplace() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceReplace,
 		UsageLine: "replace <distribution> <source>",
-		Short:     "replace staged source list of published repository",
+		Short:     "replace the source components of a published repository",
 		Long: `
-The command replaces the staged source list of the published repository.
+The command replaces the source components of a snapshot or local repository to be published.
+
+This does not publish the changes directly, but rather schedules them for a subsequent 'aptly publish update'.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be modified. The number of given components must be
@@ -77,7 +79,6 @@ equal to the number of given sources, e.g.:
 Example:
 
 	$ aptly publish source replace -component=contrib wheezy ppa wheezy-contrib
-
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-source-add", flag.ExitOnError),
 	}

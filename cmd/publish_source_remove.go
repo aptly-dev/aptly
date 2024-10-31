@@ -64,9 +64,11 @@ func makeCmdPublishSourceRemove() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSourceRemove,
 		UsageLine: "remove <distribution> [[<endpoint>:]<prefix>] <source>",
-		Short:     "remove source from staged source list of published repository",
+		Short:     "remove source components from a published repo",
 		Long: `
-The command removes sources from the staged source list of the published repository.
+The command removes source components (snapshot / local repo) from a published repository.
+
+This does not publish the changes directly, but rather schedules them for a subsequent 'aptly publish update'.
 
 The flag -component is mandatory. Use a comma-separated list of components, if
 multiple components should be removed, e.g.:
