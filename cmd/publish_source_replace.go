@@ -39,7 +39,7 @@ func aptlyPublishSourceReplace(cmd *commander.Command, args []string) error {
 
 	revision := published.ObtainRevision()
 	sources := revision.Sources
-	context.Progress().Printf("Clearing staged source list...\n")
+	context.Progress().Printf("Replacing source list...\n")
 	clear(sources)
 
 	for i, component := range components {
