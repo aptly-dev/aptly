@@ -31,18 +31,14 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	if published.SourceKind != deb.SourceLocalRepo {
-		return fmt.Errorf("unable to update: not a local repository publish")
-	}
-
 	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
 	}
 
-	components := published.Components()
-	for _, component := range components {
-		published.UpdateLocalRepo(component)
+	result, err := published.Update(collectionFactory, context.Progress())
+	if err != nil {
+		return fmt.Errorf("unable to update: %s", err)
 	}
 
 	signer, err := getSigner(context.Flags())
@@ -80,14 +76,15 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-			context.GetPublishedStorage(storage), collectionFactory, context.Progress())
+		cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
+		cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, context.Progress())
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
 	}
 
-	context.Progress().Printf("\nPublish for local repo %s has been successfully updated.\n", published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been updated successfully.\n", published.SourceKind, published.String())
 
 	return err
 }
@@ -96,15 +93,21 @@ func makeCmdPublishUpdate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishUpdate,
 		UsageLine: "update <distribution> [[<endpoint>:]<prefix>]",
-		Short:     "update published local repository",
+		Short:     "update published repository",
 		Long: `
-Command re-publishes (updates) published local repository. <distribution>
-and <prefix> should be occupied with local repository published
-using command aptly publish repo. Update happens in-place with
-minimum possible downtime for published repository.
+The command updates updates a published repository after applying pending changes to the sources.
 
-For multiple component published repositories, all local repositories
-are updated.
+For published local repositories:
+
+    * update to match local repository contents
+
+For published snapshots:
+
+    * switch components to new snapshot
+
+The update happens in-place with minimum possible downtime for published repository.
+
+For multiple component published repositories, all local repositories are updated.
 
 Example:
 

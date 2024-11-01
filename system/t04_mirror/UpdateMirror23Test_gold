@@ -23,7 +23,7 @@ Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archi
 Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/non-free/installer-s390x/current/images/SHA256SUMS
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease
 Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/non-free/installer-s390x/current/images/SHA256SUMS
-Mirror `stretch` has been successfully updated.
+Mirror `stretch` has been updated successfully.
 Packages filtered: 49256 -> 1.
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/InRelease...
 Retrying 0 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/dists/stretch/non-free/installer-s390x/current/images/SHA256SUMS...

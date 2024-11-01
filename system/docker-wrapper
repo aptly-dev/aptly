@@ -1,11 +1,14 @@
 #!/bin/sh -e
 
 # make sure files are written with correct user ownership
-usermod -u `stat -c %u /work/src` aptly >/dev/null
-chown -R `stat -c %u /work/src` /var/lib/aptly
+if [ `stat -c %u /work/src` -ne 0 ]; then
+    usermod -u `stat -c %u /work/src` aptly >/dev/null
+    chown -R `stat -c %u /work/src` /var/lib/aptly
+fi
 
 args="$@"
 if [ -z "$args" ]; then
+    cp /work/src/completion.d/aptly /usr/share/bash-completion/completions/
     cmd="bash"
 else
     cmd="make $@"

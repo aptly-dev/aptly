@@ -1,0 +1,3 @@
+Sources:
+  main: snap1 [snapshot]
+  test: snap2 [snapshot]

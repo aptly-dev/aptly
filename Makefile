@@ -59,7 +59,7 @@ flake8:  ## run flake8 on system test python files
 
 lint:
 	# Install golangci-lint
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
 	@PATH=$(BINPATH)/:$(PATH) golangci-lint run
 
@@ -100,7 +100,7 @@ serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
 	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd -- api serve -listen 0.0.0.0:3142
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)

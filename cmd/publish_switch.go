@@ -5,12 +5,16 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
 )
 
 func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
-	var err error
+	var (
+		err   error
+		names []string
+	)
 
 	components := strings.Split(context.Flags().Lookup("component").Value.String(), ",")
 
@@ -21,11 +25,6 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 
 	distribution := args[0]
 	param := "."
-
-	var (
-		names    []string
-		snapshot *deb.Snapshot
-	)
 
 	if len(args) == len(components)+2 {
 		param = args[1]
@@ -41,16 +40,16 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 	collectionFactory := context.NewCollectionFactory()
 	published, err = collectionFactory.PublishedRepoCollection().ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
-		return fmt.Errorf("unable to update: %s", err)
+		return fmt.Errorf("unable to switch: %s", err)
 	}
 
 	if published.SourceKind != deb.SourceSnapshot {
-		return fmt.Errorf("unable to update: not a snapshot publish")
+		return fmt.Errorf("unable to switch: not a published snapshot repository")
 	}
 
 	err = collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
 	if err != nil {
-		return fmt.Errorf("unable to update: %s", err)
+		return fmt.Errorf("unable to switch: %s", err)
 	}
 
 	publishedComponents := published.Components()
@@ -62,13 +61,18 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("mismatch in number of components (%d) and snapshots (%d)", len(components), len(names))
 	}
 
+	snapshotCollection := collectionFactory.SnapshotCollection()
 	for i, component := range components {
-		snapshot, err = collectionFactory.SnapshotCollection().ByName(names[i])
+		if !utils.StrSliceHasItem(publishedComponents, component) {
+			return fmt.Errorf("unable to switch: component %s does not exist in published repository", component)
+		}
+
+		snapshot, err := snapshotCollection.ByName(names[i])
 		if err != nil {
 			return fmt.Errorf("unable to switch: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		err = snapshotCollection.LoadComplete(snapshot)
 		if err != nil {
 			return fmt.Errorf("unable to switch: %s", err)
 		}
@@ -111,14 +115,13 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 
 	skipCleanup := context.Flags().Lookup("skip-cleanup").Value.Get().(bool)
 	if !skipCleanup {
-		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(published.Prefix, components,
-			context.GetPublishedStorage(storage), collectionFactory, context.Progress())
+		err = collectionFactory.PublishedRepoCollection().CleanupPrefixComponentFiles(context, published, components, collectionFactory, context.Progress())
 		if err != nil {
-			return fmt.Errorf("unable to update: %s", err)
+			return fmt.Errorf("unable to switch: %s", err)
 		}
 	}
 
-	context.Progress().Printf("\nPublish for snapshot %s has been successfully switched to new snapshot.\n", published.String())
+	context.Progress().Printf("\nPublished %s repository %s has been successfully switched to new source.\n", published.SourceKind, published.String())
 
 	return err
 }
@@ -126,15 +129,15 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 func makeCmdPublishSwitch() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyPublishSwitch,
-		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-snapshot>",
-		Short:     "update published repository by switching to new snapshot",
+		UsageLine: "switch <distribution> [[<endpoint>:]<prefix>] <new-source>",
+		Short:     "update published repository by switching to new source",
 		Long: `
-Command switches in-place published snapshots with new snapshot contents. All
+Command switches in-place published snapshots with new source contents. All
 publishing parameters are preserved (architecture list, distribution,
 component).
 
 For multiple component repositories, flag -component should be given with
-list of components to update. Corresponding snapshots should be given in the
+list of components to update. Corresponding sources should be given in the
 same order, e.g.:
 
 	aptly publish switch -component=main,contrib wheezy wh-main wh-contrib

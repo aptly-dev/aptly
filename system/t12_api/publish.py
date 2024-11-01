@@ -905,6 +905,58 @@ class PublishSwitchAPISkipCleanupTestRepo(APITest):
         self.check_exists("public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
 
 
+class PublishShowAPITestRepo(APITest):
+    """
+    GET /publish/:prefix/:distribution
+    """
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(
+            self.upload("/api/files/" + d,
+                        "pyspi_0.6.1-1.3.dsc",
+                        "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                        "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        self.check_equal(self.post_task("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "Architectures": ["i386", "source"],
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Origin': '',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': False,
+            'MultiDist': False,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo1_name}],
+            'Storage': '',
+            'Suite': ''}
+        repo = self.get("/api/publish/" + prefix + "/wheezy")
+        self.check_equal(repo.status_code, 200)
+        self.check_equal(repo_expected, repo.json())
+
+
 class ServePublishedListTestRepo(APITest):
     """
     GET /repos
@@ -1036,3 +1088,472 @@ class ServePublishedNotFoundTestRepo(APITest):
         get = self.get("/repos/apiandserve/pool/main/b/boost-defaults/i-dont-exist")
         if get.status_code != 404:
             raise Exception(f"Expected status 404 != {get.status_code}")
+
+
+class PublishSourcesAddAPITestRepo(APITest):
+    """
+    POST /publish/:prefix/:distribution/sources
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # Actual test
+        self.check_equal(self.post(
+            "/api/publish/" + prefix + "/wheezy/sources",
+            json={"Component": "test", "Name": repo2_name}
+        ).status_code, 201)
+
+        sources_expected = [{"Component": "main", "Name": repo1_name}, {"Component": "test", "Name": repo2_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishSourceUpdateAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution/sources/main
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # Actual test
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources/main",
+            json={"Component": "main", "Name": repo2_name}
+        ).status_code, 200)
+
+        sources_expected = [{"Component": "main", "Name": repo2_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishSourcesUpdateAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution/sources
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        # Actual test
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources",
+            json=[{"Component": "test", "Name": repo1_name}, {"Component": "other-test", "Name": repo2_name}]
+        ).status_code, 200)
+
+        sources_expected = [{"Component": "other-test", "Name": repo2_name}, {"Component": "test", "Name": repo1_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishSourceRemoveAPITestRepo(APITest):
+    """
+    DELETE /publish/:prefix/:distribution/sources/test
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}, {"Component": "test", "Name": repo2_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        # Actual test
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy/sources/test").status_code, 200)
+
+        sources_expected = [{"Component": "main", "Name": repo1_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishSourcesDropAPITestRepo(APITest):
+    """
+    DELETE /publish/:prefix/:distribution/sources
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}, {"Component": "test", "Name": repo2_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy/sources/test").status_code, 200)
+
+        # Actual test
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy/sources").status_code, 200)
+
+        self.check_equal(self.get("/api/publish/" + prefix + "/wheezy/sources").status_code, 404)
+
+
+class PublishSourcesListAPITestRepo(APITest):
+    """
+    GET /publish/:prefix/:distribution/sources
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        # Actual test
+        self.check_equal(self.post(
+            "/api/publish/" + prefix + "/wheezy/sources",
+            json={"Component": "test", "Name": repo1_name}
+        ).status_code, 201)
+
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources/main",
+            json={"Component": "main", "Name": repo2_name}
+        ).status_code, 200)
+
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy/sources/main").status_code, 200)
+
+        sources_expected = [{"Component": "test", "Name": repo1_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishSourceReplaceAPITestRepo(APITest):
+    """
+    PUT /publish/:prefix/:distribution/sources/main
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}],
+                 "Signing": DefaultSigningOptions,
+            }
+        ).status_code, 201)
+
+        # Actual test
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources/main",
+            json={"Component": "test", "Name": repo2_name}
+        ).status_code, 200)
+
+        sources_expected = [{"Component": "test", "Name": repo2_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+
+class PublishUpdateSourcesAPITestRepo(APITest):
+    """
+    POST /publish/:prefix/:distribution/update
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo1_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo1_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo1_name + "/file/" + d).status_code, 200)
+
+        repo2_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo2_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo2_name + "/file/" + d).status_code, 200)
+
+        repo3_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo3_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb").status_code, 200)
+
+        self.check_equal(self.post("/api/repos/" + repo3_name + "/file/" + d).status_code, 200)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        self.check_equal(self.post(
+            "/api/publish/" + prefix,
+            json={
+                 "Signing": DefaultSigningOptions,
+                 "SourceKind": "local",
+                 "Sources": [{"Component": "main", "Name": repo1_name}, {"Component": "test", "Name": repo2_name}],
+            }
+        ).status_code, 201)
+
+        # remove 'main' component
+        self.check_equal(self.delete("/api/publish/" + prefix + "/wheezy/sources/main").status_code, 200)
+
+        # update 'test' component
+        self.check_equal(self.put(
+            "/api/publish/" + prefix + "/wheezy/sources/test",
+            json={"Component": "test", "Name": repo1_name}
+        ).status_code, 200)
+
+        # add 'other-test' component
+        self.check_equal(self.post(
+            "/api/publish/" + prefix + "/wheezy/sources",
+            json={"Component": "other-test", "Name": repo3_name}
+        ).status_code, 201)
+
+        sources_expected = [{"Component": "other-test", "Name": repo3_name}, {"Component": "test", "Name": repo1_name}]
+        sources = self.get("/api/publish/" + prefix + "/wheezy/sources")
+        self.check_equal(sources.status_code, 200)
+        self.check_equal(sources_expected, sources.json())
+
+        # update published repository and publish new content
+        self.check_equal(self.post(
+            "/api/publish/" + prefix + "/wheezy/update",
+            json={
+                "AcquireByHash": True,
+                "MultiDist": False,
+                "Signing": DefaultSigningOptions,
+                "SkipBz2": True,
+                "SkipContents": True,
+            }
+        ).status_code, 200)
+
+        repo_expected = {
+            'AcquireByHash': True,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'Origin': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': True,
+            'MultiDist': False,
+            'SourceKind': 'local',
+            'Sources': [{"Component": "other-test", "Name": repo3_name}, {"Component": "test", "Name": repo1_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())

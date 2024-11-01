@@ -54,12 +54,14 @@ _aptly()
 {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
+    prevprev="${COMP_WORDS[COMP_CWORD-2]}"
 
     commands="api config db graph mirror package publish repo serve snapshot task version"
     options="-architectures= -config= -db-open-attempts= -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve -gpg-provider="
     db_subcommands="cleanup recover"
     mirror_subcommands="create drop edit show list rename search update"
-    publish_subcommands="drop list repo snapshot switch update"
+    publish_subcommands="drop list repo snapshot switch update source"
+    publish_source_subcommands="drop list add remove update replace"
     snapshot_subcommands="create diff drop filter list merge pull rename search show verify"
     repo_subcommands="add copy create drop edit import include list move remove rename search show"
     package_subcommands="search show"
@@ -147,6 +149,17 @@ _aptly()
             ;;
         esac
     fi
+
+    case "$prevprev" in
+        "publish")
+            case "$prev" in
+                "source")
+                COMPREPLY=($(compgen -W "${publish_source_subcommands}" -- ${cur}))
+                return 0
+                ;;
+            esac
+        ;;
+   esac
 
     case "$cmd" in
       "mirror")
@@ -570,6 +583,19 @@ _aptly()
 
             if [[ $numargs -eq 1 ]]; then
               COMPREPLY=($(compgen -W "$(__aptly_prefixes_for_distribution $prev)" -- ${cur}))
+              return 0
+            fi
+          ;;
+        esac
+      ;;
+      "source")
+        case "$subcmd" in
+          "add")
+              return 0
+          ;;
+          "list")
+            if [[ $numargs -eq 0 ]]; then
+                COMPREPLY=($(compgen -W "-raw" -- ${cur}))
               return 0
             fi
           ;;

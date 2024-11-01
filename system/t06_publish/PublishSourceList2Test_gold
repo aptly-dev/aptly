@@ -1,0 +1,10 @@
+[
+  {
+    "Component": "main",
+    "Name": "snap1"
+  },
+  {
+    "Component": "test",
+    "Name": "snap2"
+  }
+]

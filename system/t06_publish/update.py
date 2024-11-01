@@ -175,58 +175,11 @@ class PublishUpdate3Test(BaseTest):
         self.check_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
 
 
-class PublishUpdate4Test(BaseTest):
-    """
-    publish update: added some packages, but list of published archs doesn't change
-    """
-    fixtureCmds = [
-        "aptly repo create local-repo",
-        "aptly repo add local-repo ${files}/pyspi_0.6.1-1.3.dsc",
-        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
-        "aptly repo add local-repo ${files}/libboost-program-options-dev_1.49.0.1_i386.deb"
-    ]
-    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
-    gold_processor = BaseTest.expand_environ
-
-    def check(self):
-        super(PublishUpdate4Test, self).check()
-
-        self.check_exists('public/dists/maverick/InRelease')
-        self.check_exists('public/dists/maverick/Release')
-        self.check_exists('public/dists/maverick/Release.gpg')
-
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.gz')
-        self.check_not_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
-        self.check_exists('public/dists/maverick/main/source/Sources')
-        self.check_exists('public/dists/maverick/main/source/Sources.gz')
-        self.check_exists('public/dists/maverick/main/source/Sources.bz2')
-
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz')
-        self.check_exists('public/pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz')
-        self.check_not_exists('public/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
-
-
 class PublishUpdate5Test(BaseTest):
     """
     publish update: no such publish
     """
     runCmd = "aptly publish update maverick ppa"
-    expectedCode = 1
-
-
-class PublishUpdate6Test(BaseTest):
-    """
-    publish update: not a local repo
-    """
-    fixtureDB = True
-    fixturePool = True
-    fixtureCmds = [
-        "aptly snapshot create snap1 from mirror gnuplot-maverick",
-        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1",
-    ]
-    runCmd = "aptly publish update maverick"
     expectedCode = 1
 
 
@@ -487,3 +440,169 @@ class PublishUpdate14Test(BaseTest):
         self.check_exists('public/dists/bookworm/main/binary-i386/Packages.gz')
 
         self.check_exists('public/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb')
+
+
+class PublishUpdate15Test(BaseTest):
+    """
+    publish update: source added
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 empty",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -architectures=i386 -component=main snap1",
+        "aptly publish source add -component=test,other-test maverick snap2 snap3"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate15Test, self).check()
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.bz2')
+
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.bz2')
+
+        release = self.read_file('public/dists/maverick/Release').split('\n')
+        components = next((e.split(': ')[1] for e in release if e.startswith('Components')), None)
+        components = sorted(components.split(' '))
+        if ['main', 'other-test', 'test'] != components:
+            raise Exception("value of 'Components' in release file is '%s' and does not match '%s'." % (' '.join(components), 'main other-test test'))
+
+
+class PublishUpdate16Test(BaseTest):
+    """
+    publish update: source removed
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 empty",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -architectures=i386 -component=main,test,other-test snap1 snap2 snap3",
+        "aptly publish source remove -component=test,other-test maverick"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate16Test, self).check()
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
+
+        release = self.read_file('public/dists/maverick/Release').split('\n')
+        components = next((e.split(': ')[1] for e in release if e.startswith('Components')), None)
+        components = sorted(components.split(' '))
+        if ['main'] != components:
+            raise Exception("value of 'Components' in release file is '%s' and does not match '%s'." % (' '.join(components), 'main'))
+
+
+class PublishUpdate17Test(BaseTest):
+    """
+    publish update: source updated
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 empty",
+        "aptly snapshot create snap4 from mirror gnuplot-maverick",
+        "aptly snapshot create snap5 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -architectures=i386 -component=main,test,other-test snap1 snap2 snap3",
+        "aptly publish source update -component=test,other-test maverick snap4 snap5"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate17Test, self).check()
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/main/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/main/Contents-i386.gz')
+
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/test/Contents-i386.gz')
+
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/other-test/Contents-i386.gz')
+
+        release = self.read_file('public/dists/maverick/Release').split('\n')
+        components = next((e.split(': ')[1] for e in release if e.startswith('Components')), None)
+        components = sorted(components.split(' '))
+        if ['main', 'other-test', 'test'] != components:
+            raise Exception("value of 'Components' in release file is '%s' and does not match '%s'." % (' '.join(components), 'main other-test test'))
+
+
+class PublishUpdate18Test(BaseTest):
+    """
+    publish update: source added, updated and removed
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 empty",
+        "aptly snapshot create snap3 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -architectures=i386 -component=main,test snap1 snap2",
+        "aptly publish source remove -component=main maverick",
+        "aptly publish source update -component=test maverick snap3",
+        "aptly publish source add -component=other-test maverick snap1"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick"
+
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate18Test, self).check()
+        self.check_exists('public/dists/maverick/InRelease')
+        self.check_exists('public/dists/maverick/Release')
+        self.check_exists('public/dists/maverick/Release.gpg')
+
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/test/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/test/Contents-i386.gz')
+
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.gz')
+        self.check_exists('public/dists/maverick/other-test/binary-i386/Packages.bz2')
+        self.check_exists('public/dists/maverick/other-test/Contents-i386.gz')
+
+        release = self.read_file('public/dists/maverick/Release').split('\n')
+        components = next((e.split(': ')[1] for e in release if e.startswith('Components')), None)
+        components = sorted(components.split(' '))
+        if ['other-test', 'test'] != components:
+            raise Exception("value of 'Components' in release file is '%s' and does not match '%s'." % (' '.join(components), 'other-test test'))
