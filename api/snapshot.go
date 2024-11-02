@@ -187,10 +187,18 @@ func apiSnapshotsCreate(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
+type snapshotRepositoryParams  struct {
+        Name        string `binding:"required"`
+        Description string
+}
+
+// @Summary Snapshot Repository
+// @Description **Create a sbalshot of a repository**
 // @Description To Do
 // @Tags Snapshots
+// @Param name path string true "Repository name"
+// @Consume json
+// @Param request body snapshotRepositoryParams true "Parameters"
 // @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
@@ -200,12 +208,8 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		err      error
 		repo     *deb.LocalRepo
 		snapshot *deb.Snapshot
+                b        snapshotRepositoryParams
 	)
-
-	var b struct {
-		Name        string `binding:"required"`
-		Description string
-	}
 
 	if c.Bind(&b) != nil {
 		return
@@ -305,10 +309,11 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
+// @Summary Get snapshot information
+// @Description **Get information about a snapshot**
 // @Description To Do
 // @Tags Snapshots
+// @Param name path string true "Name of the snapshot"
 // @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"

@@ -399,10 +399,13 @@ func apiReposPackagesDelete(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
+// @Summary Add packages
+// @Description **Add package file**
 // @Description To Do
 // @Tags Repos
+// @Param name path string true "Repository name"
+// @Param dir path string true "Directory of packages"
+// @Param file path string false "Filename (optional)"
 // @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
@@ -427,7 +430,7 @@ func apiReposPackageFromFile(c *gin.Context) {
 // @Failure 400 {object} Error "wrong file"
 // @Failure 404 {object} Error "Repository not found"
 // @Failure 500 {object} Error "Error adding files"
-// @Router /api/repos/{name}/{dir} [post]
+// @Router /api/repos/{name}/file/{dir} [post]
 func apiReposPackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemove := c.Request.URL.Query().Get("noRemove") == "1"
