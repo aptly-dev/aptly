@@ -67,10 +67,13 @@ func apiFilesListDirs(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// @Summary TODO
-// @Description **ToDo**
+// @Summary Upload file glaa
+// @Description **Upload a file to a directory**
 // @Description To Do
 // @Tags Files
+// @Accept multipart/form-data
+// @Param dir path string true "Directory to upload files to"
+// @Param files formData file true "Files to upload"
 // @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
