@@ -187,9 +187,9 @@ func apiSnapshotsCreate(c *gin.Context) {
 	})
 }
 
-type snapshotRepositoryParams  struct {
-        Name        string `binding:"required"`
-        Description string
+type snapshotRepositoryParams struct {
+	Name        string `binding:"required"`
+	Description string
 }
 
 // @Summary Snapshot Repository
@@ -208,7 +208,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 		err      error
 		repo     *deb.LocalRepo
 		snapshot *deb.Snapshot
-                b        snapshotRepositoryParams
+		b        snapshotRepositoryParams
 	)
 
 	if c.Bind(&b) != nil {
