@@ -112,7 +112,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 		// If we haven't seen such name-architecture pair and were instructed to remove, remove it
 		if !noRemove && !seen {
 			// Remove all packages with the same name and architecture
-			pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+			pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true, false)
 			for _, p := range pS {
 				packageList.Remove(p)
 				context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
