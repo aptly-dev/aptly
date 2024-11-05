@@ -362,24 +362,22 @@ func (p *Package) providesDependency(dep Dependency) (bool, error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
-		// The only relation allowed here is `=`.
-		// > The relations allowed are [...]. The exception is the Provides field, for which only = is allowed.
-		// > [...]
-		// > A Provides field may contain version numbers, and such a version number will be considered when
-		// > considering a dependency on or conflict with the virtual package name.
-		// -- https://www.debian.org/doc/debian-policy/ch-relationships.html
-		switch providedDep.Relation {
-		case VersionDontCare:
-			if providedDep.Pkg == dep.Pkg {
-				return true, nil
-			}
-		case VersionEqual:
-			providedVersion := providedDep.Version
-			if providedDep.Pkg == dep.Pkg && versionSatisfiesDependency(providedVersion, dep) {
-				return true, nil
-			}
-		default:
+		if providedDep.Relation != VersionEqual && providedDep.Relation != VersionDontCare {
+			// The only relation allowed here is `=`.
+			// > The relations allowed are [...]. The exception is the Provides field, for which only = is allowed.
+			// > [...]
+			// > A Provides field may contain version numbers, and such a version number will be considered when
+			// > considering a dependency on or conflict with the virtual package name.
+			// -- https://www.debian.org/doc/debian-policy/ch-relationships.html
 			errs = append(errs, fmt.Errorf("unsupported relation in Provides: %s", providedDep.String()))
+			continue
+		}
+		providedVersion := providedDep.Version
+		if providedVersion == "" {
+			providedVersion = p.Version
+		}
+		if providedDep.Pkg == dep.Pkg && versionSatisfiesDependency(providedVersion, dep) {
+			return true, nil
 		}
 	}
 	return false, JoinErrors(errs...)
