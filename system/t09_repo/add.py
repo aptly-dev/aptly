@@ -344,3 +344,21 @@ class AddRepo16Test(BaseTest):
         self.check_cmd_output("aptly repo show repo2", "repo_show")
 
         shutil.rmtree(self.tempSrcDir)
+
+
+class AddRepo17Test(BaseTest):
+    """
+    add packages to local repo: .deb file with provides
+    """
+    fixtureCmds = [
+        "aptly repo create -comment=Repo17 -distribution=squeeze repo17",
+    ]
+    runCmd = "aptly repo add repo17 ${testfiles}/mesa-stable_24.2.6-101pika1_amd64.deb ${testfiles}/mesa-stable-no-march_24.2.6-101pika1_amd64.deb"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly repo show -with-packages repo17", "repo_show")
+
+        # check pool
+        self.check_exists('pool/e3/f6/51297bd4bd0ef999296ef0a28299_mesa-stable-no-march_24.2.6-101pika1_amd64.deb')
+        self.check_exists('pool/01/6b/3d864229761eff49a8680c9987ab_mesa-stable_24.2.6-101pika1_amd64.deb')
