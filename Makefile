@@ -85,9 +85,10 @@ test: prepare swagger etcd-install  ## Run unit tests
 system-test: prepare swagger etcd-install  ## Run system tests
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
-	# Extract fixture-db, fixture-pool, etcd.db
-	test -e ~/aptly-fixture-db || tar -C ~/ -xf system/files/aptly-fixture.tar.xz
-	test -f ~/etcd.db || xz -dc system/files/etcd.db.xz > ~/etcd.db
+	# Download fixture-db, fixture-pool, etcd.db
+	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
+	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
+	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
 	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
