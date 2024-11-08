@@ -454,3 +454,38 @@ class CreateMirror33Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror33", "mirror_show")
+
+
+class CreateMirror34Test(BaseTest):
+    """
+    create mirror error: flat repo with filter but no architectures in InRelease file
+    """
+    configOverride = {"max-tries": 1}
+    runCmd = "aptly mirror create -ignore-signatures -filter \"cuda-12-6 (= 12.6.2-1)\" -filter-with-deps mirror34 http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ ./"
+
+
+class CreateMirror35Test(BaseTest):
+    """
+    create mirror: flat repo with filter but no architectures in InRelease file
+    """
+    configOverride = {"max-tries": 1}
+    fixtureCmds = [
+        "aptly mirror create -architectures amd64 -ignore-signatures -filter \"cuda-12-6 (= 12.6.2-1)\" -filter-with-deps mirror35 "
+        "http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ ./",
+    ]
+    runCmd = "aptly mirror update -ignore-signatures mirror35"
+
+    # the downloading of the actual packages will return 404 since they don't exist. ignore the errors, the test verifies proper count of filtered packages
+
+    def outputMatchPrepare(self, s):
+        s = re.sub(r'Downloading: .*\n', '', s, flags=re.MULTILINE)
+        s = re.sub(r'Download Error: .*\n', '', s, flags=re.MULTILINE)
+        s = re.sub(r'Retrying .*\n', '', s, flags=re.MULTILINE)
+        s = re.sub(r'Error \(retrying\): .*\n', '', s, flags=re.MULTILINE)
+        s = re.sub(r'HTTP code 404 while fetching .*\n', '', s, flags=re.MULTILINE)
+        s = re.sub(r'ERROR: unable to update: .*\n', '', s, flags=re.MULTILINE)
+        return s
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror35", "mirror_show")

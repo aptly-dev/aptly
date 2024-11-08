@@ -1,0 +1,6 @@
+Downloading: http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/Release
+Error (retrying): HTTP code 404 while fetching http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/Release
+Retrying 0 http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/Release...
+Download Error: http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/Release
+Downloading: http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/InRelease
+ERROR: unable to fetch mirror: no architectures found, please specify
