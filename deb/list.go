@@ -318,7 +318,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 	}
 
         if len(architectures) == 0 {
-		return nil, fmt.Errorf("no architectures defined, cannot verify dependencies", p, err)
+		return nil, fmt.Errorf("no architectures defined, cannot verify dependencies")
         }
 	for _, arch := range architectures {
 		cache := make(map[string]bool, 2048)
