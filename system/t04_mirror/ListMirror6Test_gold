@@ -126,7 +126,10 @@
     "ArchiveRoot": "http://repo.aptly.info/system-tests/download.opensuse.org/repositories/Apache:/MirrorBrain/Debian_9.0/",
     "Distribution": "./",
     "Components": null,
-    "Architectures": null,
+    "Architectures": [
+      "amd64",
+      "i386"
+    ],
     "Meta": {
       "Architectures": "i386 amd64",
       "Archive": "Debian_9.0",

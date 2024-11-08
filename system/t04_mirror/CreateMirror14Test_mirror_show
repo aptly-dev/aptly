@@ -2,7 +2,7 @@ Name: mirror14
 Archive Root URL: http://repo.aptly.info/system-tests/cloud.r-project.org/bin/linux/debian/
 Distribution: ./bullseye-cran40/
 Components: 
-Architectures: 
+Architectures: all, amd64, i386
 Download Sources: no
 Download .udebs: no
 Last update: never
