@@ -1,6 +1,6 @@
 Loading packages...
 Verifying...
-Missing dependencies (625):
+Missing dependencies (635):
   abrowser [amd64]
   abrowser [i386]
   apache [amd64]
@@ -106,6 +106,8 @@ Missing dependencies (625):
   ghostcript-x (= 9.05~dfsg-6.3+deb7u1) [i386]
   gij [amd64]
   gij [i386]
+  git-core (<= 1:1.7.0.4-1) [amd64]
+  git-core (<= 1:1.7.0.4-1) [i386]
   gkrellm2 [amd64]
   gkrellm2 [i386]
   gnome-themes-more [amd64]
@@ -302,6 +304,8 @@ Missing dependencies (625):
   libgnomeprint-data [i386]
   libgtk2.0-dev (<< 2.21) [amd64]
   libgtk2.0-dev (<< 2.21) [i386]
+  libhaml-ruby (<< 3.1) [amd64]
+  libhaml-ruby (<< 3.1) [i386]
   libicu36-dev [amd64]
   libicu36-dev [i386]
   libjasper-1.701-dev [amd64]
@@ -328,6 +332,8 @@ Missing dependencies (625):
   libsvn-core-perl [i386]
   libswt-mozilla-gtk-3-jni [amd64]
   libswt-mozilla-gtk-3-jni [i386]
+  libtest-harness-perl (= 3.23-1) [amd64]
+  libtest-harness-perl (= 3.23-1) [i386]
   libwww-perl (<< 6) [amd64]
   libwww-perl (<< 6) [i386]
   libzephyr4-krb (= 3.0.2-2) [amd64]
@@ -424,6 +430,8 @@ Missing dependencies (625):
   puredata (<< 0.43) [i386]
   python-celementtree [amd64]
   python-celementtree [i386]
+  python-codespeak-lib (<< 1.0) [amd64]
+  python-codespeak-lib (<< 1.0) [i386]
   python-elementtree (>= 1.2) [amd64]
   python-elementtree (>= 1.2) [i386]
   python-elementtree [amd64]
@@ -576,6 +584,8 @@ Missing dependencies (625):
   xmessage [i386]
   xpdf-reader (<< 3.02-2) [amd64]
   xpdf-reader (<< 3.02-2) [i386]
+  xpdf-utils (>= 3.02-2) [amd64]
+  xpdf-utils (>= 3.02-2) [i386]
   xrandr [amd64]
   xrandr [i386]
   xulrunner-1.9 [amd64]
