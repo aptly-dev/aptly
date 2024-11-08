@@ -40,7 +40,6 @@ jobs:
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
-          lfs: true
 
       - name: "Run flake8"
         run: |

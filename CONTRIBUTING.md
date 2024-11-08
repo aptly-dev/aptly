@@ -70,13 +70,10 @@ if that is possible.
 
 ### Get the Source
 
-Make sure git with LFS support ist installed.
-
 To clone the git repo, run the following commands:
 ```
 git clone git@github.com:aptly-dev/aptly.git
 cd aptly
-git lfs checkout
 ```
 
 ## Development Setup
