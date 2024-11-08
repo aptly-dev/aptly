@@ -317,6 +317,9 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 		progress.InitBar(int64(l.Len())*int64(len(architectures)), false, aptly.BarGeneralVerifyDependencies)
 	}
 
+        if len(architectures) == 0 {
+		return nil, fmt.Errorf("no architectures defined, cannot verify dependencies", p, err)
+        }
 	for _, arch := range architectures {
 		cache := make(map[string]bool, 2048)
 
