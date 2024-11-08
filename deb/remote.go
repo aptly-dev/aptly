@@ -350,16 +350,16 @@ ok:
 		return err
 	}
 
-        var architectures []string
-        if len(stanza["Architectures"]) > 0 {
-	        architectures = strings.Split(stanza["Architectures"], " ")
-        } else if len(stanza["Architecture"]) > 0 {
-	        architectures = strings.Split(stanza["Architecture"], " ")
-        }
-        if len(architectures) == 0 {
-                fmt.Printf("stanza arch: %s\n", stanza["Architecture"])
-	        architectures = strings.Split(stanza["Architecture"], " ")
-        }
+	var architectures []string
+	if len(stanza["Architectures"]) > 0 {
+		architectures = strings.Split(stanza["Architectures"], " ")
+	} else if len(stanza["Architecture"]) > 0 {
+		architectures = strings.Split(stanza["Architecture"], " ")
+	}
+	if len(architectures) == 0 {
+		fmt.Printf("stanza arch: %s\n", stanza["Architecture"])
+		architectures = strings.Split(stanza["Architecture"], " ")
+	}
 	sort.Strings(architectures)
 	// "source" architecture is never present, despite Release file claims
 	architectures = utils.StrSlicesSubstract(architectures, []string{ArchitectureSource})
