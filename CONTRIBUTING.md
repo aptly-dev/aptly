@@ -68,22 +68,16 @@ following [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 Make sure that purpose of your change is clear, all the tests and checks pass, and all new code is covered with tests
 if that is possible.
 
-### Forking and Cloning
+### Get the Source
 
-As aptly is using Go modules, aptly repository could be cloned to any location on the file system:
+Make sure git with LFS support ist installed.
 
-    git clone git@github.com:aptly-dev/aptly.git
-    cd aptly
-
-For main repo under your GitHub user and add it as another Git remote:
-
-    git remote add <user> git@github.com:<user>/aptly.git
-
-That way you can continue to build project as is (you don't need to adjust import paths), but you would need
-to specify your remote name when pushing branches:
-
-    git push <user> <your-branch>
-
+To clone the git repo, run the following commands:
+```
+git clone git@github.com:aptly-dev/aptly.git
+cd aptly
+git lfs checkout
+```
 
 ## Development Setup
 
