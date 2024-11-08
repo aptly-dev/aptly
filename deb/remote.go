@@ -105,7 +105,6 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		if !strings.HasPrefix(result.Distribution, ".") {
 			result.Distribution = "./" + result.Distribution
 		}
-		result.Architectures = nil
 		if len(result.Components) > 0 {
 			return nil, fmt.Errorf("components aren't supported for flat repos")
 		}
