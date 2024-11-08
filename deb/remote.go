@@ -350,27 +350,24 @@ ok:
 		return err
 	}
 
-	var architectures []string
 	if len(stanza["Architectures"]) > 0 {
-		architectures = strings.Split(stanza["Architectures"], " ")
-	} else if len(stanza["Architecture"]) > 0 {
-		architectures = strings.Split(stanza["Architecture"], " ")
-	}
-	if len(architectures) == 0 {
-		fmt.Printf("stanza arch: %s\n", stanza["Architecture"])
-		architectures = strings.Split(stanza["Architecture"], " ")
-	}
-	sort.Strings(architectures)
-	// "source" architecture is never present, despite Release file claims
-	architectures = utils.StrSlicesSubstract(architectures, []string{ArchitectureSource})
-	if len(repo.Architectures) == 0 {
-		repo.Architectures = architectures
-	} else if !repo.SkipArchitectureCheck {
-		err = utils.StringsIsSubset(repo.Architectures, architectures,
-			fmt.Sprintf("architecture %%s not available in repo %s, use -force-architectures to override", repo))
-		if err != nil {
-			return err
+		architectures := strings.Split(stanza["Architectures"], " ")
+		sort.Strings(architectures)
+		// "source" architecture is never present, despite Release file claims
+		architectures = utils.StrSlicesSubstract(architectures, []string{ArchitectureSource})
+		if len(repo.Architectures) == 0 {
+			repo.Architectures = architectures
+		} else if !repo.SkipArchitectureCheck {
+			err = utils.StringsIsSubset(repo.Architectures, architectures,
+				fmt.Sprintf("architecture %%s not available in repo %s, use -force-architectures to override", repo))
+			if err != nil {
+				return err
+			}
 		}
+	}
+
+	if len(repo.Architectures) == 0 {
+		return fmt.Errorf("no architectures found, please specify")
 	}
 
 	if !repo.IsFlat() {
