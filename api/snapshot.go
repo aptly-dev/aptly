@@ -653,7 +653,7 @@ func apiSnapshotsPull(c *gin.Context) {
 			// If we haven't seen such name-architecture pair and were instructed to remove, remove it
 			if !noRemove && !seen {
 				// Remove all packages with the same name and architecture
-				packageSearchResults := toPackageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true)
+				packageSearchResults := toPackageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true, false)
 				for _, p := range packageSearchResults {
 					toPackageList.Remove(p)
 					removedPackages = append(removedPackages, p.String())

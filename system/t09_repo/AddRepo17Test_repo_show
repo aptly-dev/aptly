@@ -1,0 +1,8 @@
+Name: repo17
+Comment: Repo17
+Default Distribution: squeeze
+Default Component: main
+Number of packages: 2
+Packages:
+  mesa-stable_24.2.6-101pika1_amd64
+  mesa-stable-no-march_24.2.6-101pika1_amd64

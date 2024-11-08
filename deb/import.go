@@ -209,7 +209,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		}
 
 		if forceReplace {
-			conflictingPackages := list.Search(Dependency{Pkg: p.Name, Version: p.Version, Relation: VersionEqual, Architecture: p.Architecture}, true)
+			conflictingPackages := list.Search(Dependency{Pkg: p.Name, Version: p.Version, Relation: VersionEqual, Architecture: p.Architecture}, true, false)
 			for _, cp := range conflictingPackages {
 				reporter.Removed("%s removed due to conflict with package being added", cp)
 				list.Remove(cp)

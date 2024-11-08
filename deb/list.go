@@ -347,7 +347,7 @@ func (l *PackageList) VerifyDependencies(options int, architectures []string, so
 					hash := dep.Hash()
 					satisfied, ok := cache[hash]
 					if !ok {
-						satisfied = sources.Search(dep, false) != nil
+						satisfied = sources.Search(dep, false, true) != nil
 						cache[hash] = satisfied
 					}
 
@@ -459,7 +459,7 @@ func (l *PackageList) SearchByKey(arch, name, version string) (result *PackageLi
 }
 
 // Search searches package index for specified package(s) using optimized queries
-func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*Package) {
+func (l *PackageList) Search(dep Dependency, allMatches bool, searchProvided bool) (searchResults []*Package) {
 	if !l.indexed {
 		panic("list not indexed, can't search")
 	}
@@ -479,18 +479,20 @@ func (l *PackageList) Search(dep Dependency, allMatches bool) (searchResults []*
 		i++
 	}
 
-	providers, ok := l.providesIndex[dep.Pkg]
-	if !ok {
-		return
-	}
-	for _, p := range providers {
-		if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
-			if p.MatchesDependency(dep) {
-				searchResults = append(searchResults, p)
-			}
+	if searchProvided {
+		providers, ok := l.providesIndex[dep.Pkg]
+		if !ok {
+			return
+		}
+		for _, p := range providers {
+			if dep.Architecture == "" || p.MatchesArchitecture(dep.Architecture) {
+				if p.MatchesDependency(dep) {
+					searchResults = append(searchResults, p)
+				}
 
-			if !allMatches {
-				return
+				if !allMatches {
+					return
+				}
 			}
 		}
 	}
@@ -544,15 +546,16 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 					//
 					// when follow-all-variants is enabled, we need to try to expand anyway,
 					// as even if dependency is satisfied now, there might be other ways to satisfy dependency
-					if result.Search(dep, false) != nil {
+					// FIXME: do not search twice
+					if result.Search(dep, false, true) != nil {
 						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true))
+							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true, true))
 						}
 						continue
 					}
 				}
 
-				searchResults := l.Search(dep, true)
+				searchResults := l.Search(dep, true, true)
 				if len(searchResults) > 0 {
 					for _, p := range searchResults {
 						if result.Has(p) {

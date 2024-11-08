@@ -251,63 +251,63 @@ func (s *PackageListSuite) TestAppend(c *C) {
 
 func (s *PackageListSuite) TestSearch(c *C) {
 	//allMatches = False
-	c.Check(func() { s.list.Search(Dependency{Architecture: "i386", Pkg: "app"}, false) }, Panics, "list not indexed, can't search")
+	c.Check(func() { s.list.Search(Dependency{Architecture: "i386", Pkg: "app"}, false, true) }, Panics, "list not indexed, can't search")
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "mail-agent"}, false), DeepEquals, []*Package{s.packages[4]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "puppy"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "mail-agent"}, false, true), DeepEquals, []*Package{s.packages[4]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "puppy"}, false, true), IsNil)
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp1"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp2"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp1"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionEqual, Version: "1.1~bp2"}, false, true), IsNil)
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1~~"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLess, Version: "1.1~~"}, false, true), IsNil)
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~bp1"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~~"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~bp1"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1~~"}, false, true), IsNil)
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.0"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.2"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.0"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreater, Version: "1.2"}, false, true), IsNil)
 
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}, false), DeepEquals, []*Package{s.packages[3]})
-	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}, false), IsNil)
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.0"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}, false, true), DeepEquals, []*Package{s.packages[3]})
+	c.Check(s.il.Search(Dependency{Architecture: "i386", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}, false, true), IsNil)
 
 	// search w/o version should return package with latest version
-	c.Check(s.il.Search(Dependency{Architecture: "source", Pkg: "dpkg"}, false), DeepEquals, []*Package{s.packages[13]})
+	c.Check(s.il.Search(Dependency{Architecture: "source", Pkg: "dpkg"}, false, true), DeepEquals, []*Package{s.packages[13]})
 
 	// allMatches = True
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app"}, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "mail-agent"}, true), Contains, []*Package{s.packages2[0], s.packages2[1]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "puppy"}, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "mail-agent"}, true, true), Contains, []*Package{s.packages2[0], s.packages2[1]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "puppy"}, true, true), IsNil)
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "1.1"}, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "1.1"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "1.1"}, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "3"}, true), Contains, []*Package{s.packages2[5]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "1.1"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionEqual, Version: "3"}, true, true), Contains, []*Package{s.packages2[5]})
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLess, Version: "1.2"}, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLess, Version: "1.1~"}, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLess, Version: "1.2"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLess, Version: "1.1~"}, true, true), IsNil)
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.2"}, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1-bp1"}, true), Contains, []*Package{s.packages2[2]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.0"}, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.2"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.1-bp1"}, true, true), Contains, []*Package{s.packages2[2]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionLessOrEqual, Version: "1.0"}, true, true), IsNil)
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreater, Version: "1.1"}, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreater, Version: "5.0"}, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreater, Version: "1.1"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreater, Version: "5.0"}, true, true), IsNil)
 
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}, true), Contains, []*Package{s.packages2[4], s.packages2[5]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
-	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "5.0"}, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.2"}, true, true), Contains, []*Package{s.packages2[4], s.packages2[5]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "1.1~bp1"}, true, true), Contains, []*Package{s.packages2[2], s.packages2[3], s.packages2[4], s.packages2[5]})
+	c.Check(s.il2.Search(Dependency{Architecture: "amd64", Pkg: "app", Relation: VersionGreaterOrEqual, Version: "5.0"}, true, true), IsNil)
 
 	// Provides with version number
 	python3CFFIBackend := &Package{Name: "python3-cffi-backend", Version: "1.15.1-5+b1", Architecture: "amd64", Provides: []string{"python3-cffi-backend-api-9729", "python3-cffi-backend-api-max (= 10495)", "python3-cffi-backend-api-min (= 9729)"}}
 	err := s.il2.Add(python3CFFIBackend)
 	c.Check(err, IsNil)
-	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionGreaterOrEqual, Version: "9729"}, false), DeepEquals, []*Package{python3CFFIBackend})
-	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionLess, Version: "9729"}, false), IsNil)
-	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionDontCare}, false), DeepEquals, []*Package{python3CFFIBackend})
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionGreaterOrEqual, Version: "9729"}, false, true), DeepEquals, []*Package{python3CFFIBackend})
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionLess, Version: "9729"}, false, true), IsNil)
+	c.Check(s.il2.Search(Dependency{Pkg: "python3-cffi-backend-api-max", Relation: VersionDontCare}, false, true), DeepEquals, []*Package{python3CFFIBackend})
 }
 
 func (s *PackageListSuite) TestFilter(c *C) {

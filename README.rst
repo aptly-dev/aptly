@@ -39,8 +39,8 @@ Current limitations:
 
 * translations are not supported yet
 
-Download
---------
+Install Stable Version
+-----------------------
 
 To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list``::
 
@@ -58,19 +58,28 @@ After that you can install aptly as any other software package::
 Don't worry about squeeze part in repo name: aptly package should work on Debian squeeze+,
 Ubuntu 10.0+. Package contains aptly binary, man page and bash completion.
 
-If you would like to use nightly builds (unstable), please use following repository::
-
-    deb http://repo.aptly.info/ nightly main
+Other Binaries
+~~~~~~~~~~~~~~~~~
 
 Binary executables (depends almost only on libc) are available for download from `GitHub Releases <https://github.com/aptly-dev/aptly/releases>`_.
 
-If you have Go environment set up, you can build aptly from source by running (go 1.14+ required)::
+Install CI Version
+--------------------
 
-    git clone https://github.com/aptly-dev/aptly
-    cd aptly
-    make modules install
+More recent versions are available as CI builds (development, might be unstable).
 
-Binary would be installed to ``$GOPATH/bin/aptly``.
+Debian GNU/Linux
+~~~~~~~~~~~~~~~~~
+
+Install the following APT key::
+
+    sudo wget -O /etc/apt/keyrings/aptly.asc https://www.aptly.info/pubkey.txt
+
+Define CI APT sources in ``/etc/apt/sources.list.d/aptly-ci.list``::
+
+    deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/ci DIST main
+
+Where DIST is one of: ``buster``, ``bullseye``, ``bookworm``, ``focal``, ``jammy``, ``noble``
 
 Contributing
 ------------

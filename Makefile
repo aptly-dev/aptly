@@ -85,10 +85,9 @@ test: prepare swagger etcd-install  ## Run unit tests
 system-test: prepare swagger etcd-install  ## Run system tests
 	# build coverage binary
 	go test -v -coverpkg="./..." -c -tags testruncli
-	# Download fixture-db, fixture-pool, etcd.db
-	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
-	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
-	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
+	# Extract fixture-db, fixture-pool, etcd.db
+	test -e ~/aptly-fixture-db || tar -C ~/ -xf system/files/aptly-fixture.tar.xz
+	test -f ~/etcd.db || xz -dc system/files/etcd.db.xz > ~/etcd.db
 	# Run system tests
 	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
 
@@ -100,7 +99,7 @@ serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
 	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
-	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,cmd,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
+	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
 	@test -n "$(DEBARCH)" || (echo "please define DEBARCH"; exit 1)
