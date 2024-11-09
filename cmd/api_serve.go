@@ -65,6 +65,7 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 	go (func() {
 		if _, ok := <-sigchan; ok {
+			fmt.Printf("\nShutdown signal received, waiting for background tasks...\n")
 			context.TaskList().Wait()
 			server.Shutdown(stdcontext.Background())
 		}
