@@ -133,6 +133,8 @@ func retryableError(err error) bool {
 	}
 
 	switch err {
+	case context.Canceled:
+		return false
 	case io.EOF:
 		return true
 	case io.ErrUnexpectedEOF:

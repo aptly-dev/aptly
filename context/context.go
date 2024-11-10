@@ -13,6 +13,7 @@ import (
 	"runtime/pprof"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -359,10 +360,7 @@ func (context *AptlyContext) ReOpenDatabase() error {
 
 // NewCollectionFactory builds factory producing all kinds of collections
 func (context *AptlyContext) NewCollectionFactory() *deb.CollectionFactory {
-	context.Lock()
-	defer context.Unlock()
-
-	db, err := context._database()
+	db, err := context.Database()
 	if err != nil {
 		Fatal(err)
 	}
@@ -560,7 +558,7 @@ func (context *AptlyContext) GoContextHandleSignals() {
 
 	// Catch ^C
 	sigch := make(chan os.Signal, 1)
-	signal.Notify(sigch, os.Interrupt)
+	signal.Notify(sigch, syscall.SIGINT, syscall.SIGTERM)
 
 	var cancel gocontext.CancelFunc
 
