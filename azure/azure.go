@@ -5,28 +5,35 @@ package azure
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
-	"net/url"
+	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 	"github.com/aptly-dev/aptly/aptly"
 )
 
 func isBlobNotFound(err error) bool {
-	storageError, ok := err.(azblob.StorageError)
-	return ok && storageError.ServiceCode() == azblob.ServiceCodeBlobNotFound
+	var respErr *azcore.ResponseError
+	if errors.As(err, &respErr) {
+		return respErr.StatusCode == 404 // BlobNotFound
+	}
+	return false
 }
 
 type azContext struct {
-	container azblob.ContainerURL
+	client    *azblob.Client
+	container string
 	prefix    string
 }
 
 func newAzContext(accountName, accountKey, container, prefix, endpoint string) (*azContext, error) {
-	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+	cred, err := azblob.NewSharedKeyCredential(accountName, accountKey)
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +42,14 @@ func newAzContext(accountName, accountKey, container, prefix, endpoint string) (
 		endpoint = fmt.Sprintf("https://%s.blob.core.windows.net", accountName)
 	}
 
-	url, err := url.Parse(fmt.Sprintf("%s/%s", endpoint, container))
+	serviceClient, err := azblob.NewClientWithSharedKeyCredential(endpoint, cred, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	containerURL := azblob.NewContainerURL(*url, azblob.NewPipeline(credential, azblob.PipelineOptions{}))
-
 	result := &azContext{
-		container: containerURL,
+		client:    serviceClient,
+		container: container,
 		prefix:    prefix,
 	}
 
@@ -52,10 +58,6 @@ func newAzContext(accountName, accountKey, container, prefix, endpoint string) (
 
 func (az *azContext) blobPath(path string) string {
 	return filepath.Join(az.prefix, path)
-}
-
-func (az *azContext) blobURL(path string) azblob.BlobURL {
-	return az.container.NewBlobURL(az.blobPath(path))
 }
 
 func (az *azContext) internalFilelist(prefix string, progress aptly.Progress) (paths []string, md5s []string, err error) {
@@ -67,27 +69,33 @@ func (az *azContext) internalFilelist(prefix string, progress aptly.Progress) (p
 		prefix += delimiter
 	}
 
-	for marker := (azblob.Marker{}); marker.NotDone(); {
-		listBlob, err := az.container.ListBlobsFlatSegment(
-			context.Background(), marker, azblob.ListBlobsSegmentOptions{
-				Prefix:     prefix,
-				MaxResults: 1,
-				Details:    azblob.BlobListingDetails{Metadata: true}})
+	ctx := context.Background()
+	maxResults := int32(1)
+	pager := az.client.NewListBlobsFlatPager(az.container, &azblob.ListBlobsFlatOptions{
+		Prefix:     &prefix,
+		MaxResults: &maxResults,
+		Include:    azblob.ListBlobsInclude{Metadata: true},
+	})
+
+	// Iterate over each page
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error listing under prefix %s in %s: %s", prefix, az, err)
 		}
 
-		marker = listBlob.NextMarker
-
-		for _, blob := range listBlob.Segment.BlobItems {
+		for _, blob := range page.Segment.BlobItems {
 			if prefix == "" {
-				paths = append(paths, blob.Name)
+				paths = append(paths, *blob.Name)
 			} else {
-				paths = append(paths, blob.Name[len(prefix):])
+				name := *blob.Name
+				paths = append(paths, name[len(prefix):])
 			}
-			md5s = append(md5s, fmt.Sprintf("%x", blob.Properties.ContentMD5))
-		}
+			b := *blob
+			md5 := b.Properties.ContentMD5
+			md5s = append(md5s, fmt.Sprintf("%x", md5))
 
+		}
 		if progress != nil {
 			time.Sleep(time.Duration(500) * time.Millisecond)
 			progress.AddBar(1)
@@ -97,28 +105,27 @@ func (az *azContext) internalFilelist(prefix string, progress aptly.Progress) (p
 	return paths, md5s, nil
 }
 
-func (az *azContext) putFile(blob azblob.BlobURL, source io.Reader, sourceMD5 string) error {
-	uploadOptions := azblob.UploadStreamToBlockBlobOptions{
-		BufferSize: 4 * 1024 * 1024,
-		MaxBuffers: 8,
+func (az *azContext) putFile(blobName string, source io.Reader, sourceMD5 string) error {
+	uploadOptions := &azblob.UploadFileOptions{
+		BlockSize:   4 * 1024 * 1024,
+		Concurrency: 8,
 	}
 
+	path := az.blobPath(blobName)
 	if len(sourceMD5) > 0 {
 		decodedMD5, err := hex.DecodeString(sourceMD5)
 		if err != nil {
 			return err
 		}
-		uploadOptions.BlobHTTPHeaders = azblob.BlobHTTPHeaders{
-			ContentMD5: decodedMD5,
+		uploadOptions.HTTPHeaders = &blob.HTTPHeaders{
+			BlobContentMD5: decodedMD5,
 		}
 	}
 
-	_, err := azblob.UploadStreamToBlockBlob(
-		context.Background(),
-		source,
-		blob.ToBlockBlobURL(),
-		uploadOptions,
-	)
+	var err error
+	if file, ok := source.(*os.File); ok {
+		_, err = az.client.UploadFile(context.TODO(), az.container, path, file, uploadOptions)
+	}
 
 	return err
 }
