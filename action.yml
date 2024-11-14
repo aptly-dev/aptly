@@ -1,0 +1,14 @@
+name: 'Hello World JS Action'
+description: 'Greet someone and record the time'
+inputs:
+  directory:
+    description: 'directory with debian packages'
+    required: true
+    default: 'build'
+#outputs:
+#  time:
+#    description: 'The time we greeted you'
+runs:
+  using: 'debian:bookworm-slim'
+  main: 'aptly-upload.sh'
+
