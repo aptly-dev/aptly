@@ -1,0 +1,21 @@
+name: test aptly upload-lint
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  aptly-upload:
+    name: upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish to aptly server
+        uses: neolynx/aptly-github-action/publish@v0.0.15
+        with:
+          directory: buildout
+          aptly_server: https://aptly.info
+          aptly_user: ${{ secrets.APTLY_USER }}
+          aptly_password: ${{ secrets.APTLY_PASSWORD }}
+
