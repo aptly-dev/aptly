@@ -142,7 +142,7 @@ jobs:
       - name: "Install packages"
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq
+          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf jq bash-completion
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Checkout repository"

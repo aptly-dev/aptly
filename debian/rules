@@ -8,36 +8,28 @@ export DEB_BUILD_OPTIONS=crossbuildcanrunhostbinaries
 export GOARCH := $(shell if [ $(DEB_TARGET_ARCH) = "i386" ]; then echo "386"; elif [ $(DEB_TARGET_ARCH) = "armhf" ]; then echo "arm"; else echo  $(DEB_TARGET_ARCH); fi)
 
 %:
-	dh $@ --buildsystem=golang --with=golang
+	dh $@ --buildsystem=golang --with=golang,bash-completion
 
 override_dh_auto_clean:
 	rm -rf build/
 	rm -rf obj-$(DEB_TARGET_GNU_TYPE)/
 	dh_auto_clean
 
-override_dh_auto_build:
-	echo $(DEB_VERSION) > VERSION
-	go build -o build/aptly
-
-	# when dependencies fully debianized:
-	# echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION
-	# dh_auto_build
-
-override_dh_auto_test:
+override_dh_auto_test:  # disabled
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
-	mkdir -p build
-	test -f debian/tmp/usr/bin/aptly && mv debian/tmp/usr/bin/aptly build/ || true
-	mkdir -p debian/aptly/usr/share/man/man1/
-	cp man/aptly.1 debian/aptly/usr/share/man/man1
-	gzip debian/aptly/usr/share/man/man1/aptly.1
 
 override_dh_strip:
 	dh_strip --dbg-package=aptly-dbg
 
-# only with full debian dependencies:
-override_dh_golang:
+override_dh_golang: # fails on non native debian build
 
-# not needed with golang, fails with cross compiling
-# override_dh_makeshlibs:
+# override_dh_makeshlibs:  # fails with cross compiling on non native debian build
+
+override_dh_dwz:  # somehow dwz works only with certain newer debhelper versions
+	dhver=`dpkg-query -f '$${Version}' -W debhelper`; (dpkg --compare-versions "$$dhver" lt 13 || test "$$dhver" = "13.3.4" || test "$$dhver" = "13.6ubuntu1") || dh_dwz
+
+override_dh_auto_build:
+	echo $(DEB_VERSION) > VERSION
+	go build -o usr/bin/aptly
