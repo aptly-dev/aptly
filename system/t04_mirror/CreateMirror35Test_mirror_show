@@ -1,0 +1,17 @@
+Name: mirror35
+Archive Root URL: http://repo.aptly.info/system-tests/developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/
+Distribution: ./
+Components: 
+Architectures: amd64
+Download Sources: no
+Download .udebs: no
+Filter: cuda-12-6 (= 12.6.2-1)
+Filter With Deps: yes
+Last update: never
+
+Information from release file:
+Acquire-By-Hash: no
+Architecture: x86_64
+Date: Mon, 04 Nov 2024 16:02:23 +0000
+Label: NVIDIA CUDA
+Origin: NVIDIA

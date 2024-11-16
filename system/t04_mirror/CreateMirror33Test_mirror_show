@@ -2,7 +2,7 @@ Name: mirror33
 Archive Root URL: http://repo.aptly.info/system-tests/nvidia.github.io/libnvidia-container/stable/ubuntu16.04/amd64/
 Distribution: ./
 Components: 
-Architectures: 
+Architectures: amd64
 Download Sources: no
 Download .udebs: no
 Last update: never

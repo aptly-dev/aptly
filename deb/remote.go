@@ -105,7 +105,6 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 		if !strings.HasPrefix(result.Distribution, ".") {
 			result.Distribution = "./" + result.Distribution
 		}
-		result.Architectures = nil
 		if len(result.Components) > 0 {
 			return nil, fmt.Errorf("components aren't supported for flat repos")
 		}
@@ -351,7 +350,7 @@ ok:
 		return err
 	}
 
-	if !repo.IsFlat() {
+	if len(stanza["Architectures"]) > 0 {
 		architectures := strings.Split(stanza["Architectures"], " ")
 		sort.Strings(architectures)
 		// "source" architecture is never present, despite Release file claims
@@ -365,7 +364,13 @@ ok:
 				return err
 			}
 		}
+	}
 
+	if len(repo.Architectures) == 0 {
+		return fmt.Errorf("no architectures found, please specify")
+	}
+
+	if !repo.IsFlat() {
 		components := strings.Split(stanza["Components"], " ")
 		if strings.Contains(repo.Distribution, "/") {
 			distributionLast := path.Base(repo.Distribution) + "/"

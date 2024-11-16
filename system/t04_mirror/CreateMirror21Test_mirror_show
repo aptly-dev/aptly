@@ -2,7 +2,7 @@ Name: mirror21
 Archive Root URL: http://repo.aptly.info/system-tests/pkg.jenkins.io/debian-stable/
 Distribution: ./binary/
 Components: 
-Architectures: 
+Architectures: all
 Download Sources: no
 Download .udebs: no
 Last update: never
