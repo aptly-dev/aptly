@@ -107,18 +107,24 @@ dpkg: prepare swagger  ## Build debian packages
 	# set debian version
 	@if [ "`make -s releasetype`" = "ci" ]; then  \
 		echo CI Build, setting version... ; \
+		test ! -f debian/changelog.dpkg-bak || mv debian/changelog.dpkg-bak debian/changelog ; \
 		cp debian/changelog debian/changelog.dpkg-bak ; \
-		DEBEMAIL="CI <ci@aptly>" dch -v `make -s version` "CI build" ; \
+		DEBEMAIL="CI <ci@aptly.info>" dch -v `make -s version` "CI build" ; \
 	fi
+	# clean
+	rm -rf obj-i686-linux-gnu obj-arm-linux-gnueabihf obj-aarch64-linux-gnu obj-x86_64-linux-gnu
 	# Run dpkg-buildpackage
-	buildtype="any" ; \
+	@buildtype="any" ; \
 	if [ "$(DEBARCH)" = "amd64" ]; then  \
 	  buildtype="any,all" ; \
 	fi ; \
 	echo "\e[33m\e[1mBuilding: $$buildtype\e[0m" ; \
-	dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)
+	cmd="dpkg-buildpackage -us -uc --build=$$buildtype -d --host-arch=$(DEBARCH)" ; \
+	echo "$$cmd" ; \
+	$$cmd
+	lintian ../*_$(DEBARCH).changes || true
 	# cleanup
-	@test -f debian/changelog.dpkg-bak && mv debian/changelog.dpkg-bak debian/changelog || true ; \
+	@test ! -f debian/changelog.dpkg-bak || mv debian/changelog.dpkg-bak debian/changelog; \
 	mkdir -p build && mv ../*.deb build/ ; \
 	cd build && ls -l *.deb
 
@@ -148,7 +154,7 @@ docker-build:  ## Build aptly in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
 
 docker-shell:  ## Run aptly and other commands in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
+	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
 
 docker-deb:  ## Build debian packages in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64

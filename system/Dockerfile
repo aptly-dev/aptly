@@ -6,7 +6,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg b
         golang/bookworm-backports golang-go/bookworm-backports golang-doc/bookworm-backports golang-src/bookworm-backports \
         make git python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage \
         g++ python3-etcd3 python3-plyvel graphviz devscripts sudo dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu \
-        binutils-arm-linux-gnueabihf bash-completion zip ruby3.1-dev && \
+        binutils-arm-linux-gnueabihf bash-completion zip ruby3.1-dev lintian \
+        libc6-dev-i386-cross libc6-dev-armhf-cross libc6-dev-arm64-cross \
+        gcc-i686-linux-gnu gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m --shell /bin/bash --home-dir /var/lib/aptly aptly
