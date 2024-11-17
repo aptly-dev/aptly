@@ -67,7 +67,7 @@ etcd-install:
 flake8:  ## run flake8 on system test python files
 	flake8 system/
 
-lint:
+lint: prepare
 	# Install golangci-lint
 	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
