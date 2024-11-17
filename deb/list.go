@@ -549,7 +549,6 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 					//
 					// when follow-all-variants is enabled, we need to try to expand anyway,
 					// as even if dependency is satisfied now, there might be other ways to satisfy dependency
-					// FIXME: do not search twice
 					if result.Search(dep, false, true) != nil {
 						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
 							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true, true))

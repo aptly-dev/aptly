@@ -46,6 +46,13 @@ swagger-install:
 	# Install swag
 	@test -f $(BINPATH)/swag || GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
 
+azurite-start:
+	azurite & \
+	echo $$! > ~/.azurite.pid
+
+azurite-stop:
+	kill `cat ~/.azurite.pid`
+
 swagger: swagger-install
 	# Generate swagger docs
 	@PATH=$(BINPATH)/:$(PATH) swag init --markdownFiles docs
@@ -160,10 +167,22 @@ docker-deb:  ## Build debian packages in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
 docker-unit-test:  ## Run unit tests in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper test
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+		azurite-start \
+		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
+		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
+		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
+		test \
+		azurite-stop
 
 docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper system-test TEST=$(TEST)
+	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+		azurite-start \
+		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
+		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
+		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
+		system-test TEST=$(TEST) \
+		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
 	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper serve || true
