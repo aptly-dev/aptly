@@ -10,9 +10,9 @@ import (
 )
 
 // @Summary Get tasks
-// @Description Get list of available tasks. Each task is returned as in “show” API.
+// @Description **Get list of available tasks. Each task is returned as in “show” API**
 // @Tags Tasks
-// @Produce  json
+// @Produce json
 // @Success 200 {array} task.Task
 // @Router /api/tasks [get]
 func apiTasksList(c *gin.Context) {
@@ -20,12 +20,11 @@ func apiTasksList(c *gin.Context) {
 	c.JSON(200, list.GetTasks())
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Clear finished and failed tasks
+// @Description **Removes finished and failed tasks from internal task list**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Success 200 ""
 // @Router /api/tasks-clear [post]
 func apiTasksClear(c *gin.Context) {
 	list := context.TaskList()
@@ -33,13 +32,11 @@ func apiTasksClear(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Wait for task completion
+// @Description **Waits for and returns when all running tasks are complete**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 200 ""
 // @Router /api/tasks-wait [get]
 func apiTasksWait(c *gin.Context) {
 	list := context.TaskList()
@@ -47,13 +44,14 @@ func apiTasksWait(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Wait for task to process
+// @Description **Waits for and returns when given Task ID is complete**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad id?"
+// @Failure 400 {object} Error "Task Not Found"
 // @Router /api/tasks/{id}/wait [get]
 func apiTasksWaitForTaskByID(c *gin.Context) {
 	list := context.TaskList()
@@ -72,13 +70,14 @@ func apiTasksWaitForTaskByID(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Return task information
+// @Description **Return task information for a given ID**
 // @Tags Tasks
-// @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad id?"
+// @Failure 404 {object} Error "Task Not Found"
 // @Router /api/tasks/{id} [get]
 func apiTasksShow(c *gin.Context) {
 	list := context.TaskList()
@@ -98,13 +97,14 @@ func apiTasksShow(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Return task output
+// @Description **Return task output for a given ID**
 // @Tags Tasks
-// @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {object} string "Task output"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 404 {object} Error "Task Not Found"
 // @Router /api/tasks/{id}/output [get]
 func apiTasksOutputShow(c *gin.Context) {
 	list := context.TaskList()
@@ -124,13 +124,14 @@ func apiTasksOutputShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Return task detail
+// @Description **Return task detail for a given ID**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param id path int true "Task ID"
+// @Success 200 {object} string "Task detail"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 404 {object} Error "Task Not Found"
 // @Router /api/tasks/{id}/detail [get]
 func apiTasksDetailShow(c *gin.Context) {
 	list := context.TaskList()
@@ -150,12 +151,13 @@ func apiTasksDetailShow(c *gin.Context) {
 	c.JSON(200, detail)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Return task return value (status code)
+// @Description **Return task return value (status code) by given ID**
 // @Tags Tasks
-// @Produce json
+// @Produce plain
+// @Param id path int true "Task ID"
 // @Success 200 {object} string "msg"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/tasks/{id}/return_value [get]
 func apiTasksReturnValueShow(c *gin.Context) {
@@ -175,13 +177,14 @@ func apiTasksReturnValueShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Delete task
+// @Description **Delete completed task by given ID. Does not stop task execution**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 400 {object} Error "Task in progress or not found"
 // @Router /api/tasks/{id} [delete]
 func apiTasksDelete(c *gin.Context) {
 	list := context.TaskList()
@@ -201,15 +204,12 @@ func apiTasksDelete(c *gin.Context) {
 	c.JSON(200, delTask)
 }
 
-// FIXME: used for testing only, remove:
-
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Dummy endpoint used for testing.
+// @Description **Dummy endpoint used for testing**
 // @Tags Tasks
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param _async query bool false "Run task in background using tasks API"
+// @Success 200 {object} task.ProcessReturnValue
 // @Router /api/tasks-dummy [post]
 func apiTasksDummy(c *gin.Context) {
 	resources := []string{"dummy"}

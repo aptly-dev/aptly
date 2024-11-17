@@ -58,7 +58,7 @@ azurite-stop:
 
 swagger: swagger-install
 	# Generate swagger docs
-	@PATH=$(BINPATH)/:$(PATH) swag init --markdownFiles docs --generalInfo docs/swagger.conf
+	@PATH=$(BINPATH)/:$(PATH) swag init --parseDependency --parseInternal --markdownFiles docs --generalInfo docs/swagger.conf
 
 etcd-install:
 	# Install etcd

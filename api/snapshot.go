@@ -15,7 +15,8 @@ import (
 )
 
 // @Summary Get snapshots
-// @Description Get list of available snapshots. Each snapshot is returned as in “show” API.
+// @Description **Get list of available snapshots**
+// @Description Each snapshot is returned as in “show” API.
 // @Tags Snapshots
 // @Produce  json
 // @Success 200 {array} deb.Snapshot
@@ -39,25 +40,31 @@ func apiSnapshotsList(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+type snapshotsCreateFromMirrorParams struct {
+	Name        string `binding:"required"`
+	Description string
+}
+
+// @Summary Create snapshot from mirror
+// @Description **Create snapshot of a mirror from given name**
 // @Tags Snapshots
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param request body snapshotsCreateFromMirrorParams true "Parameters"
+// @Param name path string true "Mirror name"
+// @Param _async query bool false "Run task in background using tasks API"
+// @Success 201 {object} deb.Snapshot "Created Snapshot"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Mirror Not Found"
+// @Failure 409 {object} Error "Conflicting snapshot"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/mirrors/{name}/snapshots [post]
 func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	var (
 		err      error
 		repo     *deb.RemoteRepo
 		snapshot *deb.Snapshot
+		b        snapshotsCreateFromMirrorParams
 	)
-
-	var b struct {
-		Name        string `binding:"required"`
-		Description string
-	}
 
 	if c.Bind(&b) != nil {
 		return
@@ -105,26 +112,31 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+type snapshotsCreateParams struct {
+	Name            string `binding:"required"`
+	Description     string
+	SourceSnapshots []string
+	PackageRefs     []string
+}
+
+// @Summary Create snapshot from repo
+// @Description **Create a snapshot from package refs**
+// @Description Refs can be obtained from snapshots, local repos, or mirrors
 // @Tags Snapshots
+// @Param request body snapshotsCreateParams true "Parameters"
+// @Param _async query bool false "Run task in background using tasks API"
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 201 {object} deb.Snapshot "Created snapshot"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Source snapshot or package refs not found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots [post]
 func apiSnapshotsCreate(c *gin.Context) {
 	var (
 		err      error
 		snapshot *deb.Snapshot
+		b        snapshotsCreateParams
 	)
-
-	var b struct {
-		Name            string `binding:"required"`
-		Description     string
-		SourceSnapshots []string
-		PackageRefs     []string
-	}
 
 	if c.Bind(&b) != nil {
 		return
@@ -187,28 +199,31 @@ func apiSnapshotsCreate(c *gin.Context) {
 	})
 }
 
-type snapshotRepositoryParams struct {
+type snapshotsCreateFromRepositoryParams struct {
 	Name        string `binding:"required"`
 	Description string
 }
 
 // @Summary Snapshot Repository
-// @Description **Create a sbalshot of a repository**
-// @Description To Do
+// @Description **Create a snapshot of a repository by name**
 // @Tags Snapshots
 // @Param name path string true "Repository name"
 // @Consume json
-// @Param request body snapshotRepositoryParams true "Parameters"
+// @Param request body snapshotsCreateFromRepositoryParams true "Parameters"
+// @Param name path string true "Name of the snapshot"
+// @Param _async query bool false "Run task in background using tasks API"
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 201 {object} deb.Snapshot "Created snapshot object"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Failure 404 {object} Error "Repo Not Found"
 // @Router /api/repos/{name}/snapshots [post]
 func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	var (
 		err      error
 		repo     *deb.LocalRepo
 		snapshot *deb.Snapshot
-		b        snapshotRepositoryParams
+		b        snapshotsCreateFromRepositoryParams
 	)
 
 	if c.Bind(&b) != nil {
@@ -252,24 +267,29 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+type snapshotsUpdateParams struct {
+	Name        string
+	Description string
+}
+
+// @Summary Update Snapshot
+// @Description **Update snapshot metadata (Name, Description)**
 // @Tags Snapshots
+// @Param request body snapshotsUpdateParams true "Parameters"
+// @Param name path string true "Snapshot name"
+// @Param _async query bool false "Run task in background using tasks API"
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 200 {object} deb.Snapshot "Updated snapshot object"
+// @Failure 404 {object} Error "Snapshot Not Found"
+// @Failure 409 {object} Error "Conflicting snapshot"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots/{name} [put]
 func apiSnapshotsUpdate(c *gin.Context) {
 	var (
 		err      error
 		snapshot *deb.Snapshot
+		b        snapshotsUpdateParams
 	)
-
-	var b struct {
-		Name        string
-		Description string
-	}
 
 	if c.Bind(&b) != nil {
 		return
@@ -310,13 +330,13 @@ func apiSnapshotsUpdate(c *gin.Context) {
 }
 
 // @Summary Get snapshot information
-// @Description **Get information about a snapshot**
-// @Description To Do
+// @Description **Query detailed information about a snapshot by name**
 // @Tags Snapshots
 // @Param name path string true "Name of the snapshot"
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 200 {object} deb.Snapshot "msg"
+// @Failure 404 {object} Error "Snapshot Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots/{name} [get]
 func apiSnapshotsShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
@@ -337,13 +357,19 @@ func apiSnapshotsShow(c *gin.Context) {
 	c.JSON(200, snapshot)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Drop Snapshot
+// @Description **Drop/delete snapshot by name**
+// @Description Cannot drop snapshots that are published.
+// @Description Needs force=1 to drop snapshots used as source by other snapshots.
 // @Tags Snapshots
+// @Param name path string true "Snapshot name"
+// @Param force query string false "Force operation"
+// @Param _async query bool false "Run task in background using tasks API"
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Success 200 ""
+// @Failure 404 {object} Error "Snapshot Not Found"
+// @Failure 409 {object} Error "Snapshot in use"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots/{name} [delete]
 func apiSnapshotsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
@@ -383,13 +409,18 @@ func apiSnapshotsDrop(c *gin.Context) {
 	})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Snapshot diff
+// @Description **Return the diff between two snapshots (name & withSnapshot)**
+// @Description Provide `onlyMatching=1` to return only packages present in both snapshots.
+// @Description Otherwise, returns a `left` and `right` result providing packages only in the first and second snapshots
 // @Tags Snapshots
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param name path string true "Snapshot name"
+// @Param withSnapshot path string true "Snapshot name to diff against"
+// @Param onlyMatching query string false "Only return packages present in both snapshots"
+// @Success 200 {array} deb.PackageDiff "Package Diff"
+// @Failure 404 {object} Error "Snapshot Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots/{name}/diff/{withSnapshot} [get]
 func apiSnapshotsDiff(c *gin.Context) {
 	onlyMatching := c.Request.URL.Query().Get("onlyMatching") == "1"
@@ -441,13 +472,19 @@ func apiSnapshotsDiff(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary List Snapshot Packages
+// @Description **List all packages in snapshot or perform search on snapshot contents and return results**
+// @Description If `q` query parameter is missing, return all packages, otherwise return packages that match q
 // @Tags Snapshots
 // @Produce json
-// @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Param name path string true "Snapshot to search"
+// @Param q query string false "Package query (e.g Name%20(~%20matlab))"
+// @Param withDeps query string false "Set to 1 to include dependencies when evaluating package query"
+// @Param format query string false "Set to 'details' to return extra info about each package"
+// @Param maximumVersion query string false "Set to 1 to only return the highest version for each package name"
+// @Success 200 {array} string "Package info"
+// @Failure 404 {object} Error "Snapshot Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/snapshots/{name}/packages [get]
 func apiSnapshotsSearchPackages(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
@@ -480,13 +517,14 @@ type snapshotsMergeParams struct {
 // @Description
 // @Description If only one snapshot is specified, merge copies source into destination.
 // @Tags Snapshots
+// @Consume json
+// @Produce json
 // @Param name path string true "Name of the snapshot to be created"
 // @Param latest query int false "merge only the latest version of each package"
 // @Param no-remove query int false "all versions of packages are preserved during merge"
-// @Consume json
 // @Param request body snapshotsMergeParams true "Parameters"
-// @Produce  json
-// @Success 200
+// @Param _async query bool false "Run task in background using tasks API"
+// @Success 201 {object} deb.Snapshot "Resulting snapshot object"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Error"
@@ -591,15 +629,16 @@ type snapshotsPullParams struct {
 // @Description
 // @Description Aptly pulls first package matching each of package queries, but with flag -all-matches all matching packages would be pulled.
 // @Tags Snapshots
+// @Param request body snapshotsPullParams true "Parameters"
 // @Param name path string true "Name of the snapshot to be created"
 // @Param all-matches query int false "pull all the packages that satisfy the dependency version requirements (default is to pull first matching package): 1 to enable"
 // @Param dry-run query int false "don’t create destination snapshot, just show what would be pulled: 1 to enable"
 // @Param no-deps query int false "don’t process dependencies, just pull listed packages: 1 to enable"
 // @Param no-remove query int false "don’t remove other package versions when pulling package: 1 to enable"
+// @Param _async query bool false "Run task in background using tasks API"
 // @Consume json
-// @Param request body snapshotsPullParams true "Parameters"
 // @Produce json
-// @Success 200
+// @Success 200 {object} deb.Snapshot "Resulting Snapshot object"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Error"
