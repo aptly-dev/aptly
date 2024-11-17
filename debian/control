@@ -83,13 +83,46 @@ Homepage: https://www.aptly.info
 Vcs-Git: https://github.com/aptly-dev/aptly.git
 Vcs-Browser: https://github.com/aptly-dev/aptly
 XS-Go-Import-Path: github.com/aptly-dev/aptly
+Testsuite: autopkgtest-pkg-go
 
 Package: aptly
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, adduser, gpg (>= 2.2.12)
+Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, gpgv, gpg
+Suggests: graphviz
+Conflicts: gnupg1, gpgv1
 Built-Using: ${misc:Static-Built-Using}, ${misc:Built-Using}
-Description: Debian repository management tool
- aptly is a Swiss army knife for Debian repository management.
+Description: Swiss army knife for Debian repository management - main package
+ It offers several features making it easy to manage Debian package
+ repositories:
+ .
+  - make mirrors of remote Debian/Ubuntu repositories, limiting by
+    components/architectures
+  - take snapshots of mirrors at any point in time, fixing state of
+    repository at some moment of time
+  - publish snapshot as Debian repository, ready to be consumed by apt
+  - controlled update of one or more packages in snapshot from upstream
+    mirror, tracking dependencies
+  - merge two or more snapshots into one
+ .
+ This is the main package, it contains the aptly command-line utility.
+
+Package: aptly-api
+Architecture: any
+Depends: ${misc:Depends}, aptly
+Description: Swiss army knife for Debian repository management - API
+ It offers several features making it easy to manage Debian package
+ repositories:
+ .
+  - make mirrors of remote Debian/Ubuntu repositories, limiting by
+    components/architectures
+  - take snapshots of mirrors at any point in time, fixing state of
+    repository at some moment of time
+  - publish snapshot as Debian repository, ready to be consumed by apt
+  - controlled update of one or more packages in snapshot from upstream
+    mirror, tracking dependencies
+  - merge two or more snapshots into one
+ .
+ This package contains the aptly-api service.
 
 Package: aptly-dbg
 Architecture: any
@@ -97,9 +130,3 @@ Depends: ${misc:Depends}
 Built-Using: ${misc:Static-Built-Using}, ${misc:Built-Using}
 Description: Debian repository management tool (debug files)
  Debug symbols for aptly
-
-Package: aptly-api
-Architecture: all
-Depends: ${misc:Depends}, aptly
-Description: Debian repository management tool (REST API server)
- systemd service and configuration for aptly

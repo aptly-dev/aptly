@@ -20,7 +20,8 @@ override_dh_auto_clean:
 	rm -rf obj-$(DEB_TARGET_GNU_TYPE)/
 	dh_auto_clean
 
-override_dh_auto_test:  # disabled
+override_dh_auto_test:
+	# run during autopkgtests
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source

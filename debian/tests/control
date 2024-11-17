@@ -1,0 +1,4 @@
+# This file is an addition to the autodep8 tests.
+
+Test-Command: HOME=/tmp aptly repo create autopkgtest
+Restrictions: allow-stderr
