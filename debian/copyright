@@ -1,10 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: aptly
 Source: http://www.aptly.info
-Files-Excluded: vendor/*
 
 Files: *
-Copyright: 2014 Andrey Smirnov <me@smira.ru>
+Copyright: 2014 Andrey Smirnov <me@smira.ru>, 2023 André Roth <neolynx@gmail.com>
 License: Expat
 Comment: Some of aptly's vendored dependencies are already in Debian, and
  Alexandre Viau is well on his way to packaging the rest of them so that

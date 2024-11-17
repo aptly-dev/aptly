@@ -1,0 +1,1 @@
+mv_conffile /etc/aptly-api.conf /etc/aptly.conf 1.6~

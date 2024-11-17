@@ -1,6 +1,10 @@
 .go/
 .git/
 obj-x86_64-linux-gnu/
+obj-aarch64-linux-gnu/
+obj-arm-linux-gnueabihf/
+obj-i686-linux-gnu/
 unit.out
 aptly.test
 build/
+dpkgs/

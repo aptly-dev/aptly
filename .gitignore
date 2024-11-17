@@ -50,21 +50,24 @@ system/files/aptly2_passphrase.gpg~
 
 .go/
 obj-x86_64-linux-gnu/
+obj-aarch64-linux-gnu/
+obj-arm-linux-gnueabihf/
+obj-i686-linux-gnu/
 
 # debian
 debian/.debhelper/
-debian/aptly.debhelper.log
-debian/aptly.postrm.debhelper
 debian/aptly.substvars
 debian/aptly/
 debian/debhelper-build-stamp
 debian/files
 debian/aptly-api/
-debian/aptly-api.debhelper.log
-debian/aptly-api.postrm.debhelper
+debian/*.debhelper
+debian/*.debhelper.log
 debian/aptly-api.substvars
-debian/aptly-dbg.debhelper.log
 debian/aptly-dbg.substvars
 debian/aptly-dbg/
+usr/bin/aptly
+dpkgs/
+debian/changelog.dpkg-bak
 
 docs/
