@@ -9,7 +9,7 @@ Group=aptly-api
 Environment=TERM=dumb
 WorkingDirectory=~
 EnvironmentFile=/etc/default/aptly-api
-ExecStart=/usr/bin/aptly api serve -config=/etc/aptly.conf -listen=${LISTEN_ADDRESS}
+ExecStart=/usr/bin/aptly api serve -config=/etc/aptly.conf -no-lock -listen=${LISTEN_ADDRESS}
 
 [Install]
 WantedBy=multi-user.target
