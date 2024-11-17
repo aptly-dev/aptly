@@ -905,6 +905,7 @@ class PublishRepo34Test(BaseTest):
         super(PublishRepo34Test, self).prepare_fixture()
 
         self.write_file(os.path.join('skel', 'dists', 'maverick', 'main', 'dep11', 'README'), 'README test file')
+        self.write_file(os.path.join('skel', 'dists', 'maverick', 'Release'), 'Release test file')
 
     def check(self):
         super(PublishRepo34Test, self).check()
@@ -916,6 +917,10 @@ class PublishRepo34Test(BaseTest):
         readme = self.read_file('public/dists/maverick/main/dep11/README')
         if readme != 'README test file':
             raise Exception("README file not copied on publish")
+
+        release = self.read_file('public/dists/maverick/Release')
+        if release == 'Release test file':
+            raise Exception("Release file was copied on publish")
 
         release = self.read_file('public/dists/maverick/Release').split("\n")
         release = [l for l in release if l.startswith(" ")]
