@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/pkg/errors"
@@ -40,7 +41,10 @@ func (pool *PackagePool) buildPoolPath(filename string, checksums *utils.Checksu
 	return filepath.Join(hash[0:2], hash[2:4], hash[4:32]+"_"+filename)
 }
 
-func (pool *PackagePool) ensureChecksums(poolPath string, checksumStorage aptly.ChecksumStorage) (*utils.ChecksumInfo, error) {
+func (pool *PackagePool) ensureChecksums(
+	poolPath string,
+	checksumStorage aptly.ChecksumStorage,
+) (*utils.ChecksumInfo, error) {
 	targetChecksums, err := checksumStorage.Get(poolPath)
 	if err != nil {
 		return nil, err
@@ -48,7 +52,8 @@ func (pool *PackagePool) ensureChecksums(poolPath string, checksumStorage aptly.
 
 	if targetChecksums == nil {
 		// we don't have checksums stored yet for this file
-		download, err := pool.az.client.DownloadStream(context.Background(), pool.az.container, poolPath, nil)
+		blob := pool.az.blobURL(poolPath)
+		download, err := blob.Download(context.Background(), 0, 0, azblob.BlobAccessConditions{}, false, azblob.ClientProvidedKeyOptions{})
 		if err != nil {
 			if isBlobNotFound(err) {
 				return nil, nil
@@ -58,7 +63,7 @@ func (pool *PackagePool) ensureChecksums(poolPath string, checksumStorage aptly.
 		}
 
 		targetChecksums = &utils.ChecksumInfo{}
-		*targetChecksums, err = utils.ChecksumsForReader(download.Body)
+		*targetChecksums, err = utils.ChecksumsForReader(download.Body(azblob.RetryReaderOptions{}))
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checksumming blob at %s", poolPath)
 		}
@@ -87,49 +92,46 @@ func (pool *PackagePool) LegacyPath(_ string, _ *utils.ChecksumInfo) (string, er
 }
 
 func (pool *PackagePool) Size(path string) (int64, error) {
-	serviceClient := pool.az.client.ServiceClient()
-	containerClient := serviceClient.NewContainerClient(pool.az.container)
-	blobClient := containerClient.NewBlobClient(path)
-
-	props, err := blobClient.GetProperties(context.TODO(), nil)
+	blob := pool.az.blobURL(path)
+	props, err := blob.GetProperties(context.Background(), azblob.BlobAccessConditions{}, azblob.ClientProvidedKeyOptions{})
 	if err != nil {
 		return 0, errors.Wrapf(err, "error examining %s from %s", path, pool)
 	}
 
-	return *props.ContentLength, nil
+	return props.ContentLength(), nil
 }
 
 func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
+	blob := pool.az.blobURL(path)
+
 	temp, err := os.CreateTemp("", "blob-download")
 	if err != nil {
-		return nil, errors.Wrapf(err, "error creating tempfile for %s", path)
+		return nil, errors.Wrap(err, "error creating temporary file for blob download")
 	}
+
 	defer os.Remove(temp.Name())
 
-	_, err = pool.az.client.DownloadFile(context.TODO(), pool.az.container, path, temp, nil)
+	err = azblob.DownloadBlobToFile(context.Background(), blob, 0, 0, temp, azblob.DownloadFromBlobOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "error downloading blob %s", path)
+		return nil, errors.Wrapf(err, "error downloading blob at %s", path)
 	}
 
 	return temp, nil
 }
 
 func (pool *PackagePool) Remove(path string) (int64, error) {
-	serviceClient := pool.az.client.ServiceClient()
-	containerClient := serviceClient.NewContainerClient(pool.az.container)
-	blobClient := containerClient.NewBlobClient(path)
-
-	props, err := blobClient.GetProperties(context.TODO(), nil)
+	blob := pool.az.blobURL(path)
+	props, err := blob.GetProperties(context.Background(), azblob.BlobAccessConditions{}, azblob.ClientProvidedKeyOptions{})
 	if err != nil {
-		return 0, errors.Wrapf(err, "error examining %s from %s", path, pool)
+		return 0, errors.Wrapf(err, "error getting props of %s from %s", path, pool)
 	}
 
-	_, err = pool.az.client.DeleteBlob(context.Background(), pool.az.container, path, nil)
+	_, err = blob.Delete(context.Background(), azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
 	if err != nil {
 		return 0, errors.Wrapf(err, "error deleting %s from %s", path, pool)
 	}
 
-	return *props.ContentLength, nil
+	return props.ContentLength(), nil
 }
 
 func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, _ bool, checksumStorage aptly.ChecksumStorage) (string, error) {
@@ -143,6 +145,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	}
 
 	path := pool.buildPoolPath(basename, checksums)
+	blob := pool.az.blobURL(path)
 	targetChecksums, err := pool.ensureChecksums(path, checksumStorage)
 	if err != nil {
 		return "", err
@@ -158,7 +161,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	}
 	defer source.Close()
 
-	err = pool.az.putFile(path, source, checksums.MD5)
+	err = pool.az.putFile(blob, source, checksums.MD5)
 	if err != nil {
 		return "", err
 	}
