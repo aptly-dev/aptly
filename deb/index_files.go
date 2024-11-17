@@ -389,6 +389,27 @@ func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile 
 	return file
 }
 
+func (files *indexFiles) SkelIndex(component, path string) *indexFile {
+	key := fmt.Sprintf("si-%s-%s", component, path)
+	file, ok := files.indexes[key]
+
+	if !ok {
+		relativePath := filepath.Join(component, path)
+
+		file = &indexFile{
+			parent:       files,
+			discardable:  false,
+			compressable: false,
+			onlyGzip:     false,
+			relativePath: relativePath,
+		}
+
+		files.indexes[key] = file
+	}
+
+	return file
+}
+
 func (files *indexFiles) ReleaseFile() *indexFile {
 	return &indexFile{
 		parent:       files,

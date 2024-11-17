@@ -21,7 +21,7 @@ func (s *ConfigSuite) TestLoadConfig(c *C) {
 
 	err := LoadConfig(configname, &s.config)
 	c.Assert(err, IsNil)
-	c.Check(s.config.RootDir, Equals, "/opt/aptly/")
+	c.Check(s.config.GetRootDir(), Equals, "/opt/aptly/")
 	c.Check(s.config.DownloadConcurrency, Equals, 33)
 	c.Check(s.config.DatabaseOpenAttempts, Equals, 33)
 }

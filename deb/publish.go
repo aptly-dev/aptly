@@ -773,9 +773,47 @@ func (p *PublishedRepo) GetCodename() string {
 	return p.Codename
 }
 
+// GetSkelFiles returns a map of files to be added to a repo. Key being the relative
+// path from component folder, and value being the full local FS path.
+func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[string]string, error) {
+	files := make(map[string]string)
+
+	if skelDir == "" {
+		return files, nil
+	}
+
+	fsPath := filepath.Join(skelDir, p.Prefix, "dists", p.Distribution, component)
+	if err := filepath.Walk(fsPath, func(path string, _ os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !stat.Mode().IsRegular() {
+			return nil
+		}
+
+		relativePath, err := filepath.Rel(fsPath, path)
+		if err != nil {
+			return err
+		}
+
+		files[relativePath] = path
+		return nil
+	}); err != nil && !os.IsNotExist(err) {
+		return files, err
+	}
+
+	return files, nil
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
-	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool) error {
+	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool, skelDir string) error {
 	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
 
 	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
@@ -980,6 +1018,30 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				_, err = index.WriteTo(bufWriter)
 				if err != nil {
 					return fmt.Errorf("unable to generate contents index: %v", err)
+				}
+			}
+		}
+
+		for component := range p.sourceItems {
+			skelFiles, err := p.GetSkelFiles(skelDir, component)
+			if err != nil {
+				return fmt.Errorf("unable to get skeleton files: %v", err)
+			}
+
+			for relPath, absPath := range skelFiles {
+				bufWriter, err := indexes.SkelIndex(component, relPath).BufWriter()
+				if err != nil {
+					return fmt.Errorf("unable to generate skeleton index: %v", err)
+				}
+
+				file, err := os.Open(absPath)
+				if err != nil {
+					return fmt.Errorf("unable to read skeleton file: %v", err)
+				}
+
+				_, err = bufio.NewReader(file).WriteTo(bufWriter)
+				if err != nil {
+					return fmt.Errorf("unable to write skeleton file: %v", err)
 				}
 			}
 		}

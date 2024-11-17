@@ -297,7 +297,7 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 			if len(context.config().DatabaseBackend.DbPath) == 0 {
 				return nil, errors.New("leveldb databaseBackend config invalid")
 			}
-			dbPath := filepath.Join(context.config().RootDir, context.config().DatabaseBackend.DbPath)
+			dbPath := filepath.Join(context.config().GetRootDir(), context.config().DatabaseBackend.DbPath)
 			context.database, err = goleveldb.NewDB(dbPath)
 		case "etcd":
 			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
@@ -388,7 +388,7 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 		} else {
 			poolRoot := context.config().PackagePoolStorage.Local.Path
 			if poolRoot == "" {
-				poolRoot = filepath.Join(context.config().RootDir, "pool")
+				poolRoot = filepath.Join(context.config().GetRootDir(), "pool")
 			}
 
 			context.packagePool = files.NewPackagePool(poolRoot, !context.config().SkipLegacyPool)
@@ -525,6 +525,11 @@ func (context *AptlyContext) GetVerifier() pgp.Verifier {
 	}
 
 	return pgp.NewGpgVerifier(context.getGPGFinder())
+}
+
+// SkelPath builds the local skeleton folder
+func (context *AptlyContext) SkelPath() string {
+	return filepath.Join(context.config().GetRootDir(), "skel")
 }
 
 // UpdateFlags sets internal copy of flags in the context
