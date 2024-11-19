@@ -11,16 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary DB Cleanup
+// @Description **Cleanup Aptly DB**
+// @Description Database cleanup removes information about unreferenced packages and deletes files in the package pool that aren’t used by packages anymore.
+// @Description It is a good idea to run this command after massive deletion of mirrors, snapshots or local repos.
 // @Tags Database
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Param _async query bool false "Run task in background using tasks API"
+// @Success 200 {object} string "Output"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/db/cleanup [post]
 func apiDbCleanup(c *gin.Context) {
-
 	resources := []string{string(task.AllResourcesKey)}
 	maybeRunTaskInBackground(c, "Clean up db", resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		var err error
