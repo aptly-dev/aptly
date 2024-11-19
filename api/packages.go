@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Show packages
+// @Description **Show information about package by package key**
+// @Description Package keys could be obtained from various GET .../packages APIs.
 // @Tags Packages
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Param key path string true "package key (unique package identifier)"
+// @Success 200 {object} deb.Package "OK"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/packages/{key} [get]
 func apiPackagesShow(c *gin.Context) {
