@@ -12,13 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Graph Output
+// @Description **Generate graph of aptly objects (same as in aptly graph command).**
+// @Description e.g open url `http://localhost:8080/api/graph.svg?layout=vertical` in browser
 // @Tags Graph
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Param ext path string true "ext specifies desired file extension, e.g. .png, .svg."
+// @Param layout query string false "Change between a `horizontal` (default) and a `vertical` graph layout."
+// @Success 200 {object} []byte "Output"
 // @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/graph [get]
 // GET /api/graph.:ext?layout=[vertical|horizontal(default)]
 func apiGraph(c *gin.Context) {

@@ -12,22 +12,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+type gpgAddKeyParams struct {
+	Keyserver   string
+	GpgKeyID    string
+	GpgKeyArmor string
+	Keyring     string
+}
+
+// @Summary Add GPG Key
+// @Description Adds a GPG key to aptly keyring
 // @Tags GPG
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Success 200 {object} string "OK"
+// @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/gpg [post]
 func apiGPGAddKey(c *gin.Context) {
-	var b struct {
-		Keyserver   string
-		GpgKeyID    string
-		GpgKeyArmor string
-		Keyring     string
-	}
-
+	b := gpgAddKeyParams{}
 	if c.Bind(&b) != nil {
 		return
 	}
