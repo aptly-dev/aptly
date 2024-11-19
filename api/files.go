@@ -69,14 +69,16 @@ func apiFilesListDirs(c *gin.Context) {
 
 // @Summary Upload file glaa
 // @Description **Upload a file to a directory**
-// @Description To Do
+// @Description Any number of files can be uploaded in one call; aptly preserves filenames. No check is performed if existing uploaded file would be overwritten.
 // @Tags Files
 // @Accept multipart/form-data
-// @Param dir path string true "Directory to upload files to"
+// @Param dir path string true "Directory to upload files to. Created if does not exist"
 // @Param files formData file true "Files to upload"
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Success 200 {array} string "list of uploaded files"
+// @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/files/{dir} [post]
 func apiFilesUpload(c *gin.Context) {
 	if !verifyDir(c) {
@@ -128,16 +130,16 @@ func apiFilesUpload(c *gin.Context) {
 
 	apiFilesUploadedCounter.WithLabelValues(c.Params.ByName("dir")).Inc()
 	c.JSON(200, stored)
-
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary List files in directory
+// @Description **Returns list of files in directory**
 // @Tags Files
 // @Produce json
-// @Success 200 {object} string "msg"
+// @Param dir path string true "Directory to list"
+// @Success 200 {array} string "Files found in directory"
 // @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/files/{dir} [get]
 func apiFilesListFiles(c *gin.Context) {
 	if !verifyDir(c) {
@@ -176,13 +178,13 @@ func apiFilesListFiles(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Delete Directory
+// @Description **Deletes all files in upload directory and directory itself**
 // @Tags Files
 // @Produce json
+// @Param dir path string true "Directory"
 // @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/files/{dir} [delete]
 func apiFilesDeleteDir(c *gin.Context) {
 	if !verifyDir(c) {
@@ -198,13 +200,15 @@ func apiFilesDeleteDir(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary TODO
-// @Description **ToDo**
-// @Description To Do
+// @Summary Delete File in Directory
+// @Description **Delete single file in directory**
 // @Tags Files
 // @Produce json
+// @Param dir path string true "Directory to delete from"
+// @Param name path string true "File to delete"
 // @Success 200 {object} string "msg"
-// @Failure 404 {object} Error "Not Found"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 500 {object} Error "Internal Server Error"
 // @Router /api/files/{dir}/{name} [delete]
 func apiFilesDeleteFile(c *gin.Context) {
 	if !verifyDir(c) {
