@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/aptly-dev/aptly/deb"
 )
 
 // @Summary Show packages
