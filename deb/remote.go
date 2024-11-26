@@ -596,7 +596,14 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 	emptyList.PrepareIndex()
 
 	oldLen = repo.packageList.Len()
-	repo.packageList, err = repo.packageList.FilterWithProgress([]PackageQuery{filterQuery}, repo.FilterWithDeps, emptyList, dependencyOptions, repo.Architectures, progress)
+	repo.packageList, err = repo.packageList.Filter(FilterOptions{
+		Queries:           []PackageQuery{filterQuery},
+		WithDependencies:  repo.FilterWithDeps,
+		Source:            emptyList,
+		DependencyOptions: dependencyOptions,
+		Architectures:     repo.Architectures,
+		Progress:          progress,
+	})
 	if repo.packageList != nil {
 		newLen = repo.packageList.Len()
 	}

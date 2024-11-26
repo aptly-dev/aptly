@@ -636,7 +636,14 @@ func apiSnapshotsPull(c *gin.Context) {
 		}
 
 		// Filter with dependencies as requested
-		destinationPackageList, err := sourcePackageList.FilterWithProgress(queries, !noDeps, toPackageList, context.DependencyOptions(), architecturesList, context.Progress())
+		destinationPackageList, err := sourcePackageList.Filter(deb.FilterOptions{
+			Queries:           queries,
+			WithDependencies:  !noDeps,
+			Source:            toPackageList,
+			DependencyOptions: context.DependencyOptions(),
+			Architectures:     architecturesList,
+			Progress:          context.Progress(),
+		})
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}

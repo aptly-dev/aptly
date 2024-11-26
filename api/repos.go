@@ -586,7 +586,14 @@ func apiReposCopyPackage(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusUnprocessableEntity, Value: nil}, fmt.Errorf("unable to parse query '%s': %s", fileName, err)
 		}
 
-		toProcess, err := srcList.FilterWithProgress(queries, jsonBody.WithDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
+		toProcess, err := srcList.Filter(deb.FilterOptions{
+			Queries:           queries,
+			WithDependencies:  jsonBody.WithDeps,
+			Source:            dstList,
+			DependencyOptions: context.DependencyOptions(),
+			Architectures:     architecturesList,
+			Progress:          context.Progress(),
+		})
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("filter error: %s", err)
 		}
