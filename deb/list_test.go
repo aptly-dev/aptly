@@ -381,8 +381,6 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "")
 
-	//result, err = s.il.Filter([]PackageQuery{&OrQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
-	//	&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}}, false, nil, 0, nil)
 	result, err = s.il.Filter(FilterOptions{
 		Queries: []PackageQuery{&OrQuery{&PkgQuery{"app", "1.1~bp1", "i386"},
 			&FieldQuery{Field: "$Architecture", Relation: VersionEqual, Value: "s390"}}},
@@ -435,6 +433,31 @@ func (s *PackageListSuite) TestFilter(c *C) {
 	})
 	c.Check(err, IsNil)
 	c.Check(plString(result), Equals, "aa_2.0-1_i386 app_1.0_s390 app_1.1~bp1_amd64 app_1.1~bp1_arm app_1.1~bp1_i386 mailer_3.5.8_i386")
+
+	// Different version for the source package
+	for _, p := range s.sourcePackages {
+		c.Check(s.il.Add(p), IsNil)
+	}
+	result, err = s.il.Filter(FilterOptions{
+		Queries:       []PackageQuery{&DependencyQuery{Dep: Dependency{Pkg: "lib"}}},
+		Architectures: []string{"i386", "amd64"},
+		WithSources:   true,
+	})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "lib_0.9_source lib_1.0_i386")
+
+	// Different name for the source package
+	err = s.il.Add(&Package{Name: "glibc", Version: "1.0", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}})
+	c.Check(err, IsNil)
+	err = s.il.Add(&Package{Name: "libc1", Version: "1.0", Architecture: "i386", Source: "glibc", deps: &PackageDependencies{}})
+	c.Check(err, IsNil)
+	result, err = s.il.Filter(FilterOptions{
+		Queries:       []PackageQuery{&DependencyQuery{Dep: Dependency{Pkg: "libc1"}}},
+		Architectures: []string{"i386"},
+		WithSources:   true,
+	})
+	c.Check(err, IsNil)
+	c.Check(plString(result), Equals, "glibc_1.0_source libc1_1.0_i386")
 }
 
 func (s *PackageListSuite) TestVerifyDependencies(c *C) {
