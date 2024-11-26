@@ -450,7 +450,7 @@ func (p *Package) GetArchitecture() string {
 	return p.Architecture
 }
 
-// GetDependencies compiles list of dependncies by flags from options
+// GetDependencies compiles list of dependencies by flags from options
 func (p *Package) GetDependencies(options int) (dependencies []string) {
 	deps := p.Deps()
 

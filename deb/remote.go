@@ -600,6 +600,7 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 		Queries:           []PackageQuery{filterQuery},
 		WithDependencies:  repo.FilterWithDeps,
 		Source:            emptyList,
+		WithSources:       repo.DownloadSources,
 		DependencyOptions: dependencyOptions,
 		Architectures:     repo.Architectures,
 		Progress:          progress,

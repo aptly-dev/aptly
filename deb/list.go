@@ -2,6 +2,7 @@ package deb
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -507,11 +508,23 @@ func (l *PackageList) Search(dep Dependency, allMatches bool, searchProvided boo
 type FilterOptions struct {
 	Queries           []PackageQuery
 	WithDependencies  bool
+	WithSources       bool // Source packages correspond to binary packages are included
 	Source            *PackageList
 	DependencyOptions int
 	Architectures     []string
 	Progress          aptly.Progress // set to non-nil to report progress
 }
+
+// SourceRegex is a regular expression to match source package names.
+// > In a binary package control file [...], the source package name may be followed by a version number in
+// > parentheses. This version number may be omitted [...] if it has the same value as the Version field of
+// > the binary package in question.
+// > [...]
+// > Package names (both source and binary, see Package) must consist only of lower case letters (a-z),
+// > digits (0-9), plus (+) and minus (-) signs, and periods (.).
+// > They must be at least two characters long and must start with an alphanumeric character.
+// -- https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-source
+var SourceRegex = regexp.MustCompile(`^([a-z0-9][-+.a-z0-9]+)(?:\s+\(([^)]+)\))?$`)
 
 // Filter filters package index by specified queries (ORed together), possibly pulling dependencies
 func (l *PackageList) Filter(options FilterOptions) (*PackageList, error) {
@@ -523,6 +536,37 @@ func (l *PackageList) Filter(options FilterOptions) (*PackageList, error) {
 
 	for _, query := range options.Queries {
 		_ = result.Append(query.Query(l))
+	}
+	// The above loop already finds source packages that are named equal to their binary package, but we still need
+	// to account for those that are named differently.
+	if options.WithSources {
+		sourceQueries := make([]PackageQuery, 0)
+		for _, pkg := range result.packages {
+			if pkg.Source == "" {
+				continue
+			}
+			matches := SourceRegex.FindStringSubmatch(pkg.Source)
+			if matches == nil {
+				return nil, fmt.Errorf("invalid Source field: %s", pkg.Source)
+			}
+			sourceName := matches[1]
+			if sourceName == pkg.Name {
+				continue
+			}
+			sourceVersion := pkg.Version
+			if matches[2] != "" {
+				sourceVersion = matches[2]
+			}
+			sourceQueries = append(sourceQueries, &DependencyQuery{Dependency{
+				Pkg:          sourceName,
+				Version:      sourceVersion,
+				Relation:     VersionEqual,
+				Architecture: ArchitectureSource,
+			}})
+		}
+		for _, query := range sourceQueries {
+			_ = result.Append(query.Query(l))
+		}
 	}
 
 	if options.WithDependencies {
