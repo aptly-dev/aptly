@@ -164,6 +164,7 @@ func apiMirrorsCreate(c *gin.Context) {
 // @Tags Mirrors
 // @Param name path string true "mirror name"
 // @Param force query int true "force: 1 to enable"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {object} task.ProcessReturnValue
 // @Failure 404 {object} Error "Mirror not found"
@@ -364,6 +365,7 @@ type mirrorUpdateParams struct {
 // @Param name path string true "mirror name to update"
 // @Consume json
 // @Param request body mirrorUpdateParams true "Parameters"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {object} task.ProcessReturnValue "Mirror was updated successfully"
 // @Success 202 {object} task.Task "Mirror is being updated"

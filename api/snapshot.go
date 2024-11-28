@@ -52,7 +52,7 @@ type snapshotsCreateFromMirrorParams struct {
 // @Produce json
 // @Param request body snapshotsCreateFromMirrorParams true "Parameters"
 // @Param name path string true "Mirror name"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 201 {object} deb.Snapshot "Created Snapshot"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Mirror Not Found"
@@ -126,7 +126,7 @@ type snapshotsCreateParams struct {
 // @Description Refs can be obtained from snapshots, local repos, or mirrors
 // @Tags Snapshots
 // @Param request body snapshotsCreateParams true "Parameters"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 201 {object} deb.Snapshot "Created snapshot"
 // @Failure 400 {object} Error "Bad Request"
@@ -213,7 +213,7 @@ type snapshotsCreateFromRepositoryParams struct {
 // @Consume json
 // @Param request body snapshotsCreateFromRepositoryParams true "Parameters"
 // @Param name path string true "Name of the snapshot"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 201 {object} deb.Snapshot "Created snapshot object"
 // @Failure 400 {object} Error "Bad Request"
@@ -279,7 +279,7 @@ type snapshotsUpdateParams struct {
 // @Tags Snapshots
 // @Param request body snapshotsUpdateParams true "Parameters"
 // @Param name path string true "Snapshot name"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {object} deb.Snapshot "Updated snapshot object"
 // @Failure 404 {object} Error "Snapshot Not Found"
@@ -366,7 +366,7 @@ func apiSnapshotsShow(c *gin.Context) {
 // @Tags Snapshots
 // @Param name path string true "Snapshot name"
 // @Param force query string false "Force operation"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 ""
 // @Failure 404 {object} Error "Snapshot Not Found"
@@ -525,7 +525,7 @@ type snapshotsMergeParams struct {
 // @Param latest query int false "merge only the latest version of each package"
 // @Param no-remove query int false "all versions of packages are preserved during merge"
 // @Param request body snapshotsMergeParams true "Parameters"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 201 {object} deb.Snapshot "Resulting snapshot object"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -637,7 +637,7 @@ type snapshotsPullParams struct {
 // @Param dry-run query int false "don’t create destination snapshot, just show what would be pulled: 1 to enable"
 // @Param no-deps query int false "don’t process dependencies, just pull listed packages: 1 to enable"
 // @Param no-remove query int false "don’t remove other package versions when pulling package: 1 to enable"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Produce json
 // @Success 200 {object} deb.Snapshot "Resulting Snapshot object"

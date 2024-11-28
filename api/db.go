@@ -17,7 +17,7 @@ import (
 // @Description It is a good idea to run this command after massive deletion of mirrors, snapshots or local repos.
 // @Tags Database
 // @Produce json
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} string "Output"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/db/cleanup [post]

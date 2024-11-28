@@ -1,4 +1,4 @@
-# Publish Repositories and Mirrors
+# Publish Repositories, Snapshots, Mirrors
 <div>
 
 Publish snapshot or local repo as Debian repository to be used as APT source on Debian based systems.

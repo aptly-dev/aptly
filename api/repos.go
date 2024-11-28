@@ -251,7 +251,7 @@ func apiReposShow(c *gin.Context) {
 // @Description Needs force=1 to drop repos used as source by other repos.
 // @Tags Repos
 // @Produce json
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Param force query int false "force: 1 to enable"
 // @Success 200 {object} task.ProcessReturnValue "Repo object"
 // @Failure 404 {object} Error "Not Found"
@@ -403,7 +403,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 // @Tags Repos
 // @Produce json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} string "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -423,7 +423,7 @@ func apiReposPackagesAdd(c *gin.Context) {
 // @Tags Repos
 // @Produce json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} string "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -445,7 +445,7 @@ func apiReposPackagesDelete(c *gin.Context) {
 // @Param name path string true "Repository name"
 // @Param dir path string true "Directory of packages"
 // @Param file path string false "Filename (optional)"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {string} string "OK"
 // @Failure 400 {object} Error "wrong file"
@@ -467,7 +467,7 @@ func apiReposPackageFromFile(c *gin.Context) {
 // @Consume  json
 // @Param noRemove query string false "when value is set to 1, don’t remove any files"
 // @Param forceReplace query string false "when value is set to 1, remove packages conflicting with package being added (in local repository)"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce  json
 // @Success 200 {string} string "OK"
 // @Failure 400 {object} Error "wrong file"
@@ -604,7 +604,7 @@ type reposCopyPackageParams struct {
 // @Param name path string true "Source repo"
 // @Param src path string true "Destination repo"
 // @Param file path string true "File/packages to copy"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} task.ProcessReturnValue "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -753,7 +753,7 @@ func apiReposCopyPackage(c *gin.Context) {
 // @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
 // @Param acceptUnsigned query int false "when value is set to 1, accept unsigned .changes files"
 // @Param ignoreSignature query int false "when value is set to 1 disable verification of .changes file signature"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/repos/{name}/include/{dir}/{file} [post]
@@ -781,7 +781,7 @@ type reposIncludePackageFromDirResponse struct {
 // @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
 // @Param acceptUnsigned query int false "when value is set to 1, accept unsigned .changes files"
 // @Param ignoreSignature query int false "when value is set to 1 disable verification of .changes file signature"
-// @Param _async query bool false "Run task in background using tasks API"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200 {object} reposIncludePackageFromDirResponse "Response"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/repos/{name}/include/{dir} [post]
