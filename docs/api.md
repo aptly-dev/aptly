@@ -1,32 +1,8 @@
-Using aptly via REST API allows to achieve two goals:
+Aptly operations are also available via REST API served with `aptly api serve`.
 
-1. Remote access to aptly service: e.g. uploading packages and publishing them from CI server.
-2. Concurrent access to aptly by multiple users.
+On Debian based systems, a package `aptly-api` is available, which will run aptly as systemd service as dedicated aptly-api user.
 
-#### Quickstart
-
-Run `aptly api serve` to start HTTP service:
-
-    $ aptly api serve
-    Starting web server at: :8080 (press Ctrl+C to quit)...
-    [GIN-debug] GET   /api/version              --> github.com/aptly-dev/aptly/api.apiVersion (4 handlers)
-    ...
-
-By default aptly would listen on `:8080`, but it could be changed with `-listen` flag.
-
-Usage:
-
-    $ aptly api serve -listen=:8080
-
-Flags:
-
--   `-listen=":8080"`: host:port for HTTP listening
--   `-no-lock`: don't lock the database
-
-When `-no-lock` option is enabled, API server acquires and drops the lock
-around all the operations, so that API and CLI could be used concurrently.
-
-Try some APIs:
+#### Example API calls
 
     $ curl http://localhost:8080/api/version
     {"Version":"0.9~dev"}
@@ -46,15 +22,9 @@ Try some APIs:
     $ curl -X POST -H 'Content-Type: application/json' --data '{"Distribution": "wheezy", "Sources": [{"Name": "aptly-repo"}]}' http://localhost:8080/api/publish//repos
     {"Architectures":["i386"],"Distribution":"wheezy","Label":"","Origin":"","Prefix":".","SourceKind":"local","Sources":[{"Component":"main","Name":"aptly-repo"}],"Storage":""}
 
-#### Security
-
-For security reasons it is advised to let Aptly listen on a Unix domain socket rather than a port. Sockets are subject to file permissions and thus allow for user-level access control while binding to a port only gives host-level access control. To use a socket simply run Aptly with a suitable listen flag such as `aptly api serve -listen=unix:///var/run/aptly.sock`.
-
-Aptly's HTTP API shouldn't be directly exposed to the Internet: there's no authentication/protection of APIs. To publish the API it could be proxied through a HTTP proxy or server (e.g. nginx) to add an authentication mechanism or disallow all non-GET requests. [Reference example](https://github.com/sepich/nginx-ldap) for LDAP based per-repo access with nginx.
-
 #### Notes
 
-1. Some things (for example, S3 publishing endpoints) could be set up only using configuration file, so it requires restart of aptly HTTP server in order for changes to take effect.
-1. GPG key passphrase can't be input on console, so either passwordless GPG keys are required or passphrase should be specified in API parameters.
-1. Some script might be required to start/stop aptly HTTP service.
-1. Some parameters are given as part of URLs, which requires proper url encoding. Unfortunately, at the moment it's not possible to pass URL arguments with `/` in them.
+- Some configuration changes (S3 publishing endpoints, ...) will require restarting the aptly service
+- Aptly's HTTP API shouldn't be directly exposed to the Internet as there is no authentication/protection of APIs. Consider using a HTTP proxy or server (e.g. nginx) to add an authentication mechanism.
+
+#### Aptly REST API Documentation
