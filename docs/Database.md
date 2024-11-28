@@ -1,4 +1,4 @@
-# Aptly Database Operations
+# Maintenance Operations
 <div>
 Manage aptly’s internal metadata database and package pool.
 </div>

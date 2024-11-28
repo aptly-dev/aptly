@@ -31,7 +31,7 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	return verifier, nil
 }
 
-// @Summary Get mirrors
+// @Summary Get Mirrors
 // @Description **Show list of currently available mirrors**
 // @Description Each mirror is returned as in “show” API.
 // @Tags Mirrors
@@ -82,8 +82,8 @@ type mirrorCreateParams struct {
 	IgnoreSignatures bool `                  json:"IgnoreSignatures"`
 }
 
-// @Summary Create mirror
-// @Description **Create a mirror**
+// @Summary Create Mirror
+// @Description **Create a mirror of a remote repositoru**
 // @Tags Mirrors
 // @Consume json
 // @Param request body mirrorCreateParams true "Parameters"

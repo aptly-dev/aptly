@@ -1,4 +1,4 @@
-# File Operations
+# Upload Package Files
 <div>
 Upload package files temporarily to aptly service. These files
 could be added to local repositories using [local repositories API](/doc/api/repos).

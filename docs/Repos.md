@@ -1,4 +1,4 @@
-# Repositories
+# Manage Local Repositories
 <div>
 Local repository is a collection of packages (most usually custom packages created internally).
 Packages could be added to local repository at any moment, removed, moved or copied between repos.
