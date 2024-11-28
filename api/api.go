@@ -30,7 +30,12 @@ type aptlyVersion struct {
 
 // @Summary Aptly version
 // @Description **Get aptly version**
-// @Description Returns the aptly version
+// @Description
+// @Description **Example:**
+// @Description ```
+// @Description $ curl http://localhost:8080/api/version
+// @Description {"Version":"0.9~dev"}
+// @Description ```
 // @Tags Status
 // @Produce json
 // @Success 200 {object} aptlyVersion
