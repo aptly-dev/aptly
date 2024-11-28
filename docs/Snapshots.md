@@ -1,4 +1,4 @@
-# Manage Snapshots of Repositories and Mirrors
+# Manage Snapshots
 <div>
 
 Local Repositories and Mirrors can be snapshotted to get an immutable state.

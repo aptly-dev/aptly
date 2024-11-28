@@ -188,6 +188,7 @@ type publishedRepoCreateParams struct {
 // @Description See also: `aptly publish create`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body publishedRepoCreateParams true "Parameters"
 // @Produce json
@@ -395,6 +396,7 @@ type publishedRepoUpdateSwitchParams struct {
 // @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body publishedRepoUpdateSwitchParams true "Parameters"
 // @Produce json
@@ -525,6 +527,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 // @Param distribution path string true "distribution name"
 // @Param force query int true "force: 1 to enable"
 // @Param skipCleanup query int true "skipCleanup: 1 to enable"
+// @Param _async query bool false "Run in background and return task object"
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Published repository not found"
@@ -571,6 +574,7 @@ func apiPublishDrop(c *gin.Context) {
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body sourceParams true "Parameters"
 // @Produce json
@@ -688,6 +692,7 @@ func apiPublishListChanges(c *gin.Context) {
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body []sourceParams true "Parameters"
 // @Produce json
@@ -753,6 +758,7 @@ func apiPublishSetSources(c *gin.Context) {
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
@@ -805,6 +811,7 @@ func apiPublishDropChanges(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Param component path string true "component name"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body sourceParams true "Parameters"
 // @Produce json
@@ -884,6 +891,7 @@ func apiPublishUpdateSource(c *gin.Context) {
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Param component path string true "component name"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200
 // @Failure 400 {object} Error "Bad Request"
@@ -960,6 +968,7 @@ type publishedRepoUpdateParams struct {
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
+// @Param _async query bool false "Run in background and return task object"
 // @Consume json
 // @Param request body publishedRepoUpdateParams true "Parameters"
 // @Produce json
