@@ -14,8 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Get snapshots
-// @Description **Get list of available snapshots**
+// @Summary List Snapshots
+// @Description **Get list of snapshots**
+// @Description
 // @Description Each snapshot is returned as in “show” API.
 // @Tags Snapshots
 // @Produce  json
@@ -45,8 +46,8 @@ type snapshotsCreateFromMirrorParams struct {
 	Description string
 }
 
-// @Summary Create snapshot from mirror
-// @Description **Create snapshot of a mirror from given name**
+// @Summary Snapshot Mirror
+// @Description **Create a snapshot of a mirror**
 // @Tags Snapshots
 // @Produce json
 // @Param request body snapshotsCreateFromMirrorParams true "Parameters"
@@ -119,8 +120,9 @@ type snapshotsCreateParams struct {
 	PackageRefs     []string
 }
 
-// @Summary Create snapshot from repo
+// @Summary Snapshot Packages
 // @Description **Create a snapshot from package refs**
+// @Description
 // @Description Refs can be obtained from snapshots, local repos, or mirrors
 // @Tags Snapshots
 // @Param request body snapshotsCreateParams true "Parameters"

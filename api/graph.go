@@ -26,7 +26,7 @@ import (
 // @Description
 // @Description Example URL: `http://localhost:8080/api/graph.svg?layout=vertical`
 // @Tags Status
-// @Produce json
+// @Produce image/png, image/svg+xml
 // @Param ext path string true "ext specifies desired file extension, e.g. .png, .svg."
 // @Param layout query string false "Change between a `horizontal` (default) and a `vertical` graph layout."
 // @Success 200 {object} []byte "Output"
