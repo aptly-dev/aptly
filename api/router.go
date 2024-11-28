@@ -232,7 +232,6 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		api.GET("/tasks/:id/return_value", apiTasksReturnValueShow)
 		api.GET("/tasks/:id", apiTasksShow)
 		api.DELETE("/tasks/:id", apiTasksDelete)
-		api.POST("/tasks-dummy", apiTasksDummy)
 	}
 
 	return router

@@ -1,10 +1,8 @@
 package api
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
@@ -202,22 +200,4 @@ func apiTasksDelete(c *gin.Context) {
 	}
 
 	c.JSON(200, delTask)
-}
-
-// @Summary Dummy endpoint used for testing.
-// @Description **Dummy endpoint used for testing**
-// @Tags Tasks
-// @Produce json
-// @Param _async query bool false "Run task in background using tasks API"
-// @Success 200 {object} task.ProcessReturnValue
-// @Router /api/tasks-dummy [post]
-func apiTasksDummy(c *gin.Context) {
-	resources := []string{"dummy"}
-	taskName := "Dummy task"
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
-		out.Printf("Dummy task started\n")
-		detail.Store([]int{1, 2, 3})
-		out.Printf("Dummy task finished\n")
-		return &task.ProcessReturnValue{Code: http.StatusTeapot, Value: []int{1, 2, 3}}, nil
-	})
 }
