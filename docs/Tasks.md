@@ -1,8 +1,8 @@
 # Background Tasks
 <div>
-An aptly task is a sequence of multiple aptly commands run within a single aptly thread.
 
-For example, a task could be to [create a new repository](/doc/aptly/repo/create), [add packages to it](/doc/aptly/repo/add), [create a snapshot](/doc/aptly/snapshot/create) and [serve it](/doc/aptly/serve).
+Several API operations allow to be run in background asynchronously in a task. In that case, a Task object with an ID and a State is returned, which can be queried for progress.
 
-Four commands can be now run in a single command.
+Tasks should be deleted once they are no longer in progress, in order to not cause memory overflows.
+
 </div>

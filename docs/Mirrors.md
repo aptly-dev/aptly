@@ -1,8 +1,8 @@
 # Manage Remote Repository Mirrors
 <div>
-Manage mirrors of remote Debian repositories.
+Manage mirrors of remote Debian repositories (http, https or ftp).
 
-HTTP, HTTPS and FTP repositories are supported.
+Flat debian repositories, mirroring source packages and debian installers is supported.
 
 </div>
 
