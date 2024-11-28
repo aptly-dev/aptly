@@ -84,7 +84,7 @@ func aptlySnapshotCreate(cmd *commander.Command, args []string) error {
 func makeCmdSnapshotCreate() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlySnapshotCreate,
-		UsageLine: "create <name> from mirror <mirror-name> | from repo <repo-name> | empty",
+		UsageLine: "create <name> (from mirror <mirror-name> | from repo <repo-name> | empty)",
 		Short:     "creates snapshot of mirror (local repository) contents",
 		Long: `
 Command create <name> from mirror makes persistent immutable snapshot of remote

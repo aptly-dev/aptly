@@ -91,7 +91,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 func makeCmdRepoAdd() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoAdd,
-		UsageLine: "add <name> <package file.deb>|<directory> ...",
+		UsageLine: "add <name> (<package file.deb>|<directory>)...",
 		Short:     "add packages to local repository",
 		Long: `
 Command adds packages to local repository from .deb, .udeb (binary packages) and .dsc (source packages) files.
