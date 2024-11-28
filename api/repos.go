@@ -98,8 +98,14 @@ type repoCreateParams struct {
 }
 
 // @Summary Create repository
-// @Description Create a local repository with specified parameters.
+// @Description **Create a local repository**
+// @Description
 // @Description Distribution and component are used as defaults when publishing repo either directly or via snapshot.
+// @Description
+// @Description ```
+// @Description $ curl -X POST -H 'Content-Type: application/json' --data '{"Name": "aptly-repo"}' http://localhost:8080/api/repos
+// @Description {"Name":"aptly-repo","Comment":"","DefaultDistribution":"","DefaultComponent":""}
+// @Description ```
 // @Tags Repos
 // @Produce  json
 // @Consume  json
@@ -287,7 +293,14 @@ func apiReposDrop(c *gin.Context) {
 
 // @Summary List Repo Packages
 // @Description **Return a list of packages present in the repo**
+// @Description
 // @Description If `q` query parameter is missing, return all packages, otherwise return packages that match q
+// @Description
+// @Description **Example:**
+// @Description ```
+// @Description $ curl http://localhost:8080/api/repos/aptly-repo/packages
+// @Description ["Pi386 aptly 0.8 966561016b44ed80"]
+// @Description ```
 // @Tags Repos
 // @Produce json
 // @Param name path string true "Snapshot to search"

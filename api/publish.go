@@ -179,6 +179,12 @@ type publishedRepoCreateParams struct {
 // @Description
 // @Description The prefix may contain a storage specifier, e.g. `s3:packages/`, or it may also be empty to publish to the root directory.
 // @Description
+// @Description **Example:**
+// @Description ```
+// @Description $ curl -X POST -H 'Content-Type: application/json' --data '{"Distribution": "wheezy", "Sources": [{"Name": "aptly-repo"}]}' http://localhost:8080/api/publish//repos
+// @Description {"Architectures":["i386"],"Distribution":"wheezy","Label":"","Origin":"","Prefix":".","SourceKind":"local","Sources":[{"Component":"main","Name":"aptly-repo"}],"Storage":""}
+// @Description ```
+// @Description
 // @Description See also: `aptly publish create`
 // @Tags Publish
 // @Param prefix path string true "publishing prefix"
