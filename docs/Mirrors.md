@@ -1,4 +1,4 @@
-# Remote Repository Mirrors
+# Manage Remote Repository Mirrors
 <div>
 Manage mirrors of remote Debian repositories.
 

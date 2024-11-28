@@ -1,4 +1,4 @@
-# Publish repositories and mirrors
+# Publish Repositories and Mirrors
 <div>
 
 Publish snapshot or local repo as Debian repository which could be served by HTTP/FTP/rsync server. Repository is signed by user's key with GnuPG. Key should be created beforehand (see section GPG Keys below).  Published repository could be consumed directly by apt.

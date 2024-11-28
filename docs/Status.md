@@ -1,4 +1,4 @@
-# Aptly Status Information
+# Status Information
 <div>
 Various status information.
 
