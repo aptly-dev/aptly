@@ -1,10 +1,5 @@
 # Aptly Status Information
 <div>
-
-## Something
-
-Very interesting ... asd wer
-
-
+Various status information.
 
 </div>

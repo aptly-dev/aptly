@@ -13,17 +13,26 @@ import (
 )
 
 // @Summary Graph Output
-// @Description **Generate graph of aptly objects (same as in aptly graph command).**
-// @Description e.g open url `http://localhost:8080/api/graph.svg?layout=vertical` in browser
-// @Tags Graph
+// @Description **Generate dependency graph**
+// @Description
+// @Description Command graph generates graph of dependencies:
+// @Description
+// @Description * between snapshots and mirrors (what mirror was used to create each snapshot)
+// @Description * between snapshots and local repos (what local repo was used to create snapshot)
+// @Description * between snapshots (pulling, merging, etc.)
+// @Description * between snapshots, local repos and published repositories (how snapshots were published).
+// @Description
+// @Description Graph is rendered to PNG file using graphviz package.
+// @Description
+// @Description Example URL: `http://localhost:8080/api/graph.svg?layout=vertical`
+// @Tags Status
 // @Produce json
 // @Param ext path string true "ext specifies desired file extension, e.g. .png, .svg."
 // @Param layout query string false "Change between a `horizontal` (default) and a `vertical` graph layout."
 // @Success 200 {object} []byte "Output"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Server Error"
-// @Router /api/graph [get]
-// GET /api/graph.:ext?layout=[vertical|horizontal(default)]
+// @Router /api/graph.{ext} [get]
 func apiGraph(c *gin.Context) {
 	var (
 		err    error

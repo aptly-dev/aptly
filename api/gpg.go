@@ -19,9 +19,11 @@ type gpgAddKeyParams struct {
 	Keyring     string
 }
 
-// @Summary Add GPG Key
-// @Description Adds a GPG key to aptly keyring
-// @Tags GPG
+// @Summary Add GPG Keys
+// @Description **Adds GPG keys to aptly keyring**
+// @Description
+// @Description Add GPG public keys for veryfing remote repositories for mirroring.
+// @Tags Mirrors
 // @Produce json
 // @Success 200 {object} string "OK"
 // @Failure 400 {object} Error "Bad Request"
