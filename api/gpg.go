@@ -13,10 +13,14 @@ import (
 )
 
 type gpgAddKeyParams struct {
-	Keyserver   string
-	GpgKeyID    string
-	GpgKeyArmor string
-	Keyring     string
+	// Keyserver, when downloading GpgKeyIDs
+	Keyserver string `json:"Keyserver"       example:"hkp://keyserver.ubuntu.com:80"`
+	// GpgKeyIDs to download from Keyserver, comma separated list
+	GpgKeyID string `json:"GpgKeyID"        example:"EF0F382A1A7B6500,8B48AD6246925553"`
+	// Armored gpg public ket, instead of downloading from keyserver
+	GpgKeyArmor string `json:"GpgKeyArmor"     example:""`
+	// Keyring for adding the keys (default: trustedkeys.gpg)
+	Keyring string `json:"Keyring"         example:"trustedkeys.gpg"`
 }
 
 // @Summary Add GPG Keys
