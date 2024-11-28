@@ -73,6 +73,10 @@
         align-self: flex-start;
     }
 
+    #swagger-ui {
+        padding-bottom: 112px;
+    }
+
   </style>
 </head>
 
@@ -117,6 +121,17 @@
 <script src="/docs/swagger-ui-bundle.js"> </script>
 <script src="/docs/swagger-ui-standalone-preset.js"> </script>
 <script>
+    function collapseAll() {
+        blocks = document.getElementsByClassName("opblock-tag");
+        for (let i = 0; i < blocks.length; i++) {
+            blocks[i].click();
+        }
+        models = document.getElementsByClassName("models-control");
+        for (let i = 0; i < models.length; i++) {
+            models[i].click();
+        }
+    }
+
 window.onload = function() {
 
   const ui = SwaggerUIBundle({
@@ -146,6 +161,8 @@ window.onload = function() {
   }
 
   window.ui = ui
+
+  setTimeout(collapseAll, 700);
 }
 </script>
 </body>

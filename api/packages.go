@@ -1,8 +1,8 @@
 package api
 
 import (
+	_ "github.com/aptly-dev/aptly/deb" // for swagger
 	"github.com/gin-gonic/gin"
-	_ "github.com/aptly-dev/aptly/deb"
 )
 
 // @Summary Show packages
