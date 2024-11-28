@@ -165,10 +165,14 @@ func apiReposCreate(c *gin.Context) {
 }
 
 type reposEditParams struct {
-	Name                *string
-	Comment             *string
-	DefaultDistribution *string
-	DefaultComponent    *string
+	// Name of repository to modify
+	Name *string `binding:"required"     json:"Name"                 example:"repo1"`
+	// Change Comment of repository
+	Comment *string `                    json:"Comment"              example:"example repo"`
+	// Change Default Distribution for publishing
+	DefaultDistribution *string `        json:"DefaultDistribution"  example:""`
+	// Change Devault Component for publishing
+	DefaultComponent *string `        json:"DefaultComponent"     example:""`
 }
 
 // @Summary Update repo
@@ -332,7 +336,8 @@ func apiReposPackagesShow(c *gin.Context) {
 }
 
 type reposPackagesAddDeleteParams struct {
-	PackageRefs []string
+	// Package Refs
+	PackageRefs []string `binding:"required"     json:"PackageRefs"                 example:""`
 }
 
 // Handler for both add and delete
@@ -593,8 +598,10 @@ func apiReposPackageFromDir(c *gin.Context) {
 }
 
 type reposCopyPackageParams struct {
+	// Copy also dependencies
 	WithDeps bool `json:"with-deps,omitempty"`
-	DryRun   bool `json:"dry-run,omitempty"`
+	// Do not perform operations
+	DryRun bool `json:"dry-run,omitempty"`
 }
 
 // @Summary Copy Package
