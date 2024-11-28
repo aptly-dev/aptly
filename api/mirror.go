@@ -83,7 +83,7 @@ type mirrorCreateParams struct {
 }
 
 // @Summary Create Mirror
-// @Description **Create a mirror of a remote repositoru**
+// @Description **Create a mirror of a remote repository**
 // @Tags Mirrors
 // @Consume json
 // @Param request body mirrorCreateParams true "Parameters"

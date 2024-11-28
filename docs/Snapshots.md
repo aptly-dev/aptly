@@ -1,4 +1,8 @@
 # Manage Snapshots of Repositories and Mirrors
 <div>
-Snapshot is a fixed state of remote repository mirror or local repository. Internally snapshot is list of references to packages. Snapshot is immutable, i.e. it can’t be changed since it has been created. Snapshots could be merged, filtered, individual packages could be pulled, snapshot could be verified for missing dependencies. Finally, snapshots could be published as repositories.
+
+Local Repositories and Mirrors can be snapshotted to get an immutable state.
+
+Snapshots cab be merged, filtered, verified for missing dependencies. Snapshots can be published to be used as APT source.
+
 </div>
