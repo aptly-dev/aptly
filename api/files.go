@@ -34,8 +34,14 @@ func verifyDir(c *gin.Context) bool {
 	return true
 }
 
-// @Summary List Files
-// @Description **Get list of uploaded files**
+// @Summary List Directories
+// @Description **Get list of upload directories**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description  $ curl http://localhost:8080/api/files
+// @Description  ["aptly-0.9"]
+// @Description  ```
 // @Tags Files
 // @Produce json
 // @Success 200 {array} string "List of files"
@@ -67,9 +73,17 @@ func apiFilesListDirs(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// @Summary Upload file glaa
-// @Description **Upload a file to a directory**
-// @Description Any number of files can be uploaded in one call; aptly preserves filenames. No check is performed if existing uploaded file would be overwritten.
+// @Summary Upload Files
+// @Description **Upload files to a directory**
+// @Description
+// @Description - one or more files can be uploaded
+// @Description - existing uploaded are overwritten
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X POST -F file=@aptly_0.9~dev+217+ge5d646c_i386.deb http://localhost:8080/api/files/aptly-0.9
+// @Description ["aptly-0.9/aptly_0.9~dev+217+ge5d646c_i386.deb"]
+// @Description  ```
 // @Tags Files
 // @Accept multipart/form-data
 // @Param dir path string true "Directory to upload files to. Created if does not exist"
@@ -132,8 +146,14 @@ func apiFilesUpload(c *gin.Context) {
 	c.JSON(200, stored)
 }
 
-// @Summary List files in directory
-// @Description **Returns list of files in directory**
+// @Summary List Files
+// @Description **Show uploaded files in upload directory**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl http://localhost:8080/api/files/aptly-0.9
+// @Description ["aptly_0.9~dev+217+ge5d646c_i386.deb"]
+// @Description  ```
 // @Tags Files
 // @Produce json
 // @Param dir path string true "Directory to list"
@@ -179,7 +199,13 @@ func apiFilesListFiles(c *gin.Context) {
 }
 
 // @Summary Delete Directory
-// @Description **Deletes all files in upload directory and directory itself**
+// @Description **Delete upload directory and uploaded files within**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X DELETE http://localhost:8080/api/files/aptly-0.9
+// @Description {}
+// @Description  ```
 // @Tags Files
 // @Produce json
 // @Param dir path string true "Directory"
@@ -200,8 +226,14 @@ func apiFilesDeleteDir(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary Delete File in Directory
-// @Description **Delete single file in directory**
+// @Summary Delete File
+// @Description **Delete a uploaded file in upload directory**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X DELETE http://localhost:8080/api/files/aptly-0.9/aptly_0.9~dev+217+ge5d646c_i386.deb
+// @Description {}
+// @Description  ```
 // @Tags Files
 // @Produce json
 // @Param dir path string true "Directory to delete from"
