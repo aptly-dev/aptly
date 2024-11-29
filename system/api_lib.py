@@ -84,7 +84,7 @@ class APITest(BaseTest):
         self._ensure_async(kwargs)
         resp = self.post(uri, *args, **kwargs)
         if resp.status_code != 202:
-            return resp
+            raise Exception("async api error: " + resp.text)
 
         _id = resp.json()['ID']
         resp = self.get("/api/tasks/" + str(_id) + "/wait")
