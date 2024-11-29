@@ -117,13 +117,13 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 
 type snapshotsCreateParams struct {
 	// Name of snapshot to create
-	Name string `binding:"required"               json:"Name"                 example:"snap2"`
+	Name string `binding:"required"  json:"Name"                 example:"snap2"`
 	// Description of snapshot
-	Description string `                          json:"Description"`
+	Description string `             json:"Description"`
 	// List of source snapshots
-	SourceSnapshots []string `binding:"required"  json:"SourceSnapshots"      example:"snap1"`
+	SourceSnapshots []string `       json:"SourceSnapshots"      example:"snap1"`
 	// List of package refs
-	PackageRefs []string `binding:"required"  json:"PackageRefs"          example:""`
+	PackageRefs []string `           json:"PackageRefs"          example:""`
 }
 
 // @Summary Snapshot Packages
@@ -279,9 +279,9 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 
 type snapshotsUpdateParams struct {
 	// Change Name of snapshot
-	Name string `binding:"required"               json:"Name"                 example:"snap2"`
+	Name string `       json:"Name"  example:"snap2"`
 	// Change Description of snapshot
-	Description string `                          json:"Description"`
+	Description string `json:"Description"`
 }
 
 // @Summary Update Snapshot
