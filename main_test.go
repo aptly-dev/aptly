@@ -51,6 +51,7 @@ func TestRunMain(t *testing.T) {
 	}
 
 	aptly.Version = Version
+	aptly.AptlyConf = AptlyConf
 
 	args := filterOutTestArgs(os.Args[1:])
 	root := cmd.RootCommand()
