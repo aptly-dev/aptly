@@ -215,6 +215,18 @@ func SaveConfig(filename string, config *ConfigStructure) error {
 	return err
 }
 
+// SaveConfigRaw write configuration to file
+func SaveConfigRaw(filename string, conf []byte) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(conf)
+	return err
+}
+
 // GetRootDir returns the RootDir with expanded ~ as home directory
 func (conf *ConfigStructure) GetRootDir() string {
 	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
