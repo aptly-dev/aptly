@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -81,6 +82,9 @@ type PackagePoolStorage struct {
 	Azure *AzureEndpoint
 }
 
+var AZURE = "azure"
+var LOCAL = "local"
+
 func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
 	var discriminator struct {
 		Type string `json:"type"`
@@ -91,10 +95,10 @@ func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
 	}
 
 	switch discriminator.Type {
-	case "azure":
+	case AZURE:
 		pool.Azure = &AzureEndpoint{}
 		return json.Unmarshal(data, &pool.Azure)
-	case "local", "":
+	case LOCAL, "":
 		pool.Local = &LocalPoolStorage{}
 		return json.Unmarshal(data, &pool.Local)
 	default:
@@ -111,10 +115,10 @@ func (pool *PackagePoolStorage) UnmarshalYAML(unmarshal func(interface{}) error)
 	}
 
 	switch discriminator.Type {
-	case "azure":
+	case AZURE:
 		pool.Azure = &AzureEndpoint{}
 		return unmarshal(&pool.Azure)
-	case "local", "":
+	case LOCAL, "":
 		pool.Local = &LocalPoolStorage{}
 		return unmarshal(&pool.Local)
 	default:
@@ -250,17 +254,13 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	}
 	defer f.Close()
 
-	dec_json := json.NewDecoder(JsonConfigReader.New(f))
-	if err = dec_json.Decode(&config); err != nil {
+	decJSON := json.NewDecoder(JsonConfigReader.New(f))
+	if err = decJSON.Decode(&config); err != nil {
 		f.Seek(0, 0)
-		dec_yaml := yaml.NewDecoder(f)
-		if err = dec_yaml.Decode(&config); err != nil {
-			fmt.Errorf("config file %s is not valid yaml or json\n", filename)
-		} else {
-			fmt.Printf("config file %s format is yaml\n", filename)
+		decYAML := yaml.NewDecoder(f)
+		if err = decYAML.Decode(&config); err != nil {
+			err = errors.New("not valid yaml or json")
 		}
-	} else {
-		fmt.Printf("config file %s format is json\n", filename)
 	}
 	return err
 }

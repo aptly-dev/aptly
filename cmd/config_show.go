@@ -9,11 +9,11 @@ import (
 )
 
 func aptlyConfigShow(_ *commander.Command, _ []string) error {
-	show_yaml := context.Flags().Lookup("yaml").Value.Get().(bool)
+	showYaml := context.Flags().Lookup("yaml").Value.Get().(bool)
 
 	config := context.Config()
 
-	if show_yaml {
+	if showYaml {
 		yamlData, err := yaml.Marshal(&config)
 		if err != nil {
 			return fmt.Errorf("error marshaling to YAML: %s", err)
