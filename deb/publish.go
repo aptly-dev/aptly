@@ -1660,6 +1660,11 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		return err
 	}
 
+	err = collection.LoadComplete(repo, collectionFactory)
+	if err != nil {
+		return err
+	}
+
 	removePrefix := true
 	removePoolComponents := repo.Components()
 	cleanComponents := []string{}
