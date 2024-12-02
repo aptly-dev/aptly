@@ -7,7 +7,7 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
-# Uncomment to update test outputs
+# Uncomment to update system test gold files
 # CAPTURE := "--capture"
 
 help:  ## Print this help

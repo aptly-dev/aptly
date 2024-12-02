@@ -63,93 +63,93 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	f.Read(buf)
 
 	c.Check(string(buf), Equals, ""+
-		"{\n"+
-		"  \"rootDir\": \"/tmp/aptly\",\n"+
-		"  \"downloadConcurrency\": 5,\n"+
-		"  \"downloadSpeedLimit\": 0,\n"+
-		"  \"downloadRetries\": 0,\n"+
-		"  \"downloader\": \"\",\n"+
-		"  \"databaseOpenAttempts\": 5,\n"+
-		"  \"architectures\": null,\n"+
-		"  \"dependencyFollowSuggests\": false,\n"+
-		"  \"dependencyFollowRecommends\": false,\n"+
-		"  \"dependencyFollowAllVariants\": false,\n"+
-		"  \"dependencyFollowSource\": false,\n"+
-		"  \"dependencyVerboseResolve\": false,\n"+
-		"  \"gpgDisableSign\": false,\n"+
-		"  \"gpgDisableVerify\": false,\n"+
-		"  \"gpgProvider\": \"gpg\",\n"+
-		"  \"downloadSourcePackages\": false,\n"+
-		"  \"packagePoolStorage\": {\n"+
-		"    \"type\": \"local\",\n"+
-		"    \"path\": \"/tmp/aptly-pool\"\n"+
-		"  },\n"+
-		"  \"skipLegacyPool\": false,\n"+
-		"  \"ppaDistributorID\": \"\",\n"+
-		"  \"ppaCodename\": \"\",\n"+
-		"  \"skipContentsPublishing\": false,\n"+
-		"  \"skipBz2Publishing\": false,\n"+
-		"  \"FileSystemPublishEndpoints\": {\n"+
-		"    \"test\": {\n"+
-		"      \"rootDir\": \"/opt/aptly-publish\",\n"+
-		"      \"linkMethod\": \"\",\n"+
-		"      \"verifyMethod\": \"\"\n"+
-		"    }\n"+
-		"  },\n"+
-		"  \"S3PublishEndpoints\": {\n"+
-		"    \"test\": {\n"+
-		"      \"region\": \"us-east-1\",\n"+
-		"      \"bucket\": \"repo\",\n"+
-		"      \"endpoint\": \"\",\n"+
-		"      \"awsAccessKeyID\": \"\",\n"+
-		"      \"awsSecretAccessKey\": \"\",\n"+
-		"      \"awsSessionToken\": \"\",\n"+
-		"      \"prefix\": \"\",\n"+
-		"      \"acl\": \"\",\n"+
-		"      \"storageClass\": \"\",\n"+
-		"      \"encryptionMethod\": \"\",\n"+
-		"      \"plusWorkaround\": false,\n"+
-		"      \"disableMultiDel\": false,\n"+
-		"      \"forceSigV2\": false,\n"+
-		"      \"forceVirtualHostedStyle\": false,\n"+
-		"      \"debug\": false\n"+
-		"    }\n"+
-		"  },\n"+
-		"  \"SwiftPublishEndpoints\": {\n"+
-		"    \"test\": {\n"+
-		"      \"osname\": \"\",\n"+
-		"      \"password\": \"\",\n"+
-		"      \"authurl\": \"\",\n"+
-		"      \"tenant\": \"\",\n"+
-		"      \"tenantid\": \"\",\n"+
-		"      \"domain\": \"\",\n"+
-		"      \"domainid\": \"\",\n"+
-		"      \"tenantdomain\": \"\",\n"+
-		"      \"tenantdomainid\": \"\",\n"+
-		"      \"prefix\": \"\",\n"+
-		"      \"container\": \"repo\"\n"+
-		"    }\n"+
-		"  },\n"+
-		"  \"AzurePublishEndpoints\": {\n"+
-		"    \"test\": {\n"+
-		"      \"accountName\": \"\",\n"+
-		"      \"accountKey\": \"\",\n"+
-		"      \"container\": \"repo\",\n"+
-		"      \"prefix\": \"\",\n"+
-		"      \"endpoint\": \"\"\n"+
-		"    }\n"+
-		"  },\n"+
-		"  \"AsyncAPI\": false,\n"+
-		"  \"enableMetricsEndpoint\": false,\n"+
-		"  \"logLevel\": \"info\",\n"+
-		"  \"logFormat\": \"json\",\n"+
-		"  \"serveInAPIMode\": false,\n"+
-		"  \"databaseBackend\": {\n"+
-		"    \"type\": \"\",\n"+
-		"    \"url\": \"\",\n"+
-                "    \"dbPath\": \"\"\n" +
-		"  },\n"+
-                "  \"enableSwaggerEndpoint\": false\n" +
+		"{\n" +
+		"  \"rootDir\": \"/tmp/aptly\",\n" +
+		"  \"logLevel\": \"info\",\n" +
+		"  \"logFormat\": \"json\",\n" +
+		"  \"databaseOpenAttempts\": 5,\n" +
+		"  \"architectures\": null,\n" +
+		"  \"skipLegacyPool\": false,\n" +
+		"  \"dependencyFollowSuggests\": false,\n" +
+		"  \"dependencyFollowRecommends\": false,\n" +
+		"  \"dependencyFollowAllVariants\": false,\n" +
+		"  \"dependencyFollowSource\": false,\n" +
+		"  \"dependencyVerboseResolve\": false,\n" +
+		"  \"ppaDistributorID\": \"\",\n" +
+		"  \"ppaCodename\": \"\",\n" +
+		"  \"serveInAPIMode\": false,\n" +
+		"  \"enableMetricsEndpoint\": false,\n" +
+		"  \"enableSwaggerEndpoint\": false,\n" +
+		"  \"AsyncAPI\": false,\n" +
+		"  \"databaseBackend\": {\n" +
+		"    \"type\": \"\",\n" +
+		"    \"dbPath\": \"\",\n" +
+		"    \"url\": \"\"\n" +
+		"  },\n" +
+		"  \"downloader\": \"\",\n" +
+		"  \"downloadConcurrency\": 5,\n" +
+		"  \"downloadSpeedLimit\": 0,\n" +
+		"  \"downloadRetries\": 0,\n" +
+		"  \"downloadSourcePackages\": false,\n" +
+		"  \"gpgProvider\": \"gpg\",\n" +
+		"  \"gpgDisableSign\": false,\n" +
+		"  \"gpgDisableVerify\": false,\n" +
+		"  \"skipContentsPublishing\": false,\n" +
+		"  \"skipBz2Publishing\": false,\n" +
+		"  \"FileSystemPublishEndpoints\": {\n" +
+		"    \"test\": {\n" +
+		"      \"rootDir\": \"/opt/aptly-publish\",\n" +
+		"      \"linkMethod\": \"\",\n" +
+		"      \"verifyMethod\": \"\"\n" +
+		"    }\n" +
+		"  },\n" +
+		"  \"S3PublishEndpoints\": {\n" +
+		"    \"test\": {\n" +
+		"      \"region\": \"us-east-1\",\n" +
+		"      \"bucket\": \"repo\",\n" +
+		"      \"prefix\": \"\",\n" +
+		"      \"acl\": \"\",\n" +
+		"      \"awsAccessKeyID\": \"\",\n" +
+		"      \"awsSecretAccessKey\": \"\",\n" +
+		"      \"awsSessionToken\": \"\",\n" +
+		"      \"endpoint\": \"\",\n" +
+		"      \"storageClass\": \"\",\n" +
+		"      \"encryptionMethod\": \"\",\n" +
+		"      \"plusWorkaround\": false,\n" +
+		"      \"disableMultiDel\": false,\n" +
+		"      \"forceSigV2\": false,\n" +
+		"      \"forceVirtualHostedStyle\": false,\n" +
+		"      \"debug\": false\n" +
+		"    }\n" +
+		"  },\n" +
+		"  \"SwiftPublishEndpoints\": {\n" +
+		"    \"test\": {\n" +
+		"      \"container\": \"repo\",\n" +
+		"      \"prefix\": \"\",\n" +
+		"      \"osname\": \"\",\n" +
+		"      \"password\": \"\",\n" +
+		"      \"tenant\": \"\",\n" +
+		"      \"tenantid\": \"\",\n" +
+		"      \"domain\": \"\",\n" +
+		"      \"domainid\": \"\",\n" +
+		"      \"tenantdomain\": \"\",\n" +
+		"      \"tenantdomainid\": \"\",\n" +
+		"      \"authurl\": \"\"\n" +
+		"    }\n" +
+		"  },\n" +
+		"  \"AzurePublishEndpoints\": {\n" +
+		"    \"test\": {\n" +
+		"      \"container\": \"repo\",\n" +
+		"      \"prefix\": \"\",\n" +
+		"      \"accountName\": \"\",\n" +
+		"      \"accountKey\": \"\",\n" +
+		"      \"endpoint\": \"\"\n" +
+		"    }\n" +
+		"  },\n" +
+		"  \"packagePoolStorage\": {\n" +
+		"    \"type\": \"local\",\n" +
+		"    \"path\": \"/tmp/aptly-pool\"\n" +
+		"  }\n" +
 		"}")
 }
 
