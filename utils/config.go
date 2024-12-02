@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
+	"gopkg.in/yaml.v3"
+
 )
 
 // ConfigStructure is structure of main configuration
@@ -194,8 +196,19 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	}
 	defer f.Close()
 
-	dec := json.NewDecoder(JsonConfigReader.New(f))
-	return dec.Decode(&config)
+        dec_json := json.NewDecoder(JsonConfigReader.New(f))
+        if err = dec_json.Decode(&config); err != nil {
+            f.Seek(0, 0)
+            dec_yaml := yaml.NewDecoder(f)
+            if err = dec_yaml.Decode(&config); err != nil {
+                fmt.Errorf("config file %s is not valid yaml or json\n", filename)
+            } else {
+                fmt.Printf("config file %s format is yaml\n", filename)
+            }
+        } else {
+            fmt.Printf("config file %s format is json\n", filename)
+        }
+	return err
 }
 
 // SaveConfig write configuration to json file

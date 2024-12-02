@@ -113,7 +113,6 @@ require (
 	google.golang.org/grpc v1.64.1 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
@@ -129,4 +128,5 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	go.etcd.io/etcd/client/v3 v3.5.15
+	gopkg.in/yaml.v3 v3.0.1
 )
