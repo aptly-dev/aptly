@@ -9,55 +9,54 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"gopkg.in/yaml.v3"
-
 )
 
 // ConfigStructure is structure of main configuration
 type ConfigStructure struct { // nolint: maligned
-	RootDir                string                           `json:"rootDir"`
-	DownloadConcurrency    int                              `json:"downloadConcurrency"`
-	DownloadLimit          int64                            `json:"downloadSpeedLimit"`
-	DownloadRetries        int                              `json:"downloadRetries"`
-	Downloader             string                           `json:"downloader"`
-	DatabaseOpenAttempts   int                              `json:"databaseOpenAttempts"`
-	Architectures          []string                         `json:"architectures"`
-	DepFollowSuggests      bool                             `json:"dependencyFollowSuggests"`
-	DepFollowRecommends    bool                             `json:"dependencyFollowRecommends"`
-	DepFollowAllVariants   bool                             `json:"dependencyFollowAllVariants"`
-	DepFollowSource        bool                             `json:"dependencyFollowSource"`
-	DepVerboseResolve      bool                             `json:"dependencyVerboseResolve"`
-	GpgDisableSign         bool                             `json:"gpgDisableSign"`
-	GpgDisableVerify       bool                             `json:"gpgDisableVerify"`
-	GpgProvider            string                           `json:"gpgProvider"`
-	DownloadSourcePackages bool                             `json:"downloadSourcePackages"`
-	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"`
-	SkipLegacyPool         bool                             `json:"skipLegacyPool"`
-	PpaDistributorID       string                           `json:"ppaDistributorID"`
-	PpaCodename            string                           `json:"ppaCodename"`
-	SkipContentsPublishing bool                             `json:"skipContentsPublishing"`
-	SkipBz2Publishing      bool                             `json:"skipBz2Publishing"`
-	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"`
-	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"`
-	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"`
-	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"`
-	AsyncAPI               bool                             `json:"AsyncAPI"`
-	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"`
-	LogLevel               string                           `json:"logLevel"`
-	LogFormat              string                           `json:"logFormat"`
-	ServeInAPIMode         bool                             `json:"serveInAPIMode"`
-	DatabaseBackend        DBConfig                         `json:"databaseBackend"`
-	EnableSwaggerEndpoint  bool                             `json:"enableSwaggerEndpoint"`
+	RootDir                string                           `json:"rootDir"                       yaml:"root_dir"`
+	DownloadConcurrency    int                              `json:"downloadConcurrency"           yaml:"download_concurrency"`
+	DownloadLimit          int64                            `json:"downloadSpeedLimit"            yaml:"download_limit"`
+	DownloadRetries        int                              `json:"downloadRetries"               yaml:"download_retries"`
+	Downloader             string                           `json:"downloader"                    yaml:"downloader"`
+	DatabaseOpenAttempts   int                              `json:"databaseOpenAttempts"          yaml:"database_open_attempts"`
+	Architectures          []string                         `json:"architectures"                 yaml:"architectures"`
+	DepFollowSuggests      bool                             `json:"dependencyFollowSuggests"      yaml:"dep_follow_suggests"`
+	DepFollowRecommends    bool                             `json:"dependencyFollowRecommends"    yaml:"dep_follow_recommends"`
+	DepFollowAllVariants   bool                             `json:"dependencyFollowAllVariants"   yaml:"dep_follow_all_variants"`
+	DepFollowSource        bool                             `json:"dependencyFollowSource"        yaml:"dep_follow_source"`
+	DepVerboseResolve      bool                             `json:"dependencyVerboseResolve"      yaml:"dep_verboseresolve"`
+	GpgDisableSign         bool                             `json:"gpgDisableSign"                yaml:"gpg_disable_sign"`
+	GpgDisableVerify       bool                             `json:"gpgDisableVerify"              yaml:"gpg_disable_verify"`
+	GpgProvider            string                           `json:"gpgProvider"                   yaml:"gpg_provider"`
+	DownloadSourcePackages bool                             `json:"downloadSourcePackages"        yaml:"download_sourcepackages"`
+	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"            yaml:"packagepool_storage"`
+	SkipLegacyPool         bool                             `json:"skipLegacyPool"                yaml:"skip_legacy_pool"`
+	PpaDistributorID       string                           `json:"ppaDistributorID"              yaml:"ppa_distributor_id"`
+	PpaCodename            string                           `json:"ppaCodename"                   yaml:"ppa_codename"`
+	SkipContentsPublishing bool                             `json:"skipContentsPublishing"        yaml:"skip_contents_publishing"`
+	SkipBz2Publishing      bool                             `json:"skipBz2Publishing"             yaml:"skip_bz2_publishing"`
+	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"    yaml:"filesystem_publish_endpoints"`
+	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"            yaml:"s3_publish_endpoints"`
+	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"         yaml:"swift_publish_endpoints"`
+	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"         yaml:"azure_publish_endpoints"`
+	AsyncAPI               bool                             `json:"AsyncAPI"                      yaml:"async_api"`
+	EnableMetricsEndpoint  bool                             `json:"enableMetricsEndpoint"         yaml:"enable_metrics_endpoint"`
+	LogLevel               string                           `json:"logLevel"                      yaml:"log_level"`
+	LogFormat              string                           `json:"logFormat"                     yaml:"log_format"`
+	ServeInAPIMode         bool                             `json:"serveInAPIMode"                yaml:"serve_in_api_mode"`
+	DatabaseBackend        DBConfig                         `json:"databaseBackend"               yaml:"database_backend"`
+	EnableSwaggerEndpoint  bool                             `json:"enableSwaggerEndpoint"         yaml:"enable_swagger_endpoint"`
 }
 
 // DBConfig
 type DBConfig struct {
-	Type   string `json:"type"`
-	URL    string `json:"url"`
-	DbPath string `json:"dbPath"`
+	Type   string `json:"type"    yaml:"type"`
+	URL    string `json:"url"     yaml:"url"`
+	DbPath string `json:"dbPath"  yaml:"db_path"`
 }
 
 type LocalPoolStorage struct {
-	Path string `json:"path,omitempty"`
+	Path string `json:"path,omitempty"  yaml:"path,omitempty"`
 }
 
 type PackagePoolStorage struct {
@@ -86,6 +85,26 @@ func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
 	}
 }
 
+func (pool *PackagePoolStorage) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var discriminator struct {
+		Type string `yaml:"type"`
+	}
+	if err := unmarshal(&discriminator); err != nil {
+		return err
+	}
+
+	switch discriminator.Type {
+	case "azure":
+		pool.Azure = &AzureEndpoint{}
+		return unmarshal(&pool.Azure)
+	case "local", "":
+		pool.Local = &LocalPoolStorage{}
+		return unmarshal(&pool.Local)
+	default:
+		return fmt.Errorf("unknown pool storage type: %s", discriminator.Type)
+	}
+}
+
 func (pool *PackagePoolStorage) MarshalJSON() ([]byte, error) {
 	var wrapper struct {
 		Type string `json:"type,omitempty"`
@@ -104,54 +123,72 @@ func (pool *PackagePoolStorage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(wrapper)
 }
 
+func (pool PackagePoolStorage) MarshalYAML() (interface{}, error) {
+	var wrapper struct {
+		Type string `yaml:"type,omitempty"`
+		*LocalPoolStorage `yaml:",inline"`
+                *AzureEndpoint `yaml:",inline"`
+	}
+
+	if pool.Azure != nil {
+                wrapper.Type = "azure"
+                wrapper.AzureEndpoint = pool.Azure
+	} else if pool.Local.Path != "" {
+                wrapper.Type = "local"
+                wrapper.LocalPoolStorage = pool.Local
+	}
+
+        return wrapper, nil
+}
+
 // FileSystemPublishRoot describes single filesystem publishing entry point
 type FileSystemPublishRoot struct {
-	RootDir      string `json:"rootDir"`
-	LinkMethod   string `json:"linkMethod"`
-	VerifyMethod string `json:"verifyMethod"`
+	RootDir      string `json:"rootDir"       yaml:"root_dir"`
+	LinkMethod   string `json:"linkMethod"    yaml:"link_method"`
+	VerifyMethod string `json:"verifyMethod"  yaml:"verify_method"`
 }
 
 // S3PublishRoot describes single S3 publishing entry point
 type S3PublishRoot struct {
-	Region                  string `json:"region"`
-	Bucket                  string `json:"bucket"`
-	Endpoint                string `json:"endpoint"`
-	AccessKeyID             string `json:"awsAccessKeyID"`
-	SecretAccessKey         string `json:"awsSecretAccessKey"`
-	SessionToken            string `json:"awsSessionToken"`
-	Prefix                  string `json:"prefix"`
-	ACL                     string `json:"acl"`
-	StorageClass            string `json:"storageClass"`
-	EncryptionMethod        string `json:"encryptionMethod"`
-	PlusWorkaround          bool   `json:"plusWorkaround"`
-	DisableMultiDel         bool   `json:"disableMultiDel"`
-	ForceSigV2              bool   `json:"forceSigV2"`
-	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"`
-	Debug                   bool   `json:"debug"`
+	Region                  string `json:"region"                     yaml:"region"`
+	Bucket                  string `json:"bucket"                     yaml:"bucket"`
+	Endpoint                string `json:"endpoint"                   yaml:"endpoint"`
+	AccessKeyID             string `json:"awsAccessKeyID"             yaml:"access_key_id"`
+	SecretAccessKey         string `json:"awsSecretAccessKey"         yaml:"secret_access_key"`
+	SessionToken            string `json:"awsSessionToken"            yaml:"session_token"`
+	Prefix                  string `json:"prefix"                     yaml:"prefix"`
+	ACL                     string `json:"acl"                        yaml:"acl"`
+	StorageClass            string `json:"storageClass"               yaml:"storage_class"`
+	EncryptionMethod        string `json:"encryptionMethod"           yaml:"encryption_method"`
+	PlusWorkaround          bool   `json:"plusWorkaround"             yaml:"plus_workaround"`
+	DisableMultiDel         bool   `json:"disableMultiDel"            yaml:"disable_multidel"`
+	ForceSigV2              bool   `json:"forceSigV2"                 yaml:"force_sigv2"`
+	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"    yaml:"force_virtualhosted_style"`
+	Debug                   bool   `json:"debug"                      yaml:"debug"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
 type SwiftPublishRoot struct {
-	UserName       string `json:"osname"`
-	Password       string `json:"password"`
-	AuthURL        string `json:"authurl"`
-	Tenant         string `json:"tenant"`
-	TenantID       string `json:"tenantid"`
-	Domain         string `json:"domain"`
-	DomainID       string `json:"domainid"`
-	TenantDomain   string `json:"tenantdomain"`
-	TenantDomainID string `json:"tenantdomainid"`
-	Prefix         string `json:"prefix"`
-	Container      string `json:"container"`
+	UserName       string `json:"osname"          yaml:"username"`
+	Password       string `json:"password"        yaml:"password"`
+	AuthURL        string `json:"authurl"         yaml:"auth_url"`
+	Tenant         string `json:"tenant"          yaml:"tenant"`
+	TenantID       string `json:"tenantid"        yaml:"tenant_id"`
+	Domain         string `json:"domain"          yaml:"domain"`
+	DomainID       string `json:"domainid"        yaml:"domain_id"`
+	TenantDomain   string `json:"tenantdomain"    yaml:"tenant_domain"`
+	TenantDomainID string `json:"tenantdomainid"  yaml:"tenant_domain_id"`
+	Prefix         string `json:"prefix"          yaml:"prefix"`
+	Container      string `json:"container"       yaml:"container"`
 }
 
 // AzureEndpoint describes single Azure publishing entry point
 type AzureEndpoint struct {
-	AccountName string `json:"accountName"`
-	AccountKey  string `json:"accountKey"`
-	Container   string `json:"container"`
-	Prefix      string `json:"prefix"`
-	Endpoint    string `json:"endpoint"`
+	AccountName string `json:"accountName"  yaml:"account_name"`
+	AccountKey  string `json:"accountKey"   yaml:"account_key"`
+	Container   string `json:"container"    yaml:"container"`
+	Prefix      string `json:"prefix"       yaml:"prefix"`
+	Endpoint    string `json:"endpoint"     yaml:"endpoint"`
 }
 
 // Config is configuration for aptly, shared by all modules
@@ -182,7 +219,7 @@ var Config = ConfigStructure{
 	AzurePublishRoots:      map[string]AzureEndpoint{},
 	AsyncAPI:               false,
 	EnableMetricsEndpoint:  false,
-	LogLevel:               "debug",
+	LogLevel:               "info",
 	LogFormat:              "default",
 	ServeInAPIMode:         false,
 	EnableSwaggerEndpoint:  false,
@@ -196,18 +233,18 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	}
 	defer f.Close()
 
-        dec_json := json.NewDecoder(JsonConfigReader.New(f))
-        if err = dec_json.Decode(&config); err != nil {
-            f.Seek(0, 0)
-            dec_yaml := yaml.NewDecoder(f)
-            if err = dec_yaml.Decode(&config); err != nil {
-                fmt.Errorf("config file %s is not valid yaml or json\n", filename)
-            } else {
-                fmt.Printf("config file %s format is yaml\n", filename)
-            }
-        } else {
-            fmt.Printf("config file %s format is json\n", filename)
-        }
+	dec_json := json.NewDecoder(JsonConfigReader.New(f))
+	if err = dec_json.Decode(&config); err != nil {
+		f.Seek(0, 0)
+		dec_yaml := yaml.NewDecoder(f)
+		if err = dec_yaml.Decode(&config); err != nil {
+			fmt.Errorf("config file %s is not valid yaml or json\n", filename)
+		} else {
+			fmt.Printf("config file %s format is yaml\n", filename)
+		}
+	} else {
+		fmt.Printf("config file %s format is json\n", filename)
+	}
 	return err
 }
 
