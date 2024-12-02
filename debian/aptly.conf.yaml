@@ -7,10 +7,6 @@
 # - published repositories (`rootDir`/public)
 root_dir: ~/.aptly
 
-# Number of attempts to open database if it's locked by other instance
-# * -1 (no retry)
-database_open_attempts: -1
-
 # Log Level
 # * debug
 # * info
@@ -23,10 +19,22 @@ log_level: info
 # * json
 log_format: default
 
+# Number of attempts to open database if it's locked by other instance
+# * -1 (no retry)
+database_open_attempts: -1
+
 # Default Architectures
 # empty list defaults to all available architectures
 architectures:
 #    - amd64
+
+# OBSOLETE
+# in aptly up to version 1.0.0, package files were stored in internal package pool
+# with MD5-dervied path, since 1.1.0 package pool layout was changed;
+# if option is enabled, aptly stops checking for legacy paths;
+# by default option is enabled for new aptly installations and disabled when
+# upgrading from older versions
+skip_legacy_pool: true
 
 
 # Dependency following
@@ -57,14 +65,6 @@ ppa_distributor_id: ubuntu
 
 # Codename for short PPA url expansion
 ppa_codename: ""
-
-# OBSOLETE
-# in aptly up to version 1.0.0, package files were stored in internal package pool
-# with MD5-dervied path, since 1.1.0 package pool layout was changed;
-# if option is enabled, aptly stops checking for legacy paths;
-# by default option is enabled for new aptly installations and disabled when
-# upgrading from older versions
-skip_legacy_pool: true
 
 
 # Aptly Server
@@ -196,11 +196,6 @@ s3_publish_endpoints:
     #     region: us-east-1
     #     # Bucket name
     #     bucket: test-bucket
-    #     # Endpoint (optional)
-    #     # When using S3-compatible cloud storage, specify hostname of service endpoint here,
-    #     # region is ignored if endpoint is set (set region to some human-readable name)
-    #     # (should be left blank for real Amazon S3)
-    #     endpoint: ""
     #     # Prefix (optional)
     #     # publishing under specified prefix in the bucket, defaults to
     #     # no prefix (bucket root)
@@ -217,6 +212,11 @@ s3_publish_endpoints:
     #     access_key_id: ""
     #     secret_access_key: ""
     #     session_token: ""
+    #     # Endpoint (optional)
+    #     # When using S3-compatible cloud storage, specify hostname of service endpoint here,
+    #     # region is ignored if endpoint is set (set region to some human-readable name)
+    #     # (should be left blank for real Amazon S3)
+    #     endpoint: ""
     #     # Storage Class (optional)
     #     # Amazon S3 storage class, defaults to `STANDARD`. Other values
     #     # available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
