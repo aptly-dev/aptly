@@ -3,11 +3,10 @@
 // validate with: sed '/\/\//d' aptly.conf | json_pp
 {
 
-// General
-///////////
+// Aptly Configuration File
+////////////////////////////
 
-  // Aptly storage directory
-  // Directory for storing:
+  // Aptly storage directory for:
   // - downloaded packages (`rootDir`/pool)
   // - database (`rootDir`/db)
   // - published repositories (`rootDir`/public)
@@ -167,13 +166,13 @@
     // "test1": {
     //    // Directory for publishing
     //    "rootDir": "/opt/srv/aptly_public",
-    //
+
     //    // File Link Method for linking files from the internal pool to the published directory
     //    // * hardlink
     //    // * symlink
     //    // * copy
     //    "linkMethod": "hardlink",
-    //
+
     //    // File Copare Method for comparing existing links from the internal pool to the published directory
     //    // Only used when "linkMethod" is set to "copy"
     //    // * md5 (default: compare md5 sum)
@@ -196,24 +195,24 @@
   "S3PublishEndpoints": {
     // // Endpoint Name
     // "test": {
-    //
+
     //    // Amazon region for S3 bucket
     //    "region": "us-east-1",
-    //
+
     //    // Bucket name
     //    "bucket": "test-bucket",
-    //
+
     //    // Endpoint (optional)
     //    // When using S3-compatible cloud storage, specify hostname of service endpoint here,
     //    // region is ignored if endpoint is set (set region to some human-readable name)
     //    // (should be left blank for real Amazon S3)
     //    "endpoint": "",
-    //
+
     //    // Prefix (optional)
     //    // publishing under specified prefix in the bucket, defaults to
     //    // no prefix (bucket root)
     //    "prefix": "",
-    //
+
     //    // Default ACLs (optional)
     //    // assign ACL to published files (one of the canned ACLs in Amazon
     //    // terminology). Useful values: `private` (default), `public-read` (public
@@ -221,24 +220,24 @@
     //    // HTTP endpoint (Amazon bucket should be configured for "website hosting"),
     //    // for private repositories special apt S3 transport is required.
     //    "acl": "private",
-    //
+
     //    // Credentials (optional)
     //    // Amazon credentials to access S3 bucket. If not supplied,
     //    // environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
     //    // are used.
     //    "awsAccessKeyID": "",
     //    "awsSecretAccessKey": "",
-    //
+
     //    // Storage Class (optional)
     //    // Amazon S3 storage class, defaults to `STANDARD`. Other values
     //    // available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
     //    "storageClass": "STANDARD",
-    //
+
     //    // Encryption Method (optional)
     //    // Server-side encryption method, defaults to none. Currently
     //    // the only available encryption method is `AES256`
     //    "encryptionMethod": "none",
-    //
+
     //    // Plus Workaround (optional)
     //    // Workaround misbehavior in apt and Amazon S3 for files with `+` in filename by
     //    // creating two copies of package files with `+` in filename: one original
@@ -247,22 +246,22 @@
     //    // would be stored twice. aptly might not cleanup files with spaces when published
     //    // repository is dropped or updated (switched) to new version of repository (snapshot)
     //    "plusWorkaround": false,
-    //
+
     //    // Disable MultiDel (optional)
     //    // For S3-compatible cloud storages which do not support `MultiDel` S3 API,
     //    // enable this setting (file deletion would be slower with this setting enabled)
     //    "disableMultiDel": false,
-    //
+
     //    // ForceSig2 (optional)
     //    // Disable Signature V4 support, useful with non-AWS S3-compatible object stores
     //    // which do not support SigV4, shouldn't be enabled for AWS
     //    "forceSigV2": false,
-    //
+
     //    // ForceVirtualHostedStyle (optional)
     //    // Disable path style visit, useful with non-AWS S3-compatible object stores
     //    // which only support virtual hosted style
     //    "forceVirtualHostedStyle": false,
-    //
+
     //    // Debug (optional)
     //    // Enables detailed request/response dump for each S3 operation
     //    "debug": false
@@ -281,12 +280,12 @@
   //   `aptly publish snapshot jessie-main swift:test:`
   //
   "SwiftPublishEndpoints": {
-    // // Endpoint Name
+    // Endpoint Name
     // "test": {
-    //
+
     //    // Container Name
-    //    "container": "container1",
-    //
+    //    "container": "taylor1",
+
     //    // Prefix (optional)
     //    // Publish under specified prefix in the container, defaults to no prefix (container root)
     //    "prefix": "",
@@ -316,19 +315,19 @@
   "AzurePublishEndpoints": {
     // // Endpoint Name
     // "test": {
-    //
+
     //    // Container Name
     //    "container": "container1",
-    //
+
     //    // Prefix (optional)
     //    // Publishing under specified prefix in the container, defaults to no prefix (container root)
     //    "prefix": "",
-    //
+
     //    // Credentials
     //    // Azure storage account access key to access blob storage
     //    "accountName": "",
     //    "accountKey": "",
-    //
+
     //    // Endpoint URL
     //    // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
     //    // defaults to "https://<accountName>.blob.core.windows.net"
@@ -350,24 +349,21 @@
 
     // // Azure Azure Blob Storage Pool
     // "type": "azure",
-    // "azure": {
-    //    // Container Name
-    //    "container": "pool1",
-    //
-    //    // Prefix (optional)
-    //    // Publishing under specified prefix in the container, defaults to no prefix (container root)
-    //    "prefix": "",
-    //
-    //    // Credentials
-    //    // Azure storage account access key to access blob storage
-    //    "accountName": "",
-    //    "accountKey": "",
-    //
-    //    // Endpoint URL
-    //    // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
-    //    // defaults to "https://<accountName>.blob.core.windows.net"
-    //    "endpoint": ""
-    // }
+    // "container": "pool1",
+
+    // // Prefix (optional)
+    // // Publishing under specified prefix in the container, defaults to no prefix (container root)
+    // "prefix": "",
+
+    // // Credentials
+    // // Azure storage account access key to access blob storage
+    // "accountName": "",
+    // "accountKey": "",
+
+    // // Endpoint URL
+    // // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
+    // // defaults to "https://<accountName>.blob.core.windows.net"
+    // "endpoint": ""
   }
 
 // End of config
