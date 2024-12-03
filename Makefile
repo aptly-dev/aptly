@@ -62,7 +62,7 @@ swagger: swagger-install
 
 etcd-install:
 	# Install etcd
-	test -d /srv/etcd || system/t13_etcd/install-etcd.sh
+	test -d /tmp/aptly-etcd || system/t13_etcd/install-etcd.sh
 
 flake8:  ## run flake8 on system test python files
 	flake8 system/

@@ -242,7 +242,7 @@ class BaseTest(object):
                 os.environ["HOME"], self.aptlyDir, "pool"), ignore=shutil.ignore_patterns(".git"))
 
         if self.databaseType == "etcd":
-            if not os.path.exists("/srv/etcd"):
+            if not os.path.exists("/tmp/aptly-etcd"):
                 self.run_cmd([os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "t13_etcd/install-etcd.sh")])
 
         if self.fixtureDB and self.databaseType != "etcd":
@@ -258,7 +258,7 @@ class BaseTest(object):
 
             if self.fixtureDB:
                 print("import etcd")
-                self.run_cmd(["/srv/etcd/etcdctl", "--data-dir=/tmp/etcd-data", "snapshot", "restore", os.path.join(os.environ["HOME"], "etcd.db")])
+                self.run_cmd(["/tmp/aptly-etcd/etcdctl", "--data-dir=/tmp/aptly-etcd-data", "snapshot", "restore", os.path.join(os.environ["HOME"], "etcd.db")])
 
             print("starting etcd")
             self.EtcdServer = self._start_process([os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "t13_etcd/start-etcd.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
