@@ -120,7 +120,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 	if isSameDevice(s) {
 		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 1, Equals, true)
 	} else {
-		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink == 1, Equals, true)
 	}
 
 	// import as different name
@@ -359,7 +359,7 @@ func (s *PackagePoolSuite) TestLink(c *C) {
 	if isSameDevice(s) {
 		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
 	} else {
-		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(2))
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink == 2, Equals, true)
 	}
 }
 
@@ -377,7 +377,7 @@ func (s *PackagePoolSuite) TestSymlink(c *C) {
 	if isSameDevice(s) {
 		c.Check(info.Sys().(*syscall.Stat_t).Nlink > 2, Equals, true)
 	} else {
-		c.Check(info.Sys().(*syscall.Stat_t).Nlink, Equals, uint64(1))
+		c.Check(info.Sys().(*syscall.Stat_t).Nlink == 1, Equals, true)
 	}
 
 	info, err = os.Lstat(dstPath)
