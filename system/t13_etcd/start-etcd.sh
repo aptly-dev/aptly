@@ -16,7 +16,7 @@ finish()
 }
 trap finish INT
 
-/srv/etcd/etcd --max-request-bytes '1073741824' --data-dir /tmp/etcd-data &
+/tmp/aptly-etcd/etcd --max-request-bytes '1073741824' --data-dir /tmp/aptly-etcd-data &
 echo $! > /tmp/etcd.pid
 etcdpid=`cat /tmp/etcd.pid`
 wait $etcdpid
