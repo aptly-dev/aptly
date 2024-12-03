@@ -294,6 +294,23 @@ func SaveConfigRaw(filename string, conf []byte) error {
 	return err
 }
 
+// SaveConfigYAML write configuration to yaml file
+func SaveConfigYAML(filename string, config *ConfigStructure) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	yamlData, err := yaml.Marshal(&config)
+	if err != nil {
+		return fmt.Errorf("error marshaling to YAML: %s", err)
+	}
+
+	_, err = f.Write(yamlData)
+	return err
+}
+
 // GetRootDir returns the RootDir with expanded ~ as home directory
 func (conf *ConfigStructure) GetRootDir() string {
 	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
