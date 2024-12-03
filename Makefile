@@ -86,12 +86,12 @@ install:
 
 test: prepare swagger etcd-install  ## Run unit tests
 	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
-	@mkdir -p /tmp/etcd-data; system/t13_etcd/start-etcd.sh > /tmp/etcd-data/etcd.log 2>&1 &
+	@mkdir -p /tmp/aptly-etcd-data; system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
 	@echo "\e[33m\e[1mRunning go test ...\e[0m"
 	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
 	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
-	@rm -f /tmp/etcd-data/etcd.log
+	@rm -f /tmp/aptly-etcd-data/etcd.log
 	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
 
 system-test: prepare swagger etcd-install  ## Run system tests

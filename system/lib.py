@@ -253,8 +253,8 @@ class BaseTest(object):
                 self.shutdown_etcd()
 
             # remove existing database
-            if os.path.exists("/tmp/etcd-data"):
-                shutil.rmtree("/tmp/etcd-data")
+            if os.path.exists("/tmp/aptly-etcd-data"):
+                shutil.rmtree("/tmp/aptly-etcd-data")
 
             if self.fixtureDB:
                 print("import etcd")
