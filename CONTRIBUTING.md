@@ -110,15 +110,13 @@ make docker-build
 
 To run aptly commands in the development docker container, run:
 ```
-make docker-aptly
+make docker-shell
 ```
 
 Example:
 ```
-$ make docker-aptly
-bash: cannot set terminal process group (16): Inappropriate ioctl for device
-bash: no job control in this shell
-aptly@b43e8473ef81:/app$ aptly version
+$ make docker-shell
+aptly@b43e8473ef81:/work/src$ aptly version
 aptly version: 1.5.0+189+g0fc90dff
 ```
 
@@ -152,41 +150,27 @@ Run `make help` for more information.
 
 This section describes local setup to start contributing to aptly.
 
-#### Go & Python
-
-You would need `Go` (latest version is recommended) and `Python` 3.9 (or newer, the CI currently tests against 3.11).
-
-If you're new to Go, follow [getting started guide](https://golang.org/doc/install) to install it and perform
-initial setup. With Go 1.8+, default `$GOPATH` is `$HOME/go`, so rest of this document assumes that.
-
-Usually `$GOPATH/bin` is appended to your `$PATH` to make it easier to run built binaries, but you might choose
-to prepend it or to skip this test if you're security conscious.
-
 #### Dependencies
 
-You would need some additional tools and Python virtual environment to run tests and checks, install them with:
+Building aptly requires go version 1.22.
 
-    make prepare dev system/env
+On Debian bookworm with backports enabled, go can be installed with:
 
-This is usually one-time action.
-
-Aptly is using Go modules to manage dependencies, download modules using:
-
-    make modules
+    apt install -t bookworm-backports golang-go
 
 #### Building
 
-If you want to build aptly binary from your current source tree, run:
+To build aptly, run:
+
+    make build
+
+Run aptly:
+
+    build/aptly
+
+To install aptly into `$GOPATH/bin`, run:
 
     make install
-
-This would build `aptly` in `$GOPATH/bin`, so depending on your `$PATH`, you should be able to run it immediately with:
-
-    aptly
-
-Or, if it's not on your path:
-
-    ~/go/bin/aptly
 
 #### Unit-tests
 
@@ -243,26 +227,6 @@ There are some packages available under `system/files/` directory which are used
 `~/.aptly.conf` and `~/.aptly` subdirectory between the runs. So it's not wise to have non-dev aptly being used with
 this default location. You can run aptly under different user or by using non-default config location with non-default
 aptly root directory.
-
-#### Style Checks
-
-Style checks could be run with:
-
-    make check
-
-aptly is using [golangci-lint](https://github.com/golangci/golangci-lint) to run style checks on Go code. Configuration
-for the linter could be found in [.golangci.yml](.golangci.yml) file.
-
-Python code (system tests) are linted with [flake8 tool](https://pypi.python.org/pypi/flake8).
-
-#### Vendored Code
-
-aptly is using Go vendoring for all the libraries aptly depends upon. `vendor/` directory is checked into the source
-repository to avoid any problems if source repositories go away. Go build process will automatically prefer vendored
-packages over packages in `$GOPATH`.
-
-If you want to update vendored dependencies or to introduce new dependency, use [dep tool](https://github.com/golang/dep).
-Usually all you need is `dep ensure` or `dep ensure -update`.
 
 ### man Page
 
