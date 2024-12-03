@@ -44,7 +44,7 @@ version:  ## Print aptly version
 
 swagger-install:
 	# Install swag
-	@test -f $(BINPATH)/swag || GOOS=linux GOARCH=amd64 go install github.com/swaggo/swag/cmd/swag@latest
+	@test -f $(BINPATH)/swag || GOOS= GOARCH= go install github.com/swaggo/swag/cmd/swag@latest
 	# Generate swagger.conf
 	cp docs/swagger.conf.tpl docs/swagger.conf
 	echo "// @version $(VERSION)" >> docs/swagger.conf
@@ -79,7 +79,9 @@ build: prepare swagger  ## Build aptly
 
 install:
 	@echo "\e[33m\e[1mBuilding aptly ...\e[0m"
-	go generate
+	# go generate
+	@go generate
+	# go install -v
 	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
 test: prepare swagger etcd-install  ## Run unit tests
