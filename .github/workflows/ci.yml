@@ -109,7 +109,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
+        name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04", "Ubuntu 18.04"]
         arch: ["amd64", "i386" , "arm64" , "armhf"]
         include:
           - name: "Debian 13/testing"
@@ -133,6 +133,9 @@ jobs:
           - name: "Ubuntu 20.04"
             suite: focal
             image: ubuntu:20.04
+          - name: "Ubuntu 18.04"
+            suite: bionic
+            image: ubuntu:18.04
     container:
       image: ${{ matrix.image }}
       env:
