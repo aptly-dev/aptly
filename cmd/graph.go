@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
@@ -79,10 +78,6 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	defer func() {
-		_ = os.Remove(tempfilename)
-	}()
-
 	if output != "" {
 		err = utils.CopyFile(tempfilename, output)
 		if err != nil {
@@ -90,23 +85,16 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 		}
 
 		fmt.Printf("Output saved to %s\n", output)
+		_ = os.Remove(tempfilename)
 	} else {
 		command := getOpenCommand()
-		fmt.Printf("Rendered to %s file: %s, trying to open it with: %s %s...\n", format, tempfilename, command, tempfilename)
+		fmt.Printf("Displaying %s file: %s %s\n", format, command, tempfilename)
 
 		args := strings.Split(command, " ")
 
 		viewer := exec.Command(args[0], append(args[1:], tempfilename)...)
 		viewer.Stderr = os.Stderr
-		if err = viewer.Start(); err == nil {
-			// Wait for a second so that the visualizer has a chance to
-			// open the input file. This needs to be done even if we're
-			// waiting for the visualizer as it can be just a wrapper that
-			// spawns a browser tab and returns right away.
-			defer func(t <-chan time.Time) {
-				<-t
-			}(time.After(time.Second))
-		}
+		err = viewer.Start()
 	}
 
 	return err
