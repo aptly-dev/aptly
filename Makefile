@@ -7,7 +7,7 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
-# Uncomment to update test outputs
+# Uncomment to update system test gold files
 # CAPTURE := "--capture"
 
 help:  ## Print this help
@@ -50,11 +50,11 @@ swagger-install:
 	echo "// @version $(VERSION)" >> docs/swagger.conf
 
 azurite-start:
-	azurite & \
+	azurite -l /tmp/aptly-azurite & \
 	echo $$! > ~/.azurite.pid
 
 azurite-stop:
-	kill `cat ~/.azurite.pid`
+	@kill `cat ~/.azurite.pid`
 
 swagger: swagger-install
 	# Generate swagger docs
@@ -111,7 +111,7 @@ bench:
 serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
-	sed -i /enableSwaggerEndpoint/s/false/true/ ~/.aptly.conf
+	sed -i /enable_swagger_endpoint/s/false/true/ ~/.aptly.conf
 	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs --generalInfo docs/swagger.conf' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
@@ -210,7 +210,7 @@ man:  ## Create man pages
 
 clean:  ## remove local build and module cache
 	# Clean all generated and build files
-	find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
+	test ! -e .go || find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
 	rm -rf .go/
 	rm -rf build/ obj-*-linux-gnu* tmp/
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf

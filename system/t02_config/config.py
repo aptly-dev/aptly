@@ -64,3 +64,11 @@ class ConfigShowTest(BaseTest):
     """
     runCmd = ["aptly", "config", "show"]
     gold_processor = BaseTest.expand_environ
+
+
+class ConfigShowYAMLTest(BaseTest):
+    """
+    config showing
+    """
+    runCmd = ["aptly", "config", "show", "-yaml"]
+    gold_processor = BaseTest.expand_environ
