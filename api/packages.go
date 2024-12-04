@@ -1,10 +1,19 @@
 package api
 
 import (
+	_ "github.com/aptly-dev/aptly/deb" // for swagger
 	"github.com/gin-gonic/gin"
 )
 
-// GET /api/packages/:key
+// @Summary Show packages
+// @Description **Show information about package by package key**
+// @Description Package keys could be obtained from various GET .../packages APIs.
+// @Tags Packages
+// @Produce json
+// @Param key path string true "package key (unique package identifier)"
+// @Success 200 {object} deb.Package "OK"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/packages/{key} [get]
 func apiPackagesShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	p, err := collectionFactory.PackageCollection().ByKey([]byte(c.Params.ByName("key")))

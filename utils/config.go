@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/DisposaBoy/JsonConfigReader"
 )
 
 // ConfigStructure is structure of main configuration
@@ -192,7 +194,7 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	}
 	defer f.Close()
 
-	dec := json.NewDecoder(f)
+	dec := json.NewDecoder(JsonConfigReader.New(f))
 	return dec.Decode(&config)
 }
 
@@ -210,6 +212,18 @@ func SaveConfig(filename string, config *ConfigStructure) error {
 	}
 
 	_, err = f.Write(encoded)
+	return err
+}
+
+// SaveConfigRaw write configuration to file
+func SaveConfigRaw(filename string, conf []byte) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(conf)
 	return err
 }
 

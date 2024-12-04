@@ -86,7 +86,7 @@ func aptlyRepoInclude(cmd *commander.Command, args []string) error {
 func makeCmdRepoInclude() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyRepoInclude,
-		UsageLine: "include <file.changes>|<directory> ...",
+		UsageLine: "include (<file.changes>|<directory>)...",
 		Short:     "add packages to local repositories based on .changes files",
 		Long: `
 Command include looks for .changes files in list of arguments or specified directories. Each

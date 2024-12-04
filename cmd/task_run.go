@@ -131,7 +131,7 @@ func formatCommands(args []string) [][]string {
 func makeCmdTaskRun() *commander.Command {
 	cmd := &commander.Command{
 		Run:       aptlyTaskRun,
-		UsageLine: "run -filename=<filename> | <command1>, <command2>, ...",
+		UsageLine: "run (-filename=<filename> | <commands>...)",
 		Short:     "run aptly tasks",
 		Long: `
 Command helps organise multiple aptly commands in one single aptly task, running as single thread.

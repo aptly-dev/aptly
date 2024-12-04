@@ -34,10 +34,16 @@ func verifyDir(c *gin.Context) bool {
 	return true
 }
 
-// @Summary Get files
-// @Description Get list of uploaded files.
+// @Summary List Directories
+// @Description **Get list of upload directories**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description  $ curl http://localhost:8080/api/files
+// @Description  ["aptly-0.9"]
+// @Description  ```
 // @Tags Files
-// @Produce  json
+// @Produce json
 // @Success 200 {array} string "List of files"
 // @Router /api/files [get]
 func apiFilesListDirs(c *gin.Context) {
@@ -67,7 +73,27 @@ func apiFilesListDirs(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// POST /files/:dir/
+// @Summary Upload Files
+// @Description **Upload files to a directory**
+// @Description
+// @Description - one or more files can be uploaded
+// @Description - existing uploaded are overwritten
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X POST -F file=@aptly_0.9~dev+217+ge5d646c_i386.deb http://localhost:8080/api/files/aptly-0.9
+// @Description ["aptly-0.9/aptly_0.9~dev+217+ge5d646c_i386.deb"]
+// @Description  ```
+// @Tags Files
+// @Accept multipart/form-data
+// @Param dir path string true "Directory to upload files to. Created if does not exist"
+// @Param files formData file true "Files to upload"
+// @Produce json
+// @Success 200 {array} string "list of uploaded files"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/files/{dir} [post]
 func apiFilesUpload(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -118,10 +144,23 @@ func apiFilesUpload(c *gin.Context) {
 
 	apiFilesUploadedCounter.WithLabelValues(c.Params.ByName("dir")).Inc()
 	c.JSON(200, stored)
-
 }
 
-// GET /files/:dir
+// @Summary List Files
+// @Description **Show uploaded files in upload directory**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl http://localhost:8080/api/files/aptly-0.9
+// @Description ["aptly_0.9~dev+217+ge5d646c_i386.deb"]
+// @Description  ```
+// @Tags Files
+// @Produce json
+// @Param dir path string true "Directory to list"
+// @Success 200 {array} string "Files found in directory"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/files/{dir} [get]
 func apiFilesListFiles(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -159,7 +198,20 @@ func apiFilesListFiles(c *gin.Context) {
 	c.JSON(200, list)
 }
 
-// DELETE /files/:dir
+// @Summary Delete Directory
+// @Description **Delete upload directory and uploaded files within**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X DELETE http://localhost:8080/api/files/aptly-0.9
+// @Description {}
+// @Description  ```
+// @Tags Files
+// @Produce json
+// @Param dir path string true "Directory"
+// @Success 200 {object} string "msg"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/files/{dir} [delete]
 func apiFilesDeleteDir(c *gin.Context) {
 	if !verifyDir(c) {
 		return
@@ -174,7 +226,22 @@ func apiFilesDeleteDir(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// DELETE /files/:dir/:name
+// @Summary Delete File
+// @Description **Delete a uploaded file in upload directory**
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ curl -X DELETE http://localhost:8080/api/files/aptly-0.9/aptly_0.9~dev+217+ge5d646c_i386.deb
+// @Description {}
+// @Description  ```
+// @Tags Files
+// @Produce json
+// @Param dir path string true "Directory to delete from"
+// @Param name path string true "File to delete"
+// @Success 200 {object} string "msg"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/files/{dir}/{name} [delete]
 func apiFilesDeleteFile(c *gin.Context) {
 	if !verifyDir(c) {
 		return
