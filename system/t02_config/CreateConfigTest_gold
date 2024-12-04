@@ -1,7 +1,11 @@
 # Aptly Configuration File
 ###########################
+# vim: : filetype=yaml
 
-# Aptly storage directory for:
+# aptly 1.6.0 supports yaml configuraiton files with inline documentation and examples.
+# Legacy json config files are still supported, and may be converted to yaml with `aptly config show -yaml`
+
+# Root directory for:
 # - downloaded packages (`rootDir`/pool)
 # - database (`rootDir`/db)
 # - published repositories (`rootDir`/public)

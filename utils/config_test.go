@@ -299,7 +299,7 @@ dep_follow_all_variants: true
 dep_follow_source: true
 dep_verboseresolve: true
 ppa_distributor_id: Ubuntu
-ppa_codename: short
+ppa_codename: code
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: true
@@ -327,7 +327,7 @@ s3_publish_endpoints:
     test:
         region: us-east-1
         bucket: test-bucket
-        prefix: ""
+        prefix: prfx
         acl: public-read
         access_key_id: "2"
         secret_access_key: secret
@@ -366,7 +366,7 @@ packagepool_storage:
     prefix: pre3
     account_name: a name
     account_key: a key
-    endpoint: ""
+    endpoint: ep
 `
 const configFileYAMLError = `packagepool_storage:
     type: invalid
