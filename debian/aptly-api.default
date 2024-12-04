@@ -1,2 +1,8 @@
-# Default settings for aptly-api
+# Default settings for aptly-api systemd service
+
+# bind to host:port
 LISTEN_ADDRESS='localhost:8080'
+
+# aptly options:
+#   -no-lock        allow aptly commands in parallel with api service (no global database lock, but lock per request)
+APTLY_OPTIONS="-no-lock"
