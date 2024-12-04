@@ -175,8 +175,21 @@ func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
 	c.Check(s.config.DatabaseOpenAttempts, Equals, 10)
 }
 
-func (s *ConfigSuite) TestSaveYAMLConfig(c *C) {
+func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.yaml2")
+	f, _ := os.Create(configname)
+	f.WriteString(configFileYAMLError)
+	f.Close()
+
+        // start with empty config
+        s.config = ConfigStructure{}
+
+	err := LoadConfig(configname, &s.config)
+	c.Assert(err.Error(), Equals, "invalid yaml (unknown pool storage type: invalid) or json (invalid character 'p' looking for beginning of value)")
+}
+
+func (s *ConfigSuite) TestSaveYAMLConfig(c *C) {
+	configname := filepath.Join(c.MkDir(), "aptly.yaml3")
 	f, _ := os.Create(configname)
 	f.WriteString(configFileYAML)
 	f.Close()
@@ -207,7 +220,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 	s.config.PackagePoolStorage.Local = &LocalPoolStorage{"/tmp/aptly-pool"}
         s.config.PackagePoolStorage.Azure = nil
 
-	configname := filepath.Join(c.MkDir(), "aptly.yaml3")
+	configname := filepath.Join(c.MkDir(), "aptly.yaml4")
         err := SaveConfigYAML(configname, &s.config)
 	c.Assert(err, IsNil)
 
@@ -260,7 +273,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 }
 
 func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
-	configname := filepath.Join(c.MkDir(), "aptly.yaml4")
+	configname := filepath.Join(c.MkDir(), "aptly.yaml5")
 	f, _ := os.Create(configname)
 	f.Close()
 
@@ -268,7 +281,7 @@ func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
         s.config = ConfigStructure{}
 
 	err := LoadConfig(configname, &s.config)
-	c.Assert(err.Error(), Equals, "not valid yaml or json")
+	c.Assert(err.Error(), Equals, "invalid yaml (EOF) or json (EOF)")
 }
 
 const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33, "databaseOpenAttempts": 33}`
@@ -354,4 +367,7 @@ packagepool_storage:
     account_name: a name
     account_key: a key
     endpoint: ""
+`
+const configFileYAMLError = `packagepool_storage:
+    type: invalid
 `

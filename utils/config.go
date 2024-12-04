@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -258,9 +257,11 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	if err = decJSON.Decode(&config); err != nil {
 		f.Seek(0, 0)
 		decYAML := yaml.NewDecoder(f)
-		if err = decYAML.Decode(&config); err != nil {
-			err = errors.New("not valid yaml or json")
-		}
+		if err2 := decYAML.Decode(&config); err2 != nil {
+			err = fmt.Errorf("invalid yaml (%s) or json (%s)", err2, err)
+		} else {
+			err = nil
+                }
 	}
 	return err
 }
