@@ -261,7 +261,7 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 			err = fmt.Errorf("invalid yaml (%s) or json (%s)", err2, err)
 		} else {
 			err = nil
-                }
+		}
 	}
 	return err
 }
