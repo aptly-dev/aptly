@@ -1,1 +1,1 @@
-ERROR: error loading config file ${HOME}/.aptly.conf: not valid yaml or json
+ERROR: error loading config file ${HOME}/.aptly.conf: invalid yaml (yaml: line 1: did not find expected ',' or '}') or json (invalid character 's' looking for beginning of object key string)
