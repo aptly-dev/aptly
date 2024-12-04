@@ -21,4 +21,6 @@ override_dh_strip:
 
 override_dh_auto_build:
 	echo $(DEB_VERSION) > obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/VERSION
+	mkdir -p obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/debian
+	cp debian/aptly.conf obj-$(DEB_TARGET_GNU_TYPE)/src/github.com/aptly-dev/aptly/debian/
 	dh_auto_build
