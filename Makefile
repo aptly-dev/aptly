@@ -50,11 +50,11 @@ swagger-install:
 	echo "// @version $(VERSION)" >> docs/swagger.conf
 
 azurite-start:
-	azurite & \
+	azurite -l /tmp/aptly-azurite & \
 	echo $$! > ~/.azurite.pid
 
 azurite-stop:
-	kill `cat ~/.azurite.pid`
+	@kill `cat ~/.azurite.pid`
 
 swagger: swagger-install
 	# Generate swagger docs
@@ -210,7 +210,7 @@ man:  ## Create man pages
 
 clean:  ## remove local build and module cache
 	# Clean all generated and build files
-	find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
+	test ! -e .go || find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
 	rm -rf .go/
 	rm -rf build/ obj-*-linux-gnu* tmp/
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
