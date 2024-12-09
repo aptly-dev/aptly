@@ -508,11 +508,11 @@ func (l *PackageList) Search(dep Dependency, allMatches bool, searchProvided boo
 type FilterOptions struct {
 	Queries           []PackageQuery
 	WithDependencies  bool
-	WithSources       bool // Source packages correspond to binary packages are included
+	WithSources       bool // Source packages corresponding to binary packages are included
 	Source            *PackageList
 	DependencyOptions int
 	Architectures     []string
-	Progress          aptly.Progress // set to non-nil to report progress
+	Progress          aptly.Progress // set to non-nil value to report progress
 }
 
 // SourceRegex is a regular expression to match source package names.
