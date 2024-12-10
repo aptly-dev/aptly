@@ -2,6 +2,7 @@ package deb
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -503,32 +504,80 @@ func (l *PackageList) Search(dep Dependency, allMatches bool, searchProvided boo
 	return
 }
 
-// Filter filters package index by specified queries (ORed together), possibly pulling dependencies
-func (l *PackageList) Filter(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string) (*PackageList, error) {
-	return l.FilterWithProgress(queries, withDependencies, source, dependencyOptions, architecturesList, nil)
+// FilterOptions specifies options for Filter()
+type FilterOptions struct {
+	Queries           []PackageQuery
+	WithDependencies  bool
+	WithSources       bool // Source packages corresponding to binary packages are included
+	Source            *PackageList
+	DependencyOptions int
+	Architectures     []string
+	Progress          aptly.Progress // set to non-nil value to report progress
 }
 
-// FilterWithProgress filters package index by specified queries (ORed together), possibly pulling dependencies and displays progress
-func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencies bool, source *PackageList, dependencyOptions int, architecturesList []string, progress aptly.Progress) (*PackageList, error) {
+// SourceRegex is a regular expression to match source package names.
+// > In a binary package control file [...], the source package name may be followed by a version number in
+// > parentheses. This version number may be omitted [...] if it has the same value as the Version field of
+// > the binary package in question.
+// > [...]
+// > Package names (both source and binary, see Package) must consist only of lower case letters (a-z),
+// > digits (0-9), plus (+) and minus (-) signs, and periods (.).
+// > They must be at least two characters long and must start with an alphanumeric character.
+// -- https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-source
+var SourceRegex = regexp.MustCompile(`^([a-z0-9][-+.a-z0-9]+)(?:\s+\(([^)]+)\))?$`)
+
+// Filter filters package index by specified queries (ORed together), possibly pulling dependencies
+func (l *PackageList) Filter(options FilterOptions) (*PackageList, error) {
 	if !l.indexed {
 		panic("list not indexed, can't filter")
 	}
 
 	result := NewPackageList()
 
-	for _, query := range queries {
-		result.Append(query.Query(l))
+	for _, query := range options.Queries {
+		_ = result.Append(query.Query(l))
+	}
+	// The above loop already finds source packages that are named equal to their binary package, but we still need
+	// to account for those that are named differently.
+	if options.WithSources {
+		sourceQueries := make([]PackageQuery, 0)
+		for _, pkg := range result.packages {
+			if pkg.Source == "" {
+				continue
+			}
+			matches := SourceRegex.FindStringSubmatch(pkg.Source)
+			if matches == nil {
+				return nil, fmt.Errorf("invalid Source field: %s", pkg.Source)
+			}
+			sourceName := matches[1]
+			if sourceName == pkg.Name {
+				continue
+			}
+			sourceVersion := pkg.Version
+			if matches[2] != "" {
+				sourceVersion = matches[2]
+			}
+			sourceQueries = append(sourceQueries, &DependencyQuery{Dependency{
+				Pkg:          sourceName,
+				Version:      sourceVersion,
+				Relation:     VersionEqual,
+				Architecture: ArchitectureSource,
+			}})
+		}
+		for _, query := range sourceQueries {
+			_ = result.Append(query.Query(l))
+		}
 	}
 
-	if withDependencies {
+	if options.WithDependencies {
 		added := result.Len()
 		result.PrepareIndex()
 
 		dependencySource := NewPackageList()
-		if source != nil {
-			dependencySource.Append(source)
+		if options.Source != nil {
+			_ = dependencySource.Append(options.Source)
 		}
-		dependencySource.Append(result)
+		_ = dependencySource.Append(result)
 		dependencySource.PrepareIndex()
 
 		// while some new dependencies were discovered
@@ -536,22 +585,22 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 			added = 0
 
 			// find missing dependencies
-			missing, err := result.VerifyDependencies(dependencyOptions, architecturesList, dependencySource, progress)
+			missing, err := result.VerifyDependencies(options.DependencyOptions, options.Architectures, dependencySource, options.Progress)
 			if err != nil {
 				return nil, err
 			}
 
 			// try to satisfy dependencies
 			for _, dep := range missing {
-				if dependencyOptions&DepFollowAllVariants == 0 {
+				if options.DependencyOptions&DepFollowAllVariants == 0 {
 					// dependency might have already been satisfied
 					// with packages already been added
 					//
 					// when follow-all-variants is enabled, we need to try to expand anyway,
 					// as even if dependency is satisfied now, there might be other ways to satisfy dependency
 					if result.Search(dep, false, true) != nil {
-						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-							progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true, true))
+						if options.DependencyOptions&DepVerboseResolve == DepVerboseResolve && options.Progress != nil {
+							options.Progress.ColoredPrintf("@{y}Already satisfied dependency@|: %s with %s", &dep, result.Search(dep, true, true))
 						}
 						continue
 					}
@@ -564,19 +613,19 @@ func (l *PackageList) FilterWithProgress(queries []PackageQuery, withDependencie
 							continue
 						}
 
-						if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-							progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
+						if options.DependencyOptions&DepVerboseResolve == DepVerboseResolve && options.Progress != nil {
+							options.Progress.ColoredPrintf("@{g}Injecting package@|: %s", p)
 						}
-						result.Add(p)
-						dependencySource.Add(p)
+						_ = result.Add(p)
+						_ = dependencySource.Add(p)
 						added++
-						if dependencyOptions&DepFollowAllVariants == 0 {
+						if options.DependencyOptions&DepFollowAllVariants == 0 {
 							break
 						}
 					}
 				} else {
-					if dependencyOptions&DepVerboseResolve == DepVerboseResolve && progress != nil {
-						progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
+					if options.DependencyOptions&DepVerboseResolve == DepVerboseResolve && options.Progress != nil {
+						options.Progress.ColoredPrintf("@{r}Unsatisfied dependency@|: %s", dep.String())
 					}
 
 				}

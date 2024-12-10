@@ -103,8 +103,13 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 		}
 	}
 
-	result, err := list.FilterWithProgress([]deb.PackageQuery{q}, withDeps,
-		nil, context.DependencyOptions(), architecturesList, context.Progress())
+	result, err := list.Filter(deb.FilterOptions{
+		Queries:           []deb.PackageQuery{q},
+		WithDependencies:  withDeps,
+		DependencyOptions: context.DependencyOptions(),
+		Architectures:     architecturesList,
+		Progress:          context.Progress(),
+	})
 	if err != nil {
 		return fmt.Errorf("unable to search: %s", err)
 	}

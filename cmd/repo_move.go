@@ -116,7 +116,14 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		}
 	}
 
-	toProcess, err := srcList.FilterWithProgress(queries, withDeps, dstList, context.DependencyOptions(), architecturesList, context.Progress())
+	toProcess, err := srcList.Filter(deb.FilterOptions{
+		Queries:           queries,
+		WithDependencies:  withDeps,
+		Source:            dstList,
+		DependencyOptions: context.DependencyOptions(),
+		Architectures:     architecturesList,
+		Progress:          context.Progress(),
+	})
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}

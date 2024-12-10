@@ -306,8 +306,12 @@ func apiMirrorsPackages(c *gin.Context) {
 
 		list.PrepareIndex()
 
-		list, err = list.Filter([]deb.PackageQuery{q}, withDeps,
-			nil, context.DependencyOptions(), architecturesList)
+		list, err = list.Filter(deb.FilterOptions{
+			Queries:           []deb.PackageQuery{q},
+			WithDependencies:  withDeps,
+			DependencyOptions: context.DependencyOptions(),
+			Architectures:     architecturesList,
+		})
 		if err != nil {
 			AbortWithJSONError(c, 500, fmt.Errorf("unable to search: %s", err))
 		}
