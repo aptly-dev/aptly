@@ -5,18 +5,29 @@ import (
 	"fmt"
 
 	"github.com/smira/commander"
+	"gopkg.in/yaml.v3"
 )
 
 func aptlyConfigShow(_ *commander.Command, _ []string) error {
+	showYaml := context.Flags().Lookup("yaml").Value.Get().(bool)
 
 	config := context.Config()
-	prettyJSON, err := json.MarshalIndent(config, "", "    ")
 
-	if err != nil {
-		return fmt.Errorf("unable to dump the config file: %s", err)
+	if showYaml {
+		yamlData, err := yaml.Marshal(&config)
+		if err != nil {
+			return fmt.Errorf("error marshaling to YAML: %s", err)
+		}
+
+		fmt.Println(string(yamlData))
+	} else {
+		prettyJSON, err := json.MarshalIndent(config, "", "    ")
+		if err != nil {
+			return fmt.Errorf("unable to dump the config file: %s", err)
+		}
+
+		fmt.Println(string(prettyJSON))
 	}
-
-	fmt.Println(string(prettyJSON))
 
 	return nil
 }
@@ -35,5 +46,6 @@ Example:
 
 `,
 	}
+	cmd.Flag.Bool("yaml", false, "show yaml config")
 	return cmd
 }

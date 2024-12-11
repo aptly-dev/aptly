@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "APTLY" "1" "October 2024" "" ""
+.TH "APTLY" "1" "December 2024" "" ""
 .
 .SH "NAME"
 \fBaptly\fR \- Debian repository management tool
@@ -28,329 +28,389 @@ aptly\(cqs goal is to establish repeatability and controlled changes in a packag
 aptly looks for configuration file first in \fB~/\.aptly\.conf\fR then in \fB/usr/local/etc/aptly\.conf\fR and \fB/etc/aptly\.conf\fR\. If no config file found (or they are not readable), a new one is created in the home directory\. If \fB\-config=\fR flag is specified, aptly would use config file at specified location\. Also aptly needs root directory for database, package and published repository storage\. If not specified, directory defaults to \fB~/\.aptly/\fR, it will be created if missing\.
 .
 .P
-Configuration file is stored in JSON format (default values shown below):
+With aptly version 1\.6\.0, yaml configuration with inline documentation is supported and recommended (see \fBdebian/aptly\.conf\fR)\.
+.
+.P
+The legacy json configuration is still supported:
 .
 .IP "" 4
 .
 .nf
 
+// vim: : filetype=json
+// json configuration file with comments
+// validate with: sed \(cq/\e/\e//d\(cq aptly\.conf | json_pp
 {
-  "rootDir": "$HOME/\.aptly",
-  "databaseBackend": {
-    "type": "",
-    "url": ""
-  },
-  "downloadConcurrency": 4,
-  "downloadSpeedLimit": 0,
-  "downloadRetries": 0,
-  "downloader": "default",
-  "databaseOpenAttempts": 10,
+
+// Aptly Configuration File
+////////////////////////////
+
+  // Root directory for:
+  // \- downloaded packages (`rootDir`/pool)
+  // \- database (`rootDir`/db)
+  // \- published repositories (`rootDir`/public)
+  "rootDir": "~/\.aptly",
+
+  // Number of attempts to open database if it\(cqs locked by other instance
+  // * \-1 (no retry)
+  "databaseOpenAttempts": \-1,
+
+  // Log Level
+  // * debug
+  // * info
+  // * warning
+  // * error
+  "logLevel": "info",
+
+  // Log Format
+  // * default (text)
+  // * json
+  "logFormat": "default",
+
+  // Default Architectures
+  // empty array defaults to all available architectures
   "architectures": [],
+
+  // Follow contents of `Suggests:` field when processing dependencies for the package
   "dependencyFollowSuggests": false,
+
+  // Follow contents of `Recommends:` field when processing dependencies for the package
   "dependencyFollowRecommends": false,
+
+  // When dependency looks like `package\-a | package\-b`, follow both variants always
   "dependencyFollowAllVariants": false,
+
+  // Follow dependency from binary package to source package
   "dependencyFollowSource": false,
+
+  // Log additional details while resolving dependencies (useful for debugging)
   "dependencyVerboseResolve": false,
-  "gpgDisableSign": false,
-  "gpgDisableVerify": false,
-  "gpgProvider": "gpg",
-  "downloadSourcePackages": false,
-  "packagePoolStorage": {
-    "path": "$ROOTDIR/pool",
-    "azure": {
-      "accountName": "",
-      "accountKey": "",
-      "container": "repo",
-      "prefix": "",
-      "endpoint": ""
-    }
-  },
-  "skipLegacyPool": true,
+
+  // Specifies paramaters for short PPA url expansion
+  // empty defaults to output of `lsb_release` command
   "ppaDistributorID": "ubuntu",
+
+  // Codename for short PPA url expansion
   "ppaCodename": "",
+
+  // OBSOLETE
+  // in aptly up to version 1\.0\.0, package files were stored in internal package pool
+  // with MD5\-dervied path, since 1\.1\.0 package pool layout was changed;
+  // if option is enabled, aptly stops checking for legacy paths;
+  // by default option is enabled for new aptly installations and disabled when
+  // upgrading from older versions
+  "skipLegacyPool": true,
+
+
+// Aptly Server
+////////////////
+
+  // Serve published repos as well as API
+  "serveInAPIMode": false,
+
+  // Enable metrics for Prometheus client
+  "enableMetricsEndpoint": false,
+
+  // Enable API documentation on /docs
+  "enableSwaggerEndpoint": false,
+
+  // OBSOLETE: use via url param ?_async=true
+  "AsyncAPI": false,
+
+
+// Database
+////////////
+
+  // Database backend
+  // Type must be one of:
+  // * leveldb (default)
+  // * etcd
+  "databaseBackend": {
+    // LevelDB
+    "type": "leveldb",
+    // Path to leveldb files
+    // empty dbPath defaults to `rootDir`/db
+    "dbPath": ""
+
+    // // etcd
+    // "type": "etcd",
+    // // URL to db server
+    // "url": "127\.0\.0\.1:2379"
+  },
+
+
+// Mirroring
+/////////////
+
+  // Downloader
+  // * "default"
+  // * "grab"      (more robust)
+  "downloader": "default",
+
+  // Number of parallel download threads to use when downloading packages
+  "downloadConcurrency": 4,
+
+  // Limit in kbytes/sec on download speed while mirroring remote repositories
+  "downloadSpeedLimit": 0,
+
+  // Number of retries for download attempts
+  "downloadRetries": 0,
+
+  // Download source packages per default
+  "downloadSourcePackages": false,
+
+
+// Signing
+///////////
+
+  // GPG Provider
+  // * "internal" (Go internal implementation)
+  // * "gpg"      (External `gpg` utility)
+  "gpgProvider": "gpg",
+
+  // Disable signing of published repositories
+  "gpgDisableSign": false,
+
+  // Disable signature verification of remote repositories
+  "gpgDisableVerify": false,
+
+
+// Publishing
+//////////////
+
+  // Do not publish Contents files
   "skipContentsPublishing": false,
+
+  // Do not create bz2 files
+  "skipBz2Publishing": false,
+
+
+// Storage
+///////////
+
+  // Filesystem publishing endpoints
+  //
+  // aptly defaults to publish to a single publish directory under `rootDir`/public\. For
+  // a more advanced publishing strategy, you can define one or more filesystem endpoints in the
+  // `FileSystemPublishEndpoints` list of the aptly configuration file\. Each endpoint has a name
+  // and the following associated settings\.
+  //
+  // In order to publish to such an endpoint, specify the endpoint as `filesystem:endpoint\-name`
+  // with `endpoint\-name` as the name given in the aptly configuration file\. For example:
+  //
+  //   `aptly publish snapshot wheezy\-main filesystem:test1:wheezy/daily`
+  //
   "FileSystemPublishEndpoints": {
-    "test1": {
-      "rootDir": "/opt/srv1/aptly_public",
-      "linkMethod": "symlink"
-    },
-    "test2": {
-      "rootDir": "/opt/srv2/aptly_public",
-      "linkMethod": "copy",
-      "verifyMethod": "md5"
-    },
-    "test3": {
-      "rootDir": "/opt/srv3/aptly_public",
-      "linkMethod": "hardlink"
-    }
+    // // Endpoint Name
+    // "test1": {
+    //    // Directory for publishing
+    //    "rootDir": "/opt/srv/aptly_public",
+
+    //    // File Link Method for linking files from the internal pool to the published directory
+    //    // * hardlink
+    //    // * symlink
+    //    // * copy
+    //    "linkMethod": "hardlink",
+
+    //    // File Copare Method for comparing existing links from the internal pool to the published directory
+    //    // Only used when "linkMethod" is set to "copy"
+    //    // * md5 (default: compare md5 sum)
+    //    // * size (compare file size)
+    //    "verifyMethod": "md5"
+    // }
   },
+
+  // S3 Endpoint Support
+  //
+  // cloud storage)\. First, publishing
+  // endpoints should be described in aptly configuration file\. Each endpoint has name
+  // and associated settings\.
+  //
+  // In order to publish to S3, specify endpoint as `s3:endpoint\-name:` before
+  // publishing prefix on the command line, e\.g\.:
+  //
+  //   `aptly publish snapshot wheezy\-main s3:test:`
+  //
   "S3PublishEndpoints": {
-    "test": {
-      "region": "us\-east\-1",
-      "bucket": "repo",
-      "endpoint": "",
-      "awsAccessKeyID": "",
-      "awsSecretAccessKey": "",
-      "prefix": "",
-      "acl": "public\-read",
-      "storageClass": "",
-      "encryptionMethod": "",
-      "plusWorkaround": false,
-      "disableMultiDel": false,
-      "forceSigV2": false,
-      "forceVirtualHostedStyle": true,
-      "debug": false
-    }
+    // // Endpoint Name
+    // "test": {
+
+    //    // Amazon region for S3 bucket
+    //    "region": "us\-east\-1",
+
+    //    // Bucket name
+    //    "bucket": "test\-bucket",
+
+    //    // Endpoint (optional)
+    //    // When using S3\-compatible cloud storage, specify hostname of service endpoint here,
+    //    // region is ignored if endpoint is set (set region to some human\-readable name)
+    //    // (should be left blank for real Amazon S3)
+    //    "endpoint": "",
+
+    //    // Prefix (optional)
+    //    // publishing under specified prefix in the bucket, defaults to
+    //    // no prefix (bucket root)
+    //    "prefix": "",
+
+    //    // Default ACLs (optional)
+    //    // assign ACL to published files (one of the canned ACLs in Amazon
+    //    // terminology)\. Useful values: `private` (default), `public\-read` (public
+    //    // repository) or `none` (don\(cqt set ACL)\. Public repositories could be consumed by `apt` using
+    //    // HTTP endpoint (Amazon bucket should be configured for "website hosting"),
+    //    // for private repositories special apt S3 transport is required\.
+    //    "acl": "private",
+
+    //    // Credentials (optional)
+    //    // Amazon credentials to access S3 bucket\. If not supplied,
+    //    // environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+    //    // are used\.
+    //    "awsAccessKeyID": "",
+    //    "awsSecretAccessKey": "",
+
+    //    // Storage Class (optional)
+    //    // Amazon S3 storage class, defaults to `STANDARD`\. Other values
+    //    // available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
+    //    "storageClass": "STANDARD",
+
+    //    // Encryption Method (optional)
+    //    // Server\-side encryption method, defaults to none\. Currently
+    //    // the only available encryption method is `AES256`
+    //    "encryptionMethod": "none",
+
+    //    // Plus Workaround (optional)
+    //    // Workaround misbehavior in apt and Amazon S3 for files with `+` in filename by
+    //    // creating two copies of package files with `+` in filename: one original
+    //    // and another one with spaces instead of plus signs
+    //    // With `plusWorkaround` enabled, package files with plus sign
+    //    // would be stored twice\. aptly might not cleanup files with spaces when published
+    //    // repository is dropped or updated (switched) to new version of repository (snapshot)
+    //    "plusWorkaround": false,
+
+    //    // Disable MultiDel (optional)
+    //    // For S3\-compatible cloud storages which do not support `MultiDel` S3 API,
+    //    // enable this setting (file deletion would be slower with this setting enabled)
+    //    "disableMultiDel": false,
+
+    //    // ForceSig2 (optional)
+    //    // Disable Signature V4 support, useful with non\-AWS S3\-compatible object stores
+    //    // which do not support SigV4, shouldn\(cqt be enabled for AWS
+    //    "forceSigV2": false,
+
+    //    // ForceVirtualHostedStyle (optional)
+    //    // Disable path style visit, useful with non\-AWS S3\-compatible object stores
+    //    // which only support virtual hosted style
+    //    "forceVirtualHostedStyle": false,
+
+    //    // Debug (optional)
+    //    // Enables detailed request/response dump for each S3 operation
+    //    "debug": false
+    // }
   },
+
+  // Swift Endpoint Support
+  //
+  // aptly could be configured to publish repository directly to OpenStack Swift\. First,
+  // publishing endpoints should be described in aptly configuration file\. Each endpoint
+  // has name and associated settings\.
+  //
+  // In order to publish to Swift, specify endpoint as `swift:endpoint\-name:` before
+  // publishing prefix on the command line, e\.g\.:
+  //
+  //   `aptly publish snapshot jessie\-main swift:test:`
+  //
   "SwiftPublishEndpoints": {
-    "test": {
-      "container": "repo",
-      "osname": "",
-      "password": "",
-      "prefix": "",
-      "authurl": "",
-      "tenant": "",
-      "tenantid": ""
-    }
+    // Endpoint Name
+    // "test": {
+
+    //    // Container Name
+    //    "container": "taylor1",
+
+    //    // Prefix (optional)
+    //    // Publish under specified prefix in the container, defaults to no prefix (container root)
+    //    "prefix": "",
+
+    //    // Credentials (optional)
+    //    // OpenStack credentials to access Keystone\. If not supplied, environment variables `OS_USERNAME` and `OS_PASSWORD` are used
+    //    "osname": "",
+    //    "password": "",
+
+    //    // Tenant (optional)
+    //    // OpenStack tenant name and id (in order to use v2 authentication)
+    //    "tenant": "",
+    //    "tenantid": "",
+
+    //    // Auth URL (optional)
+    //    // Full url of Keystone server (including port, and version)\.
+    //    // Example `http://identity\.example\.com:5000/v2\.0`
+    //    "authurl": ""
+    // }
   },
+
+  // Azure Endpoint Support
+  //
+  // aptly can be configured to publish repositories directly to Microsoft Azure Blob
+  // Storage\. First, publishing endpoints should be described in the aptly
+  // configuration file\. Each endpoint has its name and associated settings\.
   "AzurePublishEndpoints": {
-    "test": {
-      "accountName": "",
-      "accountKey": "",
-      "container": "repo",
-      "prefix": "",
-      "endpoint": "blob\.core\.windows\.net"
-    }
+    // // Endpoint Name
+    // "test": {
+
+    //    // Container Name
+    //    "container": "container1",
+
+    //    // Prefix (optional)
+    //    // Publishing under specified prefix in the container, defaults to no prefix (container root)
+    //    "prefix": "",
+
+    //    // Credentials
+    //    // Azure storage account access key to access blob storage
+    //    "accountName": "",
+    //    "accountKey": "",
+
+    //    // Endpoint URL
+    //    // See: Azure documentation https://docs\.microsoft\.com/en\-us/azure/storage/common/storage\-configure\-connection\-string
+    //    // defaults to "https://<accountName>\.blob\.core\.windows\.net"
+    //    "endpoint": ""
+    // }
+  },
+
+  // Package Pool
+  // Location for storing downloaded packages
+  // Type must be one of:
+  // * local
+  // * azure
+  "packagePoolStorage": {
+    // Local Pool
+    "type": "local",
+    // Local Pool Path
+    // empty path defaults to `rootDir`/pool
+    "path": ""
+
+    // // Azure Azure Blob Storage Pool
+    // "type": "azure",
+    // "container": "pool1",
+
+    // // Prefix (optional)
+    // // Publishing under specified prefix in the container, defaults to no prefix (container root)
+    // "prefix": "",
+
+    // // Credentials
+    // // Azure storage account access key to access blob storage
+    // "accountName": "",
+    // "accountKey": "",
+
+    // // Endpoint URL
+    // // See: Azure documentation https://docs\.microsoft\.com/en\-us/azure/storage/common/storage\-configure\-connection\-string
+    // // defaults to "https://<accountName>\.blob\.core\.windows\.net"
+    // "endpoint": ""
   }
+
+// End of config
 }
 .
 .fi
 .
 .IP "" 0
-.
-.P
-Options:
-.
-.IP "\[ci]" 4
-\fBrootDir\fR: is root of directory storage to store database (\fBrootDir\fR/db), the default for downloaded packages (\fBrootDir\fR/pool) and the default for published repositories (\fBrootDir\fR/public)
-.
-.IP "\[ci]" 4
-\fBdatabaseBackend\fR: the database config; if this config is empty, use levledb backend by default
-.
-.IP "\[ci]" 4
-\fBdownloadConcurrency\fR: is a number of parallel download threads to use when downloading packages
-.
-.IP "\[ci]" 4
-\fBdownloadSpeedLimit\fR: limit in kbytes/sec on download speed while mirroring remote repositories
-.
-.IP "\[ci]" 4
-\fBdownloadRetries\fR: number of retries for download attempts
-.
-.IP "\[ci]" 4
-\fBdatabaseOpenAttempts\fR: number of attempts to open DB if it\(cqs locked by other instance; could be overridden with option \fB\-db\-open\-attempts\fR
-.
-.IP "\[ci]" 4
-\fBarchitectures\fR: is a list of architectures to process; if left empty defaults to all available architectures; could be overridden with option \fB\-architectures\fR
-.
-.IP "\[ci]" 4
-\fBdependencyFollowSuggests\fR: follow contents of \fBSuggests:\fR field when processing dependencies for the package
-.
-.IP "\[ci]" 4
-\fBdependencyFollowRecommends\fR: follow contents of \fBRecommends:\fR field when processing dependencies for the package
-.
-.IP "\[ci]" 4
-\fBdependencyFollowAllVariants\fR: when dependency looks like \fBpackage\-a | package\-b\fR, follow both variants always
-.
-.IP "\[ci]" 4
-\fBdependencyFollowSource\fR: follow dependency from binary package to source package
-.
-.IP "\[ci]" 4
-\fBdependencyVerboseResolve\fR: print additional details while resolving dependencies (useful for debugging)
-.
-.IP "\[ci]" 4
-\fBgpgDisableSign\fR: don\(cqt sign published repositories with gpg(1), also can be disabled on per\-repo basis using \fB\-skip\-signing\fR flag when publishing
-.
-.IP "\[ci]" 4
-\fBgpgDisableVerify\fR: don\(cqt verify remote mirrors with gpg(1), also can be disabled on per\-mirror basis using \fB\-ignore\-signatures\fR flag when creating and updating mirrors
-.
-.IP "\[ci]" 4
-\fBgpgProvider\fR: implementation of PGP signing/validation \- \fBgpg\fR for external \fBgpg\fR utility or \fBinternal\fR to use Go internal implementation; \fBgpg1\fR might be used to force use of GnuPG 1\.x, \fBgpg2\fR enables GnuPG 2\.x only; default is to use GnuPG 1\.x if available and GnuPG 2\.x otherwise
-.
-.IP "\[ci]" 4
-\fBdownloadSourcePackages\fR: if enabled, all mirrors created would have flag set to download source packages; this setting could be controlled on per\-mirror basis with \fB\-with\-sources\fR flag
-.
-.IP "\[ci]" 4
-\fBpackagePoolStorage\fR: configures the location to store downloaded packages (defaults to the path \fB$ROOTDIR/pool\fR), by setting the value of the \fBtype\fR:
-.
-.IP "\[ci]" 4
-\fBpath\fR: store the packages in the given path
-.
-.IP "\[ci]" 4
-\fBazure\fR: store the packages in the given Azure Blob Storage container (see the section on Azure publishing below for information on the configuration)
-.
-.IP "" 0
-
-.
-.IP "\[ci]" 4
-\fBskipLegacyPool\fR: in aptly up to version 1\.0\.0, package files were stored in internal package pool with MD5\-dervied path, since 1\.1\.0 package pool layout was changed; if option is enabled, aptly stops checking for legacy paths; by default option is enabled for new aptly installations and disabled when upgrading from older versions
-.
-.IP "\[ci]" 4
-\fBppaDistributorID\fR, \fBppaCodename\fR: specifies paramaters for short PPA url expansion, if left blank they default to output of \fBlsb_release\fR command
-.
-.IP "\[ci]" 4
-\fBFileSystemPublishEndpoints\fR: configuration of local filesystem publishing endpoints (see below)
-.
-.IP "\[ci]" 4
-\fBS3PublishEndpoints\fR: configuration of Amazon S3 publishing endpoints (see below)
-.
-.IP "\[ci]" 4
-\fBSwiftPublishEndpoints\fR: configuration of OpenStack Swift publishing endpoints (see below)
-.
-.IP "\[ci]" 4
-\fBAzurePublishEndpoints\fR: configuration of Azure publishing endpoints (see below)
-.
-.IP "" 0
-.
-.SH "CUSTOM PACKAGE POOLS"
-aptly defaults to storing downloaded packages at \fBrootDir/\fRpool\. In order to change this, you can set the \fBtype\fR key within \fBpackagePoolStorage\fR to one of two values:
-.
-.IP "\[ci]" 4
-\fBlocal\fR: Store the package pool locally (the default)\. In order to change the path, additionally set the \fBpath\fR key within \fBpackagePoolStorage\fR to the desired location\.
-.
-.IP "\[ci]" 4
-\fBazure\fR: Store the package pool in an Azure Blob Storage container\. Any keys in the below section on Azure publishing may be set on the \fBpackagePoolStorage\fR object in order to configure the Azure connection\.
-.
-.IP "" 0
-.
-.SH "FILESYSTEM PUBLISHING ENDPOINTS"
-aptly defaults to publish to a single publish directory under \fBrootDir\fR/public\. For a more advanced publishing strategy, you can define one or more filesystem endpoints in the \fBFileSystemPublishEndpoints\fR list of the aptly configuration file\. Each endpoint has a name and the following associated settings:
-.
-.TP
-\fBrootDir\fR
-The publish directory, e\.g\., \fB/opt/srv/aptly_public\fR\.
-.
-.TP
-\fBlinkMethod\fR
-This is one of \fBhardlink\fR, \fBsymlink\fR or \fBcopy\fR\. It specifies how aptly links the files from the internal pool to the published directory\. If not specified, empty or wrong, this defaults to \fBhardlink\fR\.
-.
-.TP
-\fBverifyMethod\fR
-This is used only when setting the \fBlinkMethod\fR to \fBcopy\fR\. Possible values are \fBmd5\fR and \fBsize\fR\. It specifies how aptly compares existing links from the internal pool to the published directory\. The \fBsize\fR method compares only the file sizes, whereas the \fBmd5\fR method calculates the md5 checksum of the found file and compares it to the desired one\. If not specified, empty or wrong, this defaults to \fBmd5\fR\.
-.
-.P
-In order to publish to such an endpoint, specify the endpoint as \fBfilesystem:endpoint\-name\fR with \fBendpoint\-name\fR as the name given in the aptly configuration file\. For example:
-.
-.P
-\fBaptly publish snapshot wheezy\-main filesystem:test1:wheezy/daily\fR
-.
-.SH "S3 PUBLISHING ENDPOINTS"
-aptly could be configured to publish repository directly to Amazon S3 (or S3\-compatible cloud storage)\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
-.
-.TP
-\fBregion\fR
-Amazon region for S3 bucket (e\.g\. \fBus\-east\-1\fR)
-.
-.TP
-\fBbucket\fR
-bucket name
-.
-.TP
-\fBendpoint\fR
-(optional) when using S3\-compatible cloud storage, specify hostname of service endpoint here, region is ignored if endpoint is set (set region to some human\-readable name) (should be left blank for real Amazon S3)
-.
-.TP
-\fBprefix\fR
-(optional) do publishing under specified prefix in the bucket, defaults to no prefix (bucket root)
-.
-.TP
-\fBacl\fR
-(optional) assign ACL to published files (one of the canned ACLs in Amazon terminology)\. Useful values: \fBprivate\fR (default), \fBpublic\-read\fR (public repository) or \fBnone\fR (don\(cqt set ACL)\. Public repositories could be consumed by \fBapt\fR using HTTP endpoint (Amazon bucket should be configured for "website hosting"), for private repositories special apt S3 transport is required\.
-.
-.TP
-\fBawsAccessKeyID\fR, \fBawsSecretAccessKey\fR
-(optional) Amazon credentials to access S3 bucket\. If not supplied, environment variables \fBAWS_ACCESS_KEY_ID\fR and \fBAWS_SECRET_ACCESS_KEY\fR are used\.
-.
-.TP
-\fBstorageClass\fR
-(optional) Amazon S3 storage class, defaults to \fBSTANDARD\fR\. Other values available: \fBREDUCED_REDUNDANCY\fR (lower price, lower redundancy)
-.
-.TP
-\fBencryptionMethod\fR
-(optional) server\-side encryption method, defaults to none\. Currently the only available encryption method is \fBAES256\fR
-.
-.TP
-\fBplusWorkaround\fR
-(optional) workaround misbehavior in apt and Amazon S3 for files with \fB+\fR in filename by creating two copies of package files with \fB+\fR in filename: one original and another one with spaces instead of plus signs With \fBplusWorkaround\fR enabled, package files with plus sign would be stored twice\. aptly might not cleanup files with spaces when published repository is dropped or updated (switched) to new version of repository (snapshot)
-.
-.TP
-\fBdisableMultiDel\fR
-(optional) for S3\-compatible cloud storages which do not support \fBMultiDel\fR S3 API, enable this setting (file deletion would be slower with this setting enabled)
-.
-.TP
-\fBforceSigV2\fR
-(optional) disable Signature V4 support, useful with non\-AWS S3\-compatible object stores which do not support SigV4, shouldn\(cqt be enabled for AWS
-.
-.TP
-\fBforceVirtualHostedStyle\fR
-(optional) disable path style visit, useful with non\-AWS S3\-compatible object stores which only support virtual hosted style
-.
-.TP
-\fBdebug\fR
-(optional) enables detailed request/response dump for each S3 operation
-.
-.P
-In order to publish to S3, specify endpoint as \fBs3:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
-.
-.P
-\fBaptly publish snapshot wheezy\-main s3:test:\fR
-.
-.SH "OPENSTACK SWIFT PUBLISHING ENDPOINTS"
-aptly could be configured to publish repository directly to OpenStack Swift\. First, publishing endpoints should be described in aptly configuration file\. Each endpoint has name and associated settings:
-.
-.TP
-\fBcontainer\fR
-container name
-.
-.TP
-\fBprefix\fR
-(optional) do publishing under specified prefix in the container, defaults to no prefix (container root)
-.
-.TP
-\fBosname\fR, \fBpassword\fR
-(optional) OpenStack credentials to access Keystone\. If not supplied, environment variables \fBOS_USERNAME\fR and \fBOS_PASSWORD\fR are used\.
-.
-.TP
-\fBtenant\fR, \fBtenantid\fR
-(optional) OpenStack tenant name and id (in order to use v2 authentication)\.
-.
-.TP
-\fBauthurl\fR
-(optional) the full url of Keystone server (including port, and version)\. example \fBhttp://identity\.example\.com:5000/v2\.0\fR
-.
-.P
-In order to publish to Swift, specify endpoint as \fBswift:endpoint\-name:\fR before publishing prefix on the command line, e\.g\.:
-.
-.P
-\fBaptly publish snapshot jessie\-main swift:test:\fR
-.
-.SH "AZURE PUBLISHING ENDPOINTS"
-aptly can be configured to publish repositories directly to Microsoft Azure Blob Storage\. First, publishing endpoints should be described in the aptly configuration file\. Each endpoint has its name and associated settings:
-.
-.TP
-\fBcontainer\fR
-container name
-.
-.TP
-\fBprefix\fR
-(optional) do publishing under specified prefix in the container, defaults to no prefix (container root)
-.
-.TP
-\fBaccountName\fR, \fBaccountKey\fR
-Azure storage account access key to access blob storage
-.
-.TP
-\fBendpoint\fR
-endpoint URL to connect to, as described in the Azure documentation \fIhttps://docs\.microsoft\.com/en\-us/azure/storage/common/storage\-configure\-connection\-string\fR; defaults to \fBhttps://$accountName\.blob\.core\.windows\.net\fR
 .
 .SH "PACKAGE QUERY"
 Some commands accept package queries to identify list of packages to process\. Package query syntax almost matches \fBreprepro\fR query language\. Query consists of the following simple terms:
@@ -771,7 +831,7 @@ custom format for result printing
 include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORY"
-\fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR
+\fBaptly\fR \fBrepo\fR \fBadd\fR \fIname\fR \fB(<package\fR \fBfile\.deb>|<directory>)\|\.\|\.\|\.\fR
 .
 .P
 Command adds packages to local repository from \.deb, \.udeb (binary packages) and \.dsc (source packages) files\. When importing from directory aptly would do recursive scan looking for all files matching \fI\.[u]deb or\fR\.dsc patterns\. Every file discovered would be analyzed to extract metadata, package would then be created and added to the database\. Files would be imported to internal package pool\. For source packages, all required files are added automatically as well\. Extra files for source package should be in the same directory as *\.dsc file\.
@@ -1057,7 +1117,7 @@ custom format for result printing
 include dependencies into search results
 .
 .SH "ADD PACKAGES TO LOCAL REPOSITORIES BASED ON \.CHANGES FILES"
-\fBaptly\fR \fBrepo\fR \fBinclude\fR
+\fBaptly\fR \fBrepo\fR \fBinclude\fR \fB(<file\.changes>|<directory>)\|\.\|\.\|\.\fR
 .
 .P
 Command include looks for \.changes files in list of arguments or specified directories\. Each \.changes file is verified, parsed, referenced files are put into separate temporary directory and added into local repository\. Successfully imported files are removed by default\.
@@ -1103,7 +1163,7 @@ which repo should files go to, defaults to Distribution field of \.changes file
 path to uploaders\.json file
 .
 .SH "CREATES SNAPSHOT OF MIRROR (LOCAL REPOSITORY) CONTENTS"
-\fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fBfrom\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty\fR
+\fBaptly\fR \fBsnapshot\fR \fBcreate\fR \fIname\fR \fB(from\fR \fBmirror\fR \fImirror\-name\fR \fB|\fR \fBfrom\fR \fBrepo\fR \fIrepo\-name\fR \fB|\fR \fBempty)\fR
 .
 .P
 Command create \fIname\fR from mirror makes persistent immutable snapshot of remote repository mirror\. Snapshot could be published or further modified using merge, pull and other aptly features\.
@@ -1706,11 +1766,14 @@ don\(cqt sign Release files with GPG
 \-\fBsuite\fR=
 suite to publish (defaults to distribution)
 .
-.SH "ADD SOURCE TO STAGED SOURCE LIST OF PUBLISHED REPOSITORY"
+.SH "ADD SOURCE COMPONENTS TO A PUBLISHED REPO"
 \fBaptly\fR \fBpublish\fR \fBsource\fR \fBadd\fR \fIdistribution\fR \fIsource\fR
 .
 .P
-The command adds sources to the staged source list of the published repository\.
+The command adds components of a snapshot or local repository to be published\.
+.
+.P
+This does not publish the changes directly, but rather schedules them for a subsequent \(cqaptly publish update\(cq\.
 .
 .P
 The flag \-component is mandatory\. Use a comma\-separated list of components, if multiple components should be modified\. The number of given components must be equal to the number of given sources, e\.g\.:
@@ -1719,7 +1782,7 @@ The flag \-component is mandatory\. Use a comma\-separated list of components, i
 .
 .nf
 
-aptly publish add \-component=main,contrib wheezy wheezy\-main wheezy\-contrib
+aptly publish source add \-component=main,contrib wheezy wheezy\-main wheezy\-contrib
 .
 .fi
 .
@@ -1732,7 +1795,7 @@ Example:
 .
 .nf
 
-$ aptly publish add \-component=contrib wheezy ppa wheezy\-contrib
+$ aptly publish source add \-component=contrib wheezy ppa wheezy\-contrib
 .
 .fi
 .
@@ -1752,11 +1815,11 @@ component names to add (for multi\-component publishing, separate components wit
 \-\fBprefix\fR=\.
 publishing prefix in the form of [\fIendpoint\fR:]\fIprefix\fR
 .
-.SH "DROPS STAGED SOURCE CHANGES OF PUBLISHED REPOSITORY"
+.SH "DROP PENDING SOURCE COMPONENT CHANGES OF A PUBLISHED REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBsource\fR \fBdrop\fR \fIdistribution\fR
 .
 .P
-Command drops the staged source changes of the published repository\.
+Remove all pending changes what would be applied with a subsequent \(cqaptly publish update\(cq\.
 .
 .P
 Example:
@@ -1816,11 +1879,14 @@ display record in JSON format
 \-\fBprefix\fR=\.
 publishing prefix in the form of [\fIendpoint\fR:]\fIprefix\fR
 .
-.SH "REMOVE SOURCE FROM STAGED SOURCE LIST OF PUBLISHED REPOSITORY"
+.SH "REMOVE SOURCE COMPONENTS FROM A PUBLISHED REPO"
 \fBaptly\fR \fBpublish\fR \fBsource\fR \fBremove\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR] \fIsource\fR
 .
 .P
-The command removes sources from the staged source list of the published repository\.
+The command removes source components (snapshot / local repo) from a published repository\.
+.
+.P
+This does not publish the changes directly, but rather schedules them for a subsequent \(cqaptly publish update\(cq\.
 .
 .P
 The flag \-component is mandatory\. Use a comma\-separated list of components, if multiple components should be removed, e\.g\.:
@@ -1832,7 +1898,7 @@ Example:
 .
 .nf
 
-$ aptly publish remove \-component=contrib,non\-free wheezy filesystem:symlink:debian
+$ aptly publish source remove \-component=contrib,non\-free wheezy filesystem:symlink:debian
 .
 .fi
 .
@@ -1849,11 +1915,14 @@ component names to remove (for multi\-component publishing, separate components 
 \-\fBprefix\fR=\.
 publishing prefix in the form of [\fIendpoint\fR:]\fIprefix\fR
 .
-.SH "UPDATE SOURCE IN STAGED SOURCE LIST OF PUBLISHED REPOSITORY"
-\fBaptly\fR \fBpublish\fR \fBsource\fR \fBupdate\fR \fIdistribution\fR \fIsource\fR
+.SH "REPLACE THE SOURCE COMPONENTS OF A PUBLISHED REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBsource\fR \fBreplace\fR \fIdistribution\fR \fIsource\fR
 .
 .P
-The command updates sources in the staged source list of the published repository\.
+The command replaces the source components of a snapshot or local repository to be published\.
+.
+.P
+This does not publish the changes directly, but rather schedules them for a subsequent \(cqaptly publish update\(cq\.
 .
 .P
 The flag \-component is mandatory\. Use a comma\-separated list of components, if multiple components should be modified\. The number of given components must be equal to the number of given sources, e\.g\.:
@@ -1862,7 +1931,7 @@ The flag \-component is mandatory\. Use a comma\-separated list of components, i
 .
 .nf
 
-aptly publish update \-component=main,contrib wheezy wheezy\-main wheezy\-contrib
+aptly publish source replace \-component=main,contrib wheezy wheezy\-main wheezy\-contrib
 .
 .fi
 .
@@ -1875,7 +1944,53 @@ Example:
 .
 .nf
 
-$ aptly publish update \-component=contrib wheezy ppa wheezy\-contrib
+$ aptly publish source replace \-component=contrib wheezy ppa wheezy\-contrib
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Options:
+.
+.TP
+\-\fBcomponent\fR=
+component names to add (for multi\-component publishing, separate components with commas)
+.
+.TP
+\-\fBprefix\fR=\.
+publishing prefix in the form of [\fIendpoint\fR:]\fIprefix\fR
+.
+.SH "UPDATE THE SOURCE COMPONENTS OF A PUBLISHED REPOSITORY"
+\fBaptly\fR \fBpublish\fR \fBsource\fR \fBupdate\fR \fIdistribution\fR \fIsource\fR
+.
+.P
+The command updates the source components of a snapshot or local repository to be published\.
+.
+.P
+This does not publish the changes directly, but rather schedules them for a subsequent \(cqaptly publish update\(cq\.
+.
+.P
+The flag \-component is mandatory\. Use a comma\-separated list of components, if multiple components should be modified\. The number of given components must be equal to the number of given sources, e\.g\.:
+.
+.IP "" 4
+.
+.nf
+
+aptly publish source update \-component=main,contrib wheezy wheezy\-main wheezy\-contrib
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Example:
+.
+.IP "" 4
+.
+.nf
+
+$ aptly publish source update \-component=contrib wheezy ppa wheezy\-contrib
 .
 .fi
 .
@@ -1982,11 +2097,40 @@ don\(cqt generate Contents indexes
 \-\fBskip\-signing\fR
 don\(cqt sign Release files with GPG
 .
-.SH "UPDATE PUBLISHED LOCAL REPOSITORY"
+.SH "UPDATE PUBLISHED REPOSITORY"
 \fBaptly\fR \fBpublish\fR \fBupdate\fR \fIdistribution\fR [[\fIendpoint\fR:]\fIprefix\fR]
 .
 .P
-Command re\-publishes (updates) published local repository\. \fIdistribution\fR and \fIprefix\fR should be occupied with local repository published using command aptly publish repo\. Update happens in\-place with minimum possible downtime for published repository\.
+The command updates updates a published repository after applying pending changes to the sources\.
+.
+.P
+For published local repositories:
+.
+.IP "" 4
+.
+.nf
+
+* update to match local repository contents
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For published snapshots:
+.
+.IP "" 4
+.
+.nf
+
+* switch components to new snapshot
+.
+.fi
+.
+.IP "" 0
+.
+.P
+The update happens in\-place with minimum possible downtime for published repository\.
 .
 .P
 For multiple component published repositories, all local repositories are updated\.
@@ -2230,8 +2374,15 @@ Example:
 .P
 $ aptly config show
 .
+.P
+Options:
+.
+.TP
+\-\fByaml\fR
+show yaml config
+.
 .SH "RUN APTLY TASKS"
-\fBaptly\fR \fBtask\fR \fBrun\fR \-filename=\fIfilename\fR \fB|\fR \fIcommand1\fR, \fIcommand2\fR, \fB\|\.\|\.\|\.\fR
+\fBaptly\fR \fBtask\fR \fBrun\fR (\-filename=\fIfilename\fR \fB|\fR \fIcommands\fR\|\.\|\.\|\.)
 .
 .P
 Command helps organise multiple aptly commands in one single aptly task, running as single thread\.
@@ -2272,6 +2423,13 @@ Example:
 .
 .P
 $ aptly config show
+.
+.P
+Options:
+.
+.TP
+\-\fByaml\fR
+show yaml config
 .
 .SH "ENVIRONMENT"
 If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
@@ -2484,7 +2642,16 @@ Golf Hu (https://github\.com/hudeng\-go)
 Cookie Fei (https://github\.com/wuhuang26)
 .
 .IP "\[ci]" 4
+Andrey Loukhnov (https://github\.com/aol\-nnov)
+.
+.IP "\[ci]" 4
 Christoph Fiehe (https://github\.com/cfiehe)
+.
+.IP "\[ci]" 4
+Blake Kostner (https://github\.com/btkostner)
+.
+.IP "\[ci]" 4
+Leigh London (https://github\.com/leighlondon)
 .
 .IP "" 0
 

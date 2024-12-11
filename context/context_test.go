@@ -84,6 +84,6 @@ func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 	// storage never exists.
 	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
 		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: EOF",
+		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
 			os.Getenv("HOME"))})
 }

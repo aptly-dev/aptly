@@ -1,0 +1,37 @@
+root_dir: ${HOME}/.aptly
+log_level: debug
+log_format: default
+database_open_attempts: 10
+architectures: []
+skip_legacy_pool: false
+dep_follow_suggests: false
+dep_follow_recommends: false
+dep_follow_all_variants: false
+dep_follow_source: false
+dep_verboseresolve: false
+ppa_distributor_id: ubuntu
+ppa_codename: ""
+serve_in_api_mode: true
+enable_metrics_endpoint: true
+enable_swagger_endpoint: false
+async_api: false
+database_backend:
+    type: ""
+    db_path: ""
+    url: ""
+downloader: default
+download_concurrency: 4
+download_limit: 0
+download_retries: 5
+download_sourcepackages: false
+gpg_provider: gpg
+gpg_disable_sign: false
+gpg_disable_verify: false
+skip_contents_publishing: false
+skip_bz2_publishing: false
+filesystem_publish_endpoints: {}
+s3_publish_endpoints: {}
+swift_publish_endpoints: {}
+azure_publish_endpoints: {}
+packagepool_storage: {}
+

@@ -18,336 +18,384 @@ aptly has integrated help that matches contents of this manual page, to get help
 
 ## CONFIGURATION
 
-aptly looks for configuration file first in `~/.aptly.conf` then
-in `/usr/local/etc/aptly.conf` and `/etc/aptly.conf`. If no config file found (or they are not readable), a new one is created in the
-home directory. If `-config=` flag is specified, aptly would use config file at specified
-location. Also aptly needs root directory for database, package and published repository storage.
-If not specified, directory defaults to `~/.aptly/`, it will be created if missing.
+aptly looks for configuration file first in `~/.aptly.conf` then in `/usr/local/etc/aptly.conf` and `/etc/aptly.conf`. If no config file found (or they are not readable), a new one is created in the
+home directory. If `-config=` flag is specified, aptly would use config file at specified location. Also aptly needs root directory for database, package and published repository storage.  If not specified, directory defaults to `~/.aptly/`, it will be created if missing.
 
-Configuration file is stored in JSON format (default values shown below):
+With aptly version 1.6.0, yaml configuration with inline documentation is supported and recommended (see `debian/aptly.conf`).
 
+The legacy json configuration is still supported:
+
+    // vim: : filetype=json
+    // json configuration file with comments
+    // validate with: sed '/\/\//d' aptly.conf | json_pp
     {
-      "rootDir": "$HOME/.aptly",
-      "databaseBackend": {
-        "type": "",
-        "url": ""
-      },
-      "downloadConcurrency": 4,
-      "downloadSpeedLimit": 0,
-      "downloadRetries": 0,
-      "downloader": "default",
-      "databaseOpenAttempts": 10,
+
+    // Aptly Configuration File
+    ////////////////////////////
+
+      // Root directory for:
+      // - downloaded packages (`rootDir`/pool)
+      // - database (`rootDir`/db)
+      // - published repositories (`rootDir`/public)
+      "rootDir": "~/.aptly",
+
+      // Number of attempts to open database if it's locked by other instance
+      // * -1 (no retry)
+      "databaseOpenAttempts": -1,
+
+      // Log Level
+      // * debug
+      // * info
+      // * warning
+      // * error
+      "logLevel": "info",
+
+      // Log Format
+      // * default (text)
+      // * json
+      "logFormat": "default",
+
+      // Default Architectures
+      // empty array defaults to all available architectures
       "architectures": [],
+
+      // Follow contents of `Suggests:` field when processing dependencies for the package
       "dependencyFollowSuggests": false,
+
+      // Follow contents of `Recommends:` field when processing dependencies for the package
       "dependencyFollowRecommends": false,
+
+      // When dependency looks like `package-a | package-b`, follow both variants always
       "dependencyFollowAllVariants": false,
+
+      // Follow dependency from binary package to source package
       "dependencyFollowSource": false,
+
+      // Log additional details while resolving dependencies (useful for debugging)
       "dependencyVerboseResolve": false,
-      "gpgDisableSign": false,
-      "gpgDisableVerify": false,
-      "gpgProvider": "gpg",
-      "downloadSourcePackages": false,
-      "packagePoolStorage": {
-        "path": "$ROOTDIR/pool",
-        "azure": {
-          "accountName": "",
-          "accountKey": "",
-          "container": "repo",
-          "prefix": "",
-          "endpoint": ""
-        }
-      },
-      "skipLegacyPool": true,
+
+      // Specifies paramaters for short PPA url expansion
+      // empty defaults to output of `lsb_release` command
       "ppaDistributorID": "ubuntu",
+
+      // Codename for short PPA url expansion
       "ppaCodename": "",
+
+      // OBSOLETE
+      // in aptly up to version 1.0.0, package files were stored in internal package pool
+      // with MD5-dervied path, since 1.1.0 package pool layout was changed;
+      // if option is enabled, aptly stops checking for legacy paths;
+      // by default option is enabled for new aptly installations and disabled when
+      // upgrading from older versions
+      "skipLegacyPool": true,
+
+
+    // Aptly Server
+    ////////////////
+
+      // Serve published repos as well as API
+      "serveInAPIMode": false,
+
+      // Enable metrics for Prometheus client
+      "enableMetricsEndpoint": false,
+
+      // Enable API documentation on /docs
+      "enableSwaggerEndpoint": false,
+
+      // OBSOLETE: use via url param ?_async=true
+      "AsyncAPI": false,
+
+
+    // Database
+    ////////////
+
+      // Database backend
+      // Type must be one of:
+      // * leveldb (default)
+      // * etcd
+      "databaseBackend": {
+        // LevelDB
+        "type": "leveldb",
+        // Path to leveldb files
+        // empty dbPath defaults to `rootDir`/db
+        "dbPath": ""
+
+        // // etcd
+        // "type": "etcd",
+        // // URL to db server
+        // "url": "127.0.0.1:2379"
+      },
+
+
+    // Mirroring
+    /////////////
+
+      // Downloader
+      // * "default"
+      // * "grab"      (more robust)
+      "downloader": "default",
+
+      // Number of parallel download threads to use when downloading packages
+      "downloadConcurrency": 4,
+
+      // Limit in kbytes/sec on download speed while mirroring remote repositories
+      "downloadSpeedLimit": 0,
+
+      // Number of retries for download attempts
+      "downloadRetries": 0,
+
+      // Download source packages per default
+      "downloadSourcePackages": false,
+
+
+    // Signing
+    ///////////
+
+      // GPG Provider
+      // * "internal" (Go internal implementation)
+      // * "gpg"      (External `gpg` utility)
+      "gpgProvider": "gpg",
+
+      // Disable signing of published repositories
+      "gpgDisableSign": false,
+
+      // Disable signature verification of remote repositories
+      "gpgDisableVerify": false,
+
+
+    // Publishing
+    //////////////
+
+      // Do not publish Contents files
       "skipContentsPublishing": false,
+
+      // Do not create bz2 files
+      "skipBz2Publishing": false,
+
+
+    // Storage
+    ///////////
+
+      // Filesystem publishing endpoints
+      //
+      // aptly defaults to publish to a single publish directory under `rootDir`/public. For
+      // a more advanced publishing strategy, you can define one or more filesystem endpoints in the
+      // `FileSystemPublishEndpoints` list of the aptly configuration file. Each endpoint has a name
+      // and the following associated settings.
+      //
+      // In order to publish to such an endpoint, specify the endpoint as `filesystem:endpoint-name`
+      // with `endpoint-name` as the name given in the aptly configuration file. For example:
+      //
+      //   `aptly publish snapshot wheezy-main filesystem:test1:wheezy/daily`
+      //
       "FileSystemPublishEndpoints": {
-        "test1": {
-          "rootDir": "/opt/srv1/aptly_public",
-          "linkMethod": "symlink"
-        },
-        "test2": {
-          "rootDir": "/opt/srv2/aptly_public",
-          "linkMethod": "copy",
-          "verifyMethod": "md5"
-        },
-        "test3": {
-          "rootDir": "/opt/srv3/aptly_public",
-          "linkMethod": "hardlink"
-        }
+        // // Endpoint Name
+        // "test1": {
+        //    // Directory for publishing
+        //    "rootDir": "/opt/srv/aptly_public",
+
+        //    // File Link Method for linking files from the internal pool to the published directory
+        //    // * hardlink
+        //    // * symlink
+        //    // * copy
+        //    "linkMethod": "hardlink",
+
+        //    // File Copare Method for comparing existing links from the internal pool to the published directory
+        //    // Only used when "linkMethod" is set to "copy"
+        //    // * md5 (default: compare md5 sum)
+        //    // * size (compare file size)
+        //    "verifyMethod": "md5"
+        // }
       },
+
+      // S3 Endpoint Support
+      //
+      // cloud storage). First, publishing
+      // endpoints should be described in aptly configuration file. Each endpoint has name
+      // and associated settings.
+      //
+      // In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
+      // publishing prefix on the command line, e.g.:
+      //
+      //   `aptly publish snapshot wheezy-main s3:test:`
+      //
       "S3PublishEndpoints": {
-        "test": {
-          "region": "us-east-1",
-          "bucket": "repo",
-          "endpoint": "",
-          "awsAccessKeyID": "",
-          "awsSecretAccessKey": "",
-          "prefix": "",
-          "acl": "public-read",
-          "storageClass": "",
-          "encryptionMethod": "",
-          "plusWorkaround": false,
-          "disableMultiDel": false,
-          "forceSigV2": false,
-          "forceVirtualHostedStyle": true,
-          "debug": false
-        }
+        // // Endpoint Name
+        // "test": {
+
+        //    // Amazon region for S3 bucket
+        //    "region": "us-east-1",
+
+        //    // Bucket name
+        //    "bucket": "test-bucket",
+
+        //    // Endpoint (optional)
+        //    // When using S3-compatible cloud storage, specify hostname of service endpoint here,
+        //    // region is ignored if endpoint is set (set region to some human-readable name)
+        //    // (should be left blank for real Amazon S3)
+        //    "endpoint": "",
+
+        //    // Prefix (optional)
+        //    // publishing under specified prefix in the bucket, defaults to
+        //    // no prefix (bucket root)
+        //    "prefix": "",
+
+        //    // Default ACLs (optional)
+        //    // assign ACL to published files (one of the canned ACLs in Amazon
+        //    // terminology). Useful values: `private` (default), `public-read` (public
+        //    // repository) or `none` (don't set ACL). Public repositories could be consumed by `apt` using
+        //    // HTTP endpoint (Amazon bucket should be configured for "website hosting"),
+        //    // for private repositories special apt S3 transport is required.
+        //    "acl": "private",
+
+        //    // Credentials (optional)
+        //    // Amazon credentials to access S3 bucket. If not supplied,
+        //    // environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+        //    // are used.
+        //    "awsAccessKeyID": "",
+        //    "awsSecretAccessKey": "",
+
+        //    // Storage Class (optional)
+        //    // Amazon S3 storage class, defaults to `STANDARD`. Other values
+        //    // available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
+        //    "storageClass": "STANDARD",
+
+        //    // Encryption Method (optional)
+        //    // Server-side encryption method, defaults to none. Currently
+        //    // the only available encryption method is `AES256`
+        //    "encryptionMethod": "none",
+
+        //    // Plus Workaround (optional)
+        //    // Workaround misbehavior in apt and Amazon S3 for files with `+` in filename by
+        //    // creating two copies of package files with `+` in filename: one original
+        //    // and another one with spaces instead of plus signs
+        //    // With `plusWorkaround` enabled, package files with plus sign
+        //    // would be stored twice. aptly might not cleanup files with spaces when published
+        //    // repository is dropped or updated (switched) to new version of repository (snapshot)
+        //    "plusWorkaround": false,
+
+        //    // Disable MultiDel (optional)
+        //    // For S3-compatible cloud storages which do not support `MultiDel` S3 API,
+        //    // enable this setting (file deletion would be slower with this setting enabled)
+        //    "disableMultiDel": false,
+
+        //    // ForceSig2 (optional)
+        //    // Disable Signature V4 support, useful with non-AWS S3-compatible object stores
+        //    // which do not support SigV4, shouldn't be enabled for AWS
+        //    "forceSigV2": false,
+
+        //    // ForceVirtualHostedStyle (optional)
+        //    // Disable path style visit, useful with non-AWS S3-compatible object stores
+        //    // which only support virtual hosted style
+        //    "forceVirtualHostedStyle": false,
+
+        //    // Debug (optional)
+        //    // Enables detailed request/response dump for each S3 operation
+        //    "debug": false
+        // }
       },
+
+      // Swift Endpoint Support
+      //
+      // aptly could be configured to publish repository directly to OpenStack Swift. First,
+      // publishing endpoints should be described in aptly configuration file. Each endpoint
+      // has name and associated settings.
+      //
+      // In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
+      // publishing prefix on the command line, e.g.:
+      //
+      //   `aptly publish snapshot jessie-main swift:test:`
+      //
       "SwiftPublishEndpoints": {
-        "test": {
-          "container": "repo",
-          "osname": "",
-          "password": "",
-          "prefix": "",
-          "authurl": "",
-          "tenant": "",
-          "tenantid": ""
-        }
+        // Endpoint Name
+        // "test": {
+
+        //    // Container Name
+        //    "container": "taylor1",
+
+        //    // Prefix (optional)
+        //    // Publish under specified prefix in the container, defaults to no prefix (container root)
+        //    "prefix": "",
+
+        //    // Credentials (optional)
+        //    // OpenStack credentials to access Keystone. If not supplied, environment variables `OS_USERNAME` and `OS_PASSWORD` are used
+        //    "osname": "",
+        //    "password": "",
+
+        //    // Tenant (optional)
+        //    // OpenStack tenant name and id (in order to use v2 authentication)
+        //    "tenant": "",
+        //    "tenantid": "",
+
+        //    // Auth URL (optional)
+        //    // Full url of Keystone server (including port, and version).
+        //    // Example `http://identity.example.com:5000/v2.0`
+        //    "authurl": ""
+        // }
       },
+
+      // Azure Endpoint Support
+      //
+      // aptly can be configured to publish repositories directly to Microsoft Azure Blob
+      // Storage. First, publishing endpoints should be described in the aptly
+      // configuration file. Each endpoint has its name and associated settings.
       "AzurePublishEndpoints": {
-        "test": {
-          "accountName": "",
-          "accountKey": "",
-          "container": "repo",
-          "prefix": "",
-          "endpoint": "blob.core.windows.net"
-        }
+        // // Endpoint Name
+        // "test": {
+
+        //    // Container Name
+        //    "container": "container1",
+
+        //    // Prefix (optional)
+        //    // Publishing under specified prefix in the container, defaults to no prefix (container root)
+        //    "prefix": "",
+
+        //    // Credentials
+        //    // Azure storage account access key to access blob storage
+        //    "accountName": "",
+        //    "accountKey": "",
+
+        //    // Endpoint URL
+        //    // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
+        //    // defaults to "https://<accountName>.blob.core.windows.net"
+        //    "endpoint": ""
+        // }
+      },
+
+      // Package Pool
+      // Location for storing downloaded packages
+      // Type must be one of:
+      // * local
+      // * azure
+      "packagePoolStorage": {
+        // Local Pool
+        "type": "local",
+        // Local Pool Path
+        // empty path defaults to `rootDir`/pool
+        "path": ""
+
+        // // Azure Azure Blob Storage Pool
+        // "type": "azure",
+        // "container": "pool1",
+
+        // // Prefix (optional)
+        // // Publishing under specified prefix in the container, defaults to no prefix (container root)
+        // "prefix": "",
+
+        // // Credentials
+        // // Azure storage account access key to access blob storage
+        // "accountName": "",
+        // "accountKey": "",
+
+        // // Endpoint URL
+        // // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
+        // // defaults to "https://<accountName>.blob.core.windows.net"
+        // "endpoint": ""
       }
+
+    // End of config
     }
 
-Options:
-
-  * `rootDir`:
-    is root of directory storage to store database (`rootDir`/db),
-    the default for downloaded packages (`rootDir`/pool) and
-    the default for published repositories (`rootDir`/public) and
-    skeleton files (`rootDir`/skel)
-
-  * `databaseBackend`:
-    the database config; if this config is empty, use levledb backend by default
-
-  * `downloadConcurrency`:
-    is a number of parallel download threads to use when downloading packages
-
-  * `downloadSpeedLimit`:
-    limit in kbytes/sec on download speed while mirroring remote repositories
-
-  * `downloadRetries`:
-    number of retries for download attempts
-
-  * `databaseOpenAttempts`:
-    number of attempts to open DB if it's locked by other instance; could be overridden with option
-    `-db-open-attempts`
-
-  * `architectures`:
-    is a list of architectures to process; if left empty defaults to all available architectures; could be
-    overridden with option `-architectures`
-
-  * `dependencyFollowSuggests`:
-    follow contents of `Suggests:` field when processing dependencies for the package
-
-  * `dependencyFollowRecommends`:
-    follow contents of `Recommends:` field when processing dependencies for the package
-
-  * `dependencyFollowAllVariants`:
-    when dependency looks like `package-a | package-b`, follow both variants always
-
-  * `dependencyFollowSource`:
-    follow dependency from binary package to source package
-
-  * `dependencyVerboseResolve`:
-    print additional details while resolving dependencies (useful for debugging)
-
-  * `gpgDisableSign`:
-    don't sign published repositories with gpg(1), also can be disabled on
-    per-repo basis using `-skip-signing` flag when publishing
-
-  * `gpgDisableVerify`:
-    don't verify remote mirrors with gpg(1), also can be disabled on
-    per-mirror basis using `-ignore-signatures` flag when creating and updating mirrors
-
-  * `gpgProvider`:
-    implementation of PGP signing/validation - `gpg` for external `gpg` utility or
-    `internal` to use Go internal implementation; `gpg1` might be used to force use
-    of GnuPG 1.x, `gpg2` enables GnuPG 2.x only; default is to use GnuPG 1.x if
-    available and GnuPG 2.x otherwise
-
-  * `downloadSourcePackages`:
-    if enabled, all mirrors created would have flag set to download source packages;
-    this setting could be controlled on per-mirror basis with `-with-sources` flag
-
-  * `packagePoolStorage`:
-    configures the location to store downloaded packages (defaults to the
-    path `$ROOTDIR/pool`), by setting the value of the `type`:
-    * `path`: store the packages in the given path
-    * `azure`: store the packages in the given Azure Blob Storage container
-      (see the section on Azure publishing below for information on the
-      configuration)
-
-  * `skipLegacyPool`:
-    in aptly up to version 1.0.0, package files were stored in internal package pool
-    with MD5-dervied path, since 1.1.0 package pool layout was changed;
-    if option is enabled, aptly stops checking for legacy paths;
-    by default option is enabled for new aptly installations and disabled when
-    upgrading from older versions
-
-  * `ppaDistributorID`, `ppaCodename`:
-    specifies paramaters for short PPA url expansion, if left blank they default
-    to output of `lsb_release` command
-
-  * `FileSystemPublishEndpoints`:
-    configuration of local filesystem publishing endpoints (see below)
-
-  * `S3PublishEndpoints`:
-    configuration of Amazon S3 publishing endpoints (see below)
-
-  * `SwiftPublishEndpoints`:
-    configuration of OpenStack Swift publishing endpoints (see below)
-
-  * `AzurePublishEndpoints`:
-    configuration of Azure publishing endpoints (see below)
-
-## CUSTOM PACKAGE POOLS
-
-aptly defaults to storing downloaded packages at `rootDir/`pool. In order to
-change this, you can set the `type` key within `packagePoolStorage` to one of
-two values:
-
-  * `local`: Store the package pool locally (the default). In order to change
-    the path, additionally set the `path` key within `packagePoolStorage` to
-    the desired location.
-  * `azure`: Store the package pool in an Azure Blob Storage container. Any
-    keys in the below section on Azure publishing may be set on the
-    `packagePoolStorage` object in order to configure the Azure connection.
-
-## FILESYSTEM PUBLISHING ENDPOINTS
-
-aptly defaults to publish to a single publish directory under `rootDir`/public. For
-a more advanced publishing strategy, you can define one or more filesystem endpoints in the
-`FileSystemPublishEndpoints` list of the aptly configuration file. Each endpoint has a name
-and the following associated settings:
-
-   * `rootDir`:
-     The publish directory, e.g., `/opt/srv/aptly_public`.
-   * `linkMethod`:
-     This is one of `hardlink`, `symlink` or `copy`. It specifies how aptly links the
-     files from the internal pool to the published directory.
-     If not specified, empty or wrong, this defaults to `hardlink`.
-   * `verifyMethod`:
-     This is used only when setting the `linkMethod` to `copy`. Possible values are
-     `md5` and `size`. It specifies how aptly compares existing links from the
-     internal pool to the published directory. The `size` method compares only the
-     file sizes, whereas the `md5` method calculates the md5 checksum of the found
-     file and compares it to the desired one.
-     If not specified, empty or wrong, this defaults to `md5`.
-
-In order to publish to such an endpoint, specify the endpoint as `filesystem:endpoint-name`
-with `endpoint-name` as the name given in the aptly configuration file. For example:
-
-  `aptly publish snapshot wheezy-main filesystem:test1:wheezy/daily`
-
-## S3 PUBLISHING ENDPOINTS
-
-aptly could be configured to publish repository directly to Amazon S3 (or S3-compatible
-cloud storage). First, publishing
-endpoints should be described in aptly configuration file. Each endpoint has name
-and associated settings:
-
-   * `region`:
-     Amazon region for S3 bucket (e.g. `us-east-1`)
-   * `bucket`:
-     bucket name
-   * `endpoint`:
-     (optional) when using S3-compatible cloud storage, specify hostname of service endpoint here,
-     region is ignored if endpoint is set (set region to some human-readable name)
-     (should be left blank for real Amazon S3)
-   * `prefix`:
-     (optional) do publishing under specified prefix in the bucket, defaults to
-     no prefix (bucket root)
-   * `acl`:
-     (optional) assign ACL to published files (one of the canned ACLs in Amazon
-     terminology). Useful values: `private` (default), `public-read` (public
-     repository) or `none` (don't set ACL). Public repositories could be consumed by `apt` using
-     HTTP endpoint (Amazon bucket should be configured for "website hosting"),
-     for private repositories special apt S3 transport is required.
-   * `awsAccessKeyID`, `awsSecretAccessKey`:
-     (optional) Amazon credentials to access S3 bucket. If not supplied,
-     environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
-     are used.
-   * `storageClass`:
-     (optional) Amazon S3 storage class, defaults to `STANDARD`. Other values
-     available: `REDUCED_REDUNDANCY` (lower price, lower redundancy)
-   * `encryptionMethod`:
-     (optional) server-side encryption method, defaults to none. Currently
-     the only available encryption method is `AES256`
-   * `plusWorkaround`:
-     (optional) workaround misbehavior in apt and Amazon S3
-     for files with `+` in filename by
-     creating two copies of package files with `+` in filename: one original
-     and another one with spaces instead of plus signs
-     With `plusWorkaround` enabled, package files with plus sign
-     would be stored twice. aptly might not cleanup files with spaces when published
-     repository is dropped or updated (switched) to new version of repository (snapshot)
-   * `disableMultiDel`:
-     (optional) for S3-compatible cloud storages which do not support `MultiDel` S3 API,
-     enable this setting (file deletion would be slower with this setting enabled)
-   * `forceSigV2`:
-     (optional) disable Signature V4 support, useful with non-AWS S3-compatible object stores
-     which do not support SigV4, shouldn't be enabled for AWS
-   * `forceVirtualHostedStyle`:
-     (optional) disable path style visit, useful with non-AWS S3-compatible object stores
-     which only support virtual hosted style
-   * `debug`:
-     (optional) enables detailed request/response dump for each S3 operation
-
-In order to publish to S3, specify endpoint as `s3:endpoint-name:` before
-publishing prefix on the command line, e.g.:
-
-  `aptly publish snapshot wheezy-main s3:test:`
-
-## OPENSTACK SWIFT PUBLISHING ENDPOINTS
-
-aptly could be configured to publish repository directly to OpenStack Swift. First,
-publishing endpoints should be described in aptly configuration file. Each endpoint
-has name and associated settings:
-
-   * `container`:
-     container name
-   * `prefix`:
-     (optional) do publishing under specified prefix in the container, defaults to
-     no prefix (container root)
-   * `osname`, `password`:
-     (optional) OpenStack credentials to access Keystone. If not supplied,
-     environment variables `OS_USERNAME` and `OS_PASSWORD` are used.
-   * `tenant`, `tenantid`:
-     (optional) OpenStack tenant name and id (in order to use v2 authentication).
-   * `authurl`:
-     (optional) the full url of Keystone server (including port, and version).
-     example `http://identity.example.com:5000/v2.0`
-
-In order to publish to Swift, specify endpoint as `swift:endpoint-name:` before
-publishing prefix on the command line, e.g.:
-
-  `aptly publish snapshot jessie-main swift:test:`
-
-## AZURE PUBLISHING ENDPOINTS
-
-aptly can be configured to publish repositories directly to Microsoft Azure Blob
-Storage. First, publishing endpoints should be described in the aptly
-configuration file. Each endpoint has its name and associated settings:
-
-  * `container`:
-    container name
-  * `prefix`:
-    (optional) do publishing under specified prefix in the container, defaults to
-    no prefix (container root)
-  * `accountName`, `accountKey`:
-    Azure storage account access key to access blob storage
-  * `endpoint`:
-    endpoint URL to connect to, as described in
-    [the Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string);
-    defaults to `https://$accountName.blob.core.windows.net`
 
 ## PACKAGE QUERY
 
