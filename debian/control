@@ -90,6 +90,7 @@ Package: aptly
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, bzip2, xz-utils, gpgv, gpg
 Suggests: graphviz
+Conflicts: gnupg1, gpgv1
 Built-Using: ${misc:Static-Built-Using}, ${misc:Built-Using}
 Description: Swiss army knife for Debian repository management - main package
  It offers several features making it easy to manage Debian package
