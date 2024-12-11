@@ -18,7 +18,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /repos
+// @Summary Serve HTML Listing
+// @Description If ServeInAPIMode is enabled in aptly config,
+// @Description this endpoint is enabled which returns an HTML listing of each repo that can be browsed
+// @Tags Repos
+// @Produce html
+// @Success 200 {object} string "HTML"
+// @Router /api/repos [get]
 func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -35,7 +41,15 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 	}
 }
 
-// GET /repos/:storage/*pkgPath
+// @Summary Serve Packages
+// @Description If ServeInAPIMode is enabled in aptly config,
+// @Description this api serves a specified package from storage
+// @Tags Repos
+// @Param storage path string true "Storage"
+// @Param pkgPath path string true "Package Path" allowReserved=true
+// @Produce json
+// @Success 200 ""
+// @Router /api/{storage}/{pkgPath} [get]
 func reposServeInAPIMode(c *gin.Context) {
 	pkgpath := c.Param("pkgPath")
 
@@ -50,8 +64,9 @@ func reposServeInAPIMode(c *gin.Context) {
 	c.FileFromFS(pkgpath, http.Dir(publicPath))
 }
 
-// @Summary Get repos
-// @Description Get list of available repos. Each repo is returned as in “show” API.
+// @Summary List Repositories
+// @Description **Get list of available repos**
+// @Description Each repo is returned as in “show” API.
 // @Tags Repos
 // @Produce  json
 // @Success 200 {array} deb.LocalRepo
@@ -82,8 +97,15 @@ type repoCreateParams struct {
 	FromSnapshot string `            json:"FromSnapshot"         example:"snapshot1"`
 }
 
-// @Summary Create repository
-// @Description Create a local repository.
+// @Summary Create Repository
+// @Description **Create a local repository**
+// @Description
+// @Description Distribution and component are used as defaults when publishing repo either directly or via snapshot.
+// @Description
+// @Description ```
+// @Description $ curl -X POST -H 'Content-Type: application/json' --data '{"Name": "aptly-repo"}' http://localhost:8080/api/repos
+// @Description {"Name":"aptly-repo","Comment":"","DefaultDistribution":"","DefaultComponent":""}
+// @Description ```
 // @Tags Repos
 // @Produce  json
 // @Consume  json
@@ -142,15 +164,28 @@ func apiReposCreate(c *gin.Context) {
 	c.JSON(http.StatusCreated, repo)
 }
 
-// PUT /api/repos/:name
-func apiReposEdit(c *gin.Context) {
-	var b struct {
-		Name                *string
-		Comment             *string
-		DefaultDistribution *string
-		DefaultComponent    *string
-	}
+type reposEditParams struct {
+	// Name of repository to modify
+	Name *string `binding:"required"     json:"Name"                 example:"repo1"`
+	// Change Comment of repository
+	Comment *string `                    json:"Comment"              example:"example repo"`
+	// Change Default Distribution for publishing
+	DefaultDistribution *string `        json:"DefaultDistribution"  example:""`
+	// Change Devault Component for publishing
+	DefaultComponent *string `        json:"DefaultComponent"     example:""`
+}
 
+// @Summary Update Repository
+// @Description **Update local repository meta information**
+// @Tags Repos
+// @Produce json
+// @Param request body reposEditParams true "Parameters"
+// @Success 200 {object} deb.LocalRepo "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/repos/{name} [put]
+func apiReposEdit(c *gin.Context) {
+	var b reposEditParams
 	if c.Bind(&b) != nil {
 		return
 	}
@@ -193,7 +228,7 @@ func apiReposEdit(c *gin.Context) {
 }
 
 // GET /api/repos/:name
-// @Summary Get repository info by name
+// @Summary Get Repository Info
 // @Description Returns basic information about local repository.
 // @Tags Repos
 // @Produce  json
@@ -214,7 +249,18 @@ func apiReposShow(c *gin.Context) {
 	c.JSON(200, repo)
 }
 
-// DELETE /api/repos/:name
+// @Summary Delete Repository
+// @Description Drop/delete a repo
+// @Description Cannot drop repos that are published.
+// @Description Needs force=1 to drop repos used as source by other repos.
+// @Tags Repos
+// @Produce json
+// @Param _async query bool false "Run in background and return task object"
+// @Param force query int false "force: 1 to enable"
+// @Success 200 {object} task.ProcessReturnValue "Repo object"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 404 {object} Error "Repo Conflict"
+// @Router /api/repos/{name} [delete]
 func apiReposDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	name := c.Params.ByName("name")
@@ -249,7 +295,27 @@ func apiReposDrop(c *gin.Context) {
 	})
 }
 
-// GET /api/repos/:name/packages
+// @Summary List Repo Packages
+// @Description **Return a list of packages present in the repo**
+// @Description
+// @Description If `q` query parameter is missing, return all packages, otherwise return packages that match q
+// @Description
+// @Description **Example:**
+// @Description ```
+// @Description $ curl http://localhost:8080/api/repos/aptly-repo/packages
+// @Description ["Pi386 aptly 0.8 966561016b44ed80"]
+// @Description ```
+// @Tags Repos
+// @Produce json
+// @Param name path string true "Snapshot to search"
+// @Param q query string true "Package query (e.g Name%20(~%20matlab))"
+// @Param withDeps query string true "Set to 1 to include dependencies when evaluating package query"
+// @Param format query string true "Set to 'details' to return extra info about each package"
+// @Param maximumVersion query string true "Set to 1 to only return the highest version for each package name"
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 404 {object} Error "Internal Server Error"
+// @Router /api/repos/{name}/packages [get]
 func apiReposPackagesShow(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
@@ -269,11 +335,14 @@ func apiReposPackagesShow(c *gin.Context) {
 	showPackages(c, repo.RefList(), collectionFactory)
 }
 
+type reposPackagesAddDeleteParams struct {
+	// Package Refs
+	PackageRefs []string `binding:"required"     json:"PackageRefs"                 example:""`
+}
+
 // Handler for both add and delete
 func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error) {
-	var b struct {
-		PackageRefs []string
-	}
+	var b reposPackagesAddDeleteParams
 
 	if c.Bind(&b) != nil {
 		return
@@ -330,7 +399,21 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	})
 }
 
-// POST /repos/:name/packages
+// @Summary Add Packages by Key
+// @Description **Add packages to local repository by package keys.**
+// @Description
+// @Description Any package can be added that is present in the aptly database (from any mirror, snapshot, local repository). This API combined with package list (search) APIs allows one to implement importing, copying, moving packages around.
+// @Description
+// @Description API verifies that packages actually exist in aptly database and checks constraint that conflicting packages can’t be part of the same local repository.
+// @Tags Repos
+// @Produce json
+// @Param request body reposPackagesAddDeleteParams true "Parameters"
+// @Param _async query bool false "Run in background and return task object"
+// @Success 200 {object} string "msg"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 400 {object} Error "Internal Server Error"
+// @Router /api/repos/{name}/packages [post]
 func apiReposPackagesAdd(c *gin.Context) {
 	apiReposPackagesAddDelete(c, "Add packages to repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Adding package %s\n", p.Name)
@@ -338,7 +421,19 @@ func apiReposPackagesAdd(c *gin.Context) {
 	})
 }
 
-// DELETE /repos/:name/packages
+// @Summary Delete Packages by Key
+// @Description **Remove packages from local repository by package keys.**
+// @Description
+// @Description Any package(s) can be removed from a local repository. Package references from a local repository can be retrieved with GET /api/repos/:name/packages.
+// @Tags Repos
+// @Produce json
+// @Param request body reposPackagesAddDeleteParams true "Parameters"
+// @Param _async query bool false "Run in background and return task object"
+// @Success 200 {object} string "msg"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 400 {object} Error "Internal Server Error"
+// @Router /api/repos/{name}/packages [delete]
 func apiReposPackagesDelete(c *gin.Context) {
 	apiReposPackagesAddDelete(c, "Delete packages from repo ", func(list *deb.PackageList, p *deb.Package, out aptly.Progress) error {
 		out.Printf("Removing package %s\n", p.Name)
@@ -347,13 +442,27 @@ func apiReposPackagesDelete(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/file/:dir/:file
+// @Summary Add Uploaded File
+// @Description Import packages from files (uploaded using File Upload API) to the local repository. If directory specified, aptly would discover package files automatically.
+// @Description Adding same package to local repository is not an error.
+// @Description By default aptly would try to remove every successfully processed file and directory `dir` (if it becomes empty after import).
+// @Tags Repos
+// @Param name path string true "Repository name"
+// @Param dir path string true "Directory of packages"
+// @Param file path string false "Filename (optional)"
+// @Param _async query bool false "Run in background and return task object"
+// @Produce json
+// @Success 200 {string} string "OK"
+// @Failure 400 {object} Error "wrong file"
+// @Failure 404 {object} Error "Repository not found"
+// @Failure 500 {object} Error "Error adding files"
+// @Router /api/repos/{name}/file/{dir}/{file} [post]
 func apiReposPackageFromFile(c *gin.Context) {
 	// redirect all work to dir method
 	apiReposPackageFromDir(c)
 }
 
-// @Summary Add packages from uploaded file/directory
+// @Summary Add Uploaded Directory
 // @Description Import packages from files (uploaded using File Upload API) to the local repository. If directory specified, aptly would discover package files automatically.
 // @Description Adding same package to local repository is not an error.
 // @Description By default aptly would try to remove every successfully processed file and directory `dir` (if it becomes empty after import).
@@ -363,12 +472,13 @@ func apiReposPackageFromFile(c *gin.Context) {
 // @Consume  json
 // @Param noRemove query string false "when value is set to 1, don’t remove any files"
 // @Param forceReplace query string false "when value is set to 1, remove packages conflicting with package being added (in local repository)"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce  json
 // @Success 200 {string} string "OK"
 // @Failure 400 {object} Error "wrong file"
 // @Failure 404 {object} Error "Repository not found"
 // @Failure 500 {object} Error "Error adding files"
-// @Router /api/repos/{name}/{dir} [post]
+// @Router /api/repos/{name}/file/{dir} [post]
 func apiReposPackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemove := c.Request.URL.Query().Get("noRemove") == "1"
@@ -487,16 +597,33 @@ func apiReposPackageFromDir(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/copy/:src/:file
+type reposCopyPackageParams struct {
+	// Copy also dependencies
+	WithDeps bool `json:"with-deps,omitempty"`
+	// Do not perform operations
+	DryRun bool `json:"dry-run,omitempty"`
+}
+
+// @Summary Copy Package
+// @Description Copies a package from a source to destination repository
+// @Tags Repos
+// @Produce json
+// @Param name path string true "Source repo"
+// @Param src path string true "Destination repo"
+// @Param file path string true "File/packages to copy"
+// @Param _async query bool false "Run in background and return task object"
+// @Success 200 {object} task.ProcessReturnValue "msg"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 422 {object} Error "Unprocessable Entity"
+// @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/repos/{name}/copy/{src}/{file} [post]
 func apiReposCopyPackage(c *gin.Context) {
 	dstRepoName := c.Params.ByName("name")
 	srcRepoName := c.Params.ByName("src")
 	fileName := c.Params.ByName("file")
 
-	jsonBody := struct {
-		WithDeps bool `json:"with-deps,omitempty"`
-		DryRun   bool `json:"dry-run,omitempty"`
-	}{
+	jsonBody := reposCopyPackageParams{
 		WithDeps: false,
 		DryRun:   false,
 	}
@@ -550,7 +677,6 @@ func apiReposCopyPackage(c *gin.Context) {
 		dstList, err := deb.NewPackageListFromRefList(dstRepo.RefList(), collectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to load packages in dest: %s", err)
-
 		}
 
 		srcList, err := deb.NewPackageListFromRefList(srcRefList, collectionFactory.PackageCollection(), context.Progress())
@@ -626,13 +752,46 @@ func apiReposCopyPackage(c *gin.Context) {
 	})
 }
 
-// POST /repos/:name/include/:dir/:file
+// @Summary Include File from Directory
+// @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
+// @Tags Repos
+// @Produce json
+// @Param forceReplace query int false "when value is set to 1, when adding package that conflicts with existing package, remove existing package"
+// @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
+// @Param acceptUnsigned query int false "when value is set to 1, accept unsigned .changes files"
+// @Param ignoreSignature query int false "when value is set to 1 disable verification of .changes file signature"
+// @Param _async query bool false "Run in background and return task object"
+// @Success 200 {object} string "msg"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/include/{dir}/{file} [post]
 func apiReposIncludePackageFromFile(c *gin.Context) {
 	// redirect all work to dir method
 	apiReposIncludePackageFromDir(c)
 }
 
-// POST /repos/:name/include/:dir
+type reposIncludePackageFromDirReport struct {
+	Warnings []string
+	Added    []string
+	Deleted  []string
+}
+
+type reposIncludePackageFromDirResponse struct {
+	Report      reposIncludePackageFromDirReport
+	FailedFiles []string
+}
+
+// @Summary Include Directory
+// @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
+// @Tags Repos
+// @Produce json
+// @Param forceReplace query int false "when value is set to 1, when adding package that conflicts with existing package, remove existing package"
+// @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
+// @Param acceptUnsigned query int false "when value is set to 1, accept unsigned .changes files"
+// @Param ignoreSignature query int false "when value is set to 1 disable verification of .changes file signature"
+// @Param _async query bool false "Run in background and return task object"
+// @Success 200 {object} reposIncludePackageFromDirResponse "Response"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/repos/{name}/include/{dir} [post]
 func apiReposIncludePackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemoveFiles := c.Request.URL.Query().Get("noRemoveFiles") == "1"
@@ -734,6 +893,5 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			"Report":      reporter,
 			"FailedFiles": failedFiles,
 		}}, nil
-
 	})
 }

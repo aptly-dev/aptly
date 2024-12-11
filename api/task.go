@@ -1,18 +1,16 @@
 package api
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Get tasks
-// @Description Get list of available tasks. Each task is returned as in “show” API.
+// @Summary List Tasks
+// @Description **Get list of available tasks. Each task is returned as in “show” API**
 // @Tags Tasks
-// @Produce  json
+// @Produce json
 // @Success 200 {array} task.Task
 // @Router /api/tasks [get]
 func apiTasksList(c *gin.Context) {
@@ -20,21 +18,39 @@ func apiTasksList(c *gin.Context) {
 	c.JSON(200, list.GetTasks())
 }
 
-// POST /tasks-clear
+// @Summary Clear Tasks
+// @Description **Removes finished and failed tasks from internal task list**
+// @Tags Tasks
+// @Produce json
+// @Success 200 ""
+// @Router /api/tasks-clear [post]
 func apiTasksClear(c *gin.Context) {
 	list := context.TaskList()
 	list.Clear()
 	c.JSON(200, gin.H{})
 }
 
-// GET /tasks-wait
+// @Summary Wait for all Tasks
+// @Description **Waits for and returns when all running tasks are complete**
+// @Tags Tasks
+// @Produce json
+// @Success 200 ""
+// @Router /api/tasks-wait [get]
 func apiTasksWait(c *gin.Context) {
 	list := context.TaskList()
 	list.Wait()
 	c.JSON(200, gin.H{})
 }
 
-// GET /tasks/:id/wait
+// @Summary Wait for Task
+// @Description **Waits for and returns when given Task ID is complete**
+// @Tags Tasks
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad id?"
+// @Failure 400 {object} Error "Task Not Found"
+// @Router /api/tasks/{id}/wait [get]
 func apiTasksWaitForTaskByID(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -52,7 +68,15 @@ func apiTasksWaitForTaskByID(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// GET /tasks/:id
+// @Summary Get Task Info
+// @Description **Return task information for a given ID**
+// @Tags Tasks
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad id?"
+// @Failure 404 {object} Error "Task Not Found"
+// @Router /api/tasks/{id} [get]
 func apiTasksShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -71,7 +95,15 @@ func apiTasksShow(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// GET /tasks/:id/output
+// @Summary Get Task Output
+// @Description **Return task output for a given ID**
+// @Tags Tasks
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {object} string "Task output"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 404 {object} Error "Task Not Found"
+// @Router /api/tasks/{id}/output [get]
 func apiTasksOutputShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -90,7 +122,15 @@ func apiTasksOutputShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// GET /tasks/:id/detail
+// @Summary Get Task Details
+// @Description **Return task detail for a given ID**
+// @Tags Tasks
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} string "Task detail"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 404 {object} Error "Task Not Found"
+// @Router /api/tasks/{id}/detail [get]
 func apiTasksDetailShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -109,7 +149,15 @@ func apiTasksDetailShow(c *gin.Context) {
 	c.JSON(200, detail)
 }
 
-// GET /tasks/:id/return_value
+// @Summary Get Task Return Value
+// @Description **Return task return value (status code) by given ID**
+// @Tags Tasks
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {object} string "msg"
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/tasks/{id}/return_value [get]
 func apiTasksReturnValueShow(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -127,7 +175,15 @@ func apiTasksReturnValueShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// DELETE /tasks/:id
+// @Summary Delete Task
+// @Description **Delete completed task by given ID. Does not stop task execution**
+// @Tags Tasks
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} task.Task
+// @Failure 500 {object} Error "invalid syntax, bad ID?"
+// @Failure 400 {object} Error "Task in progress or not found"
+// @Router /api/tasks/{id} [delete]
 func apiTasksDelete(c *gin.Context) {
 	list := context.TaskList()
 	id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 0)
@@ -144,16 +200,4 @@ func apiTasksDelete(c *gin.Context) {
 	}
 
 	c.JSON(200, delTask)
-}
-
-// POST /tasks-dummy
-func apiTasksDummy(c *gin.Context) {
-	resources := []string{"dummy"}
-	taskName := "Dummy task"
-	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
-		out.Printf("Dummy task started\n")
-		detail.Store([]int{1, 2, 3})
-		out.Printf("Dummy task finished\n")
-		return &task.ProcessReturnValue{Code: http.StatusTeapot, Value: []int{1, 2, 3}}, nil
-	})
 }

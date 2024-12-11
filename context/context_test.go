@@ -1,6 +1,8 @@
 package context
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -82,5 +84,6 @@ func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 	// storage never exists.
 	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
 		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: "published local storage fuji not configured"})
+		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: EOF",
+			os.Getenv("HOME"))})
 }

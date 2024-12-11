@@ -18,6 +18,8 @@ type diskFree struct {
 
 // @Summary Get Storage Utilization
 // @Description **Get disk free information of aptly storage**
+// @Description
+// @Description Units in MiB.
 // @Tags Status
 // @Produce json
 // @Success 200 {object} diskFree "Storage information"

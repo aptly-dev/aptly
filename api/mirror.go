@@ -31,7 +31,7 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	return verifier, nil
 }
 
-// @Summary Get mirrors
+// @Summary List Mirrors
 // @Description **Show list of currently available mirrors**
 // @Description Each mirror is returned as in “show” API.
 // @Tags Mirrors
@@ -82,8 +82,8 @@ type mirrorCreateParams struct {
 	IgnoreSignatures bool `                  json:"IgnoreSignatures"`
 }
 
-// @Summary Create mirror
-// @Description **Create a mirror**
+// @Summary Create Mirror
+// @Description **Create a mirror of a remote repository**
 // @Tags Mirrors
 // @Consume json
 // @Param request body mirrorCreateParams true "Parameters"
@@ -164,6 +164,7 @@ func apiMirrorsCreate(c *gin.Context) {
 // @Tags Mirrors
 // @Param name path string true "mirror name"
 // @Param force query int true "force: 1 to enable"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {object} task.ProcessReturnValue
 // @Failure 404 {object} Error "Mirror not found"
@@ -208,7 +209,7 @@ func apiMirrorsDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Show Mirror
+// @Summary Get Mirror Info
 // @Description **Get mirror information by name**
 // @Tags Mirrors
 // @Param name path string true "mirror name"
@@ -364,6 +365,7 @@ type mirrorUpdateParams struct {
 // @Param name path string true "mirror name to update"
 // @Consume json
 // @Param request body mirrorUpdateParams true "Parameters"
+// @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {object} task.ProcessReturnValue "Mirror was updated successfully"
 // @Success 202 {object} task.Task "Mirror is being updated"

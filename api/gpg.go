@@ -12,15 +12,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// POST /api/gpg
-func apiGPGAddKey(c *gin.Context) {
-	var b struct {
-		Keyserver   string
-		GpgKeyID    string
-		GpgKeyArmor string
-		Keyring     string
-	}
+type gpgAddKeyParams struct {
+	// Keyserver, when downloading GpgKeyIDs
+	Keyserver string `json:"Keyserver"       example:"hkp://keyserver.ubuntu.com:80"`
+	// GpgKeyIDs to download from Keyserver, comma separated list
+	GpgKeyID string `json:"GpgKeyID"        example:"EF0F382A1A7B6500,8B48AD6246925553"`
+	// Armored gpg public ket, instead of downloading from keyserver
+	GpgKeyArmor string `json:"GpgKeyArmor"     example:""`
+	// Keyring for adding the keys (default: trustedkeys.gpg)
+	Keyring string `json:"Keyring"         example:"trustedkeys.gpg"`
+}
 
+// @Summary Add GPG Keys
+// @Description **Adds GPG keys to aptly keyring**
+// @Description
+// @Description Add GPG public keys for veryfing remote repositories for mirroring.
+// @Tags Mirrors
+// @Produce json
+// @Success 200 {object} string "OK"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Router /api/gpg [post]
+func apiGPGAddKey(c *gin.Context) {
+	b := gpgAddKeyParams{}
 	if c.Bind(&b) != nil {
 		return
 	}

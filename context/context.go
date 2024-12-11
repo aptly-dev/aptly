@@ -3,7 +3,6 @@ package context
 
 import (
 	gocontext "context"
-	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -116,9 +115,11 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", homeLocation)
 
-				// as this is fresh aptly installation, we don't need to support legacy pool locations
-				utils.Config.SkipLegacyPool = true
-				utils.SaveConfig(configLocations[0], &utils.Config)
+				utils.SaveConfigRaw(homeLocation, aptly.AptlyConf)
+				err = utils.LoadConfig(homeLocation, &utils.Config)
+				if err != nil {
+					Fatal(fmt.Errorf("error loading config file %s: %s", homeLocation, err))
+				}
 			}
 		}
 
@@ -293,10 +294,10 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 		var err error
 		switch context.config().DatabaseBackend.Type {
 		case "leveldb":
-			if len(context.config().DatabaseBackend.DbPath) == 0 {
-				return nil, errors.New("leveldb databaseBackend config invalid")
+			dbPath := filepath.Join(context.config().GetRootDir(), "db")
+			if len(context.config().DatabaseBackend.DbPath) != 0 {
+				dbPath = context.config().DatabaseBackend.DbPath
 			}
-			dbPath := filepath.Join(context.config().GetRootDir(), context.config().DatabaseBackend.DbPath)
 			context.database, err = goleveldb.NewDB(dbPath)
 		case "etcd":
 			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)

@@ -13,12 +13,16 @@ import (
 //go:embed VERSION
 var Version string
 
+//go:embed debian/aptly.conf
+var AptlyConf []byte
+
 func main() {
 	if Version == "" {
 		Version = "unknown"
 	}
 
 	aptly.Version = Version
+	aptly.AptlyConf = AptlyConf
 
 	os.Exit(cmd.Run(cmd.RootCommand(), os.Args[1:], true))
 }
