@@ -1,5 +1,29 @@
-aptly (1.6.0~rc1) stable; urgency=medium
+aptly (1.6.0) stable; urgency=medium
 
-  * release candidate
+  * support reading filters from file or stdin
+  * fix mirroring source packages
+  * support yaml config per default
+  * provide swagger API documentation
+  * provide API for querying aptly storage usage
+  * provide snapshot pull via API
+  * support creating repos from snapshots
+  * fix mirroring flat remote repos
+  * support skeleton files for publishing
+  * use new azure sdk
+  * support updating the components of a published repo
+  * support publishing multiple distributions (-multi-dist)
+  * support etcd database
+  * allow slash (/) in distribution names
+  * support for storing the "local" pool on Azure
+  * provide copy package API
+  * fix publish concurrency and improve performance
+  * improved mirroring
+  * fix download throttling
+  * fix resuming package downloads
+  * fix ignoring signatures
+  * fix packages dependency resolution (Virtual Packages, version numbers in Provides)
+  * improved S3 support and performance
+  * fix race condition with goleveldb
+  * use go 1.22
 
  -- André Roth <neolynx@gmail.com>  Sat, 16 Nov 2024 12:44:06 +0100
