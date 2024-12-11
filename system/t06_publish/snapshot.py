@@ -1344,6 +1344,26 @@ class PublishSnapshot41Test(BaseTest):
         self.check_exists('public/pool/main/libx/libxslt/libxslt1.1_1.1.32-2.2~deb10u2_i386.deb')
         self.check_exists('public/pool/main/libz/libzstd/libzstd1_1.3.8+dfsg-3+deb10u2_i386.deb')
         self.check_exists('public/pool/main/z/zlib/zlib1g_1.2.11.dfsg-1+deb10u2_i386.deb')
+        # check source packages with different names
+        self.check_exists('public/pool/main/u/util-linux/util-linux_2.33.1-0.1+deb10u1.dsc')
+        self.check_exists('public/pool/main/u/util-linux/util-linux_2.33.1-0.1+deb10u1.debian.tar.xz')
+        self.check_exists('public/pool/main/u/util-linux/util-linux_2.33.1.orig.tar.xz')
+        self.check_exists('public/pool/main/g/glibc/glibc_2.28-10+deb10u2.debian.tar.xz')
+        self.check_exists('public/pool/main/g/glibc/glibc_2.28-10+deb10u2.dsc')
+        self.check_exists('public/pool/main/g/glibc/glibc_2.28.orig.tar.xz')
+        self.check_exists('public/pool/main/n/ncurses/ncurses_6.1+20181013-2+deb10u5.debian.tar.xz')
+        self.check_exists('public/pool/main/n/ncurses/ncurses_6.1+20181013-2+deb10u5.dsc')
+        self.check_exists('public/pool/main/n/ncurses/ncurses_6.1+20181013.orig.tar.gz')
+        self.check_exists('public/pool/main/z/zlib/zlib_1.2.11.dfsg-1+deb10u2.debian.tar.xz')
+        self.check_exists('public/pool/main/z/zlib/zlib_1.2.11.dfsg-1+deb10u2.dsc')
+        self.check_exists('public/pool/main/z/zlib/zlib_1.2.11.dfsg.orig.tar.gz')
+        self.check_exists('public/pool/main/x/xz-utils/xz-utils_5.2.4-1+deb10u1.debian.tar.xz')
+        self.check_exists('public/pool/main/x/xz-utils/xz-utils_5.2.4-1+deb10u1.dsc')
+        self.check_exists('public/pool/main/x/xz-utils/xz-utils_5.2.4.orig.tar.xz')
+        self.check_exists('public/pool/main/e/e2fsprogs/e2fsprogs_1.44.5-1+deb10u2.debian.tar.xz')
+        self.check_exists('public/pool/main/e/e2fsprogs/e2fsprogs_1.44.5-1+deb10u2.dsc')
+        self.check_exists('public/pool/main/e/e2fsprogs/e2fsprogs_1.44.5.orig.tar.gz')
+        self.check_exists('public/pool/main/e/e2fsprogs/e2fsprogs_1.44.5.orig.tar.gz.asc')
 
 
 class PublishSnapshot42Test(BaseTest):
