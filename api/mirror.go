@@ -31,7 +31,7 @@ func getVerifier(keyRings []string) (pgp.Verifier, error) {
 	return verifier, nil
 }
 
-// @Summary Get Mirrors
+// @Summary List Mirrors
 // @Description **Show list of currently available mirrors**
 // @Description Each mirror is returned as in “show” API.
 // @Tags Mirrors
@@ -209,7 +209,7 @@ func apiMirrorsDrop(c *gin.Context) {
 	})
 }
 
-// @Summary Show Mirror
+// @Summary Get Mirror Info
 // @Description **Get mirror information by name**
 // @Tags Mirrors
 // @Param name path string true "mirror name"

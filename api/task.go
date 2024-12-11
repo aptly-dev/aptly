@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Get tasks
+// @Summary List Tasks
 // @Description **Get list of available tasks. Each task is returned as in “show” API**
 // @Tags Tasks
 // @Produce json
@@ -18,7 +18,7 @@ func apiTasksList(c *gin.Context) {
 	c.JSON(200, list.GetTasks())
 }
 
-// @Summary Clear finished and failed tasks
+// @Summary Clear Tasks
 // @Description **Removes finished and failed tasks from internal task list**
 // @Tags Tasks
 // @Produce json
@@ -30,7 +30,7 @@ func apiTasksClear(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary Wait for task completion
+// @Summary Wait for all Tasks
 // @Description **Waits for and returns when all running tasks are complete**
 // @Tags Tasks
 // @Produce json
@@ -42,7 +42,7 @@ func apiTasksWait(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// @Summary Wait for task to process
+// @Summary Wait for Task
 // @Description **Waits for and returns when given Task ID is complete**
 // @Tags Tasks
 // @Produce json
@@ -68,7 +68,7 @@ func apiTasksWaitForTaskByID(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// @Summary Return task information
+// @Summary Get Task Info
 // @Description **Return task information for a given ID**
 // @Tags Tasks
 // @Produce plain
@@ -95,7 +95,7 @@ func apiTasksShow(c *gin.Context) {
 	c.JSON(200, task)
 }
 
-// @Summary Return task output
+// @Summary Get Task Output
 // @Description **Return task output for a given ID**
 // @Tags Tasks
 // @Produce plain
@@ -122,7 +122,7 @@ func apiTasksOutputShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// @Summary Return task detail
+// @Summary Get Task Details
 // @Description **Return task detail for a given ID**
 // @Tags Tasks
 // @Produce json
@@ -149,7 +149,7 @@ func apiTasksDetailShow(c *gin.Context) {
 	c.JSON(200, detail)
 }
 
-// @Summary Return task return value (status code)
+// @Summary Get Task Return Value
 // @Description **Return task return value (status code) by given ID**
 // @Tags Tasks
 // @Produce plain
@@ -175,7 +175,7 @@ func apiTasksReturnValueShow(c *gin.Context) {
 	c.JSON(200, output)
 }
 
-// @Summary Delete task
+// @Summary Delete Task
 // @Description **Delete completed task by given ID. Does not stop task execution**
 // @Tags Tasks
 // @Produce json

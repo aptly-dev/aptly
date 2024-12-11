@@ -635,7 +635,7 @@ func apiPublishAddSource(c *gin.Context) {
 	})
 }
 
-// @Summary List pending changes
+// @Summary List Pending Changes
 // @Description **List source component changes to be applied**
 // @Description
 // @Description Return added, removed or changed components of snapshots or local repository to be published.
@@ -749,8 +749,8 @@ func apiPublishSetSources(c *gin.Context) {
 	})
 }
 
-// @Summary Drop pending changes
-// @Description **Drop pending source component changes of a published repository**
+// @Summary Discard Pending Changes
+// @Description **Discard pending source component changes of a published repository**
 // @Description
 // @Description Remove all pending changes what would be applied with a subsequent publish update call (i.e. `PUT /api/publish/{prefix}/{distribution}` / `POST /api/publish/{prefix}/{distribution}/update`).
 // @Description

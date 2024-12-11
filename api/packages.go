@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Show packages
+// @Summary Get Package Info
 // @Description **Show information about package by package key**
 // @Description Package keys could be obtained from various GET .../packages APIs.
 // @Tags Packages
@@ -25,8 +25,8 @@ func apiPackagesShow(c *gin.Context) {
 	c.JSON(200, p)
 }
 
-// @Summary Get packages
-// @Description Get list of packages.
+// @Summary List Packages
+// @Description **Get list of packages**
 // @Tags Packages
 // @Consume  json
 // @Produce  json

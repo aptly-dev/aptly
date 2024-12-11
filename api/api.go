@@ -28,7 +28,7 @@ type aptlyVersion struct {
 	Version string `json:"Version"`
 }
 
-// @Summary Aptly version
+// @Summary Aptly Version
 // @Description **Get aptly version**
 // @Description
 // @Description **Example:**
@@ -49,7 +49,7 @@ type aptlyStatus struct {
 	Status string `json:"Status" example:"'Aptly is ready', 'Aptly is unavailable', 'Aptly is healthy'"`
 }
 
-// @Summary Ready State
+// @Summary Get Ready State
 // @Description **Get aptly ready state**
 // @Description
 // @Description Return aptly ready state:
@@ -71,7 +71,7 @@ func apiReady(isReady *atomic.Value) func(*gin.Context) {
 	}
 }
 
-// @Summary Health State
+// @Summary Get Health State
 // @Description **Get aptly health state**
 // @Description
 // @Description Return aptly health state:

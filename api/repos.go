@@ -18,7 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Serve HTML listing of repo
+// @Summary Serve HTML Listing
 // @Description If ServeInAPIMode is enabled in aptly config,
 // @Description this endpoint is enabled which returns an HTML listing of each repo that can be browsed
 // @Tags Repos
@@ -41,7 +41,7 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 	}
 }
 
-// @Summary Serve package in API mode
+// @Summary Serve Packages
 // @Description If ServeInAPIMode is enabled in aptly config,
 // @Description this api serves a specified package from storage
 // @Tags Repos
@@ -64,7 +64,7 @@ func reposServeInAPIMode(c *gin.Context) {
 	c.FileFromFS(pkgpath, http.Dir(publicPath))
 }
 
-// @Summary Get repos
+// @Summary List Repositories
 // @Description **Get list of available repos**
 // @Description Each repo is returned as in “show” API.
 // @Tags Repos
@@ -97,7 +97,7 @@ type repoCreateParams struct {
 	FromSnapshot string `            json:"FromSnapshot"         example:"snapshot1"`
 }
 
-// @Summary Create repository
+// @Summary Create Repository
 // @Description **Create a local repository**
 // @Description
 // @Description Distribution and component are used as defaults when publishing repo either directly or via snapshot.
@@ -175,7 +175,7 @@ type reposEditParams struct {
 	DefaultComponent *string `        json:"DefaultComponent"     example:""`
 }
 
-// @Summary Update repo
+// @Summary Update Repository
 // @Description **Update local repository meta information**
 // @Tags Repos
 // @Produce json
@@ -228,7 +228,7 @@ func apiReposEdit(c *gin.Context) {
 }
 
 // GET /api/repos/:name
-// @Summary Get repository info by name
+// @Summary Get Repository Info
 // @Description Returns basic information about local repository.
 // @Tags Repos
 // @Produce  json
@@ -249,7 +249,7 @@ func apiReposShow(c *gin.Context) {
 	c.JSON(200, repo)
 }
 
-// @Summary Drop Repository
+// @Summary Delete Repository
 // @Description Drop/delete a repo
 // @Description Cannot drop repos that are published.
 // @Description Needs force=1 to drop repos used as source by other repos.
@@ -442,7 +442,7 @@ func apiReposPackagesDelete(c *gin.Context) {
 	})
 }
 
-// @Summary Add packages from uploaded file
+// @Summary Add Uploaded File
 // @Description Import packages from files (uploaded using File Upload API) to the local repository. If directory specified, aptly would discover package files automatically.
 // @Description Adding same package to local repository is not an error.
 // @Description By default aptly would try to remove every successfully processed file and directory `dir` (if it becomes empty after import).
@@ -462,7 +462,7 @@ func apiReposPackageFromFile(c *gin.Context) {
 	apiReposPackageFromDir(c)
 }
 
-// @Summary Add packages from uploaded directory
+// @Summary Add Uploaded Directory
 // @Description Import packages from files (uploaded using File Upload API) to the local repository. If directory specified, aptly would discover package files automatically.
 // @Description Adding same package to local repository is not an error.
 // @Description By default aptly would try to remove every successfully processed file and directory `dir` (if it becomes empty after import).
@@ -752,7 +752,7 @@ func apiReposCopyPackage(c *gin.Context) {
 	})
 }
 
-// @Summary Include Packages from File Upload
+// @Summary Include File from Directory
 // @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
 // @Tags Repos
 // @Produce json
@@ -780,7 +780,7 @@ type reposIncludePackageFromDirResponse struct {
 	FailedFiles []string
 }
 
-// @Summary Include Packages from Dir Upload
+// @Summary Include Directory
 // @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
 // @Tags Repos
 // @Produce json

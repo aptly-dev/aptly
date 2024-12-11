@@ -341,7 +341,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	})
 }
 
-// @Summary Get snapshot information
+// @Summary Get Snapshot Info
 // @Description **Query detailed information about a snapshot by name**
 // @Tags Snapshots
 // @Param name path string true "Name of the snapshot"
@@ -369,8 +369,8 @@ func apiSnapshotsShow(c *gin.Context) {
 	c.JSON(200, snapshot)
 }
 
-// @Summary Drop Snapshot
-// @Description **Drop/delete snapshot by name**
+// @Summary Delete Snapshot
+// @Description **Delete snapshot by name**
 // @Description Cannot drop snapshots that are published.
 // @Description Needs force=1 to drop snapshots used as source by other snapshots.
 // @Tags Snapshots
