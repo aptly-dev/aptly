@@ -33,9 +33,9 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca
 	github.com/ugorji/go/codec v1.2.11
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
-	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/sys v0.23.0
-	golang.org/x/term v0.23.0
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/sys v0.28.0
+	golang.org/x/term v0.27.0
 	golang.org/x/time v0.5.0
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
@@ -105,8 +105,8 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
