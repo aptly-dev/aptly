@@ -60,12 +60,11 @@ func aptlySnapshotFilter(cmd *commander.Command, args []string) error {
 	// Initial queries out of arguments
 	queries := make([]deb.PackageQuery, len(args)-2)
 	for i, arg := range args[2:] {
-		var q string
-		q, err = getContent(arg)
+		value, err := GetStringOrFileContent(arg)
 		if err != nil {
 			return fmt.Errorf("unable to read package query from file %s: %w", arg, err)
 		}
-		queries[i], err = query.Parse(q)
+		queries[i], err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to parse query: %s", err)
 		}
@@ -107,6 +106,8 @@ func makeCmdSnapshotFilter() *commander.Command {
 Command filter does filtering in snapshot <source>, producing another
 snapshot <destination>. Packages could be specified simply
 as 'package-name' or as package queries.
+
+Use '@file' syntax to read package queries from file and '@-' to read from stdin.
 
 Example:
 

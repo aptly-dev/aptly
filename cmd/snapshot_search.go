@@ -78,7 +78,11 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 	list.PrepareIndex()
 
 	if len(args) == 2 {
-		q, err = query.Parse(args[1])
+		value, err := GetStringOrFileContent(args[1])
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", args[1], err)
+		}
+		q, err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to search: %s", err)
 		}
@@ -133,6 +137,8 @@ func makeCmdSnapshotSearch() *commander.Command {
 Command search displays list of packages in snapshot that match package query
 
 If query is not specified, all the packages are displayed.
+
+Use '@file' syntax to read package query from file and '@-' to read from stdin.
 
 Example:
 

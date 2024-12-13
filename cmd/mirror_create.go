@@ -46,7 +46,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
-	repo.Filter, err = getContent(context.Flags().Lookup("filter").Value.String())
+	repo.Filter = context.Flags().Lookup("filter").Value.String()
 	repo.FilterWithDeps = context.Flags().Lookup("filter-with-deps").Value.Get().(bool)
 	repo.SkipComponentCheck = context.Flags().Lookup("force-components").Value.Get().(bool)
 	repo.SkipArchitectureCheck = context.Flags().Lookup("force-architectures").Value.Get().(bool)
@@ -106,7 +106,7 @@ Example:
 	cmd.Flag.Bool("with-installer", false, "download additional not packaged installer files")
 	cmd.Flag.Bool("with-sources", false, "download source packages in addition to binary packages")
 	cmd.Flag.Bool("with-udebs", false, "download .udeb packages (Debian installer support)")
-	cmd.Flag.String("filter", "", "filter packages in mirror")
+	AddStringOrFileFlag(&cmd.Flag, "filter", "", "filter packages in mirror, use '@file' to read filter from file or '@-' for stdin")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("force-components", false, "(only with component list) skip check that requested components are listed in Release file")
 	cmd.Flag.Bool("force-architectures", false, "(only with architecture list) skip check that requested architectures are listed in Release file")

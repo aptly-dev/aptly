@@ -66,7 +66,11 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 		return commander.ErrCommandError
 	}
 
-	q, err := query.Parse(args[0])
+	value, err := GetStringOrFileContent(args[0])
+	if err != nil {
+		return fmt.Errorf("unable to read package query from file %s: %w", args[0], err)
+	}
+	q, err := query.Parse(value)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -129,6 +133,8 @@ Command shows displays detailed meta-information about packages
 matching query. Information from Debian control file is displayed.
 Optionally information about package files and
 inclusion into mirrors/snapshots/local repos is shown.
+
+Use '@file' to read query from file or '@-' for stdin.
 
 Example:
 
