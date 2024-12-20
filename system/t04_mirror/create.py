@@ -489,3 +489,39 @@ class CreateMirror35Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror35", "mirror_show")
+
+
+class CreateMirror36Test(BaseTest):
+    """
+    create mirror: mirror with filter read from file
+    """
+    filterFilePath = os.path.join(os.environ["HOME"], ".aptly-filter.tmp")
+    fixtureCmds = [f"bash -c \"echo -n 'nginx | Priority (required)' > {filterFilePath}\""]
+    runCmd = f"aptly mirror create -ignore-signatures -filter='@{filterFilePath}' mirror36 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates main"
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror36",
+                              "mirror_show", match_prepare=removeDates)
+
+
+class CreateMirror37Test(BaseTest):
+    """
+    create mirror: mirror with filter read from stdin
+    """
+    runCmd = [
+        "bash",
+        "-c",
+        "echo -n 'nginx | Priority (required)' | aptly mirror create -ignore-signatures -filter='@-' mirror37 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates main"
+    ]
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror37",
+                              "mirror_show", match_prepare=removeDates)

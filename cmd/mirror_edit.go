@@ -104,7 +104,7 @@ Example:
 	}
 
 	cmd.Flag.String("archive-url", "", "archive url is the root of archive")
-	cmd.Flag.String("filter", "", "filter packages in mirror")
+	AddStringOrFileFlag(&cmd.Flag, "filter", "", "filter packages in mirror, use '@file' to read filter from file or '@-' for stdin")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("with-installer", false, "download additional not packaged installer files")

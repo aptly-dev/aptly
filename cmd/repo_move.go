@@ -110,7 +110,11 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 
 	queries := make([]deb.PackageQuery, len(args)-2)
 	for i := 0; i < len(args)-2; i++ {
-		queries[i], err = query.Parse(args[i+2])
+		value, err := GetStringOrFileContent(args[i+2])
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", args[i+2], err)
+		}
+		queries[i], err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
@@ -185,6 +189,8 @@ func makeCmdRepoMove() *commander.Command {
 		Long: `
 Command move moves packages matching <package-query> from local repo
 <src-name> to local repo <dst-name>.
+
+Use '@file' to read package queries from file or '@-' for stdin.
 
 Example:
 
