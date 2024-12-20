@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 import os
 
@@ -489,3 +490,45 @@ class CreateMirror35Test(BaseTest):
     def check(self):
         self.check_output()
         self.check_cmd_output("aptly mirror show mirror35", "mirror_show")
+
+
+class CreateMirror36Test(BaseTest):
+    """
+    create mirror: mirror with filter read from file
+    """
+    filterFilePath = os.path.join(os.environ["HOME"], ".aptly-filter.tmp")
+    fixtureCmds = [f"bash -c \"echo -n 'nginx | Priority (required)' > {filterFilePath}\""]
+    runCmd = f"aptly mirror create -ignore-signatures -filter='@{filterFilePath}' mirror36 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates main"
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror36",
+                              "mirror_show", match_prepare=removeDates)
+
+
+class CreateMirror37Test(BaseTest):
+    """
+    create mirror: mirror with filter read from stdin
+    """
+    aptly_testing_bin = Path(__file__).parent.parent.parent / "aptly.test"
+    # Hack: Normally the test system detects if runCmd is an aptly command and then
+    # substitutes the aptly_testing_bin path and deletes the last three lines of output.
+    # However, I need to run it in bash to control stdin, so I have to do it manually.
+    runCmd = [
+        "bash",
+        "-c",
+        f"echo -n 'nginx | Priority (required)' | {aptly_testing_bin} mirror create " +
+        "-ignore-signatures -filter='@-' mirror37 http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates main " +
+        "| grep -vE '^(EXIT|PASS|coverage:)'"
+    ]
+
+    def check(self):
+        def removeDates(s):
+            return re.sub(r"(Date|Valid-Until): [,0-9:+A-Za-z -]+\n", "", s)
+
+        self.check_output()
+        self.check_cmd_output("aptly mirror show mirror37",
+                              "mirror_show", match_prepare=removeDates)

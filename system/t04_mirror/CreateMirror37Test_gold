@@ -1,0 +1,4 @@
+Downloading: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/dists/stretch/updates/Release
+
+Mirror [mirror37]: http://repo.aptly.info/system-tests/archive.debian.org/debian-security/ stretch/updates successfully added.
+You can run 'aptly mirror update mirror37' to download repository contents.
