@@ -588,7 +588,7 @@ Options:
 .
 .TP
 \-\fBfilter\fR=
-filter packages in mirror
+filter packages in mirror, use \(cq@file\(cq to read filter from file or \(cq@\-\(cq for stdin
 .
 .TP
 \-\fBfilter\-with\-deps\fR
@@ -771,7 +771,7 @@ archive url is the root of archive
 .
 .TP
 \-\fBfilter\fR=
-filter packages in mirror
+filter packages in mirror, use \(cq@file\(cq to read filter from file or \(cq@\-\(cq for stdin
 .
 .TP
 \-\fBfilter\-with\-deps\fR
@@ -1016,6 +1016,9 @@ display list in machine\-readable format
 Command move moves packages matching \fIpackage\-query\fR from local repo \fIsrc\-name\fR to local repo \fIdst\-name\fR\.
 .
 .P
+Use \(cq@file\(cq to read package queries from file or \(cq@\-\(cq for stdin\.
+.
+.P
 Example:
 .
 .P
@@ -1037,6 +1040,9 @@ follow dependencies when processing package\-spec
 .
 .P
 Commands removes packages matching \fIpackage\-query\fR from local repository \fIname\fR\. If removed packages are not referenced by other repos or snapshots, they can be removed completely (including files) by running \(cqaptly db cleanup\(cq\.
+.
+.P
+Use \(cq@file\(cq to read package queries from file or \(cq@\-\(cq for stdin\.
 .
 .P
 Example:
@@ -1263,6 +1269,9 @@ $ aptly snapshot verify wheezy\-main wheezy\-contrib wheezy\-non\-free
 Command pull pulls new packages along with its\(cq dependencies to snapshot \fIname\fR from snapshot \fIsource\fR\. Pull can upgrade package version in \fIname\fR with versions from \fIsource\fR following dependencies\. New snapshot \fIdestination\fR is created as a result of this process\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
 .
 .P
+Use \(cq@file\(cq syntax to read package queries from file and \(cq@\-\(cq to read from stdin\.
+.
+.P
 Example:
 .
 .IP "" 4
@@ -1398,6 +1407,9 @@ Command search displays list of packages in snapshot that match package query
 If query is not specified, all the packages are displayed\.
 .
 .P
+Use \(cq@file\(cq syntax to read package query from file and \(cq@\-\(cq to read from stdin\.
+.
+.P
 Example:
 .
 .IP "" 4
@@ -1426,6 +1438,9 @@ include dependencies into search results
 .
 .P
 Command filter does filtering in snapshot \fIsource\fR, producing another snapshot \fIdestination\fR\. Packages could be specified simply as \(cqpackage\-name\(cq or as package queries\.
+.
+.P
+Use \(cq@file\(cq syntax to read package queries from file and \(cq@\-\(cq to read from stdin\.
 .
 .P
 Example:
@@ -2206,7 +2221,7 @@ don\(cqt sign Release files with GPG
 Command search displays list of packages in whole DB that match package query\.
 .
 .P
-If query is not specified, all the packages are displayed\.
+Use \(cq@file\(cq to read query from file or \(cq@\-\(cq for stdin\. If query is not specified, all the packages are displayed\.
 .
 .P
 Example:
@@ -2233,6 +2248,9 @@ custom format for result printing
 .
 .P
 Command shows displays detailed meta\-information about packages matching query\. Information from Debian control file is displayed\. Optionally information about package files and inclusion into mirrors/snapshots/local repos is shown\.
+.
+.P
+Use \(cq@file\(cq to read query from file or \(cq@\-\(cq for stdin\.
 .
 .P
 Example:
@@ -2652,6 +2670,9 @@ Blake Kostner (https://github\.com/btkostner)
 .
 .IP "\[ci]" 4
 Leigh London (https://github\.com/leighlondon)
+.
+.IP "\[ci]" 4
+Gordian Schönherr (https://github\.com/schoenherrg)
 .
 .IP "" 0
 
