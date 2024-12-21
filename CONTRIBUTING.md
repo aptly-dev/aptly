@@ -91,6 +91,12 @@ Install the following on your development machine:
 - make
 - git
 
+##### Docker installation on macOS
+1. Install [Docker Desktop on Mac](https://docs.docker.com/desktop/setup/install/mac-install/) (or via [Homebrew](https://brew.sh/))
+2. Allow directory sharing
+   - Open Docker Desktop
+   - Go to `Settings → Resources → File Sharing → Virtual File Shares`
+   - Add the aptly git repository path to the shared list (eg. /home/Users/john/aptly)
 
 #### Create docker container
 
