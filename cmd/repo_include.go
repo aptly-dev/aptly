@@ -93,7 +93,7 @@ Command include looks for .changes files in list of arguments or specified direc
 .changes file is verified, parsed, referenced files are put into separate temporary directory
 and added into local repository. Successfully imported files are removed by default.
 
-Additionally uploads could be restricted with <uploaders.json> file. Rules in this file control
+Additionally uploads could be restricted with 'uploaders.json' file. Rules in this file control
 uploads based on GPG key ID of .changes file signature and queries on .changes file fields.
 
 Example:
