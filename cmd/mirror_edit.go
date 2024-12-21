@@ -32,7 +32,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
-			repo.Filter = flag.Value.String()
+			repo.Filter = flag.Value.String() // allows file/stdin with @
 		case "filter-with-deps":
 			repo.FilterWithDeps = flag.Value.Get().(bool)
 		case "with-installer":
@@ -104,7 +104,7 @@ Example:
 	}
 
 	cmd.Flag.String("archive-url", "", "archive url is the root of archive")
-	cmd.Flag.String("filter", "", "filter packages in mirror")
+	AddStringOrFileFlag(&cmd.Flag, "filter", "", "filter packages in mirror, use '@file' to read filter from file or '@-' for stdin")
 	cmd.Flag.Bool("filter-with-deps", false, "when filtering, include dependencies of matching packages as well")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("with-installer", false, "download additional not packaged installer files")

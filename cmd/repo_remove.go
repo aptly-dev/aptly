@@ -38,7 +38,11 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 
 	queries := make([]deb.PackageQuery, len(args)-1)
 	for i := 0; i < len(args)-1; i++ {
-		queries[i], err = query.Parse(args[i+1])
+		value, err := GetStringOrFileContent(args[i+1])
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", args[i+1], err)
+		}
+		queries[i], err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to remove: %s", err)
 		}
@@ -80,6 +84,8 @@ Commands removes packages matching <package-query> from local repository
 <name>. If removed packages are not referenced by other repos or
 snapshots, they can be removed completely (including files) by running
 'aptly db cleanup'.
+
+Use '@file' to read package queries from file or '@-' for stdin.
 
 Example:
 

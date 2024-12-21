@@ -21,7 +21,11 @@ func aptlyPackageSearch(cmd *commander.Command, args []string) error {
 	}
 
 	if len(args) == 1 {
-		q, err = query.Parse(args[0])
+		value, err := GetStringOrFileContent(args[0])
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", args[0], err)
+		}
+		q, err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to search: %s", err)
 		}
@@ -49,6 +53,7 @@ func makeCmdPackageSearch() *commander.Command {
 		Long: `
 Command search displays list of packages in whole DB that match package query.
 
+Use '@file' to read query from file or '@-' for stdin.
 If query is not specified, all the packages are displayed.
 
 Example:

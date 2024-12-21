@@ -88,7 +88,11 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	// Initial queries out of arguments
 	queries := make([]deb.PackageQuery, len(args)-3)
 	for i, arg := range args[3:] {
-		queries[i], err = query.Parse(arg)
+		value, err := GetStringOrFileContent(arg)
+		if err != nil {
+			return fmt.Errorf("unable to read package query from file %s: %w", arg, err)
+		}
+		queries[i], err = query.Parse(value)
 		if err != nil {
 			return fmt.Errorf("unable to parse query: %s", err)
 		}
@@ -166,6 +170,8 @@ from snapshot <source>. Pull can upgrade package version in <name> with
 versions from <source> following dependencies. New snapshot <destination>
 is created as a result of this process. Packages could be specified simply
 as 'package-name' or as package queries.
+
+Use '@file' syntax to read package queries from file and '@-' to read from stdin.
 
 Example:
 
