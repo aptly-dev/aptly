@@ -46,15 +46,12 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to create mirror: %s", err)
 	}
 
-	repo.Filter = context.Flags().Lookup("filter").Value.String()
+	repo.Filter = context.Flags().Lookup("filter").Value.String() // allows file/stdin with @
 	repo.FilterWithDeps = context.Flags().Lookup("filter-with-deps").Value.Get().(bool)
 	repo.SkipComponentCheck = context.Flags().Lookup("force-components").Value.Get().(bool)
 	repo.SkipArchitectureCheck = context.Flags().Lookup("force-architectures").Value.Get().(bool)
 
 	if repo.Filter != "" {
-		if err != nil {
-			return fmt.Errorf("unable to read package query from file %s: %w", context.Flags().Lookup("filter").Value.String(), err)
-		}
 		_, err = query.Parse(repo.Filter)
 		if err != nil {
 			return fmt.Errorf("unable to create mirror: %s", err)

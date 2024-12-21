@@ -32,7 +32,7 @@ func aptlyMirrorEdit(cmd *commander.Command, args []string) error {
 	context.Flags().Visit(func(flag *flag.Flag) {
 		switch flag.Name {
 		case "filter":
-			repo.Filter = flag.Value.String()
+			repo.Filter = flag.Value.String() // allows file/stdin with @
 		case "filter-with-deps":
 			repo.FilterWithDeps = flag.Value.Get().(bool)
 		case "with-installer":
