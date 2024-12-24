@@ -26,4 +26,4 @@ aptly (1.6.0) stable; urgency=medium
   * fix race condition with goleveldb
   * use go 1.22
 
- -- André Roth <neolynx@gmail.com>  Sat, 16 Nov 2024 12:44:06 +0100
+ -- André Roth <neolynx@gmail.com>  Tue, 24 Dec 2024 17:44:35 +0100
