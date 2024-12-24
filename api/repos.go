@@ -94,7 +94,7 @@ type repoCreateParams struct {
 	// Default component when publishing from this local repo
 	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
 	// Snapshot name to create repoitory from (optional)
-	FromSnapshot string `            json:"FromSnapshot"         example:"snapshot1"`
+	FromSnapshot string `            json:"FromSnapshot"         example:""`
 }
 
 // @Summary Create Repository

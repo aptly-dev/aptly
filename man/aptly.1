@@ -31,7 +31,7 @@ aptly looks for configuration file first in \fB~/\.aptly\.conf\fR then in \fB/us
 With aptly version 1\.6\.0, yaml configuration with inline documentation is supported and recommended (see \fBdebian/aptly\.conf\fR)\.
 .
 .P
-The legacy json configuration is still supported:
+The legacy json configuration is still supported (and also supports comments):
 .
 .IP "" 4
 .
@@ -1129,7 +1129,7 @@ include dependencies into search results
 Command include looks for \.changes files in list of arguments or specified directories\. Each \.changes file is verified, parsed, referenced files are put into separate temporary directory and added into local repository\. Successfully imported files are removed by default\.
 .
 .P
-Additionally uploads could be restricted with
+Additionally uploads could be restricted with \(cquploaders\.json\(cq file\. Rules in this file control uploads based on GPG key ID of \.changes file signature and queries on \.changes file fields\.
 .
 .P
 Example:
@@ -2672,7 +2672,7 @@ Blake Kostner (https://github\.com/btkostner)
 Leigh London (https://github\.com/leighlondon)
 .
 .IP "\[ci]" 4
-Gordian Schönherr (https://github\.com/schoenherrg)
+Gordian Schoenherr (https://github\.com/schoenherrg)
 .
 .IP "" 0
 

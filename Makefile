@@ -216,4 +216,4 @@ clean:  ## remove local build and module cache
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
-.PHONY: help man prepare swagger version binaries docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image build docker-shell clean releasetype dpkg serve docker-serve flake8
+.PHONY: help man prepare swagger version binaries build docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8
