@@ -30,7 +30,7 @@ require (
 	github.com/smira/flag v0.0.0-20170926215700-695ea5e84e76
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
 	github.com/smira/go-xz v0.1.0
-	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca
+	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/ugorji/go/codec v1.2.11
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0
 	golang.org/x/crypto v0.31.0 // indirect
@@ -77,7 +77,7 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/golang/snappy v0.0.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
