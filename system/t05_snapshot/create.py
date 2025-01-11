@@ -106,3 +106,14 @@ class CreateSnapshot9Test(BaseTest):
         "aptly repo create local-repo",
     ]
     runCmd = "aptly snapshot create snap9 from repo local-repo"
+
+
+class CreateSnapshot10Test(BaseTest):
+    """
+    create snapshot: from empty mirror
+    """
+    fixtureCmds = [
+        "aptly mirror create -ignore-signatures non-free http://repo.aptly.info/system-tests/security.debian.org/debian-security bookworm-security updates/non-free",
+        "aptly mirror update -ignore-signatures non-free"
+    ]
+    runCmd = "aptly snapshot create oh-snap from mirror non-free"
