@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/saracen/walker"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -417,7 +417,7 @@ func (pool *PackagePool) FullPath(path string) string {
 
 // GenerateTempPath generates temporary path for download (which is fast to import into package pool later on)
 func (pool *PackagePool) GenerateTempPath(filename string) (string, error) {
-	random := uuid.NewRandom().String()
+	random := uuid.NewString()
 
 	return filepath.Join(pool.rootPath, random[0:2], random[2:4], random[4:]+filename), nil
 }

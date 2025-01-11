@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/lease"
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -179,7 +179,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 // Internal copy or move implementation
 func (storage *PublishedStorage) internalCopyOrMoveBlob(src, dst string, metadata map[string]*string, move bool) error {
 	const leaseDuration = 30
-	leaseID := uuid.NewRandom().String()
+	leaseID := uuid.NewString()
 
 	serviceClient := storage.az.client.ServiceClient()
 	containerClient := serviceClient.NewContainerClient(storage.az.container)

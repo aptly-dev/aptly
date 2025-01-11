@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/ugorji/go/codec"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -354,7 +354,7 @@ func walkUpTree(source interface{}, collectionFactory *CollectionFactory) (rootD
 func NewPublishedRepo(storage, prefix, distribution string, architectures []string,
 	components []string, sources []interface{}, collectionFactory *CollectionFactory, multiDist bool) (*PublishedRepo, error) {
 	result := &PublishedRepo{
-		UUID:          uuid.New(),
+		UUID:          uuid.NewString(),
 		Storage:       storage,
 		Architectures: architectures,
 		Sources:       make(map[string]string),
