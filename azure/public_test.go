@@ -7,11 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-        "bytes"
 
-        "github.com/Azure/azure-sdk-for-go/sdk/azcore"
-        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/utils"
 	. "gopkg.in/check.v1"
@@ -69,10 +66,8 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 	s.storage, err = NewPublishedStorage(s.accountName, s.accountKey, container, "", s.endpoint)
 	c.Assert(err, IsNil)
-        publicAccessType := azblob.PublicAccessTypeContainer
-        _, err = s.storage.az.client.CreateContainer(context.Background(), s.storage.az.container, &azblob.CreateContainerOptions{
-            Access: &publicAccessType,
-        })
+	cnt := s.storage.az.container
+	_, err = cnt.Create(context.Background(), azblob.Metadata{}, azblob.PublicAccessContainer)
 	c.Assert(err, IsNil)
 
 	s.prefixedStorage, err = NewPublishedStorage(s.accountName, s.accountKey, container, prefix, s.endpoint)
@@ -80,39 +75,41 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
-        _, err := s.storage.az.client.DeleteContainer(context.Background(), s.storage.az.container, nil)
+	cnt := s.storage.az.container
+	_, err := cnt.Delete(context.Background(), azblob.ContainerAccessConditions{})
 	c.Assert(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
-        resp, err := s.storage.az.client.DownloadStream(context.Background(), s.storage.az.container, path, nil)
+	blob := s.storage.az.container.NewBlobURL(path)
+	resp, err := blob.Download(context.Background(), 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false, azblob.ClientProvidedKeyOptions{})
 	c.Assert(err, IsNil)
-	data, err := ioutil.ReadAll(resp.Body)
+	body := resp.Body(azblob.RetryReaderOptions{MaxRetryRequests: 3})
+	data, err := ioutil.ReadAll(body)
 	c.Assert(err, IsNil)
 	return data
 }
 
 func (s *PublishedStorageSuite) AssertNoFile(c *C, path string) {
-        serviceClient := s.storage.az.client.ServiceClient()
-        containerClient := serviceClient.NewContainerClient(s.storage.az.container)
-        blobClient := containerClient.NewBlobClient(path)
-        _, err := blobClient.GetProperties(context.Background(), nil)
+	_, err := s.storage.az.container.NewBlobURL(path).GetProperties(
+		context.Background(), azblob.BlobAccessConditions{}, azblob.ClientProvidedKeyOptions{})
 	c.Assert(err, NotNil)
-
-        storageError, ok := err.(*azcore.ResponseError)
+	storageError, ok := err.(azblob.StorageError)
 	c.Assert(ok, Equals, true)
-	c.Assert(storageError.StatusCode, Equals, 404)
+	c.Assert(string(storageError.ServiceCode()), Equals, string(string(azblob.StorageErrorCodeBlobNotFound)))
 }
 
 func (s *PublishedStorageSuite) PutFile(c *C, path string, data []byte) {
 	hash := md5.Sum(data)
-        uploadOptions := &azblob.UploadStreamOptions{
-            HTTPHeaders: &blob.HTTPHeaders{
-            	BlobContentMD5: hash[:],
-            },
-        }
-        reader := bytes.NewReader(data)
-        _, err := s.storage.az.client.UploadStream(context.Background(), s.storage.az.container, path, reader, uploadOptions)
+	_, err := azblob.UploadBufferToBlockBlob(
+		context.Background(),
+		data,
+		s.storage.az.container.NewBlockBlobURL(path),
+		azblob.UploadToBlockBlobOptions{
+			BlobHTTPHeaders: azblob.BlobHTTPHeaders{
+				ContentMD5: hash[:],
+			},
+		})
 	c.Assert(err, IsNil)
 }
 
@@ -333,7 +330,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 
 	// 2nd link from pool, providing wrong path for source file
 	//
-	// this test should check that file already exists in Azure and skip upload (which would fail if not skipped)
+	// this test should check that file already exists in S3 and skip upload (which would fail if not skipped)
 	s.prefixedStorage.pathCache = nil
 	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, "wrong-looks-like-pathcache-doesnt-work", cksum1, false)
 	c.Check(err, IsNil)
