@@ -44,9 +44,9 @@ Debian / Ubuntu
 
 Aptly is provided in the following debian packages:
 
-* aptly (main binary)
-* aptly-api (systemd service for REST API)
-* aptly-dbgsym (debugging symbols)
+* **aptly**: Includes the main Aptly binary, man pages, and shell completions
+* **aptly-api**: A systemd service for the REST API, using the global /etc/aptly.conf
+* **aptly-dbg**: Debug symbols for troubleshooting
 
 The packages can be installed on official `Debian <https://packages.debian.org/search?keywords=aptly>`_ and `Ubuntu <https://packages.ubuntu.com/search?keywords=aptly>`_ distributions.
 
