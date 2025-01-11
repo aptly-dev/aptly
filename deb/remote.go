@@ -20,7 +20,7 @@ import (
 	"github.com/aptly-dev/aptly/http"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/utils"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/ugorji/go/codec"
 )
 
@@ -84,7 +84,7 @@ type RemoteRepo struct {
 func NewRemoteRepo(name string, archiveRoot string, distribution string, components []string,
 	architectures []string, downloadSources bool, downloadUdebs bool, downloadInstaller bool) (*RemoteRepo, error) {
 	result := &RemoteRepo{
-		UUID:              uuid.New(),
+		UUID:              uuid.NewString(),
 		Name:              name,
 		ArchiveRoot:       archiveRoot,
 		Distribution:      distribution,

@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/aptly-dev/aptly/database"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/ugorji/go/codec"
 )
 
@@ -32,7 +32,7 @@ type LocalRepo struct {
 // NewLocalRepo creates new instance of Debian local repository
 func NewLocalRepo(name string, comment string) *LocalRepo {
 	return &LocalRepo{
-		UUID:    uuid.New(),
+		UUID:    uuid.NewString(),
 		Name:    name,
 		Comment: comment,
 	}

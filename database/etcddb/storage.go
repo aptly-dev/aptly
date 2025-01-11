@@ -1,11 +1,11 @@
 package etcddb
 
 import (
-	"github.com/aptly-dev/aptly/database"
-	"github.com/pborman/uuid"
-	clientv3 "go.etcd.io/etcd/client/v3"
-
 	"fmt"
+
+	"github.com/aptly-dev/aptly/database"
+	"github.com/google/uuid"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type EtcDStorage struct {
@@ -16,7 +16,7 @@ type EtcDStorage struct {
 
 // CreateTemporary creates new DB of the same type in temp dir
 func (s *EtcDStorage) CreateTemporary() (database.Storage, error) {
-	tmp := uuid.NewRandom().String()
+	tmp := uuid.NewString()
 	return &EtcDStorage{
 		url:       s.url,
 		db:        s.db,
