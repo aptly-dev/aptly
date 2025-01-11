@@ -67,11 +67,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
+sleeptime=10
+retries=20
 wait_task()
 {
     _id=$1
     _success=0
-    for t in `seq 180`
+    for t in `seq $retries`
     do
         jsonret=`curl -fsS -u $aptly_user:$aptly_password ${aptly_api}/api/tasks/$_id`
         _state=`echo $jsonret | jq .State`
@@ -84,7 +86,7 @@ wait_task()
             echo Error: task failed
             return 1
         fi
-        sleep 1
+        sleep $sleeptime
     done
     if [ "$_success" -ne 1 ]; then
         echo Error: task timeout
