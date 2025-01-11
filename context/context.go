@@ -100,6 +100,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			configLocations := []string{homeLocation, "/usr/local/etc/aptly.conf", "/etc/aptly.conf"}
 
 			for _, configLocation := range configLocations {
+				// FIXME: check if exists, check if readable
 				err = utils.LoadConfig(configLocation, &utils.Config)
 				if os.IsPermission(err) || os.IsNotExist(err) {
 					continue
