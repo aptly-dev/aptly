@@ -45,7 +45,7 @@ type Snapshot struct {
 
 // NewSnapshotFromRepository creates snapshot from current state of repository
 func NewSnapshotFromRepository(name string, repo *RemoteRepo) (*Snapshot, error) {
-	if repo.packageRefs == nil || repo.packageRefs.Len() == 0 {
+	if repo.packageRefs == nil {
 		return nil, errors.New("mirror not updated")
 	}
 
