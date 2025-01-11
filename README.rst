@@ -1,7 +1,3 @@
-=====
-aptly
-=====
-
 .. image:: https://github.com/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
     :target: https://github.com/aptly-dev/aptly/actions
 
@@ -14,15 +10,18 @@ aptly
 .. image:: https://goreportcard.com/badge/github.com/aptly-dev/aptly
     :target: https://goreportcard.com/report/aptly-dev/aptly
 
+aptly
+=====
+
 Aptly is a swiss army knife for Debian repository management.
 
 .. image:: http://www.aptly.info/img/aptly_logo.png
     :target: http://www.aptly.info/
 
 Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support please use
-mailing list `aptly-discuss <https://groups.google.com/forum/#!forum/aptly-discuss>`_.
+open `issues <https://github.com/aptly-dev/aptly/issues>`_ or `discussions <https://github.com/aptly-dev/aptly/discussions>`_.
 
-Aptly features: ("+" means planned features)
+Aptly features:
 
 * make mirrors of remote Debian/Ubuntu repositories, limiting by components/architectures
 * take snapshots of mirrors at any point in time, fixing state of repository at some moment of time
@@ -32,48 +31,50 @@ Aptly features: ("+" means planned features)
 * filter repository by search query, pulling dependencies when required
 * publish self-made packages as Debian repositories
 * REST API for remote access
-* mirror repositories "as-is" (without resigning with user's key) (+)
-* support for yum repositories (+)
 
-Current limitations:
+Any contributions are welcome! Please see `CONTRIBUTING.md <CONTRIBUTING.md>`_.
 
-* translations are not supported yet
+Installation
+=============
 
-Install Stable Version
------------------------
+Aptly can be installed on several operating systems.
 
-To install aptly on Debian/Ubuntu, add new repository to ``/etc/apt/sources.list``::
+Debian / Ubuntu
+----------------
 
-    deb http://repo.aptly.info/ squeeze main
+Aptly is provided in the following debian packages:
 
-And import key that is used to sign the release::
+* aptly (main binary)
+* aptly-api (systemd service for REST API)
+* aptly-dbgsym (debugging symbols)
 
-    $ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EE727D4449467F0E
+The packages can be installed on official `Debian <https://packages.debian.org/search?keywords=aptly>`_ and `Ubuntu <https://packages.ubuntu.com/search?keywords=aptly>`_ distributions.
 
-After that you can install aptly as any other software package::
+Upstream Debian Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    $ apt-get update
-    $ apt-get install aptly
+If a newer version (not available in Debian/Ubuntu) of aptly is required, upstream debian packages (built from git tags) can be installed as follows:
 
-Don't worry about squeeze part in repo name: aptly package should work on Debian squeeze+,
-Ubuntu 10.0+. Package contains aptly binary, man page and bash completion.
+Install the following APT key (as root)::
 
-Other Binaries
-~~~~~~~~~~~~~~~~~
+    wget -O /etc/apt/keyrings/aptly.asc https://www.aptly.info/pubkey.txt
 
-Binary executables (depends almost only on libc) are available for download from `GitHub Releases <https://github.com/aptly-dev/aptly/releases>`_.
+Define Release APT sources in ``/etc/apt/sources.list.d/aptly.list``::
 
-Install CI Version
---------------------
+    deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/release DIST main
 
-More recent versions are available as CI builds (development, might be unstable).
+Where DIST is one of: ``buster``, ``bullseye``, ``bookworm``, ``focal``, ``jammy``, ``noble``
 
-Debian GNU/Linux
-~~~~~~~~~~~~~~~~~
+Install aptly packages::
 
-Install the following APT key::
+    apt-get update
+    apt-get install aptly
+    apt-get install aptly-api  # REST API systemd service
 
-    sudo wget -O /etc/apt/keyrings/aptly.asc https://www.aptly.info/pubkey.txt
+CI Builds
+~~~~~~~~~~
+
+For testing new features or bugfixes, recent builds are available as CI builds (built from master, may be unstable!) and can be installed as follows:
 
 Define CI APT sources in ``/etc/apt/sources.list.d/aptly-ci.list``::
 
@@ -81,13 +82,19 @@ Define CI APT sources in ``/etc/apt/sources.list.d/aptly-ci.list``::
 
 Where DIST is one of: ``buster``, ``bullseye``, ``bookworm``, ``focal``, ``jammy``, ``noble``
 
-Contributing
-------------
+Note: same gpg key is used as for the Upstream Debian Packages.
 
-Please follow detailed documentation in `CONTRIBUTING.md <CONTRIBUTING.md>`_.
+Other Operating Systems
+------------------------
+
+Binary executables (depends almost only on libc) are available on `GitHub Releases <https://github.com/aptly-dev/aptly/releases>`_ for:
+
+- macOS / darwin (amd64, arm64)
+- FreeBSD (amd64, arm64, 386, arm)
+- Generic Linux (amd64, arm64, 386, arm)
 
 Integrations
-------------
+=============
 
 Vagrant:
 
@@ -124,3 +131,7 @@ GUI for aptly API:
 Scala sbt:
 
 -   `sbt aptly plugin <https://github.com/amalakar/sbt-aptly>`_ by Arup Malakar
+
+Molior:
+
+-   `Molior Debian Build System <https://github.com/molior-dbs/molior>`_ by André Roth

@@ -140,7 +140,7 @@ dpkg: prepare swagger  ## Build debian packages
 	mkdir -p build && mv ../*.deb build/ ; \
 	cd build && ls -l *.deb
 
-binaries: prepare swagger  ## Build binary releases (FreeBSD, MacOS, Linux tar)
+binaries: prepare swagger  ## Build binary releases (FreeBSD, macOS, Linux generic)
 	# build aptly
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/tmp/aptly -ldflags='-extldflags=-static'
 	# install
@@ -195,7 +195,7 @@ docker-serve:  ## Run development server (auto recompiling) on http://localhost:
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint
 
-docker-binaries:  ## Build binary releases (FreeBSD, MacOS, Linux tar) in docker container
+docker-binaries:  ## Build binary releases (FreeBSD, macOS, Linux generic) in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper binaries
 
 docker-man:  ## Create man page in docker container
