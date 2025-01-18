@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -e
+
+# source debconf library
+. /usr/share/debconf/confmodule
+
+case "$1" in
+    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	# only remove aptly-api user and its homedir on purge
+	if [ "${1}" = "purge" ] ; then
+	    userdel -r aptly-api
+	fi
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
