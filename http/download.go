@@ -277,9 +277,7 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 	if expected != nil {
 		actual := checksummer.Sum()
 
-		if actual.Size != expected.Size {
-			err = fmt.Errorf("%s: size check mismatch %d != %d", url, actual.Size, expected.Size)
-		} else if expected.MD5 != "" && actual.MD5 != expected.MD5 {
+		if expected.MD5 != "" && actual.MD5 != expected.MD5 {
 			err = fmt.Errorf("%s: md5 hash mismatch %#v != %#v", url, actual.MD5, expected.MD5)
 		} else if expected.SHA1 != "" && actual.SHA1 != expected.SHA1 {
 			err = fmt.Errorf("%s: sha1 hash mismatch %#v != %#v", url, actual.SHA1, expected.SHA1)
