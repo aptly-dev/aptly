@@ -34,6 +34,7 @@ class APITest(BaseTest):
                 "linkMethod": "symlink"
             }
         },
+        "enableMetricsEndpoint": True,
         "enableSwaggerEndpoint": True
     }
 

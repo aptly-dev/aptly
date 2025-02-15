@@ -19,6 +19,12 @@ import (
 
 var context *ctx.AptlyContext
 
+// @Summary Get Metrics
+// @Description **Get Prometheus Metrics**
+// @Tags Status
+// @Produce text/plain
+// @Success 200 {string} string Metrics
+// @Router /api/metrics [get]
 func apiMetricsGet() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		countPackagesByRepos()
