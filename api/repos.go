@@ -420,6 +420,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 // @Description API verifies that packages actually exist in aptly database and checks constraint that conflicting packages can’t be part of the same local repository.
 // @Tags Repos
 // @Param name path string true "Repository name"
+// @Consume  json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
@@ -623,11 +624,11 @@ type reposCopyPackageParams struct {
 // @Summary Copy Package
 // @Description Copies a package from a source to destination repository
 // @Tags Repos
-// @Produce json
 // @Param name path string true "Destination repo"
 // @Param src path string true "Source repo"
 // @Param file path string true "File/packages to copy"
 // @Param _async query bool false "Run in background and return task object"
+// @Produce json
 // @Success 200 {object} task.ProcessReturnValue "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
