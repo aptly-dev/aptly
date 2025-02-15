@@ -291,7 +291,8 @@ func CollectChangesFiles(locations []string, reporter aptly.ResultReporter) (cha
 // ImportChangesFiles imports referenced files in changes files into local repository
 func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, acceptUnsigned, ignoreSignatures, forceReplace, noRemoveFiles bool,
 	verifier pgp.Verifier, repoTemplate *template.Template, progress aptly.Progress, localRepoCollection *LocalRepoCollection, packageCollection *PackageCollection,
-	pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders, parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
+	reflistCollection *RefListCollection, pool aptly.PackagePool, checksumStorageProvider aptly.ChecksumStorageProvider, uploaders *Uploaders,
+	parseQuery parseQuery) (processedFiles []string, failedFiles []string, err error) {
 
 	for _, path := range changesFiles {
 		var changes *Changes
@@ -359,7 +360,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 			}
 		}
 
-		err = localRepoCollection.LoadComplete(repo)
+		err = localRepoCollection.LoadComplete(repo, reflistCollection)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to load repo: %s", err)
 		}
@@ -382,9 +383,9 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 			return nil, nil, fmt.Errorf("unable to import package files: %s", err)
 		}
 
-		repo.UpdateRefList(NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(NewSplitRefListFromPackageList(list))
 
-		err = localRepoCollection.Update(repo)
+		err = localRepoCollection.Update(repo, reflistCollection)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to save: %s", err)
 		}

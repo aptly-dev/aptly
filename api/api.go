@@ -229,7 +229,7 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 
 // Common piece of code to show list of packages,
 // with searching & details if requested
-func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) {
+func showPackages(c *gin.Context, reflist deb.AnyRefList, collectionFactory *deb.CollectionFactory) {
 	result := []*deb.Package{}
 
 	list, err := deb.NewPackageListFromRefList(reflist, collectionFactory.PackageCollection(), nil)

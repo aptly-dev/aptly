@@ -31,6 +31,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 	packageCollection := factory.PackageCollection()
 	repoCollection := factory.LocalRepoCollection()
 	publishCollection := factory.PublishedRepoCollection()
+	reflistCollection := factory.RefListCollection()
 
 	sharedRefs := NewPackageRefList()
 	{
@@ -91,14 +92,14 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 		repo := NewLocalRepo(fmt.Sprintf("repo%d", repoIndex), "comment")
 		repo.DefaultDistribution = fmt.Sprintf("dist%d", repoIndex)
 		repo.DefaultComponent = defaultComponent
-		repo.UpdateRefList(refs.Merge(sharedRefs, false, true))
-		repoCollection.Add(repo)
+		repo.UpdateRefList(NewSplitRefListFromRefList(refs.Merge(sharedRefs, false, true)))
+		repoCollection.Add(repo, reflistCollection)
 
 		publish, err := NewPublishedRepo("", "test", "", nil, []string{defaultComponent}, []interface{}{repo}, factory, false)
 		if err != nil {
 			b.Fatal(err)
 		}
-		publishCollection.Add(publish)
+		publishCollection.Add(publish, reflistCollection)
 	}
 
 	db.CompactDB()

@@ -69,7 +69,7 @@ func aptlyMirrorCreate(cmd *commander.Command, args []string) error {
 	}
 
 	collectionFactory := context.NewCollectionFactory()
-	err = collectionFactory.RemoteRepoCollection().Add(repo)
+	err = collectionFactory.RemoteRepoCollection().Add(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to add mirror: %s", err)
 	}

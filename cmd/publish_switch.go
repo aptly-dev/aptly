@@ -72,7 +72,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to switch: %s", err)
 		}
 
-		err = snapshotCollection.LoadComplete(snapshot)
+		err = snapshotCollection.LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to switch: %s", err)
 		}
@@ -108,7 +108,7 @@ func aptlyPublishSwitch(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to publish: %s", err)
 	}
 
-	err = collectionFactory.PublishedRepoCollection().Update(published)
+	err = collectionFactory.PublishedRepoCollection().Update(published, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to save to DB: %s", err)
 	}
