@@ -30,12 +30,12 @@ jobs:
       GOPROXY: "https://proxy.golang.org"
 
     steps:
-      - name: "Install packages"
+      - name: "Install Packages"
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage python3-etcd3 python3-plyvel flake8
 
-      - name: "Checkout repository"
+      - name: "Checkout Repository"
         uses: actions/checkout@v4
         with:
           # fetch the whole repo for `git describe` to work
@@ -45,7 +45,7 @@ jobs:
         run: |
           make flake8
 
-      - name: "Read go version from go.mod"
+      - name: "Read Go Version"
         run: |
           gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
           echo "Go Version: $gover"
@@ -91,12 +91,12 @@ jobs:
           sudo mkdir -p /srv ; sudo chown runner /srv
           COVERAGE_DIR=${{ runner.temp }} make system-test
 
-      - name: "Merge code coverage"
+      - name: "Merge Code Coverage"
         run: |
           go install github.com/wadey/gocovmerge@latest
           ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
-      - name: "Upload code coverage"
+      - name: "Upload Code Coverage"
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -148,13 +148,13 @@ jobs:
                           gcc-i686-linux-gnu gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: "Checkout repository"
+      - name: "Checkout Repository"
         uses: actions/checkout@v4
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: "Read go version from go.mod"
+      - name: "Read Go Version"
         run: |
           gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
           echo "Go Version: $gover"
@@ -221,13 +221,13 @@ jobs:
           - goos: darwin
             goarch: arm
     steps:
-      - name: "Checkout repository"
+      - name: "Checkout Repository"
         uses: actions/checkout@v4
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
 
-      - name: "Read go version from go.mod"
+      - name: "Read Go Version"
         run: |
           echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
         id: goversion
@@ -274,12 +274,31 @@ jobs:
     needs: ci-binary-build
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Get aptly version"
+        env:
+          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
+        run: |
+           aptlyver=$(make -s version)
+           echo "Aptly Version: $aptlyver"
+           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
+        id: releaseversion
+
       - name: "Download Artifacts"
         uses: actions/download-artifact@v4
         with:
           path: out/
 
+      - name: "Create Release Notes"
+        run: |
+          echo -e "## Changes\n\n" > out/release-notes.md
+          dpkg-parsechangelog -S Changes | tail -n +4 >> out/release-notes.md
+
       - name: "Release"
         uses: softprops/action-gh-release@v2
         with:
+          name: "Aptly Release ${{ steps.releaseversion.outputs.VERSION }}"
           files: "out/**/aptly_*.zip"
+          body_path: "out/release-notes.md"
