@@ -1,3 +1,13 @@
+aptly (1.6.1) stable; urgency=medium
+
+  * update golang-github-syndtr-goleveldb-dev dependency (v1.0.1-0.20220721030215-126854af5e6d) to fix segfault on arm64
+    (bug in golang-github-golang-snappy-dev)
+  * allow snapshotting empty mirrors again (regression)
+  * debian compliance: add postrm (note: `apt purge aptly-api` will remove all data in ~aptly-api/)
+  * update other dependencies (x/net 0.33.0, gin-gonic/gin 1.9.1)
+
+ -- André Roth <neolynx@gmail.com>  Sat, 15 Feb 2025 13:03:16 +0100
+
 aptly (1.6.0) stable; urgency=medium
 
   * support reading filters from file or stdin
