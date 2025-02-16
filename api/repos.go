@@ -47,7 +47,6 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 // @Tags Repos
 // @Param storage path string true "Storage"
 // @Param pkgPath path string true "Package Path" allowReserved=true
-// @Produce json
 // @Success 200 ""
 // @Router /api/{storage}/{pkgPath} [get]
 func reposServeInAPIMode(c *gin.Context) {
@@ -178,8 +177,10 @@ type reposEditParams struct {
 // @Summary Update Repository
 // @Description **Update local repository meta information**
 // @Tags Repos
-// @Produce json
+// @Param name path string true "Repository name"
+// @Consume  json
 // @Param request body reposEditParams true "Parameters"
+// @Produce json
 // @Success 200 {object} deb.LocalRepo "msg"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Server Error"
@@ -231,8 +232,8 @@ func apiReposEdit(c *gin.Context) {
 // @Summary Get Repository Info
 // @Description Returns basic information about local repository.
 // @Tags Repos
-// @Produce  json
 // @Param name path string true "Repository name"
+// @Produce  json
 // @Success 200 {object} deb.LocalRepo
 // @Failure 404 {object} Error "Repository not found"
 // @Router /api/repos/{name} [get]
@@ -254,6 +255,7 @@ func apiReposShow(c *gin.Context) {
 // @Description Cannot drop repos that are published.
 // @Description Needs force=1 to drop repos used as source by other repos.
 // @Tags Repos
+// @Param name path string true "Repository name"
 // @Produce json
 // @Param _async query bool false "Run in background and return task object"
 // @Param force query int false "force: 1 to enable"
@@ -306,12 +308,12 @@ func apiReposDrop(c *gin.Context) {
 // @Description ["Pi386 aptly 0.8 966561016b44ed80"]
 // @Description ```
 // @Tags Repos
-// @Produce json
-// @Param name path string true "Snapshot to search"
+// @Param name path string true "Repository name"
 // @Param q query string true "Package query (e.g Name%20(~%20matlab))"
 // @Param withDeps query string true "Set to 1 to include dependencies when evaluating package query"
 // @Param format query string true "Set to 'details' to return extra info about each package"
 // @Param maximumVersion query string true "Set to 1 to only return the highest version for each package name"
+// @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 404 {object} Error "Internal Server Error"
@@ -406,9 +408,11 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 // @Description
 // @Description API verifies that packages actually exist in aptly database and checks constraint that conflicting packages can’t be part of the same local repository.
 // @Tags Repos
-// @Produce json
+// @Param name path string true "Repository name"
+// @Consume  json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
 // @Param _async query bool false "Run in background and return task object"
+// @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -426,6 +430,8 @@ func apiReposPackagesAdd(c *gin.Context) {
 // @Description
 // @Description Any package(s) can be removed from a local repository. Package references from a local repository can be retrieved with GET /api/repos/:name/packages.
 // @Tags Repos
+// @Param name path string true "Repository name"
+// @Consume  json
 // @Produce json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
 // @Param _async query bool false "Run in background and return task object"
@@ -607,11 +613,11 @@ type reposCopyPackageParams struct {
 // @Summary Copy Package
 // @Description Copies a package from a source to destination repository
 // @Tags Repos
-// @Produce json
 // @Param name path string true "Source repo"
 // @Param src path string true "Destination repo"
 // @Param file path string true "File/packages to copy"
 // @Param _async query bool false "Run in background and return task object"
+// @Produce json
 // @Success 200 {object} task.ProcessReturnValue "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -762,12 +768,16 @@ func apiReposCopyPackage(c *gin.Context) {
 // @Summary Include File from Directory
 // @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
 // @Tags Repos
-// @Produce json
+// @Param name path string true "Repository name"
+// @Param dir path string true "Directory name"
+// @Param file path string true "File name"
+// @Consume  json
 // @Param forceReplace query int false "when value is set to 1, when adding package that conflicts with existing package, remove existing package"
 // @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
 // @Param acceptUnsigned query int false "when value is set to 1, accept unsigned .changes files"
 // @Param ignoreSignature query int false "when value is set to 1 disable verification of .changes file signature"
 // @Param _async query bool false "Run in background and return task object"
+// @Produce json
 // @Success 200 {object} string "msg"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/repos/{name}/include/{dir}/{file} [post]
@@ -790,6 +800,8 @@ type reposIncludePackageFromDirResponse struct {
 // @Summary Include Directory
 // @Description Allows automatic processing of .changes file controlling package upload (uploaded using File Upload API) to the local repository. i.e. Exposes repo include command in api.
 // @Tags Repos
+// @Param name path string true "Repository name"
+// @Param dir path string true "Directory name"
 // @Produce json
 // @Param forceReplace query int false "when value is set to 1, when adding package that conflicts with existing package, remove existing package"
 // @Param noRemoveFiles query int false "when value is set to 1, don’t remove files that have been imported successfully into repository"
