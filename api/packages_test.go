@@ -5,7 +5,7 @@ import (
 )
 
 type PackagesSuite struct {
-	ApiSuite
+	APISuite
 }
 
 var _ = Suite(&PackagesSuite{})

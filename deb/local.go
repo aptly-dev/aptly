@@ -69,7 +69,7 @@ func (repo *LocalRepo) Encode() []byte {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(repo)
+	_ = encoder.Encode(repo)
 
 	return buf.Bytes()
 }
@@ -116,7 +116,7 @@ func (collection *LocalRepoCollection) search(filter func(*LocalRepo) bool, uniq
 		return result
 	}
 
-	collection.db.ProcessByPrefix([]byte("L"), func(_, blob []byte) error {
+	_ = collection.db.ProcessByPrefix([]byte("L"), func(_, blob []byte) error {
 		r := &LocalRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding local repo: %s\n", err)
@@ -159,9 +159,9 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 // Update stores updated information about repo in DB
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
 	batch := collection.db.CreateBatch()
-	batch.Put(repo.Key(), repo.Encode())
+	_ = batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
+		_ = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
 	return batch.Write()
 }
@@ -247,7 +247,7 @@ func (collection *LocalRepoCollection) Drop(repo *LocalRepo) error {
 	delete(collection.cache, repo.UUID)
 
 	batch := collection.db.CreateBatch()
-	batch.Delete(repo.Key())
-	batch.Delete(repo.RefKey())
+	_ = batch.Delete(repo.Key())
+	_ = batch.Delete(repo.RefKey())
 	return batch.Write()
 }

@@ -51,7 +51,7 @@ func (s *ChangesSuite) SetUpTest(c *C) {
 
 func (s *ChangesSuite) TearDownTest(c *C) {
 	s.progress.Shutdown()
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *ChangesSuite) TestParseAndVerify(c *C) {
@@ -108,13 +108,13 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 
 	for _, path := range origFailedFiles {
 		filename := filepath.Join(s.Dir, filepath.Base(path))
-		utils.CopyFile(path, filename)
+		_ = utils.CopyFile(path, filename)
 		expectedFailedFiles = append(expectedFailedFiles, filename)
 	}
 
 	for _, path := range origProcessedFiles {
 		filename := filepath.Join(s.Dir, filepath.Base(path))
-		utils.CopyFile(path, filename)
+		_ = utils.CopyFile(path, filename)
 		expectedProcessedFiles = append(expectedProcessedFiles, filename)
 	}
 

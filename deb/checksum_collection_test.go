@@ -28,7 +28,7 @@ func (s *ChecksumCollectionSuite) SetUpTest(c *C) {
 }
 
 func (s *ChecksumCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *ChecksumCollectionSuite) TestFlow(c *C) {

@@ -20,7 +20,7 @@ func getVerifier(flags *flag.FlagSet) (pgp.Verifier, error) {
 		verifier.AddKeyring(keyRing)
 	}
 
-	err := verifier.InitKeyring(ignoreSignatures == false) // be verbose only if verifying signatures is requested
+	err := verifier.InitKeyring(!ignoreSignatures) // be verbose only if verifying signatures is requested
 	if err != nil {
 		return nil, err
 	}

@@ -38,8 +38,8 @@ func aptlyGraph(cmd *commander.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	tempfile.Close()
-	os.Remove(tempfile.Name())
+	_ = tempfile.Close()
+	_ = os.Remove(tempfile.Name())
 
 	format := context.Flags().Lookup("format").Value.String()
 	output := context.Flags().Lookup("output").Value.String()

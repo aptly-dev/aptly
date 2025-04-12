@@ -14,11 +14,11 @@ var _ = Suite(&ChecksumSuite{})
 
 func (s *ChecksumSuite) SetUpTest(c *C) {
 	s.tempfile, _ = os.CreateTemp(c.MkDir(), "aptly-test")
-	s.tempfile.WriteString(testString)
+	_, _ = s.tempfile.WriteString(testString)
 }
 
 func (s *ChecksumSuite) TearDownTest(c *C) {
-	s.tempfile.Close()
+	_ = s.tempfile.Close()
 }
 
 func (s *ChecksumSuite) TestChecksumsForFile(c *C) {

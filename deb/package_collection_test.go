@@ -23,7 +23,7 @@ func (s *PackageCollectionSuite) SetUpTest(c *C) {
 }
 
 func (s *PackageCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *PackageCollectionSuite) TestUpdate(c *C) {
@@ -67,7 +67,7 @@ func (s *PackageCollectionSuite) TestByKey(c *C) {
 
 func (s *PackageCollectionSuite) TestByKeyOld0_3(c *C) {
 	key := []byte("Pi386 vmware-view-open-client 4.5.0-297975+dfsg-4+b1")
-	s.db.Put(key, old0_3Package)
+	_ = s.db.Put(key, old0_3Package)
 
 	p, err := s.collection.ByKey(key)
 	c.Check(err, IsNil)

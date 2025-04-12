@@ -12,7 +12,7 @@ type Error struct {
 	URL  string
 }
 
-// Error
+// Error returns HTTP error message
 func (e *Error) Error() string {
 	return fmt.Sprintf("HTTP code %d while fetching %s", e.Code, e.URL)
 }

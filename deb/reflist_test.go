@@ -46,21 +46,21 @@ func (s *PackageRefListSuite) SetUpTest(c *C) {
 func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
 	db, _ := goleveldb.NewOpenDB(c.MkDir())
 	coll := NewPackageCollection(db)
-	coll.Update(s.p1)
-	coll.Update(s.p3)
+	_ = coll.Update(s.p1)
+	_ = coll.Update(s.p3)
 
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
+	_ = s.list.Add(s.p5)
+	_ = s.list.Add(s.p6)
 
 	reflist := NewPackageRefListFromPackageList(s.list)
 
 	_, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, ErrorMatches, "unable to load package with key.*")
 
-	coll.Update(s.p5)
-	coll.Update(s.p6)
+	_ = coll.Update(s.p5)
+	_ = coll.Update(s.p6)
 
 	list, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, IsNil)
@@ -73,10 +73,10 @@ func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
 }
 
 func (s *PackageRefListSuite) TestNewPackageRefList(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
+	_ = s.list.Add(s.p5)
+	_ = s.list.Add(s.p6)
 
 	reflist := NewPackageRefListFromPackageList(s.list)
 	c.Assert(reflist.Len(), Equals, 4)
@@ -90,10 +90,10 @@ func (s *PackageRefListSuite) TestNewPackageRefList(c *C) {
 }
 
 func (s *PackageRefListSuite) TestPackageRefListEncodeDecode(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
+	_ = s.list.Add(s.p5)
+	_ = s.list.Add(s.p6)
 
 	reflist := NewPackageRefListFromPackageList(s.list)
 
@@ -105,10 +105,10 @@ func (s *PackageRefListSuite) TestPackageRefListEncodeDecode(c *C) {
 }
 
 func (s *PackageRefListSuite) TestPackageRefListForeach(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
-	s.list.Add(s.p6)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
+	_ = s.list.Add(s.p5)
+	_ = s.list.Add(s.p6)
 
 	reflist := NewPackageRefListFromPackageList(s.list)
 
@@ -131,9 +131,9 @@ func (s *PackageRefListSuite) TestPackageRefListForeach(c *C) {
 }
 
 func (s *PackageRefListSuite) TestHas(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
-	s.list.Add(s.p5)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
+	_ = s.list.Add(s.p5)
 	reflist := NewPackageRefListFromPackageList(s.list)
 
 	c.Check(reflist.Has(s.p1), Equals, true)
@@ -180,21 +180,21 @@ func (s *PackageRefListSuite) TestDiff(c *C) {
 	}
 
 	for _, p := range packages {
-		coll.Update(p)
+		_ = coll.Update(p)
 	}
 
 	listA := NewPackageList()
-	listA.Add(packages[0])
-	listA.Add(packages[1])
-	listA.Add(packages[2])
-	listA.Add(packages[3])
-	listA.Add(packages[6])
+	_ = listA.Add(packages[0])
+	_ = listA.Add(packages[1])
+	_ = listA.Add(packages[2])
+	_ = listA.Add(packages[3])
+	_ = listA.Add(packages[6])
 
 	listB := NewPackageList()
-	listB.Add(packages[0])
-	listB.Add(packages[2])
-	listB.Add(packages[4])
-	listB.Add(packages[5])
+	_ = listB.Add(packages[0])
+	_ = listB.Add(packages[2])
+	_ = listB.Add(packages[4])
+	_ = listB.Add(packages[5])
 
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
@@ -248,15 +248,15 @@ func (s *PackageRefListSuite) TestDiffCompactsAtEnd(c *C) {
 	}
 
 	for _, p := range packages {
-		coll.Update(p)
+		_ = coll.Update(p)
 	}
 
 	listA := NewPackageList()
-	listA.Add(packages[0])
+	_ = listA.Add(packages[0])
 
 	listB := NewPackageList()
-	listB.Add(packages[1])
-	listB.Add(packages[2])
+	_ = listB.Add(packages[1])
+	_ = listB.Add(packages[2])
 
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
@@ -291,27 +291,27 @@ func (s *PackageRefListSuite) TestMerge(c *C) {
 
 	for _, p := range packages {
 		p.V06Plus = true
-		coll.Update(p)
+		_ = coll.Update(p)
 	}
 
 	listA := NewPackageList()
-	listA.Add(packages[0])
-	listA.Add(packages[1])
-	listA.Add(packages[2])
-	listA.Add(packages[3])
-	listA.Add(packages[7])
+	_ = listA.Add(packages[0])
+	_ = listA.Add(packages[1])
+	_ = listA.Add(packages[2])
+	_ = listA.Add(packages[3])
+	_ = listA.Add(packages[7])
 
 	listB := NewPackageList()
-	listB.Add(packages[0])
-	listB.Add(packages[2])
-	listB.Add(packages[4])
-	listB.Add(packages[5])
-	listB.Add(packages[6])
+	_ = listB.Add(packages[0])
+	_ = listB.Add(packages[2])
+	_ = listB.Add(packages[4])
+	_ = listB.Add(packages[5])
+	_ = listB.Add(packages[6])
 
 	listC := NewPackageList()
-	listC.Add(packages[0])
-	listC.Add(packages[8])
-	listC.Add(packages[9])
+	_ = listC.Add(packages[0])
+	_ = listC.Add(packages[8])
+	_ = listC.Add(packages[9])
 
 	reflistA := NewPackageRefListFromPackageList(listA)
 	reflistB := NewPackageRefListFromPackageList(listB)
@@ -372,14 +372,14 @@ func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	}
 
 	rl := NewPackageList()
-	rl.Add(packages[0])
-	rl.Add(packages[1])
-	rl.Add(packages[2])
-	rl.Add(packages[3])
-	rl.Add(packages[4])
-	rl.Add(packages[5])
-	rl.Add(packages[6])
-	rl.Add(packages[7])
+	_ = rl.Add(packages[0])
+	_ = rl.Add(packages[1])
+	_ = rl.Add(packages[2])
+	_ = rl.Add(packages[3])
+	_ = rl.Add(packages[4])
+	_ = rl.Add(packages[5])
+	_ = rl.Add(packages[6])
+	_ = rl.Add(packages[7])
 
 	result := NewPackageRefListFromPackageList(rl)
 	result.FilterLatestRefs()

@@ -86,7 +86,7 @@ func aptlyMirrorShowTxt(_ *commander.Command, args []string) error {
 		if repo.LastDownloadDate.IsZero() {
 			fmt.Printf("Unable to show package list, mirror hasn't been downloaded yet.\n")
 		} else {
-			ListPackagesRefList(repo.RefList(), collectionFactory)
+			_ = ListPackagesRefList(repo.RefList(), collectionFactory)
 		}
 	}
 
@@ -119,7 +119,7 @@ func aptlyMirrorShowJSON(_ *commander.Command, args []string) error {
 			}
 
 			list.PrepareIndex()
-			list.ForEachIndexed(func(p *deb.Package) error {
+			_ = list.ForEachIndexed(func(p *deb.Package) error {
 				repo.Packages = append(repo.Packages, p.GetFullName())
 				return nil
 			})

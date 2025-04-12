@@ -24,7 +24,7 @@ func DirIsAccessible(filename string) error {
 	return nil
 }
 
-// Remove leading '/', remove '..', '$' and '`'
+// SanitizePath removes leading '/', remove '..', '$' and '`'
 func SanitizePath(path string) (result string) {
 	result = strings.Replace(path, "..", "", -1)
 	result = strings.Replace(result, "$", "", -1)

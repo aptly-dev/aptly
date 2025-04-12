@@ -17,7 +17,7 @@ import (
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/kjk/lzma"
 	"github.com/klauspost/compress/zstd"
-	"github.com/smira/go-xz"
+	xz "github.com/smira/go-xz"
 )
 
 // Source kinds
@@ -35,7 +35,7 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	library := ar.NewReader(file)
 	for {
@@ -66,14 +66,14 @@ func GetControlFileFromDeb(packageFile string) (Stanza, error) {
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to ungzip %s from %s", header.Name, packageFile)
 				}
-				defer ungzip.Close()
+				defer func() { _ = ungzip.Close() }()
 				tarInput = ungzip
 			case "control.tar.xz":
 				unxz, err := xz.NewReader(bufReader)
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to unxz %s from %s", header.Name, packageFile)
 				}
-				defer unxz.Close()
+				defer func() { _ = unxz.Close() }()
 				tarInput = unxz
 			case "control.tar.zst":
 				unzstd, err := zstd.NewReader(bufReader)
@@ -116,10 +116,10 @@ func GetControlFileFromDsc(dscFile string, verifier pgp.Verifier) (Stanza, error
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	isClearSigned, err := verifier.IsClearSigned(file)
-	file.Seek(0, 0)
+	_, _ = file.Seek(0, 0)
 
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func GetControlFileFromDsc(dscFile string, verifier pgp.Verifier) (Stanza, error
 		if err != nil {
 			return nil, err
 		}
-		defer text.Close()
+		defer func() { _ = text.Close() }()
 	} else {
 		text = file
 	}
@@ -181,7 +181,7 @@ func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 					if err != nil {
 						return nil, errors.Wrapf(err, "unable to ungzip data.tar.gz from %s", packageFile)
 					}
-					defer ungzip.Close()
+					defer func() { _ = ungzip.Close() }()
 					tarInput = ungzip
 				}
 			case "data.tar.bz2":
@@ -191,11 +191,11 @@ func GetContentsFromDeb(file io.Reader, packageFile string) ([]string, error) {
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to unxz data.tar.xz from %s", packageFile)
 				}
-				defer unxz.Close()
+				defer func() { _ = unxz.Close() }()
 				tarInput = unxz
 			case "data.tar.lzma":
 				unlzma := lzma.NewReader(bufReader)
-				defer unlzma.Close()
+				defer func() { _ = unlzma.Close() }()
 				tarInput = unlzma
 			case "data.tar.zst":
 				unzstd, err := zstd.NewReader(bufReader)

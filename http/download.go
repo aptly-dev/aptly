@@ -226,7 +226,7 @@ func (downloader *downloaderImpl) DownloadWithChecksum(ctx context.Context, url 
 
 	err = os.Rename(temppath, destination)
 	if err != nil {
-		os.Remove(temppath)
+		_ = os.Remove(temppath)
 		return errors.Wrap(err, url)
 	}
 
@@ -239,7 +239,9 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 		return "", errors.Wrap(err, url)
 	}
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func() {
+                    _ = resp.Body.Close()
+		}()
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
@@ -257,7 +259,9 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 	if err != nil {
 		return "", errors.Wrap(err, url)
 	}
-	defer outfile.Close()
+	defer func() {
+		_ = outfile.Close()
+	}()
 
 	checksummer := utils.NewChecksumWriter()
 	writers := []io.Writer{outfile, downloader.aggWriter}
@@ -270,7 +274,7 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
-		os.Remove(temppath)
+		_ = os.Remove(temppath)
 		return "", errors.Wrap(err, url)
 	}
 
@@ -295,7 +299,7 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 					downloader.progress.Printf("WARNING: %s\n", err.Error())
 				}
 			} else {
-				os.Remove(temppath)
+				_ = os.Remove(temppath)
 				return "", err
 			}
 		} else {

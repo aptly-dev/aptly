@@ -33,7 +33,7 @@ func apiSnapshotsList(c *gin.Context) {
 	}
 
 	result := []*deb.Snapshot{}
-	collection.ForEachSorted(SortMethodString, func(snapshot *deb.Snapshot) error {
+	_ = collection.ForEachSorted(SortMethodString, func(snapshot *deb.Snapshot) error {
 		result = append(result, snapshot)
 		return nil
 	})
@@ -555,7 +555,7 @@ func apiSnapshotsMerge(c *gin.Context) {
 	}
 
 	if len(body.Sources) < 1 {
-		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("At least one source snapshot is required"))
+		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("minimum one source snapshot is required"))
 		return
 	}
 
@@ -765,7 +765,7 @@ func apiSnapshotsPull(c *gin.Context) {
 		addedPackages := []string{}
 		alreadySeen := map[string]bool{}
 
-		destinationPackageList.ForEachIndexed(func(pkg *deb.Package) error {
+		_ = destinationPackageList.ForEachIndexed(func(pkg *deb.Package) error {
 			key := pkg.Architecture + "_" + pkg.Name
 			_, seen := alreadySeen[key]
 
@@ -781,7 +781,7 @@ func apiSnapshotsPull(c *gin.Context) {
 
 			// If !allMatches, add only first matching name-arch package
 			if !seen || allMatches {
-				toPackageList.Add(pkg)
+				_ = toPackageList.Add(pkg)
 				addedPackages = append(addedPackages, pkg.String())
 			}
 

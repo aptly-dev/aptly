@@ -97,7 +97,7 @@ package environment to new version.`,
 		Flag: *flag.NewFlagSet("aptly", flag.ExitOnError),
 		Subcommands: []*commander.Command{
 			makeCmdConfig(),
-			makeCmdDb(),
+			makeCmdDB(),
 			makeCmdGraph(),
 			makeCmdMirror(),
 			makeCmdRepo(),

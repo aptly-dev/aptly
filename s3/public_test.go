@@ -3,7 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -70,8 +70,8 @@ func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
 	})
 	c.Assert(err, IsNil)
 
-	body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
 	c.Assert(err, IsNil)
 
 	return body
@@ -98,7 +98,7 @@ func (s *PublishedStorageSuite) PutFile(c *C, path string, data []byte) {
 
 func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	dir := c.MkDir()
-	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
+	err := os.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
 	c.Assert(err, IsNil)
 
 	err = s.storage.PutFile("a/b.txt", filepath.Join(dir, "a"))
@@ -116,7 +116,7 @@ func (s *PublishedStorageSuite) TestPutFilePlusWorkaround(c *C) {
 	s.storage.plusWorkaround = true
 
 	dir := c.MkDir()
-	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
+	err := os.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
 	c.Assert(err, IsNil)
 
 	err = s.storage.PutFile("a/b+c.txt", filepath.Join(dir, "a"))
@@ -260,18 +260,18 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	cs := files.NewMockChecksumStorage()
 
 	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
+	err := os.WriteFile(tmpFile1, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
 	tmpFile2 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err = ioutil.WriteFile(tmpFile2, []byte("Spam"), 0644)
+	err = os.WriteFile(tmpFile2, []byte("Spam"), 0644)
 	c.Assert(err, IsNil)
 	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
 
 	tmpFile3 := filepath.Join(c.MkDir(), "netboot/boot.img.gz")
-	os.MkdirAll(filepath.Dir(tmpFile3), 0777)
-	err = ioutil.WriteFile(tmpFile3, []byte("Contents"), 0644)
+	_ = os.MkdirAll(filepath.Dir(tmpFile3), 0777)
+	err = os.WriteFile(tmpFile3, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum3 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
@@ -332,7 +332,7 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 	cs := files.NewMockChecksumStorage()
 
 	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
+	err := os.WriteFile(tmpFile1, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 

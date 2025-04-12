@@ -16,8 +16,8 @@ var _ = Suite(&ConfigSuite{})
 func (s *ConfigSuite) TestLoadConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.json1")
 	f, _ := os.Create(configname)
-	f.WriteString(configFile)
-	f.Close()
+	_, _ = f.WriteString(configFile)
+	_ = f.Close()
 
         // start with empty config
         s.config = ConfigStructure{}
@@ -62,11 +62,13 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	c.Assert(err, IsNil)
 
 	f, _ := os.Open(configname)
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	st, _ := f.Stat()
 	buf := make([]byte, st.Size())
-	f.Read(buf)
+	_, _ = f.Read(buf)
 
 	c.Check(string(buf), Equals, ""+
 		"{\n" +
@@ -162,8 +164,8 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.yaml1")
 	f, _ := os.Create(configname)
-	f.WriteString(configFileYAML)
-	f.Close()
+	_, _ = f.WriteString(configFileYAML)
+	_ = f.Close()
 
         // start with empty config
         s.config = ConfigStructure{}
@@ -178,8 +180,8 @@ func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
 func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.yaml2")
 	f, _ := os.Create(configname)
-	f.WriteString(configFileYAMLError)
-	f.Close()
+	_, _ = f.WriteString(configFileYAMLError)
+	_ = f.Close()
 
         // start with empty config
         s.config = ConfigStructure{}
@@ -191,8 +193,8 @@ func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
 func (s *ConfigSuite) TestSaveYAMLConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.yaml3")
 	f, _ := os.Create(configname)
-	f.WriteString(configFileYAML)
-	f.Close()
+	_, _ = f.WriteString(configFileYAML)
+	_ = f.Close()
 
         // start with empty config
         s.config = ConfigStructure{}
@@ -204,11 +206,13 @@ func (s *ConfigSuite) TestSaveYAMLConfig(c *C) {
 	c.Assert(err, IsNil)
 
 	f, _ = os.Open(configname)
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	st, _ := f.Stat()
 	buf := make([]byte, st.Size())
-	f.Read(buf)
+	_, _ = f.Read(buf)
 
 	c.Check(string(buf), Equals, configFileYAML)
 }
@@ -225,11 +229,13 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 	c.Assert(err, IsNil)
 
         f, _ := os.Open(configname)
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	st, _ := f.Stat()
 	buf := make([]byte, st.Size())
-	f.Read(buf)
+	_, _ = f.Read(buf)
 
 	c.Check(string(buf), Equals, "" +
 		"root_dir: \"\"\n" +
@@ -275,7 +281,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
 	configname := filepath.Join(c.MkDir(), "aptly.yaml5")
 	f, _ := os.Create(configname)
-	f.Close()
+	_ = f.Close()
 
         // start with empty config
         s.config = ConfigStructure{}

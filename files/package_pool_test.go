@@ -2,7 +2,6 @@ package files
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -51,18 +50,18 @@ func (s *PackagePoolSuite) TestFilepathList(c *C) {
 	c.Check(err, IsNil)
 	c.Check(list, IsNil)
 
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0b"), 0755)
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0a"), 0755)
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "ae", "0c"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0b"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0a"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "ae", "0c"), 0755)
 
 	list, err = s.pool.FilepathList(nil)
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{})
 
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "1.deb"), nil, 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "2.deb"), nil, 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0a", "3.deb"), nil, 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0b", "4.deb"), nil, 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "1.deb"), nil, 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "2.deb"), nil, 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0a", "3.deb"), nil, 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0b", "4.deb"), nil, 0644)
 
 	list, err = s.pool.FilepathList(nil)
 	c.Check(err, IsNil)
@@ -70,14 +69,14 @@ func (s *PackagePoolSuite) TestFilepathList(c *C) {
 }
 
 func (s *PackagePoolSuite) TestRemove(c *C) {
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0b"), 0755)
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0a"), 0755)
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "ae", "0c"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0b"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "bd", "0a"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "ae", "0c"), 0755)
 
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "1.deb"), []byte("1"), 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "2.deb"), []byte("22"), 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0a", "3.deb"), []byte("333"), 0644)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0b", "4.deb"), []byte("4444"), 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "1.deb"), []byte("1"), 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "ae", "0c", "2.deb"), []byte("22"), 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0a", "3.deb"), []byte("333"), 0644)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "bd", "0b", "4.deb"), []byte("4444"), 0644)
 
 	size, err := s.pool.Remove("ae/0c/2.deb")
 	c.Check(err, IsNil)
@@ -99,7 +98,9 @@ func isSameDevice(s *PackagePoolSuite) bool {
 
 	source, _ := os.Open(s.debFile)
 	sourceInfo, _ := source.Stat()
-	defer source.Close()
+	defer func() {
+		_ = source.Close()
+	}()
 
 	return poolDirInfo.Sys().(*syscall.Stat_t).Dev == sourceInfo.Sys().(*syscall.Stat_t).Dev
 }
@@ -157,7 +158,7 @@ func (s *PackagePoolSuite) TestImportOk(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportLegacy(c *C) {
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
 	err := utils.CopyFile(s.debFile, filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"))
 	c.Assert(err, IsNil)
 
@@ -178,7 +179,7 @@ func (s *PackagePoolSuite) TestVerifyLegacy(c *C) {
 	c.Check(err, IsNil)
 	c.Check(exists, Equals, false)
 
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "00", "35"), 0755)
 	err = utils.CopyFile(s.debFile, filepath.Join(s.pool.rootPath, "00", "35", "libboost-program-options-dev_1.49.0.1_i386.deb"))
 	c.Assert(err, IsNil)
 
@@ -299,8 +300,8 @@ func (s *PackagePoolSuite) TestImportNotExist(c *C) {
 }
 
 func (s *PackagePoolSuite) TestImportOverwrite(c *C) {
-	os.MkdirAll(filepath.Join(s.pool.rootPath, "c7", "6b"), 0755)
-	ioutil.WriteFile(filepath.Join(s.pool.rootPath, "c7", "6b", "4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
+	_ = os.MkdirAll(filepath.Join(s.pool.rootPath, "c7", "6b"), 0755)
+	_ = os.WriteFile(filepath.Join(s.pool.rootPath, "c7", "6b", "4bd12fd92e4dfe1b55b18a67a669_libboost-program-options-dev_1.49.0.1_i386.deb"), []byte("1"), 0644)
 
 	_, err := s.pool.Import(s.debFile, filepath.Base(s.debFile), &s.checksum, false, s.cs)
 	c.Check(err, ErrorMatches, "unable to import into pool.*")
@@ -336,7 +337,7 @@ func (s *PackagePoolSuite) TestOpen(c *C) {
 
 	f, err := s.pool.Open(path)
 	c.Assert(err, IsNil)
-	contents, err := ioutil.ReadAll(f)
+	contents, err := io.ReadAll(f)
 	c.Assert(err, IsNil)
 	c.Check(len(contents), Equals, 2738)
 	c.Check(f.Close(), IsNil)

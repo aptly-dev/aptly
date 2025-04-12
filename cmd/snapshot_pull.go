@@ -116,7 +116,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 	alreadySeen := map[string]bool{}
 
-	result.ForEachIndexed(func(pkg *deb.Package) error {
+	_ = result.ForEachIndexed(func(pkg *deb.Package) error {
 		key := pkg.Architecture + "_" + pkg.Name
 		_, seen := alreadySeen[key]
 
@@ -132,7 +132,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 
 		// If !allMatches, add only first matching name-arch package
 		if !seen || allMatches {
-			packageList.Add(pkg)
+			_ = packageList.Add(pkg)
 			context.Progress().ColoredPrintf("@g[+]@| %s added", pkg)
 		}
 

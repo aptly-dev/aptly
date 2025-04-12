@@ -60,7 +60,7 @@ func apiGPGAddKey(c *gin.Context) {
 			AbortWithJSONError(c, 400, err)
 			return
 		}
-		defer os.RemoveAll(tempdir)
+		defer func() { _ = os.RemoveAll(tempdir) }()
 
 		keypath := filepath.Join(tempdir, "key")
 		keyfile, e := os.Create(keypath)

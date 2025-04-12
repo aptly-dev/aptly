@@ -1,7 +1,7 @@
 package deb
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -39,7 +39,7 @@ func (s *PackageFilesSuite) TestVerify(c *C) {
 	c.Check(result, Equals, false)
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
+	c.Assert(os.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
 	s.files[0].PoolPath, _ = packagePool.Import(tmpFilepath, s.files[0].Filename, &s.files[0].Checksums, false, s.cs)
 

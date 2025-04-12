@@ -1,7 +1,6 @@
 package files
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -222,8 +221,8 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 
 	for _, t := range tests {
 		tmpPath := filepath.Join(c.MkDir(), t.sourcePath)
-		os.MkdirAll(filepath.Dir(tmpPath), 0777)
-		err := ioutil.WriteFile(tmpPath, []byte("Contents"), 0644)
+		_ = os.MkdirAll(filepath.Dir(tmpPath), 0777)
+		err := os.WriteFile(tmpPath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
 
 		sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
@@ -276,7 +275,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 
 	// test linking files to duplicate final name
 	tmpPath := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err := ioutil.WriteFile(tmpPath, []byte("cONTENTS"), 0644)
+	err := os.WriteFile(tmpPath, []byte("cONTENTS"), 0644)
 	c.Assert(err, IsNil)
 
 	sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
@@ -330,11 +329,11 @@ func (s *PublishedStorageSuite) TestRootRemove(c *C) {
 
 	// Symlink
 	linkedDir := filepath.Join(pwd, "linkedDir")
-	os.Symlink(s.root, linkedDir)
+	_ = os.Symlink(s.root, linkedDir)
 	linkStorage := NewPublishedStorage(linkedDir, "", "")
-	c.Assert(func() { linkStorage.Remove("") }, PanicMatches, "trying to remove empty path")
+	c.Assert(func() { _ = linkStorage.Remove("") }, PanicMatches, "trying to remove empty path")
 
 	// Actual dir
 	dirStorage := NewPublishedStorage(pwd, "", "")
-	c.Assert(func() { dirStorage.RemoveDirs("", nil) }, PanicMatches, "trying to remove the root directory")
+	c.Assert(func() { _ = dirStorage.RemoveDirs("", nil) }, PanicMatches, "trying to remove the root directory")
 }

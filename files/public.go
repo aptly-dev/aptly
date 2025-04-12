@@ -86,13 +86,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() {
+		_ = source.Close()
+	}()
 
 	f, err = os.Create(filepath.Join(storage.rootPath, path))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	_, err = io.Copy(f, source)
 	return err
@@ -221,20 +225,20 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		var dst *os.File
 		dst, err = os.Create(filepath.Join(poolPath, baseName))
 		if err != nil {
-			r.Close()
+			_ = r.Close()
 			return err
 		}
 
 		_, err = io.Copy(dst, r)
 		if err != nil {
-			r.Close()
-			dst.Close()
+			_ = r.Close()
+			_ = dst.Close()
 			return err
 		}
 
 		err = r.Close()
 		if err != nil {
-			dst.Close()
+			_ = dst.Close()
 			return err
 		}
 

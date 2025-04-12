@@ -43,7 +43,7 @@ func apiMirrorsList(c *gin.Context) {
 	collection := collectionFactory.RemoteRepoCollection()
 
 	result := []*deb.RemoteRepo{}
-	collection.ForEach(func(repo *deb.RemoteRepo) error {
+	_ = collection.ForEach(func(repo *deb.RemoteRepo) error {
 		result = append(result, repo)
 		return nil
 	})
@@ -319,7 +319,7 @@ func apiMirrorsPackages(c *gin.Context) {
 	}
 
 	if c.Request.URL.Query().Get("format") == "details" {
-		list.ForEach(func(p *deb.Package) error {
+		_ = list.ForEach(func(p *deb.Package) error {
 			result = append(result, p)
 			return nil
 		})
@@ -491,7 +491,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			e := context.ReOpenDatabase()
 			if e == nil {
 				remote.MarkAsIdle()
-				collection.Update(remote)
+				_ = collection.Update(remote)
 			}
 		}()
 
@@ -579,7 +579,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 							file, e = os.CreateTemp("", task.File.Filename)
 							if e == nil {
 								task.TempDownPath = file.Name()
-								file.Close()
+								_ = file.Close()
 							}
 						}
 						if e != nil {
@@ -653,7 +653,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		log.Info().Msgf("%s: Finalizing download...", b.Name)
-		remote.FinalizeDownload(collectionFactory, out)
+		_ = remote.FinalizeDownload(collectionFactory, out)
 		err = collectionFactory.RemoteRepoCollection().Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)

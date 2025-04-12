@@ -59,24 +59,24 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		if file.discardable {
 			return nil
 		}
-		file.BufWriter()
+		_, _ = file.BufWriter()
 	}
 
 	err := file.w.Flush()
 	if err != nil {
-		file.tempFile.Close()
+		_ = file.tempFile.Close()
 		return fmt.Errorf("unable to write to index file: %s", err)
 	}
 
 	if file.compressable {
 		err = utils.CompressFile(file.tempFile, file.onlyGzip || file.parent.skipBz2)
 		if err != nil {
-			file.tempFile.Close()
+			_ = file.tempFile.Close()
 			return fmt.Errorf("unable to compress index file: %s", err)
 		}
 	}
 
-	file.tempFile.Close()
+	_ = file.tempFile.Close()
 
 	exts := []string{""}
 	cksumExts := exts
@@ -220,11 +220,11 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 				// If we managed to resolve the link target: delete it. This is the
 				// oldest physical index file we no longer need. Once we drop our
 				// old symlink we'll essentially forget about it existing at all.
-				file.parent.publishedStorage.Remove(linkTarget)
+				_ = file.parent.publishedStorage.Remove(linkTarget)
 			}
-			file.parent.publishedStorage.Remove(oldIndexPath)
+			_ = file.parent.publishedStorage.Remove(oldIndexPath)
 		}
-		file.parent.publishedStorage.RenameFile(indexPath, oldIndexPath)
+		_ = file.parent.publishedStorage.RenameFile(indexPath, oldIndexPath)
 	}
 
 	// create symlink

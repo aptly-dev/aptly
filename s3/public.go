@@ -12,19 +12,17 @@ import (
 	"github.com/aptly-dev/aptly/utils"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	signer "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/smithy-go"
+	smithy "github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/logging"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
-
-const errCodeNotFound = "NotFound"
 
 type logger struct{}
 
@@ -90,7 +88,7 @@ func NewPublishedStorageRaw(
 	result := &PublishedStorage{
 		s3: s3.NewFromConfig(*config, func(o *s3.Options) {
 			o.UsePathStyle = !forceVirtualHostedStyle
-			o.HTTPSignerV4 = v4.NewSigner()
+			o.HTTPSignerV4 = signer.NewSigner()
 			o.BaseEndpoint = baseEndpoint
 		}),
 		bucket:           bucket,
@@ -149,7 +147,7 @@ func NewPublishedStorage(
 	return result, err
 }
 
-// String
+// String returns the storage as string
 func (storage *PublishedStorage) String() string {
 	return fmt.Sprintf("S3: %s:%s/%s", storage.config.Region, storage.bucket, storage.prefix)
 }
@@ -170,7 +168,7 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() { _ = source.Close() }()
 
 	log.Debug().Msgf("S3: PutFile '%s'", path)
 	err = storage.putFile(path, source, "")
@@ -385,7 +383,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() { _ = source.Close() }()
 
 	log.Debug().Msgf("S3: LinkFromPool '%s'", relPath)
 	err = storage.putFile(relPath, source, sourceMD5)

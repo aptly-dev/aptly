@@ -67,17 +67,17 @@ func (s *MiddlewareSuite) TestJSONMiddleware4xx(c *C) {
 	outC := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, s.logReader)
+		_, _ = io.Copy(&buf, s.logReader)
 		fmt.Println(buf.String())
 		outC <- buf.String()
 	}()
 
 	s.HTTPRequest(http.MethodGet, "/", nil)
-	s.logWriter.Close()
+	_ = s.logWriter.Close()
 	capturedOutput := <-outC
 
 	var jsonMap map[string]interface{}
-	json.Unmarshal([]byte(capturedOutput), &jsonMap)
+	_ = json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
 	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "warn")
@@ -130,17 +130,17 @@ func (s *MiddlewareSuite) TestJSONMiddleware2xx(c *C) {
 	outC := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, s.logReader)
+		_, _ = io.Copy(&buf, s.logReader)
 		fmt.Println(buf.String())
 		outC <- buf.String()
 	}()
 
 	s.HTTPRequest(http.MethodGet, "/api/healthy", nil)
-	s.logWriter.Close()
+	_ = s.logWriter.Close()
 	capturedOutput := <-outC
 
 	var jsonMap map[string]interface{}
-	json.Unmarshal([]byte(capturedOutput), &jsonMap)
+	_ = json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
 	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "info")
@@ -153,17 +153,17 @@ func (s *MiddlewareSuite) TestJSONMiddleware5xx(c *C) {
 	outC := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, s.logReader)
+		_, _ = io.Copy(&buf, s.logReader)
 		fmt.Println(buf.String())
 		outC <- buf.String()
 	}()
 
 	s.HTTPRequest(http.MethodGet, "/api/ready", nil)
-	s.logWriter.Close()
+	_ = s.logWriter.Close()
 	capturedOutput := <-outC
 
 	var jsonMap map[string]interface{}
-	json.Unmarshal([]byte(capturedOutput), &jsonMap)
+	_ = json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
 	if val, ok := jsonMap["level"]; ok {
 		c.Check(val, Equals, "error")
@@ -176,17 +176,17 @@ func (s *MiddlewareSuite) TestJSONMiddlewareRaw(c *C) {
 	outC := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, s.logReader)
+		_, _ = io.Copy(&buf, s.logReader)
 		fmt.Println(buf.String())
 		outC <- buf.String()
 	}()
 
 	s.HTTPRequest(http.MethodGet, "/api/healthy?test=raw", nil)
-	s.logWriter.Close()
+	_ = s.logWriter.Close()
 	capturedOutput := <-outC
 
 	var jsonMap map[string]interface{}
-	json.Unmarshal([]byte(capturedOutput), &jsonMap)
+	_ = json.Unmarshal([]byte(capturedOutput), &jsonMap)
 
 	fmt.Println(capturedOutput)
 

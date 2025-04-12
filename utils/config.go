@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // ConfigStructure is structure of main configuration
@@ -65,10 +65,10 @@ type ConfigStructure struct { // nolint: maligned
 	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"            yaml:"packagepool_storage"`
 }
 
-// DBConfig
+// DBConfig structure
 type DBConfig struct {
 	Type   string `json:"type"    yaml:"type"`
-	DbPath string `json:"dbPath"  yaml:"db_path"`
+	DBPath string `json:"dbPath"  yaml:"db_path"`
 	URL    string `json:"url"     yaml:"url"`
 }
 
@@ -251,11 +251,13 @@ func LoadConfig(filename string, config *ConfigStructure) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	decJSON := json.NewDecoder(JsonConfigReader.New(f))
 	if err = decJSON.Decode(&config); err != nil {
-		f.Seek(0, 0)
+		_, _ = f.Seek(0, 0)
 		decYAML := yaml.NewDecoder(f)
 		if err2 := decYAML.Decode(&config); err2 != nil {
 			err = fmt.Errorf("invalid yaml (%s) or json (%s)", err2, err)
@@ -272,7 +274,9 @@ func SaveConfig(filename string, config *ConfigStructure) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	encoded, err := json.MarshalIndent(&config, "", "  ")
 	if err != nil {
@@ -289,7 +293,9 @@ func SaveConfigRaw(filename string, conf []byte) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	_, err = f.Write(conf)
 	return err
@@ -301,7 +307,9 @@ func SaveConfigYAML(filename string, config *ConfigStructure) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	yamlData, err := yaml.Marshal(&config)
 	if err != nil {

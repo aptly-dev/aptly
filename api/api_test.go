@@ -24,14 +24,14 @@ func Test(t *testing.T) {
 	TestingT(t)
 }
 
-type ApiSuite struct {
+type APISuite struct {
 	context    *ctx.AptlyContext
 	flags      *flag.FlagSet
 	configFile *os.File
 	router     http.Handler
 }
 
-var _ = Suite(&ApiSuite{})
+var _ = Suite(&APISuite{})
 
 func createTestConfig() *os.File {
 	file, err := os.CreateTemp("", "aptly")
@@ -45,11 +45,11 @@ func createTestConfig() *os.File {
 	if err != nil {
 		return nil
 	}
-	file.Write(jsonString)
+	_, _ = file.Write(jsonString)
 	return file
 }
 
-func (s *ApiSuite) setupContext() error {
+func (s *APISuite) setupContext() error {
 	aptly.Version = "testVersion"
 	file := createTestConfig()
 	if nil == file {
@@ -75,23 +75,23 @@ func (s *ApiSuite) setupContext() error {
 	return nil
 }
 
-func (s *ApiSuite) SetUpSuite(c *C) {
+func (s *APISuite) SetUpSuite(c *C) {
 	err := s.setupContext()
 	c.Assert(err, IsNil)
 }
 
-func (s *ApiSuite) TearDownSuite(c *C) {
-	os.Remove(s.configFile.Name())
+func (s *APISuite) TearDownSuite(c *C) {
+	_ = os.Remove(s.configFile.Name())
 	s.context.Shutdown()
 }
 
-func (s *ApiSuite) SetUpTest(c *C) {
+func (s *APISuite) SetUpTest(c *C) {
 }
 
-func (s *ApiSuite) TearDownTest(c *C) {
+func (s *APISuite) TearDownTest(c *C) {
 }
 
-func (s *ApiSuite) HTTPRequest(method string, url string, body io.Reader) (*httptest.ResponseRecorder, error) {
+func (s *APISuite) HTTPRequest(method string, url string, body io.Reader) (*httptest.ResponseRecorder, error) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -102,32 +102,32 @@ func (s *ApiSuite) HTTPRequest(method string, url string, body io.Reader) (*http
 	return w, nil
 }
 
-func (s *ApiSuite) TestGinRunsInReleaseMode(c *C) {
+func (s *APISuite) TestGinRunsInReleaseMode(c *C) {
 	c.Check(gin.Mode(), Equals, gin.ReleaseMode)
 }
 
-func (s *ApiSuite) TestGetVersion(c *C) {
+func (s *APISuite) TestGetVersion(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/version", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
 	c.Check(response.Body.String(), Matches, "{\"Version\":\""+aptly.Version+"\"}")
 }
 
-func (s *ApiSuite) TestGetReadiness(c *C) {
+func (s *APISuite) TestGetReadiness(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/ready", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
 	c.Check(response.Body.String(), Matches, "{\"Status\":\"Aptly is ready\"}")
 }
 
-func (s *ApiSuite) TestGetHealthiness(c *C) {
+func (s *APISuite) TestGetHealthiness(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/healthy", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
 	c.Check(response.Body.String(), Matches, "{\"Status\":\"Aptly is healthy\"}")
 }
 
-func (s *ApiSuite) TestGetMetrics(c *C) {
+func (s *APISuite) TestGetMetrics(c *C) {
 	response, err := s.HTTPRequest("GET", "/api/metrics", nil)
 	c.Assert(err, IsNil)
 	c.Check(response.Code, Equals, 200)
@@ -141,7 +141,7 @@ func (s *ApiSuite) TestGetMetrics(c *C) {
 	c.Check(b, Matches, ".*aptly_build_info.*version=\"testVersion\".*")
 }
 
-func (s *ApiSuite) TestRepoCreate(c *C) {
+func (s *APISuite) TestRepoCreate(c *C) {
 	body, err := json.Marshal(gin.H{
 		"Name": "dummy",
 	})
@@ -150,7 +150,7 @@ func (s *ApiSuite) TestRepoCreate(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *ApiSuite) TestTruthy(c *C) {
+func (s *APISuite) TestTruthy(c *C) {
 	c.Check(truthy("no"), Equals, false)
 	c.Check(truthy("n"), Equals, false)
 	c.Check(truthy("off"), Equals, false)

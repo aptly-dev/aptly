@@ -1,16 +1,11 @@
-run:
-  tests: false
-
-
+version: "2"
 linters:
-  disable-all: true
-  enable:
-   - goconst
-   - gofmt
-   - goimports
-   - govet
-   - ineffassign
-   - misspell
-   - revive
-   - staticcheck
-   - vetshadow
+  settings:
+    staticcheck:
+      checks:
+      - "all"
+      - "-QF1004"  # could use strings.ReplaceAll instead
+      - "-QF1012"  # Use fmt.Fprintf(...) instead of WriteString(fmt.Sprintf(...))
+      - "-QF1003"  # could use tagged switch
+      - "-ST1000"  # at least one file in a package should have a package comment
+      - "-QF1001"  # could apply De Morgan's law

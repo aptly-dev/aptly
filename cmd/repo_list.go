@@ -32,7 +32,7 @@ func aptlyRepoListTxt(cmd *commander.Command, _ []string) error {
 	collectionFactory := context.NewCollectionFactory()
 	repos := make([]string, collectionFactory.LocalRepoCollection().Len())
 	i := 0
-	collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+	_ = collectionFactory.LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
@@ -47,7 +47,7 @@ func aptlyRepoListTxt(cmd *commander.Command, _ []string) error {
 		return nil
 	})
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Strings(repos)
 
@@ -76,7 +76,7 @@ func aptlyRepoListJSON(_ *commander.Command, _ []string) error {
 
 	repos := make([]*deb.LocalRepo, context.NewCollectionFactory().LocalRepoCollection().Len())
 	i := 0
-	context.NewCollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
+	_ = context.NewCollectionFactory().LocalRepoCollection().ForEach(func(repo *deb.LocalRepo) error {
 		e := context.NewCollectionFactory().LocalRepoCollection().LoadComplete(repo)
 		if e != nil {
 			return e
@@ -87,7 +87,7 @@ func aptlyRepoListJSON(_ *commander.Command, _ []string) error {
 		return nil
 	})
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Slice(repos, func(i, j int) bool {
 		return repos[i].Name < repos[j].Name

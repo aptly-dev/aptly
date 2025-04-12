@@ -122,7 +122,7 @@ func apiFilesUpload(c *gin.Context) {
 				AbortWithJSONError(c, 500, err)
 				return
 			}
-			defer src.Close()
+			defer func() { _ = src.Close() }()
 
 			destPath := filepath.Join(path, filepath.Base(file.Filename))
 			dst, err := os.Create(destPath)
@@ -130,7 +130,7 @@ func apiFilesUpload(c *gin.Context) {
 				AbortWithJSONError(c, 500, err)
 				return
 			}
-			defer dst.Close()
+			defer func() { _ = dst.Close() }()
 
 			_, err = io.Copy(dst, src)
 			if err != nil {

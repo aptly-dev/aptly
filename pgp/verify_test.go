@@ -2,7 +2,7 @@ package pgp
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 
 	. "gopkg.in/check.v1"
@@ -31,8 +31,8 @@ func (s *VerifierSuite) TestVerifyDetached(c *C) {
 		err = s.verifier.VerifyDetachedSignature(signature, cleartext, false)
 		c.Assert(err, IsNil)
 
-		signature.Close()
-		cleartext.Close()
+		_ = signature.Close()
+		_ = cleartext.Close()
 	}
 }
 
@@ -50,7 +50,7 @@ func (s *VerifierSuite) TestVerifyClearsigned(c *C) {
 		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"04EE7237B7D453EC", "648ACFD622F3D138", "DCC9EFBF77E11517"})
 		c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
 
-		clearsigned.Close()
+		_ = clearsigned.Close()
 	}
 }
 
@@ -70,15 +70,15 @@ func (s *VerifierSuite) TestExtractClearsigned(c *C) {
 		c.Assert(err, IsNil)
 		c.Check(is, Equals, true)
 
-		clearsigned.Seek(0, 0)
+		_, _ = clearsigned.Seek(0, 0)
 
 		extractedF, err := s.verifier.ExtractClearsigned(clearsigned)
 		c.Assert(err, IsNil)
 
-		expected, err := ioutil.ReadAll(cleartext)
+		expected, err := io.ReadAll(cleartext)
 		c.Assert(err, IsNil)
 
-		extracted, err := ioutil.ReadAll(extractedF)
+		extracted, err := io.ReadAll(extractedF)
 		c.Assert(err, IsNil)
 
 		// normalize newlines
@@ -87,8 +87,8 @@ func (s *VerifierSuite) TestExtractClearsigned(c *C) {
 
 		c.Check(extracted, DeepEquals, expected)
 
-		extractedF.Close()
-		clearsigned.Close()
-		cleartext.Close()
+		_ = extractedF.Close()
+		_ = clearsigned.Close()
+		_ = cleartext.Close()
 	}
 }

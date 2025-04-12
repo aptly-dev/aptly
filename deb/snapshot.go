@@ -142,7 +142,7 @@ func (s *Snapshot) Encode() []byte {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(s)
+	_ = encoder.Encode(s)
 
 	return buf.Bytes()
 }
@@ -228,9 +228,9 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 	batch := collection.db.CreateBatch()
 
-	batch.Put(snapshot.Key(), snapshot.Encode())
+	_ = batch.Put(snapshot.Key(), snapshot.Encode())
 	if snapshot.packageRefs != nil {
-		batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+		_ = batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
 	}
 
 	return batch.Write()
@@ -259,7 +259,7 @@ func (collection *SnapshotCollection) search(filter func(*Snapshot) bool, unique
 		return result
 	}
 
-	collection.db.ProcessByPrefix([]byte("S"), func(_, blob []byte) error {
+	_ = collection.db.ProcessByPrefix([]byte("S"), func(_, blob []byte) error {
 		s := &Snapshot{}
 		if err := s.Decode(blob); err != nil {
 			log.Printf("Error decoding snapshot: %s\n", err)
@@ -400,8 +400,8 @@ func (collection *SnapshotCollection) Drop(snapshot *Snapshot) error {
 	delete(collection.cache, snapshot.UUID)
 
 	batch := collection.db.CreateBatch()
-	batch.Delete(snapshot.Key())
-	batch.Delete(snapshot.RefKey())
+	_ = batch.Delete(snapshot.Key())
+	_ = batch.Delete(snapshot.RefKey())
 	return batch.Write()
 }
 

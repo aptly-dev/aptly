@@ -115,7 +115,7 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", homeLocation)
 
-				utils.SaveConfigRaw(homeLocation, aptly.AptlyConf)
+				_ = utils.SaveConfigRaw(homeLocation, aptly.AptlyConf)
 				err = utils.LoadConfig(homeLocation, &utils.Config)
 				if err != nil {
 					Fatal(fmt.Errorf("error loading config file %s: %s", homeLocation, err))
@@ -241,7 +241,7 @@ func (context *AptlyContext) newDownloader(progress aptly.Progress) aptly.Downlo
 		// If flag is defined prefer it to global setting
 		maxTries = maxTriesFlag.Value.Get().(int)
 	}
-	var downloader string = context.config().Downloader
+	var downloader = context.config().Downloader
 	downloaderFlag := context.flags.Lookup("downloader")
 	if downloaderFlag != nil {
 		downloader = downloaderFlag.Value.String()
@@ -303,8 +303,8 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 		switch context.config().DatabaseBackend.Type {
 		case "leveldb":
 			dbPath := filepath.Join(context.config().GetRootDir(), "db")
-			if len(context.config().DatabaseBackend.DbPath) != 0 {
-				dbPath = context.config().DatabaseBackend.DbPath
+			if len(context.config().DatabaseBackend.DBPath) != 0 {
+				dbPath = context.config().DatabaseBackend.DBPath
 			}
 			context.database, err = goleveldb.NewDB(dbPath)
 		case "etcd":
@@ -452,7 +452,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		} else if strings.HasPrefix(name, "azure:") {
 			params, ok := context.config().AzurePublishRoots[name[6:]]
 			if !ok {
-				Fatal(fmt.Errorf("Published Azure storage %v not configured", name[6:]))
+				Fatal(fmt.Errorf("published Azure storage %v not configured", name[6:]))
 			}
 
 			var err error
@@ -597,17 +597,17 @@ func (context *AptlyContext) Shutdown() {
 
 	if aptly.EnableDebug {
 		if context.fileMemProfile != nil {
-			pprof.WriteHeapProfile(context.fileMemProfile)
-			context.fileMemProfile.Close()
+			_ = pprof.WriteHeapProfile(context.fileMemProfile)
+			_ = context.fileMemProfile.Close()
 			context.fileMemProfile = nil
 		}
 		if context.fileCPUProfile != nil {
 			pprof.StopCPUProfile()
-			context.fileCPUProfile.Close()
+			_ = context.fileCPUProfile.Close()
 			context.fileCPUProfile = nil
 		}
 		if context.fileMemProfile != nil {
-			context.fileMemProfile.Close()
+			_ = context.fileMemProfile.Close()
 			context.fileMemProfile = nil
 		}
 	}
@@ -615,7 +615,7 @@ func (context *AptlyContext) Shutdown() {
 		context.taskList.Stop()
 	}
 	if context.database != nil {
-		context.database.Close()
+		_ = context.database.Close()
 		context.database = nil
 	}
 	if context.downloader != nil {
@@ -660,7 +660,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 			if err != nil {
 				return nil, err
 			}
-			pprof.StartCPUProfile(context.fileCPUProfile)
+			_ = pprof.StartCPUProfile(context.fileCPUProfile)
 		}
 
 		memprofile := flags.Lookup("memprofile").Value.String()
@@ -680,7 +680,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 				return nil, err
 			}
 
-			context.fileMemStats.WriteString("# Time\tHeapSys\tHeapAlloc\tHeapIdle\tHeapReleased\n")
+			_, _ = context.fileMemStats.WriteString("# Time\tHeapSys\tHeapAlloc\tHeapIdle\tHeapReleased\n")
 
 			go func() {
 				var stats runtime.MemStats
@@ -690,7 +690,7 @@ func NewContext(flags *flag.FlagSet) (*AptlyContext, error) {
 				for {
 					runtime.ReadMemStats(&stats)
 					if context.fileMemStats != nil {
-						context.fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\n",
+						_, _ = context.fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\n",
 							(time.Now().UnixNano()-start)/1000000, stats.HeapSys, stats.HeapAlloc, stats.HeapIdle, stats.HeapReleased))
 						time.Sleep(interval)
 					} else {

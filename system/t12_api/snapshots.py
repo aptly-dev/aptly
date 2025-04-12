@@ -355,7 +355,7 @@ class SnapshotsAPITestMerge(APITest):
         )
         self.check_equal(resp.status_code, 400)
         self.check_equal(
-            resp.json()["error"], "At least one source snapshot is required"
+            resp.json()["error"], "minimum one source snapshot is required"
         )
         self.check_equal(self.get(f"/api/snapshots/{merged_name}").status_code, 404)
 

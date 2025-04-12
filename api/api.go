@@ -41,7 +41,10 @@ type aptlyVersion struct {
 // @Success 200 {object} aptlyVersion
 // @Router /api/version [get]
 func apiVersion(c *gin.Context) {
-	c.JSON(200, gin.H{"Version": aptly.Version})
+	version := aptlyVersion{
+		Version: aptly.Version,
+	}
+	c.JSON(200, version)
 }
 
 type aptlyStatus struct {
@@ -67,7 +70,8 @@ func apiReady(isReady *atomic.Value) func(*gin.Context) {
 			return
 		}
 
-		c.JSON(200, gin.H{"Status": "Aptly is ready"})
+                status := aptlyStatus{Status: "Aptly is ready"}
+		c.JSON(200, status)
 	}
 }
 
@@ -165,7 +169,7 @@ func runTaskInBackground(name string, resources []string, proc task.Process) (ta
 			return nil, err
 		}
 
-		defer releaseDatabaseConnection()
+		defer func() { _ = releaseDatabaseConnection() }()
 		return proc(out, detail)
 	})
 }
@@ -174,18 +178,18 @@ func truthy(value interface{}) bool {
 	if value == nil {
 		return false
 	}
-	switch value.(type) {
+        switch v := value.(type) {
 	case string:
-		switch strings.ToLower(value.(string)) {
+		switch strings.ToLower(v) {
 		case "n", "no", "f", "false", "0", "off":
 			return false
 		default:
 			return true
 		}
 	case int:
-		return !(value.(int) == 0)
+		return v != 0
 	case bool:
-		return value.(bool)
+		return v
 	}
 	return true
 }
@@ -210,11 +214,11 @@ func maybeRunTaskInBackground(c *gin.Context, name string, resources []string, p
 		}
 
 		// wait for task to finish
-		context.TaskList().WaitForTaskByID(task.ID)
+		_, _ = context.TaskList().WaitForTaskByID(task.ID)
 
 		retValue, _ := context.TaskList().GetTaskReturnValueByID(task.ID)
 		err, _ := context.TaskList().GetTaskErrorByID(task.ID)
-		context.TaskList().DeleteTaskByID(task.ID)
+		_, _ = context.TaskList().DeleteTaskByID(task.ID)
 		if err != nil {
 			AbortWithJSONError(c, retValue.Code, err)
 			return
@@ -282,11 +286,11 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	// filter packages by version
 	if c.Request.URL.Query().Get("maximumVersion") == "1" {
 		list.PrepareIndex()
-		list.ForEach(func(p *deb.Package) error {
+		_ = list.ForEach(func(p *deb.Package) error {
 			versionQ, err := query.Parse(fmt.Sprintf("Name (%s), $Version (<= %s)", p.Name, p.Version))
 			if err != nil {
 				fmt.Println("filter packages by version, query string parse err: ", err)
-				c.AbortWithError(500, fmt.Errorf("unable to parse %s maximum version query string: %s", p.Name, err))
+				_ = c.AbortWithError(500, fmt.Errorf("unable to parse %s maximum version query string: %s", p.Name, err))
 			} else {
 				tmpList, err := list.Filter(deb.FilterOptions{
 					Queries: []deb.PackageQuery{versionQ},
@@ -294,15 +298,15 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 
 				if err == nil {
 					if tmpList.Len() > 0 {
-						tmpList.ForEach(func(tp *deb.Package) error {
+						_ = tmpList.ForEach(func(tp *deb.Package) error {
 							list.Remove(tp)
 							return nil
 						})
-						list.Add(p)
+						_ = list.Add(p)
 					}
 				} else {
 					fmt.Println("filter packages by version, filter err: ", err)
-					c.AbortWithError(500, fmt.Errorf("unable to get %s maximum version: %s", p.Name, err))
+					_ = c.AbortWithError(500, fmt.Errorf("unable to get %s maximum version: %s", p.Name, err))
 				}
 			}
 
@@ -311,7 +315,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	}
 
 	if c.Request.URL.Query().Get("format") == "details" {
-		list.ForEach(func(p *deb.Package) error {
+		_ = list.ForEach(func(p *deb.Package) error {
 			result = append(result, p)
 			return nil
 		})
@@ -322,7 +326,7 @@ func showPackages(c *gin.Context, reflist *deb.PackageRefList, collectionFactory
 	}
 }
 
-func AbortWithJSONError(c *gin.Context, code int, err error) *gin.Error {
+func AbortWithJSONError(c *gin.Context, code int, err error) {
 	c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	return c.AbortWithError(code, err)
+	_ = c.AbortWithError(code, err)
 }

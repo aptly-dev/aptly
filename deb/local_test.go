@@ -21,8 +21,8 @@ var _ = Suite(&LocalRepoSuite{})
 func (s *LocalRepoSuite) SetUpTest(c *C) {
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.list = NewPackageList()
-	s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
-	s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
+	_ = s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
+	_ = s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
 
 	s.reflist = NewPackageRefListFromPackageList(s.list)
 
@@ -31,7 +31,7 @@ func (s *LocalRepoSuite) SetUpTest(c *C) {
 }
 
 func (s *LocalRepoSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *LocalRepoSuite) TestString(c *C) {
@@ -88,14 +88,14 @@ func (s *LocalRepoCollectionSuite) SetUpTest(c *C) {
 	s.collection = NewLocalRepoCollection(s.db)
 
 	s.list = NewPackageList()
-	s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
-	s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
+	_ = s.list.Add(&Package{Name: "lib", Version: "1.7", Architecture: "i386"})
+	_ = s.list.Add(&Package{Name: "app", Version: "1.9", Architecture: "amd64"})
 
 	s.reflist = NewPackageRefListFromPackageList(s.list)
 }
 
 func (s *LocalRepoCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *LocalRepoCollectionSuite) TestAddByName(c *C) {
@@ -156,7 +156,7 @@ func (s *LocalRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 
 func (s *LocalRepoCollectionSuite) TestForEachAndLen(c *C) {
 	repo := NewLocalRepo("local1", "Comment 1")
-	s.collection.Add(repo)
+	_ = s.collection.Add(repo)
 
 	count := 0
 	err := s.collection.ForEach(func(*LocalRepo) error {
@@ -178,10 +178,10 @@ func (s *LocalRepoCollectionSuite) TestForEachAndLen(c *C) {
 
 func (s *LocalRepoCollectionSuite) TestDrop(c *C) {
 	repo1 := NewLocalRepo("local1", "Comment 1")
-	s.collection.Add(repo1)
+	_ = s.collection.Add(repo1)
 
 	repo2 := NewLocalRepo("local2", "Comment 2")
-	s.collection.Add(repo2)
+	_ = s.collection.Add(repo2)
 
 	r1, _ := s.collection.ByUUID(repo1.UUID)
 	c.Check(r1, Equals, repo1)
@@ -208,6 +208,6 @@ func (s *LocalRepoCollectionSuite) TestDropNonExisting(c *C) {
 	_, err := s.collection.ByUUID(repo.UUID)
 	c.Check(err, ErrorMatches, "local repo .* not found")
 
-	err = s.collection.Drop(repo)
+	_ = s.collection.Drop(repo)
 	c.Check(s.collection.Drop(repo), ErrorMatches, "local repo not found")
 }

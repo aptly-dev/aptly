@@ -46,8 +46,10 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectResponse("http://example.com/file.bz2", bzipData)
 	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
-	defer file.Close()
-	io.ReadFull(r, buf)
+	defer func() {
+		_ = file.Close()
+	}()
+	_, _ = io.ReadFull(r, buf)
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 
@@ -58,8 +60,10 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectResponse("http://example.com/file.gz", gzipData)
 	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
-	defer file.Close()
-	io.ReadFull(r, buf)
+	defer func() {
+		_ = file.Close()
+	}()
+	_, _ = io.ReadFull(r, buf)
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 
@@ -71,8 +75,10 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectResponse("http://example.com/file.xz", xzData)
 	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
-	defer file.Close()
-	io.ReadFull(r, buf)
+	defer func() {
+		_ = file.Close()
+	}()
+	_, _ = io.ReadFull(r, buf)
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 
@@ -85,8 +91,10 @@ func (s *CompressionSuite) TestDownloadTryCompression(c *C) {
 	d.ExpectResponse("http://example.com/file", rawData)
 	r, file, err = DownloadTryCompression(s.ctx, d, s.baseURL, "file", expectedChecksums, false)
 	c.Assert(err, IsNil)
-	defer file.Close()
-	io.ReadFull(r, buf)
+	defer func() {
+		_ = file.Close()
+	}()
+	_, _ = io.ReadFull(r, buf)
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 
@@ -114,8 +122,10 @@ func (s *CompressionSuite) TestDownloadTryCompressionLongestSuffix(c *C) {
 	d.ExpectResponse("http://example.com/subdir/file.bz2", bzipData)
 	r, file, err := DownloadTryCompression(s.ctx, d, s.baseURL, "subdir/file", expectedChecksums, false)
 	c.Assert(err, IsNil)
-	defer file.Close()
-	io.ReadFull(r, buf)
+	defer func() {
+		_ = file.Close()
+	}()
+	_, _ = io.ReadFull(r, buf)
 	c.Assert(string(buf), Equals, rawData)
 	c.Assert(d.Empty(), Equals, true)
 }

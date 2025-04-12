@@ -54,7 +54,7 @@ func aptlyRepoRemove(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to remove: %s", err)
 	}
 
-	toRemove.ForEach(func(p *deb.Package) error {
+	_ = toRemove.ForEach(func(p *deb.Package) error {
 		list.Remove(p)
 		context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 		return nil

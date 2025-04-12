@@ -631,7 +631,7 @@ func (p *PublishedRepo) Components() []string {
 	return result
 }
 
-// Components returns sorted list of published repo source names
+// SourceNames returns sorted list of published repo source names
 func (p *PublishedRepo) SourceNames() []string {
 	var sources = []string{}
 
@@ -702,7 +702,7 @@ func (p *PublishedRepo) Encode() []byte {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(p)
+	_ = encoder.Encode(p)
 
 	return buf.Bytes()
 }
@@ -884,7 +884,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash, p.SkipBz2)
 
@@ -970,7 +970,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 								contentIndexesMap[key] = contentIndex
 							}
 
-							contentIndex.Push(qualifiedName, contents, batch)
+							_ = contentIndex.Push(qualifiedName, contents, batch)
 						}
 					}
 
@@ -1275,11 +1275,11 @@ func (collection *PublishedRepoCollection) CheckDuplicate(repo *PublishedRepo) *
 // Update stores updated information about repo in DB
 func (collection *PublishedRepoCollection) Update(repo *PublishedRepo) error {
 	batch := collection.db.CreateBatch()
-	batch.Put(repo.Key(), repo.Encode())
+	_ = batch.Put(repo.Key(), repo.Encode())
 
 	if repo.SourceKind == SourceLocalRepo {
 		for component, item := range repo.sourceItems {
-			batch.Put(repo.RefKey(component), item.packageRefs.Encode())
+			_ = batch.Put(repo.RefKey(component), item.packageRefs.Encode())
 		}
 	}
 	return batch.Write()
@@ -1324,7 +1324,7 @@ func (collection *PublishedRepoCollection) LoadShallow(repo *PublishedRepo, coll
 
 // LoadComplete loads complete information on the sources of the repo *and* their packages
 func (collection *PublishedRepoCollection) LoadComplete(repo *PublishedRepo, collectionFactory *CollectionFactory) (err error) {
-	collection.LoadShallow(repo, collectionFactory)
+	_ = collection.LoadShallow(repo, collectionFactory)
 
 	if repo.SourceKind == SourceSnapshot {
 		for _, item := range repo.sourceItems {
@@ -1502,7 +1502,7 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 						return nil, err
 					}
 
-					packageList.ForEach(func(p *Package) error {
+					_ = packageList.ForEach(func(p *Package) error {
 						poolDir, err := p.PoolDirectory()
 						if err != nil {
 							return err
@@ -1575,7 +1575,7 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 				return err
 			}
 
-			packageList.ForEach(func(p *Package) error {
+			_ = packageList.ForEach(func(p *Package) error {
 				poolDir, err := p.PoolDirectory()
 				if err != nil {
 					return err
@@ -1709,10 +1709,10 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 	}
 
 	batch := collection.db.CreateBatch()
-	batch.Delete(repo.Key())
+	_ = batch.Delete(repo.Key())
 
 	for _, component := range repo.Components() {
-		batch.Delete(repo.RefKey(component))
+		_ = batch.Delete(repo.RefKey(component))
 	}
 
 	return batch.Write()

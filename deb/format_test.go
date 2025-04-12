@@ -163,7 +163,7 @@ func (s *ControlFileSuite) TestCanonicalCase(c *C) {
 func (s *ControlFileSuite) TestLongFields(c *C) {
 	f, err := os.Open("long.stanza")
 	c.Assert(err, IsNil)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	r := NewControlFileReader(f, false, false)
 	stanza, e := r.ReadStanza()

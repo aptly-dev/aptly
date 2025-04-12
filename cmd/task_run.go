@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/smira/commander"
 )
 
@@ -31,7 +31,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 
 		scanner := bufio.NewScanner(file)
 

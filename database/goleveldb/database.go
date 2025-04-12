@@ -51,8 +51,8 @@ func RecoverDB(path string) error {
 		return err
 	}
 
-	db.Close()
-	stor.Close()
+	_ = db.Close()
+	_ = stor.Close()
 
 	return nil
 }

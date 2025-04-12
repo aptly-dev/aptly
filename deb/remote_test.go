@@ -38,9 +38,9 @@ func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp
 
 func (n *NullVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	text, _ = os.CreateTemp("", "aptly-test")
-	io.Copy(text, clearsigned)
-	text.Seek(0, 0)
-	os.Remove(text.Name())
+	_, _ = io.Copy(text, clearsigned)
+	_, _ = text.Seek(0, 0)
+	_ = os.Remove(text.Name())
 
 	return
 }
@@ -68,9 +68,9 @@ func (s *PackageListMixinSuite) SetUpPackages() {
 	stanza["Filename"] = "pool/contrib/l/lonely-strangers/lonely-strangers_7.40-2_i386.deb"
 	s.p3 = NewPackageFromControlFile(stanza)
 
-	s.list.Add(s.p1)
-	s.list.Add(s.p2)
-	s.list.Add(s.p3)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p2)
+	_ = s.list.Add(s.p3)
 
 	s.reflist = NewPackageRefListFromPackageList(s.list)
 }
@@ -104,7 +104,7 @@ func (s *RemoteRepoSuite) SetUpTest(c *C) {
 
 func (s *RemoteRepoSuite) TearDownTest(c *C) {
 	s.progress.Shutdown()
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *RemoteRepoSuite) TestInvalidURL(c *C) {
@@ -287,7 +287,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -313,7 +313,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -335,7 +335,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 }
 
@@ -369,7 +369,7 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	c.Check(q[0], Equals, "dists/squeeze/main/installer-i386/current/images/MANIFEST")
 	c.Check(q[1], Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -415,7 +415,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
@@ -449,7 +449,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -474,7 +474,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
-	s.repo.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 }
 
@@ -499,7 +499,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -526,7 +526,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -549,7 +549,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb")
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 
@@ -589,7 +589,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(q[2], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0.orig.tar.gz")
 	c.Check(q[0], Equals, "pool/main/a/access-modifier-checker/access-modifier-checker_1.0-4.debian.tar.gz")
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
@@ -625,7 +625,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
 	// Next call must return the download list without option "skip-existing-packages"
@@ -651,7 +651,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
 
-	s.flat.FinalizeDownload(s.collectionFactory, nil)
+	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 
@@ -670,7 +670,7 @@ func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
 }
 
 func (s *RemoteRepoCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
@@ -731,7 +731,7 @@ func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 
 func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
-	s.collection.Add(repo)
+	_ = s.collection.Add(repo)
 
 	count := 0
 	err := s.collection.ForEach(func(*RemoteRepo) error {
@@ -753,10 +753,10 @@ func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 
 func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
 	repo1, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
-	s.collection.Add(repo1)
+	_ = s.collection.Add(repo1)
 
 	repo2, _ := NewRemoteRepo("tyndex", "http://mirror.yandex.ru/debian/", "wheezy", []string{"main"}, []string{}, false, false, false)
-	s.collection.Add(repo2)
+	_ = s.collection.Add(repo2)
 
 	r1, _ := s.collection.ByUUID(repo1.UUID)
 	c.Check(r1, Equals, repo1)

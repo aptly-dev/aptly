@@ -29,7 +29,7 @@ func NewPackagePool(accountName, accountKey, container, prefix, endpoint string)
 	return &PackagePool{az: azctx}, nil
 }
 
-// String
+// String returns the storage as string
 func (pool *PackagePool) String() string {
 	return pool.az.String()
 }
@@ -104,7 +104,7 @@ func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating tempfile for %s", path)
 	}
-	defer os.Remove(temp.Name())
+	defer func () { _ = os.Remove(temp.Name()) }()
 
 	_, err = pool.az.client.DownloadFile(context.TODO(), pool.az.container, path, temp, nil)
 	if err != nil {
@@ -156,7 +156,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	if err != nil {
 		return "", err
 	}
-	defer source.Close()
+	defer func() { _ = source.Close() }()
 
 	err = pool.az.putFile(path, source, checksums.MD5)
 	if err != nil {

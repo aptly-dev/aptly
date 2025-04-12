@@ -79,7 +79,7 @@ func aptlySnapshotShowTxt(_ *commander.Command, args []string) error {
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		ListPackagesRefList(snapshot.RefList(), collectionFactory)
+		_ = ListPackagesRefList(snapshot.RefList(), collectionFactory)
 	}
 
 	return err
@@ -139,7 +139,7 @@ func aptlySnapshotShowJSON(_ *commander.Command, args []string) error {
 			}
 
 			list.PrepareIndex()
-			list.ForEachIndexed(func(p *deb.Package) error {
+			_ = list.ForEachIndexed(func(p *deb.Package) error {
 				snapshot.Packages = append(snapshot.Packages, p.GetFullName())
 				return nil
 			})

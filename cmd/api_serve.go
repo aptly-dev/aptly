@@ -46,7 +46,7 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	}
 	if err == nil && len(listeners) == 1 {
 		listener := listeners[0]
-		defer listener.Close()
+		defer func() { _ = listener.Close() }()
 		fmt.Printf("\nTaking over web server at: %s (press Ctrl+C to quit)...\n", listener.Addr().String())
 		err = http.Serve(listener, api.Router(context))
 		if err != nil {
@@ -67,7 +67,7 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 		if _, ok := <-sigchan; ok {
 			fmt.Printf("\nShutdown signal received, waiting for background tasks...\n")
 			context.TaskList().Wait()
-			server.Shutdown(stdcontext.Background())
+			_ = server.Shutdown(stdcontext.Background())
 		}
 	})()
 	defer close(sigchan)
@@ -75,14 +75,14 @@ func aptlyAPIServe(cmd *commander.Command, args []string) error {
 	listenURL, err := url.Parse(listen)
 	if err == nil && listenURL.Scheme == "unix" {
 		file := listenURL.Path
-		os.Remove(file)
+		_ = os.Remove(file)
 
 		var listener net.Listener
 		listener, err = net.Listen("unix", file)
 		if err != nil {
 			return fmt.Errorf("failed to listen on: %s\n%s", file, err)
 		}
-		defer listener.Close()
+		defer func() { _ = listener.Close() }()
 
 		err = server.Serve(listener)
 	} else {

@@ -101,7 +101,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		err = context.ReOpenDatabase()
 		if err == nil {
 			repo.MarkAsIdle()
-			collectionFactory.RemoteRepoCollection().Update(repo)
+			_ = collectionFactory.RemoteRepoCollection().Update(repo)
 		}
 	}()
 
@@ -173,7 +173,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 						file, e = os.CreateTemp("", task.File.Filename)
 						if e == nil {
 							task.TempDownPath = file.Name()
-							file.Close()
+							_ = file.Close()
 						}
 					}
 					if e != nil {
@@ -261,7 +261,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to update: download errors:\n  %s", strings.Join(errors, "\n  "))
 	}
 
-	repo.FinalizeDownload(collectionFactory, context.Progress())
+	_ = repo.FinalizeDownload(collectionFactory, context.Progress())
 	err = collectionFactory.RemoteRepoCollection().Update(repo)
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)

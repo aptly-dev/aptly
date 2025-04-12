@@ -19,13 +19,13 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	db, err := goleveldb.NewOpenDB(tmpDir)
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	factory := NewCollectionFactory(db)
 	packageCollection := factory.PackageCollection()
@@ -49,7 +49,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg-shared_%d.deb", pkgIndex),
 			}})
 
-			packageCollection.UpdateInTransaction(p, transaction)
+			_ = packageCollection.UpdateInTransaction(p, transaction)
 			sharedRefs.Refs = append(sharedRefs.Refs, p.Key(""))
 		}
 
@@ -78,7 +78,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg%d_%d.deb", repoIndex, pkgIndex),
 			}})
 
-			packageCollection.UpdateInTransaction(p, transaction)
+			_ = packageCollection.UpdateInTransaction(p, transaction)
 			refs.Refs = append(refs.Refs, p.Key(""))
 		}
 
@@ -92,16 +92,16 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 		repo.DefaultDistribution = fmt.Sprintf("dist%d", repoIndex)
 		repo.DefaultComponent = defaultComponent
 		repo.UpdateRefList(refs.Merge(sharedRefs, false, true))
-		repoCollection.Add(repo)
+		_ = repoCollection.Add(repo)
 
 		publish, err := NewPublishedRepo("", "test", "", nil, []string{defaultComponent}, []interface{}{repo}, factory, false)
 		if err != nil {
 			b.Fatal(err)
 		}
-		publishCollection.Add(publish)
+		_ = publishCollection.Add(publish)
 	}
 
-	db.CompactDB()
+	_ = db.CompactDB()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

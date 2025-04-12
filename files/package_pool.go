@@ -240,7 +240,9 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	if err != nil {
 		return "", err
 	}
-	defer source.Close()
+	defer func() {
+            _ = source.Close()
+	}()
 
 	sourceInfo, err := source.Stat()
 	if err != nil {
@@ -351,7 +353,9 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		if err != nil {
 			return "", err
 		}
-		defer target.Close()
+		defer func() {
+			_ = target.Close()
+		}()
 
 		_, err = io.Copy(target, source)
 

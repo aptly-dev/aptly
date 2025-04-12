@@ -120,7 +120,7 @@ func NewRemoteRepo(name string, archiveRoot string, distribution string, compone
 // SetArchiveRoot of remote repo
 func (repo *RemoteRepo) SetArchiveRoot(archiveRoot string) {
 	repo.ArchiveRoot = archiveRoot
-	repo.prepare()
+	_ = repo.prepare()
 }
 
 func (repo *RemoteRepo) prepare() error {
@@ -302,14 +302,14 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier, ignoreS
 		if err != nil {
 			goto splitsignature
 		}
-		defer inrelease.Close()
+		defer func() { _ = inrelease.Close() }()
 
 		_, err = verifier.VerifyClearsigned(inrelease, true)
 		if err != nil {
 			goto splitsignature
 		}
 
-		inrelease.Seek(0, 0)
+		_, _ = inrelease.Seek(0, 0)
 
 		release, err = verifier.ExtractClearsigned(inrelease)
 		if err != nil {
@@ -342,7 +342,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier, ignoreS
 	}
 ok:
 
-	defer release.Close()
+	defer func() { _ = release.Close() }()
 
 	sreader := NewControlFileReader(release, true, false)
 	stanza, err := sreader.ReadStanza()
@@ -528,7 +528,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 				return err
 			}
 		}
-		defer packagesFile.Close()
+		defer func() { _ = packagesFile.Close() }()
 
 		if progress != nil {
 			stat, _ := packagesFile.Stat()
@@ -705,7 +705,7 @@ func (repo *RemoteRepo) Encode() []byte {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(repo)
+	_ = encoder.Encode(repo)
 
 	return buf.Bytes()
 }
@@ -804,7 +804,7 @@ func (collection *RemoteRepoCollection) search(filter func(*RemoteRepo) bool, un
 		return result
 	}
 
-	collection.db.ProcessByPrefix([]byte("R"), func(_, blob []byte) error {
+	_ = collection.db.ProcessByPrefix([]byte("R"), func(_, blob []byte) error {
 		r := &RemoteRepo{}
 		if err := r.Decode(blob); err != nil {
 			log.Printf("Error decoding remote repo: %s\n", err)
@@ -848,9 +848,9 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
 	batch := collection.db.CreateBatch()
 
-	batch.Put(repo.Key(), repo.Encode())
+	_ = batch.Put(repo.Key(), repo.Encode())
 	if repo.packageRefs != nil {
-		batch.Put(repo.RefKey(), repo.packageRefs.Encode())
+		_ = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
 	}
 	return batch.Write()
 }
@@ -936,7 +936,7 @@ func (collection *RemoteRepoCollection) Drop(repo *RemoteRepo) error {
 	delete(collection.cache, repo.UUID)
 
 	batch := collection.db.CreateBatch()
-	batch.Delete(repo.Key())
-	batch.Delete(repo.RefKey())
+	_ = batch.Delete(repo.Key())
+	_ = batch.Delete(repo.RefKey())
 	return batch.Write()
 }
