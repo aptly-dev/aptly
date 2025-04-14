@@ -338,7 +338,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	poolPath := filepath.Join(storage.prefix, relPath)
 
 	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist(filepath.Join(storage.prefix, publishedPrefix, "pool"), true)
+		paths, md5s, err := storage.internalFilelist(filepath.Join(publishedPrefix, "pool"), true)
 		if err != nil {
 			return errors.Wrap(err, "error caching paths under prefix")
 		}
@@ -346,7 +346,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		storage.pathCache = make(map[string]string, len(paths))
 
 		for i := range paths {
-			storage.pathCache[paths[i]] = md5s[i]
+			storage.pathCache[filepath.Join("pool", paths[i])] = md5s[i]
 		}
 	}
 

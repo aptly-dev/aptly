@@ -370,7 +370,7 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 
 	// Check only one listing request was done to the server
 	s.checkGetRequestsEqual(c, "/test?", []string{
-		"/test?list-type=2&max-keys=1000&prefix=lala%2Flala%2Fpool%2F",
+		"/test?list-type=2&max-keys=1000&prefix=lala%2Fpool%2F",
 	})
 
 	// Publish two packages at a prefixed storage plus a publish prefix.
