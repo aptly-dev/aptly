@@ -93,7 +93,7 @@ jobs:
 
       - name: "Merge Code Coverage"
         run: |
-          go install github.com/wadey/gocovmerge@latest
+          go install github.com/wadey/gocovmerge@v0.0.0-20160331181800-b5bfa59ec0ad
           ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
 
       - name: "Upload Code Coverage"
