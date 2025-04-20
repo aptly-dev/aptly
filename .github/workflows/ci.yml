@@ -207,6 +207,23 @@ jobs:
         run: |
           .github/workflows/scripts/upload-artifacts.sh release ${{ matrix.suite }}
 
+      - name: "Get aptly version"
+        env:
+          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
+        run: |
+           aptlyver=$(make -s version)
+           echo "Aptly Version: $aptlyver"
+           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
+        id: releaseversion
+
+      - name: "Upload CI Artifacts"
+        if: github.ref != 'refs/heads/master' && !startsWith(github.event.ref, 'refs/tags')
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.suite }}_${{ matrix.arch }}
+          path: build/
+          retention-days: 7
+
   ci-binary-build:
     name: "Build"
     needs: test
@@ -266,6 +283,15 @@ jobs:
           name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
           path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
           compression-level: 0 # no compression
+
+      - name: "Upload CI Artifacts"
+        uses: actions/upload-artifact@v4
+        if: "!startsWith(github.event.ref, 'refs/tags')"
+        with:
+          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          compression-level: 0 # no compression
+          retention-days: 7
 
   gh-release:
     name: "Github Release"
