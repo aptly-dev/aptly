@@ -2,7 +2,7 @@ GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make -s version)
 PYTHON?=python3
 BINPATH?=$(GOPATH)/bin
-GOLANGCI_LINT_VERSION=v1.54.1  # version supporting go 1.19
+GOLANGCI_LINT_VERSION=v1.64.5 # version supporting go 1.23
 COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
@@ -71,7 +71,7 @@ lint: prepare
 	# Install golangci-lint
 	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
-	@PATH=$(BINPATH)/:$(PATH) golangci-lint run
+	@PATH=$(BINPATH)/:$(PATH) golangci-lint run --max-issues-per-linter 0 --max-same-issues 0
 
 
 build: prepare swagger  ## Build aptly
