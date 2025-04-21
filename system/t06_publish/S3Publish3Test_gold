@@ -1,9 +1,58 @@
 Loading packages...
 Generating metadata files and linking package files...
 Finalizing metadata files...
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Release.tmp'
+DBG S3: PutFile 'dists/maverick/Contents-amd64.tmp.gz'
+DBG S3: PutFile 'dists/maverick/Contents-i386.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-amd64/Packages.tmp'
+DBG S3: PutFile 'dists/maverick/main/binary-amd64/Packages.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-amd64/Packages.tmp.bz2'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp.bz2'
+DBG S3: PutFile 'dists/maverick/main/Contents-amd64.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/Contents-i386.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-amd64/Release.tmp'
+DBG S3: PutFile 'dists/maverick/Release.tmp'
 Signing file 'Release' with gpg, please enter your passphrase when prompted:
+DBG S3: PutFile 'dists/maverick/Release.tmp.gpg'
 Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
+DBG S3: PutFile 'dists/maverick/InRelease.tmp'
+DBG S3: RenameFile dists/maverick/main/Contents-amd64.tmp.gz -> dists/maverick/main/Contents-amd64.gz
+DBG S3: Remove 'dists/maverick/main/Contents-amd64.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Release.tmp -> dists/maverick/main/binary-i386/Release
+DBG S3: Remove 'dists/maverick/main/binary-i386/Release.tmp'
+DBG S3: RenameFile dists/maverick/main/Contents-i386.tmp.gz -> dists/maverick/main/Contents-i386.gz
+DBG S3: Remove 'dists/maverick/main/Contents-i386.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/binary-amd64/Release.tmp -> dists/maverick/main/binary-amd64/Release
+DBG S3: Remove 'dists/maverick/main/binary-amd64/Release.tmp'
+DBG S3: RenameFile dists/maverick/Release.tmp -> dists/maverick/Release
+DBG S3: Remove 'dists/maverick/Release.tmp'
+DBG S3: RenameFile dists/maverick/InRelease.tmp -> dists/maverick/InRelease
+DBG S3: Remove 'dists/maverick/InRelease.tmp'
+DBG S3: RenameFile dists/maverick/main/binary-amd64/Packages.tmp -> dists/maverick/main/binary-amd64/Packages
+DBG S3: Remove 'dists/maverick/main/binary-amd64/Packages.tmp'
+DBG S3: RenameFile dists/maverick/main/binary-amd64/Packages.tmp.bz2 -> dists/maverick/main/binary-amd64/Packages.bz2
+DBG S3: Remove 'dists/maverick/main/binary-amd64/Packages.tmp.bz2'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp.bz2 -> dists/maverick/main/binary-i386/Packages.bz2
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp.bz2'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp -> dists/maverick/main/binary-i386/Packages
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp.gz -> dists/maverick/main/binary-i386/Packages.gz
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp.gz'
+DBG S3: RenameFile dists/maverick/Release.tmp.gpg -> dists/maverick/Release.gpg
+DBG S3: Remove 'dists/maverick/Release.tmp.gpg'
+DBG S3: RenameFile dists/maverick/Contents-amd64.tmp.gz -> dists/maverick/Contents-amd64.gz
+DBG S3: Remove 'dists/maverick/Contents-amd64.tmp.gz'
+DBG S3: RenameFile dists/maverick/Contents-i386.tmp.gz -> dists/maverick/Contents-i386.gz
+DBG S3: Remove 'dists/maverick/Contents-i386.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/binary-amd64/Packages.tmp.gz -> dists/maverick/main/binary-amd64/Packages.gz
+DBG S3: Remove 'dists/maverick/main/binary-amd64/Packages.tmp.gz'
 Cleaning up published repository s3:test1:./maverick...
 Cleaning up component 'main'...
+DBG S3: Remove 'pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb'
+DBG S3: Remove 'pool/main/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_amd64.deb'
+DBG S3: Remove 'pool/main/g/gnuplot/gnuplot-nox_4.6.1-1~maverick2_i386.deb'
+DBG S3: Remove 'pool/main/g/gnuplot/gnuplot_4.6.1-1~maverick2_all.deb'
 
 Published snapshot repository s3:test1:./maverick (origin: LP-PPA-gladky-anton-gnuplot) [amd64, i386] publishes {main: [snap3]: Pulled into 'snap2' with 'snap1' as source, pull request was: 'gnuplot-x11'} has been successfully switched to new source.

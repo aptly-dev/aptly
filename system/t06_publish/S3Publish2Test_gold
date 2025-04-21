@@ -1,9 +1,52 @@
 Loading packages...
 Generating metadata files and linking package files...
 Finalizing metadata files...
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Packages.tmp.bz2'
+DBG S3: PutFile 'dists/maverick/main/source/Sources.tmp'
+DBG S3: PutFile 'dists/maverick/main/source/Sources.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/source/Sources.tmp.bz2'
+DBG S3: PutFile 'dists/maverick/main/Contents-i386.tmp.gz'
+DBG S3: PutFile 'dists/maverick/main/binary-i386/Release.tmp'
+DBG S3: PutFile 'dists/maverick/main/source/Release.tmp'
+DBG S3: PutFile 'dists/maverick/Contents-i386.tmp.gz'
+DBG S3: PutFile 'dists/maverick/Release.tmp'
 Signing file 'Release' with gpg, please enter your passphrase when prompted:
+DBG S3: PutFile 'dists/maverick/Release.tmp.gpg'
 Clearsigning file 'Release' with gpg, please enter your passphrase when prompted:
+DBG S3: PutFile 'dists/maverick/InRelease.tmp'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp -> dists/maverick/main/binary-i386/Packages
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp.gz -> dists/maverick/main/binary-i386/Packages.gz
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Packages.tmp.bz2 -> dists/maverick/main/binary-i386/Packages.bz2
+DBG S3: Remove 'dists/maverick/main/binary-i386/Packages.tmp.bz2'
+DBG S3: RenameFile dists/maverick/main/Contents-i386.tmp.gz -> dists/maverick/main/Contents-i386.gz
+DBG S3: Remove 'dists/maverick/main/Contents-i386.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/binary-i386/Release.tmp -> dists/maverick/main/binary-i386/Release
+DBG S3: Remove 'dists/maverick/main/binary-i386/Release.tmp'
+DBG S3: RenameFile dists/maverick/InRelease.tmp -> dists/maverick/InRelease
+DBG S3: Remove 'dists/maverick/InRelease.tmp'
+DBG S3: RenameFile dists/maverick/main/source/Sources.tmp -> dists/maverick/main/source/Sources
+DBG S3: Remove 'dists/maverick/main/source/Sources.tmp'
+DBG S3: RenameFile dists/maverick/main/source/Sources.tmp.gz -> dists/maverick/main/source/Sources.gz
+DBG S3: Remove 'dists/maverick/main/source/Sources.tmp.gz'
+DBG S3: RenameFile dists/maverick/main/source/Sources.tmp.bz2 -> dists/maverick/main/source/Sources.bz2
+DBG S3: Remove 'dists/maverick/main/source/Sources.tmp.bz2'
+DBG S3: RenameFile dists/maverick/main/source/Release.tmp -> dists/maverick/main/source/Release
+DBG S3: Remove 'dists/maverick/main/source/Release.tmp'
+DBG S3: RenameFile dists/maverick/Contents-i386.tmp.gz -> dists/maverick/Contents-i386.gz
+DBG S3: Remove 'dists/maverick/Contents-i386.tmp.gz'
+DBG S3: RenameFile dists/maverick/Release.tmp -> dists/maverick/Release
+DBG S3: Remove 'dists/maverick/Release.tmp'
+DBG S3: RenameFile dists/maverick/Release.tmp.gpg -> dists/maverick/Release.gpg
+DBG S3: Remove 'dists/maverick/Release.tmp.gpg'
 Cleaning up published repository s3:test1:./maverick...
 Cleaning up component 'main'...
+DBG S3: Remove 'pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc'
+DBG S3: Remove 'pool/main/p/pyspi/pyspi_0.6.1-1.3.diff.gz'
+DBG S3: Remove 'pool/main/p/pyspi/pyspi_0.6.1-1.3.dsc'
+DBG S3: Remove 'pool/main/p/pyspi/pyspi_0.6.1.orig.tar.gz'
 
 Published local repository s3:test1:./maverick [i386, source] publishes {main: [local-repo]} has been updated successfully.

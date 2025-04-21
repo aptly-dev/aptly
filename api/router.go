@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"os"
 	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -56,13 +55,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	router.UseRawPath = true
 
 	if c.Config().LogFormat == "json" {
-		c.StructuredLogging(true)
-		utils.SetupJSONLogger(c.Config().LogLevel, os.Stdout)
 		gin.DefaultWriter = utils.LogWriter{Logger: log.Logger}
 		router.Use(JSONLogger())
 	} else {
-		c.StructuredLogging(false)
-		utils.SetupDefaultLogger(c.Config().LogLevel)
 		router.Use(gin.Logger())
 	}
 
