@@ -289,8 +289,6 @@ class BaseTest(object):
 
     def run(self):
         output = self.run_cmd(self.runCmd, self.expectedCode)
-        if self.sortOutput:
-            output = self.sort_lines(output)
         self.output = self.output_processor(output)
 
     def _start_process(self, command, stderr=subprocess.STDOUT, stdout=None):
@@ -493,24 +491,29 @@ class BaseTest(object):
             return a.decode('utf-8')
         return a
 
-    def verify_match(self, a, b, match_prepare=None, ensure_utf8=True):
+    def verify_match(self, gold, orig, match_prepare=None, ensure_utf8=True):
+        output = orig
         if ensure_utf8:
-            a = self.ensure_utf8(a)
-            b = self.ensure_utf8(b)
+            gold = self.ensure_utf8(gold)
+            output = self.ensure_utf8(output)
 
         if match_prepare is not None:
-            a = match_prepare(a)
-            b = match_prepare(b)
+            gold = match_prepare(gold)
+            output = match_prepare(output)
+
+        # sort if requested
+        if self.sortOutput:
+            gold = self.sort_lines(gold)
+            output = self.sort_lines(output)
 
         # strip trailing whitespace and newlines
-        a = a.strip()
-        b = b.strip()
+        gold = gold.strip()
+        output = output.strip()
 
-        if a != b:
+        if gold != output:
             diff = "".join(difflib.unified_diff(
-                [l + "\n" for l in a.split("\n")], [l + "\n" for l in b.split("\n")]))
-
-            raise Exception("content doesn't match:\n" + diff + "\n")
+                [l + "\n" for l in gold.split("\n")], [l + "\n" for l in output.split("\n")]))
+            raise Exception("content doesn't match:\n" + diff + "\n\nOutput:\n" + orig + "\n")
 
     check = check_output
 
