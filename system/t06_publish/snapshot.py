@@ -22,6 +22,7 @@ class PublishSnapshot1Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap1"
     gold_processor = BaseTest.expand_environ
 
@@ -131,6 +132,7 @@ class PublishSnapshot2Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap2 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap2"
     gold_processor = BaseTest.expand_environ
 
@@ -168,6 +170,7 @@ class PublishSnapshot3Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap3 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -component=contrib snap3"
     gold_processor = BaseTest.expand_environ
 
@@ -208,6 +211,7 @@ class PublishSnapshot4Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap4 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly -architectures=i386 publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap4"
     gold_processor = BaseTest.expand_environ
 
@@ -247,6 +251,7 @@ class PublishSnapshot5Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap5 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -acquire-by-hash -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap5 ppa/smira"
 
     gold_processor = BaseTest.expand_environ
@@ -294,6 +299,7 @@ class PublishSnapshot6Test(BaseTest):
         "aptly snapshot create snap2 from mirror wheezy-main",
         "aptly snapshot merge snap6 snap2 snap"
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap6"
     expectedCode = 1
 
@@ -308,6 +314,7 @@ class PublishSnapshot7Test(BaseTest):
         "aptly snapshot create snap7 from mirror gnuplot-maverick",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap7",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap7"
     expectedCode = 1
 
@@ -322,6 +329,7 @@ class PublishSnapshot8Test(BaseTest):
         "aptly snapshot create snap8 from mirror gnuplot-maverick",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap8 ./ppa",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap8 ppa"
     expectedCode = 1
 
@@ -334,6 +342,7 @@ class PublishSnapshot9Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap9 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap9 ppa/dists/la"
     expectedCode = 1
 
@@ -346,6 +355,7 @@ class PublishSnapshot10Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap10 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap10 ppa/pool/la"
     expectedCode = 1
 
@@ -358,6 +368,7 @@ class PublishSnapshot11Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap11 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap11 ../la"
     expectedCode = 1
 
@@ -367,6 +378,7 @@ class PublishSnapshot12Test(BaseTest):
     publish snapshot: no snapshot
     """
     fixtureDB = True
+    sortOutput = True
     runCmd = "aptly publish snapshot snap12"
     expectedCode = 1
 
@@ -465,6 +477,7 @@ class PublishSnapshot16Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap16 from mirror gnuplot-maverick-src",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap16"
     gold_processor = BaseTest.expand_environ
 
@@ -524,6 +537,7 @@ class PublishSnapshot17Test(BaseTest):
         "aptly repo add local-repo ${files}",
         "aptly snapshot create snap17 from repo local-repo",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap17"
     gold_processor = BaseTest.expand_environ
 
@@ -578,6 +592,7 @@ class PublishSnapshot18Test(BaseTest):
         "aptly repo add repo1 ${files}",
         "aptly snapshot create snap1 from repo repo1",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot snap1"
     expectedCode = 1
 
@@ -682,6 +697,7 @@ class PublishSnapshot24Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap24 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze -origin=aptly24 -notautomatic=yes -butautomaticupgrades=yes snap24"
     gold_processor = BaseTest.expand_environ
 
@@ -701,6 +717,7 @@ class PublishSnapshot25Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap25 empty",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -architectures=amd64 --distribution=maverick -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap25"
     gold_processor = BaseTest.expand_environ
 
@@ -736,6 +753,7 @@ class PublishSnapshot26Test(BaseTest):
         "aptly repo add local-repo ${files}",
         "aptly snapshot create snap26.2 from repo local-repo",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=main,contrib snap26.1 snap26.2"
     gold_processor = BaseTest.expand_environ
 
@@ -864,6 +882,7 @@ class PublishSnapshot27Test(BaseTest):
         "aptly repo add local-repo ${files}",
         "aptly snapshot create snap27.2 from repo local-repo",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=, snap27.1 snap27.2"
     gold_processor = BaseTest.expand_environ
 
@@ -879,6 +898,7 @@ class PublishSnapshot28Test(BaseTest):
         "aptly repo add local-repo ${files}",
         "aptly snapshot create snap28.2 from repo local-repo",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -component=, snap28.1 snap28.2"
     expectedCode = 1
 
@@ -891,6 +911,7 @@ class PublishSnapshot29Test(BaseTest):
         "aptly snapshot create snap29.1 empty",
         "aptly snapshot create snap29.2 empty",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -component=b,b snap29.1 snap29.2"
     expectedCode = 1
 
@@ -906,6 +927,7 @@ class PublishSnapshot30Test(BaseTest):
         "aptly repo add local-repo ${files}",
         "aptly snapshot create snap30.2 from repo local-repo",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -component=main,contrib snap30.1 snap30.2"
     expectedCode = 1
 
@@ -917,6 +939,7 @@ class PublishSnapshot31Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap31.1 empty",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -component=main,contrib snap31.1 snap31.2"
     expectedCode = 1
 
@@ -928,6 +951,7 @@ class PublishSnapshot32Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap32.1 empty",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -component=main,contrib snap32.1"
     expectedCode = 2
 
@@ -948,6 +972,7 @@ class PublishSnapshot33Test(BaseTest):
         "aptly snapshot create snap2 from repo local-repo2",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap2"
     expectedCode = 1
     gold_processor = BaseTest.expand_environ
@@ -966,6 +991,7 @@ class PublishSnapshot34Test(BaseTest):
         "aptly snapshot create snap2 from repo local-repo2",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -force-overwrite -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=squeeze snap2"
     gold_processor = BaseTest.expand_environ
 
@@ -987,6 +1013,7 @@ class PublishSnapshot35Test(BaseTest):
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
 
@@ -1118,6 +1145,7 @@ class PublishSnapshot36Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap36 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -skip-contents snap36"
     gold_processor = BaseTest.expand_environ
 
@@ -1145,6 +1173,7 @@ class PublishSnapshot37Test(BaseTest):
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
 
@@ -1160,8 +1189,10 @@ class PublishSnapshot38Test(BaseTest):
         "aptly mirror update -keyring=aptlytest.gpg stretch",
         "aptly snapshot create stretch from mirror stretch",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec stretch"
     gold_processor = BaseTest.expand_environ
+    sortOutput = True
 
     def check(self):
         super(PublishSnapshot38Test, self).check()
@@ -1187,6 +1218,7 @@ class PublishSnapshot39Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -suite=stable snap1"
     gold_processor = BaseTest.expand_environ
 
@@ -1222,6 +1254,7 @@ class PublishSnapshot40Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap40 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -skip-bz2 snap40"
     gold_processor = BaseTest.expand_environ
 
@@ -1254,6 +1287,7 @@ class PublishSnapshot41Test(BaseTest):
         "aptly mirror update -keyring=aptlytest.gpg ps41",
         "aptly snapshot create snap41 from mirror ps41",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec snap41"
     gold_processor = BaseTest.expand_environ
 
@@ -1375,6 +1409,7 @@ class PublishSnapshot42Test(BaseTest):
     fixtureCmds = [
         "aptly snapshot create snap1 from mirror gnuplot-maverick",
     ]
+    sortOutput = True
     runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -multi-dist snap1"
     gold_processor = BaseTest.expand_environ
 

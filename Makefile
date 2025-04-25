@@ -2,13 +2,15 @@ GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make -s version)
 PYTHON?=python3
 BINPATH?=$(GOPATH)/bin
-GOLANGCI_LINT_VERSION=v1.54.1  # version supporting go 1.19
+GOLANGCI_LINT_VERSION=v1.64.5 # version supporting go 1.23
 COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
-# Uncomment to update system test gold files
-# CAPTURE := "--capture"
+# export CAPUTRE=1 for regenrating test gold files
+ifeq ($(CAPTURE),1)
+CAPTURE_ARG := --capture
+endif
 
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -50,7 +52,7 @@ swagger-install:
 	echo "// @version $(VERSION)" >> docs/swagger.conf
 
 azurite-start:
-	azurite -l /tmp/aptly-azurite & \
+	azurite -l /tmp/aptly-azurite > ~/.azurite.log 2>&1 & \
 	echo $$! > ~/.azurite.pid
 
 azurite-stop:
@@ -71,7 +73,7 @@ lint: prepare
 	# Install golangci-lint
 	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
-	@PATH=$(BINPATH)/:$(PATH) golangci-lint run
+	@PATH=$(BINPATH)/:$(PATH) golangci-lint run --max-issues-per-linter 0 --max-same-issues 0
 
 
 build: prepare swagger  ## Build aptly
@@ -102,7 +104,7 @@ system-test: prepare swagger etcd-install  ## Run system tests
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARG) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -186,6 +188,8 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
+		AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
+		AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
 		system-test TEST=$(TEST) \
 		azurite-stop
 

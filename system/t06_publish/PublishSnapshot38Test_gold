@@ -12,3 +12,4 @@ Now you can add following line to apt sources:
 Don't forget to add your GPG key to apt with apt-key.
 
 You can also use `aptly serve` to publish your repositories over HTTP quickly.
+

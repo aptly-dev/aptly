@@ -4,11 +4,18 @@ import (
 	"io"
 	"os"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/term"
 )
+
+// RunningOnTerminal checks whether stdout is terminal
+func RunningOnTerminal() bool {
+	return term.IsTerminal(syscall.Stdout)
+}
 
 type LogWriter struct {
 	Logger zerolog.Logger
@@ -32,11 +39,10 @@ func SetupDefaultLogger(levelStr string) {
 	zerolog.MessageFieldName = "message"
 	zerolog.LevelFieldName = "level"
 
-	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).
-		Level(GetLogLevelOrDebug(levelStr)).
-		With().
-		Timestamp().
-		Logger()
+	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr,
+		FormatTimestamp: func(_ interface{}) string { return "" },
+		NoColor:         !RunningOnTerminal(),
+	}).Level(GetLogLevelOrDebug(levelStr))
 }
 
 func GetLogLevelOrDebug(levelStr string) zerolog.Level {

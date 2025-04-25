@@ -14,6 +14,7 @@ class S3Publish1Test(S3Test):
         "aptly repo add local-repo ${files}",
         "aptly repo remove local-repo libboost-program-options-dev_1.62.0.1_i386",
     ]
+    sortOutput = True
     runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo s3:test1:"
 
     def check(self):
@@ -53,6 +54,7 @@ class S3Publish2Test(S3Test):
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo s3:test1:",
         "aptly repo remove local-repo pyspi"
     ]
+    sortOutput = True
     runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1:"
 
     def check(self):
@@ -93,6 +95,7 @@ class S3Publish3Test(S3Test):
         "aptly snapshot pull -no-deps -architectures=i386,amd64 snap2 snap1 snap3 gnuplot-x11",
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1 s3:test1:",
     ]
+    sortOutput = True
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1: snap3"
 
     def check(self):
@@ -129,6 +132,7 @@ class S3Publish4Test(S3Test):
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=xyz local-repo s3:test1:",
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo s3:test1:prefix",
     ]
+    sortOutput = True
     runCmd = "aptly publish list"
 
 
@@ -144,6 +148,7 @@ class S3Publish5Test(S3Test):
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq1 local1 s3:test1:",
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=sq2 local2 s3:test1:",
     ]
+    sortOutput = True
     runCmd = "aptly publish drop sq2 s3:test1:"
 
     def check(self):
@@ -172,6 +177,7 @@ class S3Publish6Test(S3Test):
         "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec local-repo s3:test1:",
         "aptly repo remove local-repo pyspi"
     ]
+    sortOutput = True
     runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1:"
 
     def check(self):

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/cheggaaa/pb"
 	"github.com/rs/zerolog/log"
 	"github.com/wsxiaoys/terminal/color"
@@ -78,7 +79,7 @@ func (p *Progress) InitBar(count int64, isBytes bool, _ aptly.BarType) {
 	if p.bar != nil {
 		panic("bar already initialized")
 	}
-	if RunningOnTerminal() {
+	if utils.RunningOnTerminal() {
 		p.bar = pb.New(0)
 		p.bar.Total = count
 		p.bar.NotPrint = true
@@ -141,7 +142,7 @@ func (p *Progress) PrintfStdErr(msg string, a ...interface{}) {
 
 // ColoredPrintf does printf in colored way + newline
 func (p *Progress) ColoredPrintf(msg string, a ...interface{}) {
-	if RunningOnTerminal() {
+	if utils.RunningOnTerminal() {
 		p.queue <- printTask{code: codePrint, message: color.Sprintf(msg, a...) + "\n"}
 	} else {
 		// stip color marks

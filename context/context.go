@@ -123,6 +123,14 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			}
 		}
 
+		if utils.Config.LogFormat == "json" {
+			context.StructuredLogging(true)
+			utils.SetupJSONLogger(utils.Config.LogLevel, os.Stdout)
+		} else {
+			context.StructuredLogging(false)
+			utils.SetupDefaultLogger(utils.Config.LogLevel)
+		}
+
 		context.configLoaded = true
 
 	}

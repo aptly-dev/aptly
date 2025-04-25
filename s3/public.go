@@ -172,6 +172,7 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}
 	defer source.Close()
 
+	log.Debug().Msgf("S3: PutFile '%s'", path)
 	err = storage.putFile(path, source, "")
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
@@ -196,7 +197,6 @@ func (storage *PublishedStorage) getMD5(path string) (string, error) {
 
 // putFile uploads file-like object to
 func (storage *PublishedStorage) putFile(path string, source io.ReadSeeker, sourceMD5 string) error {
-
 	params := &s3.PutObjectInput{
 		Bucket: aws.String(storage.bucket),
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
@@ -238,6 +238,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 		Key:    aws.String(filepath.Join(storage.prefix, path)),
 	}
 
+	log.Debug().Msgf("S3: Remove '%s'", path)
 	if _, err := storage.s3.DeleteObject(context.TODO(), params); err != nil {
 		var notFoundErr *smithy.GenericAPIError
 		if errors.As(err, &notFoundErr) && notFoundErr.Code == "NoSuchBucket" {
@@ -270,6 +271,7 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 		return err
 	}
 
+	log.Debug().Msgf("S3: RemoveDirs '%s'", path)
 	if storage.disableMultiDel {
 		for i := range filelist {
 			params := &s3.DeleteObjectInput{
@@ -338,7 +340,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	poolPath := filepath.Join(storage.prefix, relPath)
 
 	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist(filepath.Join(storage.prefix, publishedPrefix, "pool"), true)
+		paths, md5s, err := storage.internalFilelist(filepath.Join(publishedPrefix, "pool"), true)
 		if err != nil {
 			return errors.Wrap(err, "error caching paths under prefix")
 		}
@@ -346,7 +348,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		storage.pathCache = make(map[string]string, len(paths))
 
 		for i := range paths {
-			storage.pathCache[paths[i]] = md5s[i]
+			storage.pathCache[filepath.Join("pool", paths[i])] = md5s[i]
 		}
 	}
 
@@ -385,6 +387,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	}
 	defer source.Close()
 
+	log.Debug().Msgf("S3: LinkFromPool '%s'", relPath)
 	err = storage.putFile(relPath, source, sourceMD5)
 	if err == nil {
 		storage.pathCache[relPath] = sourceMD5
@@ -465,6 +468,7 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 		params.ServerSideEncryption = storage.encryptionMethod
 	}
 
+	log.Debug().Msgf("S3: RenameFile %s -> %s", oldName, newName)
 	_, err := storage.s3.CopyObject(context.TODO(), params)
 	if err != nil {
 		return fmt.Errorf("error copying %s -> %s in %s: %s", oldName, newName, storage, err)
@@ -494,6 +498,7 @@ func (storage *PublishedStorage) SymLink(src string, dst string) error {
 		params.ServerSideEncryption = types.ServerSideEncryption(storage.encryptionMethod)
 	}
 
+	log.Debug().Msgf("S3: SymLink %s -> %s", src, dst)
 	_, err := storage.s3.CopyObject(context.TODO(), params)
 	if err != nil {
 		return fmt.Errorf("error symlinking %s -> %s in %s: %s", src, dst, storage, err)
@@ -504,6 +509,7 @@ func (storage *PublishedStorage) SymLink(src string, dst string) error {
 
 // HardLink using symlink functionality as hard links do not exist
 func (storage *PublishedStorage) HardLink(src string, dst string) error {
+	log.Debug().Msgf("S3: HardLink %s -> %s", src, dst)
 	return storage.SymLink(src, dst)
 }
 
