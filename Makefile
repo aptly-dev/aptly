@@ -164,6 +164,9 @@ binaries: prepare swagger  ## Build binary releases (FreeBSD, macOS, Linux gener
 docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
+docker-image-no-cache:  ## Build aptly-dev docker image (no cache)
+	@docker build --no-cache -f system/Dockerfile . -t aptly-dev
+
 docker-build:  ## Build aptly in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
 
