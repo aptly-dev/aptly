@@ -4,17 +4,22 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/folbricht/tpmk"
+	"github.com/google/go-tpm/tpmutil"
 	"github.com/pkg/errors"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/clearsign"
+	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	openpgp_errors "github.com/ProtonMail/go-crypto/openpgp/errors"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"golang.org/x/term"
@@ -38,10 +43,31 @@ type GoSigner struct {
 	passphrase, passphraseFile     string
 	batch                          bool
 
+	tpmPrivateKey *tpmk.RSAPrivateKey
 	publicKeyring openpgp.EntityList
 	secretKeyring openpgp.EntityList
 	signer        *openpgp.Entity
 	signerConfig  *packet.Config
+}
+
+func findKey(keyRef string, keyring openpgp.EntityList) *openpgp.Entity {
+	for _, signer := range keyring {
+		key := KeyFromUint64(signer.PrimaryKey.KeyId)
+		if key.Matches(Key(keyRef)) {
+			return signer
+		}
+
+		if !validEntity(signer) {
+			continue
+		}
+
+		for name := range signer.Identities {
+			if strings.Contains(name, keyRef) {
+				return signer
+			}
+		}
+	}
+	return nil
 }
 
 // SetBatch controls whether we allowed to interact with user, for example
@@ -104,12 +130,56 @@ func (g *GoSigner) Init() error {
 		return errors.Wrap(err, "error loading public keyring")
 	}
 
-	g.secretKeyring, err = loadKeyRing(g.secretKeyringFile, false)
-	if err != nil {
-		return errors.Wrap(err, "error load secret keyring")
+	if strings.HasPrefix(g.secretKeyringFile, "tpm://") {
+		// Expected form of tpm://0x81000002 -- optionally with query parameters holding extra values
+		// f/e, ?dev=%2Fdev%2Ftpmrm1 to specify the device as /dev/tpmrm1; or ?dev=sim for simulator
+		tpmSecretURL, err := url.Parse(g.secretKeyringFile)
+		if err != nil {
+			return errors.Wrap(err, "parsing TPM URI")
+		}
+		tpmQueryArgs := tpmSecretURL.Query()
+		devStrings, hasDev := tpmQueryArgs["dev"]
+		tpmDevFilename := "/dev/tpmrm0"
+		if hasDev && len(devStrings) != 0 {
+			if len(devStrings) > 1 {
+				return errors.Errorf("Parsing TPM address, more than one device name found")
+			}
+			tpmDevFilename = devStrings[0]
+		}
+		tpmDev, err := tpmk.OpenDevice(tpmDevFilename)
+		if err != nil {
+			return errors.Wrap(err, "opening TPM device")
+		}
+		tpmHandleInt, err := strconv.ParseUint(tpmSecretURL.Host, 0, 32)
+		if err != nil {
+			return errors.Wrap(err, "parsing TPM URI host as integer handle")
+		}
+		tpmHandle := tpmutil.Handle(tpmHandleInt)
+		privKey, err := tpmk.NewRSAPrivateKey(tpmDev, tpmHandle, g.passphrase)
+		if err != nil {
+			return errors.Wrap(err, "opening TPM key handle")
+		}
+		g.tpmPrivateKey = &privKey
+	} else {
+		g.secretKeyring, err = loadKeyRing(g.secretKeyringFile, false)
+		if err != nil {
+			return errors.Wrap(err, "error load secret keyring")
+		}
 	}
 
-	if g.keyRef == "" {
+	if g.secretKeyring == nil {
+		// Happens if our private key is TPM-backed; means we only have a public key
+		if g.keyRef == "" && len(g.publicKeyring) == 1 {
+			g.signer = g.publicKeyring[0]
+		} else if g.keyRef != "" {
+			g.signer = findKey(g.keyRef, g.publicKeyring)
+			if g.signer == nil {
+				return errors.Errorf("couldn't find key for key reference %+v in public keyring", g.keyRef)
+			}
+		} else {
+			return errors.Errorf("must either only have our signing key in the public keyring, or provide the identity of the signing key when in tpm mode")
+		}
+	} else if g.keyRef == "" {
 		// no key reference, pick the first key
 		for _, signer := range g.secretKeyring {
 			if !validEntity(signer) {
@@ -124,28 +194,9 @@ func (g *GoSigner) Init() error {
 			return fmt.Errorf("looks like there are no keys in gpg, please create one (official manual: http://www.gnupg.org/gph/en/manual.html)")
 		}
 	} else {
-	pickKeyLoop:
-		for _, signer := range g.secretKeyring {
-			key := KeyFromUint64(signer.PrimaryKey.KeyId)
-			if key.Matches(Key(g.keyRef)) {
-				g.signer = signer
-				break
-			}
-
-			if !validEntity(signer) {
-				continue
-			}
-
-			for name := range signer.Identities {
-				if strings.Contains(name, g.keyRef) {
-					g.signer = signer
-					break pickKeyLoop
-				}
-			}
-		}
-
+		g.signer = findKey(g.keyRef, g.secretKeyring)
 		if g.signer == nil {
-			return errors.Errorf("couldn't find key for key reference %v", g.keyRef)
+			return errors.Errorf("couldn't find key for key reference %v in private keyring", g.keyRef)
 		}
 	}
 
@@ -232,9 +283,21 @@ func (g *GoSigner) DetachedSign(source string, destination string) error {
 	}
 	defer signature.Close()
 
-	err = openpgp.ArmoredDetachSign(signature, g.signer, message, g.signerConfig)
-	if err != nil {
-		return errors.Wrap(err, "error creating detached signature")
+	if g.tpmPrivateKey != nil {
+		encoder, err := armor.Encode(signature, openpgp.SignatureType, nil)
+		if err != nil {
+			return errors.Wrap(err, "error creating armoring encoder")
+		}
+		defer encoder.Close()
+		err = tpmk.OpenPGPDetachSign(encoder, g.signer, message, nil, g.tpmPrivateKey)
+		if err != nil {
+			return errors.Wrap(err, "error creating detached signature with TPM-backed key")
+		}
+	} else {
+		err = openpgp.ArmoredDetachSign(signature, g.signer, message, g.signerConfig)
+		if err != nil {
+			return errors.Wrap(err, "error creating detached signature")
+		}
 	}
 
 	return nil
