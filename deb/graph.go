@@ -33,7 +33,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	existingNodes := map[string]bool{}
 
 	err = collectionFactory.RemoteRepoCollection().ForEach(func(repo *RemoteRepo) error {
-		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
@@ -55,7 +55,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	}
 
 	err = collectionFactory.LocalRepoCollection().ForEach(func(repo *LocalRepo) error {
-		e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		e := collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}
@@ -81,7 +81,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	})
 
 	err = collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
-		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if e != nil {
 			return e
 		}

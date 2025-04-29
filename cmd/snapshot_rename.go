@@ -32,7 +32,7 @@ func aptlySnapshotRename(cmd *commander.Command, args []string) error {
 	}
 
 	snapshot.Name = newName
-	err = collectionFactory.SnapshotCollection().Update(snapshot)
+	err = collectionFactory.SnapshotCollection().Update(snapshot, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}

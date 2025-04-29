@@ -297,10 +297,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			switch s := source.(type) {
 			case *deb.Snapshot:
 				snapshotCollection := collectionFactory.SnapshotCollection()
-				err = snapshotCollection.LoadComplete(s)
+				err = snapshotCollection.LoadComplete(s, collectionFactory.RefListCollection())
 			case *deb.LocalRepo:
 				localCollection := collectionFactory.LocalRepoCollection()
-				err = localCollection.LoadComplete(s)
+				err = localCollection.LoadComplete(s, collectionFactory.RefListCollection())
 			default:
 				err = fmt.Errorf("unexpected type for source: %T", source)
 			}
@@ -352,7 +352,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = collection.Add(published)
+		err = collection.Add(published, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -469,7 +469,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err = collection.LoadComplete(published, collectionFactory)
+		err = collection.LoadComplete(published, collectionFactory, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
@@ -495,7 +495,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
 		}
 
-		err = collection.Update(published)
+		err = collection.Update(published, collectionFactory.RefListCollection())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
