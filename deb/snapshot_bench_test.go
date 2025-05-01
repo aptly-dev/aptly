@@ -12,10 +12,10 @@ func BenchmarkSnapshotCollectionForEach(b *testing.B) {
 	const count = 1024
 
 	tmpDir := os.TempDir()
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	db, _ := goleveldb.NewOpenDB(tmpDir)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	collection := NewSnapshotCollection(db)
 
@@ -31,7 +31,8 @@ func BenchmarkSnapshotCollectionForEach(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		collection = NewSnapshotCollection(db)
 
-		collection.ForEach(func(s *Snapshot) error {
+
+                _ = collection.ForEach(func(s *Snapshot) error {
 			return nil
 		})
 	}
@@ -41,10 +42,10 @@ func BenchmarkSnapshotCollectionByUUID(b *testing.B) {
 	const count = 1024
 
 	tmpDir := os.TempDir()
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	db, _ := goleveldb.NewOpenDB(tmpDir)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	collection := NewSnapshotCollection(db)
 
@@ -72,10 +73,10 @@ func BenchmarkSnapshotCollectionByName(b *testing.B) {
 	const count = 1024
 
 	tmpDir := os.TempDir()
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	db, _ := goleveldb.NewOpenDB(tmpDir)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	collection := NewSnapshotCollection(db)
 

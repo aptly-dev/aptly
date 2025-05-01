@@ -104,7 +104,9 @@ func (f *FakeDownloader) DownloadWithChecksum(_ context.Context, url string, fil
 	if err != nil {
 		return err
 	}
-	defer outfile.Close()
+	defer func() {
+		_ = outfile.Close()
+	}()
 
 	cks := utils.NewChecksumWriter()
 	w := io.MultiWriter(outfile, cks)

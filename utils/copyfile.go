@@ -11,7 +11,9 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sf.Close()
+	defer func() {
+		_ = sf.Close()
+	}()
 
 	df, err := os.Create(dst)
 	if err != nil {
@@ -20,7 +22,7 @@ func CopyFile(src, dst string) error {
 
 	_, err = io.Copy(df, sf)
 	if err != nil {
-		df.Close()
+		_ = df.Close()
 		return err
 	}
 

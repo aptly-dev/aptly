@@ -107,21 +107,21 @@ func (t *Output) SetBar(_ int) {
 
 // Printf does printf in a safe manner
 func (t *Output) Printf(msg string, a ...interface{}) {
-	t.WriteString(fmt.Sprintf(msg, a...))
+	_, _ = t.WriteString(fmt.Sprintf(msg, a...))
 }
 
 // Print does printf in a safe manner
 func (t *Output) Print(msg string) {
-	t.WriteString(msg)
+	_, _ = t.WriteString(msg)
 }
 
 // ColoredPrintf does printf in a safe manner + newline
 // currently are no colors supported.
 func (t *Output) ColoredPrintf(msg string, a ...interface{}) {
-	t.WriteString(fmt.Sprintf(msg+"\n", a...))
+	_, _ = t.WriteString(fmt.Sprintf(msg+"\n", a...))
 }
 
 // PrintfStdErr does printf but in safe manner to output
 func (t *Output) PrintfStdErr(msg string, a ...interface{}) {
-	t.WriteString(fmt.Sprintf(msg, a...))
+	_, _ = t.WriteString(fmt.Sprintf(msg, a...))
 }

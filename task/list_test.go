@@ -21,7 +21,7 @@ func (s *ListSuite) TestList(c *check.C) {
 		return nil, nil
 	})
 	c.Assert(err, check.IsNil)
-	list.WaitForTaskByID(task.ID)
+	_, _ = list.WaitForTaskByID(task.ID)
 
 	tasks := list.GetTasks()
 	c.Assert(len(tasks), check.Equals, 1)
@@ -38,7 +38,7 @@ func (s *ListSuite) TestList(c *check.C) {
 		return nil, errors.New("Task failed")
 	})
 	c.Assert(err, check.IsNil)
-	list.WaitForTaskByID(task.ID)
+	_, _ = list.WaitForTaskByID(task.ID)
 
 	tasks = list.GetTasks()
 	c.Assert(len(tasks), check.Equals, 2)

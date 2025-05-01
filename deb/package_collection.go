@@ -309,7 +309,7 @@ func (collection *PackageCollection) Scan(q PackageQuery) (result *PackageList) 
 		}
 
 		if q.Matches(pkg) {
-			result.Add(pkg)
+			_ = result.Add(pkg)
 		}
 	}
 
@@ -337,7 +337,7 @@ func (collection *PackageCollection) SearchByKey(arch, name, version string) (re
 		}
 
 		if pkg.Architecture == arch && pkg.Name == name && pkg.Version == version {
-			result.Add(pkg)
+			_ = result.Add(pkg)
 		}
 	}
 

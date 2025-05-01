@@ -79,7 +79,9 @@ func (g *GoSigner) Init() error {
 		if err != nil {
 			return errors.Wrap(err, "error opening passphrase file")
 		}
-		defer passF.Close()
+		defer func() {
+			_ = passF.Close()
+		}()
 
 		contents, err := io.ReadAll(passF)
 		if err != nil {
@@ -224,13 +226,17 @@ func (g *GoSigner) DetachedSign(source string, destination string) error {
 	if err != nil {
 		return errors.Wrap(err, "error opening source file")
 	}
-	defer message.Close()
+	defer func() {
+		_ = message.Close()
+	}()
 
 	signature, err := os.Create(destination)
 	if err != nil {
 		return errors.Wrap(err, "error creating signature file")
 	}
-	defer signature.Close()
+	defer func() {
+		_ = signature.Close()
+	}()
 
 	err = openpgp.ArmoredDetachSign(signature, g.signer, message, g.signerConfig)
 	if err != nil {
@@ -248,13 +254,17 @@ func (g *GoSigner) ClearSign(source string, destination string) error {
 	if err != nil {
 		return errors.Wrap(err, "error opening source file")
 	}
-	defer message.Close()
+	defer func() {
+		_ = message.Close()
+	}()
 
 	clearsigned, err := os.Create(destination)
 	if err != nil {
 		return errors.Wrap(err, "error creating clearsigned file")
 	}
-	defer clearsigned.Close()
+	defer func() {
+		_ = clearsigned.Close()
+	}()
 
 	stream, err := clearsign.Encode(clearsigned, g.signer.PrivateKey, g.signerConfig)
 	if err != nil {
@@ -263,7 +273,7 @@ func (g *GoSigner) ClearSign(source string, destination string) error {
 
 	_, err = io.Copy(stream, message)
 	if err != nil {
-		stream.Close()
+		_ = stream.Close()
 		return errors.Wrap(err, "error generating clearsigned signature")
 	}
 
@@ -463,7 +473,9 @@ func (g *GoVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, e
 	if err != nil {
 		return
 	}
-	defer os.Remove(text.Name())
+	defer func() {
+		_ = os.Remove(text.Name())
+	}()
 
 	_, err = text.Write(block.Bytes)
 	if err != nil {
@@ -494,7 +506,9 @@ func loadKeyRing(name string, ignoreMissing bool) (openpgp.EntityList, error) {
 
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	return openpgp.ReadKeyRing(f)
 }

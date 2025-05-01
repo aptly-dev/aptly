@@ -29,14 +29,14 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 		c.Writer.Flush()
-		c.Writer.WriteString("<pre>\n")
+		_, _ = c.Writer.WriteString("<pre>\n")
 		if len(localRepos) == 0 {
-			c.Writer.WriteString("<a href=\"-/\">default</a>\n")
+			_, _ = c.Writer.WriteString("<a href=\"-/\">default</a>\n")
 		}
 		for publishPrefix := range localRepos {
-			c.Writer.WriteString(fmt.Sprintf("<a href=\"%[1]s/\">%[1]s</a>\n", publishPrefix))
+			_, _ = c.Writer.WriteString(fmt.Sprintf("<a href=\"%[1]s/\">%[1]s</a>\n", publishPrefix))
 		}
-		c.Writer.WriteString("</pre>")
+		_, _ = c.Writer.WriteString("</pre>")
 		c.Writer.Flush()
 	}
 }
@@ -76,7 +76,7 @@ func apiReposList(c *gin.Context) {
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
-	collection.ForEach(func(r *deb.LocalRepo) error {
+	_ = collection.ForEach(func(r *deb.LocalRepo) error {
 		result = append(result, r)
 		return nil
 	})
@@ -570,7 +570,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 			}
 
 			// atempt to remove dir, if it fails, that's fine: probably it's not empty
-			os.Remove(filepath.Join(context.UploadPath(), dirParam))
+			_ = os.Remove(filepath.Join(context.UploadPath(), dirParam))
 		}
 
 		if failedFiles == nil {
@@ -776,14 +776,8 @@ func apiReposIncludePackageFromFile(c *gin.Context) {
 	apiReposIncludePackageFromDir(c)
 }
 
-type reposIncludePackageFromDirReport struct {
-	Warnings []string
-	Added    []string
-	Deleted  []string
-}
-
 type reposIncludePackageFromDirResponse struct {
-	Report      reposIncludePackageFromDirReport
+	Report      *aptly.RecordingResultReporter
 	FailedFiles []string
 }
 
@@ -836,7 +830,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	}
 
 	var resources []string
-	if len(repoTemplate.Tree.Root.Nodes) > 1 {
+	if len(repoTemplate.Root.Nodes) > 1 {
 		resources = append(resources, task.AllLocalReposResourcesKey)
 	} else {
 		// repo template string is simple text so only use resource key of specific repository
@@ -876,7 +870,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 
 		if !noRemoveFiles {
 			// atempt to remove dir, if it fails, that's fine: probably it's not empty
-			os.Remove(filepath.Join(context.UploadPath(), dirParam))
+			_ = os.Remove(filepath.Join(context.UploadPath(), dirParam))
 		}
 
 		if failedFiles == nil {
@@ -896,9 +890,10 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{
-			"Report":      reporter,
-			"FailedFiles": failedFiles,
-		}}, nil
+                ret := reposIncludePackageFromDirResponse{
+			Report:      reporter,
+			FailedFiles: failedFiles,
+                    }
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: ret}, nil
 	})
 }

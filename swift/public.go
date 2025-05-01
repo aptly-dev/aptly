@@ -89,7 +89,9 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 	var bulkDelete bool
 	resp, err := http.Get(filepath.Join(ct.StorageUrl, "..", "..") + "/info")
 	if err == nil {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 		decoder := json.NewDecoder(resp.Body)
 		var infos swiftInfo
 		if decoder.Decode(&infos) == nil {
@@ -107,7 +109,7 @@ func NewPublishedStorage(username string, password string, authURL string, tenan
 	return result, nil
 }
 
-// String
+// String represents the Storage as string
 func (storage *PublishedStorage) String() string {
 	return fmt.Sprintf("Swift: %s/%s/%s", storage.conn.StorageUrl, storage.container, storage.prefix)
 }
@@ -128,7 +130,9 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() {
+		_ = source.Close()
+	}()
 
 	err = storage.putFile(path, source)
 	if err != nil {
@@ -225,7 +229,9 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() {
+		_ = source.Close()
+	}()
 
 	err = storage.putFile(relPath, source)
 	if err != nil {

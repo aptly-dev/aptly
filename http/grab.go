@@ -14,7 +14,7 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/aptly-dev/aptly/utils"
-	"github.com/cavaliergopher/grab/v3"
+	grab "github.com/cavaliergopher/grab/v3"
 	"github.com/pkg/errors"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -49,10 +49,10 @@ func (d *GrabDownloader) Download(ctx context.Context, url string, destination s
 
 func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	maxTries := d.maxTries
-	const delayMax = time.Duration(5 * time.Minute)
+        // FIXME: const delayMax = time.Duration(5 * time.Minute)
 	delay := time.Duration(1 * time.Second)
-	const delayMultiplier = 2
-	err := fmt.Errorf("No tries available")
+        // FIXME: const delayMultiplier = 2
+	err := fmt.Errorf("no tries available")
 	for maxTries > 0 {
 		err = d.download(ctx, url, destination, expected, ignoreMismatch)
 		if err == nil {
@@ -125,7 +125,7 @@ func (d *GrabDownloader) download(_ context.Context, url string, destination str
 		req.RateLimiter = rate.NewLimiter(rate.Limit(d.downLimit), int(d.downLimit))
 	}
 
-	d.maybeSetupChecksum(req, expected)
+	err = d.maybeSetupChecksum(req, expected)
 	if err != nil {
 		d.log("Error setting up checksum: %v\n", err)
 		return errors.Wrap(err, url)
@@ -133,14 +133,17 @@ func (d *GrabDownloader) download(_ context.Context, url string, destination str
 
 	resp := d.client.Do(req)
 
-Loop:
-	for {
-		select {
-		case <-resp.Done:
-			// download is complete
-			break Loop
-		}
-	}
+        <-resp.Done
+	// download is complete
+
+// Loop:
+// 	for {
+// 		select {
+// 		case <-resp.Done:
+// 			// download is complete
+// 			break Loop
+// 		}
+// 	}
 	err = resp.Err()
 	if err != nil && err == grab.ErrBadChecksum && ignoreMismatch {
 		fmt.Printf("Ignoring checksum mismatch for %s\n", url)

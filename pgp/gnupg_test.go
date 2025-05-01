@@ -23,8 +23,8 @@ func (s *GnupgSuite) SetUpSuite(c *C) {
 // If gpg == gpg1 = pick gpg
 func (s *GnupgSuite) TestGPG1(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpg1"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpg1"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	signer := NewGpgSigner(GPG1Finder())
 	c.Assert(signer.gpg, Equals, "gpg")
@@ -33,8 +33,8 @@ func (s *GnupgSuite) TestGPG1(c *C) {
 // gpg(2) + gpg1 installed = pick gpg1
 func (s *GnupgSuite) TestGPG1Not2(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpg2-and-1"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpg2-and-1"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	signer := NewGpgSigner(GPG1Finder())
 	c.Assert(signer.gpg, Equals, "gpg1")
@@ -43,8 +43,8 @@ func (s *GnupgSuite) TestGPG1Not2(c *C) {
 // If gpg == gpg2 and no gpg1 is available = error
 func (s *GnupgSuite) TestGPGNothing(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpg2-only"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpg2-only"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	c.Assert(func() { NewGpgSigner(GPG1Finder()) }, PanicMatches, `Couldn't find a suitable gpg executable.+`)
 }
@@ -52,8 +52,8 @@ func (s *GnupgSuite) TestGPGNothing(c *C) {
 // If gpgv == gpgv1 = pick gpgv
 func (s *GnupgSuite) TestGPGV1(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpgv1")+":"+filepath.Join(s.bins, "gpg1"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpgv1")+":"+filepath.Join(s.bins, "gpg1"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	verifier := NewGpgVerifier(GPG1Finder())
 	c.Assert(verifier.gpgv, Equals, "gpgv")
@@ -62,8 +62,8 @@ func (s *GnupgSuite) TestGPGV1(c *C) {
 // gpgv(2) + gpgv1 installed = pick gpgv1
 func (s *GnupgSuite) TestGPGV1Not2(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-and-1")+":"+filepath.Join(s.bins, "gpg1"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-and-1")+":"+filepath.Join(s.bins, "gpg1"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	verifier := NewGpgVerifier(GPG1Finder())
 	c.Assert(verifier.gpgv, Equals, "gpgv1")
@@ -72,8 +72,8 @@ func (s *GnupgSuite) TestGPGV1Not2(c *C) {
 // If gpgv == gpgv2 and no gpgv1 is available = error
 func (s *GnupgSuite) TestGPGVNothing(c *C) {
 	origPath := os.Getenv("PATH")
-	os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-only")+":"+filepath.Join(s.bins, "gpg1"))
-	defer func() { os.Setenv("PATH", origPath) }()
+	_ = os.Setenv("PATH", filepath.Join(s.bins, "gpgv2-only")+":"+filepath.Join(s.bins, "gpg1"))
+	defer func() { _ = os.Setenv("PATH", origPath) }()
 
 	c.Assert(func() { NewGpgVerifier(GPG1Finder()) }, PanicMatches, `Couldn't find a suitable gpg executable.+`)
 }
@@ -220,6 +220,6 @@ func (s *Gnupg2SignerSuite) SetUpTest(c *C) {
 func (s *Gnupg2SignerSuite) TearDownTest(c *C) {
 	s.SignerSuite.TearDownTest(c)
 
-	os.Remove("../system/files/aptly2.gpg")
-	os.Remove("../system/files/aptly2_passphrase.gpg")
+	_ = os.Remove("../system/files/aptly2.gpg")
+	_ = os.Remove("../system/files/aptly2_passphrase.gpg")
 }

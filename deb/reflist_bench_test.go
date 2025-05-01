@@ -42,6 +42,6 @@ func BenchmarkReflistDecode(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		(&PackageRefList{}).Decode(data)
+		_ = (&PackageRefList{}).Decode(data)
 	}
 }

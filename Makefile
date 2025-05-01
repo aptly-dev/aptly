@@ -2,7 +2,7 @@ GOPATH=$(shell go env GOPATH)
 VERSION=$(shell make -s version)
 PYTHON?=python3
 BINPATH?=$(GOPATH)/bin
-GOLANGCI_LINT_VERSION=v1.64.5 # version supporting go 1.23
+GOLANGCI_LINT_VERSION=v2.0.2  # version supporting go 1.24
 COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
@@ -71,9 +71,9 @@ flake8:  ## run flake8 on system test python files
 
 lint: prepare
 	# Install golangci-lint
-	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@test -f $(BINPATH)/golangci-lint || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	# Running lint
-	@PATH=$(BINPATH)/:$(PATH) golangci-lint run --max-issues-per-linter 0 --max-same-issues 0
+	@NO_COLOR=true PATH=$(BINPATH)/:$(PATH) golangci-lint run --max-issues-per-linter=0 --max-same-issues=0
 
 
 build: prepare swagger  ## Build aptly
@@ -163,6 +163,9 @@ binaries: prepare swagger  ## Build binary releases (FreeBSD, macOS, Linux gener
 
 docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
+
+docker-image-no-cache:  ## Build aptly-dev docker image (no cache)
+	@docker build --no-cache -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build

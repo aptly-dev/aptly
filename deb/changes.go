@@ -60,14 +60,14 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 	if err != nil {
 		return err
 	}
-	defer input.Close()
+	defer func() { _ = input.Close() }()
 
 	isClearSigned, err := verifier.IsClearSigned(input)
 	if err != nil {
 		return err
 	}
 
-	input.Seek(0, 0)
+	_, _ = input.Seek(0, 0)
 
 	if !isClearSigned && !acceptUnsigned {
 		return fmt.Errorf(".changes file is not signed and unsigned processing hasn't been enabled")
@@ -79,7 +79,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 		if err != nil {
 			return err
 		}
-		input.Seek(0, 0)
+		_, _ = input.Seek(0, 0)
 
 		c.SignatureKeys = keyInfo.GoodKeys
 	}
@@ -91,7 +91,7 @@ func (c *Changes) VerifyAndParse(acceptUnsigned, ignoreSignature bool, verifier 
 		if err != nil {
 			return err
 		}
-		defer text.Close()
+		defer func() { _ = text.Close() }()
 	} else {
 		text = input
 	}
@@ -307,7 +307,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
+			_ = changes.Cleanup()
 			continue
 		}
 
@@ -315,7 +315,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
+			_ = changes.Cleanup()
 			continue
 		}
 
@@ -334,7 +334,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 		if err != nil {
 			failedFiles = append(failedFiles, path)
 			reporter.Warning("unable to process file %s: %s", changes.ChangesName, err)
-			changes.Cleanup()
+			_ = changes.Cleanup()
 			continue
 		}
 
@@ -354,7 +354,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 				failedFiles = append(failedFiles, path)
 				reporter.Warning("changes file skipped due to uploaders config: %s, keys %#v: %s",
 					changes.ChangesName, changes.SignatureKeys, err)
-				changes.Cleanup()
+				_ = changes.Cleanup()
 				continue
 			}
 		}

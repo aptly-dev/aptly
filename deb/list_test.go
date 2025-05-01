@@ -96,7 +96,7 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		{Name: "dpkg", Version: "1.7", Architecture: "source", SourceArchitecture: "any", IsSource: true, deps: &PackageDependencies{}},
 	}
 	for _, p := range s.packages {
-		s.il.Add(p)
+		_ = s.il.Add(p)
 	}
 	s.il.PrepareIndex()
 
@@ -110,7 +110,7 @@ func (s *PackageListSuite) SetUpTest(c *C) {
 		{Name: "app", Version: "3.0", Architecture: "amd64", deps: &PackageDependencies{PreDepends: []string{"dpkg >= 1.6)"}, Depends: []string{"lib (>> 0.9)", "data (>= 1.0)"}}},
 	}
 	for _, p := range s.packages2 {
-		s.il2.Add(p)
+		_ = s.il2.Add(p)
 	}
 	s.il2.PrepareIndex()
 
@@ -202,8 +202,8 @@ func (s *PackageListSuite) TestRemoveWhenIndexed(c *C) {
 }
 
 func (s *PackageListSuite) TestForeach(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
 
 	Len := 0
 	err := s.list.ForEach(func(*Package) error {
@@ -232,21 +232,21 @@ func (s *PackageListSuite) TestIndex(c *C) {
 }
 
 func (s *PackageListSuite) TestAppend(c *C) {
-	s.list.Add(s.p1)
-	s.list.Add(s.p3)
+	_ = s.list.Add(s.p1)
+	_ = s.list.Add(s.p3)
 
 	err := s.list.Append(s.il)
 	c.Check(err, IsNil)
 	c.Check(s.list.Len(), Equals, 16)
 
 	list := NewPackageList()
-	list.Add(s.p4)
+	_ = list.Add(s.p4)
 
 	err = s.list.Append(list)
 	c.Check(err, ErrorMatches, "package already exists and is different: .*")
 
 	s.list.PrepareIndex()
-	c.Check(func() { s.list.Append(s.il) }, Panics, "Append not supported when indexed")
+	c.Check(func() { _ = s.list.Append(s.il) }, Panics, "Append not supported when indexed")
 }
 
 func (s *PackageListSuite) TestSearch(c *C) {
@@ -312,7 +312,7 @@ func (s *PackageListSuite) TestSearch(c *C) {
 
 func (s *PackageListSuite) TestFilter(c *C) {
 	c.Check(func() {
-		s.list.Filter(FilterOptions{
+		_, _ = s.list.Filter(FilterOptions{
 			Queries: []PackageQuery{&PkgQuery{"abcd", "0.3", "i386"}},
 		})
 	}, Panics, "list not indexed, can't filter")
@@ -479,7 +479,7 @@ func (s *PackageListSuite) TestVerifyDependencies(c *C) {
 		{Pkg: "mail-agent", Relation: VersionDontCare, Version: "", Architecture: "arm"}})
 
 	for _, p := range s.sourcePackages {
-		s.il.Add(p)
+		_ = s.il.Add(p)
 	}
 
 	missing, err = s.il.VerifyDependencies(DepFollowSource, []string{"i386", "amd64"}, s.il, nil)

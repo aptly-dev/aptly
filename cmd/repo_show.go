@@ -52,7 +52,7 @@ func aptlyRepoShowTxt(_ *commander.Command, args []string) error {
 
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		ListPackagesRefList(repo.RefList(), collectionFactory)
+		_ = ListPackagesRefList(repo.RefList(), collectionFactory)
 	}
 
 	return err

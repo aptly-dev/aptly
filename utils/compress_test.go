@@ -3,7 +3,7 @@ package utils
 import (
 	"compress/bzip2"
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 	"os"
 
 	. "gopkg.in/check.v1"
@@ -19,11 +19,11 @@ const testString = "Quick brown fox jumps over black dog and runs away... Really
 
 func (s *CompressSuite) SetUpTest(c *C) {
 	s.tempfile, _ = os.CreateTemp(c.MkDir(), "aptly-test")
-	s.tempfile.WriteString(testString)
+	_, _ = s.tempfile.WriteString(testString)
 }
 
 func (s *CompressSuite) TearDownTest(c *C) {
-	s.tempfile.Close()
+	_ = s.tempfile.Close()
 }
 
 func (s *CompressSuite) TestCompress(c *C) {
@@ -36,11 +36,11 @@ func (s *CompressSuite) TestCompress(c *C) {
 	gzReader, err := gzip.NewReader(file)
 	c.Assert(err, IsNil)
 
-	buf, err := ioutil.ReadAll(gzReader)
+	buf, err := io.ReadAll(gzReader)
 	c.Assert(err, IsNil)
 
-	gzReader.Close()
-	file.Close()
+	_ = gzReader.Close()
+	_ = file.Close()
 
 	c.Check(string(buf), Equals, testString)
 
@@ -52,7 +52,7 @@ func (s *CompressSuite) TestCompress(c *C) {
 	_, err = bzReader.Read(buf)
 	c.Assert(err, IsNil)
 
-	file.Close()
+	_ = file.Close()
 
 	c.Check(string(buf), Equals, testString)
 }

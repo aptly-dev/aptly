@@ -53,7 +53,7 @@ func aptlyPublishListTxt(cmd *commander.Command, _ []string) error {
 		return fmt.Errorf("unable to load list of repos: %s", err)
 	}
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Strings(published)
 
@@ -99,7 +99,7 @@ func aptlyPublishListJSON(_ *commander.Command, _ []string) error {
 		return fmt.Errorf("unable to load list of repos: %s", err)
 	}
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Slice(repos, func(i, j int) bool {
 		return repos[i].GetPath() < repos[j].GetPath()

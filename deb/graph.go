@@ -12,15 +12,15 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 	var err error
 
 	graph := gographviz.NewEscape()
-	graph.SetDir(true)
-	graph.SetName("aptly")
+	_ = graph.SetDir(true)
+	_ = graph.SetName("aptly")
 
 	var labelStart string
 	var labelEnd string
 
 	switch layout {
 	case "vertical":
-		graph.AddAttr("aptly", "rankdir", "LR")
+		_ = graph.AddAttr("aptly", "rankdir", "LR")
 		labelStart = ""
 		labelEnd = ""
 	case "horizontal":
@@ -38,7 +38,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			return e
 		}
 
-		graph.AddNode("aptly", repo.UUID, map[string]string{
+		_ = graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkgoldenrod1",
@@ -60,7 +60,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			return e
 		}
 
-		graph.AddNode("aptly", repo.UUID, map[string]string{
+		_ = graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "mediumseagreen",
@@ -75,7 +75,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 		return nil, err
 	}
 
-	collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
+	_ = collectionFactory.SnapshotCollection().ForEach(func(snapshot *Snapshot) error {
 		existingNodes[snapshot.UUID] = true
 		return nil
 	})
@@ -91,7 +91,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			description = "Snapshot from repo"
 		}
 
-		graph.AddNode("aptly", snapshot.UUID, map[string]string{
+		_ = graph.AddNode("aptly", snapshot.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "cadetblue1",
@@ -103,7 +103,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 			for _, uuid := range snapshot.SourceIDs {
 				_, exists := existingNodes[uuid]
 				if exists {
-					graph.AddEdge(uuid, snapshot.UUID, true, nil)
+					_ = graph.AddEdge(uuid, snapshot.UUID, true, nil)
 				}
 			}
 		}
@@ -114,8 +114,8 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 		return nil, err
 	}
 
-	collectionFactory.PublishedRepoCollection().ForEach(func(repo *PublishedRepo) error {
-		graph.AddNode("aptly", repo.UUID, map[string]string{
+	_ = collectionFactory.PublishedRepoCollection().ForEach(func(repo *PublishedRepo) error {
+		_ = graph.AddNode("aptly", repo.UUID, map[string]string{
 			"shape":     "Mrecord",
 			"style":     "filled",
 			"fillcolor": "darkolivegreen1",
@@ -127,7 +127,7 @@ func BuildGraph(collectionFactory *CollectionFactory, layout string) (gographviz
 		for _, uuid := range repo.Sources {
 			_, exists := existingNodes[uuid]
 			if exists {
-				graph.AddEdge(uuid, repo.UUID, true, nil)
+				_ = graph.AddEdge(uuid, repo.UUID, true, nil)
 			}
 		}
 

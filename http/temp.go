@@ -24,7 +24,7 @@ func DownloadTempWithChecksum(ctx context.Context, downloader aptly.Downloader, 
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(tempdir)
+	defer func() { _ = os.RemoveAll(tempdir) }()
 
 	tempfile := filepath.Join(tempdir, "buffer")
 

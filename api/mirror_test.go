@@ -9,7 +9,7 @@ import (
 )
 
 type MirrorSuite struct {
-	ApiSuite
+	APISuite
 }
 
 var _ = Suite(&MirrorSuite{})

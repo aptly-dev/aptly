@@ -31,7 +31,7 @@ func NewList() *List {
 		wgTasks:       make(map[int]*sync.WaitGroup),
 		wg:            &sync.WaitGroup{},
 		usedResources: NewResourcesSet(),
-		queue:         make(chan *Task, 0),
+		queue:         make(chan *Task),
 		queueWg:       &sync.WaitGroup{},
 		queueDone:     make(chan bool),
 	}
@@ -123,11 +123,11 @@ func (list *List) DeleteTaskByID(ID int) (Task, error) {
 				return *task, nil
 			}
 
-			return *task, fmt.Errorf("Task with id %v is still in state=%d", ID, task.State)
+			return *task, fmt.Errorf("task with id %v is still in state=%d", ID, task.State)
 		}
 	}
 
-	return Task{}, fmt.Errorf("Could not find task with id %v", ID)
+	return Task{}, fmt.Errorf("could not find task with id %v", ID)
 }
 
 // GetTaskByID returns task with given id
@@ -142,7 +142,7 @@ func (list *List) GetTaskByID(ID int) (Task, error) {
 		}
 	}
 
-	return Task{}, fmt.Errorf("Could not find task with id %v", ID)
+	return Task{}, fmt.Errorf("could not find task with id %v", ID)
 }
 
 // GetTaskOutputByID returns standard output of task with given id
@@ -236,14 +236,14 @@ func (list *List) WaitForTaskByID(ID int) (Task, error) {
 	wgTask, ok := list.wgTasks[ID]
 	list.Unlock()
 	if !ok {
-		return Task{}, fmt.Errorf("Could not find task with id %v", ID)
+		return Task{}, fmt.Errorf("could not find task with id %v", ID)
 	}
 
 	wgTask.Wait()
 	return list.GetTaskByID(ID)
 }
 
-// GetTaskError returns the Task error for a given id
+// GetTaskErrorByID returns the Task error for a given id
 func (list *List) GetTaskErrorByID(ID int) (error, error) {
 	task, err := list.GetTaskByID(ID)
 

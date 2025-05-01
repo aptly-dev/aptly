@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -51,11 +50,11 @@ func (n *NullSigner) SetPassphrase(passphrase, passphraseFile string) {
 }
 
 func (n *NullSigner) DetachedSign(source string, destination string) error {
-	return ioutil.WriteFile(destination, []byte{}, 0644)
+	return os.WriteFile(destination, []byte{}, 0644)
 }
 
 func (n *NullSigner) ClearSign(source string, destination string) error {
-	return ioutil.WriteFile(destination, []byte{}, 0644)
+	return os.WriteFile(destination, []byte{}, 0644)
 }
 
 type FakeStorageProvider struct {
@@ -104,7 +103,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 	s.cs = files.NewMockChecksumStorage()
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
+	c.Assert(os.WriteFile(tmpFilepath, nil, 0777), IsNil)
 
 	var err error
 	s.p1.Files()[0].PoolPath, err = s.packagePool.Import(tmpFilepath, s.p1.Files()[0].Filename, &s.p1.Files()[0].Checksums, false, s.cs)
@@ -118,22 +117,22 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false)
 	repo.packageRefs = s.reflist
-	s.factory.RemoteRepoCollection().Add(repo)
+	_ = s.factory.RemoteRepoCollection().Add(repo)
 
 	s.localRepo = NewLocalRepo("local1", "comment1")
 	s.localRepo.packageRefs = s.reflist
-	s.factory.LocalRepoCollection().Add(s.localRepo)
+	_ = s.factory.LocalRepoCollection().Add(s.localRepo)
 
 	s.snapshot, _ = NewSnapshotFromRepository("snap", repo)
-	s.factory.SnapshotCollection().Add(s.snapshot)
+	_ = s.factory.SnapshotCollection().Add(s.snapshot)
 
 	s.snapshot2, _ = NewSnapshotFromRepository("snap", repo)
-	s.factory.SnapshotCollection().Add(s.snapshot2)
+	_ = s.factory.SnapshotCollection().Add(s.snapshot2)
 
 	s.packageCollection = s.factory.PackageCollection()
-	s.packageCollection.Update(s.p1)
-	s.packageCollection.Update(s.p2)
-	s.packageCollection.Update(s.p3)
+	_ = s.packageCollection.Update(s.p1)
+	_ = s.packageCollection.Update(s.p2)
+	_ = s.packageCollection.Update(s.p3)
 
 	s.repo, _ = NewPublishedRepo("", "ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory, false)
 	s.repo.SkipContents = true
@@ -152,7 +151,7 @@ func (s *PublishedRepoSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedRepoSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
@@ -179,12 +178,12 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 	c.Check(s.repo3.RefList("main").Len(), Equals, 3)
 	c.Check(s.repo3.RefList("contrib").Len(), Equals, 3)
 
-	c.Check(func() { NewPublishedRepo("", ".", "a", nil, nil, nil, s.factory, false) }, PanicMatches, "publish with empty sources")
+	c.Check(func() { _, _ = NewPublishedRepo("", ".", "a", nil, nil, nil, s.factory, false) }, PanicMatches, "publish with empty sources")
 	c.Check(func() {
-		NewPublishedRepo("", ".", "a", nil, []string{"main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory, false)
+		_, _ = NewPublishedRepo("", ".", "a", nil, []string{"main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory, false)
 	}, PanicMatches, "sources and components should be equal in size")
 	c.Check(func() {
-		NewPublishedRepo("", ".", "a", nil, []string{"main", "contrib"}, []interface{}{s.localRepo, s.snapshot2}, s.factory, false)
+		_, _ = NewPublishedRepo("", ".", "a", nil, []string{"main", "contrib"}, []interface{}{s.localRepo, s.snapshot2}, s.factory, false)
 	}, PanicMatches, "interface conversion:.*")
 
 	_, err := NewPublishedRepo("", ".", "a", nil, []string{"main", "main"}, []interface{}{s.snapshot, s.snapshot2}, s.factory, false)
@@ -337,7 +336,7 @@ func (s *PublishedRepoSuite) TestDistributionComponentGuessing(c *C) {
 
 	s.localRepo.DefaultDistribution = "precise"
 	s.localRepo.DefaultComponent = "contrib"
-	s.factory.LocalRepoCollection().Update(s.localRepo)
+	_ = s.factory.LocalRepoCollection().Update(s.localRepo)
 
 	repo, err = NewPublishedRepo("", "ppa", "", nil, []string{""}, []interface{}{s.localRepo}, s.factory, false)
 	c.Check(err, IsNil)
@@ -526,8 +525,8 @@ func (s *PublishedRepoSuite) TestPublishedRepoRevision(c *C) {
 	bytes, err := json.Marshal(revision)
 	c.Assert(err, IsNil)
 
-	json_expected := `{"Sources":[{"Component":"main","Name":"local1"},{"Component":"test1","Name":"snap1"},{"Component":"test2","Name":"snap2"}]}`
-	c.Assert(string(bytes), Equals, json_expected)
+	jsonExpected := `{"Sources":[{"Component":"main","Name":"local1"},{"Component":"test1","Name":"snap1"},{"Component":"test2","Name":"snap2"}]}`
+	c.Assert(string(bytes), Equals, jsonExpected)
 
 	c.Assert(s.repo2.DropRevision(), DeepEquals, revision)
 	c.Assert(s.repo2.Revision, IsNil)
@@ -564,11 +563,11 @@ func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
 	sort.Sort(snap2Refs)
 	s.snap2 = NewSnapshotFromRefList("snap2", []*Snapshot{}, snap2Refs, "desc2")
 
-	s.snapshotCollection.Add(s.snap1)
-	s.snapshotCollection.Add(s.snap2)
+	_ = s.snapshotCollection.Add(s.snap1)
+	_ = s.snapshotCollection.Add(s.snap2)
 
 	s.localRepo = NewLocalRepo("local1", "comment1")
-	s.factory.LocalRepoCollection().Add(s.localRepo)
+	_ = s.factory.LocalRepoCollection().Add(s.localRepo)
 
 	s.repo1, _ = NewPublishedRepo("", "ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory, false)
 	s.repo2, _ = NewPublishedRepo("", "", "anaconda", []string{}, []string{"main", "contrib"}, []interface{}{s.snap2, s.snap1}, s.factory, false)
@@ -580,7 +579,7 @@ func (s *PublishedRepoCollectionSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *PublishedRepoCollectionSuite) TestAddByStoragePrefixDistribution(c *C) {
@@ -677,7 +676,7 @@ func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(&old)
+	_ = encoder.Encode(&old)
 
 	c.Assert(s.db.Put(s.repo1.Key(), buf.Bytes()), IsNil)
 	c.Assert(s.db.Put(s.repo1.RefKey(""), s.localRepo.RefList().Encode()), IsNil)
@@ -695,7 +694,7 @@ func (s *PublishedRepoCollectionSuite) TestLoadPre0_6(c *C) {
 }
 
 func (s *PublishedRepoCollectionSuite) TestForEachAndLen(c *C) {
-	s.collection.Add(s.repo1)
+	_ = s.collection.Add(s.repo1)
 
 	count := 0
 	err := s.collection.ForEach(func(*PublishedRepo) error {
@@ -755,7 +754,7 @@ func (s *PublishedRepoCollectionSuite) TestListReferencedFiles(c *C) {
 	})
 
 	snap3 := NewSnapshotFromRefList("snap3", []*Snapshot{}, s.snap2.RefList(), "desc3")
-	s.snapshotCollection.Add(snap3)
+	_ = s.snapshotCollection.Add(snap3)
 
 	// Ensure that adding a second publish point with matching files doesn't give duplicate results.
 	repo3, err := NewPublishedRepo("", "", "anaconda-2", []string{}, []string{"main"}, []interface{}{snap3}, s.factory, false)
@@ -799,7 +798,7 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 
 	s.snap1 = NewSnapshotFromPackageList("snap1", []*Snapshot{}, NewPackageList(), "desc1")
 
-	s.snapshotCollection.Add(s.snap1)
+	_ = s.snapshotCollection.Add(s.snap1)
 
 	s.repo1, _ = NewPublishedRepo("", "ppa", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory, false)
 	s.repo2, _ = NewPublishedRepo("", "", "anaconda", []string{}, []string{"main"}, []interface{}{s.snap1}, s.factory, false)
@@ -808,26 +807,26 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 	s.repo5, _ = NewPublishedRepo("files:other", "ppa", "osminog", []string{}, []string{"contrib"}, []interface{}{s.snap1}, s.factory, false)
 
 	s.collection = s.factory.PublishedRepoCollection()
-	s.collection.Add(s.repo1)
-	s.collection.Add(s.repo2)
-	s.collection.Add(s.repo3)
-	s.collection.Add(s.repo4)
-	s.collection.Add(s.repo5)
+	_ = s.collection.Add(s.repo1)
+	_ = s.collection.Add(s.repo2)
+	_ = s.collection.Add(s.repo3)
+	_ = s.collection.Add(s.repo4)
+	_ = s.collection.Add(s.repo5)
 
 	s.root = c.MkDir()
 	s.publishedStorage = files.NewPublishedStorage(s.root, "", "")
-	s.publishedStorage.MkDir("ppa/dists/anaconda")
-	s.publishedStorage.MkDir("ppa/dists/meduza")
-	s.publishedStorage.MkDir("ppa/dists/osminog")
-	s.publishedStorage.MkDir("ppa/pool/main")
-	s.publishedStorage.MkDir("ppa/pool/contrib")
-	s.publishedStorage.MkDir("dists/anaconda")
-	s.publishedStorage.MkDir("pool/main")
+	_ = s.publishedStorage.MkDir("ppa/dists/anaconda")
+	_ = s.publishedStorage.MkDir("ppa/dists/meduza")
+	_ = s.publishedStorage.MkDir("ppa/dists/osminog")
+	_ = s.publishedStorage.MkDir("ppa/pool/main")
+	_ = s.publishedStorage.MkDir("ppa/pool/contrib")
+	_ = s.publishedStorage.MkDir("dists/anaconda")
+	_ = s.publishedStorage.MkDir("pool/main")
 
 	s.root2 = c.MkDir()
 	s.publishedStorage2 = files.NewPublishedStorage(s.root2, "", "")
-	s.publishedStorage2.MkDir("ppa/dists/osminog")
-	s.publishedStorage2.MkDir("ppa/pool/contrib")
+	_ = s.publishedStorage2.MkDir("ppa/dists/osminog")
+	_ = s.publishedStorage2.MkDir("ppa/pool/contrib")
 
 	s.provider = &FakeStorageProvider{map[string]aptly.PublishedStorage{
 		"":            s.publishedStorage,
@@ -835,11 +834,11 @@ func (s *PublishedRepoRemoveSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
-	s.repo1.RemoveFiles(s.provider, false, []string{}, nil)
+	_ = s.repo1.RemoveFiles(s.provider, false, []string{}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -853,7 +852,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesOnlyDist(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
-	s.repo1.RemoveFiles(s.provider, false, []string{"main"}, nil)
+	_ = s.repo1.RemoveFiles(s.provider, false, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -867,7 +866,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPool(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithTwoPools(c *C) {
-	s.repo1.RemoveFiles(s.provider, false, []string{"main", "contrib"}, nil)
+	_ = s.repo1.RemoveFiles(s.provider, false, []string{"main", "contrib"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)
@@ -881,7 +880,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithTwoPools(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
-	s.repo1.RemoveFiles(s.provider, true, []string{"main"}, nil)
+	_ = s.repo1.RemoveFiles(s.provider, true, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), Not(PathExists))
@@ -895,7 +894,7 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefix(c *C) {
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
-	s.repo2.RemoveFiles(s.provider, true, []string{"main"}, nil)
+	_ = s.repo2.RemoveFiles(s.provider, true, []string{"main"}, nil)
 
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/anaconda"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/meduza"), PathExists)

@@ -343,7 +343,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
-			collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
+			_ = collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
@@ -471,7 +471,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err = collection.LoadComplete(published, collectionFactory)
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		revision := published.ObtainRevision()
@@ -487,12 +487,12 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 		result, err := published.Update(collectionFactory, out)
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
-			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("Unable to update: %s", err)
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		err = collection.Update(published)

@@ -54,7 +54,7 @@ func (l *PackageRefList) Swap(i, j int) {
 	l.Refs[i], l.Refs[j] = l.Refs[j], l.Refs[i]
 }
 
-// Compare compares two refs in lexographical order
+// Less compares two refs in lexographical order
 func (l *PackageRefList) Less(i, j int) bool {
 	return bytes.Compare(l.Refs[i], l.Refs[j]) < 0
 }
@@ -64,7 +64,7 @@ func (l *PackageRefList) Encode() []byte {
 	var buf bytes.Buffer
 
 	encoder := codec.NewEncoder(&buf, &codec.MsgpackHandle{})
-	encoder.Encode(l)
+	_ = encoder.Encode(l)
 
 	return buf.Bytes()
 }

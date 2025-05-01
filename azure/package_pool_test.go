@@ -2,7 +2,7 @@ package azure
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -69,8 +69,8 @@ func (s *PackagePoolSuite) TestFilepathList(c *C) {
 	c.Check(err, IsNil)
 	c.Check(list, DeepEquals, []string{})
 
-	s.pool.Import(s.debFile, "a.deb", &utils.ChecksumInfo{}, false, s.cs)
-	s.pool.Import(s.debFile, "b.deb", &utils.ChecksumInfo{}, false, s.cs)
+	_, _ = s.pool.Import(s.debFile, "a.deb", &utils.ChecksumInfo{}, false, s.cs)
+	_, _ = s.pool.Import(s.debFile, "b.deb", &utils.ChecksumInfo{}, false, s.cs)
 
 	list, err = s.pool.FilepathList(nil)
 	c.Check(err, IsNil)
@@ -81,8 +81,8 @@ func (s *PackagePoolSuite) TestFilepathList(c *C) {
 }
 
 func (s *PackagePoolSuite) TestRemove(c *C) {
-	s.pool.Import(s.debFile, "a.deb", &utils.ChecksumInfo{}, false, s.cs)
-	s.pool.Import(s.debFile, "b.deb", &utils.ChecksumInfo{}, false, s.cs)
+	_, _ = s.pool.Import(s.debFile, "a.deb", &utils.ChecksumInfo{}, false, s.cs)
+	_, _ = s.pool.Import(s.debFile, "b.deb", &utils.ChecksumInfo{}, false, s.cs)
 
 	size, err := s.pool.Remove("c7/6b/4bd12fd92e4dfe1b55b18a67a669_a.deb")
 	c.Check(err, IsNil)
@@ -247,7 +247,7 @@ func (s *PackagePoolSuite) TestOpen(c *C) {
 
 	f, err := s.pool.Open(path)
 	c.Assert(err, IsNil)
-	contents, err := ioutil.ReadAll(f)
+	contents, err := io.ReadAll(f)
 	c.Assert(err, IsNil)
 	c.Check(len(contents), Equals, 2738)
 	c.Check(f.Close(), IsNil)

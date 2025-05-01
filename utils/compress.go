@@ -18,12 +18,16 @@ func CompressFile(source *os.File, onlyGzip bool) error {
 	if err != nil {
 		return err
 	}
-	defer gzFile.Close()
+	defer func() {
+		_ = gzFile.Close()
+	}()
 
 	gzWriter := pgzip.NewWriter(gzFile)
-	defer gzWriter.Close()
+	defer func() {
+		_ = gzWriter.Close()
+	}()
 
-	source.Seek(0, 0)
+	_, _ = source.Seek(0, 0)
 	_, err = io.Copy(gzWriter, source)
 	if err != nil || onlyGzip {
 		return err

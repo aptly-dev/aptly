@@ -89,7 +89,7 @@ func (q *OrQuery) Fast(list PackageCatalog) bool {
 func (q *OrQuery) Query(list PackageCatalog) (result *PackageList) {
 	if q.Fast(list) {
 		result = q.L.Query(list)
-		result.Append(q.R.Query(list))
+		_ = result.Append(q.R.Query(list))
 	} else {
 		result = list.Scan(q)
 	}
@@ -245,7 +245,7 @@ func (q *DependencyQuery) Query(list PackageCatalog) (result *PackageList) {
 	if q.Fast(list) {
 		result = NewPackageList()
 		for _, pkg := range list.Search(q.Dep, true, true) {
-			result.Add(pkg)
+			_ = result.Add(pkg)
 		}
 	} else {
 		result = list.Scan(q)

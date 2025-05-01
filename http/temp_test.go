@@ -25,11 +25,11 @@ func (s *TempSuite) TearDownTest(c *C) {
 func (s *TempSuite) TestDownloadTemp(c *C) {
 	f, err := DownloadTemp(s.ctx, s.d, s.url+"/test")
 	c.Assert(err, IsNil)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	buf := make([]byte, 1)
 
-	f.Read(buf)
+	_, _ = f.Read(buf)
 	c.Assert(buf, DeepEquals, []byte("H"))
 
 	_, err = os.Stat(f.Name())

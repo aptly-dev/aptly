@@ -14,7 +14,6 @@ func Test(t *testing.T) {
 }
 
 type EtcDDBSuite struct {
-	url string
 	db  database.Storage
 }
 
@@ -67,17 +66,17 @@ func (s *EtcDDBSuite) TestDelete(c *C) {
 func (s *EtcDDBSuite) TestByPrefix(c *C) {
 	//c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{})
 
-	s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
-	s.db.Put([]byte{0x80, 0x03}, []byte{0x03})
-	s.db.Put([]byte{0x80, 0x02}, []byte{0x02})
+	_ = s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
+	_ = s.db.Put([]byte{0x80, 0x03}, []byte{0x03})
+	_ = s.db.Put([]byte{0x80, 0x02}, []byte{0x02})
 	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 	c.Check(s.db.KeysByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
 
-	s.db.Put([]byte{0x90, 0x01}, []byte{0x04})
+	_ = s.db.Put([]byte{0x90, 0x01}, []byte{0x04})
 	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 	c.Check(s.db.KeysByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
 
-	s.db.Put([]byte{0x00, 0x01}, []byte{0x05})
+	_ = s.db.Put([]byte{0x00, 0x01}, []byte{0x05})
 	c.Check(s.db.FetchByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x01}, {0x02}, {0x03}})
 	c.Check(s.db.KeysByPrefix([]byte{0x80}), DeepEquals, [][]byte{{0x80, 0x01}, {0x80, 0x02}, {0x80, 0x03}})
 
@@ -109,7 +108,7 @@ func (s *EtcDDBSuite) TestHasPrefix(c *C) {
 	//c.Check(s.db.HasPrefix([]byte(nil)), Equals, false)
 	//c.Check(s.db.HasPrefix([]byte{0x80}), Equals, false)
 
-	s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
+	_ = s.db.Put([]byte{0x80, 0x01}, []byte{0x01})
 
 	c.Check(s.db.HasPrefix([]byte(nil)), Equals, true)
 	c.Check(s.db.HasPrefix([]byte{0x80}), Equals, true)
@@ -124,13 +123,15 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 		value2 = []byte("value2")
 	)
 	transaction, err := s.db.OpenTransaction()
+	c.Assert(err, IsNil)
 
 	err = s.db.Put(key, value)
 	c.Assert(err, IsNil)
 
 	c.Assert(err, IsNil)
-	transaction.Put(key2, value2)
+	_ = transaction.Put(key2, value2)
 	v, err := s.db.Get(key)
+	c.Assert(err, IsNil)
 	c.Check(v, DeepEquals, value)
         err = transaction.Delete(key)
 	c.Assert(err, IsNil)

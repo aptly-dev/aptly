@@ -215,7 +215,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		api.GET("/graph.:ext", apiGraph)
 	}
 	{
-		api.POST("/db/cleanup", apiDbCleanup)
+		api.POST("/db/cleanup", apiDBCleanup)
 	}
 	{
 		api.GET("/tasks", apiTasksList)

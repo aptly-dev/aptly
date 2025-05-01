@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"crypto/rand"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
         "bytes"
@@ -36,7 +36,7 @@ func randString(n int) string {
 	}
 	const alphanum = "0123456789abcdefghijklmnopqrstuvwxyz"
 	var bytes = make([]byte, n)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
@@ -87,7 +87,7 @@ func (s *PublishedStorageSuite) TearDownTest(c *C) {
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
         resp, err := s.storage.az.client.DownloadStream(context.Background(), s.storage.az.container, path, nil)
 	c.Assert(err, IsNil)
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	c.Assert(err, IsNil)
 	return data
 }
@@ -121,7 +121,7 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	filename := "a/b.txt"
 
 	dir := c.MkDir()
-	err := ioutil.WriteFile(filepath.Join(dir, "a"), content, 0644)
+	err := os.WriteFile(filepath.Join(dir, "a"), content, 0644)
 	c.Assert(err, IsNil)
 
 	err = s.storage.PutFile(filename, filepath.Join(dir, "a"))
@@ -140,7 +140,7 @@ func (s *PublishedStorageSuite) TestPutFilePlus(c *C) {
 	filename := "a/b+c.txt"
 
 	dir := c.MkDir()
-	err := ioutil.WriteFile(filepath.Join(dir, "a"), content, 0644)
+	err := os.WriteFile(filepath.Join(dir, "a"), content, 0644)
 	c.Assert(err, IsNil)
 
 	err = s.storage.PutFile(filename, filepath.Join(dir, "a"))
@@ -258,7 +258,7 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlus(c *C) {
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
 	dir := c.MkDir()
-	err := ioutil.WriteFile(filepath.Join(dir, "a"), []byte("Welcome to Azure!"), 0644)
+	err := os.WriteFile(filepath.Join(dir, "a"), []byte("Welcome to Azure!"), 0644)
 	c.Assert(err, IsNil)
 
 	err = s.storage.PutFile("source.txt", filepath.Join(dir, "a"))
@@ -280,18 +280,18 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	cs := files.NewMockChecksumStorage()
 
 	tmpFile1 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err := ioutil.WriteFile(tmpFile1, []byte("Contents"), 0644)
+	err := os.WriteFile(tmpFile1, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
 	tmpFile2 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
-	err = ioutil.WriteFile(tmpFile2, []byte("Spam"), 0644)
+	err = os.WriteFile(tmpFile2, []byte("Spam"), 0644)
 	c.Assert(err, IsNil)
 	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
 
 	tmpFile3 := filepath.Join(c.MkDir(), "netboot/boot.img.gz")
-	os.MkdirAll(filepath.Dir(tmpFile3), 0777)
-	err = ioutil.WriteFile(tmpFile3, []byte("Contents"), 0644)
+	_ = os.MkdirAll(filepath.Dir(tmpFile3), 0777)
+	err = os.WriteFile(tmpFile3, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum3 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 

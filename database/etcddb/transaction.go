@@ -67,8 +67,7 @@ func (t *transaction) Commit() (err error) {
 // Discard is safe to call after Commit(), it would be no-op
 func (t *transaction) Discard() {
 	t.ops = []clientv3.Op{}
-	t.tmpdb.Drop()
-	return
+	_ = t.tmpdb.Drop()
 }
 
 // transaction should implement database.Transaction

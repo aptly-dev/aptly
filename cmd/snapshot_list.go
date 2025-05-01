@@ -33,7 +33,7 @@ func aptlySnapshotListTxt(cmd *commander.Command, _ []string) error {
 	collection := collectionFactory.SnapshotCollection()
 
 	if raw {
-		collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
+		_ = collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
 			fmt.Printf("%s\n", snapshot.Name)
 			return nil
 		})
@@ -68,7 +68,7 @@ func aptlySnapshotListJSON(cmd *commander.Command, _ []string) error {
 
 	jsonSnapshots := make([]*deb.Snapshot, collection.Len())
 	i := 0
-	collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
+	_ = collection.ForEachSorted(sortMethodString, func(snapshot *deb.Snapshot) error {
 		jsonSnapshots[i] = snapshot
 		i++
 		return nil

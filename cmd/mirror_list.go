@@ -32,7 +32,7 @@ func aptlyMirrorListTxt(cmd *commander.Command, _ []string) error {
 
 	repos := make([]string, collectionFactory.RemoteRepoCollection().Len())
 	i := 0
-	collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	_ = collectionFactory.RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		if raw {
 			repos[i] = repo.Name
 		} else {
@@ -42,7 +42,7 @@ func aptlyMirrorListTxt(cmd *commander.Command, _ []string) error {
 		return nil
 	})
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Strings(repos)
 
@@ -70,13 +70,13 @@ func aptlyMirrorListJSON(_ *commander.Command, _ []string) error {
 
 	repos := make([]*deb.RemoteRepo, context.NewCollectionFactory().RemoteRepoCollection().Len())
 	i := 0
-	context.NewCollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
+	_ = context.NewCollectionFactory().RemoteRepoCollection().ForEach(func(repo *deb.RemoteRepo) error {
 		repos[i] = repo
 		i++
 		return nil
 	})
 
-	context.CloseDatabase()
+	_ = context.CloseDatabase()
 
 	sort.Slice(repos, func(i, j int) bool {
 		return repos[i].Name < repos[j].Name

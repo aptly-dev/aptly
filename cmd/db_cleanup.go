@@ -12,7 +12,7 @@ import (
 )
 
 // aptly db cleanup
-func aptlyDbCleanup(cmd *commander.Command, args []string) error {
+func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 	var err error
 
 	if len(args) != 0 {
@@ -48,7 +48,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 			if verbose {
 				description := fmt.Sprintf("mirror %s", repo.Name)
-				repo.RefList().ForEach(func(key []byte) error {
+				_ = repo.RefList().ForEach(func(key []byte) error {
 					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 					return nil
 				})
@@ -81,7 +81,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 			if verbose {
 				description := fmt.Sprintf("local repo %s", repo.Name)
-				repo.RefList().ForEach(func(key []byte) error {
+				_ = repo.RefList().ForEach(func(key []byte) error {
 					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 					return nil
 				})
@@ -113,7 +113,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 
 		if verbose {
 			description := fmt.Sprintf("snapshot %s", snapshot.Name)
-			snapshot.RefList().ForEach(func(key []byte) error {
+			_ = snapshot.RefList().ForEach(func(key []byte) error {
 				packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 				return nil
 			})
@@ -146,7 +146,7 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 			if verbose {
 				description := fmt.Sprintf("published repository %s:%s/%s component %s",
 					published.Storage, published.Prefix, published.Distribution, component)
-				published.RefList(component).ForEach(func(key []byte) error {
+				_ = published.RefList(component).ForEach(func(key []byte) error {
 					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 					return nil
 				})
@@ -291,9 +291,9 @@ func aptlyDbCleanup(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func makeCmdDbCleanup() *commander.Command {
+func makeCmdDBCleanup() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyDbCleanup,
+		Run:       aptlyDBCleanup,
 		UsageLine: "cleanup",
 		Short:     "cleanup DB and package pool",
 		Long: `

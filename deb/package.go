@@ -565,7 +565,7 @@ func (p *Package) CalculateContents(packagePool aptly.PackagePool, progress aptl
 		}
 		return nil, err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	contents, err := GetContentsFromDeb(reader, file.Filename)
 	if err != nil {

@@ -41,7 +41,7 @@ func NewUploadersFromFile(path string) (*Uploaders, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error loading uploaders file: %s", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	err = json.NewDecoder(JsonConfigReader.New(f)).Decode(&uploaders)
 	if err != nil {

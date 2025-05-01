@@ -203,7 +203,9 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 	if err != nil {
 		return nil, err
 	}
-	defer tempf.Close()
+	defer func() {
+		_ = tempf.Close()
+	}()
 
 	err = os.Remove(tempf.Name())
 	if err != nil {
@@ -216,7 +218,9 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 	if err != nil {
 		return nil, err
 	}
-	defer stderr.Close()
+	defer func() {
+		_ = stderr.Close()
+	}()
 
 	err = cmd.Start()
 	if err != nil {
@@ -232,7 +236,7 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 
 	cmderr := cmd.Wait()
 
-	tempf.Seek(0, 0)
+	_, _ = tempf.Seek(0, 0)
 
 	statusr := bufio.NewScanner(tempf)
 
@@ -281,8 +285,10 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sh
 	if err != nil {
 		return err
 	}
-	defer os.Remove(sigf.Name())
-	defer sigf.Close()
+	defer func() {
+		_ = os.Remove(sigf.Name())
+		_ = sigf.Close()
+	}()
 
 	_, err = io.Copy(sigf, signature)
 	if err != nil {
@@ -293,8 +299,10 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sh
 	if err != nil {
 		return err
 	}
-	defer os.Remove(clearf.Name())
-	defer clearf.Close()
+	defer func() {
+		_ = os.Remove(clearf.Name())
+		_ = clearf.Close()
+	}()
 
 	_, err = io.Copy(clearf, cleartext)
 	if err != nil {
@@ -326,8 +334,10 @@ func (g *GpgVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) 
 	if err != nil {
 		return nil, err
 	}
-	defer os.Remove(clearf.Name())
-	defer clearf.Close()
+	defer func() {
+		_ = os.Remove(clearf.Name())
+		_ = clearf.Close()
+	}()
 
 	_, err = io.Copy(clearf, clearsigned)
 	if err != nil {
@@ -344,8 +354,10 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 	if err != nil {
 		return
 	}
-	defer os.Remove(clearf.Name())
-	defer clearf.Close()
+	defer func() {
+		_ = os.Remove(clearf.Name())
+		_ = clearf.Close()
+	}()
 
 	_, err = io.Copy(clearf, clearsigned)
 	if err != nil {
@@ -356,7 +368,9 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 	if err != nil {
 		return
 	}
-	defer os.Remove(text.Name())
+	defer func() {
+		_ = os.Remove(text.Name())
+	}()
 
 	args := []string{"--no-auto-check-trustdb", "--decrypt", "--batch", "--skip-verify", "--output", "-", clearf.Name()}
 
@@ -365,7 +379,9 @@ func (g *GpgVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, 
 	if err != nil {
 		return nil, err
 	}
-	defer stdout.Close()
+	defer func() {
+		_ = stdout.Close()
+	}()
 
 	err = cmd.Start()
 	if err != nil {

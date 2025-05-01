@@ -17,7 +17,9 @@ func MD5ChecksumForFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	hash := md5.New()
 	_, err = io.Copy(hash, file)
@@ -62,7 +64,9 @@ func ChecksumsForFile(path string) (ChecksumInfo, error) {
 	if err != nil {
 		return ChecksumInfo{}, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	return ChecksumsForReader(file)
 }

@@ -2,7 +2,7 @@ package deb
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -395,7 +395,7 @@ func (s *PackageSuite) TestLinkFromPool(c *C) {
 	p := NewPackageFromControlFile(s.stanza)
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, nil, 0777), IsNil)
+	c.Assert(os.WriteFile(tmpFilepath, nil, 0777), IsNil)
 
 	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
@@ -434,7 +434,7 @@ func (s *PackageSuite) TestDownloadList(c *C) {
 	})
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
+	c.Assert(os.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 
 	list, err = p.DownloadList(packagePool, cs)
@@ -449,7 +449,7 @@ func (s *PackageSuite) TestVerifyFiles(c *C) {
 	cs := files.NewMockChecksumStorage()
 
 	tmpFilepath := filepath.Join(c.MkDir(), "file")
-	c.Assert(ioutil.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
+	c.Assert(os.WriteFile(tmpFilepath, []byte("abcde"), 0777), IsNil)
 
 	p.Files()[0].PoolPath, _ = packagePool.Import(tmpFilepath, p.Files()[0].Filename, &p.Files()[0].Checksums, false, cs)
 

@@ -29,8 +29,10 @@ const (
 // Files returns all the fds passed from systemd
 func Files(unsetEnv bool) []*os.File {
 	if unsetEnv {
-		defer os.Unsetenv("LISTEN_PID")
-		defer os.Unsetenv("LISTEN_FDS")
+		defer func() {
+			_ = os.Unsetenv("LISTEN_PID")
+			_ = os.Unsetenv("LISTEN_FDS")
+		}()
 	}
 
 	pid, err := strconv.Atoi(os.Getenv("LISTEN_PID"))

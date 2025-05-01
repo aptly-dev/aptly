@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -113,15 +112,15 @@ func NewServer(config *Config) (*Server, error) {
 		buckets:  make(map[string]*bucket),
 		config:   config,
 	}
-	go http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	go func() { _ = http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		srv.serveHTTP(w, req)
-	}))
+	})) }()
 	return srv, nil
 }
 
 // Quit closes down the server.
 func (srv *Server) Quit() {
-	srv.listener.Close()
+	_ = srv.listener.Close()
 }
 
 // URL returns a URL for the server.
@@ -140,7 +139,7 @@ func fatalError(code int, codeStr string, errf string, a ...interface{}) {
 // serveHTTP serves the S3 protocol.
 func (srv *Server) serveHTTP(w http.ResponseWriter, req *http.Request) {
 	// ignore error from ParseForm as it's usually spurious.
-	req.ParseForm()
+	_ = req.ParseForm()
 
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
@@ -384,7 +383,7 @@ func (r bucketResource) get(a *action) interface{} {
 	if s := a.req.Form.Get("max-keys"); s != "" {
 		i, err := strconv.Atoi(s)
 		if err != nil || i < 0 {
-			fatalError(400, "invalid value for max-keys: %q", s)
+			fatalError(400, "invalid value for max-keys", "%q", s)
 		}
 		maxKeys = i
 	}
@@ -541,7 +540,7 @@ func validBucketName(name string) bool {
 		return false
 	}
 	r := name[0]
-	if !(r >= '0' && r <= '9' || r >= 'a' && r <= 'z') {
+	if r < '0' || (r > '9' && r < 'a') || r > 'z' {
 		return false
 	}
 	for _, r := range name {
@@ -654,7 +653,7 @@ func (objr objectResource) put(a *action) interface{} {
 	}
 	sum := md5.New()
 	// TODO avoid holding lock while reading data.
-	data, err := ioutil.ReadAll(io.TeeReader(a.req.Body, sum))
+	data, err := io.ReadAll(io.TeeReader(a.req.Body, sum))
 	if err != nil {
 		fatalError(400, "TODO", "read error")
 	}
@@ -699,14 +698,14 @@ type CreateBucketConfiguration struct {
 func locationConstraint(a *action) string {
 	var body bytes.Buffer
 	if _, err := io.Copy(&body, a.req.Body); err != nil {
-		fatalError(400, "InvalidRequest", err.Error())
+		fatalError(400, "InvalidRequest", "%v", err.Error())
 	}
 	if body.Len() == 0 {
 		return ""
 	}
 	var loc CreateBucketConfiguration
 	if err := xml.NewDecoder(&body).Decode(&loc); err != nil {
-		fatalError(400, "InvalidRequest", err.Error())
+		fatalError(400, "InvalidRequest", "%v", err.Error())
 	}
 	return loc.LocationConstraint
 }

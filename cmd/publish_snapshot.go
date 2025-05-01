@@ -156,7 +156,7 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	duplicate := collectionFactory.PublishedRepoCollection().CheckDuplicate(published)
 	if duplicate != nil {
-		collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
+		_ = collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
 		return fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 	}
 

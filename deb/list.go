@@ -438,7 +438,7 @@ func (l *PackageList) Scan(q PackageQuery) (result *PackageList) {
 	result = NewPackageListWithDuplicates(l.duplicatesAllowed, 0)
 	for _, pkg := range l.packages {
 		if q.Matches(pkg) {
-			result.Add(pkg)
+			_ = result.Add(pkg)
 		}
 	}
 
@@ -456,7 +456,7 @@ func (l *PackageList) SearchByKey(arch, name, version string) (result *PackageLi
 
 	pkg := l.packages["P"+arch+" "+name+" "+version]
 	if pkg != nil {
-		result.Add(pkg)
+		_ = result.Add(pkg)
 	}
 
 	return

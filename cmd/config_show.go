@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/smira/commander"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 func aptlyConfigShow(_ *commander.Command, _ []string) error {

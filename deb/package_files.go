@@ -64,7 +64,7 @@ func (files PackageFiles) Hash() uint64 {
 
 	for _, f := range files {
 		h.Write([]byte(f.Filename))
-		binary.Write(h, binary.BigEndian, f.Checksums.Size)
+		_ = binary.Write(h, binary.BigEndian, f.Checksums.Size)
 		h.Write([]byte(f.Checksums.MD5))
 		h.Write([]byte(f.Checksums.SHA1))
 		h.Write([]byte(f.Checksums.SHA256))

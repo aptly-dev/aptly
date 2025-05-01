@@ -31,13 +31,13 @@ func (s *GrabDownloaderSuiteBase) SetUpTest(c *C) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %s", r.URL.Path)
+		_, _ = fmt.Fprintf(w, "Hello, %s", r.URL.Path)
 	})
 
 	s.ch = make(chan struct{})
 
 	go func() {
-		http.Serve(s.l, mux)
+		_ = http.Serve(s.l, mux)
 		close(s.ch)
 	}()
 
@@ -51,11 +51,11 @@ func (s *GrabDownloaderSuiteBase) SetUpTest(c *C) {
 func (s *GrabDownloaderSuiteBase) TearDownTest(c *C) {
 	s.progress.Shutdown()
 
-	s.l.Close()
+	_ = s.l.Close()
 	<-s.ch
 
-	os.Remove(s.tempfile.Name())
-	s.tempfile.Close()
+	_ = os.Remove(s.tempfile.Name())
+	_ = s.tempfile.Close()
 }
 
 type GrabDownloaderSuite struct {

@@ -7,7 +7,7 @@ import (
 )
 
 // aptly db recover
-func aptlyDbRecover(cmd *commander.Command, args []string) error {
+func aptlyDBRecover(cmd *commander.Command, args []string) error {
 	var err error
 
 	if len(args) != 0 {
@@ -21,9 +21,9 @@ func aptlyDbRecover(cmd *commander.Command, args []string) error {
 	return err
 }
 
-func makeCmdDbRecover() *commander.Command {
+func makeCmdDBRecover() *commander.Command {
 	cmd := &commander.Command{
-		Run:       aptlyDbRecover,
+		Run:       aptlyDBRecover,
 		UsageLine: "recover",
 		Short:     "recover DB after crash",
 		Long: `

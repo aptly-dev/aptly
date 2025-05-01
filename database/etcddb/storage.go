@@ -145,7 +145,7 @@ func (s *EtcDStorage) Close() error {
 	return err
 }
 
-// Reopen tries to open (re-open) the database
+// Open returns the database
 func (s *EtcDStorage) Open() error {
 	if s.db != nil {
 		return nil

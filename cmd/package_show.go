@@ -84,8 +84,8 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 	result := q.Query(collectionFactory.PackageCollection())
 
 	err = result.ForEach(func(p *deb.Package) error {
-		p.Stanza().WriteTo(w, p.IsSource, false, false)
-		w.Flush()
+		_ = p.Stanza().WriteTo(w, p.IsSource, false, false)
+		_ = w.Flush()
 		fmt.Printf("\n")
 
 		if withFiles {
@@ -109,7 +109,7 @@ func aptlyPackageShow(cmd *commander.Command, args []string) error {
 
 		if withReferences {
 			fmt.Printf("References to package:\n")
-			printReferencesTo(p, collectionFactory)
+			_ = printReferencesTo(p, collectionFactory)
 			fmt.Printf("\n")
 		}
 

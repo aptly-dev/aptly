@@ -3,7 +3,6 @@ package pgp
 import (
 	"crypto/rand"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -57,14 +56,14 @@ func (s *SignerSuite) SetUpTest(c *C) {
 	_, err = f.Write([]byte("verysecret"))
 	c.Assert(err, IsNil)
 
-	f.Close()
+	_ = f.Close()
 
 	s.signer.SetBatch(true)
 }
 
 func (s *SignerSuite) TearDownTest(c *C) {
-	s.clearF.Close()
-	s.signedF.Close()
+	_ = s.clearF.Close()
+	_ = s.signedF.Close()
 }
 
 func (s *SignerSuite) testSignDetached(c *C) {
@@ -137,9 +136,11 @@ func (s *SignerSuite) testClearSign(c *C, expectedKey Key) {
 	c.Assert(err, IsNil)
 	extractedF, err := s.verifier.ExtractClearsigned(s.signedF)
 	c.Assert(err, IsNil)
-	defer extractedF.Close()
+	defer func() {
+		_ = extractedF.Close()
+	}()
 
-	extracted, err := ioutil.ReadAll(extractedF)
+	extracted, err := io.ReadAll(extractedF)
 	c.Assert(err, IsNil)
 
 	c.Assert(extracted, DeepEquals, s.cleartext)

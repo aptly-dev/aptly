@@ -136,7 +136,7 @@ func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TearDownTest(c *C) {
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
@@ -179,8 +179,8 @@ func (s *SnapshotCollectionSuite) TestUpdateLoadComplete(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
-	s.collection.Add(s.snapshot1)
-	s.collection.Add(s.snapshot2)
+	_ = s.collection.Add(s.snapshot1)
+	_ = s.collection.Add(s.snapshot2)
 
 	count := 0
 	err := s.collection.ForEach(func(*Snapshot) error {
@@ -200,10 +200,10 @@ func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestForEachSorted(c *C) {
-	s.collection.Add(s.snapshot2)
-	s.collection.Add(s.snapshot1)
-	s.collection.Add(s.snapshot4)
-	s.collection.Add(s.snapshot3)
+	_ = s.collection.Add(s.snapshot2)
+	_ = s.collection.Add(s.snapshot1)
+	_ = s.collection.Add(s.snapshot4)
+	_ = s.collection.Add(s.snapshot3)
 
 	names := []string{}
 
@@ -263,8 +263,8 @@ func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestDrop(c *C) {
-	s.collection.Add(s.snapshot1)
-	s.collection.Add(s.snapshot2)
+	_ = s.collection.Add(s.snapshot1)
+	_ = s.collection.Add(s.snapshot2)
 
 	snap, _ := s.collection.ByUUID(s.snapshot1.UUID)
 	c.Check(snap, Equals, s.snapshot1)

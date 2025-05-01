@@ -21,7 +21,7 @@ import (
 // @Success 200 {object} string "Output"
 // @Failure 404 {object} Error "Not Found"
 // @Router /api/db/cleanup [post]
-func apiDbCleanup(c *gin.Context) {
+func apiDBCleanup(c *gin.Context) {
 	resources := []string{string(task.AllResourcesKey)}
 	maybeRunTaskInBackground(c, "Clean up db", resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		var err error
@@ -109,8 +109,8 @@ func apiDbCleanup(c *gin.Context) {
 
 		if toDelete.Len() > 0 {
 			batch := db.CreateBatch()
-			toDelete.ForEach(func(ref []byte) error {
-				collectionFactory.PackageCollection().DeleteByKey(ref, batch)
+			_ = toDelete.ForEach(func(ref []byte) error {
+				_ = collectionFactory.PackageCollection().DeleteByKey(ref, batch)
 				return nil
 			})
 
