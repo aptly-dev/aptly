@@ -22,33 +22,35 @@
 
 __aptly_mirror_list()
 {
-  aptly mirror list -raw
+  aptly ${aptly_global_opts[@]} mirror list -raw
 }
 
 __aptly_repo_list()
 {
-  aptly repo list -raw
+  aptly ${aptly_global_opts[@]} repo list -raw
 }
 
 __aptly_snapshot_list()
 {
-  aptly snapshot list -raw
+  aptly ${aptly_global_opts[@]} snapshot list -raw
 }
 
 __aptly_published_distributions()
 {
-  aptly publish list -raw | cut -d ' ' -f 2 | sort | uniq
+  aptly ${aptly_global_opts[@]} publish list -raw | cut -d ' ' -f 2 | sort | uniq
 }
 
 __aptly_published_prefixes()
 {
-  aptly publish list -raw | cut -d ' ' -f 1 | sort | uniq
+  aptly ${aptly_global_opts[@]} publish list -raw | cut -d ' ' -f 1 | sort | uniq
 }
 
 __aptly_prefixes_for_distribution()
 {
-  aptly publish list -raw | awk -v dist="$1" '{ if (dist == $2) print $1 }' | sort | uniq
+  aptly ${aptly_global_opts[@]} publish list -raw | awk -v dist="$1" '{ if (dist == $2) print $1 }' | sort | uniq
 }
+
+
 
 _aptly()
 {
@@ -57,7 +59,12 @@ _aptly()
     prevprev="${COMP_WORDS[COMP_CWORD-2]}"
 
     commands="api config db graph mirror package publish repo serve snapshot task version"
-    options="-architectures= -config= -db-open-attempts= -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve -gpg-provider="
+
+    options="-architectures -config -db-open-attempts -dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve -gpg-provider"
+    options_without_arg="-dep-follow-all-variants -dep-follow-recommends -dep-follow-source -dep-follow-suggests -dep-verbose-resolve"
+    options_with_arg="-architectures -db-open-attempts -gpg-provider"
+    options_with_path_arg="-config"
+
     db_subcommands="cleanup recover"
     mirror_subcommands="create drop edit show list rename search update"
     publish_subcommands="drop list repo snapshot switch update source"
@@ -69,12 +76,41 @@ _aptly()
     config_subcommands="show"
     api_subcommands="serve"
 
-    local cmd subcmd numargs numoptions i
+    local cmd subcmd numargs numoptions i aptly_global_opts
 
     numargs=0
     numoptions=0
 
+    for opt in "${options_with_path_arg[@]}"; do
+        [[ "$prev" == "$opt" ]] || continue
+        compopt -o filenames 2>/dev/null
+        _filedir
+        return 0
+    done
+
     for (( i=1; i < $COMP_CWORD; i++ )); do
+      word=${COMP_WORDS[i]}
+      if [[ "$word" == -*=* ]]; then
+        for o in "${options[@]}"; do
+          [[ ${word%%=*} == "$o" ]] && aptly_global_opts+=("$word")
+        done
+      else
+        for o in "${options_with_arg[@]}" ""${options_with_path_arg[@]}"" ; do
+          if [[ "$word" == "$o" ]]; then
+            if (( i + 1 < COMP_CWORD )); then
+                aptly_global_opts+=("$word" "${COMP_WORDS[i+1]}")
+            else
+                aptly_global_opts+=("$word")
+            fi
+            (( i++ ))
+            continue 2
+          fi
+        done
+      fi
+      for o in ${options_without_arg[@]}; do
+          [[ "$word" == "$o" ]] && aptly_global_opts+=("$word")
+      done
+
       if [[ -n "$cmd" ]]; then
         if [[ ! -n "$subcmd" ]]; then
           subcmd=${COMP_WORDS[i]}
@@ -339,7 +375,7 @@ _aptly()
                 if [[ "$cur" == -* ]]; then
                   COMPREPLY=($(compgen -W "-accept-unsigned -force-replace -ignore-signatures -keyring= -no-remove-files -repo= -uploaders-file=" -- ${cur}))
                 else
-                  comptopt -o filenames 2>/dev/null
+                  compopt -o filenames 2>/dev/null
                   COMPREPLY=($(compgen -f -- ${cur}))
                   return 0
                 fi
