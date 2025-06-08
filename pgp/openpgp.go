@@ -40,6 +40,7 @@ func hashForSignature(hashID crypto.Hash, sigType packet.SignatureType) (hash.Ha
 
 type signatureResult struct {
 	CreationTime time.Time
+	IsExpired    bool
 	IssuerKeyID  uint64
 	PubKeyAlgo   packet.PublicKeyAlgorithm
 	Entity       *openpgp.Entity
@@ -58,6 +59,8 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 	if _, e := io.Copy(signedBuf, signed); e != nil && e != io.EOF {
 		return nil, 0, e
 	}
+
+	var now = time.Now()
 
 	packets := packet.NewReader(signature)
 	for {
@@ -86,6 +89,9 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 		case *packet.Signature:
 			if sig.IssuerKeyId == nil {
 				return nil, 0, errors.StructuralError("signature doesn't have an issuer")
+			}
+			if sig.SigExpired(now) {
+				continue
 			}
 			issuerKeyID = *sig.IssuerKeyId
 			hashFunc = sig.Hash
@@ -128,6 +134,7 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 			if err == nil {
 				signers = append(signers, signatureResult{
 					CreationTime: creationTime,
+					IsExpired:    key.PublicKey.KeyExpired(key.SelfSignature, now),
 					IssuerKeyID:  issuerKeyID,
 					PubKeyAlgo:   pubKeyAlgo,
 					Entity:       key.Entity,

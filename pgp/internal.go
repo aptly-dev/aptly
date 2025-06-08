@@ -455,10 +455,11 @@ func (g *GoVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (
 
 	for _, signer := range signers {
 		if signer.Entity != nil {
-			result.GoodKeys = append(result.GoodKeys, KeyFromUint64(signer.IssuerKeyID))
+			if !signer.IsExpired {
+				result.GoodKeys = append(result.GoodKeys, KeyFromUint64(signer.IssuerKeyID))
+			}
 		} else {
 			result.MissingKeys = append(result.MissingKeys, KeyFromUint64(signer.IssuerKeyID))
-
 		}
 	}
 
