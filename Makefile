@@ -86,11 +86,11 @@ install:
 	# go install -v
 	@out=`mktemp`; if ! go install -v > $$out 2>&1; then cat $$out; rm -f $$out; echo "\nBuild failed\n"; exit 1; else rm -f $$out; fi
 
-test: prepare swagger etcd-install  ## Run unit tests
+test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify which tests to run)
 	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
 	@mkdir -p /tmp/aptly-etcd-data; system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
 	@echo "\e[33m\e[1mRunning go test ...\e[0m"
-	go test -v ./... -gocheck.v=true -coverprofile=unit.out; echo $$? > .unit-test.ret
+	go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
 	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
 	@rm -f /tmp/aptly-etcd-data/etcd.log
@@ -176,13 +176,13 @@ docker-shell:  ## Run aptly and other commands in docker container
 docker-deb:  ## Build debian packages in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
-docker-unit-test:  ## Run unit tests in docker container
+docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
-		test \
+		test TEST=$(TEST) \
 		azurite-stop
 
 docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
