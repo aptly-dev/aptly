@@ -13,26 +13,34 @@ import (
 )
 
 type gpgAddKeyParams struct {
-	// Keyserver, when downloading GpgKeyIDs
-	Keyserver string `json:"Keyserver"       example:"hkp://keyserver.ubuntu.com:80"`
-	// GpgKeyIDs to download from Keyserver, comma separated list
-	GpgKeyID string `json:"GpgKeyID"        example:"EF0F382A1A7B6500,8B48AD6246925553"`
-	// Armored gpg public ket, instead of downloading from keyserver
-	GpgKeyArmor string `json:"GpgKeyArmor"     example:""`
 	// Keyring for adding the keys (default: trustedkeys.gpg)
 	Keyring string `json:"Keyring"         example:"trustedkeys.gpg"`
+
+	// Add ASCII armored gpg public key, do not download from keyserver
+	GpgKeyArmor string `json:"GpgKeyArmor"     example:""`
+
+	// Keyserver to download keys provided in `GpgKeyID`
+	Keyserver string `json:"Keyserver"       example:"hkp://keyserver.ubuntu.com:80"`
+	// Keys do download from `Keyserver`, separated by space
+	GpgKeyID string `json:"GpgKeyID"        example:"EF0F382A1A7B6500 8B48AD6246925553"`
 }
 
 // @Summary Add GPG Keys
 // @Description **Adds GPG keys to aptly keyring**
 // @Description
 // @Description Add GPG public keys for veryfing remote repositories for mirroring.
+// @Description
+// @Description Keys can be added in two ways:
+// @Description * By providing the ASCII armord key in `GpgKeyArmor` (leave Keyserver and GpgKeyID empty)
+// @Description * By providing a `Keyserver` and one or more key IDs in `GpgKeyID`, separated by space (leave GpgKeyArmor empty)
+// @Description
 // @Tags Mirrors
+// @Consume  json
+// @Param request body gpgAddKeyParams true "Parameters"
 // @Produce json
 // @Success 200 {object} string "OK"
 // @Failure 400 {object} Error "Bad Request"
-// @Failure 404 {object} Error "Not Found"
-// @Router /api/gpg [post]
+// @Router /api/gpg/key [post]
 func apiGPGAddKey(c *gin.Context) {
 	b := gpgAddKeyParams{}
 	if c.Bind(&b) != nil {
