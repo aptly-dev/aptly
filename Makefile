@@ -90,7 +90,7 @@ test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify
 	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
 	@mkdir -p /tmp/aptly-etcd-data; system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
 	@echo "\e[33m\e[1mRunning go test ...\e[0m"
-	go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
+	faketime '2025-01-02 03:04:05' go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
 	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
 	@rm -f /tmp/aptly-etcd-data/etcd.log
@@ -104,7 +104,7 @@ system-test: prepare swagger etcd-install  ## Run system tests
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) && FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARG) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 faketime '2025-01-02 03:04:05' $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARG) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
