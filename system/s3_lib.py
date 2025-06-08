@@ -24,7 +24,9 @@ class S3Test(BaseTest):
     s3Overrides = {}
 
     def fixture_available(self):
-        return super(S3Test, self).fixture_available() and s3_conn is not None
+        return super(S3Test, self).fixture_available() and \
+                'AWS_SECRET_ACCESS_KEY' in os.environ and 'AWS_ACCESS_KEY_ID' in os.environ and \
+                os.environ['AWS_SECRET_ACCESS_KEY'] != "" and os.environ['AWS_ACCESS_KEY_ID'] != ""
 
     def prepare(self):
         self.bucket_name = "aptly-sys-test-" + str(uuid.uuid1())
