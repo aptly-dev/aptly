@@ -1,3 +1,15 @@
+aptly (1.6.2) stable; urgency=medium
+
+  * doc: add swagger doc for /api/gpg/key (https://github.com/aptly-dev/aptly/pull/1456)
+  * bash-completion: include global options in aptly command completions (https://github.com/aptly-dev/aptly/pull/1452)
+  * Bump golang.org/x/net from 0.33.0 to 0.38.0 (https://github.com/aptly-dev/aptly/pull/1443)
+  * Bump golang.org/x/crypto from 0.31.0 to 0.35.0 (https://github.com/aptly-dev/aptly/pull/1441)
+  * Remove corrupt package references in `db recover` (https://github.com/aptly-dev/aptly/pull/1445)
+  * Fix upload of unchanged packages in S3 (https://github.com/aptly-dev/aptly/pull/1440)
+  * use go 1.24 (https://github.com/aptly-dev/aptly/pull/1439)
+
+ -- André Roth <neolynx@gmail.com>  Mon, 09 Jun 2025 13:45:15 +0200
+
 aptly (1.6.1) stable; urgency=medium
 
   * update golang-github-syndtr-goleveldb-dev dependency (v1.0.1-0.20220721030215-126854af5e6d) to fix segfault on arm64
