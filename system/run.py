@@ -50,6 +50,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     if not coverage_dir:
         coverage_dir = mkdtemp(suffix="aptly-coverage")
 
+    failed = False
     for test in tests:
         orig_stdout = sys.stdout
         orig_stderr = sys.stderr
@@ -157,8 +158,15 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
 
                 t.shutdown()
 
+                if failed:
+                    break
+            if failed:
+                break
+
         sys.stdout = orig_stdout
         sys.stderr = orig_stderr
+        if failed:
+            break
 
     if lastBase is not None:
         lastBase.shutdown_class()
