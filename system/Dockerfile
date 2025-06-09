@@ -6,7 +6,8 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends curl gnupg b
         g++ python3-etcd3 python3-plyvel graphviz devscripts sudo dh-golang binutils-i686-linux-gnu binutils-aarch64-linux-gnu \
         binutils-arm-linux-gnueabihf bash-completion zip ruby-dev lintian npm \
         libc6-dev-i386-cross libc6-dev-armhf-cross libc6-dev-arm64-cross \
-        gcc-i686-linux-gnu gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu && \
+        gcc-i686-linux-gnu gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu \
+        faketime && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m --shell /bin/bash --home-dir /var/lib/aptly aptly

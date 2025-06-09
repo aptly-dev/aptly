@@ -30,10 +30,10 @@ jobs:
       GOPROXY: "https://proxy.golang.org"
 
     steps:
-      - name: "Install Packages"
+      - name: "Install Test Packages"
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage python3-etcd3 python3-plyvel flake8
+          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage python3-etcd3 python3-plyvel flake8 faketime
 
       - name: "Checkout Repository"
         uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
         APT_LISTCHANGES_FRONTEND: none
         DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: "Install packages"
+      - name: "Install Build Packages"
         run: |
           apt-get update
           apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang jq bash-completion lintian \

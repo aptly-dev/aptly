@@ -416,6 +416,7 @@ class CreateMirror31Test(BaseTest):
     runCmd = "aptly mirror create --keyring=aptlytest-gpg1.gpg mirror11 http://repo.aptly.info/system-tests/archive.debian.org/debian-archive/debian/ stretch"
     configOverride = {"gpgProvider": "internal", "max-tries": 1}
     fixtureGpg = True
+    faketime = True
 
     def outputMatchPrepare(self, s):
         return re.sub(r'Signature made .* using', '', s)

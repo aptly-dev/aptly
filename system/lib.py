@@ -130,6 +130,7 @@ class BaseTest(object):
     sortOutput = False
     debugOutput = False
     EtcdServer = None
+    faketime = False
 
     aptlyDir = ".aptly"
     aptlyConfigFile = ".aptly.conf"
@@ -310,6 +311,9 @@ class BaseTest(object):
         if command[0] == "aptly":
             aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
             command = [str(aptly_testing_bin), f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out", *command[1:]]
+
+        if self.faketime:
+            command = ["faketime", os.environ.get("TEST_FAKETIME", "2025-01-02 03:04:05")] + command
 
         environ = os.environ.copy()
         environ["LC_ALL"] = "C"
