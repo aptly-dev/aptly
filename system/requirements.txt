@@ -1,6 +1,6 @@
 azure-storage-blob
 boto
-requests==2.28.2
+requests==2.32.4
 requests-unixsocket
 python-swiftclient
 flake8
