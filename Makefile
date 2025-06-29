@@ -7,6 +7,8 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
+# Setting TZ for certificates
+export TZ=UTC
 # Unit Tests and some sysmte tests rely on expired certificates, turn back the time
 export TEST_FAKETIME := 2025-01-02 03:04:05
 
@@ -200,7 +202,7 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper serve || true
+	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src -v /tmp/cache-go-aptly:/var/lib/aptly/.cache/go-build aptly-dev /work/src/system/docker-wrapper serve || true
 
 docker-lint:  ## Run golangci-lint in docker container
 	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint

@@ -333,26 +333,8 @@ func apiMirrorsPackages(c *gin.Context) {
 type mirrorUpdateParams struct {
 	// Change mirror name to `Name`
 	Name string `                 json:"Name"                   example:"mirror1"`
-	// Url of the archive to mirror
-	ArchiveURL string `           json:"ArchiveURL"             example:"http://deb.debian.org/debian"`
-	// Package query that is applied to mirror packages
-	Filter string `               json:"Filter"                 example:"xserver-xorg"`
-	// Limit mirror to those architectures, if not specified aptly would fetch all architectures
-	Architectures []string `      json:"Architectures"          example:"amd64"`
-	// Components to mirror, if not specified aptly would fetch all components
-	Components []string `         json:"Components"             example:"main"`
 	// Gpg keyring(s) for verifing Release file
 	Keyrings []string `           json:"Keyrings"               example:"trustedkeys.gpg"`
-	// Set "true" to include dependencies of matching packages when filtering
-	FilterWithDeps bool `         json:"FilterWithDeps"`
-	// Set "true" to mirror source packages
-	DownloadSources bool `        json:"DownloadSources"`
-	// Set "true" to mirror udeb files
-	DownloadUdebs bool `          json:"DownloadUdebs"`
-	// Set "true" to skip checking if the given components are in the Release file
-	SkipComponentCheck bool `     json:"SkipComponentCheck"`
-	// Set "true" to skip checking if the given architectures are in the Release file
-	SkipArchitectureCheck bool `  json:"SkipArchitectureCheck"`
 	// Set "true" to ignore checksum errors
 	IgnoreChecksums bool `        json:"IgnoreChecksums"`
 	// Set "true" to skip the verification of Release file signatures
@@ -394,14 +376,6 @@ func apiMirrorsUpdate(c *gin.Context) {
 	}
 
 	b.Name = remote.Name
-	b.DownloadUdebs = remote.DownloadUdebs
-	b.DownloadSources = remote.DownloadSources
-	b.SkipComponentCheck = remote.SkipComponentCheck
-	b.SkipArchitectureCheck = remote.SkipArchitectureCheck
-	b.FilterWithDeps = remote.FilterWithDeps
-	b.Filter = remote.Filter
-	b.Architectures = remote.Architectures
-	b.Components = remote.Components
 	b.IgnoreSignatures = context.Config().GpgDisableVerify
 
 	log.Info().Msgf("%s: Starting mirror update", b.Name)
@@ -417,27 +391,6 @@ func apiMirrorsUpdate(c *gin.Context) {
 			return
 		}
 	}
-
-	if b.DownloadUdebs != remote.DownloadUdebs {
-		if remote.IsFlat() && b.DownloadUdebs {
-			AbortWithJSONError(c, 400, fmt.Errorf("unable to update: flat mirrors don't support udebs"))
-			return
-		}
-	}
-
-	if b.ArchiveURL != "" {
-		remote.SetArchiveRoot(b.ArchiveURL)
-	}
-
-	remote.Name = b.Name
-	remote.DownloadUdebs = b.DownloadUdebs
-	remote.DownloadSources = b.DownloadSources
-	remote.SkipComponentCheck = b.SkipComponentCheck
-	remote.SkipArchitectureCheck = b.SkipArchitectureCheck
-	remote.FilterWithDeps = b.FilterWithDeps
-	remote.Filter = b.Filter
-	remote.Architectures = b.Architectures
-	remote.Components = b.Components
 
 	verifier, err := getVerifier(b.Keyrings)
 	if err != nil {
@@ -461,7 +414,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.IgnoreSignatures, b.SkipComponentCheck)
+		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.IgnoreSignatures, remote.SkipComponentCheck)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
