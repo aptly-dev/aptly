@@ -56,7 +56,6 @@ class MirrorsAPITestCreateUpdate(APITest):
         resp = self.get("/api/mirrors/" + mirror_name + "/packages")
         self.check_equal(resp.status_code, 404)
 
-        mirror_desc["Name"] = self.random_name()
         resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
         self.check_task(resp)
         _id = resp.json()['ID']
