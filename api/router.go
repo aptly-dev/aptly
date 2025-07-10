@@ -86,25 +86,17 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		// We use a goroutine to count the number of
 		// concurrent requests. When no more requests are
 		// running, we close the database to free the lock.
-		dbRequests = make(chan dbRequest)
-
-		go acquireDatabase()
+		initDBRequests()
 
 		api.Use(func(c *gin.Context) {
-			var err error
-
-			errCh := make(chan error)
-			dbRequests <- dbRequest{acquiredb, errCh}
-
-			err = <-errCh
+			err := acquireDatabaseConnection()
 			if err != nil {
 				AbortWithJSONError(c, 500, err)
 				return
 			}
 
 			defer func() {
-				dbRequests <- dbRequest{releasedb, errCh}
-				err = <-errCh
+				err := releaseDatabaseConnection()
 				if err != nil {
 					AbortWithJSONError(c, 500, err)
 				}

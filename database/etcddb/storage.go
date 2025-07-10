@@ -1,10 +1,14 @@
 package etcddb
 
 import (
+	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/aptly-dev/aptly/database"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -31,11 +35,66 @@ func (s *EtcDStorage) applyPrefix(key []byte) []byte {
 	return key
 }
 
+// getContext returns a context with timeout for etcd operations
+func (s *EtcDStorage) getContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), DefaultTimeout)
+}
+
+// isTemporary checks if error is temporary and can be retried
+func isTemporary(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	// Check for context deadline exceeded
+	if err == context.DeadlineExceeded {
+		return true
+	}
+	
+	// Check for etcd specific temporary errors
+	switch err {
+	case clientv3.ErrNoAvailableEndpoints:
+		return true
+	default:
+		// Check if error string contains temporary indicators
+		errStr := err.Error()
+		return strings.Contains(errStr, "temporary") || 
+			strings.Contains(errStr, "timeout") ||
+			strings.Contains(errStr, "unavailable") ||
+			strings.Contains(errStr, "connection refused")
+	}
+}
+
 // Get key value from etcd
 func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
 	realKey := s.applyPrefix(key)
-	getResp, err := s.db.Get(Ctx, string(realKey))
-	if err != nil {
+	
+	var getResp *clientv3.GetResponse
+	maxRetries := 3
+	
+	for i := 0; i < maxRetries; i++ {
+		ctx, cancel := s.getContext()
+		getResp, err = s.db.Get(ctx, string(realKey))
+		cancel()
+		
+		if err == nil {
+			break
+		}
+		
+		// Only retry on temporary errors and not on last attempt
+		if i < maxRetries-1 && isTemporary(err) {
+			backoff := time.Duration(i+1) * 100 * time.Millisecond
+			log.Warn().
+				Err(err).
+				Str("key", string(realKey)).
+				Int("attempt", i+1).
+				Dur("backoff", backoff).
+				Msg("etcd: get failed, retrying")
+			time.Sleep(backoff)
+			continue
+		}
+		
+		log.Error().Err(err).Str("key", string(realKey)).Msg("etcd: get failed")
 		return
 	}
 	for _, kv := range getResp.Kvs {
@@ -52,8 +111,13 @@ func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
 // Put saves key to etcd, if key has the same value in DB already, it is not saved
 func (s *EtcDStorage) Put(key []byte, value []byte) (err error) {
 	realKey := s.applyPrefix(key)
-	_, err = s.db.Put(Ctx, string(realKey), string(value))
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	_, err = s.db.Put(ctx, string(realKey), string(value))
 	if err != nil {
+		log.Error().Err(err).Str("key", string(realKey)).Msg("etcd: put failed")
 		return
 	}
 	return
@@ -62,8 +126,13 @@ func (s *EtcDStorage) Put(key []byte, value []byte) (err error) {
 // Delete removes key from etcd
 func (s *EtcDStorage) Delete(key []byte) (err error) {
 	realKey := s.applyPrefix(key)
-	_, err = s.db.Delete(Ctx, string(realKey))
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	_, err = s.db.Delete(ctx, string(realKey))
 	if err != nil {
+		log.Error().Err(err).Str("key", string(realKey)).Msg("etcd: delete failed")
 		return
 	}
 	return
@@ -73,8 +142,13 @@ func (s *EtcDStorage) Delete(key []byte) (err error) {
 func (s *EtcDStorage) KeysByPrefix(prefix []byte) [][]byte {
 	realPrefix := s.applyPrefix(prefix)
 	result := make([][]byte, 0, 20)
-	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	getResp, err := s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
+		log.Error().Err(err).Str("prefix", string(realPrefix)).Msg("etcd: keys by prefix failed")
 		return nil
 	}
 	for _, ev := range getResp.Kvs {
@@ -90,8 +164,13 @@ func (s *EtcDStorage) KeysByPrefix(prefix []byte) [][]byte {
 func (s *EtcDStorage) FetchByPrefix(prefix []byte) [][]byte {
 	realPrefix := s.applyPrefix(prefix)
 	result := make([][]byte, 0, 20)
-	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	getResp, err := s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
+		log.Error().Err(err).Str("prefix", string(realPrefix)).Msg("etcd: fetch by prefix failed")
 		return nil
 	}
 	for _, kv := range getResp.Kvs {
@@ -106,8 +185,13 @@ func (s *EtcDStorage) FetchByPrefix(prefix []byte) [][]byte {
 // HasPrefix checks whether it can find any key with given prefix and returns true if one exists
 func (s *EtcDStorage) HasPrefix(prefix []byte) bool {
 	realPrefix := s.applyPrefix(prefix)
-	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	getResp, err := s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
+		log.Error().Err(err).Str("prefix", string(realPrefix)).Msg("etcd: has prefix failed")
 		return false
 	}
 	return getResp.Count > 0
@@ -117,8 +201,13 @@ func (s *EtcDStorage) HasPrefix(prefix []byte) bool {
 // StorageProcessor on key value pair
 func (s *EtcDStorage) ProcessByPrefix(prefix []byte, proc database.StorageProcessor) error {
 	realPrefix := s.applyPrefix(prefix)
-	getResp, err := s.db.Get(Ctx, string(realPrefix), clientv3.WithPrefix())
+	
+	ctx, cancel := s.getContext()
+	defer cancel()
+	
+	getResp, err := s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
 	if err != nil {
+		log.Error().Err(err).Str("prefix", string(realPrefix)).Msg("etcd: process by prefix failed")
 		return err
 	}
 
@@ -182,12 +271,15 @@ func (s *EtcDStorage) CompactDB() error {
 // Drop removes only temporary DBs with etcd (i.e. remove all prefixed keys)
 func (s *EtcDStorage) Drop() error {
 	if len(s.tmpPrefix) != 0 {
-		getResp, err := s.db.Get(Ctx, s.tmpPrefix, clientv3.WithPrefix())
+		ctx, cancel := s.getContext()
+		defer cancel()
+		
+		getResp, err := s.db.Get(ctx, s.tmpPrefix, clientv3.WithPrefix())
 		if err != nil {
 			return nil
 		}
 		for _, kv := range getResp.Kvs {
-			_, err = s.db.Delete(Ctx, string(kv.Key))
+			_, err = s.db.Delete(ctx, string(kv.Key))
 			if err != nil {
 				return fmt.Errorf("cannot delete tempdb entry: %s", kv.Key)
 			}

@@ -408,11 +408,27 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 
 // GetPublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
+	// Fast path: check if already exists without lock
+	context.Lock()
+	publishedStorage, ok := context.publishedStorages[name]
+	context.Unlock()
+	
+	if ok {
+		return publishedStorage
+	}
+
+	// Slow path: need to create storage
 	context.Lock()
 	defer context.Unlock()
+	
+	// Double-check after acquiring lock
+	publishedStorage, ok = context.publishedStorages[name]
+	if ok {
+		return publishedStorage
+	}
 
-	publishedStorage, ok := context.publishedStorages[name]
-	if !ok {
+	// Now safe to create new storage
+	if true { // Keep original indentation
 		if name == "" {
 			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
