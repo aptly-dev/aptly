@@ -158,7 +158,7 @@ This section describes local setup to start contributing to aptly.
 
 #### Dependencies
 
-Building aptly requires go version 1.22.
+Building aptly requires go version 1.24.
 
 On Debian bookworm with backports enabled, go can be installed with:
 
@@ -233,6 +233,59 @@ There are some packages available under `system/files/` directory which are used
 `~/.aptly.conf` and `~/.aptly` subdirectory between the runs. So it's not wise to have non-dev aptly being used with
 this default location. You can run aptly under different user or by using non-default config location with non-default
 aptly root directory.
+
+### Continuous Integration (CI)
+
+aptly uses GitHub Actions for continuous integration. The CI pipeline includes:
+
+- **Quick checks**: Code formatting, go vet, mod tidy, and flake8 linting
+- **Security scanning**: govulncheck and Trivy vulnerability scanning  
+- **Linting**: golangci-lint with extensive checks
+- **Unit tests**: With race detection on Go 1.23 and 1.24
+- **Integration tests**: Full system tests with cloud storage backends
+- **Benchmarks**: Performance testing
+- **Extended tests**: Combined unit tests and benchmarks with coverage merging
+- **Cross-platform builds**: Binaries for Linux, macOS, Windows, FreeBSD (multiple architectures)
+- **Debian packages**: Built for Debian (buster, bullseye, bookworm, trixie) and Ubuntu (focal, jammy, noble)
+- **Docker images**: Multi-architecture container images (linux/amd64, linux/arm64)
+
+All pull requests must pass CI checks before merging. Build artifacts are available for download from GitHub Actions runs with the following retention:
+- CI builds: 7 days
+- Tagged releases: 90 days
+
+#### Testing CI Locally with act
+
+You can test GitHub Actions workflows locally using [act](https://github.com/nektos/act):
+
+```bash
+# Install act
+brew install act              # macOS
+# or
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash  # Linux
+
+# Run default push event
+act
+
+# Run pull request event
+act pull_request
+
+# Run specific job
+act -j test-unit
+
+# Run with specific matrix values
+act -j test-unit --matrix go:1.24
+
+# List all available jobs
+act -l
+```
+
+For Apple Silicon Macs, use: `act --container-architecture linux/amd64`
+
+Common use cases:
+- Test a job before pushing: `act -j quick-checks`
+- Test PR workflows: Create a PR event file and run `act pull_request -e pr-event.json`
+- Debug failures: `act -j failing-job -v` for verbose output
+- Use secrets: Create `.secrets` file with `KEY=value` format and run `act --secret-file .secrets`
 
 ### man Page
 

@@ -1,0 +1,12 @@
+name: Test Act
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: |
+          echo "Hello from act\!"
+          pwd
+          ls -la
