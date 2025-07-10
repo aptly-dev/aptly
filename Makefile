@@ -5,10 +5,8 @@ SHELL := /bin/bash
 .PHONY: help
 
 # Version and build info
-VERSION := $(shell make -s version)
 BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-LDFLAGS := -X main.Version=$(VERSION) -X main.BuildDate=$(BUILD_DATE) -X main.GitCommit=$(GIT_COMMIT)
 
 # Go parameters
 GOCMD := go
@@ -93,22 +91,22 @@ dev-tools: ## Install development tools
 ##@ Build
 
 build: prepare swagger ## Build aptly binary
-	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Building aptly $(VERSION)...$(COLOR_RESET)"
+	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Building aptly...$(COLOR_RESET)"
 	@mkdir -p $(BUILD_DIR)
-	$(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME) .
+	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME) .
 	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ Build complete: $(BUILD_DIR)/$(BINARY_NAME)$(COLOR_RESET)"
 
 build-all: prepare swagger ## Build for all platforms
 	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Building for all platforms...$(COLOR_RESET)"
 	@mkdir -p $(BUILD_DIR)
 	# Linux
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64
-	GOOS=linux GOARCH=arm64 $(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64
+	GOOS=linux GOARCH=arm64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64
 	# macOS
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64
-	GOOS=darwin GOARCH=arm64 $(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64
+	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64
+	GOOS=darwin GOARCH=arm64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64
 	# Windows
-	GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe
+	GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe
 	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ Multi-platform build complete$(COLOR_RESET)"
 
 install: build ## Install aptly to GOPATH/bin
@@ -253,7 +251,7 @@ ci: prepare lint test security ## Run CI pipeline
 	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ CI pipeline complete$(COLOR_RESET)"
 
 release: clean build-all ## Prepare release artifacts
-	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Preparing release $(VERSION)...$(COLOR_RESET)"
+	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Preparing release...$(COLOR_RESET)"
 	@mkdir -p $(BUILD_DIR)/release
 	@for file in $(BUILD_DIR)/$(BINARY_NAME)-*; do \
 		base=$$(basename $$file); \
