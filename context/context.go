@@ -416,14 +416,18 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		if name == "" {
 			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
-			params, ok := context.config().FileSystemPublishRoots[name[11:]]
+			// Get a safe copy of the map
+			fileSystemRoots := context.config().GetFileSystemPublishRoots()
+			params, ok := fileSystemRoots[name[11:]]
 			if !ok {
 				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
-			params, ok := context.config().S3PublishRoots[name[3:]]
+			// Get a safe copy of the map
+			s3Roots := context.config().GetS3PublishRoots()
+			params, ok := s3Roots[name[3:]]
 			if !ok {
 				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
 			}
@@ -438,7 +442,9 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "swift:") {
-			params, ok := context.config().SwiftPublishRoots[name[6:]]
+			// Get a safe copy of the map
+			swiftRoots := context.config().GetSwiftPublishRoots()
+			params, ok := swiftRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
 			}
@@ -450,7 +456,9 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "azure:") {
-			params, ok := context.config().AzurePublishRoots[name[6:]]
+			// Get a safe copy of the map
+			azureRoots := context.config().GetAzurePublishRoots()
+			params, ok := azureRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Azure storage %v not configured", name[6:]))
 			}

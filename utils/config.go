@@ -324,3 +324,39 @@ func SaveConfigYAML(filename string, config *ConfigStructure) error {
 func (conf *ConfigStructure) GetRootDir() string {
 	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
 }
+
+// GetFileSystemPublishRoots returns a copy of FileSystemPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetFileSystemPublishRoots() map[string]FileSystemPublishRoot {
+	result := make(map[string]FileSystemPublishRoot, len(conf.FileSystemPublishRoots))
+	for k, v := range conf.FileSystemPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetS3PublishRoots returns a copy of S3PublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetS3PublishRoots() map[string]S3PublishRoot {
+	result := make(map[string]S3PublishRoot, len(conf.S3PublishRoots))
+	for k, v := range conf.S3PublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetSwiftPublishRoots returns a copy of SwiftPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetSwiftPublishRoots() map[string]SwiftPublishRoot {
+	result := make(map[string]SwiftPublishRoot, len(conf.SwiftPublishRoots))
+	for k, v := range conf.SwiftPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetAzurePublishRoots returns a copy of AzurePublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetAzurePublishRoots() map[string]AzureEndpoint {
+	result := make(map[string]AzureEndpoint, len(conf.AzurePublishRoots))
+	for k, v := range conf.AzurePublishRoots {
+		result[k] = v
+	}
+	return result
+}

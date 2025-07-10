@@ -77,7 +77,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	if c.Config().ServeInAPIMode {
-		router.GET("/repos/", reposListInAPIMode(c.Config().FileSystemPublishRoots))
+		router.GET("/repos/", reposListInAPIMode(c.Config().GetFileSystemPublishRoots()))
 		router.GET("/repos/:storage/*pkgPath", reposServeInAPIMode)
 	}
 
