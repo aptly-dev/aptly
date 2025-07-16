@@ -408,42 +408,22 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 
 // GetPublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
-	// Fast path: check if already exists without lock
-	context.Lock()
-	publishedStorage, ok := context.publishedStorages[name]
-	context.Unlock()
-	
-	if ok {
-		return publishedStorage
-	}
-
-	// Slow path: need to create storage
 	context.Lock()
 	defer context.Unlock()
-	
-	// Double-check after acquiring lock
-	publishedStorage, ok = context.publishedStorages[name]
-	if ok {
-		return publishedStorage
-	}
 
-	// Now safe to create new storage
-	if true { // Keep original indentation
+	publishedStorage, ok := context.publishedStorages[name]
+	if !ok {
 		if name == "" {
 			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
-			// Get a safe copy of the map
-			fileSystemRoots := context.config().GetFileSystemPublishRoots()
-			params, ok := fileSystemRoots[name[11:]]
+			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
 				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
-			// Get a safe copy of the map
-			s3Roots := context.config().GetS3PublishRoots()
-			params, ok := s3Roots[name[3:]]
+			params, ok := context.config().S3PublishRoots[name[3:]]
 			if !ok {
 				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
 			}
@@ -458,9 +438,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "swift:") {
-			// Get a safe copy of the map
-			swiftRoots := context.config().GetSwiftPublishRoots()
-			params, ok := swiftRoots[name[6:]]
+			params, ok := context.config().SwiftPublishRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
 			}
@@ -472,9 +450,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "azure:") {
-			// Get a safe copy of the map
-			azureRoots := context.config().GetAzurePublishRoots()
-			params, ok := azureRoots[name[6:]]
+			params, ok := context.config().AzurePublishRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Azure storage %v not configured", name[6:]))
 			}

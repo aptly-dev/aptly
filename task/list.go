@@ -51,16 +51,6 @@ func (list *List) consumer() {
 			list.Unlock()
 
 			go func() {
-				// Ensure Done() is always called, even if panic occurs
-				defer func() {
-					list.Lock()
-					defer list.Unlock()
-					
-					task.wgTask.Done()
-					list.wg.Done()
-					list.usedResources.Free(task.resources)
-				}()
-				
 				retValue, err := task.process(aptly.Progress(task.output), task.detail)
 
 				list.Lock()
@@ -75,12 +65,17 @@ func (list *List) consumer() {
 						task.State = SUCCEEDED
 					}
 
+					list.usedResources.Free(task.resources)
+
+					task.wgTask.Done()
+					list.wg.Done()
+
 					for _, t := range list.tasks {
 						if t.State == IDLE {
 							// check resources
 							blockingTasks := list.usedResources.UsedBy(t.resources)
 							if len(blockingTasks) == 0 {
-								list.usedResources.MarkInUse(t.resources, t)
+								list.usedResources.MarkInUse(task.resources, task)
 								list.queue <- t
 								break
 							}

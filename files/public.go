@@ -208,10 +208,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		}
 
 		// forced, so remove destination
-		destPath := filepath.Join(poolPath, baseName)
-		unlock := utils.LockFile(destPath)
-		err = os.Remove(destPath)
-		unlock()
+		err = os.Remove(filepath.Join(poolPath, baseName))
 		if err != nil {
 			return err
 		}
@@ -226,18 +223,14 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		}
 
 		var dst *os.File
-		destPath := filepath.Join(poolPath, baseName)
-		unlock := utils.LockFile(destPath)
-		dst, err = os.Create(destPath)
+		dst, err = os.Create(filepath.Join(poolPath, baseName))
 		if err != nil {
-			unlock()
 			_ = r.Close()
 			return err
 		}
 
 		_, err = io.Copy(dst, r)
 		if err != nil {
-			unlock()
 			_ = r.Close()
 			_ = dst.Close()
 			return err
@@ -245,23 +238,15 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 		err = r.Close()
 		if err != nil {
-			unlock()
 			_ = dst.Close()
 			return err
 		}
 
 		err = dst.Close()
-		unlock()
 	} else if storage.linkMethod == LinkMethodSymLink {
-		destPath := filepath.Join(poolPath, baseName)
-		unlock := utils.LockFile(destPath)
-		err = localSourcePool.Symlink(sourcePath, destPath)
-		unlock()
+		err = localSourcePool.Symlink(sourcePath, filepath.Join(poolPath, baseName))
 	} else {
-		destPath := filepath.Join(poolPath, baseName)
-		unlock := utils.LockFile(destPath)
-		err = localSourcePool.Link(sourcePath, destPath)
-		unlock()
+		err = localSourcePool.Link(sourcePath, filepath.Join(poolPath, baseName))
 	}
 
 	return err
@@ -293,32 +278,17 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 
 // RenameFile renames (moves) file
 func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
-	oldPath := filepath.Join(storage.rootPath, oldName)
-	newPath := filepath.Join(storage.rootPath, newName)
-	
-	// Lock both paths in consistent order to avoid deadlock
-	unlock := utils.LockFiles([]string{oldPath, newPath})
-	defer unlock()
-	
-	return os.Rename(oldPath, newPath)
+	return os.Rename(filepath.Join(storage.rootPath, oldName), filepath.Join(storage.rootPath, newName))
 }
 
 // SymLink creates a symbolic link, which can be read with ReadLink
 func (storage *PublishedStorage) SymLink(src string, dst string) error {
-	dstPath := filepath.Join(storage.rootPath, dst)
-	unlock := utils.LockFile(dstPath)
-	defer unlock()
-	
-	return os.Symlink(filepath.Join(storage.rootPath, src), dstPath)
+	return os.Symlink(filepath.Join(storage.rootPath, src), filepath.Join(storage.rootPath, dst))
 }
 
 // HardLink creates a hardlink of a file
 func (storage *PublishedStorage) HardLink(src string, dst string) error {
-	dstPath := filepath.Join(storage.rootPath, dst)
-	unlock := utils.LockFile(dstPath)
-	defer unlock()
-	
-	return os.Link(filepath.Join(storage.rootPath, src), dstPath)
+	return os.Link(filepath.Join(storage.rootPath, src), filepath.Join(storage.rootPath, dst))
 }
 
 // FileExists returns true if path exists

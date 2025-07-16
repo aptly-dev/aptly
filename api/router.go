@@ -77,7 +77,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	}
 
 	if c.Config().ServeInAPIMode {
-		router.GET("/repos/", reposListInAPIMode(c.Config().GetFileSystemPublishRoots()))
+		router.GET("/repos/", reposListInAPIMode(c.Config().FileSystemPublishRoots))
 		router.GET("/repos/:storage/*pkgPath", reposServeInAPIMode)
 	}
 
@@ -86,17 +86,25 @@ func Router(c *ctx.AptlyContext) http.Handler {
 		// We use a goroutine to count the number of
 		// concurrent requests. When no more requests are
 		// running, we close the database to free the lock.
-		initDBRequests()
+		dbRequests = make(chan dbRequest)
+
+		go acquireDatabase()
 
 		api.Use(func(c *gin.Context) {
-			err := acquireDatabaseConnection()
+			var err error
+
+			errCh := make(chan error)
+			dbRequests <- dbRequest{acquiredb, errCh}
+
+			err = <-errCh
 			if err != nil {
 				AbortWithJSONError(c, 500, err)
 				return
 			}
 
 			defer func() {
-				err := releaseDatabaseConnection()
+				dbRequests <- dbRequest{releasedb, errCh}
+				err = <-errCh
 				if err != nil {
 					AbortWithJSONError(c, 500, err)
 				}

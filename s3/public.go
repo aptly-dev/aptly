@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
@@ -51,6 +52,7 @@ type PublishedStorage struct {
 	plusWorkaround   bool
 	disableMultiDel  bool
 	pathCache        map[string]string
+	pathCacheMutex   sync.RWMutex
 
 	// True if the bucket encrypts objects by default.
 	encryptByDefault bool
@@ -251,7 +253,10 @@ func (storage *PublishedStorage) Remove(path string) error {
 		_ = storage.Remove(strings.Replace(path, "+", " ", -1))
 	}
 
+	// Thread-safe cache delete
+	storage.pathCacheMutex.Lock()
 	delete(storage.pathCache, path)
+	storage.pathCacheMutex.Unlock()
 
 	return nil
 }
@@ -280,7 +285,10 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			if err != nil {
 				return fmt.Errorf("error deleting path %s from %s: %s", filelist[i], storage, err)
 			}
+			// Thread-safe cache delete
+			storage.pathCacheMutex.Lock()
 			delete(storage.pathCache, filepath.Join(path, filelist[i]))
+			storage.pathCacheMutex.Unlock()
 		}
 	} else {
 		numParts := (len(filelist) + page - 1) / page
@@ -313,9 +321,12 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			if err != nil {
 				return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
 			}
+			// Thread-safe cache delete for batch operations
+			storage.pathCacheMutex.Lock()
 			for i := range part {
 				delete(storage.pathCache, filepath.Join(path, part[i]))
 			}
+			storage.pathCacheMutex.Unlock()
 		}
 	}
 
@@ -337,20 +348,34 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	relPath := filepath.Join(publishedDirectory, fileName)
 	poolPath := filepath.Join(storage.prefix, relPath)
 
-	if storage.pathCache == nil {
-		paths, md5s, err := storage.internalFilelist(filepath.Join(publishedPrefix, "pool"), true)
-		if err != nil {
-			return errors.Wrap(err, "error caching paths under prefix")
-		}
+	// Thread-safe cache initialization
+	storage.pathCacheMutex.RLock()
+	cacheExists := storage.pathCache != nil
+	storage.pathCacheMutex.RUnlock()
 
-		storage.pathCache = make(map[string]string, len(paths))
+	if !cacheExists {
+		storage.pathCacheMutex.Lock()
+		// Double-check pattern to avoid race condition
+		if storage.pathCache == nil {
+			paths, md5s, err := storage.internalFilelist(filepath.Join(publishedPrefix, "pool"), true)
+			if err != nil {
+				storage.pathCacheMutex.Unlock()
+				return errors.Wrap(err, "error caching paths under prefix")
+			}
 
-		for i := range paths {
-			storage.pathCache[filepath.Join("pool", paths[i])] = md5s[i]
+			storage.pathCache = make(map[string]string, len(paths))
+
+			for i := range paths {
+				storage.pathCache[filepath.Join("pool", paths[i])] = md5s[i]
+			}
 		}
+		storage.pathCacheMutex.Unlock()
 	}
 
+	// Thread-safe cache read
+	storage.pathCacheMutex.RLock()
 	destinationMD5, exists := storage.pathCache[relPath]
+	storage.pathCacheMutex.RUnlock()
 	sourceMD5 := sourceChecksums.MD5
 
 	if exists {
@@ -367,7 +392,10 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 				err = errors.Wrap(err, fmt.Sprintf("error verifying MD5 for %s: %s", storage, poolPath))
 				return err
 			}
-			storage.pathCache[relPath] = destinationMD5
+			// Thread-safe cache write
+		storage.pathCacheMutex.Lock()
+		storage.pathCache[relPath] = destinationMD5
+		storage.pathCacheMutex.Unlock()
 		}
 
 		if destinationMD5 == sourceMD5 {
@@ -388,7 +416,10 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	log.Debug().Msgf("S3: LinkFromPool '%s'", relPath)
 	err = storage.putFile(relPath, source, sourceMD5)
 	if err == nil {
+		// Thread-safe cache write
+		storage.pathCacheMutex.Lock()
 		storage.pathCache[relPath] = sourceMD5
+		storage.pathCacheMutex.Unlock()
 	} else {
 		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
 	}

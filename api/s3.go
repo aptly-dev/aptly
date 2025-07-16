@@ -14,9 +14,7 @@ import (
 // @Router /api/s3 [get]
 func apiS3List(c *gin.Context) {
 	keys := []string{}
-	// Use safe accessor to get a copy of the map
-	s3Roots := context.Config().GetS3PublishRoots()
-	for k := range s3Roots {
+	for k := range context.Config().S3PublishRoots {
 		keys = append(keys, k)
 	}
 	c.JSON(200, keys)

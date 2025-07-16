@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -101,18 +100,7 @@ type dbRequest struct {
 	err  chan<- error
 }
 
-var (
-	dbRequests     chan dbRequest
-	dbRequestsOnce sync.Once
-)
-
-// initDBRequests initializes the database request channel in a thread-safe manner
-func initDBRequests() {
-	dbRequestsOnce.Do(func() {
-		dbRequests = make(chan dbRequest, 1)
-		go acquireDatabase()
-	})
-}
+var dbRequests chan dbRequest
 
 // Acquire database lock and release it when not needed anymore.
 //
@@ -151,8 +139,9 @@ func acquireDatabase() {
 // runTaskInBackground to run a task which accquire database.
 // Important do not forget to defer to releaseDatabaseConnection
 func acquireDatabaseConnection() error {
-	// Ensure channel is initialized
-	initDBRequests()
+	if dbRequests == nil {
+		return nil
+	}
 
 	errCh := make(chan error)
 	dbRequests <- dbRequest{acquiredb, errCh}
@@ -162,8 +151,9 @@ func acquireDatabaseConnection() error {
 
 // Release database connection when not needed anymore
 func releaseDatabaseConnection() error {
-	// Ensure channel is initialized
-	initDBRequests()
+	if dbRequests == nil {
+		return nil
+	}
 
 	errCh := make(chan error)
 	dbRequests <- dbRequest{releasedb, errCh}

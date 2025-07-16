@@ -1,8 +1,6 @@
 package etcddb
 
 import (
-	"context"
-
 	"github.com/aptly-dev/aptly/database"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -32,9 +30,7 @@ func (b *EtcDBatch) Write() (err error) {
 
 	batchSize := 128
 	for i := 0; i < len(b.ops); i += batchSize {
-		ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
-		defer cancel()
-		txn := kv.Txn(ctx)
+		txn := kv.Txn(Ctx)
 		end := i + batchSize
 		if end > len(b.ops) {
 			end = len(b.ops)

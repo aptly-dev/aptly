@@ -46,10 +46,6 @@ func SetupDefaultLogger(levelStr string) {
 }
 
 func GetLogLevelOrDebug(levelStr string) zerolog.Level {
-	if levelStr == "" {
-		return zerolog.DebugLevel
-	}
-	
 	levelStr = strings.ToLower(levelStr)
 	if levelStr == "warning" {
 		levelStr = "warn"
