@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -33,11 +34,11 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.srv, NotNil)
 
-	s.storage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, false)
+	s.storage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, false, 0, 0)
 	c.Assert(err, IsNil)
-	s.prefixedStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", false, true, false, false, false)
+	s.prefixedStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", false, true, false, false, false, 0, 0)
 	c.Assert(err, IsNil)
-	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false, false)
+	s.noSuchBucketStorage, err = NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "no-bucket", "", "", "", "", false, true, false, false, false, 0, 0)
 	c.Assert(err, IsNil)
 
 	_, err = s.storage.s3.CreateBucket(context.TODO(), &s3.CreateBucketInput{
@@ -49,51 +50,55 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
-	s.srv.Quit()
-}
-
-func (s *PublishedStorageSuite) checkGetRequestsEqual(c *C, prefix string, expectedGetRequestUris []string) {
-	getRequests := make([]string, 0, len(s.srv.Requests))
-	for _, r := range s.srv.Requests {
-		if r.Method == "GET" && strings.HasPrefix(r.RequestURI, prefix) {
-			getRequests = append(getRequests, r.RequestURI)
-		}
-	}
-	sort.Strings(getRequests)
-	c.Check(getRequests, DeepEquals, expectedGetRequestUris)
+	s.srv.Stop()
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
 	resp, err := s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
-		Bucket: aws.String(s.storage.bucket),
+		Bucket: aws.String("test"),
 		Key:    aws.String(path),
 	})
 	c.Assert(err, IsNil)
+	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	_ = resp.Body.Close()
+	contents, err := io.ReadAll(resp.Body)
 	c.Assert(err, IsNil)
 
-	return body
+	return contents
 }
 
-func (s *PublishedStorageSuite) AssertNoFile(c *C, path string) {
-	_, err := s.storage.s3.HeadObject(context.TODO(), &s3.HeadObjectInput{
-		Bucket: aws.String(s.storage.bucket),
+func (s *PublishedStorageSuite) GetFileWithBucket(c *C, bucket, path string) []byte {
+	resp, err := s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
 		Key:    aws.String(path),
 	})
-	c.Assert(err, ErrorMatches, ".*StatusCode: 404.*")
+	c.Assert(err, IsNil)
+	defer resp.Body.Close()
+
+	contents, err := io.ReadAll(resp.Body)
+	c.Assert(err, IsNil)
+
+	return contents
 }
 
-func (s *PublishedStorageSuite) PutFile(c *C, path string, data []byte) {
-	_, err := s.storage.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(s.storage.bucket),
-		Key:         aws.String(path),
-		Body:        bytes.NewReader(data),
-		ContentType: aws.String("binary/octet-stream"),
-		ACL:         types.ObjectCannedACLPrivate,
-	})
-	c.Assert(err, IsNil)
+func (s *PublishedStorageSuite) checkGetRequestsEqual(c *C, prefix string, expectedRequests []string) {
+	requests := []string{}
+	for _, r := range s.srv.Requests {
+		if r.Method == "GET" && strings.Contains(r.RequestURI, prefix) {
+			requests = append(requests, r.RequestURI)
+		}
+	}
+	c.Check(requests, DeepEquals, expectedRequests)
+}
+
+func (s *PublishedStorageSuite) TestNoSuchBucketCreateAndPutFile(c *C) {
+	err := s.noSuchBucketStorage.PutFile("a/b.txt", "/dev/null")
+	c.Check(err, NotNil)
+}
+
+func (s *PublishedStorageSuite) TestNoSuchBucketRemoveDirs(c *C) {
+	err := s.noSuchBucketStorage.RemoveDirs("a/b", nil)
+	c.Check(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestPutFile(c *C) {
@@ -112,30 +117,31 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	c.Check(s.GetFile(c, "lala/a/b.txt"), DeepEquals, []byte("welcome to s3!"))
 }
 
-func (s *PublishedStorageSuite) TestPutFilePlusWorkaround(c *C) {
-	s.storage.plusWorkaround = true
-
-	dir := c.MkDir()
-	err := os.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
+func (s *PublishedStorageSuite) TestPutFileWithPlusWorkaround(c *C) {
+	storage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", true, true, false, false, false, 0, 0)
 	c.Assert(err, IsNil)
 
-	err = s.storage.PutFile("a/b+c.txt", filepath.Join(dir, "a"))
+	dir := c.MkDir()
+	err = os.WriteFile(filepath.Join(dir, "a"), []byte("welcome to s3!"), 0644)
+	c.Assert(err, IsNil)
+
+	err = storage.PutFile("a+/b+.txt", filepath.Join(dir, "a"))
 	c.Check(err, IsNil)
 
-	c.Check(s.GetFile(c, "a/b+c.txt"), DeepEquals, []byte("welcome to s3!"))
-
-	c.Check(s.GetFile(c, "a/b c.txt"), DeepEquals, []byte("welcome to s3!"))
+	c.Check(s.GetFile(c, "lala/a+/b+.txt"), DeepEquals, []byte("welcome to s3!"))
+	c.Check(s.GetFile(c, "lala/a /b .txt"), DeepEquals, []byte("welcome to s3!"))
 }
 
 func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "lala/a", "lala/b", "lala/c"}
 	for _, path := range paths {
-		s.PutFile(c, path, []byte("test"))
+		err := s.storage.PutFile(path, "/dev/null")
+		c.Check(err, IsNil)
 	}
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "test/a", "test/b", "testa"})
+	c.Check(list, DeepEquals, paths)
 
 	list, err = s.storage.Filelist("test")
 	c.Check(err, IsNil)
@@ -150,91 +156,84 @@ func (s *PublishedStorageSuite) TestFilelist(c *C) {
 	c.Check(list, DeepEquals, []string{"a", "b", "c"})
 }
 
-func (s *PublishedStorageSuite) TestFilelistPlusWorkaround(c *C) {
-	s.storage.plusWorkaround = true
-	s.prefixedStorage.plusWorkaround = true
-
-	paths := []string{"a", "b", "c", "testa", "test/a+1", "test/a 1", "lala/a+b", "lala/a b", "lala/c"}
-	for _, path := range paths {
-		s.PutFile(c, path, []byte("test"))
+func (s *PublishedStorageSuite) TestFilelistPagination(c *C) {
+	for i := 0; i < 2030; i++ {
+		err := s.storage.PutFile(strings.Repeat("la", i%23), "/dev/null")
+		c.Check(err, IsNil)
 	}
 
 	list, err := s.storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+b", "lala/c", "test/a+1", "testa"})
+	c.Check(len(list), Equals, 23)
+}
 
-	list, err = s.storage.Filelist("test")
-	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a+1"})
+func (s *PublishedStorageSuite) TestFilelistWithPlusWorkaround(c *C) {
+	storage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", true, true, false, false, false, 0, 0)
+	c.Assert(err, IsNil)
 
-	list, err = s.storage.Filelist("test2")
-	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{})
+	paths := []string{"a", "b", "c", "test+a", "test/a+", "test/b", "lala/a+", "lala/b", "lala/c+"}
+	for _, path := range paths {
+		err := storage.PutFile(path, "/dev/null")
+		c.Check(err, IsNil)
+	}
 
-	list, err = s.prefixedStorage.Filelist("")
+	list, err := storage.Filelist("")
 	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a+b", "c"})
+	sort.Strings(list)
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+", "lala/b", "lala/c+", "test+a", "test/a+", "test/b"})
+
+	list, err = storage.Filelist("test")
+	c.Check(err, IsNil)
+	sort.Strings(list)
+	c.Check(list, DeepEquals, []string{"a+", "b"})
 }
 
 func (s *PublishedStorageSuite) TestRemove(c *C) {
-	s.PutFile(c, "a/b", []byte("test"))
-
-	err := s.storage.Remove("a/b")
+	err := s.storage.PutFile("a/b.txt", "/dev/null")
 	c.Check(err, IsNil)
 
-	s.AssertNoFile(c, "a/b")
+	err = s.storage.Remove("a/b.txt")
+	c.Check(err, IsNil)
 
-	s.PutFile(c, "lala/xyz", []byte("test"))
+	_, err = s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String("test"),
+		Key:    aws.String("a/b.txt"),
+	})
+	c.Check(err, NotNil)
 
-	errp := s.prefixedStorage.Remove("xyz")
-	c.Check(errp, IsNil)
-
-	s.AssertNoFile(c, "lala/xyz")
-}
-
-func (s *PublishedStorageSuite) TestRemoveNoSuchBucket(c *C) {
-	err := s.noSuchBucketStorage.Remove("a/b")
+	// double remove
+	err = s.storage.Remove("a/b.txt")
 	c.Check(err, IsNil)
 }
 
-func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
-	s.storage.plusWorkaround = true
+func (s *PublishedStorageSuite) TestRemoveWithPlusWorkaround(c *C) {
+	storage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", true, true, false, false, false, 0, 0)
+	c.Assert(err, IsNil)
 
-	s.PutFile(c, "a/b+c", []byte("test"))
-	s.PutFile(c, "a/b", []byte("test"))
-
-	err := s.storage.Remove("a/b+c")
+	err = storage.PutFile("a+/b+.txt", "/dev/null")
 	c.Check(err, IsNil)
 
-	s.AssertNoFile(c, "a/b+c")
-	s.AssertNoFile(c, "a/b c")
-
-	err = s.storage.Remove("a/b")
+	err = storage.Remove("a+/b+.txt")
 	c.Check(err, IsNil)
 
-	s.AssertNoFile(c, "a/b")
+	_, err = s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String("test"),
+		Key:    aws.String("lala/a+/b+.txt"),
+	})
+	c.Check(err, NotNil)
+
+	_, err = s.storage.s3.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String("test"),
+		Key:    aws.String("lala/a /b .txt"),
+	})
+	c.Check(err, NotNil)
 }
 
 func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
-	s.storage.plusWorkaround = true
-
-	paths := []string{"a", "b", "c", "testa", "test/a+1", "test/a 1", "lala/a+b", "lala/a b", "lala/c"}
+	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "test/c/d", "test/c/e", "lala/a", "lala/b", "lala/c"}
 	for _, path := range paths {
-		s.PutFile(c, path, []byte("test"))
-	}
-
-	err := s.storage.RemoveDirs("test", nil)
-	c.Check(err, IsNil)
-
-	list, err := s.storage.Filelist("")
-	c.Check(err, IsNil)
-	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a+b", "lala/c", "testa"})
-}
-
-func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
-	paths := []string{"a", "b", "c", "testa", "test/a", "test/b", "lala/a", "lala/b", "lala/c"}
-	for _, path := range paths {
-		s.PutFile(c, path, []byte("test"))
+		err := s.storage.PutFile(path, "/dev/null")
+		c.Check(err, IsNil)
 	}
 
 	err := s.storage.RemoveDirs("test", nil)
@@ -245,13 +244,35 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b", "lala/c", "testa"})
 }
 
-func (s *PublishedStorageSuite) TestRemoveDirsNoSuchBucket(c *C) {
-	err := s.noSuchBucketStorage.RemoveDirs("a/b", nil)
-	c.Check(err, ErrorMatches, ".*StatusCode: 404.*")
+func (s *PublishedStorageSuite) TestRemoveDirsWithPlusWorkaround(c *C) {
+	storage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "lala", "", "", true, true, false, false, false, 0, 0)
+	c.Assert(err, IsNil)
+
+	paths := []string{"a", "b", "c", "test+a", "test/a+", "test/b", "test/c/d+", "test/c/e", "lala/a", "lala/b+", "lala/c"}
+	for _, path := range paths {
+		err := storage.PutFile(path, "/dev/null")
+		c.Check(err, IsNil)
+	}
+
+	err = storage.RemoveDirs("test", nil)
+	c.Check(err, IsNil)
+
+	list, err := storage.Filelist("")
+	c.Check(err, IsNil)
+	sort.Strings(list)
+	c.Check(list, DeepEquals, []string{"a", "b", "c", "lala/a", "lala/b+", "lala/c", "test+a"})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
-	c.Skip("copy not available in s3test")
+	err := s.storage.PutFile("a/b", "/dev/null")
+	c.Check(err, IsNil)
+
+	err = s.storage.RenameFile("a/b", "c/d")
+	c.Check(err, IsNil)
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"c/d"})
 }
 
 func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
@@ -264,22 +285,23 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	c.Assert(err, IsNil)
 	cksum1 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
+	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
+	c.Assert(err, IsNil)
+
 	tmpFile2 := filepath.Join(c.MkDir(), "mars-invaders_1.03.deb")
 	err = os.WriteFile(tmpFile2, []byte("Spam"), 0644)
 	c.Assert(err, IsNil)
-	cksum2 := utils.ChecksumInfo{MD5: "e9dfd31cc505d51fc26975250750deab"}
+	cksum2 := utils.ChecksumInfo{MD5: "07563b64442662f7b7e6e5afe5bb55d7"}
 
-	tmpFile3 := filepath.Join(c.MkDir(), "netboot/boot.img.gz")
-	_ = os.MkdirAll(filepath.Dir(tmpFile3), 0777)
+	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true, cs)
+	c.Assert(err, IsNil)
+
+	tmpFile3 := filepath.Join(c.MkDir(), "boot.img.gz")
 	err = os.WriteFile(tmpFile3, []byte("Contents"), 0644)
 	c.Assert(err, IsNil)
 	cksum3 := utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}
 
-	src1, err := pool.Import(tmpFile1, "mars-invaders_1.03.deb", &cksum1, true, cs)
-	c.Assert(err, IsNil)
-	src2, err := pool.Import(tmpFile2, "mars-invaders_1.03.deb", &cksum2, true, cs)
-	c.Assert(err, IsNil)
-	src3, err := pool.Import(tmpFile3, "netboot/boot.img.gz", &cksum3, true, cs)
+	src3, err := pool.Import(tmpFile3, "boot.img.gz", &cksum3, true, cs)
 	c.Assert(err, IsNil)
 
 	// first link from pool
@@ -296,7 +318,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 
 	// link from pool with conflict
 	err = s.storage.LinkFromPool("", filepath.Join("pool", "main", "m/mars-invaders"), "mars-invaders_1.03.deb", pool, src2, cksum2, false)
-	c.Check(err, ErrorMatches, ".*file already exists and is different.*")
+	c.Check(err, ErrorMatches, "error putting file to .*: file already exists and is different: .*")
 
 	c.Check(s.GetFile(c, "pool/main/m/mars-invaders/mars-invaders_1.03.deb"), DeepEquals, []byte("Contents"))
 
@@ -383,41 +405,70 @@ func (s *PublishedStorageSuite) TestLinkFromPoolCache(c *C) {
 
 	// Check no listing request was done to the server (pathCache is used)
 	s.checkGetRequestsEqual(c, "/test?", []string{})
-
-	// This step checks that files already exists in S3 and skip upload (which would fail if not skipped).
-	err = s.prefixedStorage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
-	c.Check(err, IsNil)
-	err = s.prefixedStorage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
-	c.Check(err, IsNil)
-	err = s.storage.LinkFromPool("publish-prefix", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
-	c.Check(err, IsNil)
-	err = s.storage.LinkFromPool("", filepath.Join("pool", "a"), "mars-invaders_1.03.deb", pool, "non-existent-file", cksum1, false)
-	c.Check(err, IsNil)
 }
 
-func (s *PublishedStorageSuite) TestSymLink(c *C) {
-	s.PutFile(c, "a/b", []byte("test"))
-
-	err := s.storage.SymLink("a/b", "a/b.link")
-	c.Check(err, IsNil)
-
-	var link string
-	link, err = s.storage.ReadLink("a/b.link")
-	c.Check(err, IsNil)
-	c.Check(link, Equals, "a/b")
-
-	c.Skip("copy not available in s3test")
+func (s *PublishedStorageSuite) TestConcurrentUploads(c *C) {
+	// Create storage with concurrent uploads enabled (3 workers, default queue size)
+	concurrentStorage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "concurrent", "", "", false, true, false, false, false, 3, 0)
+	c.Assert(err, IsNil)
+	
+	// Create test files
+	tmpDir := c.MkDir()
+	files := []string{"file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt"}
+	for _, name := range files {
+		err := os.WriteFile(filepath.Join(tmpDir, name), []byte("test content: "+name), 0644)
+		c.Assert(err, IsNil)
+	}
+	
+	// Upload files concurrently
+	for _, name := range files {
+		err := concurrentStorage.PutFile(name, filepath.Join(tmpDir, name))
+		c.Assert(err, IsNil)
+	}
+	
+	// Flush to ensure all uploads complete
+	err = concurrentStorage.Flush()
+	c.Assert(err, IsNil)
+	
+	// Verify all files exist
+	for _, name := range files {
+		exists, err := concurrentStorage.FileExists(name)
+		c.Assert(err, IsNil)
+		c.Check(exists, Equals, true)
+	}
 }
 
-func (s *PublishedStorageSuite) TestFileExists(c *C) {
-	s.PutFile(c, "a/b", []byte("test"))
-
-	exists, err := s.storage.FileExists("a/b")
-	c.Check(err, IsNil)
-	c.Check(exists, Equals, true)
-
-	exists, _ = s.storage.FileExists("a/b.invalid")
-	// Comment out as there is an error in s3test implementation
-	// c.Check(err, IsNil)
-	c.Check(exists, Equals, false)
+func (s *PublishedStorageSuite) TestConcurrentUploadsWithCustomQueueSize(c *C) {
+	// Create storage with concurrent uploads and custom queue size (2 workers, 5x queue size)
+	concurrentStorage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "concurrent-custom", "", "", false, true, false, false, false, 2, 5)
+	c.Assert(err, IsNil)
+	
+	// Create test files
+	tmpDir := c.MkDir()
+	// Create more files than workers * queue size (2 * 5 = 10)
+	fileCount := 12
+	var files []string
+	for i := 0; i < fileCount; i++ {
+		name := fmt.Sprintf("file%d.txt", i)
+		files = append(files, name)
+		err := os.WriteFile(filepath.Join(tmpDir, name), []byte(fmt.Sprintf("content %d", i)), 0644)
+		c.Assert(err, IsNil)
+	}
+	
+	// Upload files concurrently
+	for _, name := range files {
+		err := concurrentStorage.PutFile(name, filepath.Join(tmpDir, name))
+		c.Assert(err, IsNil)
+	}
+	
+	// Flush to ensure all uploads complete
+	err = concurrentStorage.Flush()
+	c.Assert(err, IsNil)
+	
+	// Verify all files exist
+	for _, name := range files {
+		exists, err := concurrentStorage.FileExists(name)
+		c.Assert(err, IsNil)
+		c.Check(exists, Equals, true)
+	}
 }
