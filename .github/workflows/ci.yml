@@ -47,6 +47,9 @@ jobs:
             exit 1
           fi
       
+      - name: Generate VERSION file
+        run: make version > VERSION || echo "dev" > VERSION
+      
       - name: Run go vet
         run: go vet ./...
       

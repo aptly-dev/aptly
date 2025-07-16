@@ -50,7 +50,7 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
-	s.srv.Stop()
+	s.srv.Quit()
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
