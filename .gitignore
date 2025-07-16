@@ -74,3 +74,42 @@ docs/docs.go
 docs/swagger.json
 docs/swagger.yaml
 docs/swagger.conf
+.secrets
+
+# Coverage reports
+*.out
+coverage.html
+*_coverage.html
+
+# Binaries
+aptly-binary
+aptly-test
+
+# Downloaded archives
+*.tar.gz
+
+# Test artifacts
+test_results.log
+
+# Python virtual environments
+system/venv/
+venv/
+
+# act local CI runner
+.actrc
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary directories
+coverage/
+scripts/
+
+# Binary executables
+aptly/aptly
+
+# Coverage reports
+coverage_report.html
+*.coverage
+coverage.out
