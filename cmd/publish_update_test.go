@@ -251,10 +251,10 @@ func (s *PublishUpdateSuite) TestAptlyPublishUpdateWithUpdateResult(c *C) {
 func (s *PublishUpdateSuite) TestAptlyPublishUpdatePrefixParsing(c *C) {
 	// Test different prefix formats
 	prefixTests := [][]string{
-		{"wheezy"},                    // Default prefix
-		{"wheezy", "."},              // Explicit default prefix
-		{"wheezy", "ppa"},            // Simple prefix
-		{"wheezy", "s3:bucket"},      // Storage with prefix
+		{"wheezy"},              // Default prefix
+		{"wheezy", "."},         // Explicit default prefix
+		{"wheezy", "ppa"},       // Simple prefix
+		{"wheezy", "s3:bucket"}, // Storage with prefix
 	}
 
 	for _, args := range prefixTests {
@@ -312,15 +312,15 @@ func (m *MockPublishUpdateProgress) ColoredPrintf(msg string, a ...interface{}) 
 	m.ColoredMessages = append(m.ColoredMessages, formatted)
 }
 
-func (m *MockPublishUpdateProgress) AddBar(count int) {}
-func (m *MockPublishUpdateProgress) Flush() {}
+func (m *MockPublishUpdateProgress) AddBar(count int)                                         {}
+func (m *MockPublishUpdateProgress) Flush()                                                   {}
 func (m *MockPublishUpdateProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockPublishUpdateProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockPublishUpdateProgress) SetBar(count int) {}
-func (m *MockPublishUpdateProgress) Shutdown() {}
-func (m *MockPublishUpdateProgress) ShutdownBar() {}
-func (m *MockPublishUpdateProgress) Start() {}
-func (m *MockPublishUpdateProgress) Write(data []byte) (int, error) { return len(data), nil }
+func (m *MockPublishUpdateProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockPublishUpdateProgress) SetBar(count int)                                         {}
+func (m *MockPublishUpdateProgress) Shutdown()                                                {}
+func (m *MockPublishUpdateProgress) ShutdownBar()                                             {}
+func (m *MockPublishUpdateProgress) Start()                                                   {}
+func (m *MockPublishUpdateProgress) Write(data []byte) (int, error)                           { return len(data), nil }
 
 type MockPublishUpdateContext struct {
 	flags             *flag.FlagSet
@@ -331,22 +331,34 @@ type MockPublishUpdateContext struct {
 	signerError       bool
 }
 
-func (m *MockPublishUpdateContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishUpdateContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishUpdateContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPublishUpdateContext) PackagePool() aptly.PackagePool               { return m.packagePool }
-func (m *MockPublishUpdateContext) SkelPath() string                             { return m.skelPath }
+func (m *MockPublishUpdateContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishUpdateContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishUpdateContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPublishUpdateContext) PackagePool() aptly.PackagePool { return m.packagePool }
+func (m *MockPublishUpdateContext) SkelPath() string               { return m.skelPath }
 
 type MockUpdatePackagePool struct{}
 
 func (m *MockUpdatePackagePool) GeneratePackageRefs() []string { return []string{} }
-func (m *MockUpdatePackagePool) FilepathList(progress aptly.Progress) ([]string, error) { return []string{}, nil }
-func (m *MockUpdatePackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) { return "/pool/path", nil }
-func (m *MockUpdatePackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) { return poolPath, true, nil }
-func (m *MockUpdatePackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) { return nil, nil }
+func (m *MockUpdatePackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
+	return []string{}, nil
+}
+func (m *MockUpdatePackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) {
+	return "/pool/path", nil
+}
+func (m *MockUpdatePackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) {
+	return poolPath, true, nil
+}
+func (m *MockUpdatePackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) {
+	return nil, nil
+}
 func (m *MockUpdatePackagePool) Remove(filename string) (int64, error) { return 0, nil }
-func (m *MockUpdatePackagePool) Size(prefix string) (int64, error) { return 0, nil }
-func (m *MockUpdatePackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) { return "/legacy/" + filename, nil }
+func (m *MockUpdatePackagePool) Size(prefix string) (int64, error)     { return 0, nil }
+func (m *MockUpdatePackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+	return "/legacy/" + filename, nil
+}
 
 type MockPublishedUpdateRepoCollection struct {
 	shouldErrorByStoragePrefixDistribution bool
@@ -404,10 +416,10 @@ func (m *MockPublishedUpdateRepoCollection) CleanupPrefixComponentFiles(publishe
 
 type MockUpdateSigner struct{}
 
-func (m *MockUpdateSigner) SetKey(keyRef string) {}
-func (m *MockUpdateSigner) SetKeyRing(keyring, secretKeyring string) {}
+func (m *MockUpdateSigner) SetKey(keyRef string)                            {}
+func (m *MockUpdateSigner) SetKeyRing(keyring, secretKeyring string)        {}
 func (m *MockUpdateSigner) SetPassphrase(passphrase, passphraseFile string) {}
-func (m *MockUpdateSigner) SetBatch(batch bool) {}
+func (m *MockUpdateSigner) SetBatch(batch bool)                             {}
 
 // Mock deb.ParsePrefix function for update tests
 func init() {

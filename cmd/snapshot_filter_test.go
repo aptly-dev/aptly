@@ -39,9 +39,9 @@ func (s *SnapshotFilterSuite) SetUpTest(c *C) {
 		collectionFactory: s.collectionFactory,
 		architectures:     []string{"amd64", "i386"},
 		dependencyOptions: aptly.DependencyOptions{
-			FollowRecommends: false,
-			FollowSuggests:   false,
-			FollowSource:     false,
+			FollowRecommends:  false,
+			FollowSuggests:    false,
+			FollowSource:      false,
 			FollowAllVariants: false,
 		},
 	}
@@ -283,7 +283,7 @@ func (s *SnapshotFilterSuite) TestAptlySnapshotFilterArchitectureHandling(c *C) 
 
 	for _, testCase := range testCases {
 		s.mockContext.architectures = testCase.contextArchs
-		
+
 		args := []string{"source-snapshot", "dest-snapshot", "nginx"}
 		err := aptlySnapshotFilter(s.cmd, args)
 		c.Check(err, IsNil, Commentf("Context architectures: %v", testCase.contextArchs))
@@ -330,11 +330,13 @@ type MockSnapshotFilterContext struct {
 	dependencyOptions int
 }
 
-func (m *MockSnapshotFilterContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotFilterContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotFilterContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockSnapshotFilterContext) ArchitecturesList() []string                  { return m.architectures }
-func (m *MockSnapshotFilterContext) DependencyOptions() int                      { return m.dependencyOptions }
+func (m *MockSnapshotFilterContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotFilterContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotFilterContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockSnapshotFilterContext) ArchitecturesList() []string { return m.architectures }
+func (m *MockSnapshotFilterContext) DependencyOptions() int      { return m.dependencyOptions }
 
 type MockSnapshotFilterCollection struct {
 	shouldErrorByName       bool
@@ -352,7 +354,7 @@ func (m *MockSnapshotFilterCollection) ByName(name string) (*deb.Snapshot, error
 		Description: "Test snapshot",
 	}
 	snapshot.SetRefList(&MockSnapshotFilterRefList{})
-	
+
 	return snapshot, nil
 }
 
@@ -410,7 +412,7 @@ func (m *MockSnapshotFilterPackageList) Filter(options deb.FilterOptions) (*deb.
 	if m.collection != nil && m.collection.shouldErrorFilter {
 		return nil, fmt.Errorf("mock filter error")
 	}
-	
+
 	// Return a filtered package list
 	return &MockSnapshotFilterPackageList{}, nil
 }

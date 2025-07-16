@@ -160,53 +160,69 @@ func (m *MockRepoIncludeProgress) ColoredPrintf(msg string, a ...interface{}) {
 	// Mock implementation
 }
 
-func (m *MockRepoIncludeProgress) AddBar(count int) {}
-func (m *MockRepoIncludeProgress) Flush() {}
+func (m *MockRepoIncludeProgress) AddBar(count int)                                         {}
+func (m *MockRepoIncludeProgress) Flush()                                                   {}
 func (m *MockRepoIncludeProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockRepoIncludeProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockRepoIncludeProgress) SetBar(count int) {}
-func (m *MockRepoIncludeProgress) Shutdown() {}
-func (m *MockRepoIncludeProgress) ShutdownBar() {}
-func (m *MockRepoIncludeProgress) Start() {}
-func (m *MockRepoIncludeProgress) Write(data []byte) (int, error) { return len(data), nil }
+func (m *MockRepoIncludeProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockRepoIncludeProgress) SetBar(count int)                                         {}
+func (m *MockRepoIncludeProgress) Shutdown()                                                {}
+func (m *MockRepoIncludeProgress) ShutdownBar()                                             {}
+func (m *MockRepoIncludeProgress) Start()                                                   {}
+func (m *MockRepoIncludeProgress) Write(data []byte) (int, error)                           { return len(data), nil }
 
 type MockRepoIncludeContext struct {
-	flags                 *flag.FlagSet
-	progress              *MockRepoIncludeProgress
-	collectionFactory     *deb.CollectionFactory
-	config                *utils.ConfigStructure
-	packagePool           aptly.PackagePool
-	verifier              pgp.Verifier
-	verifierError         bool
-	nilVerifier           bool
-	uploadersError        bool
-	uploadersQueryError   bool
-	hasFailedFiles        bool
+	flags               *flag.FlagSet
+	progress            *MockRepoIncludeProgress
+	collectionFactory   *deb.CollectionFactory
+	config              *utils.ConfigStructure
+	packagePool         aptly.PackagePool
+	verifier            pgp.Verifier
+	verifierError       bool
+	nilVerifier         bool
+	uploadersError      bool
+	uploadersQueryError bool
+	hasFailedFiles      bool
 }
 
-func (m *MockRepoIncludeContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockRepoIncludeContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockRepoIncludeContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockRepoIncludeContext) Config() *utils.ConfigStructure               { return m.config }
-func (m *MockRepoIncludeContext) PackagePool() aptly.PackagePool               { return m.packagePool }
+func (m *MockRepoIncludeContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockRepoIncludeContext) Progress() aptly.Progress { return m.progress }
+func (m *MockRepoIncludeContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockRepoIncludeContext) Config() *utils.ConfigStructure { return m.config }
+func (m *MockRepoIncludeContext) PackagePool() aptly.PackagePool { return m.packagePool }
 
 type MockRepoIncludePackagePool struct{}
 
-func (m *MockRepoIncludePackagePool) FilepathList(progress aptly.Progress) ([]string, error) { return []string{}, nil }
+func (m *MockRepoIncludePackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
+	return []string{}, nil
+}
 func (m *MockRepoIncludePackagePool) GeneratePackageRefs() []string { return []string{} }
-func (m *MockRepoIncludePackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) { return "/pool/path", nil }
-func (m *MockRepoIncludePackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) { return poolPath, true, nil }
-func (m *MockRepoIncludePackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) { return nil, nil }
+func (m *MockRepoIncludePackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) {
+	return "/pool/path", nil
+}
+func (m *MockRepoIncludePackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) {
+	return poolPath, true, nil
+}
+func (m *MockRepoIncludePackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) {
+	return nil, nil
+}
 func (m *MockRepoIncludePackagePool) Remove(filename string) (int64, error) { return 0, nil }
-func (m *MockRepoIncludePackagePool) Size(prefix string) (int64, error) { return 0, nil }
-func (m *MockRepoIncludePackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) { return "/legacy/" + filename, nil }
+func (m *MockRepoIncludePackagePool) Size(prefix string) (int64, error)     { return 0, nil }
+func (m *MockRepoIncludePackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+	return "/legacy/" + filename, nil
+}
 
 type MockRepoIncludeVerifier struct{}
 
-func (m *MockRepoIncludeVerifier) AddKeyring(keyring string) {}
+func (m *MockRepoIncludeVerifier) AddKeyring(keyring string)      {}
 func (m *MockRepoIncludeVerifier) InitKeyring(verbose bool) error { return nil }
-func (m *MockRepoIncludeVerifier) VerifyDetachedSignature(signature, message io.Reader, showKeyInfo bool) error { return nil }
-func (m *MockRepoIncludeVerifier) ExtractClearsign(data []byte) (content []byte, err error) { return data, nil }
+func (m *MockRepoIncludeVerifier) VerifyDetachedSignature(signature, message io.Reader, showKeyInfo bool) error {
+	return nil
+}
+func (m *MockRepoIncludeVerifier) ExtractClearsign(data []byte) (content []byte, err error) {
+	return data, nil
+}
 func (m *MockRepoIncludeVerifier) ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error) {
 	// Create a temporary file for testing
 	tmpFile, err := os.CreateTemp("", "mock-clearsigned")
@@ -223,7 +239,11 @@ func (m *MockRepoIncludeVerifier) ExtractClearsigned(clearsigned io.Reader) (tex
 	tmpFile.Seek(0, 0)
 	return tmpFile, nil
 }
-func (m *MockRepoIncludeVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) { return true, nil }
-func (m *MockRepoIncludeVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyInfo bool) (*pgp.KeyInfo, error) { return &pgp.KeyInfo{}, nil }
+func (m *MockRepoIncludeVerifier) IsClearSigned(clearsigned io.Reader) (bool, error) {
+	return true, nil
+}
+func (m *MockRepoIncludeVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyInfo bool) (*pgp.KeyInfo, error) {
+	return &pgp.KeyInfo{}, nil
+}
 
 // Note: Removed package-level function assignments to fix compilation errors

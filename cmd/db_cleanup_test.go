@@ -40,7 +40,7 @@ func (s *DBCleanupSuite) TestMakeCmdDBCleanup(c *C) {
 func (s *DBCleanupSuite) TestDBCleanupFlags(c *C) {
 	err := s.cmd.Flag.Set("dry-run", "true")
 	c.Check(err, IsNil)
-	
+
 	err = s.cmd.Flag.Set("verbose", "true")
 	c.Check(err, IsNil)
 }
@@ -49,17 +49,17 @@ func (s *DBCleanupSuite) TestDBCleanupFlags(c *C) {
 
 type MockDBProgress struct{}
 
-func (m *MockDBProgress) Printf(msg string, a ...interface{})          {}
-func (m *MockDBProgress) ColoredPrintf(msg string, a ...interface{})   {}
-func (m *MockDBProgress) PrintfStdErr(msg string, a ...interface{})    {}
-func (m *MockDBProgress) Flush()                                       {}
-func (m *MockDBProgress) Start()                                       {}
-func (m *MockDBProgress) Shutdown()                                    {}
+func (m *MockDBProgress) Printf(msg string, a ...interface{})                      {}
+func (m *MockDBProgress) ColoredPrintf(msg string, a ...interface{})               {}
+func (m *MockDBProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockDBProgress) Flush()                                                   {}
+func (m *MockDBProgress) Start()                                                   {}
+func (m *MockDBProgress) Shutdown()                                                {}
 func (m *MockDBProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockDBProgress) ShutdownBar()                                 {}
-func (m *MockDBProgress) AddBar(count int)                             {}
-func (m *MockDBProgress) SetBar(count int)                             {}
-func (m *MockDBProgress) PrintfBar(msg string, a ...interface{})       {}
-func (m *MockDBProgress) Write(p []byte) (n int, err error)            { return len(p), nil }
+func (m *MockDBProgress) ShutdownBar()                                             {}
+func (m *MockDBProgress) AddBar(count int)                                         {}
+func (m *MockDBProgress) SetBar(count int)                                         {}
+func (m *MockDBProgress) PrintfBar(msg string, a ...interface{})                   {}
+func (m *MockDBProgress) Write(p []byte) (n int, err error)                        { return len(p), nil }
 
 // Note: Complex integration tests have been simplified for compilation compatibility.

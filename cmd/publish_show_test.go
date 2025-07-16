@@ -49,7 +49,7 @@ func (s *PublishShowSuite) TestMakeCmdPublishShow(c *C) {
 func (s *PublishShowSuite) TestPublishShowFlags(c *C) {
 	err := s.cmd.Flag.Set("type", "local")
 	c.Check(err, IsNil)
-	
+
 	err = s.cmd.Flag.Set("distribution", "stable")
 	c.Check(err, IsNil)
 }
@@ -58,18 +58,18 @@ func (s *PublishShowSuite) TestPublishShowFlags(c *C) {
 
 type MockPublishShowProgress struct{}
 
-func (m *MockPublishShowProgress) Printf(msg string, a ...interface{})          {}
-func (m *MockPublishShowProgress) ColoredPrintf(msg string, a ...interface{})   {}
-func (m *MockPublishShowProgress) PrintfStdErr(msg string, a ...interface{})    {}
-func (m *MockPublishShowProgress) Flush()                                       {}
-func (m *MockPublishShowProgress) Start()                                       {}
-func (m *MockPublishShowProgress) Shutdown()                                    {}
+func (m *MockPublishShowProgress) Printf(msg string, a ...interface{})                      {}
+func (m *MockPublishShowProgress) ColoredPrintf(msg string, a ...interface{})               {}
+func (m *MockPublishShowProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockPublishShowProgress) Flush()                                                   {}
+func (m *MockPublishShowProgress) Start()                                                   {}
+func (m *MockPublishShowProgress) Shutdown()                                                {}
 func (m *MockPublishShowProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockPublishShowProgress) ShutdownBar()                                 {}
-func (m *MockPublishShowProgress) AddBar(count int)                             {}
-func (m *MockPublishShowProgress) SetBar(count int)                             {}
-func (m *MockPublishShowProgress) PrintfBar(msg string, a ...interface{})       {}
-func (m *MockPublishShowProgress) Write(p []byte) (n int, err error)            { return len(p), nil }
+func (m *MockPublishShowProgress) ShutdownBar()                                             {}
+func (m *MockPublishShowProgress) AddBar(count int)                                         {}
+func (m *MockPublishShowProgress) SetBar(count int)                                         {}
+func (m *MockPublishShowProgress) PrintfBar(msg string, a ...interface{})                   {}
+func (m *MockPublishShowProgress) Write(p []byte) (n int, err error)                        { return len(p), nil }
 
 type MockPublishShowContext struct {
 	flags             *flag.FlagSet
@@ -77,9 +77,11 @@ type MockPublishShowContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockPublishShowContext) Flags() *flag.FlagSet                         { return m.flags }
-func (m *MockPublishShowContext) Progress() aptly.Progress                     { return m.progress }
-func (m *MockPublishShowContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPublishShowContext) Config() *utils.ConfigStructure               { return &utils.ConfigStructure{} }
+func (m *MockPublishShowContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishShowContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishShowContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPublishShowContext) Config() *utils.ConfigStructure { return &utils.ConfigStructure{} }
 
 // Note: Complex integration tests have been simplified for compilation compatibility.

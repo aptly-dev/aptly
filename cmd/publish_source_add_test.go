@@ -33,7 +33,7 @@ func (s *PublishSourceAddSuite) setupMockContext(c *C) {
 	flags := flag.NewFlagSet("test", flag.ContinueOnError)
 	flags.String("prefix", ".", "publishing prefix")
 	flags.String("component", "", "component names to add")
-	
+
 	err := InitContext(flags)
 	c.Assert(err, IsNil)
 }
@@ -59,7 +59,7 @@ func (s *PublishSourceAddSuite) TestMakeCmdPublishSourceAdd(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddInvalidArgs(c *C) {
 	// Test with insufficient arguments
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishSourceAdd(s.cmd, []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
 
@@ -70,7 +70,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddInvalidArgs(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddBasic(c *C) {
 	// Test basic source addition
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("component", "contrib")
 	args := []string{"stable", "contrib-snapshot"}
 
@@ -82,7 +82,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddBasic(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddMismatchComponents(c *C) {
 	// Test with mismatched number of components and sources
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("component", "main,contrib")
 	args := []string{"stable", "single-source"} // 2 components, 1 source
 
@@ -94,7 +94,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddMismatchComponents(c *C
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddMultipleComponents(c *C) {
 	// Test with multiple components
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("component", "main,contrib,non-free")
 	args := []string{"stable", "main-snapshot", "contrib-snapshot", "non-free-snapshot"}
 
@@ -106,7 +106,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddMultipleComponents(c *C
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddWithPrefix(c *C) {
 	// Test with custom prefix
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("prefix", "ppa")
 	context.Flags().Set("component", "contrib")
 	args := []string{"stable", "contrib-snapshot"}
@@ -119,7 +119,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddWithPrefix(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddWithStorage(c *C) {
 	// Test with storage endpoint
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("prefix", "s3:bucket")
 	context.Flags().Set("component", "contrib")
 	args := []string{"stable", "contrib-snapshot"}
@@ -132,7 +132,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddWithStorage(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddRepoNotFound(c *C) {
 	// Test with non-existent published repository
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("component", "contrib")
 
 	args := []string{"nonexistent-dist", "contrib-snapshot"}
@@ -144,7 +144,7 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddRepoNotFound(c *C) {
 func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddEmptyComponent(c *C) {
 	// Test with empty component flag
 	s.setupMockContext(c)
-	
+
 	context.Flags().Set("component", "")
 	args := []string{"stable", "contrib-snapshot"}
 
@@ -152,4 +152,3 @@ func (s *PublishSourceAddSuite) TestAptlyPublishSourceAddEmptyComponent(c *C) {
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Matches, ".*mismatch in number of components.*")
 }
-

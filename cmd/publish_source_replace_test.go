@@ -252,7 +252,7 @@ func (s *PublishSourceReplaceSuite) TestAptlyPublishSourceReplaceComponentValida
 		{"main,contrib", []string{"main-source", "contrib-source"}, false},
 		{"main,contrib,non-free", []string{"main-source", "contrib-source", "non-free-source"}, false},
 		{"main,contrib", []string{"single-source"}, true}, // Mismatch
-		{"", []string{"source"}, true},                     // Empty component
+		{"", []string{"source"}, true},                    // Empty component
 	}
 
 	for _, test := range componentTests {
@@ -393,14 +393,15 @@ func (m *MockPublishSourceReplaceProgress) Printf(msg string, a ...interface{}) 
 }
 
 func (m *MockPublishSourceReplaceProgress) AddBar(count int) {}
-func (m *MockPublishSourceReplaceProgress) Flush() {}
-func (m *MockPublishSourceReplaceProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockPublishSourceReplaceProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockPublishSourceReplaceProgress) SetBar(count int) {}
-func (m *MockPublishSourceReplaceProgress) Shutdown() {}
-func (m *MockPublishSourceReplaceProgress) ShutdownBar() {}
-func (m *MockPublishSourceReplaceProgress) Start() {}
-func (m *MockPublishSourceReplaceProgress) Write(data []byte) (int, error) { return len(data), nil }
+func (m *MockPublishSourceReplaceProgress) Flush()           {}
+func (m *MockPublishSourceReplaceProgress) InitBar(total int64, colored bool, barType aptly.BarType) {
+}
+func (m *MockPublishSourceReplaceProgress) PrintfStdErr(msg string, a ...interface{})  {}
+func (m *MockPublishSourceReplaceProgress) SetBar(count int)                           {}
+func (m *MockPublishSourceReplaceProgress) Shutdown()                                  {}
+func (m *MockPublishSourceReplaceProgress) ShutdownBar()                               {}
+func (m *MockPublishSourceReplaceProgress) Start()                                     {}
+func (m *MockPublishSourceReplaceProgress) Write(data []byte) (int, error)             { return len(data), nil }
 func (m *MockPublishSourceReplaceProgress) ColoredPrintf(msg string, a ...interface{}) {}
 
 type MockPublishSourceReplaceContext struct {
@@ -409,9 +410,11 @@ type MockPublishSourceReplaceContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockPublishSourceReplaceContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishSourceReplaceContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishSourceReplaceContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockPublishSourceReplaceContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishSourceReplaceContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishSourceReplaceContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockPublishedSourceReplaceRepoCollection struct {
 	shouldErrorByStoragePrefixDistribution bool

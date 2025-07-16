@@ -411,13 +411,13 @@ func (m *MockGraphProgress) Write(p []byte) (n int, err error) {
 }
 
 // Implement aptly.Progress interface
-func (m *MockGraphProgress) Start()                                        {}
-func (m *MockGraphProgress) Shutdown()                                     {}
-func (m *MockGraphProgress) Flush()                                        {}
+func (m *MockGraphProgress) Start()                                                   {}
+func (m *MockGraphProgress) Shutdown()                                                {}
+func (m *MockGraphProgress) Flush()                                                   {}
 func (m *MockGraphProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockGraphProgress) ShutdownBar()                                  {}
-func (m *MockGraphProgress) AddBar(count int)                              {}
-func (m *MockGraphProgress) SetBar(count int)                              {}
+func (m *MockGraphProgress) ShutdownBar()                                             {}
+func (m *MockGraphProgress) AddBar(count int)                                         {}
+func (m *MockGraphProgress) SetBar(count int)                                         {}
 func (m *MockGraphProgress) Printf(msg string, a ...interface{}) {
 	formatted := fmt.Sprintf(msg, a...)
 	m.Messages = append(m.Messages, formatted)
@@ -439,8 +439,8 @@ type MockGraphContext struct {
 	mockGraph             *MockGraph
 }
 
-func (m *MockGraphContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockGraphContext) Progress() aptly.Progress                      { return m.progress }
+func (m *MockGraphContext) Flags() *flag.FlagSet                         { return m.flags }
+func (m *MockGraphContext) Progress() aptly.Progress                     { return m.progress }
 func (m *MockGraphContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
 
 type MockGraph struct {
@@ -475,7 +475,7 @@ func (s *GraphSuite) TestAptlyGraphStdinPipeError(c *C) {
 	// This is harder to mock since exec.Command.StdinPipe() is not easily mockable
 	// We test this indirectly by ensuring our basic flow works
 	// The actual stdin pipe error would be rare and hard to reproduce in tests
-	
+
 	// Clear PATH to ensure dot is not found (which triggers the error before stdin pipe)
 	originalPath := os.Getenv("PATH")
 	defer os.Setenv("PATH", originalPath)

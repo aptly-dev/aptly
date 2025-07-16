@@ -680,11 +680,11 @@ type MockSigner struct {
 	ClearSignCalled    bool
 }
 
-func (m *MockSigner) Init() error                         { return nil }
-func (m *MockSigner) SetKey(keyRef string)                {}
-func (m *MockSigner) SetKeyRing(keyring, secretKeyring string) {}
+func (m *MockSigner) Init() error                                     { return nil }
+func (m *MockSigner) SetKey(keyRef string)                            {}
+func (m *MockSigner) SetKeyRing(keyring, secretKeyring string)        {}
 func (m *MockSigner) SetPassphrase(passphrase, passphraseFile string) {}
-func (m *MockSigner) SetBatch(batch bool)                 {}
+func (m *MockSigner) SetBatch(batch bool)                             {}
 
 func (m *MockSigner) DetachedSign(source, signature string) error {
 	m.DetachedSignCalled = true

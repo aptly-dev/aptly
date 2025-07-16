@@ -334,44 +334,44 @@ func (m *MockChecksumStorage) Update(path string, c *utils.ChecksumInfo) error {
 func (s *AptlySuite) TestPackagePoolInterface(c *C) {
 	// Test PackagePool interface with mock implementation
 	var pool PackagePool = &MockPackagePool{}
-	
+
 	checksums := &utils.ChecksumInfo{}
 	mockStorage := &MockChecksumStorage{}
-	
+
 	// Test Verify
 	path, exists, err := pool.Verify("test/path", "package.deb", checksums, mockStorage)
 	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
 	c.Check(path, Equals, "test/path")
-	
+
 	// Test Import
 	importedPath, err := pool.Import("/src/package.deb", "package.deb", checksums, false, mockStorage)
 	c.Check(err, IsNil)
 	c.Check(importedPath, Equals, "imported/path/package.deb")
-	
+
 	// Test LegacyPath
 	legacyPath, err := pool.LegacyPath("package.deb", checksums)
 	c.Check(err, IsNil)
 	c.Check(legacyPath, Equals, "legacy/package.deb")
-	
+
 	// Test Size
 	size, err := pool.Size("test/path")
 	c.Check(err, IsNil)
 	c.Check(size, Equals, int64(1024))
-	
+
 	// Test Open
 	reader, err := pool.Open("test/path")
 	c.Check(err, IsNil)
 	c.Check(reader, NotNil)
 	reader.Close()
-	
+
 	// Test FilepathList
 	mockProgress := &MockProgress{}
 	files, err := pool.FilepathList(mockProgress)
 	c.Check(err, IsNil)
 	c.Check(len(files), Equals, 2)
 	c.Check(files[0], Equals, "file1.deb")
-	
+
 	// Test Remove
 	removedSize, err := pool.Remove("test/path")
 	c.Check(err, IsNil)
@@ -381,52 +381,52 @@ func (s *AptlySuite) TestPackagePoolInterface(c *C) {
 func (s *AptlySuite) TestPublishedStorageInterface(c *C) {
 	// Test PublishedStorage interface with mock implementation
 	var storage PublishedStorage = &MockPublishedStorage{}
-	
+
 	// Test MkDir
 	err := storage.MkDir("test/dir")
 	c.Check(err, IsNil)
-	
+
 	// Test PutFile
 	err = storage.PutFile("dest/path", "source/file")
 	c.Check(err, IsNil)
-	
+
 	// Test RemoveDirs
 	mockProgress := &MockProgress{}
 	err = storage.RemoveDirs("test/dir", mockProgress)
 	c.Check(err, IsNil)
-	
+
 	// Test Remove
 	err = storage.Remove("test/file")
 	c.Check(err, IsNil)
-	
+
 	// Test LinkFromPool
 	mockPool := &MockPackagePool{}
 	checksums := utils.ChecksumInfo{}
 	err = storage.LinkFromPool("prefix", "rel/path", "file.deb", mockPool, "pool/path", checksums, false)
 	c.Check(err, IsNil)
-	
+
 	// Test Filelist
 	files, err := storage.Filelist("prefix")
 	c.Check(err, IsNil)
 	c.Check(len(files), Equals, 2)
-	
+
 	// Test RenameFile
 	err = storage.RenameFile("old", "new")
 	c.Check(err, IsNil)
-	
+
 	// Test SymLink
 	err = storage.SymLink("src", "dst")
 	c.Check(err, IsNil)
-	
+
 	// Test HardLink
 	err = storage.HardLink("src", "dst")
 	c.Check(err, IsNil)
-	
+
 	// Test FileExists
 	exists, err := storage.FileExists("test/file")
 	c.Check(err, IsNil)
 	c.Check(exists, Equals, true)
-	
+
 	// Test ReadLink
 	target, err := storage.ReadLink("link")
 	c.Check(err, IsNil)
@@ -436,27 +436,27 @@ func (s *AptlySuite) TestPublishedStorageInterface(c *C) {
 func (s *AptlySuite) TestProgressInterface(c *C) {
 	// Test Progress interface with mock implementation
 	var progress Progress = &MockProgress{}
-	
+
 	// Test Start/Shutdown
 	progress.Start()
 	progress.Shutdown()
-	
+
 	// Test Write
 	n, err := progress.Write([]byte("test"))
 	c.Check(err, IsNil)
 	c.Check(n, Equals, 4)
-	
+
 	// Test progress bar functions
 	progress.InitBar(100, false, BarGeneralBuildPackageList)
 	progress.AddBar(10)
 	progress.SetBar(50)
 	progress.ShutdownBar()
-	
+
 	// Test Printf functions
 	progress.Printf("test %s", "message")
 	progress.ColoredPrintf("colored %s", "message")
 	progress.PrintfStdErr("error %s", "message")
-	
+
 	// Test Flush
 	progress.Flush()
 }
@@ -464,22 +464,22 @@ func (s *AptlySuite) TestProgressInterface(c *C) {
 func (s *AptlySuite) TestDownloaderInterface(c *C) {
 	// Test Downloader interface with mock implementation
 	var downloader Downloader = &MockDownloader{}
-	
+
 	ctx := context.Background()
-	
+
 	// Test Download
 	err := downloader.Download(ctx, "http://example.com/file", "/tmp/dest")
 	c.Check(err, IsNil)
-	
+
 	// Test DownloadWithChecksum
 	checksums := &utils.ChecksumInfo{}
 	err = downloader.DownloadWithChecksum(ctx, "http://example.com/file", "/tmp/dest", checksums, false)
 	c.Check(err, IsNil)
-	
+
 	// Test GetProgress
 	progress := downloader.GetProgress()
 	c.Check(progress, NotNil)
-	
+
 	// Test GetLength
 	length, err := downloader.GetLength(ctx, "http://example.com/file")
 	c.Check(err, IsNil)
@@ -489,12 +489,12 @@ func (s *AptlySuite) TestDownloaderInterface(c *C) {
 func (s *AptlySuite) TestChecksumStorageInterface(c *C) {
 	// Test ChecksumStorage interface with mock implementation
 	var storage ChecksumStorage = &MockChecksumStorage{}
-	
+
 	// Test Get
 	checksums, err := storage.Get("test/path")
 	c.Check(err, IsNil)
 	c.Check(checksums, NotNil)
-	
+
 	// Test Update
 	newChecksums := &utils.ChecksumInfo{}
 	err = storage.Update("test/path", newChecksums)
@@ -505,28 +505,28 @@ func (s *AptlySuite) TestConsoleResultReporter(c *C) {
 	// Test ConsoleResultReporter implementation
 	mockProgress := &MockProgress{}
 	reporter := &ConsoleResultReporter{Progress: mockProgress}
-	
+
 	// Test interface compliance
 	var _ ResultReporter = reporter
-	
+
 	// Test Warning
 	reporter.Warning("test warning %s", "message")
 	output := mockProgress.buffer.String()
 	c.Check(strings.Contains(output, "test warning message"), Equals, true)
 	c.Check(strings.Contains(output, "[!]"), Equals, true)
-	
+
 	// Reset buffer
 	mockProgress.buffer.Reset()
-	
+
 	// Test Removed
 	reporter.Removed("removed %s", "item")
 	output = mockProgress.buffer.String()
 	c.Check(strings.Contains(output, "removed item"), Equals, true)
 	c.Check(strings.Contains(output, "[-]"), Equals, true)
-	
+
 	// Reset buffer
 	mockProgress.buffer.Reset()
-	
+
 	// Test Added
 	reporter.Added("added %s", "item")
 	output = mockProgress.buffer.String()
@@ -541,25 +541,25 @@ func (s *AptlySuite) TestRecordingResultReporter(c *C) {
 		AddedLines:   []string{},
 		RemovedLines: []string{},
 	}
-	
+
 	// Test interface compliance
 	var _ ResultReporter = reporter
-	
+
 	// Test Warning
 	reporter.Warning("test warning %s", "message")
 	c.Check(len(reporter.Warnings), Equals, 1)
 	c.Check(reporter.Warnings[0], Equals, "test warning message")
-	
+
 	// Test Removed
 	reporter.Removed("removed %s", "item")
 	c.Check(len(reporter.RemovedLines), Equals, 1)
 	c.Check(reporter.RemovedLines[0], Equals, "removed item")
-	
+
 	// Test Added
 	reporter.Added("added %s", "item")
 	c.Check(len(reporter.AddedLines), Equals, 1)
 	c.Check(reporter.AddedLines[0], Equals, "added item")
-	
+
 	// Test multiple entries
 	reporter.Warning("second warning")
 	reporter.Added("second addition")
@@ -574,39 +574,39 @@ func (s *AptlySuite) TestReadSeekerCloserInterface(c *C) {
 	var rsc ReadSeekerCloser = &MockReadSeekerCloser{
 		content: []byte("Hello, World!"),
 	}
-	
+
 	// Test Read
 	buf := make([]byte, 5)
 	n, err := rsc.Read(buf)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, 5)
 	c.Check(string(buf), Equals, "Hello")
-	
+
 	// Test Seek
 	pos, err := rsc.Seek(0, io.SeekStart)
 	c.Check(err, IsNil)
 	c.Check(pos, Equals, int64(0))
-	
+
 	// Test Read again from beginning
 	n, err = rsc.Read(buf)
 	c.Check(err, IsNil)
 	c.Check(string(buf), Equals, "Hello")
-	
+
 	// Test Seek to end
 	pos, err = rsc.Seek(-6, io.SeekEnd)
 	c.Check(err, IsNil)
 	c.Check(pos, Equals, int64(7))
-	
+
 	// Test Read from near end
 	buf = make([]byte, 10)
 	n, err = rsc.Read(buf)
 	c.Check(err, IsNil)
 	c.Check(string(buf[:n]), Equals, "World!")
-	
+
 	// Test Close
 	err = rsc.Close()
 	c.Check(err, IsNil)
-	
+
 	// Test Read after close (should error)
 	_, err = rsc.Read(buf)
 	c.Check(err, NotNil)
@@ -628,14 +628,14 @@ func (s *AptlySuite) TestBarTypeConstants(c *C) {
 		BarPublishGeneratePackageFiles,
 		BarPublishFinalizeIndexes,
 	}
-	
+
 	// Check that all constants are different
 	seen := make(map[BarType]bool)
 	for _, barType := range barTypes {
 		c.Check(seen[barType], Equals, false, Commentf("Duplicate BarType: %v", barType))
 		seen[barType] = true
 	}
-	
+
 	// Check that they are sequential integers starting from 0
 	for i, barType := range barTypes {
 		c.Check(int(barType), Equals, i, Commentf("BarType not sequential: %v", barType))
@@ -644,7 +644,7 @@ func (s *AptlySuite) TestBarTypeConstants(c *C) {
 
 func (s *AptlySuite) TestErrorHandling(c *C) {
 	// Test error handling in mock implementations
-	
+
 	// Test PackagePool with errors
 	pool := &MockPackagePool{
 		verifyFunc: func(string, string, *utils.ChecksumInfo, ChecksumStorage) (string, bool, error) {
@@ -654,15 +654,15 @@ func (s *AptlySuite) TestErrorHandling(c *C) {
 			return "", errors.New("import error")
 		},
 	}
-	
+
 	_, _, err := pool.Verify("", "", nil, nil)
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "verify error")
-	
+
 	_, err = pool.Import("", "", nil, false, nil)
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "import error")
-	
+
 	// Test PublishedStorage with errors
 	storage := &MockPublishedStorage{
 		mkDirFunc: func(string) error {
@@ -672,11 +672,11 @@ func (s *AptlySuite) TestErrorHandling(c *C) {
 			return false, errors.New("file exists error")
 		},
 	}
-	
+
 	err = storage.MkDir("test")
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "mkdir error")
-	
+
 	_, err = storage.FileExists("test")
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "file exists error")
@@ -684,29 +684,29 @@ func (s *AptlySuite) TestErrorHandling(c *C) {
 
 func (s *AptlySuite) TestInterfaceCompatibility(c *C) {
 	// Test that our mocks properly implement the interfaces
-	
+
 	// PackagePool interface
 	var _ PackagePool = &MockPackagePool{}
-	
-	// PublishedStorage interface 
+
+	// PublishedStorage interface
 	var _ PublishedStorage = &MockPublishedStorage{}
-	
+
 	// Progress interface
 	var _ Progress = &MockProgress{}
-	
+
 	// Downloader interface
 	var _ Downloader = &MockDownloader{}
-	
+
 	// ChecksumStorage interface
 	var _ ChecksumStorage = &MockChecksumStorage{}
-	
+
 	// ReadSeekerCloser interface
 	var _ ReadSeekerCloser = &MockReadSeekerCloser{}
-	
+
 	// ResultReporter interface
 	var _ ResultReporter = &ConsoleResultReporter{}
 	var _ ResultReporter = &RecordingResultReporter{}
-	
+
 	// Test that the interface checks pass
 	c.Check(true, Equals, true)
 }

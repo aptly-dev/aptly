@@ -28,7 +28,7 @@ func (s *LevelDBStorageSuite) TestCreateTemporary(c *C) {
 		c.Check(err, NotNil)
 		return
 	}
-	
+
 	c.Check(tempStorage, NotNil)
 	levelStorage, ok := tempStorage.(*storage)
 	c.Check(ok, Equals, true)

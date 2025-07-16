@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-
 	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )
@@ -66,11 +65,11 @@ func (s *StorageTestSuite) TestStorageResponseStructure(c *C) {
 	s.router.ServeHTTP(w, req)
 
 	c.Check(w.Code, Equals, 200)
-	
+
 	// Should have valid JSON response
 	body := w.Body.String()
 	c.Check(len(body), Not(Equals), 0)
-	
+
 	// Should start with valid JSON structure
 	c.Check(body[0], Equals, byte('{'), Commentf("Response should be JSON object"))
 }

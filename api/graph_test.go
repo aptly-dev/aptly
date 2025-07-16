@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"strings"
 
-
 	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )
@@ -155,7 +154,7 @@ func (s *GraphTestSuite) TestGraphMimeTypeHandling(c *C) {
 	for ext, expectedMime := range extensions {
 		actualMime := mime.TypeByExtension("." + ext)
 		if actualMime != "" {
-			c.Check(actualMime, Matches, expectedMime+".*", 
+			c.Check(actualMime, Matches, expectedMime+".*",
 				Commentf("MIME type mismatch for extension: %s", ext))
 		}
 	}
@@ -305,12 +304,12 @@ func (s *GraphTestSuite) TestGraphContentTypeHeaders(c *C) {
 		s.router.ServeHTTP(w, req)
 
 		contentType := w.Header().Get("Content-Type")
-		
+
 		if test.expectJSON {
 			c.Check(strings.Contains(contentType, "application/json"), Equals, true,
 				Commentf("Expected JSON content type for .%s, got: %s", test.ext, contentType))
 		}
-		
+
 		// Note: Image content types will only be set if graphviz is available and context exists
 		c.Check(contentType, Not(Equals), "", Commentf("Content type should be set for .%s", test.ext))
 	}

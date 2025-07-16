@@ -17,14 +17,14 @@ func Test(t *testing.T) { TestingT(t) }
 
 func (s *StorageSuite) TestGetContext(c *C) {
 	storage := &EtcDStorage{}
-	
+
 	// Test default timeout
 	ctx, cancel := storage.getContext()
 	defer cancel()
-	
+
 	deadline, ok := ctx.Deadline()
 	c.Assert(ok, Equals, true)
-	
+
 	// Should have a deadline set
 	remaining := time.Until(deadline)
 	c.Assert(remaining > 0, Equals, true)
@@ -42,7 +42,7 @@ func (s *StorageSuite) TestEnvironmentVariables(c *C) {
 	originalDialTimeout := os.Getenv("APTLY_ETCD_DIAL_TIMEOUT")
 	originalKeepAlive := os.Getenv("APTLY_ETCD_KEEPALIVE")
 	originalMaxMsg := os.Getenv("APTLY_ETCD_MAX_MSG_SIZE")
-	
+
 	defer func() {
 		// Restore original values
 		os.Setenv("APTLY_ETCD_TIMEOUT", originalTimeout)
@@ -50,12 +50,12 @@ func (s *StorageSuite) TestEnvironmentVariables(c *C) {
 		os.Setenv("APTLY_ETCD_KEEPALIVE", originalKeepAlive)
 		os.Setenv("APTLY_ETCD_MAX_MSG_SIZE", originalMaxMsg)
 	}()
-	
+
 	// Test valid timeout
 	os.Setenv("APTLY_ETCD_TIMEOUT", "30s")
 	// Would need to reinitialize to test, but we can't easily do that
 	// This test mainly ensures the env vars are recognized
-	
+
 	// Test invalid timeout (should use default)
 	os.Setenv("APTLY_ETCD_TIMEOUT", "invalid")
 	timeout := os.Getenv("APTLY_ETCD_TIMEOUT")
@@ -65,10 +65,10 @@ func (s *StorageSuite) TestEnvironmentVariables(c *C) {
 func (s *StorageSuite) TestIsTemporary(c *C) {
 	// Test nil error
 	c.Assert(isTemporary(nil), Equals, false)
-	
+
 	// Test context deadline exceeded
 	c.Assert(isTemporary(context.DeadlineExceeded), Equals, true)
-	
+
 	// Test timeout error
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 	defer cancel()
@@ -83,7 +83,7 @@ func (s *StorageSuite) TestApplyPrefix(c *C) {
 	key := []byte("test-key")
 	result := storage.applyPrefix(key)
 	c.Assert(result, DeepEquals, key)
-	
+
 	// Test with temp prefix
 	storage.tmpPrefix = "temp123"
 	result = storage.applyPrefix(key)
@@ -96,11 +96,11 @@ func (s *StorageSuite) TestGetRetryLogic(c *C) {
 	// This would require mocking etcd client, which is complex
 	// The test verifies the retry logic exists and compiles
 	// In production, this would be tested with integration tests
-	
+
 	// Verify retry count
 	maxRetries := 3
 	c.Assert(maxRetries, Equals, 3)
-	
+
 	// Verify backoff calculation
 	for i := 0; i < maxRetries; i++ {
 		backoff := time.Duration(i+1) * 100 * time.Millisecond

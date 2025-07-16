@@ -31,7 +31,7 @@ func (s *TransactionSuite) TestInterfaceCompliance(c *C) {
 	// Test that storage implements the transaction interface
 	var storageInterface database.Storage = &storage{}
 	c.Check(storageInterface, NotNil)
-	
+
 	// Test that we can call OpenTransaction method
 	_, err := storageInterface.OpenTransaction()
 	c.Check(err, NotNil) // Expected to fail without proper setup

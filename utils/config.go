@@ -67,9 +67,11 @@ type ConfigStructure struct { // nolint: maligned
 
 // DBConfig structure
 type DBConfig struct {
-	Type   string `json:"type"    yaml:"type"`
-	DBPath string `json:"dbPath"  yaml:"db_path"`
-	URL    string `json:"url"     yaml:"url"`
+	Type         string `json:"type"         yaml:"type"`
+	DBPath       string `json:"dbPath"       yaml:"db_path"`
+	URL          string `json:"url"          yaml:"url"`
+	Timeout      string `json:"timeout"      yaml:"timeout"`
+	WriteRetries int    `json:"writeRetries" yaml:"write_retries"`
 }
 
 type LocalPoolStorage struct {
@@ -185,6 +187,8 @@ type S3PublishRoot struct {
 	ForceSigV2              bool   `json:"forceSigV2"                 yaml:"force_sigv2"`
 	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"    yaml:"force_virtualhosted_style"`
 	Debug                   bool   `json:"debug"                      yaml:"debug"`
+	ConcurrentUploads       int    `json:"concurrentUploads"          yaml:"concurrent_uploads"`
+	UploadQueueSize         int    `json:"uploadQueueSize"            yaml:"upload_queue_size"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
@@ -323,4 +327,40 @@ func SaveConfigYAML(filename string, config *ConfigStructure) error {
 // GetRootDir returns the RootDir with expanded ~ as home directory
 func (conf *ConfigStructure) GetRootDir() string {
 	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
+}
+
+// GetFileSystemPublishRoots returns a copy of FileSystemPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetFileSystemPublishRoots() map[string]FileSystemPublishRoot {
+	result := make(map[string]FileSystemPublishRoot, len(conf.FileSystemPublishRoots))
+	for k, v := range conf.FileSystemPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetS3PublishRoots returns a copy of S3PublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetS3PublishRoots() map[string]S3PublishRoot {
+	result := make(map[string]S3PublishRoot, len(conf.S3PublishRoots))
+	for k, v := range conf.S3PublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetSwiftPublishRoots returns a copy of SwiftPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetSwiftPublishRoots() map[string]SwiftPublishRoot {
+	result := make(map[string]SwiftPublishRoot, len(conf.SwiftPublishRoots))
+	for k, v := range conf.SwiftPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetAzurePublishRoots returns a copy of AzurePublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetAzurePublishRoots() map[string]AzureEndpoint {
+	result := make(map[string]AzureEndpoint, len(conf.AzurePublishRoots))
+	for k, v := range conf.AzurePublishRoots {
+		result[k] = v
+	}
+	return result
 }

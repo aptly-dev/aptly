@@ -370,17 +370,19 @@ type MockSnapshotSearchContext struct {
 	dependencyOptions int
 }
 
-func (m *MockSnapshotSearchContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotSearchContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotSearchContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockSnapshotSearchContext) ArchitecturesList() []string                  { return m.architecturesList }
-func (m *MockSnapshotSearchContext) DependencyOptions() int                       { return m.dependencyOptions }
+func (m *MockSnapshotSearchContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotSearchContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotSearchContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockSnapshotSearchContext) ArchitecturesList() []string { return m.architecturesList }
+func (m *MockSnapshotSearchContext) DependencyOptions() int      { return m.dependencyOptions }
 
 type MockSnapshotSearchCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
-	byNameCalled             bool
-	loadCompleteCalled       bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
+	byNameCalled            bool
+	loadCompleteCalled      bool
 }
 
 func (m *MockSnapshotSearchCollection) ByName(name string) (*deb.Snapshot, error) {
@@ -403,10 +405,10 @@ func (m *MockSnapshotSearchCollection) LoadComplete(snapshot *deb.Snapshot) erro
 }
 
 type MockRemoteSearchRepoCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
-	byNameCalled             bool
-	loadCompleteCalled       bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
+	byNameCalled            bool
+	loadCompleteCalled      bool
 }
 
 func (m *MockRemoteSearchRepoCollection) ByName(name string) (*deb.RemoteRepo, error) {
@@ -429,10 +431,10 @@ func (m *MockRemoteSearchRepoCollection) LoadComplete(repo *deb.RemoteRepo) erro
 }
 
 type MockLocalSearchRepoCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
-	byNameCalled             bool
-	loadCompleteCalled       bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
+	byNameCalled            bool
+	loadCompleteCalled      bool
 }
 
 func (m *MockLocalSearchRepoCollection) ByName(name string) (*deb.LocalRepo, error) {
@@ -487,7 +489,7 @@ func NewPackageListFromRefListSearch(refList *deb.PackageRefList, packageCollect
 		if collection, ok := packageCollection.(*MockPackageSearchCollection); ok && collection.shouldErrorFilter {
 			return nil, fmt.Errorf("mock filter error")
 		}
-		
+
 		resultList := &deb.PackageList{}
 		if collection, ok := packageCollection.(*MockPackageSearchCollection); ok && collection.emptyResults {
 			resultList.Len = func() int { return 0 }
@@ -517,7 +519,7 @@ func (r *deb.LocalRepo) RefList() *deb.PackageRefList {
 type MockMatchAllQuery struct{}
 
 func (m *MockMatchAllQuery) Matches(pkg *deb.Package) bool { return true }
-func (m *MockMatchAllQuery) String() string               { return "*" }
+func (m *MockMatchAllQuery) String() string                { return "*" }
 
 // Override deb.MatchAllQuery for testing
 func init() {
@@ -548,6 +550,6 @@ func init() {
 type MockSearchQuery struct{}
 
 func (m *MockSearchQuery) Matches(pkg *deb.Package) bool { return true }
-func (m *MockSearchQuery) String() string               { return "mock-search-query" }
+func (m *MockSearchQuery) String() string                { return "mock-search-query" }
 
 // GetStringOrFileContent function is already defined in string_or_file_flag.go

@@ -253,8 +253,8 @@ func (s *SnapshotShowSuite) TestAptlySnapshotShowJSONRemoteRepoSources(c *C) {
 func (s *SnapshotShowSuite) TestAptlySnapshotShowSourceErrors(c *C) {
 	// Test handling of source lookup errors (should continue gracefully)
 	mockSnapshotCollection := &MockSnapshotShowCollection{
-		hasSnapshotSources:   true,
-		shouldErrorByUUID:    true,
+		hasSnapshotSources: true,
+		shouldErrorByUUID:  true,
 	}
 	s.collectionFactory.snapshotCollection = mockSnapshotCollection
 
@@ -269,7 +269,7 @@ func (s *SnapshotShowSuite) TestAptlySnapshotShowSourceErrors(c *C) {
 func (s *SnapshotShowSuite) TestAptlySnapshotShowJSONMarshalError(c *C) {
 	// Test JSON marshal error handling
 	s.cmd.Flag.Set("json", "true")
-	
+
 	// Create a snapshot that will cause JSON marshal error
 	mockCollection := &MockSnapshotShowCollection{causeMarshalError: true}
 	s.collectionFactory.snapshotCollection = mockCollection
@@ -323,22 +323,24 @@ type MockSnapshotShowContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockSnapshotShowContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotShowContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotShowContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockSnapshotShowContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotShowContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotShowContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockSnapshotShowCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
-	shouldErrorByUUID        bool
-	hasSnapshotSources       bool
-	hasLocalRepoSources      bool
-	hasRemoteRepoSources     bool
-	causeMarshalError        bool
-	emptyRefList             bool
-	byNameCalled             bool
-	loadCompleteCalled       bool
-	byUUIDCalled             bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
+	shouldErrorByUUID       bool
+	hasSnapshotSources      bool
+	hasLocalRepoSources     bool
+	hasRemoteRepoSources    bool
+	causeMarshalError       bool
+	emptyRefList            bool
+	byNameCalled            bool
+	loadCompleteCalled      bool
+	byUUIDCalled            bool
 }
 
 func (m *MockSnapshotShowCollection) ByName(name string) (*deb.Snapshot, error) {

@@ -28,7 +28,7 @@ func (s *MirrorListSuite) SetUpTest(c *C) {
 
 	// Set up mock collections
 	s.collectionFactory = &deb.CollectionFactory{
-			// Note: Removed remoteRepoCollection field to fix compilation
+		// Note: Removed remoteRepoCollection field to fix compilation
 	}
 
 	// Set up mock context
@@ -249,10 +249,12 @@ type MockMirrorListContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockMirrorListContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockMirrorListContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockMirrorListContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockMirrorListContext) CloseDatabase() error                          { return nil }
+func (m *MockMirrorListContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockMirrorListContext) Progress() aptly.Progress { return m.progress }
+func (m *MockMirrorListContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockMirrorListContext) CloseDatabase() error { return nil }
 
 type MockRemoteMirrorListCollection struct {
 	emptyCollection    bool
@@ -289,7 +291,7 @@ func (m *MockRemoteMirrorListCollection) ForEach(handler func(*deb.RemoteRepo) e
 				Distribution: "stable",
 				Components:   []string{"main"},
 			}
-			
+
 			if err := handler(repo); err != nil {
 				return err
 			}
@@ -301,13 +303,13 @@ func (m *MockRemoteMirrorListCollection) ForEach(handler func(*deb.RemoteRepo) e
 			Distribution: "stable",
 			Components:   []string{"main"},
 		}
-		
+
 		// Create problematic repo for marshal error testing
 		if m.causeMarshalError {
 			// Create a structure that can't be marshaled
 			// Note: Removed cyclic reference as TestCyclicRef field doesn't exist
 		}
-		
+
 		return handler(repo)
 	}
 
@@ -336,7 +338,7 @@ func (s *MirrorListSuite) TestSortingLogic(c *C) {
 	// Test string sorting
 	mirrors := []string{"z-mirror", "a-mirror", "m-mirror"}
 	sort.Strings(mirrors)
-	
+
 	expected := []string{"a-mirror", "m-mirror", "z-mirror"}
 	c.Check(mirrors, DeepEquals, expected)
 }
@@ -348,11 +350,11 @@ func (s *MirrorListSuite) TestMirrorSliceSorting(c *C) {
 		{Name: "a-mirror"},
 		{Name: "m-mirror"},
 	}
-	
+
 	sort.Slice(repos, func(i, j int) bool {
 		return repos[i].Name < repos[j].Name
 	})
-	
+
 	expectedOrder := []string{"a-mirror", "m-mirror", "z-mirror"}
 	for i, repo := range repos {
 		c.Check(repo.Name, Equals, expectedOrder[i])
@@ -366,7 +368,7 @@ func (s *MirrorListSuite) TestFormatStrings(c *C) {
 		ArchiveRoot:  "http://example.com/debian",
 		Distribution: "stable",
 	}
-	
+
 	// Test basic repo properties
 	c.Check(repo.Name, Equals, "test")
 	c.Check(repo.ArchiveRoot, Equals, "http://example.com/debian")
@@ -378,7 +380,7 @@ func (s *MirrorListSuite) TestEdgeCases(c *C) {
 	// Test with mirror that has minimal configuration
 	repo := &deb.RemoteRepo{Name: "simple-mirror"}
 	c.Check(repo.Name, Equals, "simple-mirror")
-	
+
 	// Test basic repo properties
 	c.Check(len(repo.Name) > 0, Equals, true)
 }
@@ -404,7 +406,7 @@ func (s *MirrorListSuite) TestFlagCombinations(c *C) {
 		for flag := range flags {
 			s.cmd.Flag.Set(flag, "false")
 		}
-		
+
 		// Note: Removed complex output mocking to fix compilation
 	}
 }

@@ -44,7 +44,7 @@ func (b *EtcDBatch) Write() (err error) {
 		}
 
 		batch := b.ops[i:end]
-		
+
 		// Retry logic with exponential backoff
 		var lastErr error
 		for retry := 0; retry <= DefaultWriteRetries; retry++ {
@@ -53,27 +53,27 @@ func (b *EtcDBatch) Write() (err error) {
 			txn.Then(batch...)
 			_, err = txn.Commit()
 			cancel()
-			
+
 			if err == nil {
 				// Success, move to next batch
 				break
 			}
-			
+
 			lastErr = err
-			
+
 			// Check if error is retryable
 			if !isRetryableError(err) {
 				log.Error().Err(err).Int("batch_start", i).Int("batch_end", end).Msg("etcd: non-retryable error during batch write")
 				return fmt.Errorf("etcd batch write failed: %w", err)
 			}
-			
+
 			if retry < DefaultWriteRetries {
 				// Calculate exponential backoff
 				backoff := time.Duration(math.Pow(2, float64(retry))) * 100 * time.Millisecond
 				if backoff > 5*time.Second {
 					backoff = 5 * time.Second
 				}
-				
+
 				log.Warn().Err(err).
 					Int("retry", retry+1).
 					Int("max_retries", DefaultWriteRetries).
@@ -81,11 +81,11 @@ func (b *EtcDBatch) Write() (err error) {
 					Int("batch_start", i).
 					Int("batch_end", end).
 					Msg("etcd: batch write failed, retrying")
-					
+
 				time.Sleep(backoff)
 			}
 		}
-		
+
 		// All retries exhausted
 		if lastErr != nil {
 			log.Error().Err(lastErr).
@@ -105,7 +105,7 @@ func isRetryableError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	// Check for gRPC status errors
 	if s, ok := status.FromError(err); ok {
 		switch s.Code() {
@@ -113,28 +113,28 @@ func isRetryableError(err error) bool {
 			return true
 		}
 	}
-	
+
 	// Check for context errors
 	if err == context.DeadlineExceeded || err == context.Canceled {
 		return true
 	}
-	
+
 	// Check for timeout errors in error message
 	if errStr := err.Error(); errStr != "" {
 		if contains(errStr, "timeout") || contains(errStr, "timed out") ||
-		   contains(errStr, "unavailable") || contains(errStr, "connection refused") {
+			contains(errStr, "unavailable") || contains(errStr, "connection refused") {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // contains is a simple string contains helper
 func contains(s, substr string) bool {
-	return len(substr) > 0 && len(s) >= len(substr) && 
+	return len(substr) > 0 && len(s) >= len(substr) &&
 		(s == substr || s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-		 len(s) > len(substr) && findSubstring(s, substr))
+			len(s) > len(substr) && findSubstring(s, substr))
 }
 
 func findSubstring(s, substr string) bool {

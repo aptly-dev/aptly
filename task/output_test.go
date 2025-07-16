@@ -50,7 +50,7 @@ func (s *OutputSuite) TestOutputString(c *C) {
 func (s *OutputSuite) TestOutputStringConcurrent(c *C) {
 	// Test String method with concurrent access
 	var wg sync.WaitGroup
-	
+
 	// Start multiple goroutines writing to output
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -59,7 +59,7 @@ func (s *OutputSuite) TestOutputStringConcurrent(c *C) {
 			s.output.WriteString("test")
 		}(i)
 	}
-	
+
 	// Start multiple goroutines reading from output
 	for i := 0; i < 5; i++ {
 		wg.Add(1)
@@ -68,9 +68,9 @@ func (s *OutputSuite) TestOutputStringConcurrent(c *C) {
 			_ = s.output.String()
 		}()
 	}
-	
+
 	wg.Wait()
-	
+
 	// Should contain all the writes
 	result := s.output.String()
 	c.Check(len(result), Equals, 40) // 10 * "test" = 40 chars
@@ -82,7 +82,7 @@ func (s *OutputSuite) TestOutputWrite(c *C) {
 	n, err := s.output.Write(data)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, len(data))
-	
+
 	// Write method doesn't actually write to buffer, just returns length
 	c.Check(s.output.String(), Equals, "")
 }
@@ -90,7 +90,7 @@ func (s *OutputSuite) TestOutputWrite(c *C) {
 func (s *OutputSuite) TestOutputWriteError(c *C) {
 	// Test Write method - can't override the method, so just test normal behavior
 	data := []byte("test data")
-	
+
 	n, err := s.output.Write(data)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, len(data))
@@ -108,20 +108,20 @@ func (s *OutputSuite) TestOutputWriteString(c *C) {
 func (s *OutputSuite) TestOutputWriteStringMultiple(c *C) {
 	// Test multiple WriteString calls
 	texts := []string{"hello", " ", "world", "!"}
-	
+
 	for _, text := range texts {
 		n, err := s.output.WriteString(text)
 		c.Check(err, IsNil)
 		c.Check(n, Equals, len(text))
 	}
-	
+
 	c.Check(s.output.String(), Equals, "hello world!")
 }
 
 func (s *OutputSuite) TestOutputWriteStringConcurrent(c *C) {
 	// Test WriteString with concurrent access
 	var wg sync.WaitGroup
-	
+
 	// Start multiple goroutines writing different strings
 	texts := []string{"a", "b", "c", "d", "e"}
 	for _, text := range texts {
@@ -131,12 +131,12 @@ func (s *OutputSuite) TestOutputWriteStringConcurrent(c *C) {
 			s.output.WriteString(t)
 		}(text)
 	}
-	
+
 	wg.Wait()
-	
+
 	result := s.output.String()
 	c.Check(len(result), Equals, 5)
-	
+
 	// All characters should be present (order may vary due to concurrency)
 	for _, text := range texts {
 		c.Check(result, Matches, ".*"+text+".*")
@@ -279,7 +279,7 @@ func (s *OutputSuite) TestOutputMixedMethods(c *C) {
 	s.output.Printf(" %s", "middle")
 	s.output.ColoredPrintf(" %s", "end")
 	s.output.PrintfStdErr("error")
-	
+
 	expected := "Start middle end\nerror"
 	c.Check(s.output.String(), Equals, expected)
 }
@@ -290,7 +290,7 @@ func (s *OutputSuite) TestPublishOutputInitBar(c *C) {
 	// Test InitBar for publish output
 	count := int64(100)
 	s.publishOutput.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
-	
+
 	c.Check(s.publishOutput.barType, NotNil)
 	c.Check(*s.publishOutput.barType, Equals, aptly.BarPublishGeneratePackageFiles)
 	c.Check(s.publishOutput.TotalNumberOfPackages, Equals, count)
@@ -301,7 +301,7 @@ func (s *OutputSuite) TestPublishOutputInitBarOtherType(c *C) {
 	// Test InitBar for publish output with different bar type
 	count := int64(50)
 	s.publishOutput.InitBar(count, false, aptly.BarGeneralBuildPackageList)
-	
+
 	c.Check(s.publishOutput.barType, NotNil)
 	c.Check(*s.publishOutput.barType, Equals, aptly.BarGeneralBuildPackageList)
 	// Should not set package counts for other bar types
@@ -313,7 +313,7 @@ func (s *OutputSuite) TestPublishOutputShutdownBar(c *C) {
 	// Test ShutdownBar for publish output
 	s.publishOutput.barType = &aptly_BarPublishGeneratePackageFiles_ptr
 	s.publishOutput.ShutdownBar()
-	
+
 	c.Check(s.publishOutput.barType, IsNil)
 }
 
@@ -321,11 +321,11 @@ func (s *OutputSuite) TestPublishOutputAddBar(c *C) {
 	// Test AddBar for publish output with correct bar type
 	s.publishOutput.barType = &aptly_BarPublishGeneratePackageFiles_ptr
 	s.publishOutput.RemainingNumberOfPackages = 10
-	
+
 	s.publishOutput.AddBar(1)
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(9))
-	
-	s.publishOutput.AddBar(3)  // Still decrements by 1, not 3
+
+	s.publishOutput.AddBar(3) // Still decrements by 1, not 3
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(8))
 }
 
@@ -334,7 +334,7 @@ func (s *OutputSuite) TestPublishOutputAddBarWrongType(c *C) {
 	otherBarType := aptly.BarGeneralBuildPackageList
 	s.publishOutput.barType = &otherBarType
 	s.publishOutput.RemainingNumberOfPackages = 10
-	
+
 	s.publishOutput.AddBar(1)
 	// Should not decrement for wrong bar type
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(10))
@@ -344,7 +344,7 @@ func (s *OutputSuite) TestPublishOutputAddBarNilBarType(c *C) {
 	// Test AddBar for publish output with nil bar type
 	s.publishOutput.barType = nil
 	s.publishOutput.RemainingNumberOfPackages = 10
-	
+
 	s.publishOutput.AddBar(1)
 	// Should not decrement when bar type is nil
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(10))
@@ -353,18 +353,18 @@ func (s *OutputSuite) TestPublishOutputAddBarNilBarType(c *C) {
 func (s *OutputSuite) TestPublishOutputComplete(c *C) {
 	// Test complete workflow of publish output
 	count := int64(5)
-	
+
 	// Initialize
 	s.publishOutput.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
 	c.Check(s.publishOutput.TotalNumberOfPackages, Equals, count)
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, count)
-	
+
 	// Simulate processing packages
 	for i := int64(0); i < count; i++ {
 		s.publishOutput.AddBar(1)
 		c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, count-i-1)
 	}
-	
+
 	// Shutdown
 	s.publishOutput.ShutdownBar()
 	c.Check(s.publishOutput.barType, IsNil)
@@ -374,7 +374,7 @@ func (s *OutputSuite) TestOutputThreadSafety(c *C) {
 	// Test thread safety of all methods
 	var wg sync.WaitGroup
 	numGoroutines := 20
-	
+
 	// Test concurrent access to all methods
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
@@ -388,17 +388,17 @@ func (s *OutputSuite) TestOutputThreadSafety(c *C) {
 			_ = s.output.String()
 		}(i)
 	}
-	
+
 	wg.Wait()
-	
+
 	// Should contain all messages without corruption
 	result := s.output.String()
 	c.Check(len(result) > 0, Equals, true)
-	
+
 	// Check that a reasonable amount of output was generated
 	// Each goroutine writes 5 messages, so we should have significant output
 	c.Check(len(result) > numGoroutines*10, Equals, true)
-	
+
 	// Check that some expected message patterns exist (not all, to avoid flakiness)
 	// This verifies basic functionality without being too strict about concurrent ordering
 	foundMsg := false
@@ -415,7 +415,7 @@ func (s *OutputSuite) TestOutputThreadSafety(c *C) {
 			foundStderr = true
 		}
 	}
-	
+
 	c.Check(foundMsg, Equals, true)
 	c.Check(foundPrintf, Equals, true)
 	c.Check(foundStderr, Equals, true)
@@ -425,7 +425,7 @@ func (s *OutputSuite) TestProgressInterfaceCompliance(c *C) {
 	// Test that Output implements aptly.Progress interface
 	var progress aptly.Progress = s.output
 	c.Check(progress, NotNil)
-	
+
 	// Test calling interface methods
 	progress.Start()
 	progress.Shutdown()
@@ -442,7 +442,7 @@ func (s *OutputSuite) TestPublishOutputProgressInterfaceCompliance(c *C) {
 	// Test that PublishOutput implements aptly.Progress interface
 	var progress aptly.Progress = s.publishOutput
 	c.Check(progress, NotNil)
-	
+
 	// Test calling interface methods
 	progress.InitBar(100, false, aptly.BarPublishGeneratePackageFiles)
 	progress.AddBar(1)
@@ -454,7 +454,7 @@ func (s *OutputSuite) TestPublishOutputProgressInterfaceCompliance(c *C) {
 func (s *OutputSuite) TestOutputLargeData(c *C) {
 	// Test with large amounts of data
 	largeString := strings.Repeat("x", 10000)
-	
+
 	n, err := s.output.WriteString(largeString)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, len(largeString))
@@ -464,7 +464,7 @@ func (s *OutputSuite) TestOutputLargeData(c *C) {
 func (s *OutputSuite) TestOutputSpecialCharacters(c *C) {
 	// Test with special characters and unicode
 	specialString := "Hello L! \n\t\r Special: @#$%^&*()"
-	
+
 	s.output.WriteString(specialString)
 	c.Check(s.output.String(), Equals, specialString)
 }
@@ -473,7 +473,7 @@ func (s *OutputSuite) TestPublishOutputNegativeAddBar(c *C) {
 	// Test AddBar with negative values (edge case)
 	s.publishOutput.barType = &aptly_BarPublishGeneratePackageFiles_ptr
 	s.publishOutput.RemainingNumberOfPackages = 5
-	
+
 	// This should still decrement by 1 regardless of the parameter
 	s.publishOutput.AddBar(-10)
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(4))
@@ -483,7 +483,7 @@ func (s *OutputSuite) TestPublishOutputZeroAddBar(c *C) {
 	// Test AddBar with zero value
 	s.publishOutput.barType = &aptly_BarPublishGeneratePackageFiles_ptr
 	s.publishOutput.RemainingNumberOfPackages = 5
-	
+
 	s.publishOutput.AddBar(0)
 	c.Check(s.publishOutput.RemainingNumberOfPackages, Equals, int64(4))
 }

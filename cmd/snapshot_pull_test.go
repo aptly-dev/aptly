@@ -226,7 +226,7 @@ func (s *SnapshotPullSuite) TestAptlySnapshotPullFilterError(c *C) {
 func (s *SnapshotPullSuite) TestAptlySnapshotPullWithFlags(c *C) {
 	// Test pull with various flags
 	flagTests := []struct {
-		flag string
+		flag  string
 		value string
 	}{
 		{"no-deps", "true"},
@@ -300,7 +300,7 @@ func (s *SnapshotPullSuite) TestAptlySnapshotPullArchitectureFiltering(c *C) {
 
 func (s *SnapshotPullSuite) TestAptlySnapshotPullPackageProcessing(c *C) {
 	// Test package addition and removal logic
-	s.cmd.Flag.Set("no-remove", "false") // Allow removal
+	s.cmd.Flag.Set("no-remove", "false")   // Allow removal
 	s.cmd.Flag.Set("all-matches", "false") // Only first match
 
 	args := []string{"target-snapshot", "source-snapshot", "dest-snapshot", "package-name"}
@@ -396,18 +396,20 @@ type MockSnapshotPullContext struct {
 	dependencyOptions int
 }
 
-func (m *MockSnapshotPullContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotPullContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotPullContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockSnapshotPullContext) ArchitecturesList() []string                  { return m.architecturesList }
-func (m *MockSnapshotPullContext) DependencyOptions() int                       { return m.dependencyOptions }
+func (m *MockSnapshotPullContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotPullContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotPullContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockSnapshotPullContext) ArchitecturesList() []string { return m.architecturesList }
+func (m *MockSnapshotPullContext) DependencyOptions() int      { return m.dependencyOptions }
 
 type MockSnapshotPullCollection struct {
-	shouldErrorByName               bool
-	shouldErrorLoadComplete         bool
-	shouldErrorSourceByName         bool
-	shouldErrorSourceLoadComplete   bool
-	shouldErrorAdd                  bool
+	shouldErrorByName             bool
+	shouldErrorLoadComplete       bool
+	shouldErrorSourceByName       bool
+	shouldErrorSourceLoadComplete bool
+	shouldErrorAdd                bool
 }
 
 func (m *MockSnapshotPullCollection) ByName(name string) (*deb.Snapshot, error) {
@@ -516,7 +518,7 @@ func init() {
 type MockSnapshotPullQuery struct{}
 
 func (m *MockSnapshotPullQuery) Matches(pkg *deb.Package) bool { return true }
-func (m *MockSnapshotPullQuery) String() string               { return "mock-query" }
+func (m *MockSnapshotPullQuery) String() string                { return "mock-query" }
 
 // Mock field query for architecture filtering
 type MockFieldQuery struct {
@@ -526,7 +528,9 @@ type MockFieldQuery struct {
 }
 
 func (m *MockFieldQuery) Matches(pkg *deb.Package) bool { return true }
-func (m *MockFieldQuery) String() string               { return fmt.Sprintf("%s %s %s", m.Field, m.Relation, m.Value) }
+func (m *MockFieldQuery) String() string {
+	return fmt.Sprintf("%s %s %s", m.Field, m.Relation, m.Value)
+}
 
 // Mock OR query
 type MockOrQuery struct {
@@ -535,7 +539,7 @@ type MockOrQuery struct {
 }
 
 func (m *MockOrQuery) Matches(pkg *deb.Package) bool { return m.L.Matches(pkg) || m.R.Matches(pkg) }
-func (m *MockOrQuery) String() string               { return fmt.Sprintf("(%s | %s)", m.L.String(), m.R.String()) }
+func (m *MockOrQuery) String() string                { return fmt.Sprintf("(%s | %s)", m.L.String(), m.R.String()) }
 
 // Mock AND query
 type MockAndQuery struct {
@@ -544,7 +548,7 @@ type MockAndQuery struct {
 }
 
 func (m *MockAndQuery) Matches(pkg *deb.Package) bool { return m.L.Matches(pkg) && m.R.Matches(pkg) }
-func (m *MockAndQuery) String() string               { return fmt.Sprintf("(%s, %s)", m.L.String(), m.R.String()) }
+func (m *MockAndQuery) String() string                { return fmt.Sprintf("(%s, %s)", m.L.String(), m.R.String()) }
 
 // Mock dependency struct
 type MockDependency struct {

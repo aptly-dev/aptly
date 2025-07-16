@@ -181,7 +181,7 @@ func (s *PublishSourceListSuite) TestAptlyPublishSourceListPrefixParsing(c *C) {
 func (s *PublishSourceListSuite) TestAptlyPublishSourceListFormatToggle(c *C) {
 	// Test switching between text and JSON formats
 	formats := []struct {
-		jsonFlag bool
+		jsonFlag    bool
 		description string
 	}{
 		{false, "text format"},
@@ -282,16 +282,16 @@ func (m *MockPublishSourceListProgress) Printf(msg string, a ...interface{}) {
 	m.Messages = append(m.Messages, formatted)
 }
 
-func (m *MockPublishSourceListProgress) AddBar(count int) {}
-func (m *MockPublishSourceListProgress) Flush() {}
+func (m *MockPublishSourceListProgress) AddBar(count int)                                         {}
+func (m *MockPublishSourceListProgress) Flush()                                                   {}
 func (m *MockPublishSourceListProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockPublishSourceListProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockPublishSourceListProgress) SetBar(count int) {}
-func (m *MockPublishSourceListProgress) Shutdown() {}
-func (m *MockPublishSourceListProgress) ShutdownBar() {}
-func (m *MockPublishSourceListProgress) Start() {}
-func (m *MockPublishSourceListProgress) Write(data []byte) (int, error) { return len(data), nil }
-func (m *MockPublishSourceListProgress) ColoredPrintf(msg string, a ...interface{}) {}
+func (m *MockPublishSourceListProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockPublishSourceListProgress) SetBar(count int)                                         {}
+func (m *MockPublishSourceListProgress) Shutdown()                                                {}
+func (m *MockPublishSourceListProgress) ShutdownBar()                                             {}
+func (m *MockPublishSourceListProgress) Start()                                                   {}
+func (m *MockPublishSourceListProgress) Write(data []byte) (int, error)                           { return len(data), nil }
+func (m *MockPublishSourceListProgress) ColoredPrintf(msg string, a ...interface{})               {}
 
 type MockPublishSourceListContext struct {
 	flags             *flag.FlagSet
@@ -299,9 +299,11 @@ type MockPublishSourceListContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockPublishSourceListContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishSourceListContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishSourceListContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockPublishSourceListContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishSourceListContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishSourceListContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockPublishedSourceListRepoCollection struct {
 	shouldErrorByStoragePrefixDistribution bool

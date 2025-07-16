@@ -24,7 +24,7 @@ var _ = Suite(&PublishSnapshotSuite{})
 func (s *PublishSnapshotSuite) SetUpTest(c *C) {
 	s.cmd = makeCmdPublishSnapshot()
 	s.mockProgress = &MockPublishProgress{}
-	
+
 	// Set up mock collections - simplified
 	s.collectionFactory = deb.NewCollectionFactory(nil)
 
@@ -138,7 +138,7 @@ func (s *PublishSnapshotSuite) TestAptlyPublishMultiComponent(c *C) {
 func (s *PublishSnapshotSuite) TestAptlyPublishInvalidArguments(c *C) {
 	// Test with invalid number of arguments - simplified test
 	s.cmd.Flag.Set("component", "main,contrib")
-	
+
 	// Too few arguments
 	args := []string{"only-one-snapshot"}
 	err := aptlyPublishSnapshotOrRepo(s.cmd, args)
@@ -350,7 +350,7 @@ func (s *PublishSnapshotSuite) TestAptlyPublishOutputFormatting(c *C) {
 func (s *PublishSnapshotSuite) TestAptlyPublishSourceArchitecture(c *C) {
 	// Test publishing with source architecture - simplified test
 	s.mockContext.architecturesList = []string{"amd64", "source"}
-	
+
 	args := []string{"test-snapshot"}
 	err := aptlyPublishSnapshotOrRepo(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
@@ -426,26 +426,28 @@ func (m *MockPublishProgress) Write(data []byte) (int, error) {
 }
 
 type MockPublishContext struct {
-	flags                     *flag.FlagSet
-	progress                  *MockPublishProgress
-	collectionFactory         *deb.CollectionFactory
-	architecturesList         []string
-	packagePool               aptly.PackagePool
-	config                    *MockPublishConfig
-	publishedStorage          aptly.PublishedStorage
-	skelPath                  string
+	flags                       *flag.FlagSet
+	progress                    *MockPublishProgress
+	collectionFactory           *deb.CollectionFactory
+	architecturesList           []string
+	packagePool                 aptly.PackagePool
+	config                      *MockPublishConfig
+	publishedStorage            aptly.PublishedStorage
+	skelPath                    string
 	shouldErrorNewPublishedRepo bool
-	shouldErrorGetSigner      bool
-	shouldErrorPublish        bool
+	shouldErrorGetSigner        bool
+	shouldErrorPublish          bool
 }
 
-func (m *MockPublishContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPublishContext) ArchitecturesList() []string                  { return m.architecturesList }
-func (m *MockPublishContext) PackagePool() aptly.PackagePool                { return m.packagePool }
-func (m *MockPublishContext) Config() *utils.ConfigStructure               { return &utils.ConfigStructure{} }
-func (m *MockPublishContext) SkelPath() string                              { return m.skelPath }
+func (m *MockPublishContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPublishContext) ArchitecturesList() []string    { return m.architecturesList }
+func (m *MockPublishContext) PackagePool() aptly.PackagePool { return m.packagePool }
+func (m *MockPublishContext) Config() *utils.ConfigStructure { return &utils.ConfigStructure{} }
+func (m *MockPublishContext) SkelPath() string               { return m.skelPath }
 
 func (m *MockPublishContext) GetPublishedStorage(name string) aptly.PublishedStorage {
 	return m.publishedStorage
@@ -491,8 +493,8 @@ func (m *MockPublishPackagePool) LegacyPath(filename string, checksums *utils.Ch
 }
 
 type MockSnapshotPublishCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
 	emptySnapshots          bool
 }
 
@@ -514,7 +516,7 @@ func (m *MockSnapshotPublishCollection) LoadComplete(snapshot *deb.Snapshot) err
 type MockLocalRepoPublishCollection struct {
 	shouldErrorByName       bool
 	shouldErrorLoadComplete bool
-	emptyRepos             bool
+	emptyRepos              bool
 }
 
 func (m *MockLocalRepoPublishCollection) ByName(name string) (*deb.LocalRepo, error) {
@@ -533,8 +535,8 @@ func (m *MockLocalRepoPublishCollection) LoadComplete(repo *deb.LocalRepo) error
 }
 
 type MockPublishedRepoPublishCollection struct {
-	hasDuplicate    bool
-	shouldErrorAdd  bool
+	hasDuplicate   bool
+	shouldErrorAdd bool
 }
 
 func (m *MockPublishedRepoPublishCollection) CheckDuplicate(published *deb.PublishedRepo) *deb.PublishedRepo {

@@ -313,8 +313,8 @@ func (s *PublishSwitchSuite) TestAptlyPublishSwitchEmptyComponentDefault(c *C) {
 func (s *PublishSwitchSuite) TestAptlyPublishSwitchPrefixParsing(c *C) {
 	// Test different prefix formats
 	prefixTests := [][]string{
-		{"wheezy", ".", "wheezy-snapshot"},       // Default prefix
-		{"wheezy", "ppa", "wheezy-snapshot"},     // Simple prefix
+		{"wheezy", ".", "wheezy-snapshot"},         // Default prefix
+		{"wheezy", "ppa", "wheezy-snapshot"},       // Simple prefix
 		{"wheezy", "s3:bucket", "wheezy-snapshot"}, // Storage with prefix
 	}
 
@@ -340,20 +340,19 @@ func (m *MockPublishSwitchProgress) Printf(msg string, a ...interface{}) {
 	m.Messages = append(m.Messages, formatted)
 }
 
-func (m *MockPublishSwitchProgress) AddBar(count int) {}
-func (m *MockPublishSwitchProgress) Flush() {}
+func (m *MockPublishSwitchProgress) AddBar(count int)                                         {}
+func (m *MockPublishSwitchProgress) Flush()                                                   {}
 func (m *MockPublishSwitchProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockPublishSwitchProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockPublishSwitchProgress) SetBar(count int) {}
-func (m *MockPublishSwitchProgress) Shutdown() {}
-func (m *MockPublishSwitchProgress) ShutdownBar() {}
-func (m *MockPublishSwitchProgress) Start() {}
-func (m *MockPublishSwitchProgress) Write(data []byte) (int, error) { return len(data), nil }
+func (m *MockPublishSwitchProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockPublishSwitchProgress) SetBar(count int)                                         {}
+func (m *MockPublishSwitchProgress) Shutdown()                                                {}
+func (m *MockPublishSwitchProgress) ShutdownBar()                                             {}
+func (m *MockPublishSwitchProgress) Start()                                                   {}
+func (m *MockPublishSwitchProgress) Write(data []byte) (int, error)                           { return len(data), nil }
 func (m *MockPublishSwitchProgress) ColoredPrintf(msg string, a ...interface{}) {
 	formatted := fmt.Sprintf(msg, a...)
 	m.ColoredMessages = append(m.ColoredMessages, formatted)
 }
-
 
 type MockPublishSwitchContext struct {
 	flags             *flag.FlagSet
@@ -364,22 +363,34 @@ type MockPublishSwitchContext struct {
 	signerError       bool
 }
 
-func (m *MockPublishSwitchContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishSwitchContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishSwitchContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPublishSwitchContext) PackagePool() aptly.PackagePool               { return m.packagePool }
-func (m *MockPublishSwitchContext) SkelPath() string                             { return m.skelPath }
+func (m *MockPublishSwitchContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishSwitchContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishSwitchContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPublishSwitchContext) PackagePool() aptly.PackagePool { return m.packagePool }
+func (m *MockPublishSwitchContext) SkelPath() string               { return m.skelPath }
 
 type MockPublishSwitchPackagePool struct{}
 
 func (m *MockPublishSwitchPackagePool) GeneratePackageRefs() []string { return []string{} }
-func (m *MockPublishSwitchPackagePool) FilepathList(progress aptly.Progress) ([]string, error) { return []string{}, nil }
-func (m *MockPublishSwitchPackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) { return "/pool/path", nil }
-func (m *MockPublishSwitchPackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) { return poolPath, true, nil }
-func (m *MockPublishSwitchPackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) { return nil, nil }
+func (m *MockPublishSwitchPackagePool) FilepathList(progress aptly.Progress) ([]string, error) {
+	return []string{}, nil
+}
+func (m *MockPublishSwitchPackagePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) {
+	return "/pool/path", nil
+}
+func (m *MockPublishSwitchPackagePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) {
+	return poolPath, true, nil
+}
+func (m *MockPublishSwitchPackagePool) Open(filename string) (aptly.ReadSeekerCloser, error) {
+	return nil, nil
+}
 func (m *MockPublishSwitchPackagePool) Remove(filename string) (int64, error) { return 0, nil }
-func (m *MockPublishSwitchPackagePool) Size(prefix string) (int64, error) { return 0, nil }
-func (m *MockPublishSwitchPackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) { return "/legacy/" + filename, nil }
+func (m *MockPublishSwitchPackagePool) Size(prefix string) (int64, error)     { return 0, nil }
+func (m *MockPublishSwitchPackagePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+	return "/legacy/" + filename, nil
+}
 
 type MockPublishedSwitchRepoCollection struct {
 	shouldErrorByStoragePrefixDistribution bool
@@ -434,8 +445,8 @@ func (m *MockPublishedSwitchRepoCollection) CleanupPrefixComponentFiles(publishe
 }
 
 type MockSnapshotSwitchCollection struct {
-	shouldErrorByName        bool
-	shouldErrorLoadComplete  bool
+	shouldErrorByName       bool
+	shouldErrorLoadComplete bool
 }
 
 func (m *MockSnapshotSwitchCollection) ByName(name string) (*deb.Snapshot, error) {
@@ -459,10 +470,10 @@ func (m *MockSnapshotSwitchCollection) LoadComplete(snapshot *deb.Snapshot) erro
 
 type MockPublishSwitchSigner struct{}
 
-func (m *MockPublishSwitchSigner) SetKey(keyRef string) {}
-func (m *MockPublishSwitchSigner) SetKeyRing(keyring, secretKeyring string) {}
+func (m *MockPublishSwitchSigner) SetKey(keyRef string)                            {}
+func (m *MockPublishSwitchSigner) SetKeyRing(keyring, secretKeyring string)        {}
 func (m *MockPublishSwitchSigner) SetPassphrase(passphrase, passphraseFile string) {}
-func (m *MockPublishSwitchSigner) SetBatch(batch bool) {}
+func (m *MockPublishSwitchSigner) SetBatch(batch bool)                             {}
 
 // Mock utils.StrSliceHasItem function
 func init() {

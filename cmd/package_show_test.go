@@ -132,7 +132,7 @@ func (s *PackageShowSuite) TestAptlyPackageShowWithFilesError(c *C) {
 	args := []string{"nginx"}
 	err := aptlyPackageShow(s.cmd, args)
 	// Note: Actual error handling depends on real implementation
-	_ = err // May or may not error depending on implementation
+	_ = err                               // May or may not error depending on implementation
 	s.cmd.Flag.Set("with-files", "false") // Reset flag
 }
 
@@ -155,7 +155,7 @@ func (s *PackageShowSuite) TestAptlyPackageShowWithReferencesRemoteError(c *C) {
 	args := []string{"nginx"}
 	err := aptlyPackageShow(s.cmd, args)
 	// Note: Actual error handling depends on real implementation
-	_ = err // May or may not error depending on implementation
+	_ = err                                    // May or may not error depending on implementation
 	s.cmd.Flag.Set("with-references", "false") // Reset flag
 }
 
@@ -166,7 +166,7 @@ func (s *PackageShowSuite) TestAptlyPackageShowWithReferencesLocalError(c *C) {
 	args := []string{"nginx"}
 	err := aptlyPackageShow(s.cmd, args)
 	// Note: Actual error handling depends on real implementation
-	_ = err // May or may not error depending on implementation
+	_ = err                                    // May or may not error depending on implementation
 	s.cmd.Flag.Set("with-references", "false") // Reset flag
 }
 
@@ -177,7 +177,7 @@ func (s *PackageShowSuite) TestAptlyPackageShowWithReferencesSnapshotError(c *C)
 	args := []string{"nginx"}
 	err := aptlyPackageShow(s.cmd, args)
 	// Note: Actual error handling depends on real implementation
-	_ = err // May or may not error depending on implementation
+	_ = err                                    // May or may not error depending on implementation
 	s.cmd.Flag.Set("with-references", "false") // Reset flag
 }
 
@@ -188,7 +188,7 @@ func (s *PackageShowSuite) TestAptlyPackageShowWithReferencesLoadError(c *C) {
 	args := []string{"nginx"}
 	err := aptlyPackageShow(s.cmd, args)
 	// Note: Actual error handling depends on real implementation
-	_ = err // May or may not error depending on implementation
+	_ = err                                    // May or may not error depending on implementation
 	s.cmd.Flag.Set("with-references", "false") // Reset flag
 }
 
@@ -225,10 +225,10 @@ func (s *PackageShowSuite) TestAptlyPackageShowPackageForEachError(c *C) {
 func (s *PackageShowSuite) TestPrintReferencesToBasic(c *C) {
 	// Test printReferencesTo function directly - simplified test
 	pkg := &deb.Package{Name: "test-package"}
-	
+
 	// Note: Function call depends on real implementation
 	// Basic test would check if printReferencesTo exists and doesn't panic
-	_ = pkg // Use variable to avoid unused warning
+	_ = pkg                     // Use variable to avoid unused warning
 	c.Check(true, Equals, true) // Placeholder assertion
 }
 
@@ -305,16 +305,18 @@ type MockPackageShowContext struct {
 	packagePool       aptly.PackagePool
 }
 
-func (m *MockPackageShowContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPackageShowContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPackageShowContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPackageShowContext) PackagePool() aptly.PackagePool               { return m.packagePool }
-func (m *MockPackageShowContext) CloseDatabase() error                          { return nil }
+func (m *MockPackageShowContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPackageShowContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPackageShowContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPackageShowContext) PackagePool() aptly.PackagePool { return m.packagePool }
+func (m *MockPackageShowContext) CloseDatabase() error           { return nil }
 
 type MockRemotePackageShowCollection struct {
-	shouldErrorForEach       bool
-	shouldErrorLoadComplete  bool
-	forEachCalled            bool
+	shouldErrorForEach      bool
+	shouldErrorLoadComplete bool
+	forEachCalled           bool
 }
 
 func (m *MockRemotePackageShowCollection) ForEach(handler func(*deb.RemoteRepo) error) error {
@@ -326,7 +328,7 @@ func (m *MockRemotePackageShowCollection) ForEach(handler func(*deb.RemoteRepo) 
 	// Create mock repo - simplified
 	repo := &deb.RemoteRepo{Name: "test-remote-repo"}
 	// Note: Removed access to unexported fields
-	
+
 	return handler(repo)
 }
 
@@ -338,9 +340,9 @@ func (m *MockRemotePackageShowCollection) LoadComplete(repo *deb.RemoteRepo) err
 }
 
 type MockLocalPackageShowCollection struct {
-	shouldErrorForEach       bool
-	shouldErrorLoadComplete  bool
-	forEachCalled            bool
+	shouldErrorForEach      bool
+	shouldErrorLoadComplete bool
+	forEachCalled           bool
 }
 
 func (m *MockLocalPackageShowCollection) ForEach(handler func(*deb.LocalRepo) error) error {
@@ -352,7 +354,7 @@ func (m *MockLocalPackageShowCollection) ForEach(handler func(*deb.LocalRepo) er
 	// Create mock repo - simplified
 	repo := &deb.LocalRepo{Name: "test-local-repo"}
 	// Note: Removed access to unexported fields
-	
+
 	return handler(repo)
 }
 
@@ -364,9 +366,9 @@ func (m *MockLocalPackageShowCollection) LoadComplete(repo *deb.LocalRepo) error
 }
 
 type MockSnapshotPackageShowCollection struct {
-	shouldErrorForEach       bool
-	shouldErrorLoadComplete  bool
-	forEachCalled            bool
+	shouldErrorForEach      bool
+	shouldErrorLoadComplete bool
+	forEachCalled           bool
 }
 
 func (m *MockSnapshotPackageShowCollection) ForEach(handler func(*deb.Snapshot) error) error {
@@ -378,7 +380,7 @@ func (m *MockSnapshotPackageShowCollection) ForEach(handler func(*deb.Snapshot) 
 	// Create mock snapshot - simplified
 	snapshot := &deb.Snapshot{Name: "test-snapshot"}
 	// Note: Removed access to unexported fields
-	
+
 	return handler(snapshot)
 }
 
@@ -397,11 +399,11 @@ type MockPackageQueryCollection struct {
 
 func (m *MockPackageQueryCollection) Query(query deb.PackageQuery) *deb.PackageList {
 	m.queryCalled = true
-	
+
 	// Return a simple mock package list
 	packageList := &deb.PackageList{}
 	// Note: Simplified to avoid method assignment issues
-	
+
 	return packageList
 }
 

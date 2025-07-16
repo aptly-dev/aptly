@@ -411,7 +411,7 @@ func (s *PublishedStorageSuite) TestConcurrentUploads(c *C) {
 	// Create storage with concurrent uploads enabled (3 workers, default queue size)
 	concurrentStorage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "concurrent", "", "", false, true, false, false, false, 3, 0)
 	c.Assert(err, IsNil)
-	
+
 	// Create test files
 	tmpDir := c.MkDir()
 	files := []string{"file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt"}
@@ -419,17 +419,17 @@ func (s *PublishedStorageSuite) TestConcurrentUploads(c *C) {
 		err := os.WriteFile(filepath.Join(tmpDir, name), []byte("test content: "+name), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	// Upload files concurrently
 	for _, name := range files {
 		err := concurrentStorage.PutFile(name, filepath.Join(tmpDir, name))
 		c.Assert(err, IsNil)
 	}
-	
+
 	// Flush to ensure all uploads complete
 	err = concurrentStorage.Flush()
 	c.Assert(err, IsNil)
-	
+
 	// Verify all files exist
 	for _, name := range files {
 		exists, err := concurrentStorage.FileExists(name)
@@ -442,7 +442,7 @@ func (s *PublishedStorageSuite) TestConcurrentUploadsWithCustomQueueSize(c *C) {
 	// Create storage with concurrent uploads and custom queue size (2 workers, 5x queue size)
 	concurrentStorage, err := NewPublishedStorage("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "concurrent-custom", "", "", false, true, false, false, false, 2, 5)
 	c.Assert(err, IsNil)
-	
+
 	// Create test files
 	tmpDir := c.MkDir()
 	// Create more files than workers * queue size (2 * 5 = 10)
@@ -454,17 +454,17 @@ func (s *PublishedStorageSuite) TestConcurrentUploadsWithCustomQueueSize(c *C) {
 		err := os.WriteFile(filepath.Join(tmpDir, name), []byte(fmt.Sprintf("content %d", i)), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	// Upload files concurrently
 	for _, name := range files {
 		err := concurrentStorage.PutFile(name, filepath.Join(tmpDir, name))
 		c.Assert(err, IsNil)
 	}
-	
+
 	// Flush to ensure all uploads complete
 	err = concurrentStorage.Flush()
 	c.Assert(err, IsNil)
-	
+
 	// Verify all files exist
 	for _, name := range files {
 		exists, err := concurrentStorage.FileExists(name)

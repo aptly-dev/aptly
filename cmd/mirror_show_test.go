@@ -234,7 +234,7 @@ func (s *MirrorShowSuite) TestAptlyMirrorShowJSONMarshalError(c *C) {
 	args := []string{"test-mirror"}
 	err := aptlyMirrorShow(s.cmd, args)
 	// Note: Actual marshal errors would be runtime dependent
-	_ = err // May or may not error depending on implementation
+	_ = err                         // May or may not error depending on implementation
 	s.cmd.Flag.Set("json", "false") // Reset flag
 }
 
@@ -319,10 +319,12 @@ type MockMirrorShowContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockMirrorShowContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockMirrorShowContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockMirrorShowContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockMirrorShowContext) CloseDatabase() error                          { return nil }
+func (m *MockMirrorShowContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockMirrorShowContext) Progress() aptly.Progress { return m.progress }
+func (m *MockMirrorShowContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockMirrorShowContext) CloseDatabase() error { return nil }
 
 // Note: Removed complex mock structures to fix compilation issues
 // Tests are simplified to focus on basic command functionality

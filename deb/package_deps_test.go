@@ -13,10 +13,10 @@ func (s *PackageDependenciesSuite) TestParseDependenciesBasic(c *C) {
 	stanza := Stanza{
 		"Depends": "package1",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1"})
-	
+
 	// Check that key was removed from stanza
 	_, exists := stanza["Depends"]
 	c.Check(exists, Equals, false)
@@ -27,7 +27,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesMultiple(c *C) {
 	stanza := Stanza{
 		"Depends": "package1, package2, package3",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1", "package2", "package3"})
 }
@@ -37,7 +37,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesWithVersions(c *C) {
 	stanza := Stanza{
 		"Depends": "package1 (>= 1.0), package2 (<< 2.0), package3 (= 1.5)",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1 (>= 1.0)", "package2 (<< 2.0)", "package3 (= 1.5)"})
 }
@@ -47,7 +47,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesWithWhitespace(c *C) {
 	stanza := Stanza{
 		"Depends": "  package1  ,   package2   ,package3,  package4  ",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1", "package2", "package3", "package4"})
 }
@@ -57,10 +57,10 @@ func (s *PackageDependenciesSuite) TestParseDependenciesEmpty(c *C) {
 	stanza := Stanza{
 		"Depends": "",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, IsNil)
-	
+
 	// Check that key was removed from stanza
 	_, exists := stanza["Depends"]
 	c.Check(exists, Equals, false)
@@ -71,7 +71,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesWhitespaceOnly(c *C) {
 	stanza := Stanza{
 		"Depends": "   \t  \n  ",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, IsNil)
 }
@@ -81,10 +81,10 @@ func (s *PackageDependenciesSuite) TestParseDependenciesMissingKey(c *C) {
 	stanza := Stanza{
 		"SomeOtherField": "value",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, IsNil)
-	
+
 	// Check that original stanza is unchanged
 	_, exists := stanza["SomeOtherField"]
 	c.Check(exists, Equals, true)
@@ -95,7 +95,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesComplexFormat(c *C) {
 	stanza := Stanza{
 		"Depends": "libc6 (>= 2.17), libgcc1 (>= 1:4.1.1), libstdc++6 (>= 4.8.1)",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"libc6 (>= 2.17)",
@@ -110,7 +110,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesAlternatives(c *C) {
 	stanza := Stanza{
 		"Depends": "mail-transport-agent | postfix, libc6 (>= 2.17)",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"mail-transport-agent | postfix",
@@ -124,7 +124,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesSpecialCharacters(c *C) 
 	stanza := Stanza{
 		"Depends": "lib-package++-dev, package.name, package_underscore",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"lib-package++-dev",
@@ -139,7 +139,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesArchitectures(c *C) {
 	stanza := Stanza{
 		"Depends": "package1 [amd64], package2 [!arm64], package3 [i386 amd64]",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"package1 [amd64]",
@@ -154,7 +154,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesProfiles(c *C) {
 	stanza := Stanza{
 		"Depends": "package1 <cross>, package2 <!nocheck>, package3 <stage1 !cross>",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"package1 <cross>",
@@ -168,11 +168,11 @@ func (s *PackageDependenciesSuite) TestParseDependenciesLongLine(c *C) {
 	// Test parsing very long dependency line
 	longDeps := "pkg1, pkg2, pkg3, pkg4, pkg5, pkg6, pkg7, pkg8, pkg9, pkg10, " +
 		"pkg11, pkg12, pkg13, pkg14, pkg15, pkg16, pkg17, pkg18, pkg19, pkg20"
-	
+
 	stanza := Stanza{
 		"Depends": longDeps,
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(len(result), Equals, 20)
 	c.Check(result[0], Equals, "pkg1")
@@ -184,7 +184,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesSingleComma(c *C) {
 	stanza := Stanza{
 		"Depends": ",",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"", ""})
 }
@@ -194,7 +194,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesTrailingComma(c *C) {
 	stanza := Stanza{
 		"Depends": "package1, package2,",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1", "package2", ""})
 }
@@ -204,7 +204,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesLeadingComma(c *C) {
 	stanza := Stanza{
 		"Depends": ", package1, package2",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"", "package1", "package2"})
 }
@@ -214,7 +214,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesMultipleCommas(c *C) {
 	stanza := Stanza{
 		"Depends": "package1,, package2,,, package3",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1", "", "package2", "", "", "package3"})
 }
@@ -224,7 +224,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesRealWorld(c *C) {
 	stanza := Stanza{
 		"Depends": "debconf (>= 0.5) | debconf-2.0, libc6 (>= 2.14), libgcc1 (>= 1:3.0), libstdc++6 (>= 5.2)",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"debconf (>= 0.5) | debconf-2.0",
@@ -238,33 +238,33 @@ func (s *PackageDependenciesSuite) TestParseDependenciesRealWorld(c *C) {
 func (s *PackageDependenciesSuite) TestParseDependenciesDifferentKeys(c *C) {
 	// Test parsing different dependency types
 	stanza := Stanza{
-		"Depends":           "runtime-dep",
-		"Build-Depends":     "build-dep",
+		"Depends":             "runtime-dep",
+		"Build-Depends":       "build-dep",
 		"Build-Depends-Indep": "build-indep-dep",
-		"Pre-Depends":       "pre-dep",
-		"Suggests":          "suggest-dep",
-		"Recommends":        "recommend-dep",
+		"Pre-Depends":         "pre-dep",
+		"Suggests":            "suggest-dep",
+		"Recommends":          "recommend-dep",
 	}
-	
+
 	// Test each dependency type
 	depends := parseDependencies(stanza, "Depends")
 	c.Check(depends, DeepEquals, []string{"runtime-dep"})
-	
+
 	buildDepends := parseDependencies(stanza, "Build-Depends")
 	c.Check(buildDepends, DeepEquals, []string{"build-dep"})
-	
+
 	buildDependsIndep := parseDependencies(stanza, "Build-Depends-Indep")
 	c.Check(buildDependsIndep, DeepEquals, []string{"build-indep-dep"})
-	
+
 	preDepends := parseDependencies(stanza, "Pre-Depends")
 	c.Check(preDepends, DeepEquals, []string{"pre-dep"})
-	
+
 	suggests := parseDependencies(stanza, "Suggests")
 	c.Check(suggests, DeepEquals, []string{"suggest-dep"})
-	
+
 	recommends := parseDependencies(stanza, "Recommends")
 	c.Check(recommends, DeepEquals, []string{"recommend-dep"})
-	
+
 	// Verify all keys were removed
 	c.Check(len(stanza), Equals, 0)
 }
@@ -279,7 +279,7 @@ func (s *PackageDependenciesSuite) TestPackageDependenciesStruct(c *C) {
 		Suggests:          []string{"suggest1", "suggest2"},
 		Recommends:        []string{"recommend1"},
 	}
-	
+
 	c.Check(deps.Depends, DeepEquals, []string{"dep1", "dep2"})
 	c.Check(deps.BuildDepends, DeepEquals, []string{"build-dep1", "build-dep2"})
 	c.Check(deps.BuildDependsInDep, DeepEquals, []string{"build-indep-dep1"})
@@ -293,7 +293,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesUnicodeCharacters(c *C) 
 	stanza := Stanza{
 		"Depends": "libμ-package, package-ñoño, 中文-package",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	expected := []string{
 		"libμ-package",
@@ -309,16 +309,16 @@ func (s *PackageDependenciesSuite) TestParseDependenciesStanzaImmutability(c *C)
 		"Depends": "package1, package2",
 		"Other":   "value",
 	}
-	
+
 	// Make a copy to compare
 	stanza := Stanza{
 		"Depends": original["Depends"],
 		"Other":   original["Other"],
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, DeepEquals, []string{"package1", "package2"})
-	
+
 	// Check that Depends key was removed but Other remains unchanged
 	_, dependsExists := stanza["Depends"]
 	c.Check(dependsExists, Equals, false)
@@ -328,7 +328,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesStanzaImmutability(c *C)
 func (s *PackageDependenciesSuite) TestParseDependenciesEmptyStanza(c *C) {
 	// Test with completely empty stanza
 	stanza := Stanza{}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	c.Check(result, IsNil)
 	c.Check(len(stanza), Equals, 0)
@@ -339,7 +339,7 @@ func (s *PackageDependenciesSuite) TestParseDependenciesTabsAndNewlines(c *C) {
 	stanza := Stanza{
 		"Depends": "package1,\n\tpackage2,\t package3\n,package4",
 	}
-	
+
 	result := parseDependencies(stanza, "Depends")
 	// The function should handle tabs and newlines as whitespace
 	c.Check(len(result), Equals, 4)

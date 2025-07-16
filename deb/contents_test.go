@@ -24,7 +24,7 @@ func (s *ContentsIndexSuite) SetUpTest(c *C) {
 func (s *ContentsIndexSuite) TestNewContentsIndex(c *C) {
 	// Test ContentsIndex creation
 	index := NewContentsIndex(s.mockDB)
-	
+
 	c.Check(index, NotNil)
 	c.Check(index.db, Equals, s.mockDB)
 	c.Check(len(index.prefix), Equals, 36) // UUID length
@@ -33,13 +33,13 @@ func (s *ContentsIndexSuite) TestNewContentsIndex(c *C) {
 func (s *ContentsIndexSuite) TestContentsIndexEmpty(c *C) {
 	// Test Empty method
 	index := NewContentsIndex(s.mockDB)
-	
+
 	// Should be empty initially
 	c.Check(index.Empty(), Equals, true)
-	
+
 	// Add some data
 	s.mockDB.prefixes[string(index.prefix)] = true
-	
+
 	// Should not be empty now
 	c.Check(index.Empty(), Equals, false)
 }
@@ -48,20 +48,20 @@ func (s *ContentsIndexSuite) TestContentsIndexPush(c *C) {
 	// Test Push method
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	qualifiedName := []byte("package_1.0_amd64")
 	contents := []string{
 		"/usr/bin/program",
 		"/usr/share/doc/package/README",
 		"/etc/package.conf",
 	}
-	
+
 	err := index.Push(qualifiedName, contents, writer)
 	c.Check(err, IsNil)
-	
+
 	// Verify data was written
 	c.Check(len(s.mockDB.data), Equals, 3)
-	
+
 	// Check that keys contain the expected format
 	for path := range contents {
 		expectedKey := string(index.prefix) + contents[path] + "\x00" + string(qualifiedName)
@@ -74,10 +74,10 @@ func (s *ContentsIndexSuite) TestContentsIndexPushError(c *C) {
 	// Test Push method with writer error
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB, shouldError: true}
-	
+
 	qualifiedName := []byte("package_1.0_amd64")
 	contents := []string{"/usr/bin/program"}
-	
+
 	err := index.Push(qualifiedName, contents, writer)
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "mock writer error")
@@ -87,24 +87,24 @@ func (s *ContentsIndexSuite) TestContentsIndexWriteTo(c *C) {
 	// Test WriteTo method
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	// Add some packages
 	err := index.Push([]byte("package1_1.0_amd64"), []string{"/usr/bin/prog1", "/usr/share/file1"}, writer)
 	c.Check(err, IsNil)
-	
+
 	err = index.Push([]byte("package2_2.0_amd64"), []string{"/usr/bin/prog2", "/usr/share/file1"}, writer)
 	c.Check(err, IsNil)
-	
+
 	// Set up processor to simulate database iteration
 	s.mockDB.processor = func(prefix []byte, fn database.StorageProcessor) error {
 		// Simulate database keys in sorted order
 		keys := []string{
 			string(prefix) + "/usr/bin/prog1\x00package1_1.0_amd64",
-			string(prefix) + "/usr/bin/prog2\x00package2_2.0_amd64", 
+			string(prefix) + "/usr/bin/prog2\x00package2_2.0_amd64",
 			string(prefix) + "/usr/share/file1\x00package1_1.0_amd64",
 			string(prefix) + "/usr/share/file1\x00package2_2.0_amd64",
 		}
-		
+
 		for _, key := range keys {
 			err := fn([]byte(key), nil)
 			if err != nil {
@@ -113,15 +113,15 @@ func (s *ContentsIndexSuite) TestContentsIndexWriteTo(c *C) {
 		}
 		return nil
 	}
-	
+
 	var buf bytes.Buffer
 	n, err := index.WriteTo(&buf)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, int64(buf.Len()))
-	
+
 	output := buf.String()
 	lines := strings.Split(strings.TrimSpace(output), "\n")
-	
+
 	// Should have header plus content lines
 	c.Check(len(lines), Equals, 4)
 	c.Check(lines[0], Equals, "FILE LOCATION")
@@ -133,17 +133,17 @@ func (s *ContentsIndexSuite) TestContentsIndexWriteTo(c *C) {
 func (s *ContentsIndexSuite) TestContentsIndexWriteToEmpty(c *C) {
 	// Test WriteTo with empty index
 	index := NewContentsIndex(s.mockDB)
-	
+
 	s.mockDB.processor = func(prefix []byte, fn database.StorageProcessor) error {
 		// No entries
 		return nil
 	}
-	
+
 	var buf bytes.Buffer
 	n, err := index.WriteTo(&buf)
 	c.Check(err, IsNil)
 	c.Check(n, Equals, int64(buf.Len()))
-	
+
 	output := buf.String()
 	c.Check(output, Equals, "FILE LOCATION\n")
 }
@@ -151,13 +151,13 @@ func (s *ContentsIndexSuite) TestContentsIndexWriteToEmpty(c *C) {
 func (s *ContentsIndexSuite) TestContentsIndexWriteToCorruptedEntry(c *C) {
 	// Test WriteTo with corrupted database entry
 	index := NewContentsIndex(s.mockDB)
-	
+
 	s.mockDB.processor = func(prefix []byte, fn database.StorageProcessor) error {
 		// Corrupted key without null byte separator
 		corruptedKey := string(prefix) + "/usr/bin/prog1package_name"
 		return fn([]byte(corruptedKey), nil)
 	}
-	
+
 	var buf bytes.Buffer
 	_, err := index.WriteTo(&buf)
 	c.Check(err, NotNil)
@@ -168,7 +168,7 @@ func (s *ContentsIndexSuite) TestContentsIndexPushMultiplePackages(c *C) {
 	// Test pushing multiple packages
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	packages := []struct {
 		name     string
 		contents []string
@@ -177,12 +177,12 @@ func (s *ContentsIndexSuite) TestContentsIndexPushMultiplePackages(c *C) {
 		{"package2_2.0_amd64", []string{"/usr/bin/prog2", "/usr/share/doc2"}},
 		{"package3_3.0_amd64", []string{"/usr/bin/prog3"}},
 	}
-	
+
 	for _, pkg := range packages {
 		err := index.Push([]byte(pkg.name), pkg.contents, writer)
 		c.Check(err, IsNil, Commentf("Failed to push package: %s", pkg.name))
 	}
-	
+
 	// Verify all entries were written
 	expectedEntries := 2 + 2 + 1 // Total files across all packages
 	c.Check(len(s.mockDB.data), Equals, expectedEntries)
@@ -192,10 +192,10 @@ func (s *ContentsIndexSuite) TestContentsIndexPushEmptyContents(c *C) {
 	// Test pushing package with no contents
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	err := index.Push([]byte("empty_package"), []string{}, writer)
 	c.Check(err, IsNil)
-	
+
 	// Should not add any entries
 	c.Check(len(s.mockDB.data), Equals, 0)
 }
@@ -204,17 +204,17 @@ func (s *ContentsIndexSuite) TestContentsIndexSpecialCharacters(c *C) {
 	// Test with special characters in paths and package names
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	qualifiedName := []byte("special-package_1.0+build1_amd64")
 	contents := []string{
 		"/usr/bin/prog-with-dashes",
 		"/usr/share/file with spaces",
 		"/etc/config.d/file.conf",
 	}
-	
+
 	err := index.Push(qualifiedName, contents, writer)
 	c.Check(err, IsNil)
-	
+
 	c.Check(len(s.mockDB.data), Equals, 3)
 }
 
@@ -222,14 +222,14 @@ func (s *ContentsIndexSuite) TestContentsIndexBinaryData(c *C) {
 	// Test with binary data in paths (edge case)
 	index := NewContentsIndex(s.mockDB)
 	writer := &MockWriter{storage: s.mockDB}
-	
+
 	// Path with binary data
 	binaryPath := "/usr/bin/prog\x00\xFF\xFE"
 	qualifiedName := []byte("binary_package_1.0_amd64")
-	
+
 	err := index.Push(qualifiedName, []string{binaryPath}, writer)
 	c.Check(err, IsNil)
-	
+
 	c.Check(len(s.mockDB.data), Equals, 1)
 }
 
@@ -261,7 +261,7 @@ func (m *MockStorage) HasPrefix(prefix []byte) bool {
 	if exists, ok := m.prefixes[string(prefix)]; ok {
 		return exists
 	}
-	
+
 	// Check if any key has this prefix
 	for key := range m.data {
 		if strings.HasPrefix(key, string(prefix)) {
@@ -275,7 +275,7 @@ func (m *MockStorage) ProcessByPrefix(prefix []byte, fn database.StorageProcesso
 	if m.processor != nil {
 		return m.processor(prefix, fn)
 	}
-	
+
 	// Default implementation - process matching keys
 	for key, value := range m.data {
 		if strings.HasPrefix(key, string(prefix)) {

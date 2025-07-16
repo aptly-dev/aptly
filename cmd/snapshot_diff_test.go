@@ -266,9 +266,11 @@ type MockSnapshotDiffContext struct {
 	testOnlyMatchingFiltering bool
 }
 
-func (m *MockSnapshotDiffContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotDiffContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotDiffContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockSnapshotDiffContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotDiffContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotDiffContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockSnapshotDiffCollection struct {
 	shouldErrorByNameA       bool
@@ -290,7 +292,7 @@ func (m *MockSnapshotDiffCollection) ByName(name string) (*deb.Snapshot, error) 
 		Description: "Test snapshot",
 	}
 	snapshot.SetRefList(&MockSnapshotDiffRefList{name: name})
-	
+
 	return snapshot, nil
 }
 
@@ -331,7 +333,7 @@ func (m *MockSnapshotDiffRefList) Diff(other *deb.PackageRefList, packageCollect
 		})
 	} else if context, ok := context.(*MockSnapshotDiffContext); ok && context.testAllPackageStates {
 		// Include all types of changes
-		
+
 		// Package only in B (addition)
 		diff = append(diff, &deb.PackageDiff{
 			Left:  nil,
@@ -376,11 +378,11 @@ func (s *deb.Snapshot) SetRefList(refList *deb.PackageRefList) {
 func (s *SnapshotDiffSuite) TestAptlySnapshotDiffScenarios(c *C) {
 	// Test scenarios for package differences
 	scenarios := []struct {
-		name                   string
-		testAllPackageStates   bool
-		testOnlyMatching       bool
-		identicalSnapshots     bool
-		expectedMessages       int
+		name                    string
+		testAllPackageStates    bool
+		testOnlyMatching        bool
+		identicalSnapshots      bool
+		expectedMessages        int
 		expectedColoredMessages int
 	}{
 		{"identical", false, false, true, 1, 0},
@@ -403,12 +405,12 @@ func (s *SnapshotDiffSuite) TestAptlySnapshotDiffScenarios(c *C) {
 		err := aptlySnapshotDiff(s.cmd, args)
 		c.Check(err, IsNil, Commentf("Scenario: %s", scenario.name))
 
-		c.Check(len(s.mockProgress.Messages) >= scenario.expectedMessages, Equals, true, 
-			Commentf("Scenario: %s, expected at least %d messages, got %d", 
+		c.Check(len(s.mockProgress.Messages) >= scenario.expectedMessages, Equals, true,
+			Commentf("Scenario: %s, expected at least %d messages, got %d",
 				scenario.name, scenario.expectedMessages, len(s.mockProgress.Messages)))
-		
+
 		c.Check(len(s.mockProgress.ColoredMessages) >= scenario.expectedColoredMessages, Equals, true,
-			Commentf("Scenario: %s, expected at least %d colored messages, got %d", 
+			Commentf("Scenario: %s, expected at least %d colored messages, got %d",
 				scenario.name, scenario.expectedColoredMessages, len(s.mockProgress.ColoredMessages)))
 	}
 }
@@ -436,8 +438,8 @@ func (s *SnapshotDiffSuite) TestPackageDiffStructure(c *C) {
 	}{
 		{nil, &deb.Package{Name: "new", Version: "1.0", Architecture: "amd64"}, "addition"},
 		{&deb.Package{Name: "old", Version: "1.0", Architecture: "amd64"}, nil, "removal"},
-		{&deb.Package{Name: "pkg", Version: "1.0", Architecture: "amd64"}, 
-		 &deb.Package{Name: "pkg", Version: "2.0", Architecture: "amd64"}, "update"},
+		{&deb.Package{Name: "pkg", Version: "1.0", Architecture: "amd64"},
+			&deb.Package{Name: "pkg", Version: "2.0", Architecture: "amd64"}, "update"},
 	}
 
 	for _, testCase := range testCases {

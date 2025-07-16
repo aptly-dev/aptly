@@ -15,10 +15,10 @@ import (
 )
 
 type TaskRunSuite struct {
-	cmd               *commander.Command
-	mockProgress      *MockTaskRunProgress
-	mockContext       *MockTaskRunContext
-	tempFile          *os.File
+	cmd          *commander.Command
+	mockProgress *MockTaskRunProgress
+	mockContext  *MockTaskRunContext
+	tempFile     *os.File
 }
 
 var _ = Suite(&TaskRunSuite{})
@@ -360,13 +360,13 @@ func (m *MockTaskRunProgress) Flush() {
 }
 
 type MockTaskRunContext struct {
-	flags              *flag.FlagSet
-	progress           *MockTaskRunProgress
+	flags               *flag.FlagSet
+	progress            *MockTaskRunProgress
 	shouldErrorReOpenDB bool
 	shouldErrorRun      bool
 }
 
-func (m *MockTaskRunContext) Flags() *flag.FlagSet { return m.flags }
+func (m *MockTaskRunContext) Flags() *flag.FlagSet     { return m.flags }
 func (m *MockTaskRunContext) Progress() aptly.Progress { return m.progress }
 
 func (m *MockTaskRunContext) ReOpenDatabase() error {

@@ -18,15 +18,15 @@ func (s *DatabaseSuite) TestErrNotFound(c *check.C) {
 	// Test that ErrNotFound is properly defined
 	c.Check(ErrNotFound, check.NotNil)
 	c.Check(ErrNotFound.Error(), check.Equals, "key not found")
-	
+
 	// Test that it's an actual error
 	var err error = ErrNotFound
 	c.Check(err, check.NotNil)
-	
+
 	// Test comparison with errors.New
 	newErr := errors.New("key not found")
 	c.Check(ErrNotFound.Error(), check.Equals, newErr.Error())
-	
+
 	// Test that it's not equal to other errors
 	otherErr := errors.New("other error")
 	c.Check(ErrNotFound.Error(), check.Not(check.Equals), otherErr.Error())
@@ -41,7 +41,7 @@ func (s *DatabaseSuite) TestStorageProcessor(c *check.C) {
 		c.Check(value, check.DeepEquals, []byte("test-value"))
 		return nil
 	}
-	
+
 	err := processor([]byte("test-key"), []byte("test-value"))
 	c.Check(err, check.IsNil)
 	c.Check(called, check.Equals, true)
@@ -53,7 +53,7 @@ func (s *DatabaseSuite) TestStorageProcessorWithError(c *check.C) {
 	var processor StorageProcessor = func(key []byte, value []byte) error {
 		return testError
 	}
-	
+
 	err := processor([]byte("key"), []byte("value"))
 	c.Check(err, check.Equals, testError)
 }
@@ -65,7 +65,7 @@ func (s *DatabaseSuite) TestStorageProcessorNilInputs(c *check.C) {
 		c.Check(value, check.DeepEquals, []byte("value"))
 		return nil
 	}
-	
+
 	err := processor(nil, []byte("value"))
 	c.Check(err, check.IsNil)
 }
@@ -77,7 +77,7 @@ func (s *DatabaseSuite) TestStorageProcessorEmptyInputs(c *check.C) {
 		c.Check(len(value), check.Equals, 0)
 		return nil
 	}
-	
+
 	err := processor([]byte{}, []byte{})
 	c.Check(err, check.IsNil)
 }
@@ -119,14 +119,14 @@ func (s *DatabaseSuite) TestReaderInterface(c *check.C) {
 		"key1": []byte("value1"),
 		"key2": []byte("value2"),
 	}
-	
+
 	var reader Reader = &mockReader{data: data}
-	
+
 	// Test existing key
 	value, err := reader.Get([]byte("key1"))
 	c.Check(err, check.IsNil)
 	c.Check(value, check.DeepEquals, []byte("value1"))
-	
+
 	// Test non-existing key
 	value, err = reader.Get([]byte("nonexistent"))
 	c.Check(err, check.Equals, ErrNotFound)
@@ -137,12 +137,12 @@ func (s *DatabaseSuite) TestWriterInterface(c *check.C) {
 	// Test Writer interface implementation
 	data := make(map[string][]byte)
 	var writer Writer = &mockWriter{data: data}
-	
+
 	// Test Put
 	err := writer.Put([]byte("key1"), []byte("value1"))
 	c.Check(err, check.IsNil)
 	c.Check(data["key1"], check.DeepEquals, []byte("value1"))
-	
+
 	// Test Delete
 	err = writer.Delete([]byte("key1"))
 	c.Check(err, check.IsNil)
@@ -153,24 +153,24 @@ func (s *DatabaseSuite) TestWriterInterface(c *check.C) {
 func (s *DatabaseSuite) TestReaderWriterInterface(c *check.C) {
 	// Test ReaderWriter interface implementation
 	data := make(map[string][]byte)
-	
+
 	var rw ReaderWriter = &mockReaderWriter{
 		mockReader: &mockReader{data: data},
 		mockWriter: &mockWriter{data: data},
 	}
-	
+
 	// Test write then read
 	err := rw.Put([]byte("test"), []byte("value"))
 	c.Check(err, check.IsNil)
-	
+
 	value, err := rw.Get([]byte("test"))
 	c.Check(err, check.IsNil)
 	c.Check(value, check.DeepEquals, []byte("value"))
-	
+
 	// Test delete
 	err = rw.Delete([]byte("test"))
 	c.Check(err, check.IsNil)
-	
+
 	value, err = rw.Get([]byte("test"))
 	c.Check(err, check.Equals, ErrNotFound)
 	c.Check(value, check.IsNil)
@@ -180,7 +180,7 @@ func (s *DatabaseSuite) TestReaderWriterInterface(c *check.C) {
 func (s *DatabaseSuite) TestInterfaceDefinitions(c *check.C) {
 	// This test ensures that all interfaces are properly defined
 	// and can be used as interface types
-	
+
 	var reader Reader
 	var prefixReader PrefixReader
 	var writer Writer
@@ -188,7 +188,7 @@ func (s *DatabaseSuite) TestInterfaceDefinitions(c *check.C) {
 	var storage Storage
 	var batch Batch
 	var transaction Transaction
-	
+
 	// Test that they are nil by default
 	c.Check(reader, check.IsNil)
 	c.Check(prefixReader, check.IsNil)
@@ -203,7 +203,7 @@ func (s *DatabaseSuite) TestErrorConstants(c *check.C) {
 	// Test that error constants are immutable and consistently defined
 	original := ErrNotFound
 	c.Check(original, check.NotNil)
-	
+
 	// Verify it maintains its identity
 	c.Check(ErrNotFound, check.Equals, original)
 	c.Check(ErrNotFound.Error(), check.Equals, original.Error())

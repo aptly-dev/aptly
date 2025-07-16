@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 
-
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/gin-gonic/gin"
@@ -479,8 +478,8 @@ func (s *ReposTestSuite) TestReposErrorHandling(c *C) {
 		{"Missing required fields", "POST", "/api/repos", `{}`, true},
 		{"Invalid package refs", "POST", "/api/repos/test/packages", `{"PackageRefs":[]}`, true},
 		{"Invalid query format", "GET", "/api/repos/test/packages?q=invalid[query", "", false}, // Query validation happens deeper
-		{"Copy to same repo", "POST", "/api/repos/test/copy/test/pkg", `{}`, false},           // Error happens in business logic
-		{"Empty directory path", "POST", "/api/repos/test/file/", "", false},                  // Path handling
+		{"Copy to same repo", "POST", "/api/repos/test/copy/test/pkg", `{}`, false},            // Error happens in business logic
+		{"Empty directory path", "POST", "/api/repos/test/file/", "", false},                   // Path handling
 	}
 
 	for _, test := range errorTests {

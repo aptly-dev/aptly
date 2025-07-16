@@ -85,6 +85,8 @@ type PublishedStorage interface {
 	FileExists(path string) (bool, error)
 	// ReadLink returns the symbolic link pointed to by path
 	ReadLink(path string) (string, error)
+	// Flush waits for any pending operations to complete (used by concurrent upload implementations)
+	Flush() error
 }
 
 // FileSystemPublishedStorage is published storage on filesystem

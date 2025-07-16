@@ -159,7 +159,7 @@ func (s *SnapshotListSuite) TestAptlySnapshotListJSON(c *C) {
 	outputStr := output.String()
 	c.Check(strings.Contains(outputStr, "{"), Equals, true)
 	c.Check(strings.Contains(outputStr, "}"), Equals, true)
-	
+
 	// Verify it's valid JSON
 	var snapshots []interface{}
 	err = json.Unmarshal([]byte(strings.TrimSpace(outputStr)), &snapshots)
@@ -281,7 +281,7 @@ func (s *SnapshotListSuite) TestAptlySnapshotListJSONSorting(c *C) {
 	// Should complete successfully with sorted JSON output
 	outputStr := output.String()
 	c.Check(len(outputStr) > 0, Equals, true)
-	
+
 	// Verify it's valid JSON
 	var snapshots []map[string]interface{}
 	err = json.Unmarshal([]byte(strings.TrimSpace(outputStr)), &snapshots)
@@ -306,16 +306,18 @@ type MockSnapshotListContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockSnapshotListContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotListContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotListContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockSnapshotListContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotListContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotListContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockSnapshotListCollection struct {
-	emptyCollection     bool
-	shouldErrorForEach  bool
-	causeMarshalError   bool
-	multipleSnapshots   bool
-	snapshotNames       []string
+	emptyCollection    bool
+	shouldErrorForEach bool
+	causeMarshalError  bool
+	multipleSnapshots  bool
+	snapshotNames      []string
 }
 
 func (m *MockSnapshotListCollection) Len() int {
@@ -341,7 +343,7 @@ func (m *MockSnapshotListCollection) ForEachSorted(sortMethod string, handler fu
 		// Sort snapshots based on method
 		names := make([]string, len(m.snapshotNames))
 		copy(names, m.snapshotNames)
-		
+
 		if sortMethod == "name" {
 			// Sort alphabetically for name sorting
 			for i := 0; i < len(names)-1; i++ {
@@ -359,7 +361,7 @@ func (m *MockSnapshotListCollection) ForEachSorted(sortMethod string, handler fu
 				Name:        name,
 				Description: "Test snapshot",
 			}
-			
+
 			if err := handler(snapshot); err != nil {
 				return err
 			}
@@ -369,13 +371,13 @@ func (m *MockSnapshotListCollection) ForEachSorted(sortMethod string, handler fu
 			Name:        "test-snapshot",
 			Description: "Test snapshot",
 		}
-		
+
 		// Create problematic snapshot for marshal error testing
 		if m.causeMarshalError {
 			// Create a cyclic structure that can't be marshaled
 			snapshot.TestCyclicRef = snapshot
 		}
-		
+
 		return handler(snapshot)
 	}
 
@@ -468,7 +470,7 @@ func (s *SnapshotListSuite) TestFlagCombinations(c *C) {
 				s.cmd.Flag.Set(flag, "false")
 			}
 		}
-		
+
 		fmt.Printf = originalPrintf
 		fmt.Println = originalPrintln
 	}
@@ -524,7 +526,7 @@ func (s *SnapshotListSuite) TestEdgeCases(c *C) {
 	// Test with snapshot that has minimal configuration
 	snapshot := &deb.Snapshot{Name: "simple-snapshot"}
 	c.Check(snapshot.Name, Equals, "simple-snapshot")
-	
+
 	// Test string representation with minimal data
 	stringRep := snapshot.String()
 	c.Check(strings.Contains(stringRep, "simple-snapshot"), Equals, true)

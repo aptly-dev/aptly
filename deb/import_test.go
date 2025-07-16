@@ -48,7 +48,7 @@ func (s *ImportSuite) TestCollectPackageFilesEmpty(c *C) {
 	// Test with empty locations list
 	reporter := &MockResultReporter{}
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 0)
@@ -59,9 +59,9 @@ func (s *ImportSuite) TestCollectPackageFilesNonExistentLocation(c *C) {
 	// Test with non-existent location
 	reporter := &MockResultReporter{}
 	nonExistentPath := filepath.Join(s.tempDir, "nonexistent")
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{nonExistentPath}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -74,13 +74,13 @@ func (s *ImportSuite) TestCollectPackageFilesSingleDebFile(c *C) {
 	// Test with single .deb file
 	reporter := &MockResultReporter{}
 	debFile := filepath.Join(s.tempDir, "package.deb")
-	
+
 	// Create dummy .deb file
 	err := ioutil.WriteFile(debFile, []byte("dummy deb content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{debFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 1)
 	c.Check(packageFiles[0], Equals, debFile)
 	c.Check(len(otherFiles), Equals, 0)
@@ -92,12 +92,12 @@ func (s *ImportSuite) TestCollectPackageFilesSingleUdebFile(c *C) {
 	// Test with single .udeb file
 	reporter := &MockResultReporter{}
 	udebFile := filepath.Join(s.tempDir, "package.udeb")
-	
+
 	err := ioutil.WriteFile(udebFile, []byte("dummy udeb content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{udebFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 1)
 	c.Check(packageFiles[0], Equals, udebFile)
 	c.Check(len(otherFiles), Equals, 0)
@@ -108,12 +108,12 @@ func (s *ImportSuite) TestCollectPackageFilesSingleDscFile(c *C) {
 	// Test with single .dsc file
 	reporter := &MockResultReporter{}
 	dscFile := filepath.Join(s.tempDir, "package.dsc")
-	
+
 	err := ioutil.WriteFile(dscFile, []byte("dummy dsc content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{dscFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 1)
 	c.Check(packageFiles[0], Equals, dscFile)
 	c.Check(len(otherFiles), Equals, 0)
@@ -124,12 +124,12 @@ func (s *ImportSuite) TestCollectPackageFilesSingleDdebFile(c *C) {
 	// Test with single .ddeb file
 	reporter := &MockResultReporter{}
 	ddebFile := filepath.Join(s.tempDir, "package.ddeb")
-	
+
 	err := ioutil.WriteFile(ddebFile, []byte("dummy ddeb content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{ddebFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 1)
 	c.Check(packageFiles[0], Equals, ddebFile)
 	c.Check(len(otherFiles), Equals, 0)
@@ -140,12 +140,12 @@ func (s *ImportSuite) TestCollectPackageFilesBuildInfoFile(c *C) {
 	// Test with .buildinfo file
 	reporter := &MockResultReporter{}
 	buildinfoFile := filepath.Join(s.tempDir, "package.buildinfo")
-	
+
 	err := ioutil.WriteFile(buildinfoFile, []byte("dummy buildinfo content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{buildinfoFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 1)
 	c.Check(otherFiles[0], Equals, buildinfoFile)
@@ -157,12 +157,12 @@ func (s *ImportSuite) TestCollectPackageFilesUnknownExtension(c *C) {
 	// Test with unknown file extension
 	reporter := &MockResultReporter{}
 	unknownFile := filepath.Join(s.tempDir, "package.unknown")
-	
+
 	err := ioutil.WriteFile(unknownFile, []byte("dummy content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{unknownFile}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -177,23 +177,23 @@ func (s *ImportSuite) TestCollectPackageFilesDirectory(c *C) {
 	subDir := filepath.Join(s.tempDir, "packages")
 	err := os.MkdirAll(subDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	// Create various file types
 	files := map[string]string{
 		"package1.deb":      "deb content",
-		"package2.udeb":     "udeb content", 
+		"package2.udeb":     "udeb content",
 		"source.dsc":        "dsc content",
 		"debug.ddeb":        "ddeb content",
 		"build.buildinfo":   "buildinfo content",
 		"readme.txt":        "text content",
 		"subdir/nested.deb": "nested deb",
 	}
-	
+
 	// Create nested subdirectory
 	nestedDir := filepath.Join(subDir, "subdir")
 	err = os.MkdirAll(nestedDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	for filename, content := range files {
 		fullPath := filepath.Join(subDir, filename)
 		err := os.MkdirAll(filepath.Dir(fullPath), 0755)
@@ -201,9 +201,9 @@ func (s *ImportSuite) TestCollectPackageFilesDirectory(c *C) {
 		err = ioutil.WriteFile(fullPath, []byte(content), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{subDir}, reporter)
-	
+
 	// Should find package files (sorted)
 	expectedPackageFiles := []string{
 		filepath.Join(subDir, "debug.ddeb"),
@@ -213,14 +213,14 @@ func (s *ImportSuite) TestCollectPackageFilesDirectory(c *C) {
 		filepath.Join(subDir, "subdir", "nested.deb"),
 	}
 	sort.Strings(expectedPackageFiles)
-	
+
 	c.Check(len(packageFiles), Equals, 5)
 	c.Check(packageFiles, DeepEquals, expectedPackageFiles)
-	
+
 	// Should find other files
 	c.Check(len(otherFiles), Equals, 1)
 	c.Check(otherFiles[0], Equals, filepath.Join(subDir, "build.buildinfo"))
-	
+
 	// No failed files
 	c.Check(len(failedFiles), Equals, 0)
 	c.Check(len(reporter.warnings), Equals, 0)
@@ -229,26 +229,26 @@ func (s *ImportSuite) TestCollectPackageFilesDirectory(c *C) {
 func (s *ImportSuite) TestCollectPackageFilesMixedLocations(c *C) {
 	// Test with mix of files and directories
 	reporter := &MockResultReporter{}
-	
+
 	// Create individual file
 	debFile := filepath.Join(s.tempDir, "single.deb")
 	err := ioutil.WriteFile(debFile, []byte("single deb"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	// Create directory with files
 	subDir := filepath.Join(s.tempDir, "multi")
 	err = os.MkdirAll(subDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	dscFile := filepath.Join(subDir, "source.dsc")
 	err = ioutil.WriteFile(dscFile, []byte("dsc content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{debFile, subDir}, reporter)
-	
+
 	expectedFiles := []string{debFile, dscFile}
 	sort.Strings(expectedFiles)
-	
+
 	c.Check(len(packageFiles), Equals, 2)
 	c.Check(packageFiles, DeepEquals, expectedFiles)
 	c.Check(len(otherFiles), Equals, 0)
@@ -261,26 +261,26 @@ func (s *ImportSuite) TestCollectPackageFilesConcurrency(c *C) {
 	subDir := filepath.Join(s.tempDir, "concurrent")
 	err := os.MkdirAll(subDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	// Create many files to test concurrent access
 	for i := 0; i < 100; i++ {
 		filename := filepath.Join(subDir, fmt.Sprintf("package%d.deb", i))
 		err := ioutil.WriteFile(filename, []byte(fmt.Sprintf("content %d", i)), 0644)
 		c.Assert(err, IsNil)
-		
+
 		if i%10 == 0 {
 			buildinfoFile := filepath.Join(subDir, fmt.Sprintf("build%d.buildinfo", i))
 			err = ioutil.WriteFile(buildinfoFile, []byte(fmt.Sprintf("buildinfo %d", i)), 0644)
 			c.Assert(err, IsNil)
 		}
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{subDir}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 100)
 	c.Check(len(otherFiles), Equals, 10) // Every 10th file is buildinfo
 	c.Check(len(failedFiles), Equals, 0)
-	
+
 	// Check that files are sorted
 	c.Check(sort.StringsAreSorted(packageFiles), Equals, true)
 }
@@ -288,26 +288,26 @@ func (s *ImportSuite) TestCollectPackageFilesConcurrency(c *C) {
 func (s *ImportSuite) TestCollectPackageFilesPermissionDenied(c *C) {
 	// Test handling of permission denied errors
 	reporter := &MockResultReporter{}
-	
+
 	// Create directory and remove read permission (if running as non-root)
 	subDir := filepath.Join(s.tempDir, "noperm")
 	err := os.MkdirAll(subDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	// Create a file inside
 	testFile := filepath.Join(subDir, "test.deb")
 	err = ioutil.WriteFile(testFile, []byte("test"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	// Remove read permission from directory
 	err = os.Chmod(subDir, 0000)
 	if err != nil {
 		c.Skip("Cannot remove permissions, likely running as root")
 	}
 	defer os.Chmod(subDir, 0755) // Restore for cleanup
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{subDir}, reporter)
-	
+
 	// Should handle permission error gracefully
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 0)
@@ -323,9 +323,9 @@ func (s *ImportSuite) TestCollectPackageFilesEmptyDirectory(c *C) {
 	emptyDir := filepath.Join(s.tempDir, "empty")
 	err := os.MkdirAll(emptyDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{emptyDir}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 0)
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 0)
@@ -335,31 +335,31 @@ func (s *ImportSuite) TestCollectPackageFilesEmptyDirectory(c *C) {
 func (s *ImportSuite) TestCollectPackageFilesNestedDirectories(c *C) {
 	// Test deeply nested directory structure
 	reporter := &MockResultReporter{}
-	
+
 	// Create nested structure: base/level1/level2/level3/
 	deepDir := filepath.Join(s.tempDir, "base", "level1", "level2", "level3")
 	err := os.MkdirAll(deepDir, 0755)
 	c.Assert(err, IsNil)
-	
+
 	// Place files at different levels
 	files := map[string]string{
-		filepath.Join(s.tempDir, "base", "root.deb"):                         "root",
-		filepath.Join(s.tempDir, "base", "level1", "level1.deb"):             "level1",
-		filepath.Join(s.tempDir, "base", "level1", "level2", "level2.deb"):   "level2",
+		filepath.Join(s.tempDir, "base", "root.deb"):                               "root",
+		filepath.Join(s.tempDir, "base", "level1", "level1.deb"):                   "level1",
+		filepath.Join(s.tempDir, "base", "level1", "level2", "level2.deb"):         "level2",
 		filepath.Join(s.tempDir, "base", "level1", "level2", "level3", "deep.deb"): "deep",
 	}
-	
+
 	for path, content := range files {
 		err := ioutil.WriteFile(path, []byte(content), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{filepath.Join(s.tempDir, "base")}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, 4)
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 0)
-	
+
 	// Verify all nested files were found
 	for expectedPath := range files {
 		found := false
@@ -376,7 +376,7 @@ func (s *ImportSuite) TestCollectPackageFilesNestedDirectories(c *C) {
 func (s *ImportSuite) TestCollectPackageFilesCaseInsensitive(c *C) {
 	// Test case sensitivity of file extensions
 	reporter := &MockResultReporter{}
-	
+
 	// Create files with various case extensions
 	files := []string{
 		"package.deb",
@@ -389,41 +389,41 @@ func (s *ImportSuite) TestCollectPackageFilesCaseInsensitive(c *C) {
 		"debug.ddeb",
 		"debug.DDEB",
 	}
-	
+
 	for _, filename := range files {
 		path := filepath.Join(s.tempDir, filename)
 		err := ioutil.WriteFile(path, []byte("content"), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{s.tempDir}, reporter)
-	
+
 	// Only lowercase extensions should be recognized
 	c.Check(len(packageFiles), Equals, 4) // .deb, .dsc, .udeb, .ddeb (lowercase only)
 	c.Check(len(otherFiles), Equals, 0)
 	// Uppercase extensions are silently ignored by the file walker, not reported as failed
-	c.Check(len(failedFiles), Equals, 0) 
+	c.Check(len(failedFiles), Equals, 0)
 	c.Check(len(reporter.warnings), Equals, 0)
 }
 
 func (s *ImportSuite) TestCollectPackageFilesSymlinks(c *C) {
 	// Test handling of symbolic links
 	reporter := &MockResultReporter{}
-	
+
 	// Create a real file
 	realFile := filepath.Join(s.tempDir, "real.deb")
 	err := ioutil.WriteFile(realFile, []byte("real content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	// Create a symlink to it
 	linkFile := filepath.Join(s.tempDir, "link.deb")
 	err = os.Symlink(realFile, linkFile)
 	if err != nil {
 		c.Skip("Cannot create symlinks on this filesystem")
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{s.tempDir}, reporter)
-	
+
 	// Both real file and symlink should be found
 	c.Check(len(packageFiles), Equals, 2)
 	c.Check(len(otherFiles), Equals, 0)
@@ -433,7 +433,7 @@ func (s *ImportSuite) TestCollectPackageFilesSymlinks(c *C) {
 func (s *ImportSuite) TestCollectPackageFilesSpecialCharacters(c *C) {
 	// Test files with special characters in names
 	reporter := &MockResultReporter{}
-	
+
 	// Create files with various special characters
 	specialFiles := []string{
 		"package with spaces.deb",
@@ -443,15 +443,15 @@ func (s *ImportSuite) TestCollectPackageFilesSpecialCharacters(c *C) {
 		"package+plus.deb",
 		"package@at.deb",
 	}
-	
+
 	for _, filename := range specialFiles {
 		path := filepath.Join(s.tempDir, filename)
 		err := ioutil.WriteFile(path, []byte("content"), 0644)
 		c.Assert(err, IsNil)
 	}
-	
+
 	packageFiles, otherFiles, failedFiles := CollectPackageFiles([]string{s.tempDir}, reporter)
-	
+
 	c.Check(len(packageFiles), Equals, len(specialFiles))
 	c.Check(len(otherFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 0)
@@ -545,7 +545,6 @@ func (m *MockVerifier) ExtractClearsigned(clearsigned io.Reader) (*os.File, erro
 	return tmpFile, err
 }
 
-
 type MockPackageCollection struct {
 	updateFunc func(*Package) error
 	packages   map[string]*Package
@@ -601,10 +600,10 @@ func (s *ImportSuite) TestImportPackageFilesEmptyList(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{}, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 0)
@@ -622,12 +621,12 @@ func (s *ImportSuite) TestImportPackageFilesNonExistentFile(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	nonExistentFile := filepath.Join(s.tempDir, "nonexistent.deb")
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{nonExistentFile}, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -646,15 +645,15 @@ func (s *ImportSuite) TestImportPackageFilesInvalidPackageFile(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Create invalid .deb file
 	invalidDeb := filepath.Join(s.tempDir, "invalid.deb")
 	err := ioutil.WriteFile(invalidDeb, []byte("not a valid deb file"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{invalidDeb}, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -667,28 +666,28 @@ func (s *ImportSuite) TestImportPackageFilesPoolImportError(c *C) {
 	// Test ImportPackageFiles with pool import error
 	list := NewPackageList()
 	reporter := &MockResultReporter{}
-	
+
 	// Mock pool that fails to import
 	pool := &MockPackagePool{
 		importFunc: func(string, string, *utils.ChecksumInfo, bool, aptly.ChecksumStorage) (string, error) {
 			return "", fmt.Errorf("pool import error")
 		},
 	}
-	
+
 	collection := NewPackageCollection(nil)
 	verifier := &MockVerifier{}
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Create a simple .deb file
 	debFile := filepath.Join(s.tempDir, "test.deb")
 	err := ioutil.WriteFile(debFile, []byte("simple deb"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{debFile}, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -701,23 +700,23 @@ func (s *ImportSuite) TestImportPackageFilesCollectionUpdateError(c *C) {
 	list := NewPackageList()
 	reporter := &MockResultReporter{}
 	pool := &MockPackagePool{}
-	
+
 	// Use real collection for testing
 	collection := NewPackageCollection(nil)
-	
+
 	verifier := &MockVerifier{}
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Create a simple .deb file
 	debFile := filepath.Join(s.tempDir, "test.deb")
 	err := ioutil.WriteFile(debFile, []byte("simple deb"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{debFile}, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1)
@@ -734,16 +733,16 @@ func (s *ImportSuite) TestImportPackageFilesForceReplace(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Test that forceReplace calls PrepareIndex on the list
 	debFile := filepath.Join(s.tempDir, "test.deb")
 	err := ioutil.WriteFile(debFile, []byte("simple deb"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	// With forceReplace = true
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{debFile}, true, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0) // No files should be processed due to invalid file
 	// Even though the file is invalid, the function should handle forceReplace logic
@@ -760,26 +759,26 @@ func (s *ImportSuite) TestImportPackageFilesErrorHandling(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Test with multiple files, some valid some invalid
 	validDeb := filepath.Join(s.tempDir, "valid.deb")
 	invalidDeb := filepath.Join(s.tempDir, "invalid.deb")
 	nonExistent := filepath.Join(s.tempDir, "nonexistent.deb")
-	
+
 	err := ioutil.WriteFile(validDeb, []byte("valid deb content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	err = ioutil.WriteFile(invalidDeb, []byte("invalid content"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	files := []string{validDeb, invalidDeb, nonExistent}
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, files, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
-	c.Check(len(processedFiles), Equals, 0) // No files should be processed successfully
-	c.Check(len(failedFiles), Equals, 3)   // All files should fail
+	c.Check(len(processedFiles), Equals, 0)    // No files should be processed successfully
+	c.Check(len(failedFiles), Equals, 3)       // All files should fail
 	c.Check(len(reporter.warnings), Equals, 3) // Should have warnings for all failures
 }
 
@@ -793,21 +792,21 @@ func (s *ImportSuite) TestImportPackageFilesRestrictionFilter(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Create mock restriction that rejects all packages
 	restriction := &MockPackageQuery{
 		matchesFunc: func(*Package) bool {
 			return false // Reject all packages
 		},
 	}
-	
+
 	debFile := filepath.Join(s.tempDir, "test.deb")
 	err := ioutil.WriteFile(debFile, []byte("test deb"), 0644)
 	c.Assert(err, IsNil)
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, []string{debFile}, false, verifier, pool, collection, reporter, restriction, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	c.Check(len(processedFiles), Equals, 0)
 	c.Check(len(failedFiles), Equals, 1) // Should fail due to restriction + invalid file
@@ -850,7 +849,7 @@ func (s *ImportSuite) TestImportPackageFilesFileTypes(c *C) {
 	checksumProvider := func(database.ReaderWriter) aptly.ChecksumStorage {
 		return &MockChecksumStorage{}
 	}
-	
+
 	// Create files of different types
 	files := map[string]string{
 		"package.deb":  "deb content",
@@ -858,7 +857,7 @@ func (s *ImportSuite) TestImportPackageFilesFileTypes(c *C) {
 		"source.dsc":   "dsc content",
 		"debug.ddeb":   "ddeb content",
 	}
-	
+
 	var fileList []string
 	for filename, content := range files {
 		path := filepath.Join(s.tempDir, filename)
@@ -866,10 +865,10 @@ func (s *ImportSuite) TestImportPackageFilesFileTypes(c *C) {
 		c.Assert(err, IsNil)
 		fileList = append(fileList, path)
 	}
-	
+
 	processedFiles, failedFiles, err := ImportPackageFiles(
 		list, fileList, false, verifier, pool, collection, reporter, nil, checksumProvider)
-	
+
 	c.Check(err, IsNil)
 	// All files should fail due to invalid format, but function should handle different types
 	c.Check(len(failedFiles), Equals, len(fileList))

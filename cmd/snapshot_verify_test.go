@@ -202,7 +202,7 @@ func (s *SnapshotVerifySuite) TestAptlySnapshotVerifyArchitectureHandling(c *C) 
 
 	for _, testCase := range testCases {
 		s.mockContext.architectures = testCase.contextArchs
-		
+
 		args := []string{"test-snapshot"}
 		err := aptlySnapshotVerify(s.cmd, args)
 		c.Check(err, IsNil, Commentf("Context architectures: %v", testCase.contextArchs))
@@ -270,11 +270,13 @@ type MockSnapshotVerifyContext struct {
 	dependencyOptions int
 }
 
-func (m *MockSnapshotVerifyContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotVerifyContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotVerifyContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockSnapshotVerifyContext) ArchitecturesList() []string                  { return m.architectures }
-func (m *MockSnapshotVerifyContext) DependencyOptions() int                      { return m.dependencyOptions }
+func (m *MockSnapshotVerifyContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotVerifyContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotVerifyContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockSnapshotVerifyContext) ArchitecturesList() []string { return m.architectures }
+func (m *MockSnapshotVerifyContext) DependencyOptions() int      { return m.dependencyOptions }
 
 type MockSnapshotVerifyCollection struct {
 	shouldErrorByName       bool
@@ -291,7 +293,7 @@ func (m *MockSnapshotVerifyCollection) ByName(name string) (*deb.Snapshot, error
 		Description: "Test snapshot",
 	}
 	snapshot.SetRefList(&MockSnapshotVerifyRefList{})
-	
+
 	return snapshot, nil
 }
 
@@ -319,7 +321,7 @@ type MockSnapshotVerifyPackageCollection struct {
 
 func (m *MockSnapshotVerifyPackageCollection) NewPackageListFromRefList(refList *deb.PackageRefList, progress aptly.Progress) (*deb.PackageList, error) {
 	m.callCount++
-	
+
 	if m.shouldErrorNewPackageList && m.callCount == 1 {
 		return nil, fmt.Errorf("mock new package list error")
 	}
@@ -328,11 +330,11 @@ func (m *MockSnapshotVerifyPackageCollection) NewPackageListFromRefList(refList 
 	}
 
 	packageList := &MockSnapshotVerifyPackageList{
-		collection:                 m,
-		emptyArchitectures:         m.emptyArchitectures,
-		hasMissingDependencies:     m.hasMissingDependencies,
+		collection:                    m,
+		emptyArchitectures:            m.emptyArchitectures,
+		hasMissingDependencies:        m.hasMissingDependencies,
 		shouldErrorVerifyDependencies: m.shouldErrorVerifyDependencies,
-		isFirstCall:                m.callCount == 1,
+		isFirstCall:                   m.callCount == 1,
 	}
 	return packageList, nil
 }
@@ -371,7 +373,7 @@ func (m *MockSnapshotVerifyPackageList) VerifyDependencies(options int, architec
 	if m.shouldErrorVerifyDependencies {
 		return nil, fmt.Errorf("mock verify dependencies error")
 	}
-	
+
 	if m.hasMissingDependencies {
 		// Return some mock missing dependencies
 		missing := []*deb.Dependency{
@@ -380,7 +382,7 @@ func (m *MockSnapshotVerifyPackageList) VerifyDependencies(options int, architec
 		}
 		return missing, nil
 	}
-	
+
 	// No missing dependencies
 	return []*deb.Dependency{}, nil
 }
@@ -419,7 +421,7 @@ func (s *SnapshotVerifySuite) TestDependencySorting(c *C) {
 	// Test that missing dependencies are sorted correctly
 	deps := []string{"z-package", "a-package", "m-package"}
 	sort.Strings(deps)
-	
+
 	expected := []string{"a-package", "m-package", "z-package"}
 	c.Check(deps, DeepEquals, expected)
 }
@@ -435,7 +437,7 @@ func (s *SnapshotVerifySuite) TestArchitectureCombinations(c *C) {
 
 	for _, archs := range testArchs {
 		s.mockContext.architectures = archs
-		
+
 		args := []string{"test-snapshot"}
 		err := aptlySnapshotVerify(s.cmd, args)
 		c.Check(err, IsNil, Commentf("Architectures: %v", archs))
@@ -476,7 +478,7 @@ func (s *SnapshotVerifySuite) TestDependencyOptionsCombinations(c *C) {
 
 	for _, options := range optionTests {
 		s.mockContext.dependencyOptions = options
-		
+
 		args := []string{"test-snapshot"}
 		err := aptlySnapshotVerify(s.cmd, args)
 		c.Check(err, IsNil, Commentf("Options: %+v", options))

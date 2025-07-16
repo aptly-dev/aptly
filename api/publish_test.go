@@ -384,10 +384,10 @@ func (s *PublishAPITestSuite) TestSigningParamsEdgeCases(c *C) {
 	// Test signingParams with edge cases
 	testCases := []signingParams{
 		{Skip: true}, // Minimal case
-		{Skip: false, GpgKey: "", Keyring: "", SecretKeyring: "", Passphrase: "", PassphraseFile: ""}, // Empty strings
+		{Skip: false, GpgKey: "", Keyring: "", SecretKeyring: "", Passphrase: "", PassphraseFile: ""},                   // Empty strings
 		{Skip: false, GpgKey: "very-long-key-id-123456789012345678901234567890", Keyring: "very-long-keyring-name.gpg"}, // Long values
-		{Skip: false, Passphrase: "password with spaces and special chars !@#$%^&*()"}, // Special characters
-		{Skip: false, PassphraseFile: "/very/long/path/to/passphrase/file/that/might/not/exist.txt"}, // Long file path
+		{Skip: false, Passphrase: "password with spaces and special chars !@#$%^&*()"},                                  // Special characters
+		{Skip: false, PassphraseFile: "/very/long/path/to/passphrase/file/that/might/not/exist.txt"},                    // Long file path
 	}
 
 	for i, params := range testCases {
@@ -409,9 +409,9 @@ func (s *PublishAPITestSuite) TestSourceParamsEdgeCases(c *C) {
 	testCases := []sourceParams{
 		{Component: "", Name: ""}, // Empty strings
 		{Component: "very-long-component-name-with-dashes-and-numbers-123", Name: "very-long-name-456"}, // Long values
-		{Component: "comp.with.dots", Name: "name_with_underscores"}, // Special characters
-		{Component: "UPPERCASE", Name: "MixedCase"}, // Case variations
-		{Component: "123numeric", Name: "456numbers"}, // Numeric values
+		{Component: "comp.with.dots", Name: "name_with_underscores"},                                    // Special characters
+		{Component: "UPPERCASE", Name: "MixedCase"},                                                     // Case variations
+		{Component: "123numeric", Name: "456numbers"},                                                   // Numeric values
 	}
 
 	for i, params := range testCases {
@@ -460,20 +460,26 @@ func (s *PublishAPITestSuite) TestSlashEscapeComprehensive(c *C) {
 
 // Mock implementations for testing context dependencies
 type MockSigner struct {
-	initError     error
-	key           string
-	keyring       string
-	secretKeyring string
-	passphrase    string
+	initError      error
+	key            string
+	keyring        string
+	secretKeyring  string
+	passphrase     string
 	passphraseFile string
-	batch         bool
+	batch          bool
 }
 
-func (m *MockSigner) SetKey(key string)                    { m.key = key }
-func (m *MockSigner) SetKeyRing(keyring, secretKeyring string) { m.keyring = keyring; m.secretKeyring = secretKeyring }
-func (m *MockSigner) SetPassphrase(passphrase, passphraseFile string) { m.passphrase = passphrase; m.passphraseFile = passphraseFile }
-func (m *MockSigner) SetBatch(batch bool)                  { m.batch = batch }
-func (m *MockSigner) Init() error                          { return m.initError }
+func (m *MockSigner) SetKey(key string) { m.key = key }
+func (m *MockSigner) SetKeyRing(keyring, secretKeyring string) {
+	m.keyring = keyring
+	m.secretKeyring = secretKeyring
+}
+func (m *MockSigner) SetPassphrase(passphrase, passphraseFile string) {
+	m.passphrase = passphrase
+	m.passphraseFile = passphraseFile
+}
+func (m *MockSigner) SetBatch(batch bool) { m.batch = batch }
+func (m *MockSigner) Init() error         { return m.initError }
 
 func (s *PublishAPITestSuite) TestGetSignerMockSuccess(c *C) {
 	// Test getSigner logic with mock (can't test actual getSigner due to context dependencies)
@@ -488,7 +494,7 @@ func (s *PublishAPITestSuite) TestGetSignerMockSuccess(c *C) {
 
 	// Mock the signer behavior
 	mockSigner := &MockSigner{initError: nil}
-	
+
 	// Simulate what getSigner would do
 	mockSigner.SetKey(options.GpgKey)
 	mockSigner.SetKeyRing(options.Keyring, options.SecretKeyring)
@@ -514,7 +520,7 @@ func (s *PublishAPITestSuite) TestGetSignerMockError(c *C) {
 
 	// Mock the signer behavior with error
 	mockSigner := &MockSigner{initError: fmt.Errorf("mock init error")}
-	
+
 	mockSigner.SetKey(options.GpgKey)
 	mockSigner.SetKeyRing(options.Keyring, options.SecretKeyring)
 	mockSigner.SetPassphrase(options.Passphrase, options.PassphraseFile)

@@ -257,7 +257,7 @@ func (s *PublishSourceUpdateSuite) TestAptlyPublishSourceUpdateComponentValidati
 		{"main,contrib", []string{"main-source", "contrib-source"}, false},
 		{"main,contrib,non-free", []string{"main-source", "contrib-source", "non-free-source"}, false},
 		{"main,contrib", []string{"single-source"}, true}, // Mismatch
-		{"", []string{"source"}, true},                     // Empty component
+		{"", []string{"source"}, true},                    // Empty component
 	}
 
 	for _, test := range componentTests {
@@ -390,16 +390,16 @@ func (m *MockPublishSourceUpdateProgress) Printf(msg string, a ...interface{}) {
 	m.Messages = append(m.Messages, formatted)
 }
 
-func (m *MockPublishSourceUpdateProgress) AddBar(count int) {}
-func (m *MockPublishSourceUpdateProgress) Flush() {}
+func (m *MockPublishSourceUpdateProgress) AddBar(count int)                                         {}
+func (m *MockPublishSourceUpdateProgress) Flush()                                                   {}
 func (m *MockPublishSourceUpdateProgress) InitBar(total int64, colored bool, barType aptly.BarType) {}
-func (m *MockPublishSourceUpdateProgress) PrintfStdErr(msg string, a ...interface{}) {}
-func (m *MockPublishSourceUpdateProgress) SetBar(count int) {}
-func (m *MockPublishSourceUpdateProgress) Shutdown() {}
-func (m *MockPublishSourceUpdateProgress) ShutdownBar() {}
-func (m *MockPublishSourceUpdateProgress) Start() {}
-func (m *MockPublishSourceUpdateProgress) Write(data []byte) (int, error) { return len(data), nil }
-func (m *MockPublishSourceUpdateProgress) ColoredPrintf(msg string, a ...interface{}) {}
+func (m *MockPublishSourceUpdateProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockPublishSourceUpdateProgress) SetBar(count int)                                         {}
+func (m *MockPublishSourceUpdateProgress) Shutdown()                                                {}
+func (m *MockPublishSourceUpdateProgress) ShutdownBar()                                             {}
+func (m *MockPublishSourceUpdateProgress) Start()                                                   {}
+func (m *MockPublishSourceUpdateProgress) Write(data []byte) (int, error)                           { return len(data), nil }
+func (m *MockPublishSourceUpdateProgress) ColoredPrintf(msg string, a ...interface{})               {}
 
 type MockPublishSourceUpdateContext struct {
 	flags             *flag.FlagSet
@@ -407,9 +407,11 @@ type MockPublishSourceUpdateContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockPublishSourceUpdateContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishSourceUpdateContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishSourceUpdateContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockPublishSourceUpdateContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishSourceUpdateContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishSourceUpdateContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockPublishedSourceUpdateRepoCollection struct {
 	shouldErrorByStoragePrefixDistribution bool

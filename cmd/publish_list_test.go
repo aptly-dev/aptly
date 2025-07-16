@@ -195,7 +195,7 @@ func (s *PublishListSuite) TestAptlyPublishListSorting(c *C) {
 			foundMessages = append(foundMessages, msg)
 		}
 	}
-	
+
 	c.Check(len(foundMessages) >= 3, Equals, true)
 	// Should be in alphabetical order
 	c.Check(strings.Contains(foundMessages[0], "a-repo"), Equals, true)
@@ -305,19 +305,21 @@ type MockPublishListContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockPublishListContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockPublishListContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockPublishListContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockPublishListContext) CloseDatabase() error                          { return nil }
+func (m *MockPublishListContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockPublishListContext) Progress() aptly.Progress { return m.progress }
+func (m *MockPublishListContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockPublishListContext) CloseDatabase() error { return nil }
 
 type MockPublishedListRepoCollection struct {
-	emptyCollection          bool
-	shouldErrorForEach       bool
-	shouldErrorLoadShallow   bool
-	shouldErrorLoadComplete  bool
-	causeMarshalError        bool
-	multipleRepos            bool
-	repoNames                []string
+	emptyCollection         bool
+	shouldErrorForEach      bool
+	shouldErrorLoadShallow  bool
+	shouldErrorLoadComplete bool
+	causeMarshalError       bool
+	multipleRepos           bool
+	repoNames               []string
 }
 
 func (m *MockPublishedListRepoCollection) Len() int {
@@ -356,12 +358,12 @@ func (m *MockPublishedListRepoCollection) ForEach(handler func(*deb.PublishedRep
 			Prefix:       "ppa",
 			// Note: Removed components field as it's not exported
 		}
-		
+
 		// Create problematic repo for marshal error testing
 		if m.causeMarshalError {
 			// Note: Removed TestCyclicRef as it doesn't exist
 		}
-		
+
 		return handler(repo)
 	}
 
@@ -408,7 +410,7 @@ func (s *PublishListSuite) TestStderrOutput(c *C) {
 
 	err := aptlyPublishList(s.cmd, []string{})
 	c.Check(err, NotNil)
-	
+
 	// The error should propagate from LoadShallow
 	c.Check(err.Error(), Matches, ".*mock load shallow error.*")
 }

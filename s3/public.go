@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -56,6 +57,21 @@ type PublishedStorage struct {
 
 	// True if the bucket encrypts objects by default.
 	encryptByDefault bool
+
+	// Concurrent upload configuration
+	concurrentUploads int
+	uploadQueue       chan *uploadTask
+	uploadErrors      chan error
+	uploadWg          sync.WaitGroup
+}
+
+// uploadTask represents a file upload job
+type uploadTask struct {
+	path           string
+	sourceFilename string
+	sourceReader   io.ReadSeeker
+	sourceMD5      string
+	isFile         bool // true for PutFile, false for putFile with reader
 }
 
 // Check interface
@@ -67,7 +83,7 @@ var (
 func NewPublishedStorageRaw(
 	bucket, defaultACL, prefix, storageClass, encryptionMethod string,
 	plusWorkaround, disabledMultiDel, forceVirtualHostedStyle bool,
-	config *aws.Config, endpoint string,
+	config *aws.Config, endpoint string, concurrentUploads int, uploadQueueSize int,
 ) (*PublishedStorage, error) {
 	var acl types.ObjectCannedACL
 	if defaultACL == "" || defaultACL == "private" {
@@ -93,14 +109,32 @@ func NewPublishedStorageRaw(
 			o.HTTPSignerV4 = signer.NewSigner()
 			o.BaseEndpoint = baseEndpoint
 		}),
-		bucket:           bucket,
-		config:           config,
-		acl:              acl,
-		prefix:           prefix,
-		storageClass:     types.StorageClass(storageClass),
-		encryptionMethod: types.ServerSideEncryption(encryptionMethod),
-		plusWorkaround:   plusWorkaround,
-		disableMultiDel:  disabledMultiDel,
+		bucket:            bucket,
+		config:            config,
+		acl:               acl,
+		prefix:            prefix,
+		storageClass:      types.StorageClass(storageClass),
+		encryptionMethod:  types.ServerSideEncryption(encryptionMethod),
+		plusWorkaround:    plusWorkaround,
+		disableMultiDel:   disabledMultiDel,
+		concurrentUploads: concurrentUploads,
+	}
+
+	// Initialize concurrent upload infrastructure if enabled
+	if concurrentUploads > 0 {
+		// Default queue size is 2x the number of workers if not specified
+		if uploadQueueSize <= 0 {
+			uploadQueueSize = 2
+		}
+		queueSize := concurrentUploads * uploadQueueSize
+
+		result.uploadQueue = make(chan *uploadTask, queueSize)
+		result.uploadErrors = make(chan error, 1)
+
+		// Start upload workers
+		for i := 0; i < concurrentUploads; i++ {
+			go result.uploadWorker()
+		}
 	}
 
 	result.setKMSFlag()
@@ -123,11 +157,48 @@ func (storage *PublishedStorage) setKMSFlag() {
 	}
 }
 
+// uploadWorker processes upload tasks from the queue
+func (storage *PublishedStorage) uploadWorker() {
+	for task := range storage.uploadQueue {
+		var err error
+
+		if task.isFile {
+			// Handle file upload
+			source, openErr := os.Open(task.sourceFilename)
+			if openErr != nil {
+				err = errors.Wrap(openErr, fmt.Sprintf("error opening %s", task.sourceFilename))
+			} else {
+				err = storage.putFile(task.path, source, task.sourceMD5)
+				_ = source.Close()
+				if err != nil {
+					err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", task.sourceFilename, storage))
+				}
+			}
+		} else {
+			// Handle reader upload (for LinkFromPool)
+			err = storage.putFile(task.path, task.sourceReader, task.sourceMD5)
+			if err != nil {
+				err = errors.Wrap(err, fmt.Sprintf("error uploading to %s", storage))
+			}
+		}
+
+		if err != nil {
+			// Send error to error channel (non-blocking)
+			select {
+			case storage.uploadErrors <- err:
+			default:
+			}
+		}
+
+		storage.uploadWg.Done()
+	}
+}
+
 // NewPublishedStorage creates new instance of PublishedStorage with specified S3 access
 // keys, region and bucket name
 func NewPublishedStorage(
 	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
-	plusWorkaround, disableMultiDel, _, forceVirtualHostedStyle, debug bool) (*PublishedStorage, error) {
+	plusWorkaround, disableMultiDel, _, forceVirtualHostedStyle, debug bool, concurrentUploads int, uploadQueueSize int) (*PublishedStorage, error) {
 
 	opts := []func(*config.LoadOptions) error{config.WithRegion(region)}
 	if accessKey != "" {
@@ -144,7 +215,7 @@ func NewPublishedStorage(
 	}
 
 	result, err := NewPublishedStorageRaw(bucket, defaultACL, prefix, storageClass,
-		encryptionMethod, plusWorkaround, disableMultiDel, forceVirtualHostedStyle, &config, endpoint)
+		encryptionMethod, plusWorkaround, disableMultiDel, forceVirtualHostedStyle, &config, endpoint, concurrentUploads, uploadQueueSize)
 
 	return result, err
 }
@@ -162,23 +233,53 @@ func (storage *PublishedStorage) MkDir(_ string) error {
 
 // PutFile puts file into published storage at specified path
 func (storage *PublishedStorage) PutFile(path string, sourceFilename string) error {
-	var (
-		source *os.File
-		err    error
-	)
-	source, err = os.Open(sourceFilename)
-	if err != nil {
+	// If concurrent uploads are disabled, use the original implementation
+	if storage.concurrentUploads == 0 {
+		var (
+			source *os.File
+			err    error
+		)
+		source, err = os.Open(sourceFilename)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = source.Close() }()
+
+		log.Debug().Msgf("S3: PutFile '%s'", path)
+		err = storage.putFile(path, source, "")
+		if err != nil {
+			err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
+		}
+
 		return err
 	}
-	defer func() { _ = source.Close() }()
 
-	log.Debug().Msgf("S3: PutFile '%s'", path)
-	err = storage.putFile(path, source, "")
-	if err != nil {
-		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s", sourceFilename, storage))
+	// Concurrent upload path
+	log.Debug().Msgf("S3: PutFile '%s' (concurrent)", path)
+
+	// Check for any previous errors
+	select {
+	case err := <-storage.uploadErrors:
+		return err
+	default:
 	}
 
-	return err
+	// Queue the upload task
+	task := &uploadTask{
+		path:           path,
+		sourceFilename: sourceFilename,
+		isFile:         true,
+	}
+
+	storage.uploadWg.Add(1)
+	select {
+	case storage.uploadQueue <- task:
+		// Task queued successfully
+		return nil
+	case err := <-storage.uploadErrors:
+		storage.uploadWg.Done()
+		return err
+	}
 }
 
 // getMD5 retrieves MD5 stored in the metadata, if any
@@ -393,9 +494,9 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 				return err
 			}
 			// Thread-safe cache write
-		storage.pathCacheMutex.Lock()
-		storage.pathCache[relPath] = destinationMD5
-		storage.pathCacheMutex.Unlock()
+			storage.pathCacheMutex.Lock()
+			storage.pathCache[relPath] = destinationMD5
+			storage.pathCacheMutex.Unlock()
 		}
 
 		if destinationMD5 == sourceMD5 {
@@ -407,24 +508,75 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		}
 	}
 
+	// If concurrent uploads are disabled, use the original implementation
+	if storage.concurrentUploads == 0 {
+		source, err := sourcePool.Open(sourcePath)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = source.Close() }()
+
+		log.Debug().Msgf("S3: LinkFromPool '%s'", relPath)
+		err = storage.putFile(relPath, source, sourceMD5)
+		if err == nil {
+			// Thread-safe cache write
+			storage.pathCacheMutex.Lock()
+			storage.pathCache[relPath] = sourceMD5
+			storage.pathCacheMutex.Unlock()
+		} else {
+			err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
+		}
+
+		return err
+	}
+
+	// Concurrent upload path
+	log.Debug().Msgf("S3: LinkFromPool '%s' (concurrent)", relPath)
+
+	// Check for any previous errors
+	select {
+	case err := <-storage.uploadErrors:
+		return err
+	default:
+	}
+
+	// Open the source file to create a copy for the worker
 	source, err := sourcePool.Open(sourcePath)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = source.Close() }()
 
-	log.Debug().Msgf("S3: LinkFromPool '%s'", relPath)
-	err = storage.putFile(relPath, source, sourceMD5)
-	if err == nil {
-		// Thread-safe cache write
+	// Read the entire content into memory to avoid concurrent access issues
+	content, err := io.ReadAll(source)
+	_ = source.Close()
+	if err != nil {
+		return err
+	}
+
+	// Create a new reader from the content
+	reader := bytes.NewReader(content)
+
+	// Queue the upload task
+	task := &uploadTask{
+		path:         relPath,
+		sourceReader: reader,
+		sourceMD5:    sourceMD5,
+		isFile:       false,
+	}
+
+	storage.uploadWg.Add(1)
+	select {
+	case storage.uploadQueue <- task:
+		// Task queued successfully
+		// Update cache optimistically
 		storage.pathCacheMutex.Lock()
 		storage.pathCache[relPath] = sourceMD5
 		storage.pathCacheMutex.Unlock()
-	} else {
-		err = errors.Wrap(err, fmt.Sprintf("error uploading %s to %s: %s", sourcePath, storage, poolPath))
+		return nil
+	case err := <-storage.uploadErrors:
+		storage.uploadWg.Done()
+		return err
 	}
-
-	return err
 }
 
 // Filelist returns list of files under prefix
@@ -540,6 +692,25 @@ func (storage *PublishedStorage) SymLink(src string, dst string) error {
 func (storage *PublishedStorage) HardLink(src string, dst string) error {
 	log.Debug().Msgf("S3: HardLink %s -> %s", src, dst)
 	return storage.SymLink(src, dst)
+}
+
+// Flush waits for all concurrent uploads to complete and returns any errors
+func (storage *PublishedStorage) Flush() error {
+	if storage.concurrentUploads == 0 {
+		// Nothing to flush if concurrent uploads are disabled
+		return nil
+	}
+
+	// Wait for all uploads to complete
+	storage.uploadWg.Wait()
+
+	// Check for any errors
+	select {
+	case err := <-storage.uploadErrors:
+		return err
+	default:
+		return nil
+	}
 }
 
 // FileExists returns true if path exists

@@ -39,7 +39,7 @@ func (s *RepoCreateSuite) TestMakeCmdRepoCreate(c *C) {
 func (s *RepoCreateSuite) TestRepoCreateBasic(c *C) {
 	// Test basic repository creation - simplified
 	args := []string{"test-repo"}
-	
+
 	err := aptlyRepoCreate(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
 	_ = err // May or may not error depending on implementation
@@ -49,7 +49,7 @@ func (s *RepoCreateSuite) TestRepoCreateWithComment(c *C) {
 	// Test repository creation with comment - simplified
 	s.cmd.Flag.Set("comment", "Test repository comment")
 	args := []string{"test-repo-with-comment"}
-	
+
 	err := aptlyRepoCreate(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
 	_ = err // May or may not error depending on implementation
@@ -59,7 +59,7 @@ func (s *RepoCreateSuite) TestRepoCreateWithDistribution(c *C) {
 	// Test repository creation with distribution - simplified
 	s.cmd.Flag.Set("distribution", "trusty")
 	args := []string{"test-repo-with-dist"}
-	
+
 	err := aptlyRepoCreate(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
 	_ = err // May or may not error depending on implementation
@@ -69,7 +69,7 @@ func (s *RepoCreateSuite) TestRepoCreateWithComponent(c *C) {
 	// Test repository creation with component - simplified
 	s.cmd.Flag.Set("component", "main")
 	args := []string{"test-repo-with-comp"}
-	
+
 	err := aptlyRepoCreate(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
 	_ = err // May or may not error depending on implementation
@@ -91,7 +91,7 @@ func (s *RepoCreateSuite) TestRepoCreateWithAllFlags(c *C) {
 	s.cmd.Flag.Set("distribution", "focal")
 	s.cmd.Flag.Set("component", "main")
 	args := []string{"test-repo-complete"}
-	
+
 	err := aptlyRepoCreate(s.cmd, args)
 	// Note: Actual behavior depends on real implementation
 	_ = err // May or may not error depending on implementation
@@ -111,7 +111,7 @@ func (s *RepoCreateSuite) TestRepoCreateSpecialCharacters(c *C) {
 		"test_repo_with_underscores",
 		"test.repo.with.dots",
 	}
-	
+
 	for _, name := range specialNames {
 		args := []string{name}
 		err := aptlyRepoCreate(s.cmd, args)

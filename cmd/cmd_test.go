@@ -9,9 +9,9 @@ import (
 )
 
 type CmdSuite struct {
-	mockProgress        *MockCmdProgress
-	collectionFactory   *deb.CollectionFactory
-	mockContext         *MockCmdContext
+	mockProgress      *MockCmdProgress
+	collectionFactory *deb.CollectionFactory
+	mockContext       *MockCmdContext
 }
 
 var _ = Suite(&CmdSuite{})
@@ -35,7 +35,7 @@ func (s *CmdSuite) SetUpTest(c *C) {
 func (s *CmdSuite) TestListPackagesRefListBasic(c *C) {
 	// Test basic functionality of ListPackagesRefList
 	reflist := &deb.PackageRefList{}
-	
+
 	err := ListPackagesRefList(reflist, s.collectionFactory)
 	c.Check(err, IsNil)
 }
@@ -43,7 +43,7 @@ func (s *CmdSuite) TestListPackagesRefListBasic(c *C) {
 func (s *CmdSuite) TestPrintPackageListBasic(c *C) {
 	// Test basic PrintPackageList functionality
 	packageList := deb.NewPackageList()
-	
+
 	err := PrintPackageList(packageList, "", "  ")
 	c.Check(err, IsNil)
 }
@@ -54,18 +54,18 @@ type MockCmdProgress struct {
 	messages []string
 }
 
-func (m *MockCmdProgress) Printf(msg string, a ...interface{})          {}
-func (m *MockCmdProgress) ColoredPrintf(msg string, a ...interface{})   {}
-func (m *MockCmdProgress) PrintfStdErr(msg string, a ...interface{})    {}
-func (m *MockCmdProgress) Flush()                                       {}
-func (m *MockCmdProgress) Start()                                       {}
-func (m *MockCmdProgress) Shutdown()                                    {}
+func (m *MockCmdProgress) Printf(msg string, a ...interface{})                      {}
+func (m *MockCmdProgress) ColoredPrintf(msg string, a ...interface{})               {}
+func (m *MockCmdProgress) PrintfStdErr(msg string, a ...interface{})                {}
+func (m *MockCmdProgress) Flush()                                                   {}
+func (m *MockCmdProgress) Start()                                                   {}
+func (m *MockCmdProgress) Shutdown()                                                {}
 func (m *MockCmdProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockCmdProgress) ShutdownBar()                                 {}
-func (m *MockCmdProgress) AddBar(count int)                             {}
-func (m *MockCmdProgress) SetBar(count int)                             {}
-func (m *MockCmdProgress) PrintfBar(msg string, a ...interface{})       {}
-func (m *MockCmdProgress) Write(p []byte) (n int, err error)            { return len(p), nil }
+func (m *MockCmdProgress) ShutdownBar()                                             {}
+func (m *MockCmdProgress) AddBar(count int)                                         {}
+func (m *MockCmdProgress) SetBar(count int)                                         {}
+func (m *MockCmdProgress) PrintfBar(msg string, a ...interface{})                   {}
+func (m *MockCmdProgress) Write(p []byte) (n int, err error)                        { return len(p), nil }
 
 type MockCmdContext struct {
 	progress          *MockCmdProgress

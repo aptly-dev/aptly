@@ -44,7 +44,7 @@ func (s *PublishSuite) setupMockContext(c *C) {
 	flags.Bool("batch", false, "batch mode")
 	flags.String("architectures", "", "architectures")
 	flags.Bool("multi-dist", false, "multi distribution")
-	
+
 	err := InitContext(flags)
 	c.Assert(err, IsNil)
 }
@@ -52,13 +52,13 @@ func (s *PublishSuite) setupMockContext(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishSnapshot(c *C) {
 	// Test makeCmdPublishSnapshot command creation
 	cmd := makeCmdPublishSnapshot()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "snapshot <name> [[<endpoint>:]<prefix>]")
 	c.Check(cmd.Short, Equals, "publish snapshot")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Check that expected flags are present
 	c.Check(cmd.Flag.Lookup("distribution"), NotNil)
 	c.Check(cmd.Flag.Lookup("component"), NotNil)
@@ -71,13 +71,13 @@ func (s *PublishSuite) TestMakeCmdPublishSnapshot(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishRepo(c *C) {
 	// Test makeCmdPublishRepo command creation
 	cmd := makeCmdPublishRepo()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "repo <name> [[<endpoint>:]<prefix>]")
 	c.Check(cmd.Short, Equals, "publish local repository")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Should use the same function as snapshot but different name
 	c.Check(cmd.Run, Equals, aptlyPublishSnapshotOrRepo)
 }
@@ -85,7 +85,7 @@ func (s *PublishSuite) TestMakeCmdPublishRepo(c *C) {
 func (s *PublishSuite) TestPublishSnapshotOrRepoNoArgs(c *C) {
 	// Test aptlyPublishSnapshotOrRepo with no arguments
 	s.setupMockContext(c)
-	
+
 	cmd := makeCmdPublishSnapshot()
 	err := aptlyPublishSnapshotOrRepo(cmd, []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
@@ -94,11 +94,11 @@ func (s *PublishSuite) TestPublishSnapshotOrRepoNoArgs(c *C) {
 func (s *PublishSuite) TestPublishSnapshotOrRepoTooManyArgs(c *C) {
 	// Test aptlyPublishSnapshotOrRepo with too many arguments
 	s.setupMockContext(c)
-	
+
 	cmd := makeCmdPublishSnapshot()
 	// Set component to "main" which means we expect 1 snapshot + optional prefix
 	context.Flags().Set("component", "main")
-	
+
 	// Too many args: 3 args when we expect max 2 (1 snapshot + 1 prefix)
 	err := aptlyPublishSnapshotOrRepo(cmd, []string{"snap1", "snap2", "snap3"})
 	c.Check(err, Equals, commander.ErrCommandError)
@@ -107,15 +107,15 @@ func (s *PublishSuite) TestPublishSnapshotOrRepoTooManyArgs(c *C) {
 func (s *PublishSuite) TestPublishSnapshotOrRepoMultiComponent(c *C) {
 	// Test aptlyPublishSnapshotOrRepo with multiple components
 	s.setupMockContext(c)
-	
+
 	cmd := makeCmdPublishSnapshot()
 	// Set multiple components
 	context.Flags().Set("component", "main,contrib,non-free")
-	
+
 	// Should expect 3 snapshots (one per component)
 	err := aptlyPublishSnapshotOrRepo(cmd, []string{"snap1"}) // Too few
 	c.Check(err, Equals, commander.ErrCommandError)
-	
+
 	err = aptlyPublishSnapshotOrRepo(cmd, []string{"snap1", "snap2", "snap3", "snap4", "snap5"}) // Too many
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -123,13 +123,13 @@ func (s *PublishSuite) TestPublishSnapshotOrRepoMultiComponent(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishList(c *C) {
 	// Test makeCmdPublishList command creation
 	cmd := makeCmdPublishList()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "list")
 	c.Check(cmd.Short, Equals, "list published repositories")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Check that expected flags are present
 	c.Check(cmd.Flag.Lookup("raw"), NotNil)
 }
@@ -137,7 +137,7 @@ func (s *PublishSuite) TestMakeCmdPublishList(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishShow(c *C) {
 	// Test makeCmdPublishShow command creation
 	cmd := makeCmdPublishShow()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "show <distribution> [[<endpoint>:]<prefix>]")
@@ -148,13 +148,13 @@ func (s *PublishSuite) TestMakeCmdPublishShow(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishDrop(c *C) {
 	// Test makeCmdPublishDrop command creation
 	cmd := makeCmdPublishDrop()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "drop <distribution> [[<endpoint>:]<prefix>]")
 	c.Check(cmd.Short, Equals, "remove published repository")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Check that expected flags are present
 	c.Check(cmd.Flag.Lookup("force-drop"), NotNil)
 	c.Check(cmd.Flag.Lookup("skip-cleanup"), NotNil)
@@ -163,13 +163,13 @@ func (s *PublishSuite) TestMakeCmdPublishDrop(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishUpdate(c *C) {
 	// Test makeCmdPublishUpdate command creation
 	cmd := makeCmdPublishUpdate()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "update <distribution> [[<endpoint>:]<prefix>]")
 	c.Check(cmd.Short, Equals, "update published repository")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Check that expected flags are present
 	c.Check(cmd.Flag.Lookup("force-overwrite"), NotNil)
 	c.Check(cmd.Flag.Lookup("skip-signing"), NotNil)
@@ -178,13 +178,13 @@ func (s *PublishSuite) TestMakeCmdPublishUpdate(c *C) {
 func (s *PublishSuite) TestMakeCmdPublishSwitch(c *C) {
 	// Test makeCmdPublishSwitch command creation
 	cmd := makeCmdPublishSwitch()
-	
+
 	c.Check(cmd, NotNil)
 	c.Check(cmd.Run, NotNil)
 	c.Check(cmd.UsageLine, Equals, "switch <distribution> [<component1>:]<name1> [<component2>:]<name2> ... [[<endpoint>:]<prefix>]")
 	c.Check(cmd.Short, Equals, "update published repository by switching to new snapshot")
 	c.Check(cmd.Long, Not(Equals), "")
-	
+
 	// Check that expected flags are present
 	c.Check(cmd.Flag.Lookup("force-overwrite"), NotNil)
 	c.Check(cmd.Flag.Lookup("skip-signing"), NotNil)
@@ -194,7 +194,7 @@ func (s *PublishSuite) TestMakeCmdPublishSwitch(c *C) {
 func (s *PublishSuite) TestPublishListNoArgs(c *C) {
 	// Test aptlyPublishList with no arguments (should work)
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishList(makeCmdPublishList(), []string{})
 	// Will likely error due to no real collection factory, but tests structure
 	c.Check(err, NotNil)
@@ -203,7 +203,7 @@ func (s *PublishSuite) TestPublishListNoArgs(c *C) {
 func (s *PublishSuite) TestPublishListWithArgs(c *C) {
 	// Test aptlyPublishList with arguments (should fail)
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishList(makeCmdPublishList(), []string{"extra", "args"})
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -211,7 +211,7 @@ func (s *PublishSuite) TestPublishListWithArgs(c *C) {
 func (s *PublishSuite) TestPublishShowNoArgs(c *C) {
 	// Test aptlyPublishShow with no arguments
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishShow(makeCmdPublishShow(), []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -219,7 +219,7 @@ func (s *PublishSuite) TestPublishShowNoArgs(c *C) {
 func (s *PublishSuite) TestPublishDropNoArgs(c *C) {
 	// Test aptlyPublishDrop with no arguments
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishDrop(makeCmdPublishDrop(), []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -227,7 +227,7 @@ func (s *PublishSuite) TestPublishDropNoArgs(c *C) {
 func (s *PublishSuite) TestPublishUpdateNoArgs(c *C) {
 	// Test aptlyPublishUpdate with no arguments
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishUpdate(makeCmdPublishUpdate(), []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -235,10 +235,10 @@ func (s *PublishSuite) TestPublishUpdateNoArgs(c *C) {
 func (s *PublishSuite) TestPublishSwitchInsufficientArgs(c *C) {
 	// Test aptlyPublishSwitch with insufficient arguments
 	s.setupMockContext(c)
-	
+
 	err := aptlyPublishSwitch(makeCmdPublishSwitch(), []string{})
 	c.Check(err, Equals, commander.ErrCommandError)
-	
+
 	err = aptlyPublishSwitch(makeCmdPublishSwitch(), []string{"distribution-only"})
 	c.Check(err, Equals, commander.ErrCommandError)
 }
@@ -254,7 +254,7 @@ func (s *PublishSuite) TestPublishCommandFlags(c *C) {
 		makeCmdPublishUpdate(),
 		makeCmdPublishSwitch(),
 	}
-	
+
 	for _, cmd := range commands {
 		c.Check(cmd, NotNil, Commentf("Command should not be nil: %s", cmd.Name()))
 		c.Check(cmd.Run, NotNil, Commentf("Command run function should not be nil: %s", cmd.Name()))
@@ -266,11 +266,11 @@ func (s *PublishSuite) TestPublishCommandFlags(c *C) {
 
 func (s *PublishSuite) TestPublishPrefixParsing(c *C) {
 	// Test prefix parsing patterns used in publish commands
-	
+
 	// Mock prefix parsing similar to deb.ParsePrefix
 	testCases := []struct {
-		input         string
-		expectedStore string
+		input          string
+		expectedStore  string
 		expectedPrefix string
 	}{
 		{"", "", ""},
@@ -279,12 +279,12 @@ func (s *PublishSuite) TestPublishPrefixParsing(c *C) {
 		{"s3:us-east-1:bucket/prefix", "s3:us-east-1", "bucket/prefix"},
 		{"filesystem:/path/to/dir", "filesystem", "/path/to/dir"},
 	}
-	
+
 	for _, tc := range testCases {
 		// Simple parsing logic for testing
 		parts := strings.SplitN(tc.input, ":", 2)
 		var storage, prefix string
-		
+
 		if len(parts) == 1 {
 			storage = ""
 			prefix = parts[0]
@@ -299,7 +299,7 @@ func (s *PublishSuite) TestPublishPrefixParsing(c *C) {
 				prefix = parts[1]
 			}
 		}
-		
+
 		c.Check(storage, Equals, tc.expectedStore, Commentf("Input: %s", tc.input))
 		c.Check(prefix, Equals, tc.expectedPrefix, Commentf("Input: %s", tc.input))
 	}
@@ -317,7 +317,7 @@ func (s *PublishSuite) TestComponentParsing(c *C) {
 		{"", []string{""}},
 		{"single", []string{"single"}},
 	}
-	
+
 	for _, tc := range testCases {
 		components := strings.Split(tc.input, ",")
 		c.Check(components, DeepEquals, tc.expected, Commentf("Input: %s", tc.input))
@@ -327,7 +327,7 @@ func (s *PublishSuite) TestComponentParsing(c *C) {
 func (s *PublishSuite) TestPublishErrorHandling(c *C) {
 	// Test error handling patterns in publish commands
 	s.setupMockContext(c)
-	
+
 	// Test various error scenarios
 	commands := []struct {
 		name    string
@@ -343,7 +343,7 @@ func (s *PublishSuite) TestPublishErrorHandling(c *C) {
 		{"publish update no args", makeCmdPublishUpdate(), aptlyPublishUpdate, []string{}, true},
 		{"publish switch no args", makeCmdPublishSwitch(), aptlyPublishSwitch, []string{}, true},
 	}
-	
+
 	for _, tc := range commands {
 		err := tc.fn(tc.cmd, tc.args)
 		if tc.wantErr {
@@ -357,29 +357,29 @@ func (s *PublishSuite) TestPublishErrorHandling(c *C) {
 func (s *PublishSuite) TestPublishArgumentValidation(c *C) {
 	// Test argument validation patterns
 	s.setupMockContext(c)
-	
+
 	// Test component/argument count validation
 	testCases := []struct {
 		components string
 		args       []string
 		valid      bool
 	}{
-		{"main", []string{"snap1"}, true},                    // 1 component, 1 snapshot
-		{"main", []string{"snap1", "prefix"}, true},          // 1 component, 1 snapshot + prefix
-		{"main", []string{}, false},                          // 1 component, no snapshots
-		{"main", []string{"snap1", "snap2", "prefix"}, false}, // 1 component, too many args
-		{"main,contrib", []string{"snap1", "snap2"}, true},   // 2 components, 2 snapshots
+		{"main", []string{"snap1"}, true},                            // 1 component, 1 snapshot
+		{"main", []string{"snap1", "prefix"}, true},                  // 1 component, 1 snapshot + prefix
+		{"main", []string{}, false},                                  // 1 component, no snapshots
+		{"main", []string{"snap1", "snap2", "prefix"}, false},        // 1 component, too many args
+		{"main,contrib", []string{"snap1", "snap2"}, true},           // 2 components, 2 snapshots
 		{"main,contrib", []string{"snap1", "snap2", "prefix"}, true}, // 2 components, 2 snapshots + prefix
-		{"main,contrib", []string{"snap1"}, false},           // 2 components, not enough snapshots
+		{"main,contrib", []string{"snap1"}, false},                   // 2 components, not enough snapshots
 	}
-	
+
 	for _, tc := range testCases {
 		components := strings.Split(tc.components, ",")
 		args := tc.args
-		
+
 		// Validation logic similar to aptlyPublishSnapshotOrRepo
 		valid := len(args) >= len(components) && len(args) <= len(components)+1
-		
+
 		c.Check(valid, Equals, tc.valid, Commentf("Components: %s, Args: %v", tc.components, tc.args))
 	}
 }
@@ -394,7 +394,7 @@ func (s *PublishSuite) TestPublishSourceCommands(c *C) {
 		makeCmdPublishSourceReplace(),
 		makeCmdPublishSourceUpdate(),
 	}
-	
+
 	for _, cmd := range sourceCommands {
 		c.Check(cmd, NotNil)
 		c.Check(cmd.Run, NotNil)

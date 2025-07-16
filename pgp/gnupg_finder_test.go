@@ -23,7 +23,7 @@ func (s *GPGFinderSuite) TestGPG1Finder(c *C) {
 	// Test GPG1 finder configuration
 	finder := GPG1Finder()
 	c.Check(finder, NotNil)
-	
+
 	pathFinder, ok := finder.(*pathGPGFinder)
 	c.Check(ok, Equals, true)
 	c.Check(pathFinder.gpgNames, DeepEquals, []string{"gpg", "gpg1"})
@@ -36,7 +36,7 @@ func (s *GPGFinderSuite) TestGPG2Finder(c *C) {
 	// Test GPG2 finder configuration
 	finder := GPG2Finder()
 	c.Check(finder, NotNil)
-	
+
 	pathFinder, ok := finder.(*pathGPGFinder)
 	c.Check(ok, Equals, true)
 	c.Check(pathFinder.gpgNames, DeepEquals, []string{"gpg", "gpg2"})
@@ -49,7 +49,7 @@ func (s *GPGFinderSuite) TestGPGDefaultFinder(c *C) {
 	// Test default finder configuration
 	finder := GPGDefaultFinder()
 	c.Check(finder, NotNil)
-	
+
 	iterFinder, ok := finder.(*iteratingGPGFinder)
 	c.Check(ok, Equals, true)
 	c.Check(len(iterFinder.finders), Equals, 2)
@@ -64,7 +64,7 @@ func (s *GPGFinderSuite) TestPathGPGFinderFindGPGNotFound(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "test error",
 	}
-	
+
 	gpg, version, err := finder.FindGPG()
 	c.Check(gpg, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
@@ -80,7 +80,7 @@ func (s *GPGFinderSuite) TestPathGPGFinderFindGPGVNotFound(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "test error",
 	}
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(gpgv, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
@@ -96,18 +96,18 @@ func (s *GPGFinderSuite) TestIteratingGPGFinderAllFail(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "individual finder error",
 	}
-	
+
 	finder := &iteratingGPGFinder{
 		finders:      []GPGFinder{failingFinder, failingFinder},
 		errorMessage: "all finders failed",
 	}
-	
+
 	gpg, version, err := finder.FindGPG()
 	c.Check(gpg, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "all finders failed")
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(gpgv, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
@@ -134,7 +134,7 @@ func (s *GPGFinderSuite) TestCliVersionCheckGPG1Pattern(c *C) {
 	// Test version pattern recognition for GPG 1.x
 	// Since we can't easily mock exec.Command, we test the pattern matching logic
 	pattern := `\(GnuPG.*\) (1).(\d)`
-	
+
 	// Test that the pattern would match GPG 1.x format
 	c.Check(strings.Contains(pattern, "(1)"), Equals, true)
 }
@@ -142,7 +142,7 @@ func (s *GPGFinderSuite) TestCliVersionCheckGPG1Pattern(c *C) {
 func (s *GPGFinderSuite) TestCliVersionCheckGPG2Pattern(c *C) {
 	// Test version pattern recognition for GPG 2.x
 	pattern := `\(GnuPG.*\) (2).(\d)`
-	
+
 	// Test that the pattern would match GPG 2.x format
 	c.Check(strings.Contains(pattern, "(2)"), Equals, true)
 }
@@ -150,20 +150,20 @@ func (s *GPGFinderSuite) TestCliVersionCheckGPG2Pattern(c *C) {
 func (s *GPGFinderSuite) TestGPGFinderInterface(c *C) {
 	// Test that all finders implement the GPGFinder interface
 	var finder GPGFinder
-	
+
 	finder = GPG1Finder()
 	c.Check(finder, NotNil)
-	
+
 	finder = GPG2Finder()
 	c.Check(finder, NotNil)
-	
+
 	finder = GPGDefaultFinder()
 	c.Check(finder, NotNil)
-	
+
 	// Test interface methods exist and return (may succeed or fail depending on system)
 	gpg, gpgv, err1 := finder.FindGPG()
 	_, _, err2 := finder.FindGPGV()
-	
+
 	// Methods should exist and return something
 	if err1 == nil {
 		// If GPG is found, paths should be non-empty
@@ -182,12 +182,12 @@ func (s *GPGFinderSuite) TestPathGPGFinderMultipleNames(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "none found",
 	}
-	
+
 	// Should try all names and still fail
 	gpg, version, err := finder.FindGPG()
 	c.Check(gpg, Equals, "")
 	c.Check(err, NotNil)
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(gpgv, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
@@ -201,23 +201,23 @@ func (s *GPGFinderSuite) TestIteratingGPGFinderFirstSuccess(c *C) {
 		gpgvResult: "test-gpgv",
 		version:    GPG1x,
 	}
-	
+
 	failingFinder := &pathGPGFinder{
 		gpgNames:     []string{"nonexistent"},
 		gpgvNames:    []string{"nonexistent"},
 		errorMessage: "should not reach this",
 	}
-	
+
 	finder := &iteratingGPGFinder{
 		finders:      []GPGFinder{successFinder, failingFinder},
 		errorMessage: "should not see this error",
 	}
-	
+
 	gpg, version, err := finder.FindGPG()
 	c.Check(err, IsNil)
 	c.Check(gpg, Equals, "test-gpg")
 	c.Check(version, Equals, GPG1x)
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(err, IsNil)
 	c.Check(gpgv, Equals, "test-gpgv")
@@ -229,11 +229,11 @@ func (s *GPGFinderSuite) TestGPGFinderErrorMessages(c *C) {
 	gpg1Finder := GPG1Finder().(*pathGPGFinder)
 	c.Check(strings.Contains(gpg1Finder.errorMessage, "gnupg1"), Equals, true)
 	c.Check(strings.Contains(gpg1Finder.errorMessage, "gpg(v)1"), Equals, true)
-	
+
 	gpg2Finder := GPG2Finder().(*pathGPGFinder)
 	c.Check(strings.Contains(gpg2Finder.errorMessage, "gnupg2"), Equals, true)
 	c.Check(strings.Contains(gpg2Finder.errorMessage, "gpg(v)2"), Equals, true)
-	
+
 	defaultFinder := GPGDefaultFinder().(*iteratingGPGFinder)
 	c.Check(strings.Contains(defaultFinder.errorMessage, "gnupg"), Equals, true)
 	c.Check(strings.Contains(defaultFinder.errorMessage, "suitable"), Equals, true)
@@ -242,16 +242,16 @@ func (s *GPGFinderSuite) TestGPGFinderErrorMessages(c *C) {
 func (s *GPGFinderSuite) TestRealGPGCommandExistence(c *C) {
 	// Test if any real GPG commands exist in the system
 	// This test documents the real-world behavior without failing if GPG is not installed
-	
+
 	commands := []string{"gpg", "gpg1", "gpg2", "gpgv", "gpgv1", "gpgv2"}
 	foundCommands := []string{}
-	
+
 	for _, cmd := range commands {
 		if _, err := exec.LookPath(cmd); err == nil {
 			foundCommands = append(foundCommands, cmd)
 		}
 	}
-	
+
 	// This test just documents what's available, doesn't require any specific GPG
 	c.Check(len(foundCommands) >= 0, Equals, true) // Always true, just documenting
 }
@@ -275,15 +275,15 @@ func (s *GPGFinderSuite) TestMockGPGFinder(c *C) {
 	// Test the mock finder implementation
 	mock := &mockSuccessfulGPGFinder{
 		gpgResult:  "mock-gpg",
-		gpgvResult: "mock-gpgv", 
+		gpgvResult: "mock-gpgv",
 		version:    GPG21x,
 	}
-	
+
 	gpg, version, err := mock.FindGPG()
 	c.Check(err, IsNil)
 	c.Check(gpg, Equals, "mock-gpg")
 	c.Check(version, Equals, GPG21x)
-	
+
 	gpgv, version, err := mock.FindGPGV()
 	c.Check(err, IsNil)
 	c.Check(gpgv, Equals, "mock-gpgv")
@@ -293,15 +293,15 @@ func (s *GPGFinderSuite) TestMockGPGFinder(c *C) {
 func (s *GPGFinderSuite) TestCliVersionCheckComplexVersions(c *C) {
 	// Test version parsing with different GPG version outputs
 	// Note: This test focuses on the regex parsing logic
-	
+
 	// Test patterns that would match different GPG versions
 	pattern1x := `\(GnuPG.*\) (1).(\d)`
 	pattern2x := `\(GnuPG.*\) (2).(\d)`
-	
+
 	// Verify patterns are correctly formed
 	c.Check(strings.Contains(pattern1x, "(1)"), Equals, true)
 	c.Check(strings.Contains(pattern2x, "(2)"), Equals, true)
-	
+
 	// Test with non-existent command to verify error handling
 	result, version := cliVersionCheck("definitely-nonexistent-command-12345", pattern1x)
 	c.Check(result, Equals, false)
@@ -314,7 +314,7 @@ func (s *GPGFinderSuite) TestGPGVersionEnumValues(c *C) {
 	c.Check(int(GPG20x), Equals, 2)
 	c.Check(int(GPG21x), Equals, 3)
 	c.Check(int(GPG22xPlus), Equals, 4)
-	
+
 	// Test version comparisons
 	c.Check(GPG1x < GPG20x, Equals, true)
 	c.Check(GPG20x < GPG21x, Equals, true)
@@ -329,24 +329,24 @@ func (s *GPGFinderSuite) TestIteratingGPGFinderPartialSuccess(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "first finder failed",
 	}
-	
+
 	successFinder := &mockSuccessfulGPGFinder{
 		gpgResult:  "second-gpg",
 		gpgvResult: "second-gpgv",
 		version:    GPG20x,
 	}
-	
+
 	finder := &iteratingGPGFinder{
 		finders:      []GPGFinder{failingFinder, successFinder},
 		errorMessage: "all failed",
 	}
-	
+
 	// Should succeed with second finder
 	gpg, version, err := finder.FindGPG()
 	c.Check(err, IsNil)
 	c.Check(gpg, Equals, "second-gpg")
 	c.Check(version, Equals, GPG20x)
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(err, IsNil)
 	c.Check(gpgv, Equals, "second-gpgv")
@@ -361,13 +361,13 @@ func (s *GPGFinderSuite) TestPathGPGFinderEmptyArrays(c *C) {
 		expectedVersionSubstring: `\(GnuPG.*\) (1).(\d)`,
 		errorMessage:             "no names to try",
 	}
-	
+
 	gpg, version, err := finder.FindGPG()
 	c.Check(gpg, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "no names to try")
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(gpgv, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
@@ -380,13 +380,13 @@ func (s *GPGFinderSuite) TestIteratingGPGFinderEmptyFinders(c *C) {
 		finders:      []GPGFinder{},
 		errorMessage: "no finders available",
 	}
-	
+
 	gpg, version, err := finder.FindGPG()
 	c.Check(gpg, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))
 	c.Check(err, NotNil)
 	c.Check(err.Error(), Equals, "no finders available")
-	
+
 	gpgv, version, err := finder.FindGPGV()
 	c.Check(gpgv, Equals, "")
 	c.Check(version, Equals, GPGVersion(0))

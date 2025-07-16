@@ -306,13 +306,13 @@ func (s *SnapshotMergeSuite) TestAptlySnapshotMergeFilterLatestRefs(c *C) {
 func (s *SnapshotMergeSuite) TestAptlySnapshotMergeOverrideMatching(c *C) {
 	// Test override matching behavior with different flag combinations
 	scenarios := []struct {
-		latest    bool
-		noRemove  bool
+		latest         bool
+		noRemove       bool
 		expectOverride bool
 	}{
-		{false, false, true},  // Default: override matching
-		{true, false, false},  // Latest: no override matching
-		{false, true, false},  // No-remove: no override matching
+		{false, false, true}, // Default: override matching
+		{true, false, false}, // Latest: no override matching
+		{false, true, false}, // No-remove: no override matching
 	}
 
 	for _, scenario := range scenarios {
@@ -345,9 +345,11 @@ type MockSnapshotMergeContext struct {
 	collectionFactory *deb.CollectionFactory
 }
 
-func (m *MockSnapshotMergeContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockSnapshotMergeContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockSnapshotMergeContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
+func (m *MockSnapshotMergeContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockSnapshotMergeContext) Progress() aptly.Progress { return m.progress }
+func (m *MockSnapshotMergeContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
 
 type MockSnapshotMergeCollection struct {
 	shouldErrorByName       bool
@@ -496,8 +498,8 @@ func (s *SnapshotMergeSuite) TestErrorMessageFormatting(c *C) {
 func (s *SnapshotMergeSuite) TestMergeStrategyValidation(c *C) {
 	// Test different merge strategies
 	strategies := []struct {
-		latest         bool
-		noRemove       bool
+		latest           bool
+		noRemove         bool
 		expectedStrategy string
 	}{
 		{false, false, "override"},

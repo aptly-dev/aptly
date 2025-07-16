@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-
 	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )
@@ -352,7 +351,7 @@ func (s *TaskTestSuite) TestTasksContentTypes(c *C) {
 		if test.expectedType != "" {
 			// Check that JSON endpoints return JSON content type
 			contentType := w.Header().Get("Content-Type")
-			c.Check(contentType, Matches, ".*"+test.expectedType+".*", 
+			c.Check(contentType, Matches, ".*"+test.expectedType+".*",
 				Commentf("Path: %s, Expected: %s, Got: %s", test.path, test.expectedType, contentType))
 		}
 	}
@@ -372,7 +371,7 @@ func (s *TaskTestSuite) TestTasksErrorConditions(c *C) {
 		{"Non-existent task detail", "/api/tasks/999999/detail", "GET", true},
 		{"Non-existent task return value", "/api/tasks/999999/return_value", "GET", true},
 		{"Non-existent task delete", "/api/tasks/999999", "DELETE", true},
-		{"Malformed task path", "/api/tasks/", "GET", false}, // Route not matched
+		{"Malformed task path", "/api/tasks/", "GET", false},                  // Route not matched
 		{"Extra path segments", "/api/tasks/123/extra/segment", "GET", false}, // Route not matched
 	}
 
@@ -390,12 +389,12 @@ func (s *TaskTestSuite) TestTasksResourceManagement(c *C) {
 	// Test that endpoints handle resource management correctly
 	endpoints := []string{
 		"/api/tasks",
-		"/api/tasks-clear", 
+		"/api/tasks-clear",
 		"/api/tasks-wait",
 		"/api/tasks/1",
 		"/api/tasks/1/wait",
 		"/api/tasks/1/output",
-		"/api/tasks/1/detail", 
+		"/api/tasks/1/detail",
 		"/api/tasks/1/return_value",
 	}
 
@@ -411,7 +410,7 @@ func (s *TaskTestSuite) TestTasksResourceManagement(c *C) {
 
 		// Should complete without hanging or crashing
 		c.Check(w.Code, Not(Equals), 0, Commentf("Endpoint: %s", endpoint))
-		
+
 		// Response should have proper headers
 		c.Check(w.Header(), NotNil, Commentf("Endpoint: %s", endpoint))
 	}

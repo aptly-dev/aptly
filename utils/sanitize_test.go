@@ -2,7 +2,7 @@ package utils
 
 import (
 	"strings"
-	
+
 	. "gopkg.in/check.v1"
 )
 

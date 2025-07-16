@@ -164,11 +164,11 @@ func (s *DBTestSuite) TestDbCleanupErrorHandling(c *C) {
 		method      string
 		expectError bool
 	}{
-		{"Normal cleanup call", "/api/db/cleanup", "POST", true}, // Expect error due to no context
+		{"Normal cleanup call", "/api/db/cleanup", "POST", true},            // Expect error due to no context
 		{"Cleanup with extra path", "/api/db/cleanup/extra", "POST", false}, // Route not matched
-		{"Cleanup with trailing slash", "/api/db/cleanup/", "POST", false}, // Route not matched
-		{"Case sensitive path", "/api/DB/cleanup", "POST", false}, // Route not matched
-		{"Case sensitive path", "/api/db/CLEANUP", "POST", false}, // Route not matched
+		{"Cleanup with trailing slash", "/api/db/cleanup/", "POST", false},  // Route not matched
+		{"Case sensitive path", "/api/DB/cleanup", "POST", false},           // Route not matched
+		{"Case sensitive path", "/api/db/CLEANUP", "POST", false},           // Route not matched
 	}
 
 	for _, test := range errorTests {
@@ -229,7 +229,7 @@ func (s *DBTestSuite) TestDbCleanupResponseFormat(c *C) {
 	// Should have proper response structure
 	c.Check(w.Code, Not(Equals), 0)
 	c.Check(w.Header(), NotNil)
-	
+
 	// If there's a response body, it should be valid
 	if w.Body.Len() > 0 {
 		body := w.Body.String()

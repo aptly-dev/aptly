@@ -291,13 +291,13 @@ func (m *MockMirrorEditProgress) Write(p []byte) (n int, err error) {
 }
 
 // Implement aptly.Progress interface
-func (m *MockMirrorEditProgress) Start()                                             {}
-func (m *MockMirrorEditProgress) Shutdown()                                          {}
-func (m *MockMirrorEditProgress) Flush()                                             {}
+func (m *MockMirrorEditProgress) Start()                                                   {}
+func (m *MockMirrorEditProgress) Shutdown()                                                {}
+func (m *MockMirrorEditProgress) Flush()                                                   {}
 func (m *MockMirrorEditProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockMirrorEditProgress) ShutdownBar()                                       {}
-func (m *MockMirrorEditProgress) AddBar(count int)                                   {}
-func (m *MockMirrorEditProgress) SetBar(count int)                                   {}
+func (m *MockMirrorEditProgress) ShutdownBar()                                             {}
+func (m *MockMirrorEditProgress) AddBar(count int)                                         {}
+func (m *MockMirrorEditProgress) SetBar(count int)                                         {}
 func (m *MockMirrorEditProgress) Printf(msg string, a ...interface{}) {
 	formatted := fmt.Sprintf(msg, a...)
 	m.Messages = append(m.Messages, formatted)
@@ -322,12 +322,14 @@ type MockMirrorEditContext struct {
 	verifierError        bool
 }
 
-func (m *MockMirrorEditContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockMirrorEditContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockMirrorEditContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockMirrorEditContext) ArchitecturesList() []string                  { return m.architectures }
-func (m *MockMirrorEditContext) Config() *utils.ConfigStructure                        { return m.config }
-func (m *MockMirrorEditContext) Downloader() aptly.Downloader                 { return m.downloader }
+func (m *MockMirrorEditContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockMirrorEditContext) Progress() aptly.Progress { return m.progress }
+func (m *MockMirrorEditContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockMirrorEditContext) ArchitecturesList() []string    { return m.architectures }
+func (m *MockMirrorEditContext) Config() *utils.ConfigStructure { return m.config }
+func (m *MockMirrorEditContext) Downloader() aptly.Downloader   { return m.downloader }
 
 func (m *MockMirrorEditContext) GlobalFlags() *flag.FlagSet {
 	globalFlags := flag.NewFlagSet("global", flag.ExitOnError)
@@ -349,8 +351,8 @@ func (m *MockDownloader) Download(ctx stdcontext.Context, url string, destinatio
 func (m *MockDownloader) DownloadWithChecksum(ctx stdcontext.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	return nil
 }
-func (m *MockDownloader) GetProgress() aptly.Progress { 
-	return &MockMirrorEditProgress{} 
+func (m *MockDownloader) GetProgress() aptly.Progress {
+	return &MockMirrorEditProgress{}
 }
 func (m *MockDownloader) GetLength(ctx stdcontext.Context, url string) (int64, error) {
 	return 0, nil

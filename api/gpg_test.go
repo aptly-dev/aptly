@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-
 	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )

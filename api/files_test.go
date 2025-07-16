@@ -260,7 +260,7 @@ func (s *FilesSuite) TestTruthy(c *C) {
 	c.Check(truthy("false"), Equals, false)
 	c.Check(truthy("0"), Equals, false)
 	c.Check(truthy("off"), Equals, false)
-	c.Check(truthy("NO"), Equals, false) // case insensitive
+	c.Check(truthy("NO"), Equals, false)    // case insensitive
 	c.Check(truthy("FALSE"), Equals, false) // case insensitive
 
 	// Test int values

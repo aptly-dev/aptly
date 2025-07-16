@@ -317,13 +317,13 @@ func (m *MockMirrorCreateProgress) Write(p []byte) (n int, err error) {
 }
 
 // Implement aptly.Progress interface
-func (m *MockMirrorCreateProgress) Start()                                             {}
-func (m *MockMirrorCreateProgress) Shutdown()                                          {}
-func (m *MockMirrorCreateProgress) Flush()                                             {}
+func (m *MockMirrorCreateProgress) Start()                                                   {}
+func (m *MockMirrorCreateProgress) Shutdown()                                                {}
+func (m *MockMirrorCreateProgress) Flush()                                                   {}
 func (m *MockMirrorCreateProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {}
-func (m *MockMirrorCreateProgress) ShutdownBar()                                       {}
-func (m *MockMirrorCreateProgress) AddBar(count int)                                   {}
-func (m *MockMirrorCreateProgress) SetBar(count int)                                   {}
+func (m *MockMirrorCreateProgress) ShutdownBar()                                             {}
+func (m *MockMirrorCreateProgress) AddBar(count int)                                         {}
+func (m *MockMirrorCreateProgress) SetBar(count int)                                         {}
 func (m *MockMirrorCreateProgress) Printf(msg string, a ...interface{}) {
 	formatted := fmt.Sprintf(msg, a...)
 	m.Messages = append(m.Messages, formatted)
@@ -338,24 +338,26 @@ func (m *MockMirrorCreateProgress) PrintfStdErr(msg string, a ...interface{}) {
 }
 
 type MockMirrorCreateContext struct {
-	flags                *flag.FlagSet
-	progress             *MockMirrorCreateProgress
-	collectionFactory    *deb.CollectionFactory
-	architectures        []string
-	config               *utils.ConfigStructure
-	downloader           aptly.Downloader
-	ppaError             bool
-	newRemoteRepoError   bool
-	verifierError        bool
-	fetchError           bool
+	flags              *flag.FlagSet
+	progress           *MockMirrorCreateProgress
+	collectionFactory  *deb.CollectionFactory
+	architectures      []string
+	config             *utils.ConfigStructure
+	downloader         aptly.Downloader
+	ppaError           bool
+	newRemoteRepoError bool
+	verifierError      bool
+	fetchError         bool
 }
 
-func (m *MockMirrorCreateContext) Flags() *flag.FlagSet                          { return m.flags }
-func (m *MockMirrorCreateContext) Progress() aptly.Progress                      { return m.progress }
-func (m *MockMirrorCreateContext) NewCollectionFactory() *deb.CollectionFactory { return m.collectionFactory }
-func (m *MockMirrorCreateContext) ArchitecturesList() []string                  { return m.architectures }
-func (m *MockMirrorCreateContext) Config() *utils.ConfigStructure                        { return m.config }
-func (m *MockMirrorCreateContext) Downloader() aptly.Downloader                 { return m.downloader }
+func (m *MockMirrorCreateContext) Flags() *flag.FlagSet     { return m.flags }
+func (m *MockMirrorCreateContext) Progress() aptly.Progress { return m.progress }
+func (m *MockMirrorCreateContext) NewCollectionFactory() *deb.CollectionFactory {
+	return m.collectionFactory
+}
+func (m *MockMirrorCreateContext) ArchitecturesList() []string    { return m.architectures }
+func (m *MockMirrorCreateContext) Config() *utils.ConfigStructure { return m.config }
+func (m *MockMirrorCreateContext) Downloader() aptly.Downloader   { return m.downloader }
 
 type MockMirrorCreateDownloader struct{}
 
@@ -366,8 +368,8 @@ func (m *MockMirrorCreateDownloader) Download(ctx stdcontext.Context, url string
 func (m *MockMirrorCreateDownloader) DownloadWithChecksum(ctx stdcontext.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	return nil
 }
-func (m *MockMirrorCreateDownloader) GetProgress() aptly.Progress { 
-	return &MockMirrorCreateProgress{} 
+func (m *MockMirrorCreateDownloader) GetProgress() aptly.Progress {
+	return &MockMirrorCreateProgress{}
 }
 func (m *MockMirrorCreateDownloader) GetLength(ctx stdcontext.Context, url string) (int64, error) {
 	return 0, nil
@@ -452,18 +454,18 @@ func (s *MirrorCreateSuite) TestAptlyMirrorCreateFlagCombinations(c *C) {
 // Test LookupOption functionality
 func (s *MirrorCreateSuite) TestLookupOptionLogic(c *C) {
 	// Test the LookupOption function behavior
-	
+
 	// Test with global config enabled, flag not set
 	s.mockContext.config.DownloadSourcePackages = true
 	result := LookupOption(s.mockContext.config.DownloadSourcePackages, &s.cmd.Flag, "with-sources")
 	c.Check(result, Equals, true)
-	
+
 	// Test with global config disabled, flag explicitly set
 	s.mockContext.config.DownloadSourcePackages = false
 	s.cmd.Flag.Set("with-sources", "true")
 	result = LookupOption(s.mockContext.config.DownloadSourcePackages, &s.cmd.Flag, "with-sources")
 	c.Check(result, Equals, true)
-	
+
 	// Reset
 	s.cmd.Flag.Set("with-sources", "false")
 }
