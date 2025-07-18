@@ -92,7 +92,16 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"databaseBackend\": {\n"+
 		"    \"type\": \"\",\n"+
 		"    \"dbPath\": \"\",\n"+
-		"    \"url\": \"\"\n"+
+		"    \"url\": \"\",\n"+
+		"    \"timeout\": \"\",\n"+
+		"    \"writeRetries\": 0,\n"+
+		"    \"writeQueue\": {\n"+
+		"      \"enabled\": false,\n"+
+		"      \"queueSize\": 0,\n"+
+		"      \"maxWritesPerSec\": 0,\n"+
+		"      \"batchMaxSize\": 0,\n"+
+		"      \"batchMaxWaitMs\": 0\n"+
+		"    }\n"+
 		"  },\n"+
 		"  \"downloader\": \"\",\n"+
 		"  \"downloadConcurrency\": 5,\n"+
@@ -127,7 +136,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"disableMultiDel\": false,\n"+
 		"      \"forceSigV2\": false,\n"+
 		"      \"forceVirtualHostedStyle\": false,\n"+
-		"      \"debug\": false\n"+
+		"      \"debug\": false,\n"+
+		"      \"concurrentUploads\": 0,\n"+
+		"      \"uploadQueueSize\": 0\n"+
 		"    }\n"+
 		"  },\n"+
 		"  \"SwiftPublishEndpoints\": {\n"+
@@ -259,6 +270,14 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"    type: \"\"\n"+
 		"    db_path: \"\"\n"+
 		"    url: \"\"\n"+
+		"    timeout: \"\"\n"+
+		"    write_retries: 0\n"+
+		"    write_queue:\n"+
+		"        enabled: false\n"+
+		"        queue_size: 0\n"+
+		"        max_writes_per_sec: 0\n"+
+		"        batch_max_size: 0\n"+
+		"        batch_max_wait_ms: 0\n"+
 		"downloader: \"\"\n"+
 		"download_concurrency: 0\n"+
 		"download_limit: 0\n"+
@@ -314,6 +333,14 @@ database_backend:
     type: etcd
     db_path: ""
     url: 127.0.0.1:2379
+    timeout: ""
+    write_retries: 0
+    write_queue:
+        enabled: false
+        queue_size: 0
+        max_writes_per_sec: 0
+        batch_max_size: 0
+        batch_max_wait_ms: 0
 downloader: grab
 download_concurrency: 40
 download_limit: 100
@@ -346,6 +373,8 @@ s3_publish_endpoints:
         force_sigv2: true
         force_virtualhosted_style: true
         debug: true
+        concurrent_uploads: 0
+        upload_queue_size: 0
 swift_publish_endpoints:
     test:
         container: c1

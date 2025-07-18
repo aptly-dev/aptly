@@ -218,6 +218,10 @@ func (m *MockPublishedStorage) ReadLink(path string) (string, error) {
 	return "target", nil
 }
 
+func (m *MockPublishedStorage) Flush() error {
+	return nil
+}
+
 type MockProgress struct {
 	buffer      bytes.Buffer
 	started     bool

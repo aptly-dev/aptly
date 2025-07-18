@@ -368,7 +368,8 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 
 	filelist, _, err := storage.internalFilelist(path, false)
 	if err != nil {
-		if errors.Is(err, &types.NoSuchBucket{}) {
+		// Check if error contains NoSuchBucket
+		if strings.Contains(err.Error(), "NoSuchBucket") {
 			// ignore 'no such bucket' errors on removal
 			return nil
 		}

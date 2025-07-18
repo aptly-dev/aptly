@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 )
@@ -18,9 +19,11 @@ type List struct {
 	usedResources *ResourcesSet
 	idCounter     int
 
-	queue     chan *Task
-	queueWg   *sync.WaitGroup
-	queueDone chan bool
+	queue        chan *Task
+	pendingQueue []*Task  // Tasks waiting to be queued
+	queueWg      *sync.WaitGroup
+	queueDone    chan bool
+	stopped      bool
 }
 
 // NewList creates empty task list
@@ -31,16 +34,54 @@ func NewList() *List {
 		wgTasks:       make(map[int]*sync.WaitGroup),
 		wg:            &sync.WaitGroup{},
 		usedResources: NewResourcesSet(),
-		queue:         make(chan *Task),
+		queue:         make(chan *Task, 1), // Small buffer for efficiency
+		pendingQueue:  make([]*Task, 0),
 		queueWg:       &sync.WaitGroup{},
 		queueDone:     make(chan bool),
+		stopped:       false,
 	}
+	list.queueWg.Add(1)
 	go list.consumer()
 	return list
 }
 
+// tryQueueTask attempts to queue a task without blocking
+func (list *List) tryQueueTask(task *Task) {
+	select {
+	case list.queue <- task:
+		// Successfully queued
+	default:
+		// Channel is full, add to pending queue
+		list.pendingQueue = append(list.pendingQueue, task)
+	}
+}
+
+// processPendingQueue tries to move tasks from pending queue to main queue
+func (list *List) processPendingQueue() {
+	if len(list.pendingQueue) == 0 {
+		return
+	}
+	
+	// Try to queue pending tasks
+	remaining := make([]*Task, 0)
+	for _, task := range list.pendingQueue {
+		select {
+		case list.queue <- task:
+			// Successfully queued
+		default:
+			// Still can't queue, keep in pending
+			remaining = append(remaining, task)
+		}
+	}
+	list.pendingQueue = remaining
+}
+
 // consumer is processing the queue
 func (list *List) consumer() {
+	defer list.queueWg.Done()
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case task := <-list.queue:
@@ -50,46 +91,56 @@ func (list *List) consumer() {
 			}
 			list.Unlock()
 
-			go func() {
+			go func(t *Task) {
 				// Ensure Done() is always called, even if panic occurs
 				defer func() {
 					list.Lock()
 					defer list.Unlock()
 
-					task.wgTask.Done()
+					t.wgTask.Done()
 					list.wg.Done()
-					list.usedResources.Free(task.resources)
-				}()
-
-				retValue, err := task.process(aptly.Progress(task.output), task.detail)
-
-				list.Lock()
-				{
-					task.processReturnValue = retValue
-					task.err = err
-					if err != nil {
-						task.output.Printf("Task failed with error: %v", err)
-						task.State = FAILED
-					} else {
-						task.output.Print("Task succeeded")
-						task.State = SUCCEEDED
-					}
-
-					for _, t := range list.tasks {
-						if t.State == IDLE {
+					list.usedResources.Free(t.resources)
+					
+					// Now that resources are freed, try to queue idle tasks
+					for _, task := range list.tasks {
+						if task.State == IDLE {
 							// check resources
-							blockingTasks := list.usedResources.UsedBy(t.resources)
+							blockingTasks := list.usedResources.UsedBy(task.resources)
 							if len(blockingTasks) == 0 {
-								list.usedResources.MarkInUse(t.resources, t)
-								list.queue <- t
+								list.usedResources.MarkInUse(task.resources, task)
+								list.tryQueueTask(task)
 								break
 							}
 						}
 					}
+					
+					// Process any pending tasks
+					list.processPendingQueue()
+				}()
+
+				retValue, err := t.process(aptly.Progress(t.output), t.detail)
+
+				list.Lock()
+				{
+					t.processReturnValue = retValue
+					t.err = err
+					if err != nil {
+						t.output.Printf("Task failed with error: %v", err)
+						t.State = FAILED
+					} else {
+						t.output.Print("Task succeeded")
+						t.State = SUCCEEDED
+					}
 				}
 				list.Unlock()
-			}()
+			}(task)
 
+		case <-ticker.C:
+			// Periodically check pending queue
+			list.Lock()
+			list.processPendingQueue()
+			list.Unlock()
+			
 		case <-list.queueDone:
 			return
 		}
@@ -98,6 +149,14 @@ func (list *List) consumer() {
 
 // Stop signals the consumer to stop processing tasks and waits for it to finish
 func (list *List) Stop() {
+	list.Lock()
+	if list.stopped {
+		list.Unlock()
+		return
+	}
+	list.stopped = true
+	list.Unlock()
+	
 	close(list.queueDone)
 	list.queueWg.Wait()
 }
@@ -209,7 +268,7 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 	tasks := list.usedResources.UsedBy(resources)
 	if len(tasks) == 0 {
 		list.usedResources.MarkInUse(task.resources, task)
-		list.queue <- task
+		list.tryQueueTask(task)
 	}
 
 	return *task, nil

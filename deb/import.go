@@ -92,7 +92,7 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 		if isSourcePackage {
 			stanza, err = GetControlFileFromDsc(file, verifier)
 
-			if err == nil {
+			if err == nil && stanza != nil {
 				stanza["Package"] = stanza["Source"]
 				delete(stanza, "Source")
 
@@ -100,14 +100,22 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			}
 		} else {
 			stanza, err = GetControlFileFromDeb(file)
-			if isUdebPackage {
-				p = NewUdebPackageFromControlFile(stanza)
-			} else {
-				p = NewPackageFromControlFile(stanza)
+			if err == nil && stanza != nil {
+				if isUdebPackage {
+					p = NewUdebPackageFromControlFile(stanza)
+				} else {
+					p = NewPackageFromControlFile(stanza)
+				}
 			}
 		}
 		if err != nil {
 			reporter.Warning("Unable to read file %s: %s", file, err)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		if p == nil {
+			reporter.Warning("Unable to process package file %s", file)
 			failedFiles = append(failedFiles, file)
 			continue
 		}

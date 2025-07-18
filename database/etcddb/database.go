@@ -11,7 +11,7 @@ import (
 )
 
 // Default timeout for etcd operations
-var DefaultTimeout = 120 * time.Second
+var DefaultTimeout = 60 * time.Second
 
 // Default write retry count
 var DefaultWriteRetries = 3
@@ -87,7 +87,39 @@ func NewDB(url string) (database.Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &EtcDStorage{url, cli, ""}, nil
+	return &EtcDStorage{
+		url:          url,
+		db:           cli,
+		queuedClient: nil,
+		queuedKV:     nil,
+		tmpPrefix:    "",
+	}, nil
+}
+
+// NewDBWithQueue creates a new DB with optional write queue
+func NewDBWithQueue(url string, queueConfig *QueueConfig) (database.Storage, error) {
+	cli, err := internalOpen(url)
+	if err != nil {
+		return nil, err
+	}
+	
+	storage := &EtcDStorage{
+		url:       url,
+		db:        cli,
+		tmpPrefix: "",
+	}
+	
+	if queueConfig != nil && queueConfig.Enabled {
+		storage.queuedClient = NewQueuedEtcdClient(cli, queueConfig)
+		storage.queuedKV = NewQueuedKV(cli.KV, storage.queuedClient.writeQueue, queueConfig)
+		log.Info().
+			Bool("enabled", queueConfig.Enabled).
+			Int("queueSize", queueConfig.WriteQueueSize).
+			Int("maxWritesPerSec", queueConfig.MaxWritesPerSec).
+			Msg("etcd: write queue enabled")
+	}
+	
+	return storage, nil
 }
 
 // ConfigureFromDBConfig applies configuration from DBConfig

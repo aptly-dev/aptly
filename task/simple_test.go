@@ -62,9 +62,9 @@ func (s *SimpleSuite) TestTaskCleanup(c *check.C) {
 	list := NewList()
 	defer list.Stop()
 
-	// Test that cleanup method exists and can be called
-	list.cleanup()
-	c.Check(true, check.Equals, true) // Cleanup should complete without error
+	// Test that Stop method properly cleans up resources
+	list.Stop()
+	c.Check(true, check.Equals, true) // Stop should complete without error
 }
 
 func (s *SimpleSuite) TestTaskListStop(c *check.C) {

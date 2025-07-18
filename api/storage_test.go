@@ -4,21 +4,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )
 
 type StorageTestSuite struct {
-	router *gin.Engine
+	APISuite
 }
 
 var _ = Suite(&StorageTestSuite{})
 
 func (s *StorageTestSuite) SetUpTest(c *C) {
-	s.router = gin.New()
-	s.router.GET("/api/storage", apiDiskFree)
-
-	gin.SetMode(gin.TestMode)
+	s.APISuite.SetUpTest(c)
 }
 
 func (s *StorageTestSuite) TestStorageListStructure(c *C) {

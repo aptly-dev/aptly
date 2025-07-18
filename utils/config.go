@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	yaml "gopkg.in/yaml.v3"
@@ -67,11 +68,20 @@ type ConfigStructure struct { // nolint: maligned
 
 // DBConfig structure
 type DBConfig struct {
-	Type         string `json:"type"         yaml:"type"`
-	DBPath       string `json:"dbPath"       yaml:"db_path"`
-	URL          string `json:"url"          yaml:"url"`
-	Timeout      string `json:"timeout"      yaml:"timeout"`
-	WriteRetries int    `json:"writeRetries" yaml:"write_retries"`
+	Type         string       `json:"type"         yaml:"type"`
+	DBPath       string       `json:"dbPath"       yaml:"db_path"`
+	URL          string       `json:"url"          yaml:"url"`
+	Timeout      string       `json:"timeout"      yaml:"timeout"`
+	WriteRetries int          `json:"writeRetries" yaml:"write_retries"`
+	WriteQueue   WriteQConfig `json:"writeQueue"   yaml:"write_queue"`
+}
+
+type WriteQConfig struct {
+	Enabled         bool   `json:"enabled"         yaml:"enabled"`
+	QueueSize       int    `json:"queueSize"       yaml:"queue_size"`
+	MaxWritesPerSec int    `json:"maxWritesPerSec" yaml:"max_writes_per_sec"`
+	BatchMaxSize    int    `json:"batchMaxSize"    yaml:"batch_max_size"`
+	BatchMaxWaitMs  int    `json:"batchMaxWaitMs"  yaml:"batch_max_wait_ms"`
 }
 
 type LocalPoolStorage struct {
@@ -215,6 +225,9 @@ type AzureEndpoint struct {
 	Endpoint    string `json:"endpoint"     yaml:"endpoint"`
 }
 
+// configMutex protects concurrent access to Config maps
+var configMutex sync.RWMutex
+
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
@@ -331,6 +344,9 @@ func (conf *ConfigStructure) GetRootDir() string {
 
 // GetFileSystemPublishRoots returns a copy of FileSystemPublishRoots map to avoid concurrent access
 func (conf *ConfigStructure) GetFileSystemPublishRoots() map[string]FileSystemPublishRoot {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	
 	result := make(map[string]FileSystemPublishRoot, len(conf.FileSystemPublishRoots))
 	for k, v := range conf.FileSystemPublishRoots {
 		result[k] = v
@@ -340,11 +356,25 @@ func (conf *ConfigStructure) GetFileSystemPublishRoots() map[string]FileSystemPu
 
 // GetS3PublishRoots returns a copy of S3PublishRoots map to avoid concurrent access
 func (conf *ConfigStructure) GetS3PublishRoots() map[string]S3PublishRoot {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	
 	result := make(map[string]S3PublishRoot, len(conf.S3PublishRoots))
 	for k, v := range conf.S3PublishRoots {
 		result[k] = v
 	}
 	return result
+}
+
+// SetFileSystemPublishRoot safely sets a filesystem publish root
+func (conf *ConfigStructure) SetFileSystemPublishRoot(name string, root FileSystemPublishRoot) {
+	configMutex.Lock()
+	defer configMutex.Unlock()
+	
+	if conf.FileSystemPublishRoots == nil {
+		conf.FileSystemPublishRoots = make(map[string]FileSystemPublishRoot)
+	}
+	conf.FileSystemPublishRoots[name] = root
 }
 
 // GetSwiftPublishRoots returns a copy of SwiftPublishRoots map to avoid concurrent access

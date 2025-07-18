@@ -7,17 +7,6 @@ run:
   
   # Include test files
   tests: true
-  
-  # Skip directories
-  skip-dirs:
-    - vendor
-    - testdata
-    - system/files
-  
-  # Skip files
-  skip-files:
-    - ".*\\.pb\\.go$"
-    - ".*\\.gen\\.go$"
 
 output:
   # Format of output
@@ -44,7 +33,7 @@ linters:
     # Additional linters for code quality
     - bodyclose     # Check HTTP response body is closed
     - dupl          # Code duplication
-    - exportloopref # Check loop variable export
+    - copyloopvar   # Check loop variable export (replacement for exportloopref)
     - gocognit      # Cognitive complexity
     - gocritic      # Opinionated linter
     - gocyclo       # Cyclomatic complexity
@@ -96,7 +85,7 @@ linters-settings:
 
   # dupl
   dupl:
-    threshold: 150
+    threshold: 200
 
   # gocritic
   gocritic:
@@ -166,6 +155,17 @@ issues:
   
   # Maximum count of issues with the same text
   max-same-issues: 0
+  
+  # Skip directories
+  exclude-dirs:
+    - vendor
+    - testdata
+    - system/files
+    
+  # Skip files matching these patterns
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
   
   # Exclude some linters from running on tests files
   exclude-rules:

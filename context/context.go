@@ -313,7 +313,31 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 				context.config().DatabaseBackend.Timeout,
 				context.config().DatabaseBackend.WriteRetries,
 			)
-			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
+			
+			// Create queue config from settings
+			queueConfig := &etcddb.QueueConfig{
+				Enabled:         context.config().DatabaseBackend.WriteQueue.Enabled,
+				WriteQueueSize:  context.config().DatabaseBackend.WriteQueue.QueueSize,
+				MaxWritesPerSec: context.config().DatabaseBackend.WriteQueue.MaxWritesPerSec,
+				BatchMaxSize:    context.config().DatabaseBackend.WriteQueue.BatchMaxSize,
+				BatchMaxWait:    time.Duration(context.config().DatabaseBackend.WriteQueue.BatchMaxWaitMs) * time.Millisecond,
+			}
+			
+			// Set defaults if not configured
+			if queueConfig.WriteQueueSize == 0 {
+				queueConfig.WriteQueueSize = 1000
+			}
+			if queueConfig.MaxWritesPerSec == 0 {
+				queueConfig.MaxWritesPerSec = 100
+			}
+			if queueConfig.BatchMaxSize == 0 {
+				queueConfig.BatchMaxSize = 50
+			}
+			if queueConfig.BatchMaxWait == 0 {
+				queueConfig.BatchMaxWait = 10 * time.Millisecond
+			}
+			
+			context.database, err = etcddb.NewDBWithQueue(context.config().DatabaseBackend.URL, queueConfig)
 		default:
 			context.database, err = goleveldb.NewDB(context.dbPath())
 		}

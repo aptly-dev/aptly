@@ -54,7 +54,7 @@ func (s *OutputSuite) TestOutputStringConcurrent(c *check.C) {
 	// Start multiple goroutines writing to output
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(n int) {
+		go func(_ int) {
 			defer wg.Done()
 			s.output.WriteString("test")
 		}(i)

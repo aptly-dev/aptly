@@ -41,7 +41,12 @@ func Files(unsetEnv bool) []*os.File {
 	}
 
 	nfds, err := strconv.Atoi(os.Getenv("LISTEN_FDS"))
-	if err != nil || nfds == 0 {
+	if err != nil || nfds <= 0 {
+		return nil
+	}
+
+	// Protect against excessive FDS allocations
+	if nfds > 1000 {
 		return nil
 	}
 

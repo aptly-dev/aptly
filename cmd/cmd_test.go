@@ -34,6 +34,14 @@ func (s *CmdSuite) SetUpTest(c *C) {
 
 func (s *CmdSuite) TestListPackagesRefListBasic(c *C) {
 	// Test basic functionality of ListPackagesRefList
+	// Need to initialize context for this test
+	if context == nil {
+		flags := flag.NewFlagSet("test", flag.ContinueOnError)
+		err := InitContext(flags)
+		c.Assert(err, IsNil)
+		defer ShutdownContext()
+	}
+	
 	reflist := &deb.PackageRefList{}
 
 	err := ListPackagesRefList(reflist, s.collectionFactory)

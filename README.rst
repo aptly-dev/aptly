@@ -184,3 +184,49 @@ When using etcd as the database backend, aptly supports several environment vari
 - **Timeout Protection**: All etcd operations use context with timeout to prevent indefinite hangs
 - **Enhanced Logging**: All etcd errors are logged with operation context for better debugging
 - **Configurable Limits**: Message size limits can be adjusted for large package operations
+
+etcd Write Queue Configuration
+------------------------------
+
+To prevent etcd overload during concurrent operations (e.g., multiple mirror updates), aptly supports an optional write queue that serializes database write operations:
+
+**Configuration in aptly.conf:**
+
+.. code-block:: json
+
+    {
+      "databaseBackend": {
+        "type": "etcd",
+        "url": "localhost:2379",
+        "timeout": "120s",
+        "writeRetries": 3,
+        "writeQueue": {
+          "enabled": true,
+          "queueSize": 1000,
+          "maxWritesPerSec": 100,
+          "batchMaxSize": 50,
+          "batchMaxWaitMs": 10
+        }
+      }
+    }
+
+**Write Queue Options:**
+
+- ``enabled``: Enable/disable the write queue (default: ``false``)
+- ``queueSize``: Size of the write operation queue (default: ``1000``)
+- ``maxWritesPerSec``: Maximum write operations per second (default: ``100``)
+- ``batchMaxSize``: Maximum batch size for future batching support (default: ``50``)
+- ``batchMaxWaitMs``: Maximum wait time for batch accumulation in milliseconds (default: ``10``)
+
+**Benefits:**
+
+- **Prevents etcd Overload**: Serializes write operations to avoid overwhelming etcd
+- **Maintains Parallelism**: I/O operations like downloads remain parallel
+- **Rate Limiting**: Configurable writes per second to match etcd capacity
+- **Transparent**: No code changes required, just enable in configuration
+
+**Example Impact:**
+
+Without write queue: 5 mirror updates → 5 parallel writers → 1000s of concurrent etcd operations → timeouts
+
+With write queue: 5 mirror updates → 5 parallel processes → 1 sequential etcd writer → stable performance

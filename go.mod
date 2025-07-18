@@ -108,7 +108,6 @@ require (
 	golang.org/x/tools v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
-	google.golang.org/grpc v1.73.0 // indirect
 )
 
 require (
@@ -126,5 +125,6 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
 	go.etcd.io/etcd/client/v3 v3.6.1
+	google.golang.org/grpc v1.73.0
 	gopkg.in/yaml.v3 v3.0.1
 )

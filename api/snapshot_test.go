@@ -7,24 +7,159 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	. "gopkg.in/check.v1"
 )
 
 type SnapshotAPITestSuite struct {
-	router *gin.Engine
+	APISuite
 }
 
 var _ = Suite(&SnapshotAPITestSuite{})
 
 func (s *SnapshotAPITestSuite) SetUpTest(c *C) {
-	s.router = gin.New()
-	gin.SetMode(gin.TestMode)
+	s.APISuite.SetUpTest(c)
+}
 
-	// Set up API routes
-	s.router.GET("/api/snapshots", apiSnapshotsList)
-	s.router.POST("/api/snapshots", apiSnapshotsCreate)
-	s.router.POST("/api/mirrors/:name/snapshots", apiSnapshotsCreateFromMirror)
+func (s *SnapshotAPITestSuite) TestSnapshotShow(c *C) {
+	// Test showing a specific snapshot
+	req, _ := http.NewRequest("GET", "/api/snapshots/test-snapshot", nil)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the snapshot doesn't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotUpdate(c *C) {
+	// Test updating a snapshot
+	params := struct {
+		Name        string `json:"Name"`
+		Description string `json:"Description"`
+	}{
+		Name:        "updated-snapshot",
+		Description: "Updated description",
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("PUT", "/api/snapshots/test-snapshot", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the snapshot doesn't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotDrop(c *C) {
+	// Test dropping a snapshot
+	req, _ := http.NewRequest("DELETE", "/api/snapshots/test-snapshot", nil)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the snapshot doesn't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotCreateFromRepository(c *C) {
+	// Test creating a snapshot from repository
+	params := struct {
+		Name        string `json:"Name"`
+		Description string `json:"Description"`
+	}{
+		Name:        "new-snapshot",
+		Description: "Test snapshot",
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/repos/test-repo/snapshots", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the repo doesn't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotDiff(c *C) {
+	// Test diffing two snapshots
+	req, _ := http.NewRequest("GET", "/api/snapshots/snap1/diff/snap2", nil)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the snapshots don't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotSearchPackages(c *C) {
+	// Test searching packages in snapshot
+	req, _ := http.NewRequest("GET", "/api/snapshots/test-snapshot/packages?q=Name", nil)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the snapshot doesn't exist
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotMerge(c *C) {
+	// Test merging snapshots
+	params := struct {
+		Destination string   `json:"Destination"`
+		Sources     []string `json:"Sources"`
+	}{
+		Destination: "merged-snapshot",
+		Sources:     []string{"snap1", "snap2"},
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/snapshots/merge", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return error as snapshots don't exist
+	c.Check(w.Code, Not(Equals), 200)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotPull(c *C) {
+	// Test pulling packages between snapshots
+	params := struct {
+		Source      string   `json:"Source"`
+		Destination string   `json:"Destination"`
+		Queries     []string `json:"Queries"`
+	}{
+		Source:      "source-snap",
+		Destination: "dest-snap",
+		Queries:     []string{"Name (~ nginx)"},
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/snapshots/pull", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return error as snapshots don't exist
+	c.Check(w.Code, Not(Equals), 200)
+}
+
+func (s *SnapshotAPITestSuite) TestSnapshotCreateFromMirror(c *C) {
+	// Test creating snapshot from mirror
+	params := struct {
+		Name        string `json:"Name"`
+		Description string `json:"Description"`
+	}{
+		Name:        "mirror-snapshot",
+		Description: "Snapshot from mirror",
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/mirrors/test-mirror/snapshots", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+
+	// Will return 404 as the mirror doesn't exist
+	c.Check(w.Code, Equals, 404)
 }
 
 func (s *SnapshotAPITestSuite) TestApiSnapshotsListGet(c *C) {

@@ -34,7 +34,12 @@ func (b *EtcDBatch) Delete(key []byte) (err error) {
 }
 
 func (b *EtcDBatch) Write() (err error) {
-	kv := clientv3.NewKV(b.s.db)
+	var kv clientv3.KV
+	if b.s.queuedKV != nil {
+		kv = b.s.queuedKV
+	} else {
+		kv = clientv3.NewKV(b.s.db)
+	}
 
 	batchSize := 128
 	for i := 0; i < len(b.ops); i += batchSize {

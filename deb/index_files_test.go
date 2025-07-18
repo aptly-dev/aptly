@@ -675,6 +675,10 @@ func (m *MockPublishedStorage) RemoveDirs(path string, progress aptly.Progress) 
 	return nil
 }
 
+func (m *MockPublishedStorage) Flush() error {
+	return nil
+}
+
 type MockSigner struct {
 	DetachedSignCalled bool
 	ClearSignCalled    bool

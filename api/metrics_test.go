@@ -14,18 +14,15 @@ import (
 )
 
 type MetricsTestSuite struct {
-	router *gin.Engine
+	APISuite
 }
 
 var _ = Suite(&MetricsTestSuite{})
 
 func (s *MetricsTestSuite) SetUpTest(c *C) {
+	s.APISuite.SetUpTest(c)
 	// Reset metrics registrar state for each test
 	MetricsCollectorRegistrar.hasRegistered = false
-
-	// Create new router for testing
-	s.router = gin.New()
-	gin.SetMode(gin.TestMode)
 }
 
 func (s *MetricsTestSuite) TestMetricsCollectorRegistrarRegisterOnce(c *C) {
@@ -33,11 +30,11 @@ func (s *MetricsTestSuite) TestMetricsCollectorRegistrarRegisterOnce(c *C) {
 	registrar := &metricsCollectorRegistrar{hasRegistered: false}
 
 	// First registration should work
-	registrar.Register(s.router)
+	registrar.Register(s.router.(*gin.Engine))
 	c.Check(registrar.hasRegistered, Equals, true)
 
 	// Second registration should be skipped
-	registrar.Register(s.router)
+	registrar.Register(s.router.(*gin.Engine))
 	c.Check(registrar.hasRegistered, Equals, true)
 }
 
@@ -46,7 +43,7 @@ func (s *MetricsTestSuite) TestMetricsCollectorRegistrarVersionGauge(c *C) {
 	registrar := &metricsCollectorRegistrar{hasRegistered: false}
 
 	// Register metrics
-	registrar.Register(s.router)
+	registrar.Register(s.router.(*gin.Engine))
 
 	// Check that version gauge was set
 	expectedLabels := prometheus.Labels{
@@ -359,16 +356,182 @@ func (s *MetricsTestSuite) TestCountPackagesByRepos(c *C) {
 	c.Check(true, Equals, true)
 }
 
+func (s *MetricsTestSuite) TestGetBasePath(c *C) {
+	// Test getBasePath function
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	
+	// Test with simple path (only returns first two segments)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/version", nil)
+	basePath := getBasePath(ginCtx)
+	c.Check(basePath, Equals, "/api/version")
+	
+	// Test with path containing more segments (still returns first two)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/repos/test-repo", nil)
+	basePath = getBasePath(ginCtx)
+	c.Check(basePath, Equals, "/api/repos")
+	
+	// Test with nested parameters (still returns first two)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/repos/repo1/packages", nil)
+	basePath = getBasePath(ginCtx)
+	c.Check(basePath, Equals, "/api/repos")
+	
+	// Test with root path
+	ginCtx.Request = httptest.NewRequest("GET", "/", nil)
+	basePath = getBasePath(ginCtx)
+	c.Check(basePath, Equals, "/")
+	
+	// Test with single segment
+	ginCtx.Request = httptest.NewRequest("GET", "/api", nil)
+	basePath = getBasePath(ginCtx)
+	c.Check(basePath, Equals, "/api")
+}
+
+func (s *MetricsTestSuite) TestGetURLSegment(c *C) {
+	// Test getURLSegment function
+	
+	// Test valid segments
+	segment, err := getURLSegment("/api/repos/test", 0)
+	c.Check(err, IsNil)
+	c.Check(*segment, Equals, "/api")
+	
+	segment, err = getURLSegment("/api/repos/test", 1)
+	c.Check(err, IsNil)
+	c.Check(*segment, Equals, "/repos")
+	
+	segment, err = getURLSegment("/api/repos/test", 2)
+	c.Check(err, IsNil)
+	c.Check(*segment, Equals, "/test")
+	
+	// Test out of range
+	_, err = getURLSegment("/api/repos", 3)
+	c.Check(err, NotNil)
+	
+	// Test root path
+	segment, err = getURLSegment("/", 0)
+	c.Check(err, NotNil) // No segments after removing empty string
+}
+
+func (s *MetricsTestSuite) TestInstrumentHandlerInFlight(c *C) {
+	// Test instrumentHandlerInFlight middleware
+	w := httptest.NewRecorder()
+	
+	// Create test gin context
+	router := gin.New()
+	
+	// Add instrumentation middleware
+	router.Use(instrumentHandlerInFlight(apiRequestsInFlightGauge, getBasePath))
+	
+	// Add test handler
+	router.GET("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
+	// Make request
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *MetricsTestSuite) TestInstrumentHandlerCounter(c *C) {
+	// Test instrumentHandlerCounter middleware
+	w := httptest.NewRecorder()
+	
+	// Create test gin context
+	router := gin.New()
+	
+	// Add instrumentation middleware
+	router.Use(instrumentHandlerCounter(apiRequestsTotalCounter, getBasePath))
+	
+	// Add test handler
+	router.GET("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
+	// Make request
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *MetricsTestSuite) TestInstrumentHandlerRequestSize(c *C) {
+	// Test instrumentHandlerRequestSize middleware
+	w := httptest.NewRecorder()
+	
+	// Create test gin context
+	router := gin.New()
+	
+	// Add instrumentation middleware
+	router.Use(instrumentHandlerRequestSize(apiRequestSizeSummary, getBasePath))
+	
+	// Add test handler
+	router.POST("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
+	// Make request with body
+	req := httptest.NewRequest("POST", "/api/test", strings.NewReader("test body"))
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *MetricsTestSuite) TestInstrumentHandlerResponseSize(c *C) {
+	// Test instrumentHandlerResponseSize middleware
+	w := httptest.NewRecorder()
+	
+	// Create test gin context
+	router := gin.New()
+	
+	// Add instrumentation middleware
+	router.Use(instrumentHandlerResponseSize(apiResponseSizeSummary, getBasePath))
+	
+	// Add test handler
+	router.GET("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"data": strings.Repeat("x", 1000)})
+	})
+	
+	// Make request
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *MetricsTestSuite) TestInstrumentHandlerDuration(c *C) {
+	// Test instrumentHandlerDuration middleware
+	w := httptest.NewRecorder()
+	
+	// Create test gin context
+	router := gin.New()
+	
+	// Add instrumentation middleware
+	router.Use(instrumentHandlerDuration(apiRequestsDurationSummary, getBasePath))
+	
+	// Add test handler
+	router.GET("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
+	// Make request
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}
+
 func (s *MetricsTestSuite) TestMetricsRegistration(c *C) {
 	// Test that metrics registration works correctly with gin router
-	MetricsCollectorRegistrar.Register(s.router)
+	MetricsCollectorRegistrar.Register(s.router.(*gin.Engine))
 
 	// Create a test request to trigger middleware
 	req, _ := http.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()
 
 	// Add a test handler
-	s.router.GET("/test", func(c *gin.Context) {
+	s.router.(*gin.Engine).GET("/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{"test": "response"})
 	})
 

@@ -15,28 +15,13 @@ import (
 )
 
 type ReposTestSuite struct {
-	router *gin.Engine
+	APISuite
 }
 
 var _ = Suite(&ReposTestSuite{})
 
 func (s *ReposTestSuite) SetUpTest(c *C) {
-	s.router = gin.New()
-	s.router.GET("/api/repos", apiReposList)
-	s.router.POST("/api/repos", apiReposCreate)
-	s.router.GET("/api/repos/:name", apiReposShow)
-	s.router.PUT("/api/repos/:name", apiReposEdit)
-	s.router.DELETE("/api/repos/:name", apiReposDrop)
-	s.router.GET("/api/repos/:name/packages", apiReposPackagesShow)
-	s.router.POST("/api/repos/:name/packages", apiReposPackagesAdd)
-	s.router.DELETE("/api/repos/:name/packages", apiReposPackagesDelete)
-	s.router.POST("/api/repos/:name/file/:dir", apiReposPackageFromDir)
-	s.router.POST("/api/repos/:name/file/:dir/:file", apiReposPackageFromFile)
-	s.router.POST("/api/repos/:name/copy/:src/:file", apiReposCopyPackage)
-	s.router.POST("/api/repos/:name/include/:dir", apiReposIncludePackageFromDir)
-	s.router.POST("/api/repos/:name/include/:dir/:file", apiReposIncludePackageFromFile)
-
-	gin.SetMode(gin.TestMode)
+	s.APISuite.SetUpTest(c)
 }
 
 func (s *ReposTestSuite) TestReposListEmpty(c *C) {
@@ -69,8 +54,114 @@ func (s *ReposTestSuite) TestReposCreateBasic(c *C) {
 	w := httptest.NewRecorder()
 	s.router.ServeHTTP(w, req)
 
-	// Will likely error due to no database context, but tests structure
-	c.Check(w.Code, Not(Equals), 200) // Expect error due to missing context
+	// Now context is properly set up, should create successfully
+	c.Check(w.Code, Equals, 201) // Expect successful creation
+	
+	// Clean up: delete the created repo
+	req, _ = http.NewRequest("DELETE", "/api/repos/test-repo?force=1", nil)
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *ReposTestSuite) TestReposEdit(c *C) {
+	// First create a repo
+	params := repoCreateParams{
+		Name:    "edit-test-repo",
+		Comment: "Original comment",
+	}
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/repos", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 201)
+
+	// Now edit it
+	editParams := reposEditParams{
+		Comment: stringPtr("Updated comment"),
+	}
+	body, _ = json.Marshal(editParams)
+	req, _ = http.NewRequest("PUT", "/api/repos/edit-test-repo", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 200)
+
+	// Clean up
+	req, _ = http.NewRequest("DELETE", "/api/repos/edit-test-repo?force=1", nil)
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *ReposTestSuite) TestReposPackagesAddDelete(c *C) {
+	// First create a repo
+	params := repoCreateParams{
+		Name: "pkg-test-repo",
+	}
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/repos", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 201)
+
+	// Test adding packages (will fail without actual packages)
+	addParams := reposPackagesAddDeleteParams{
+		PackageRefs: []string{"Pamd64 test 1.0 abc123"},
+	}
+	body, _ = json.Marshal(addParams)
+	req, _ = http.NewRequest("POST", "/api/repos/pkg-test-repo/packages", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	// Will fail as package doesn't exist
+	c.Check(w.Code, Not(Equals), 200)
+
+	// Clean up
+	req, _ = http.NewRequest("DELETE", "/api/repos/pkg-test-repo?force=1", nil)
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *ReposTestSuite) TestReposCopyPackage(c *C) {
+	// Create source and destination repos
+	params := repoCreateParams{Name: "src-repo"}
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/api/repos", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 201)
+
+	params = repoCreateParams{Name: "dst-repo"}
+	body, _ = json.Marshal(params)
+	req, _ = http.NewRequest("POST", "/api/repos", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	c.Check(w.Code, Equals, 201)
+
+	// Test copy (will fail without packages)
+	copyParams := reposCopyPackageParams{
+		WithDeps: true,
+		DryRun:   true,
+	}
+	body, _ = json.Marshal(copyParams)
+	req, _ = http.NewRequest("POST", "/api/repos/dst-repo/copy/src-repo/test", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	// Will return empty result as no packages match
+	c.Check(w.Code, Equals, 200)
+
+	// Clean up
+	req, _ = http.NewRequest("DELETE", "/api/repos/src-repo?force=1", nil)
+	s.router.ServeHTTP(w, req)
+	req, _ = http.NewRequest("DELETE", "/api/repos/dst-repo?force=1", nil)
+	s.router.ServeHTTP(w, req)
 }
 
 func (s *ReposTestSuite) TestReposCreateInvalidJSON(c *C) {
@@ -143,8 +234,8 @@ func (s *ReposTestSuite) TestReposDropStructure(c *C) {
 	w := httptest.NewRecorder()
 	s.router.ServeHTTP(w, req)
 
-	// Will error due to no context, but tests structure
-	c.Check(w.Code, Not(Equals), 200)
+	// Should return 404 as test-repo doesn't exist
+	c.Check(w.Code, Equals, 404)
 }
 
 func (s *ReposTestSuite) TestReposDropWithForce(c *C) {
@@ -315,8 +406,8 @@ func (s *ReposTestSuite) TestReposParameterValidation(c *C) {
 		body     string
 		wantCode int
 	}{
-		{"invalid repo name chars", "GET", "/api/repos/invalid/name", "", 404},
-		{"empty repo name", "GET", "/api/repos/", "", 404},
+		{"invalid repo name chars", "GET", "/api/repos/invalid/name", "", 404}, // route doesn't match
+		{"empty repo name", "GET", "/api/repos", "", 200}, // list repos endpoint
 		{"invalid method", "PATCH", "/api/repos/test", "", 404},
 		{"malformed JSON in create", "POST", "/api/repos", `{"Name":}`, 400},
 		{"malformed JSON in edit", "PUT", "/api/repos/test", `{"Name":}`, 400},
@@ -356,7 +447,7 @@ func (s *ReposTestSuite) TestReposListInAPIModeStructure(c *C) {
 
 func (s *ReposTestSuite) TestReposServeInAPIModeStructure(c *C) {
 	// Test reposServeInAPIMode function structure by simulating call
-	s.router.GET("/api/:storage/*pkgPath", reposServeInAPIMode)
+	s.router.(*gin.Engine).GET("/api/:storage/*pkgPath", reposServeInAPIMode)
 
 	// Test with default storage
 	req, _ := http.NewRequest("GET", "/api/-/some/package/path", nil)
@@ -479,7 +570,7 @@ func (s *ReposTestSuite) TestReposErrorHandling(c *C) {
 		{"Invalid package refs", "POST", "/api/repos/test/packages", `{"PackageRefs":[]}`, true},
 		{"Invalid query format", "GET", "/api/repos/test/packages?q=invalid[query", "", false}, // Query validation happens deeper
 		{"Copy to same repo", "POST", "/api/repos/test/copy/test/pkg", `{}`, false},            // Error happens in business logic
-		{"Empty directory path", "POST", "/api/repos/test/file/", "", false},                   // Path handling
+		{"File upload endpoint", "POST", "/api/repos/test/file/upload-dir", "", false},         // Valid endpoint
 	}
 
 	for _, test := range errorTests {

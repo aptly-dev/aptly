@@ -103,15 +103,15 @@ func (s *ContextSuite) TestShutdownContext(c *C) {
 	c.Check(context, NotNil)
 
 	// ShutdownContext should not panic and should call context.Shutdown()
-	c.Check(func() { ShutdownContext() }, Not(Panics))
+	ShutdownContext() // Should not panic
 }
 
 func (s *ContextSuite) TestShutdownContextNil(c *C) {
-	// Test ShutdownContext when context is nil (should panic or handle gracefully)
+	// Test ShutdownContext when context is nil (should handle gracefully)
 	context = nil
 
-	// This will panic if context is nil, which might be expected behavior
-	c.Check(func() { ShutdownContext() }, Panics, ".*")
+	// Should not panic when context is nil
+	ShutdownContext() // Should handle nil gracefully
 }
 
 func (s *ContextSuite) TestCleanupContext(c *C) {
@@ -123,15 +123,15 @@ func (s *ContextSuite) TestCleanupContext(c *C) {
 	c.Check(context, NotNil)
 
 	// CleanupContext should not panic and should call context.Cleanup()
-	c.Check(func() { CleanupContext() }, Not(Panics))
+	CleanupContext() // Should not panic
 }
 
 func (s *ContextSuite) TestCleanupContextNil(c *C) {
-	// Test CleanupContext when context is nil (should panic or handle gracefully)
+	// Test CleanupContext when context is nil (should handle gracefully)
 	context = nil
 
-	// This will panic if context is nil, which might be expected behavior
-	c.Check(func() { CleanupContext() }, Panics, ".*")
+	// Should not panic when context is nil
+	CleanupContext() // Should handle nil gracefully
 }
 
 func (s *ContextSuite) TestContextLifecycle(c *C) {
@@ -149,14 +149,14 @@ func (s *ContextSuite) TestContextLifecycle(c *C) {
 	c.Check(ctx, Equals, context)
 
 	// Cleanup
-	c.Check(func() { CleanupContext() }, Not(Panics))
+	CleanupContext() // Should not panic
 
 	// Context should still exist after cleanup
 	c.Check(context, NotNil)
 	c.Check(GetContext(), NotNil)
 
 	// Shutdown
-	c.Check(func() { ShutdownContext() }, Not(Panics))
+	ShutdownContext() // Should not panic
 }
 
 func (s *ContextSuite) TestMultipleCleanups(c *C) {
@@ -167,9 +167,9 @@ func (s *ContextSuite) TestMultipleCleanups(c *C) {
 	c.Check(err, IsNil)
 
 	// Multiple cleanups should not cause issues
-	c.Check(func() { CleanupContext() }, Not(Panics))
-	c.Check(func() { CleanupContext() }, Not(Panics))
-	c.Check(func() { CleanupContext() }, Not(Panics))
+	CleanupContext() // First cleanup
+	CleanupContext() // Second cleanup
+	CleanupContext() // Third cleanup
 }
 
 func (s *ContextSuite) TestContextVariableIsolation(c *C) {

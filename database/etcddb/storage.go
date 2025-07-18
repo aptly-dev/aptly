@@ -13,18 +13,22 @@ import (
 )
 
 type EtcDStorage struct {
-	url       string
-	db        *clientv3.Client
-	tmpPrefix string // prefix for temporary DBs
+	url          string
+	db           *clientv3.Client
+	queuedClient *QueuedEtcdClient
+	queuedKV     *QueuedKV
+	tmpPrefix    string // prefix for temporary DBs
 }
 
 // CreateTemporary creates new DB of the same type in temp dir
 func (s *EtcDStorage) CreateTemporary() (database.Storage, error) {
 	tmp := uuid.NewString()
 	return &EtcDStorage{
-		url:       s.url,
-		db:        s.db,
-		tmpPrefix: tmp,
+		url:          s.url,
+		db:           s.db,
+		queuedClient: s.queuedClient,
+		queuedKV:     s.queuedKV,
+		tmpPrefix:    tmp,
 	}, nil
 }
 
@@ -74,7 +78,11 @@ func (s *EtcDStorage) Get(key []byte) (value []byte, err error) {
 
 	for i := 0; i < maxRetries; i++ {
 		ctx, cancel := s.getContext()
-		getResp, err = s.db.Get(ctx, string(realKey))
+		if s.queuedKV != nil {
+			getResp, err = s.queuedKV.Get(ctx, string(realKey))
+		} else {
+			getResp, err = s.db.Get(ctx, string(realKey))
+		}
 		cancel()
 
 		if err == nil {
@@ -115,7 +123,11 @@ func (s *EtcDStorage) Put(key []byte, value []byte) (err error) {
 	ctx, cancel := s.getContext()
 	defer cancel()
 
-	_, err = s.db.Put(ctx, string(realKey), string(value))
+	if s.queuedKV != nil {
+		_, err = s.queuedKV.Put(ctx, string(realKey), string(value))
+	} else {
+		_, err = s.db.Put(ctx, string(realKey), string(value))
+	}
 	if err != nil {
 		log.Error().Err(err).Str("key", string(realKey)).Msg("etcd: put failed")
 		return
@@ -130,7 +142,11 @@ func (s *EtcDStorage) Delete(key []byte) (err error) {
 	ctx, cancel := s.getContext()
 	defer cancel()
 
-	_, err = s.db.Delete(ctx, string(realKey))
+	if s.queuedKV != nil {
+		_, err = s.queuedKV.Delete(ctx, string(realKey))
+	} else {
+		_, err = s.db.Delete(ctx, string(realKey))
+	}
 	if err != nil {
 		log.Error().Err(err).Str("key", string(realKey)).Msg("etcd: delete failed")
 		return
@@ -146,7 +162,13 @@ func (s *EtcDStorage) KeysByPrefix(prefix []byte) [][]byte {
 	ctx, cancel := s.getContext()
 	defer cancel()
 
-	getResp, err := s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
+	var getResp *clientv3.GetResponse
+	var err error
+	if s.queuedKV != nil {
+		getResp, err = s.queuedKV.Get(ctx, string(realPrefix), clientv3.WithPrefix())
+	} else {
+		getResp, err = s.db.Get(ctx, string(realPrefix), clientv3.WithPrefix())
+	}
 	if err != nil {
 		log.Error().Err(err).Str("prefix", string(realPrefix)).Msg("etcd: keys by prefix failed")
 		return nil
@@ -226,6 +248,16 @@ func (s *EtcDStorage) Close() error {
 	if len(s.tmpPrefix) != 0 {
 		return nil
 	}
+	
+	if s.queuedClient != nil {
+		// Close queued client first
+		if err := s.queuedClient.Close(); err != nil {
+			log.Warn().Err(err).Msg("etcd: error closing queued client")
+		}
+		s.queuedClient = nil
+		s.queuedKV = nil
+	}
+	
 	if s.db == nil {
 		return nil
 	}

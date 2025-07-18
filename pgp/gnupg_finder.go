@@ -131,7 +131,11 @@ func cliVersionCheck(cmd string, marker string) (result bool, version GPGVersion
 	}
 
 	strOutput := string(output)
-	regex := regexp.MustCompile(marker)
+	regex, err := regexp.Compile(marker)
+	if err != nil {
+		// Invalid regex pattern
+		return false, GPGVersion(0)
+	}
 
 	version = GPG22xPlus
 	matches := regex.FindStringSubmatch(strOutput)

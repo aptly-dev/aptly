@@ -13,8 +13,10 @@ import (
 // Test for unsafe map access race condition
 func TestPublishedStorageMapRace(t *testing.T) {
 	// Create a context with empty config
-	context := &AptlyContext{}
-	// publishedStorages is now sync.Map, initialized by zero value
+	context := &AptlyContext{
+		publishedStorages: make(map[string]aptly.PublishedStorage),
+		configLoaded:      true, // Skip config loading
+	}
 
 	// Mock config
 	utils.Config = utils.ConfigStructure{
@@ -59,10 +61,10 @@ func TestPublishedStorageMapRace(t *testing.T) {
 
 			// Add new storage configurations
 			storageName := fmt.Sprintf("filesystem:test%d", id)
-			utils.Config.FileSystemPublishRoots[fmt.Sprintf("test%d", id)] = utils.FileSystemPublishRoot{
+			utils.Config.SetFileSystemPublishRoot(fmt.Sprintf("test%d", id), utils.FileSystemPublishRoot{
 				RootDir:    fmt.Sprintf("/tmp/test%d", id),
 				LinkMethod: "hardlink",
-			}
+			})
 
 			storage := context.GetPublishedStorage(storageName)
 			if storage == nil {
@@ -82,7 +84,10 @@ func TestPublishedStorageMapRace(t *testing.T) {
 
 // Test for concurrent map writes
 func TestPublishedStorageConcurrentWrites(t *testing.T) {
-	context := &AptlyContext{}
+	context := &AptlyContext{
+		publishedStorages: make(map[string]aptly.PublishedStorage),
+		configLoaded:      true, // Skip config loading
+	}
 
 	utils.Config = utils.ConfigStructure{
 		RootDir:                "/tmp/aptly-test",
@@ -104,10 +109,10 @@ func TestPublishedStorageConcurrentWrites(t *testing.T) {
 			}()
 
 			storageName := fmt.Sprintf("filesystem:concurrent%d", id)
-			utils.Config.FileSystemPublishRoots[fmt.Sprintf("concurrent%d", id)] = utils.FileSystemPublishRoot{
+			utils.Config.SetFileSystemPublishRoot(fmt.Sprintf("concurrent%d", id), utils.FileSystemPublishRoot{
 				RootDir:    fmt.Sprintf("/tmp/concurrent%d", id),
 				LinkMethod: "hardlink",
-			}
+			})
 
 			// This should trigger concurrent map writes
 			_ = context.GetPublishedStorage(storageName)
@@ -136,7 +141,10 @@ func TestPublishedStorageConcurrentWrites(t *testing.T) {
 func TestPublishedStorageInitRace(t *testing.T) {
 	// Run this test multiple times to increase chance of catching race
 	for attempt := 0; attempt < 10; attempt++ {
-		context := &AptlyContext{}
+		context := &AptlyContext{
+			publishedStorages: make(map[string]aptly.PublishedStorage),
+			configLoaded:      true, // Skip config loading
+		}
 
 		utils.Config = utils.ConfigStructure{
 			RootDir: "/tmp/aptly-test",

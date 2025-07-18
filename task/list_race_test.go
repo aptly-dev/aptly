@@ -9,13 +9,13 @@ import (
 	"github.com/aptly-dev/aptly/aptly"
 )
 
-// Test 1: TaskList Goroutine Leak (with explicit cleanup)
-func TestTaskListGoroutineLeak(t *testing.T) {
+// Test 1: List Goroutine Leak (with explicit cleanup)
+func TestListGoroutineLeak(t *testing.T) {
 	// Record initial goroutine count
 	initialGoroutines := runtime.NumGoroutine()
 
-	// Create multiple TaskLists and store them for explicit cleanup
-	lists := make([]*TaskList, 10)
+	// Create multiple Lists and store them for explicit cleanup
+	lists := make([]*List, 10)
 	for i := 0; i < 10; i++ {
 		lists[i] = NewList()
 	}
@@ -39,7 +39,7 @@ func TestTaskListGoroutineLeak(t *testing.T) {
 }
 
 // Test 2: Double Close Panic
-func TestTaskListDoubleClosePanic(t *testing.T) {
+func TestListDoubleClosePanic(t *testing.T) {
 	list := NewList()
 
 	// Call Stop() multiple times concurrently
@@ -71,7 +71,7 @@ func TestTaskListDoubleClosePanic(t *testing.T) {
 	}
 }
 
-// Test 3: Concurrent TaskList Operations
+// Test 3: Concurrent List Operations
 func TestTaskListConcurrentOperations(t *testing.T) {
 	list := NewList()
 	defer list.Stop()
@@ -124,7 +124,7 @@ func TestTaskListConcurrentOperations(t *testing.T) {
 }
 
 // Test 4: Resource Management Race
-func TestTaskListResourceRace(t *testing.T) {
+func TestListResourceRace(t *testing.T) {
 	list := NewList()
 	defer list.Stop()
 
@@ -134,7 +134,7 @@ func TestTaskListResourceRace(t *testing.T) {
 	// Create tasks that use the same resource
 	for i := 0; i < 20; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func(_ int) {
 			defer wg.Done()
 
 			task, err := list.RunTaskInBackground(

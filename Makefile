@@ -20,6 +20,14 @@ BINPATH := $(GOPATH)/bin
 GOOS := $(shell go env GOHOSTOS)
 GOARCH := $(shell go env GOHOSTARCH)
 
+# OS detection
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    OS_TYPE := macos
+else
+    OS_TYPE := linux
+endif
+
 # Tool versions
 GOLANGCI_VERSION := v1.64.5
 AIR_VERSION := v1.52.3
@@ -238,6 +246,8 @@ clean: ## Clean build artifacts
 	@rm -rf $(BUILD_DIR) $(COVERAGE_DIR)
 	@rm -f docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	@rm -rf obj-* *.out *.test
+	@docker-compose -f docker-compose.ci.yml down || true
+	@docker volume prune -f || true
 	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ Clean complete$(COLOR_RESET)"
 
 clean-deps: ## Clean dependency cache
@@ -262,17 +272,29 @@ release: clean build-all ## Prepare release artifacts
 ##@ Utilities
 
 etcd-install: ## Install etcd for testing
-	@test -d /tmp/aptly-etcd || system/t13_etcd/install-etcd.sh
+	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Starting fresh etcd container...$(COLOR_RESET)"
+	@docker-compose -f docker-compose.ci.yml down etcd 2>/dev/null || true
+	@docker-compose -f docker-compose.ci.yml rm -f -v etcd 2>/dev/null || true
+	@docker volume rm aptly_etcd-data 2>/dev/null || true
+	@docker-compose -f docker-compose.ci.yml up -d etcd
+	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Waiting for etcd to be ready...$(COLOR_RESET)"
+	@sleep 5
+	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ etcd started in Docker$(COLOR_RESET)"
 
 etcd-start: ## Start etcd
-	@mkdir -p /tmp/aptly-etcd-data
-	@system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
-	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ etcd started$(COLOR_RESET)"
+	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Starting fresh etcd container...$(COLOR_RESET)"
+	@docker-compose -f docker-compose.ci.yml down etcd 2>/dev/null || true
+	@docker-compose -f docker-compose.ci.yml rm -f -v etcd 2>/dev/null || true
+	@docker volume rm aptly_etcd-data 2>/dev/null || true
+	@docker-compose -f docker-compose.ci.yml up -d etcd
+	@sleep 5
+	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ etcd started in Docker$(COLOR_RESET)"
 
 etcd-stop: ## Stop etcd
-	@kill `cat /tmp/etcd.pid` 2>/dev/null || true
-	@rm -f /tmp/etcd.pid
-	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ etcd stopped$(COLOR_RESET)"
+	@docker-compose -f docker-compose.ci.yml down etcd 2>/dev/null || true
+	@docker-compose -f docker-compose.ci.yml rm -f -v etcd 2>/dev/null || true
+	@docker volume rm aptly_etcd-data 2>/dev/null || true
+	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)✓ etcd stopped and cleaned$(COLOR_RESET)"
 
 azurite-start: ## Start Azurite (Azure Storage Emulator) for tests
 	@echo -e "$(COLOR_YELLOW)$(COLOR_BOLD)Starting Azurite...$(COLOR_RESET)"

@@ -24,5 +24,5 @@ func main() {
 	aptly.Version = Version
 	aptly.AptlyConf = AptlyConf
 
-	os.Exit(cmd.Run(cmd.RootCommand(), os.Args[1:], true))
+	os.Exit(cmd.RunCommand(cmd.RootCommand(), os.Args[1:], true))
 }
