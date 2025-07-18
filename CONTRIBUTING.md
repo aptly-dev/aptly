@@ -178,6 +178,149 @@ To install aptly into `$GOPATH/bin`, run:
 
     make install
 
+#### Platform-Specific Setup
+
+##### macOS
+
+This guide explains how to run aptly tests on macOS, including Apple Silicon (M1/M2) machines.
+
+###### Prerequisites
+
+1. **Install Go** (1.24 or later):
+   ```bash
+   brew install go
+   ```
+
+2. **Install Docker** (for etcd and other services):
+   ```bash
+   brew install --cask docker
+   ```
+
+3. **Install test dependencies**:
+   ```bash
+   # Add Go binaries to PATH
+   export PATH=$PATH:~/go/bin
+   
+   # Install swag for API documentation
+   go install github.com/swaggo/swag/cmd/swag@latest
+   
+   # Install other tools
+   brew install etcd  # Optional: for local etcd instead of Docker
+   ```
+
+###### Running Tests on macOS
+
+**Option 1: Using Docker Compose (Recommended)**
+
+```bash
+# Start test services
+docker-compose -f docker-compose.ci.yml up -d etcd
+
+# Run tests
+PATH=$PATH:~/go/bin make test
+```
+
+**Option 2: Using Local etcd**
+
+```bash
+# Install and start etcd locally
+brew services start etcd
+
+# Run tests with local etcd
+ETCD_ENDPOINTS=localhost:2379 go test ./...
+```
+
+**Option 3: Run Specific Test Suites**
+
+```bash
+# Fix VERSION file if needed
+echo "1.5.0" > VERSION
+
+# Run unit tests only
+PATH=$PATH:~/go/bin make test-unit GOTEST="go test -short -timeout=5m"
+
+# Run specific packages
+go test ./deb ./s3 ./utils ./context -short -v
+
+# Run with race detection
+go test -race ./deb ./s3 ./utils -short
+```
+
+###### macOS-Specific Considerations
+
+1. **CPU Architecture**: The install scripts now support both Intel (x86_64) and Apple Silicon (arm64).
+
+2. **File System**: macOS is case-insensitive by default, which may affect some tests.
+
+3. **Network**: Some tests may require adjusting firewall settings.
+
+4. **Timeouts**: Some tests may need longer timeouts on macOS:
+   ```bash
+   go test -timeout=10m ./...
+   ```
+
+###### Troubleshooting on macOS
+
+**etcd Installation Fails**
+
+If the automatic etcd installation fails, use Docker or Homebrew:
+```bash
+# Using Docker
+docker run -d -p 2379:2379 --name etcd quay.io/coreos/etcd:latest
+
+# Using Homebrew
+brew install etcd
+etcd --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls http://localhost:2379
+```
+
+**Test Timeouts**
+
+Increase timeouts for slower tests:
+```bash
+go test -timeout=30m ./...
+```
+
+**Race Detector Issues**
+
+The race detector may be slower on macOS. Disable for faster runs:
+```bash
+go test ./... -short
+```
+
+###### CI Integration for macOS
+
+For GitHub Actions on macOS:
+
+```yaml
+jobs:
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      
+      - name: Install dependencies
+        run: |
+          brew install etcd
+          go install github.com/swaggo/swag/cmd/swag@latest
+      
+      - name: Run tests
+        run: |
+          export PATH=$PATH:~/go/bin
+          make test
+```
+
+###### Test Coverage on macOS
+
+Generate coverage reports:
+```bash
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out -o coverage.html
+open coverage.html
+```
+
 #### Unit-tests
 
 aptly has two kinds of tests: unit-tests and functional (system) tests. Functional tests are preferred way to test any
