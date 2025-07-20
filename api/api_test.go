@@ -13,6 +13,8 @@ import (
 
 	"github.com/aptly-dev/aptly/aptly"
 	ctx "github.com/aptly-dev/aptly/context"
+	"github.com/aptly-dev/aptly/deb"
+	"github.com/aptly-dev/aptly/task"
 	"github.com/gin-gonic/gin"
 
 	"github.com/smira/flag"
@@ -146,8 +148,14 @@ func (s *APISuite) TestRepoCreate(c *C) {
 		"Name": "dummy",
 	})
 	c.Assert(err, IsNil)
-	_, err = s.HTTPRequest("POST", "/api/repos", bytes.NewReader(body))
+	resp, err := s.HTTPRequest("POST", "/api/repos", bytes.NewReader(body))
 	c.Assert(err, IsNil)
+	c.Check(resp.Code, Equals, 201)
+	
+	// Clean up: delete the created repo
+	resp, err = s.HTTPRequest("DELETE", "/api/repos/dummy?force=1", nil)
+	c.Assert(err, IsNil)
+	c.Check(resp.Code, Equals, 200)
 }
 
 func (s *APISuite) TestTruthy(c *C) {
@@ -172,4 +180,179 @@ func (s *APISuite) TestTruthy(c *C) {
 	c.Check(truthy("foobar"), Equals, true)
 	c.Check(truthy(-1), Equals, true)
 	c.Check(truthy(gin.H{}), Equals, true)
+}
+
+func (s *APISuite) TestDatabaseConnectionFunctions(c *C) {
+	// Test acquire and release database connection
+	err := acquireDatabaseConnection()
+	c.Check(err, IsNil)
+	
+	err = releaseDatabaseConnection()
+	c.Check(err, IsNil)
+}
+
+func (s *APISuite) TestConcurrentDatabaseRequests(c *C) {
+	// Test concurrent database acquisition
+	done := make(chan bool, 5)
+	
+	for i := 0; i < 5; i++ {
+		go func() {
+			defer func() { done <- true }()
+			
+			err := acquireDatabaseConnection()
+			if err == nil {
+				_ = releaseDatabaseConnection()
+			}
+		}()
+	}
+	
+	// Wait for all goroutines
+	for i := 0; i < 5; i++ {
+		<-done
+	}
+	
+	c.Check(true, Equals, true) // If we get here, no deadlock occurred
+}
+
+func (s *APISuite) TestMaybeRunTaskInBackground(c *C) {
+	// Test synchronous task execution
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/test", nil)
+	
+	called := false
+	maybeRunTaskInBackground(ginCtx, "test-task", []string{}, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		called = true
+		return &task.ProcessReturnValue{Code: 200, Value: gin.H{"status": "ok"}}, nil
+	})
+	
+	c.Check(called, Equals, true)
+	c.Check(w.Code, Equals, 200)
+}
+
+func (s *APISuite) TestMaybeRunTaskInBackgroundAsync(c *C) {
+	// Test asynchronous task execution
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/test?_async=true", nil)
+	
+	maybeRunTaskInBackground(ginCtx, "test-async-task", []string{}, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		return &task.ProcessReturnValue{Code: 200, Value: gin.H{"status": "ok"}}, nil
+	})
+	
+	// For async, should return 202 Accepted
+	c.Check(w.Code, Equals, 202)
+}
+
+func (s *APISuite) TestAbortWithJSONError(c *C) {
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	
+	testErr := fmt.Errorf("test error message")
+	AbortWithJSONError(ginCtx, 400, testErr)
+	
+	c.Check(w.Code, Equals, 400)
+	c.Check(w.Header().Get("Content-Type"), Equals, "application/json; charset=utf-8")
+}
+
+func (s *APISuite) TestShowPackagesWithNilList(c *C) {
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/test", nil)
+	
+	showPackages(ginCtx, nil, s.context.NewCollectionFactory())
+	
+	// Should return error when reflist is nil
+	c.Check(w.Code, Equals, 404)
+}
+
+func (s *APISuite) TestAPIVersionConstant(c *C) {
+	// Test that apiVersion struct is properly defined
+	version := aptlyVersion{Version: "test-version"}
+	c.Check(version.Version, Equals, "test-version")
+}
+
+func (s *APISuite) TestAPIStatusConstant(c *C) {
+	// Test that aptlyStatus struct is properly defined
+	status := aptlyStatus{Status: "test-status"}
+	c.Check(status.Status, Equals, "test-status")
+}
+
+func (s *APISuite) TestRunTaskInBackground(c *C) {
+	// Test running task in background
+	task, err := runTaskInBackground("background-test", []string{}, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		return &task.ProcessReturnValue{Code: 200, Value: gin.H{"done": true}}, nil
+	})
+	
+	c.Check(err, IsNil)
+	c.Check(task, NotNil)
+	c.Check(task.Name, Equals, "background-test")
+	
+	// Wait for task to complete
+	_, _ = s.context.TaskList().WaitForTaskByID(task.ID)
+	
+	// Clean up
+	_, _ = s.context.TaskList().DeleteTaskByID(task.ID)
+}
+
+func (s *APISuite) TestInitDBRequests(c *C) {
+	// Test that initDBRequests can be called multiple times safely
+	initDBRequests()
+	initDBRequests() // Should not panic
+	
+	c.Check(dbRequests, NotNil)
+}
+
+func (s *APISuite) TestShowPackagesWithQuery(c *C) {
+	// Create a test gin context
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/test?q=Name&format=details", nil)
+	
+	// Create empty reflist
+	reflist := deb.NewPackageRefList()
+	
+	showPackages(ginCtx, reflist, s.context.NewCollectionFactory())
+	
+	// Should succeed with empty list
+	c.Check(w.Code, Equals, 200)
+	
+	var result []*deb.Package
+	err := json.Unmarshal(w.Body.Bytes(), &result)
+	c.Check(err, IsNil)
+	c.Check(len(result), Equals, 0)
+}
+
+func (s *APISuite) TestShowPackagesCompactFormat(c *C) {
+	// Test compact format (default)
+	w := httptest.NewRecorder()
+	ginCtx, _ := gin.CreateTestContext(w)
+	ginCtx.Request = httptest.NewRequest("GET", "/api/test", nil)
+	
+	reflist := deb.NewPackageRefList()
+	showPackages(ginCtx, reflist, s.context.NewCollectionFactory())
+	
+	c.Check(w.Code, Equals, 200)
+	
+	var result []string
+	err := json.Unmarshal(w.Body.Bytes(), &result)
+	c.Check(err, IsNil)
+	c.Check(len(result), Equals, 0)
+}
+
+func (s *APISuite) TestTruthyEdgeCases(c *C) {
+	// Test edge cases for truthy function
+	c.Check(truthy("F"), Equals, false) // capital F
+	c.Check(truthy("FALSE"), Equals, false) // all caps
+	c.Check(truthy("False"), Equals, false) // mixed case
+	c.Check(truthy("NO"), Equals, false) // capital NO
+	c.Check(truthy("Off"), Equals, false) // mixed case off
+	
+	// Test empty string
+	c.Check(truthy(""), Equals, true) // empty string is truthy
+	
+	// Test other types
+	c.Check(truthy(struct{}{}), Equals, true) // empty struct
+	c.Check(truthy([]int{}), Equals, true) // empty slice
+	c.Check(truthy(map[string]int{}), Equals, true) // empty map
 }

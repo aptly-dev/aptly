@@ -1,11 +1,211 @@
-version: "2"
+# golangci-lint configuration for aptly
+# Run with: golangci-lint run
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+  
+  # Include test files
+  tests: true
+
+output:
+  # Format of output
+  formats:
+    - format: colored-line-number
+  
+  # Print lines of code with issue
+  print-issued-lines: true
+  
+  # Print linter name in the end of issue text
+  print-linter-name: true
+
 linters:
-  settings:
-    staticcheck:
-      checks:
-      - "all"
-      - "-QF1004"  # could use strings.ReplaceAll instead
-      - "-QF1012"  # Use fmt.Fprintf(...) instead of WriteString(fmt.Sprintf(...))
-      - "-QF1003"  # could use tagged switch
-      - "-ST1000"  # at least one file in a package should have a package comment
-      - "-QF1001"  # could apply De Morgan's law
+  enable:
+    # Default linters
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Go vet
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis
+    - typecheck     # Type checking
+    - unused        # Find unused code
+    
+    # Additional linters for code quality
+    - bodyclose     # Check HTTP response body is closed
+    - dupl          # Code duplication
+    - copyloopvar   # Check loop variable export (replacement for exportloopref)
+    - gocognit      # Cognitive complexity
+    - gocritic      # Opinionated linter
+    - gocyclo       # Cyclomatic complexity
+    - gofmt         # Formatting
+    - goimports     # Import formatting
+    - revive        # Fast, configurable linter
+    - unconvert     # Unnecessary type conversions
+    - unparam       # Unused function parameters
+    - gosec         # Security issues
+    - prealloc      # Preallocate slices
+    - predeclared   # Shadowing of predeclared identifiers
+    - makezero      # Make slice with non-zero length
+    - nakedret      # Naked returns in long functions
+    
+  disable:
+    # Disabled because they're too strict or noisy
+    - exhaustive    # Too strict for switch statements
+    - wsl           # Whitespace linter (too opinionated)
+    - godox         # TODO/FIXME comments
+    - gochecknoglobals # We use some globals
+    - gochecknoinits   # We use init functions
+
+linters-settings:
+  # errcheck
+  errcheck:
+    # Report about not checking of errors in type assertions
+    check-type-assertions: true
+    # Report about assignment of errors to blank identifier
+    check-blank: true
+    # Exclude some functions from checking
+    exclude-functions:
+      - io/ioutil.ReadFile
+      - io.Copy(*bytes.Buffer)
+      - io.Copy(os.Stdout)
+
+  # govet
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment # Too many false positives
+
+  # gocyclo
+  gocyclo:
+    min-complexity: 15
+
+  # gocognit
+  gocognit:
+    min-complexity: 20
+
+  # dupl
+  dupl:
+    threshold: 200
+
+  # gocritic
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - commentedOutCode
+      - whyNoLint
+
+  # gosec
+  gosec:
+    severity: low
+    confidence: low
+    excludes:
+      - G404 # Weak random for non-crypto use is ok
+
+  # revive
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: var-declaration
+      - name: var-naming
+
+  # goimports
+  goimports:
+    local-prefixes: github.com/aptly-dev/aptly
+
+  # gofmt
+  gofmt:
+    simplify: true
+
+  # unparam
+  unparam:
+    check-exported: false
+
+  # nakedret
+  nakedret:
+    max-func-lines: 30
+
+  # prealloc
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+
+issues:
+  # Maximum issues count per one linter
+  max-issues-per-linter: 0
+  
+  # Maximum count of issues with the same text
+  max-same-issues: 0
+  
+  # Skip directories
+  exclude-dirs:
+    - vendor
+    - testdata
+    - system/files
+    
+  # Skip files matching these patterns
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+  
+  # Exclude some linters from running on tests files
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec
+        - gocognit
+        - gocyclo
+    
+    # Exclude some linters from running on generated files
+    - path: ".*\\.gen\\.go$"
+      linters:
+        - all
+    
+    # Exclude known issues in vendor
+    - path: vendor/
+      linters:
+        - all
+    
+    # Allow fmt.Printf in main/cmd
+    - path: (cmd|main)\.go
+      linters:
+        - forbidigo
+
+  # Independently from option `exclude` we use default exclude patterns
+  exclude-use-default: true
+  
+  # Fix found issues (if it's supported by the linter)
+  fix: false
+
+severity:
+  # Set the default severity for issues
+  default-severity: warning
+  
+  # The list of ids of default excludes to include or disable
+  rules:
+    - linters:
+        - gosec
+      severity: info
+    - linters:
+        - dupl
+      severity: info

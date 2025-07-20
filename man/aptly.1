@@ -303,7 +303,19 @@ The legacy json configuration is still supported (and also supports comments):
 
     //    // Debug (optional)
     //    // Enables detailed request/response dump for each S3 operation
-    //    "debug": false
+    //    "debug": false,
+    //
+    //    // ConcurrentUploads (optional)
+    //    // Number of concurrent upload workers for S3 operations
+    //    // * 0 (default) \- uploads are performed sequentially
+    //    // * >0 \- enables concurrent uploads with specified number of workers
+    //    "concurrentUploads": 0,
+    //
+    //    // UploadQueueSize (optional)
+    //    // Multiplier for upload queue size (queue_size = concurrentUploads * uploadQueueSize)
+    //    // * 2 (default) \- queue holds 2x the number of workers
+    //    // * higher values allow more uploads to be queued before blocking
+    //    "uploadQueueSize": 2
     // }
   },
 

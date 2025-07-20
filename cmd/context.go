@@ -9,12 +9,16 @@ var context *ctx.AptlyContext
 
 // ShutdownContext shuts context down
 func ShutdownContext() {
-	context.Shutdown()
+	if context != nil {
+		context.Shutdown()
+	}
 }
 
 // CleanupContext does partial shutdown of context
 func CleanupContext() {
-	context.Cleanup()
+	if context != nil {
+		context.Cleanup()
+	}
 }
 
 // InitContext initializes context with default settings

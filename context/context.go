@@ -308,7 +308,36 @@ func (context *AptlyContext) _database() (database.Storage, error) {
 			}
 			context.database, err = goleveldb.NewDB(dbPath)
 		case "etcd":
-			context.database, err = etcddb.NewDB(context.config().DatabaseBackend.URL)
+			// Configure etcd from config values
+			etcddb.ConfigureFromDBConfig(
+				context.config().DatabaseBackend.Timeout,
+				context.config().DatabaseBackend.WriteRetries,
+			)
+			
+			// Create queue config from settings
+			queueConfig := &etcddb.QueueConfig{
+				Enabled:         context.config().DatabaseBackend.WriteQueue.Enabled,
+				WriteQueueSize:  context.config().DatabaseBackend.WriteQueue.QueueSize,
+				MaxWritesPerSec: context.config().DatabaseBackend.WriteQueue.MaxWritesPerSec,
+				BatchMaxSize:    context.config().DatabaseBackend.WriteQueue.BatchMaxSize,
+				BatchMaxWait:    time.Duration(context.config().DatabaseBackend.WriteQueue.BatchMaxWaitMs) * time.Millisecond,
+			}
+			
+			// Set defaults if not configured
+			if queueConfig.WriteQueueSize == 0 {
+				queueConfig.WriteQueueSize = 1000
+			}
+			if queueConfig.MaxWritesPerSec == 0 {
+				queueConfig.MaxWritesPerSec = 100
+			}
+			if queueConfig.BatchMaxSize == 0 {
+				queueConfig.BatchMaxSize = 50
+			}
+			if queueConfig.BatchMaxWait == 0 {
+				queueConfig.BatchMaxWait = 10 * time.Millisecond
+			}
+			
+			context.database, err = etcddb.NewDBWithQueue(context.config().DatabaseBackend.URL, queueConfig)
 		default:
 			context.database, err = goleveldb.NewDB(context.dbPath())
 		}
@@ -408,22 +437,42 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 
 // GetPublishedStorage returns instance of PublishedStorage
 func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
+	// Fast path: check if already exists without lock
+	context.Lock()
+	publishedStorage, ok := context.publishedStorages[name]
+	context.Unlock()
+
+	if ok {
+		return publishedStorage
+	}
+
+	// Slow path: need to create storage
 	context.Lock()
 	defer context.Unlock()
 
-	publishedStorage, ok := context.publishedStorages[name]
-	if !ok {
+	// Double-check after acquiring lock
+	publishedStorage, ok = context.publishedStorages[name]
+	if ok {
+		return publishedStorage
+	}
+
+	// Now safe to create new storage
+	if true { // Keep original indentation
 		if name == "" {
 			publishedStorage = files.NewPublishedStorage(filepath.Join(context.config().GetRootDir(), "public"), "hardlink", "")
 		} else if strings.HasPrefix(name, "filesystem:") {
-			params, ok := context.config().FileSystemPublishRoots[name[11:]]
+			// Get a safe copy of the map
+			fileSystemRoots := context.config().GetFileSystemPublishRoots()
+			params, ok := fileSystemRoots[name[11:]]
 			if !ok {
 				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
-			params, ok := context.config().S3PublishRoots[name[3:]]
+			// Get a safe copy of the map
+			s3Roots := context.config().GetS3PublishRoots()
+			params, ok := s3Roots[name[3:]]
 			if !ok {
 				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
 			}
@@ -433,12 +482,15 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				params.AccessKeyID, params.SecretAccessKey, params.SessionToken,
 				params.Region, params.Endpoint, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
 				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
-				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug)
+				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug, params.ConcurrentUploads,
+				params.UploadQueueSize)
 			if err != nil {
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "swift:") {
-			params, ok := context.config().SwiftPublishRoots[name[6:]]
+			// Get a safe copy of the map
+			swiftRoots := context.config().GetSwiftPublishRoots()
+			params, ok := swiftRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
 			}
@@ -450,7 +502,9 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				Fatal(err)
 			}
 		} else if strings.HasPrefix(name, "azure:") {
-			params, ok := context.config().AzurePublishRoots[name[6:]]
+			// Get a safe copy of the map
+			azureRoots := context.config().GetAzurePublishRoots()
+			params, ok := azureRoots[name[6:]]
 			if !ok {
 				Fatal(fmt.Errorf("published Azure storage %v not configured", name[6:]))
 			}

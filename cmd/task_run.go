@@ -89,7 +89,7 @@ func aptlyTaskRun(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("\n@yBegin command output: ----------------------------@!")
 			context.Progress().Flush()
 
-			returnCode := Run(RootCommand(), command, false)
+			returnCode := RunCommand(RootCommand(), command, false)
 			if returnCode != 0 {
 				commandErrored = true
 			}

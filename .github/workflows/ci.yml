@@ -1,4 +1,4 @@
-name: CI
+name: CI Pipeline
 
 on:
   pull_request:
@@ -7,324 +7,1333 @@ on:
       - 'v*'
     branches:
       - 'master'
+  schedule:
+    # Run security checks daily
+    - cron: '0 2 * * *'
+
+env:
+  GOLANGCI_LINT_VERSION: v1.64.5
 
 defaults:
   run:
-    # see: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
     shell: bash --noprofile --norc -eo pipefail {0}
 
-env:
-  DEBIAN_FRONTEND: noninteractive
-
 jobs:
-  test:
-    name: "Test (Ubuntu 22.04)"
-    runs-on: ubuntu-22.04
-    continue-on-error: false
-    timeout-minutes: 30
-
-    env:
-      NO_FTP_ACCESS: yes
-      BOTO_CONFIG: /dev/null
-      GO111MODULE: "on"
-      GOPROXY: "https://proxy.golang.org"
-
+  # Quick checks that should fail fast
+  quick-checks:
+    name: Quick Checks
+    runs-on: ubuntu-latest
     steps:
-      - name: "Install Test Packages"
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends graphviz gnupg2 gpgv2 git gcc make devscripts python3 python3-requests-unixsocket python3-termcolor python3-swiftclient python3-boto python3-azure-storage python3-etcd3 python3-plyvel flake8 faketime
-
-      - name: "Checkout Repository"
-        uses: actions/checkout@v4
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          # fetch the whole repo for `git describe` to work
-          fetch-depth: 0
-
-      - name: "Run flake8"
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Check formatting
         run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go code is not formatted:"
+            gofmt -d .
+            exit 1
+          fi
+      
+      - name: Generate VERSION file
+        run: make version > VERSION || echo "dev" > VERSION
+      
+      - name: Run go vet
+        run: go vet ./...
+      
+      - name: Check go mod tidy
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+      
+      - name: Run flake8
+        run: |
+          sudo apt-get update && sudo apt-get install -y flake8
           make flake8
 
-      - name: "Read Go Version"
-        run: |
-          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
-          echo "Go Version: $gover"
-          echo "GOVER=$gover" >> $GITHUB_OUTPUT
-        id: goversion
-
-      - name: "Setup Go"
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.goversion.outputs.GOVER }}
-
-      - name: "Install Azurite"
-        id: azuright
-        uses: potatoqualitee/azuright@v1.1
-        with:
-          directory: ${{ runner.temp }}
-
-      - name: "Run Unit Tests"
-        env:
-          RUN_LONG_TESTS: 'yes'
-          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
-          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
-          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make test
-
-      - name: "Run Benchmark"
-        run: |
-          COVERAGE_DIR=${{ runner.temp }} make bench
-
-      - name: "Run System Tests"
-        env:
-          RUN_LONG_TESTS: 'yes'
-          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
-          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
-          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make system-test
-
-      - name: "Merge Code Coverage"
-        run: |
-          go install github.com/wadey/gocovmerge@v0.0.0-20160331181800-b5bfa59ec0ad
-          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
-
-      - name: "Upload Code Coverage"
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.txt
-
-  ci-debian-build:
-    name: "Build"
-    needs: test
+  # Security scanning
+  security:
+    name: Security Scan
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
-        arch: ["amd64", "i386" , "arm64" , "armhf"]
-        include:
-          - name: "Debian 13/testing"
-            suite: trixie
-            image: debian:trixie-slim
-          - name: "Debian 12/bookworm"
-            suite: bookworm
-            image: debian:bookworm-slim
-          - name: "Debian 11/bullseye"
-            suite: bullseye
-            image: debian:bullseye-slim
-          - name: "Debian 10/buster"
-            suite: buster
-            image: debian:buster-slim
-          - name: "Ubuntu 24.04"
-            suite: noble
-            image: ubuntu:24.04
-          - name: "Ubuntu 22.04"
-            suite: jammy
-            image: ubuntu:22.04
-          - name: "Ubuntu 20.04"
-            suite: focal
-            image: ubuntu:20.04
-    container:
-      image: ${{ matrix.image }}
-      env:
-        APT_LISTCHANGES_FRONTEND: none
-        DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: "Install Build Packages"
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends make ca-certificates git curl build-essential devscripts dh-golang jq bash-completion lintian \
-                          binutils-i686-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf \
-                          libc6-dev-i386-cross libc6-dev-armhf-cross libc6-dev-arm64-cross \
-                          gcc-i686-linux-gnu gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: "Checkout Repository"
-        uses: actions/checkout@v4
-        with:
-          # fetch the whole repo for `git describe` to work
-          fetch-depth: 0
-
-      - name: "Read Go Version"
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
         run: |
           gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
           echo "Go Version: $gover"
           echo "GOVER=$gover" >> $GITHUB_OUTPUT
         id: goversion
-
-      - name: "Setup Go"
-        uses: actions/setup-go@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
-
-      - name: "Ensure CI build"
-        if: github.ref == 'refs/heads/master'
+          cache: true
+      
+      - name: Run govulncheck
         run: |
-          echo "FORCE_CI=true" >> $GITHUB_OUTPUT
-        id: force_ci
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
-      - name: "Build Debian packages"
+  # Linting
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          args: --timeout=5m
+
+  # Unit tests with coverage
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    strategy:
+      matrix:
+        go: ['1.23', '1.24']
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      
+      - name: Install etcd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd
+      
+      - name: Run tests
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
         env:
-          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
-        run: |
-          make dpkg DEBARCH=${{ matrix.arch }}
+          RUN_LONG_TESTS: yes
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.go == '1.24'
+        with:
+          file: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
 
-      - name: "Check aptly credentials"
-        env:
-          APTLY_USER: ${{ secrets.APTLY_USER }}
-          APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
+  # Integration tests
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
         run: |
-          found=no
-          if [ -n "$APTLY_USER" ] && [ -n "$APTLY_PASSWORD" ]; then
-            found=yes
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bzip2 \
+            xz-utils \
+            graphviz \
+            gnupg2 \
+            gpgv2 \
+            etcd \
+            azurite \
+            git \
+            gcc \
+            make \
+            devscripts \
+            python3 \
+            python3-requests-unixsocket \
+            python3-termcolor \
+            python3-swiftclient \
+            python3-boto \
+            python3-azure-storage \
+            python3-etcd3 \
+            python3-plyvel \
+            faketime
+      
+      - name: Install Python dependencies
+        run: |
+          pip install -r system/requirements.txt
+      
+      - name: Download test fixtures
+        run: |
+          git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/
+          git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/
+      
+      - name: Run system tests
+        run: |
+          make system-test
+        env:
+          RUN_LONG_TESTS: yes
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+
+  # Benchmarks
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install etcd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd
+      
+      - name: Run benchmarks
+        run: |
+          make bench
+          
+  # Extended test job with coverage merging
+  test-extended:
+    name: Extended Tests with Coverage
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd
+          go install github.com/wadey/gocovmerge@latest
+      
+      - name: Run unit tests with coverage
+        run: |
+          go test -v -coverprofile=unit.coverage -covermode=count ./...
+        env:
+          RUN_LONG_TESTS: yes
+      
+      - name: Run benchmarks with coverage
+        run: |
+          go test -v -bench=. -benchmem -coverprofile=bench.coverage -covermode=count ./...
+      
+      - name: Merge coverage files
+        run: |
+          gocovmerge unit.coverage bench.coverage > coverage.out
+      
+      - name: Upload merged coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.out
+          flags: extended
+          name: codecov-extended
+
+  # Advanced coverage analysis with PR comments
+  advanced-coverage:
+    name: Advanced Coverage Analysis
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Checkout base branch
+        run: |
+          git fetch origin ${{ github.base_ref }}:base
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd
+          go install github.com/jandelgado/gcov2lcov@latest
+          go install github.com/nikolaydubina/go-cover-treemap@latest
+      
+      - name: Run tests with coverage on PR branch
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -func=coverage.out > coverage-summary.txt
+          go tool cover -html=coverage.out -o coverage.html
+          
+          # Generate treemap
+          go-cover-treemap -coverprofile coverage.out > coverage-treemap.svg
+          
+          # Calculate total coverage
+          TOTAL_COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "TOTAL_COVERAGE=$TOTAL_COVERAGE" >> $GITHUB_ENV
+      
+      - name: Run tests with coverage on base branch
+        run: |
+          git checkout base
+          go test -coverprofile=base-coverage.out -covermode=atomic ./... || true
+          BASE_COVERAGE=$(go tool cover -func=base-coverage.out | grep total | awk '{print $3}' | sed 's/%//' || echo "0")
+          echo "BASE_COVERAGE=$BASE_COVERAGE" >> $GITHUB_ENV
+          git checkout -
+      
+      - name: Generate coverage report
+        run: |
+          # Generate detailed package coverage
+          echo "# Coverage Report" > coverage-report.md
+          echo "" >> coverage-report.md
+          echo "## Summary" >> coverage-report.md
+          echo "- **Total Coverage**: ${{ env.TOTAL_COVERAGE }}%" >> coverage-report.md
+          echo "- **Base Coverage**: ${{ env.BASE_COVERAGE }}%" >> coverage-report.md
+          COVERAGE_DIFF=$(echo "${{ env.TOTAL_COVERAGE }} - ${{ env.BASE_COVERAGE }}" | bc)
+          echo "- **Change**: ${COVERAGE_DIFF}%" >> coverage-report.md
+          echo "" >> coverage-report.md
+          echo "## Package Coverage" >> coverage-report.md
+          echo '```' >> coverage-report.md
+          cat coverage-summary.txt >> coverage-report.md
+          echo '```' >> coverage-report.md
+      
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.html
+            coverage-treemap.svg
+            coverage-report.md
+            coverage-summary.txt
+      
+      - name: Comment PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: coverage-report.md
+
+  # Performance profiling
+  performance-profile:
+    name: Performance Profiling
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd graphviz
+          go install github.com/google/pprof@latest
+      
+      - name: Run benchmarks with profiling
+        run: |
+          # Run benchmarks with CPU and memory profiling
+          go test -bench=. -benchmem -cpuprofile=cpu.prof -memprofile=mem.prof -benchtime=10s ./deb || true
+          
+          # Generate reports
+          go tool pprof -svg cpu.prof > cpu-profile.svg || true
+          go tool pprof -svg mem.prof > mem-profile.svg || true
+          
+          # Generate text reports
+          go tool pprof -text cpu.prof > cpu-profile.txt || true
+          go tool pprof -text mem.prof > mem-profile.txt || true
+          
+          # Create summary
+          echo "# Performance Profile Report" > performance-report.md
+          echo "" >> performance-report.md
+          echo "## CPU Profile Top Functions" >> performance-report.md
+          echo '```' >> performance-report.md
+          head -20 cpu-profile.txt >> performance-report.md || echo "No CPU profile data" >> performance-report.md
+          echo '```' >> performance-report.md
+          echo "" >> performance-report.md
+          echo "## Memory Profile Top Allocations" >> performance-report.md
+          echo '```' >> performance-report.md
+          head -20 mem-profile.txt >> performance-report.md || echo "No memory profile data" >> performance-report.md
+          echo '```' >> performance-report.md
+      
+      - name: Upload profile artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-profiles
+          path: |
+            *.prof
+            *.svg
+            performance-report.md
+
+  # Fuzz testing
+  fuzz-test:
+    name: Fuzz Testing
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Run fuzz tests
+        run: |
+          echo "# Fuzz Testing Report" > fuzz-report.md
+          echo "" >> fuzz-report.md
+          echo "## Results" >> fuzz-report.md
+          
+          # Find and run any fuzz tests
+          FUZZ_FOUND=false
+          for pkg in $(go list ./...); do
+            if go test -list "^Fuzz" $pkg 2>/dev/null | grep -q "^Fuzz"; then
+              FUZZ_FOUND=true
+              echo "Running fuzz tests in $pkg..." >> fuzz-report.md
+              if go test -fuzz=. -fuzztime=30s $pkg 2>&1 | tee fuzz-output.txt; then
+                echo "✅ Passed" >> fuzz-report.md
+              else
+                echo "❌ Failed" >> fuzz-report.md
+                cat fuzz-output.txt >> fuzz-report.md
+              fi
+              echo "" >> fuzz-report.md
+            fi
+          done
+          
+          if [ "$FUZZ_FOUND" = false ]; then
+            echo "ℹ️ No fuzz tests found in the codebase" >> fuzz-report.md
           fi
-          echo "Aptly credentials available: $found"
-          echo "FOUND=$found" >> $GITHUB_OUTPUT
-        id: aptlycreds
-
-      - name: "Publish CI release to aptly"
-        if: github.ref == 'refs/heads/master' && steps.aptlycreds.outputs.FOUND == 'yes'
-        env:
-          APTLY_USER: ${{ secrets.APTLY_USER }}
-          APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
-        run: |
-          .github/workflows/scripts/upload-artifacts.sh ci ${{ matrix.suite }}
-
-      - name: "Publish release to aptly"
-        if: startsWith(github.event.ref, 'refs/tags') && steps.aptlycreds.outputs.FOUND == 'yes'
-        env:
-          APTLY_USER: ${{ secrets.APTLY_USER }}
-          APTLY_PASSWORD: ${{ secrets.APTLY_PASSWORD }}
-        run: |
-          .github/workflows/scripts/upload-artifacts.sh release ${{ matrix.suite }}
-
-      - name: "Get aptly version"
-        env:
-          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
-        run: |
-           aptlyver=$(make -s version)
-           echo "Aptly Version: $aptlyver"
-           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
-        id: releaseversion
-
-      - name: "Upload CI Artifacts"
-        if: github.ref != 'refs/heads/master' && !startsWith(github.event.ref, 'refs/tags')
+      
+      - name: Upload fuzz artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.suite }}_${{ matrix.arch }}
-          path: build/
-          retention-days: 7
+          name: fuzz-test-results
+          path: |
+            fuzz-report.md
+            testdata/fuzz/
 
-  ci-binary-build:
-    name: "Build"
-    needs: test
+  # Static analysis suite
+  deep-analysis:
+    name: Deep Static Analysis
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [linux, freebsd, darwin]
-        goarch: ["386", "amd64", "arm", "arm64"]
-        exclude:
-          - goos: darwin
-            goarch: 386
-          - goos: darwin
-            goarch: arm
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
     steps:
-      - name: "Checkout Repository"
-        uses: actions/checkout@v4
-        with:
-          # fetch the whole repo for `git describe` to work
-          fetch-depth: 0
-
-      - name: "Read Go Version"
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
         run: |
-          echo "GOVER=$(sed -n 's/^go \(.*\)/\1/p' go.mod)" >> $GITHUB_OUTPUT
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
         id: goversion
-
-      - name: "Setup Go"
-        uses: actions/setup-go@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
-
-      - name: "Ensure CI build"
-        if: github.ref == 'refs/heads/master'
+          cache: true
+      
+      - name: Install analysis tools
         run: |
-          echo "FORCE_CI=true" >> $GITHUB_OUTPUT
-        id: force_ci
-
-      - name: "Get aptly version"
-        env:
-          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
+          go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+          go install github.com/gordonklaus/ineffassign@latest
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install github.com/nishanths/exhaustive/cmd/exhaustive@latest
+      
+      - name: Run analysis suite
         run: |
-           aptlyver=$(make -s version)
-           echo "Aptly Version: $aptlyver"
-           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
-        id: releaseversion
-
-      - name: "Build aptly ${{ matrix.goos }}/${{ matrix.goarch }}"
-        env:
-          GOBIN: /usr/local/bin
-          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
-        run: |
-          make binaries GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
-
-      - name: "Upload Artifacts"
+          echo "# Static Analysis Report" > analysis-report.md
+          echo "" >> analysis-report.md
+          
+          # Shadow detection
+          echo "## Shadow Variable Detection" >> analysis-report.md
+          if go vet -vettool=$(which shadow) ./... 2>&1 | tee shadow.txt | grep -q "shadowed variable"; then
+            echo "⚠️ Shadow variables detected:" >> analysis-report.md
+            echo '```' >> analysis-report.md
+            cat shadow.txt >> analysis-report.md
+            echo '```' >> analysis-report.md
+          else
+            echo "✅ No shadow variables detected" >> analysis-report.md
+          fi
+          echo "" >> analysis-report.md
+          
+          # Ineffectual assignments
+          echo "## Ineffectual Assignments" >> analysis-report.md
+          if ineffassign ./... 2>&1 | tee ineffassign.txt | grep -q ".go:"; then
+            echo "⚠️ Ineffectual assignments found:" >> analysis-report.md
+            echo '```' >> analysis-report.md
+            cat ineffassign.txt >> analysis-report.md
+            echo '```' >> analysis-report.md
+          else
+            echo "✅ No ineffectual assignments" >> analysis-report.md
+          fi
+          echo "" >> analysis-report.md
+          
+          # Security scan
+          echo "## Security Scan (gosec)" >> analysis-report.md
+          gosec -fmt=json -out=gosec.json ./... || true
+          if [ -s gosec.json ] && [ $(jq '.Issues | length' gosec.json) -gt 0 ]; then
+            echo "⚠️ Security issues found:" >> analysis-report.md
+            echo '```' >> analysis-report.md
+            jq -r '.Issues[] | "[\(.severity)] \(.file):\(.line) - \(.details)"' gosec.json >> analysis-report.md
+            echo '```' >> analysis-report.md
+          else
+            echo "✅ No security issues found" >> analysis-report.md
+          fi
+          echo "" >> analysis-report.md
+          
+          # Staticcheck
+          echo "## Staticcheck Analysis" >> analysis-report.md
+          if staticcheck ./... 2>&1 | tee staticcheck.txt | grep -q ".go:"; then
+            echo "ℹ️ Staticcheck suggestions:" >> analysis-report.md
+            echo '```' >> analysis-report.md
+            cat staticcheck.txt >> analysis-report.md
+            echo '```' >> analysis-report.md
+          else
+            echo "✅ No staticcheck issues" >> analysis-report.md
+          fi
+          echo "" >> analysis-report.md
+          
+          # Exhaustive enum checks
+          echo "## Exhaustive Enum Switch Analysis" >> analysis-report.md
+          if exhaustive ./... 2>&1 | tee exhaustive.txt | grep -q ".go:"; then
+            echo "⚠️ Non-exhaustive switches found:" >> analysis-report.md
+            echo '```' >> analysis-report.md
+            cat exhaustive.txt >> analysis-report.md
+            echo '```' >> analysis-report.md
+          else
+            echo "✅ All enum switches are exhaustive" >> analysis-report.md
+          fi
+      
+      - name: Upload analysis artifacts
         uses: actions/upload-artifact@v4
-        if: startsWith(github.event.ref, 'refs/tags')
         with:
-          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          compression-level: 0 # no compression
-
-      - name: "Upload CI Artifacts"
-        uses: actions/upload-artifact@v4
-        if: "!startsWith(github.event.ref, 'refs/tags')"
+          name: static-analysis-results
+          path: |
+            analysis-report.md
+            *.json
+            *.txt
+      
+      - name: Upload SARIF if available
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
         with:
-          name: aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: build/aptly_${{ steps.releaseversion.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          compression-level: 0 # no compression
-          retention-days: 7
+          sarif_file: gosec.sarif
 
-  gh-release:
-    name: "Github Release"
+  # Mutation testing
+  mutation-test:
+    name: Mutation Testing
     runs-on: ubuntu-latest
-    continue-on-error: false
-    needs: ci-binary-build
-    if: startsWith(github.event.ref, 'refs/tags')
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - name: "Checkout Repository"
-        uses: actions/checkout@v4
-
-      - name: "Get aptly version"
-        env:
-          FORCE_CI: ${{ steps.force_ci.outputs.FORCE_CI }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Read Go Version
         run: |
-           aptlyver=$(make -s version)
-           echo "Aptly Version: $aptlyver"
-           echo "VERSION=$aptlyver" >> $GITHUB_OUTPUT
-        id: releaseversion
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install mutation testing tool
+        run: |
+          go install github.com/zimmski/go-mutesting/cmd/go-mutesting@latest
+          sudo apt-get update && sudo apt-get install -y etcd
+      
+      - name: Run mutation tests on changed files
+        run: |
+          echo "# Mutation Testing Report" > mutation-report.md
+          echo "" >> mutation-report.md
+          
+          # Get changed Go files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep '\.go$' | grep -v '_test\.go$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "ℹ️ No Go source files changed" >> mutation-report.md
+          else
+            echo "## Mutation Testing Results" >> mutation-report.md
+            echo "" >> mutation-report.md
+            
+            TOTAL_MUTANTS=0
+            KILLED_MUTANTS=0
+            
+            for file in $CHANGED_FILES; do
+              if [ -f "$file" ]; then
+                echo "Testing mutations in $file..." >> mutation-report.md
+                
+                # Run mutation testing with timeout
+                timeout 300 go-mutesting -verbose -include="$file" . 2>&1 | tee mutation-output.txt || true
+                
+                # Parse results
+                KILLED=$(grep -c "PASS" mutation-output.txt || echo "0")
+                TOTAL=$(grep -c "MUTATION" mutation-output.txt || echo "0")
+                
+                TOTAL_MUTANTS=$((TOTAL_MUTANTS + TOTAL))
+                KILLED_MUTANTS=$((KILLED_MUTANTS + KILLED))
+                
+                if [ "$TOTAL" -gt 0 ]; then
+                  SCORE=$((KILLED * 100 / TOTAL))
+                  echo "- $file: $KILLED/$TOTAL mutants killed (${SCORE}%)" >> mutation-report.md
+                fi
+              fi
+            done
+            
+            if [ "$TOTAL_MUTANTS" -gt 0 ]; then
+              TOTAL_SCORE=$((KILLED_MUTANTS * 100 / TOTAL_MUTANTS))
+              echo "" >> mutation-report.md
+              echo "**Total: $KILLED_MUTANTS/$TOTAL_MUTANTS mutants killed (${TOTAL_SCORE}%)**" >> mutation-report.md
+            fi
+          fi
+      
+      - name: Upload mutation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-test-results
+          path: mutation-report.md
 
-      - name: "Download Artifacts"
+  # Dependency audit
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install audit tools
+        run: |
+          go install github.com/sonatype-nexus-community/nancy@latest
+          go install github.com/Zxilly/go-size-analyzer/cmd/gsa@latest
+      
+      - name: Run dependency audit
+        run: |
+          echo "# Dependency Audit Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          
+          # Check for outdated dependencies
+          echo "## Outdated Dependencies" >> dependency-report.md
+          go list -u -m all | grep '\[' > outdated.txt || true
+          if [ -s outdated.txt ]; then
+            echo "⚠️ Found outdated dependencies:" >> dependency-report.md
+            echo '```' >> dependency-report.md
+            cat outdated.txt >> dependency-report.md
+            echo '```' >> dependency-report.md
+          else
+            echo "✅ All dependencies are up to date" >> dependency-report.md
+          fi
+          echo "" >> dependency-report.md
+          
+          # Vulnerability scan
+          echo "## Vulnerability Scan (Nancy)" >> dependency-report.md
+          go list -json -m all | nancy sleuth 2>&1 | tee nancy.txt || true
+          if grep -q "Vulnerable" nancy.txt; then
+            echo "⚠️ Vulnerabilities found:" >> dependency-report.md
+            echo '```' >> dependency-report.md
+            grep -A5 "Vulnerable" nancy.txt >> dependency-report.md
+            echo '```' >> dependency-report.md
+          else
+            echo "✅ No known vulnerabilities" >> dependency-report.md
+          fi
+          echo "" >> dependency-report.md
+          
+          # Dependency graph
+          echo "## Dependency Statistics" >> dependency-report.md
+          DIRECT_DEPS=$(go list -m all | grep -v "^github.com/aptly-dev/aptly" | wc -l)
+          echo "- Direct dependencies: $DIRECT_DEPS" >> dependency-report.md
+          
+          # Binary size analysis
+          echo "" >> dependency-report.md
+          echo "## Binary Size Analysis" >> dependency-report.md
+          go build -o aptly-binary || true
+          if [ -f aptly-binary ]; then
+            SIZE=$(du -h aptly-binary | cut -f1)
+            echo "- Binary size: $SIZE" >> dependency-report.md
+            
+            # Analyze size
+            gsa aptly-binary -o size-analysis.txt || true
+            if [ -f size-analysis.txt ]; then
+              echo "### Top packages by size:" >> dependency-report.md
+              echo '```' >> dependency-report.md
+              head -20 size-analysis.txt >> dependency-report.md
+              echo '```' >> dependency-report.md
+            fi
+          fi
+      
+      - name: Upload dependency artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-results
+          path: |
+            dependency-report.md
+            *.txt
+
+  # Stress testing
+  stress-test:
+    name: Stress Testing
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y etcd
+      
+      - name: Run stress tests
+        run: |
+          echo "# Stress Testing Report" > stress-report.md
+          echo "" >> stress-report.md
+          
+          # Run race detection with multiple iterations
+          echo "## Race Detection (100 iterations)" >> stress-report.md
+          if go test -race -count=100 -timeout=30m ./utils ./database/goleveldb ./context 2>&1 | tee race-stress.txt; then
+            echo "✅ No races detected in 100 iterations" >> stress-report.md
+          else
+            echo "❌ Race conditions detected:" >> stress-report.md
+            echo '```' >> stress-report.md
+            grep -A10 "WARNING: DATA RACE" race-stress.txt | head -50 >> stress-report.md
+            echo '```' >> stress-report.md
+          fi
+          echo "" >> stress-report.md
+          
+          # Parallel stress test
+          echo "## Parallel Execution Test" >> stress-report.md
+          if go test -parallel=10 -count=10 ./deb 2>&1 | tee parallel-stress.txt; then
+            echo "✅ Parallel tests passed" >> stress-report.md
+          else
+            echo "❌ Parallel test failures" >> stress-report.md
+            tail -50 parallel-stress.txt >> stress-report.md
+          fi
+          echo "" >> stress-report.md
+          
+          # Memory stress test
+          echo "## Memory Stress Test" >> stress-report.md
+          GOGC=10 go test -run=TestPackageCollection -count=50 ./deb 2>&1 | tee memory-stress.txt || true
+          echo "✅ Memory stress test completed" >> stress-report.md
+      
+      - name: Upload stress test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-test-results
+          path: |
+            stress-report.md
+            *-stress.txt
+
+  # Aggregate all reports into a single PR comment
+  test-report-summary:
+    name: Test Report Summary
+    runs-on: ubuntu-latest
+    needs: [advanced-coverage, performance-profile, fuzz-test, deep-analysis, mutation-test, dependency-audit, stress-test]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: out/
-
-      - name: "Create Release Notes"
+          path: reports
+      
+      - name: Create combined report
         run: |
-          echo -e "## Changes\n\n" > out/release-notes.md
-          dpkg-parsechangelog -S Changes | tail -n +4 >> out/release-notes.md
-
-      - name: "Release"
-        uses: softprops/action-gh-release@v2
+          echo "# 📊 Comprehensive Test Report for PR #${{ github.event.pull_request.number }}" > combined-report.md
+          echo "" >> combined-report.md
+          echo "*Generated at $(date -u)*" >> combined-report.md
+          echo "" >> combined-report.md
+          
+          # Coverage section
+          if [ -f reports/coverage-report/coverage-report.md ]; then
+            cat reports/coverage-report/coverage-report.md >> combined-report.md
+            echo "" >> combined-report.md
+            echo "[📄 Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Performance section
+          if [ -f reports/performance-profiles/performance-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>🔥 Performance Profile</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/performance-profiles/performance-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Fuzz testing section
+          if [ -f reports/fuzz-test-results/fuzz-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>🧬 Fuzz Testing</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/fuzz-test-results/fuzz-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Static analysis section
+          if [ -f reports/static-analysis-results/analysis-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>🔍 Static Analysis</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/static-analysis-results/analysis-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Mutation testing section
+          if [ -f reports/mutation-test-results/mutation-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>🦠 Mutation Testing</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/mutation-test-results/mutation-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Dependency audit section
+          if [ -f reports/dependency-audit-results/dependency-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>📦 Dependency Audit</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/dependency-audit-results/dependency-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Stress test section
+          if [ -f reports/stress-test-results/stress-report.md ]; then
+            echo "<details>" >> combined-report.md
+            echo "<summary>💪 Stress Testing</summary>" >> combined-report.md
+            echo "" >> combined-report.md
+            cat reports/stress-test-results/stress-report.md >> combined-report.md
+            echo "</details>" >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          echo "---" >> combined-report.md
+          echo "*View detailed artifacts in the [Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*" >> combined-report.md
+      
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
         with:
-          name: "Aptly Release ${{ steps.releaseversion.outputs.VERSION }}"
-          files: "out/**/aptly_*.zip"
-          body_path: "out/release-notes.md"
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Comprehensive Test Report
+      
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: combined-report.md
+          edit-mode: replace
+  # Build artifacts
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit]
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: darwin
+            arch: arm64
+          - os: windows
+            arch: amd64
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Build
+        run: |
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build \
+            -ldflags "-X main.Version=${GITHUB_SHA::8}" \
+            -o aptly-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptly-${{ matrix.os }}-${{ matrix.arch }}
+          path: aptly-${{ matrix.os }}-${{ matrix.arch }}*
+
+  # Docker build
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: |
+            aptly/aptly:latest
+            aptly/aptly:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Debian package building
+  debian-packages:
+    name: Build Debian Packages
+    runs-on: ubuntu-22.04
+    needs: [lint, test-unit]
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    strategy:
+      matrix:
+        include:
+          - distribution: debian
+            release: buster
+            arch: amd64
+          - distribution: debian
+            release: bullseye
+            arch: amd64
+          - distribution: debian
+            release: bookworm
+            arch: amd64
+          - distribution: debian
+            release: trixie
+            arch: amd64
+          - distribution: ubuntu
+            release: focal
+            arch: amd64
+          - distribution: ubuntu
+            release: jammy
+            arch: amd64
+          - distribution: ubuntu
+            release: noble
+            arch: amd64
+          # ARM builds
+          - distribution: debian
+            release: bullseye
+            arch: arm64
+          - distribution: debian
+            release: bookworm
+            arch: arm64
+          - distribution: ubuntu
+            release: jammy
+            arch: arm64
+          - distribution: ubuntu
+            release: noble
+            arch: arm64
+          # 32-bit builds
+          - distribution: debian
+            release: bullseye
+            arch: i386
+          - distribution: debian
+            release: bookworm
+            arch: i386
+          - distribution: debian
+            release: bullseye
+            arch: armhf
+          - distribution: debian
+            release: bookworm
+            arch: armhf
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        if: matrix.arch != 'amd64' && matrix.arch != 'i386'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+
+      - name: Setup CI version suffix
+        if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "CI_VERSION_SUFFIX=+ci" >> $GITHUB_ENV
+
+      - name: Build Debian package
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          
+          # Install build dependencies
+          sudo apt-get update
+          sudo apt-get install -y devscripts dpkg-dev
+          
+          # Install cross-compilation tools if needed
+          if [[ "${{ matrix.arch }}" != "amd64" && "${{ matrix.arch }}" != "i386" ]]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+          fi
+          
+          # Set up environment for cross-compilation
+          case "${{ matrix.arch }}" in
+            i386)
+              export GOARCH=386
+              ;;
+            arm64)
+              export GOARCH=arm64
+              export CC=aarch64-linux-gnu-gcc
+              ;;
+            armhf)
+              export GOARCH=arm
+              export GOARM=7
+              export CC=arm-linux-gnueabihf-gcc
+              ;;
+            *)
+              export GOARCH=amd64
+              ;;
+          esac
+          
+          # Build the package
+          make dpkg DEBIAN_RELEASE=${{ matrix.release }} ARCHITECTURE=${{ matrix.arch }}
+          
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-${{ matrix.distribution }}-${{ matrix.release }}-${{ matrix.arch }}
+          path: build/*.deb
+          retention-days: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && 90 || 7 }}
+
+  # Binary builds with expanded platform support
+  binary-builds:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit]
+    strategy:
+      matrix:
+        include:
+          # 64-bit builds
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: darwin
+            arch: arm64
+          - os: windows
+            arch: amd64
+          - os: freebsd
+            arch: amd64
+          # 32-bit builds
+          - os: linux
+            arch: 386
+          - os: linux
+            arch: arm
+          - os: windows
+            arch: 386
+          - os: freebsd
+            arch: 386
+          - os: freebsd
+            arch: arm
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+
+      - name: Setup version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$(make version)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Build binary
+        run: |
+          # Set architecture-specific variables
+          case "${{ matrix.arch }}" in
+            386)
+              export GOARCH=386
+              ;;
+            arm)
+              export GOARCH=arm
+              export GOARM=7
+              ;;
+            *)
+              export GOARCH=${{ matrix.arch }}
+              ;;
+          esac
+          
+          export GOOS=${{ matrix.os }}
+          
+          # Build with static linking for Linux
+          if [[ "${{ matrix.os }}" == "linux" ]]; then
+            export CGO_ENABLED=0
+            LDFLAGS="-extldflags=-static"
+          else
+            LDFLAGS=""
+          fi
+          
+          # Build the binary
+          go build -ldflags "$LDFLAGS -X main.Version=$VERSION" -o aptly${{ matrix.os == 'windows' && '.exe' || '' }}
+          
+      - name: Build man pages
+        if: matrix.os == 'linux' && matrix.arch == 'amd64'
+        run: |
+          make man
+
+      - name: Build completion files
+        if: matrix.os == 'linux' && matrix.arch == 'amd64'
+        run: |
+          make completion
+
+      - name: Create archive
+        run: |
+          ARCHIVE_NAME="aptly_${VERSION}_${{ matrix.os }}_${{ matrix.arch }}.zip"
+          
+          # Include binary
+          FILES="aptly${{ matrix.os == 'windows' && '.exe' || '' }}"
+          
+          # Include man pages and completions for main Linux build
+          if [[ "${{ matrix.os }}" == "linux" && "${{ matrix.arch }}" == "amd64" ]]; then
+            FILES="$FILES man completion"
+          fi
+          
+          zip -r $ARCHIVE_NAME $FILES
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ env.ARCHIVE_NAME }}
+          retention-days: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && 90 || 7 }}
+
+  # Dependency check
+  dependencies:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read Go Version
+        run: |
+          gover=$(sed -n 's/^go \(.*\)/\1/p' go.mod)
+          echo "Go Version: $gover"
+          echo "GOVER=$gover" >> $GITHUB_OUTPUT
+        id: goversion
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.goversion.outputs.GOVER }}
+          cache: true
+      
+      - name: Check for updates
+        run: |
+          echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          go list -u -m all | grep '\[' >> $GITHUB_STEP_SUMMARY || echo "All dependencies are up to date!" >> $GITHUB_STEP_SUMMARY

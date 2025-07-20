@@ -287,3 +287,8 @@ func (storage *PublishedStorage) ReadLink(path string) (string, error) {
 	}
 	return "", fmt.Errorf("error reading link %s: %v", path, err)
 }
+
+// Flush is a no-op for Azure storage
+func (storage *PublishedStorage) Flush() error {
+	return nil
+}

@@ -253,3 +253,28 @@ func (s *MiddlewareSuite) TestGetURLSegment(c *C) {
 	}
 	c.Check(*segment, Equals, "/repos")
 }
+
+func (s *MiddlewareSuite) TestInstrumentationMiddleware(c *C) {
+	// Test instrumentation middleware functions
+	router := gin.New()
+	
+	// Add all instrumentation middleware
+	router.Use(instrumentHandlerInFlight(apiRequestsInFlightGauge, getBasePath))
+	router.Use(instrumentHandlerCounter(apiRequestsTotalCounter, getBasePath))
+	router.Use(instrumentHandlerRequestSize(apiRequestSizeSummary, getBasePath))
+	router.Use(instrumentHandlerResponseSize(apiResponseSizeSummary, getBasePath))
+	router.Use(instrumentHandlerDuration(apiRequestsDurationSummary, getBasePath))
+	
+	// Add test handler
+	router.GET("/api/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
+	// Make request
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	req.ContentLength = 42
+	router.ServeHTTP(w, req)
+	
+	c.Check(w.Code, Equals, 200)
+}

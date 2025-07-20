@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	yaml "gopkg.in/yaml.v3"
@@ -67,9 +68,20 @@ type ConfigStructure struct { // nolint: maligned
 
 // DBConfig structure
 type DBConfig struct {
-	Type   string `json:"type"    yaml:"type"`
-	DBPath string `json:"dbPath"  yaml:"db_path"`
-	URL    string `json:"url"     yaml:"url"`
+	Type         string       `json:"type"         yaml:"type"`
+	DBPath       string       `json:"dbPath"       yaml:"db_path"`
+	URL          string       `json:"url"          yaml:"url"`
+	Timeout      string       `json:"timeout"      yaml:"timeout"`
+	WriteRetries int          `json:"writeRetries" yaml:"write_retries"`
+	WriteQueue   WriteQConfig `json:"writeQueue"   yaml:"write_queue"`
+}
+
+type WriteQConfig struct {
+	Enabled         bool   `json:"enabled"         yaml:"enabled"`
+	QueueSize       int    `json:"queueSize"       yaml:"queue_size"`
+	MaxWritesPerSec int    `json:"maxWritesPerSec" yaml:"max_writes_per_sec"`
+	BatchMaxSize    int    `json:"batchMaxSize"    yaml:"batch_max_size"`
+	BatchMaxWaitMs  int    `json:"batchMaxWaitMs"  yaml:"batch_max_wait_ms"`
 }
 
 type LocalPoolStorage struct {
@@ -185,6 +197,8 @@ type S3PublishRoot struct {
 	ForceSigV2              bool   `json:"forceSigV2"                 yaml:"force_sigv2"`
 	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"    yaml:"force_virtualhosted_style"`
 	Debug                   bool   `json:"debug"                      yaml:"debug"`
+	ConcurrentUploads       int    `json:"concurrentUploads"          yaml:"concurrent_uploads"`
+	UploadQueueSize         int    `json:"uploadQueueSize"            yaml:"upload_queue_size"`
 }
 
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
@@ -210,6 +224,9 @@ type AzureEndpoint struct {
 	AccountKey  string `json:"accountKey"   yaml:"account_key"`
 	Endpoint    string `json:"endpoint"     yaml:"endpoint"`
 }
+
+// configMutex protects concurrent access to Config maps
+var configMutex sync.RWMutex
 
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
@@ -323,4 +340,57 @@ func SaveConfigYAML(filename string, config *ConfigStructure) error {
 // GetRootDir returns the RootDir with expanded ~ as home directory
 func (conf *ConfigStructure) GetRootDir() string {
 	return strings.Replace(conf.RootDir, "~", os.Getenv("HOME"), 1)
+}
+
+// GetFileSystemPublishRoots returns a copy of FileSystemPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetFileSystemPublishRoots() map[string]FileSystemPublishRoot {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	
+	result := make(map[string]FileSystemPublishRoot, len(conf.FileSystemPublishRoots))
+	for k, v := range conf.FileSystemPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetS3PublishRoots returns a copy of S3PublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetS3PublishRoots() map[string]S3PublishRoot {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	
+	result := make(map[string]S3PublishRoot, len(conf.S3PublishRoots))
+	for k, v := range conf.S3PublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// SetFileSystemPublishRoot safely sets a filesystem publish root
+func (conf *ConfigStructure) SetFileSystemPublishRoot(name string, root FileSystemPublishRoot) {
+	configMutex.Lock()
+	defer configMutex.Unlock()
+	
+	if conf.FileSystemPublishRoots == nil {
+		conf.FileSystemPublishRoots = make(map[string]FileSystemPublishRoot)
+	}
+	conf.FileSystemPublishRoots[name] = root
+}
+
+// GetSwiftPublishRoots returns a copy of SwiftPublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetSwiftPublishRoots() map[string]SwiftPublishRoot {
+	result := make(map[string]SwiftPublishRoot, len(conf.SwiftPublishRoots))
+	for k, v := range conf.SwiftPublishRoots {
+		result[k] = v
+	}
+	return result
+}
+
+// GetAzurePublishRoots returns a copy of AzurePublishRoots map to avoid concurrent access
+func (conf *ConfigStructure) GetAzurePublishRoots() map[string]AzureEndpoint {
+	result := make(map[string]AzureEndpoint, len(conf.AzurePublishRoots))
+	for k, v := range conf.AzurePublishRoots {
+		result[k] = v
+	}
+	return result
 }

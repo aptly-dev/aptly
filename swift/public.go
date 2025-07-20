@@ -317,3 +317,8 @@ func (storage *PublishedStorage) ReadLink(path string) (string, error) {
 
 	return headers["SymLink"], nil
 }
+
+// Flush is a no-op for Swift storage
+func (storage *PublishedStorage) Flush() error {
+	return nil
+}

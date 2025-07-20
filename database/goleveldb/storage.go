@@ -32,6 +32,9 @@ func (s *storage) CreateTemporary() (database.Storage, error) {
 
 // Get key value from database
 func (s *storage) Get(key []byte) ([]byte, error) {
+	if s.db == nil {
+		return nil, errors.New("database not open")
+	}
 	value, err := s.db.Get(key, nil)
 	if err != nil {
 		if err == leveldb.ErrNotFound {
@@ -45,6 +48,9 @@ func (s *storage) Get(key []byte) ([]byte, error) {
 
 // Put saves key to database, if key has the same value in DB already, it is not saved
 func (s *storage) Put(key []byte, value []byte) error {
+	if s.db == nil {
+		return errors.New("database not open")
+	}
 	old, err := s.db.Get(key, nil)
 	if err != nil {
 		if err != leveldb.ErrNotFound {
@@ -60,11 +66,17 @@ func (s *storage) Put(key []byte, value []byte) error {
 
 // Delete removes key from DB
 func (s *storage) Delete(key []byte) error {
+	if s.db == nil {
+		return errors.New("database not open")
+	}
 	return s.db.Delete(key, nil)
 }
 
 // KeysByPrefix returns all keys that start with prefix
 func (s *storage) KeysByPrefix(prefix []byte) [][]byte {
+	if s.db == nil {
+		return nil
+	}
 	result := make([][]byte, 0, 20)
 
 	iterator := s.db.NewIterator(nil, nil)
@@ -82,6 +94,9 @@ func (s *storage) KeysByPrefix(prefix []byte) [][]byte {
 
 // FetchByPrefix returns all values with keys that start with prefix
 func (s *storage) FetchByPrefix(prefix []byte) [][]byte {
+	if s.db == nil {
+		return nil
+	}
 	result := make([][]byte, 0, 20)
 
 	iterator := s.db.NewIterator(nil, nil)
@@ -99,6 +114,9 @@ func (s *storage) FetchByPrefix(prefix []byte) [][]byte {
 
 // HasPrefix checks whether it can find any key with given prefix and returns true if one exists
 func (s *storage) HasPrefix(prefix []byte) bool {
+	if s.db == nil {
+		return false
+	}
 	iterator := s.db.NewIterator(nil, nil)
 	defer iterator.Release()
 	return iterator.Seek(prefix) && bytes.HasPrefix(iterator.Key(), prefix)
@@ -107,6 +125,9 @@ func (s *storage) HasPrefix(prefix []byte) bool {
 // ProcessByPrefix iterates through all entries where key starts with prefix and calls
 // StorageProcessor on key value pair
 func (s *storage) ProcessByPrefix(prefix []byte, proc database.StorageProcessor) error {
+	if s.db == nil {
+		return errors.New("database not open")
+	}
 	iterator := s.db.NewIterator(nil, nil)
 	defer iterator.Release()
 
@@ -143,6 +164,9 @@ func (s *storage) Open() error {
 
 // CreateBatch creates a Batch object
 func (s *storage) CreateBatch() database.Batch {
+	if s.db == nil {
+		return nil
+	}
 	return &batch{
 		db: s.db,
 		b:  &leveldb.Batch{},
@@ -151,6 +175,9 @@ func (s *storage) CreateBatch() database.Batch {
 
 // OpenTransaction creates new transaction.
 func (s *storage) OpenTransaction() (database.Transaction, error) {
+	if s.db == nil {
+		return nil, errors.New("database not open")
+	}
 	t, err := s.db.OpenTransaction()
 	if err != nil {
 		return nil, err
@@ -161,6 +188,9 @@ func (s *storage) OpenTransaction() (database.Transaction, error) {
 
 // CompactDB compacts database by merging layers
 func (s *storage) CompactDB() error {
+	if s.db == nil {
+		return errors.New("database not open")
+	}
 	return s.db.CompactRange(util.Range{})
 }
 

@@ -49,6 +49,10 @@ func TLSListeners(unsetEnv bool, tlsConfig *tls.Config) ([]net.Listener, error) 
 
 	if tlsConfig != nil {
 		for i, l := range listeners {
+			// Skip nil listeners (e.g., in test environments with non-socket FDs)
+			if l == nil {
+				continue
+			}
 			// Activate TLS only for TCP sockets
 			if l.Addr().Network() == "tcp" {
 				listeners[i] = tls.NewListener(l, tlsConfig)

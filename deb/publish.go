@@ -1174,6 +1174,12 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
+	// Flush any pending uploads before renaming files
+	err = publishedStorage.Flush()
+	if err != nil {
+		return fmt.Errorf("error flushing pending uploads: %s", err)
+	}
+
 	return indexes.RenameFiles()
 }
 

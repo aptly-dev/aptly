@@ -8,8 +8,8 @@ import (
 	"github.com/smira/commander"
 )
 
-// Run runs single command starting from root cmd with args, optionally initializing context
-func Run(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode int) {
+// RunCommand runs single command starting from root cmd with args, optionally initializing context
+func RunCommand(cmd *commander.Command, cmdArgs []string, initContext bool) (returnCode int) {
 	defer func() {
 		if r := recover(); r != nil {
 			fatal, ok := r.(*ctx.FatalError)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
@@ -63,8 +64,23 @@ func (p *Progress) Start() {
 // Shutdown shuts down progress display
 func (p *Progress) Shutdown() {
 	p.ShutdownBar()
-	p.queue <- printTask{code: codeStop}
-	<-p.stopped
+	
+	// Send stop signal with timeout to prevent hanging
+	select {
+	case p.queue <- printTask{code: codeStop}:
+		// Successfully sent stop signal
+	case <-time.After(1 * time.Second):
+		// Timeout - queue might be full or nil
+		return
+	}
+	
+	// Wait for worker to stop with timeout
+	select {
+	case <-p.stopped:
+		// Worker stopped successfully
+	case <-time.After(1 * time.Second):
+		// Timeout - worker might be stuck
+	}
 }
 
 // Flush waits for all queued messages to be displayed
@@ -201,7 +217,15 @@ func (w *standardProgressWorker) run() {
 	hasBar := false
 
 	for {
-		task := <-w.progress.queue
+		task, ok := <-w.progress.queue
+		if !ok {
+			// Channel closed, exit gracefully
+			select {
+			case w.progress.stopped <- true:
+			default:
+			}
+			return
+		}
 		switch task.code {
 		case codeBarEnabled:
 			hasBar = true
@@ -246,7 +270,15 @@ func (w *loggerProgressWorker) run() {
 	hasBar := false
 
 	for {
-		task := <-w.progress.queue
+		task, ok := <-w.progress.queue
+		if !ok {
+			// Channel closed, exit gracefully
+			select {
+			case w.progress.stopped <- true:
+			default:
+			}
+			return
+		}
 		switch task.code {
 		case codeBarEnabled:
 			hasBar = true

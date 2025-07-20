@@ -253,7 +253,7 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool, install
 	if arch == ArchitectureSource {
 		udeb = false
 	}
-	key := fmt.Sprintf("pi-%s-%s-%v-%v", component, arch, udeb, installer)
+	key := fmt.Sprintf("pi-%s-%s-%v-%v-%s", component, arch, udeb, installer, distribution)
 	file, ok := files.indexes[key]
 	if !ok {
 		var relativePath string

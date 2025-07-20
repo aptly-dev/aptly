@@ -378,6 +378,13 @@ type publishedRepoUpdateSwitchParams struct {
 	AcquireByHash *bool `                         json:"AcquireByHash"  example:"false"`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
+	// Metadata fields (optional) - if provided, will update the published repository metadata
+	Origin               *string `              json:"Origin,omitempty"`
+	Label                *string `              json:"Label,omitempty"`
+	Suite                *string `              json:"Suite,omitempty"`
+	Codename             *string `              json:"Codename,omitempty"`
+	NotAutomatic         *string `              json:"NotAutomatic,omitempty"`
+	ButAutomaticUpgrades *string `              json:"ButAutomaticUpgrades,omitempty"`
 }
 
 // @Summary Update Published Repository
@@ -464,6 +471,26 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if b.MultiDist != nil {
 		published.MultiDist = *b.MultiDist
+	}
+
+	// Update metadata fields if provided
+	if b.Origin != nil {
+		published.Origin = *b.Origin
+	}
+	if b.Label != nil {
+		published.Label = *b.Label
+	}
+	if b.Suite != nil {
+		published.Suite = *b.Suite
+	}
+	if b.Codename != nil {
+		published.Codename = *b.Codename
+	}
+	if b.NotAutomatic != nil {
+		published.NotAutomatic = *b.NotAutomatic
+	}
+	if b.ButAutomaticUpgrades != nil {
+		published.ButAutomaticUpgrades = *b.ButAutomaticUpgrades
 	}
 
 	resources := []string{string(published.Key())}
