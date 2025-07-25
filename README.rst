@@ -63,7 +63,7 @@ Define Release APT sources in ``/etc/apt/sources.list.d/aptly.list``::
 
     deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/release DIST main
 
-Where DIST is one of: ``buster``, ``bullseye``, ``bookworm``, ``focal``, ``jammy``, ``noble``
+Where DIST is one of: ``buster``, ``bullseye``, ``bookworm``, ``trixie``, ``focal``, ``jammy``, ``noble``
 
 Install aptly packages::
 
