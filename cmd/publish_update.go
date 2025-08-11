@@ -115,7 +115,7 @@ Example:
 `,
 		Flag: *flag.NewFlagSet("aptly-publish-update", flag.ExitOnError),
 	}
-	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
+	cmd.Flag.Var(&gpgKeyFlag{}, "gpg-key", "GPG key ID to use when signing the release (repeatable, can be specified multiple times)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.String("passphrase", "", "GPG passphrase for the key (warning: could be insecure)")

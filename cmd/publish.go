@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/smira/commander"
 	"github.com/smira/flag"
@@ -12,7 +15,23 @@ func getSigner(flags *flag.FlagSet) (pgp.Signer, error) {
 	}
 
 	signer := context.GetSigner()
-	signer.SetKey(flags.Lookup("gpg-key").Value.String())
+
+	var gpgKeys []string
+
+	// CLI args have priority over config
+	cliKeys := flags.Lookup("gpg-key").Value.Get().([]string)
+	if len(cliKeys) > 0 {
+		gpgKeys = cliKeys
+	} else if len(context.Config().GpgKeys) > 0 {
+		gpgKeys = context.Config().GpgKeys
+	}
+
+	if len(gpgKeys) > 0 {
+		fmt.Printf("Signing with following gpg keys %s\n", strings.Join(gpgKeys, ", "))
+	}
+	for _, gpgKey := range gpgKeys {
+		signer.SetKey(gpgKey)
+	}
 	signer.SetKeyRing(flags.Lookup("keyring").Value.String(), flags.Lookup("secret-keyring").Value.String())
 	signer.SetPassphrase(flags.Lookup("passphrase").Value.String(), flags.Lookup("passphrase-file").Value.String())
 	signer.SetBatch(flags.Lookup("batch").Value.Get().(bool))
@@ -24,6 +43,23 @@ func getSigner(flags *flag.FlagSet) (pgp.Signer, error) {
 
 	return signer, nil
 
+}
+
+type gpgKeyFlag struct {
+	gpgKeys []string
+}
+
+func (k *gpgKeyFlag) Set(value string) error {
+	k.gpgKeys = append(k.gpgKeys, value)
+	return nil
+}
+
+func (k *gpgKeyFlag) Get() interface{} {
+	return k.gpgKeys
+}
+
+func (k *gpgKeyFlag) String() string {
+	return strings.Join(k.gpgKeys, ",")
 }
 
 func makeCmdPublish() *commander.Command {

@@ -102,6 +102,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"gpgProvider\": \"gpg\",\n"+
 		"  \"gpgDisableSign\": false,\n"+
 		"  \"gpgDisableVerify\": false,\n"+
+		"  \"gpgKeys\": null,\n"+
 		"  \"skipContentsPublishing\": false,\n"+
 		"  \"skipBz2Publishing\": false,\n"+
 		"  \"FileSystemPublishEndpoints\": {\n"+
@@ -267,6 +268,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"gpg_provider: \"\"\n"+
 		"gpg_disable_sign: false\n"+
 		"gpg_disable_verify: false\n"+
+		"gpg_keys: []\n"+
 		"skip_contents_publishing: false\n"+
 		"skip_bz2_publishing: false\n"+
 		"filesystem_publish_endpoints: {}\n"+
@@ -322,6 +324,7 @@ download_sourcepackages: true
 gpg_provider: gpg
 gpg_disable_sign: true
 gpg_disable_verify: true
+gpg_keys: []
 skip_contents_publishing: true
 skip_bz2_publishing: true
 filesystem_publish_endpoints:
