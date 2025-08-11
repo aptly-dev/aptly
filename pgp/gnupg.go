@@ -35,11 +35,14 @@ func (g *GpgSigner) SetBatch(batch bool) {
 
 // SetKey sets key ID to use when signing files
 func (g *GpgSigner) SetKey(keyRef string) {
-	if g.keyRefs == nil {
-		g.keyRefs = []string{strings.TrimSpace(keyRef)}
-	} else {
-		g.keyRefs = append(g.keyRefs, strings.TrimSpace(keyRef))
-	}
+    keyRef = strings.TrimSpace(keyRef)
+    if keyRef != "" {
+        if g.keyRefs == nil {
+            g.keyRefs = []string{keyRef}
+        } else {
+            g.keyRefs = append(g.keyRefs, keyRef)
+        }
+    }
 }
 
 // SetKeyRing allows to set custom keyring and secretkeyring
