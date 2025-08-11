@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/aptly-dev/aptly/pgp"
@@ -26,9 +25,6 @@ func getSigner(flags *flag.FlagSet) (pgp.Signer, error) {
 		gpgKeys = context.Config().GpgKeys
 	}
 
-	if len(gpgKeys) > 0 {
-		fmt.Printf("Signing with following gpg keys %s\n", strings.Join(gpgKeys, ", "))
-	}
 	for _, gpgKey := range gpgKeys {
 		signer.SetKey(gpgKey)
 	}
