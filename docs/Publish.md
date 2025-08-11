@@ -11,7 +11,22 @@ Repositories can be published to local directories, Amazon S3 buckets, Azure or 
 
 GPG key is required to sign any published repository. The key pari should be generated before publishing.
 
-Publiс part of the key should be exported from your keyring using `gpg --export --armor` and imported on the system which uses a published repository.
+Public part of the key should be exported from your keyring using `gpg --export --armor` and imported on the system which uses a published repository.
+
+* Multiple signing keys can be defined in aptly.conf using the gpgKeys array:
+```
+"gpgKeys": [
+    "KEY_ID_x",
+    "KEY_ID_y"
+]
+```
+
+* It is also possible to pass multiple keys via the CLI using the repeatable `--gpg-key` flag:
+```
+aptly publish repo my-repo --gpg-key=KEY_ID_a --gpg-key=KEY_ID_b
+```
+* If `--gpg-key` is specified on the command line, it takes precedence over any gpgKeys configuration in `aptly.conf`.
+* With multi-key support, aptly will sign all Release files (both clearsigned and detached signatures) with each provided key, ensuring a smooth key rotation process while maintaining compatibility for existing clients.
 
 #### Parameters
 
