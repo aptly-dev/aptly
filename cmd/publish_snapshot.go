@@ -230,7 +230,7 @@ Example:
 	}
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish (for multi-component publishing, separate components with commas)")
-	cmd.Flag.Var(&gpgKeyFlag{}, "gpg-key", "GPG key ID to use when signing the release (repeatable, can be specified multiple times)")
+	cmd.Flag.Var(&gpgKeyFlag{}, "gpg-key", "GPG key ID to use when signing the release (flag is repeatable, can be specified multiple times)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.String("passphrase", "", "GPG passphrase for the key (warning: could be insecure)")
