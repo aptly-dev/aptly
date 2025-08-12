@@ -25,7 +25,11 @@ Public part of the key should be exported from your keyring using `gpg --export 
 ```
 aptly publish repo my-repo --gpg-key=KEY_ID_a --gpg-key=KEY_ID_b
 ```
-* If `--gpg-key` is specified on the command line, it takes precedence over any gpgKeys configuration in `aptly.conf`.
+* When using the REST API, the `gpgKey` parameter supports a comma-separated list of key IDs:
+```
+"gpgKey": "KEY_ID_a,KEY_ID_b"
+```
+* If `--gpg-key` is specified on the command line, or `gpgKey` is provided via the REST API, it takes precedence over any gpgKeys configuration in aptly.conf.
 * With multi-key support, aptly will sign all Release files (both clearsigned and detached signatures) with each provided key, ensuring a smooth key rotation process while maintaining compatibility for existing clients.
 
 #### Parameters

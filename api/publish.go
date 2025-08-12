@@ -16,8 +16,8 @@ import (
 type signingParams struct {
 	// Don't sign published repository
 	Skip bool `                json:"Skip"           example:"false"`
-	// GPG key ID to use when signing the release, if not specified default key is used
-	GpgKey string `            json:"GpgKey"         example:"A0546A43624A8331"`
+	// GPG key ID(s) to use when signing the release, CSV if multiple keys, if not specified default configured key(s) are used
+	GpgKey string `            json:"GpgKey"         example:"KEY_ID_a,KEY_ID_b"`
 	// GPG keyring to use (instead of default)
 	Keyring string `           json:"Keyring"        example:"trustedkeys.gpg"`
 	// GPG secret keyring to use (instead of default) Note: depreciated with gpg2
@@ -41,7 +41,21 @@ func getSigner(options *signingParams) (pgp.Signer, error) {
 	}
 
 	signer := context.GetSigner()
-	signer.SetKey(options.GpgKey)
+
+	var multiGpgKeys []string
+	// REST params have priority over config
+	if options.GpgKey != "" {
+		for _, p := range strings.Split(options.GpgKey, ",") {
+			if t := strings.TrimSpace(p); t != "" {
+				multiGpgKeys = append(multiGpgKeys, t)
+			}
+		}
+	} else if len(context.Config().GpgKeys) > 0 {
+		multiGpgKeys = context.Config().GpgKeys
+	}
+	for _, gpgKey := range multiGpgKeys {
+		signer.SetKey(gpgKey)
+	}
 	signer.SetKeyRing(options.Keyring, options.SecretKeyring)
 	signer.SetPassphrase(options.Passphrase, options.PassphraseFile)
 
