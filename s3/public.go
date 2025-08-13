@@ -346,7 +346,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		storage.pathCache = make(map[string]string, len(paths))
 
 		for i := range paths {
-			storage.pathCache[filepath.Join("pool", paths[i])] = md5s[i]
+			storage.pathCache[filepath.Join(publishedPrefix, "pool", paths[i])] = md5s[i]
 		}
 	}
 
