@@ -16,8 +16,8 @@ import (
 type signingParams struct {
 	// Don't sign published repository
 	Skip bool `                json:"Skip"           example:"false"`
-	// GPG key ID(s) to use when signing the release, CSV if multiple keys, if not specified default configured key(s) are used
-	GpgKey string `            json:"GpgKey"         example:"KEY_ID_a,KEY_ID_b"`
+	// GPG key ID(s) to use when signing the release, separated by comma, and if not specified, default configured key(s) are used
+	GpgKey string `            json:"GpgKey"         example:"KEY_ID_a, KEY_ID_b"`
 	// GPG keyring to use (instead of default)
 	Keyring string `           json:"Keyring"        example:"trustedkeys.gpg"`
 	// GPG secret keyring to use (instead of default) Note: depreciated with gpg2
