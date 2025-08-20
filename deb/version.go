@@ -50,7 +50,7 @@ func compareLexicographic(s1, s2 string) int {
 	i := 0
 	l1, l2 := len(s1), len(s2)
 
-	for !(i == l1 && i == l2) {  // break if s1 equal to s2
+	for !(i == l1 && i == l2) { // break if s1 equal to s2
 
 		if i == l2 {
 			// s1 is longer than s2

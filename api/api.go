@@ -70,7 +70,7 @@ func apiReady(isReady *atomic.Value) func(*gin.Context) {
 			return
 		}
 
-                status := aptlyStatus{Status: "Aptly is ready"}
+		status := aptlyStatus{Status: "Aptly is ready"}
 		c.JSON(200, status)
 	}
 }
@@ -178,7 +178,7 @@ func truthy(value interface{}) bool {
 	if value == nil {
 		return false
 	}
-        switch v := value.(type) {
+	switch v := value.(type) {
 	case string:
 		switch strings.ToLower(v) {
 		case "n", "no", "f", "false", "0", "off":

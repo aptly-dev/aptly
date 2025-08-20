@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/utils"
@@ -50,10 +50,10 @@ func (s *PackagePoolSuite) SetUpTest(c *C) {
 
 	s.pool, err = NewPackagePool(s.accountName, s.accountKey, container, "", s.endpoint)
 	c.Assert(err, IsNil)
-        publicAccessType := azblob.PublicAccessTypeContainer
-        _, err = s.pool.az.client.CreateContainer(context.TODO(), s.pool.az.container, &azblob.CreateContainerOptions{
-            Access: &publicAccessType,
-        })
+	publicAccessType := azblob.PublicAccessTypeContainer
+	_, err = s.pool.az.client.CreateContainer(context.TODO(), s.pool.az.container, &azblob.CreateContainerOptions{
+		Access: &publicAccessType,
+	})
 	c.Assert(err, IsNil)
 
 	s.prefixedPool, err = NewPackagePool(s.accountName, s.accountKey, container, prefix, s.endpoint)
