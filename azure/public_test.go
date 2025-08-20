@@ -1,6 +1,7 @@
 package azure
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"crypto/rand"

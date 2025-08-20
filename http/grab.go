@@ -49,9 +49,9 @@ func (d *GrabDownloader) Download(ctx context.Context, url string, destination s
 
 func (d *GrabDownloader) DownloadWithChecksum(ctx context.Context, url string, destination string, expected *utils.ChecksumInfo, ignoreMismatch bool) error {
 	maxTries := d.maxTries
-        // FIXME: const delayMax = time.Duration(5 * time.Minute)
+	// FIXME: const delayMax = time.Duration(5 * time.Minute)
 	delay := time.Duration(1 * time.Second)
-        // FIXME: const delayMultiplier = 2
+	// FIXME: const delayMultiplier = 2
 	err := fmt.Errorf("no tries available")
 	for maxTries > 0 {
 		err = d.download(ctx, url, destination, expected, ignoreMismatch)
@@ -133,17 +133,17 @@ func (d *GrabDownloader) download(_ context.Context, url string, destination str
 
 	resp := d.client.Do(req)
 
-        <-resp.Done
+	<-resp.Done
 	// download is complete
 
-// Loop:
-// 	for {
-// 		select {
-// 		case <-resp.Done:
-// 			// download is complete
-// 			break Loop
-// 		}
-// 	}
+	// Loop:
+	// 	for {
+	// 		select {
+	// 		case <-resp.Done:
+	// 			// download is complete
+	// 			break Loop
+	// 		}
+	// 	}
 	err = resp.Err()
 	if err != nil && err == grab.ErrBadChecksum && ignoreMismatch {
 		fmt.Printf("Ignoring checksum mismatch for %s\n", url)

@@ -11,7 +11,7 @@ func Test(t *testing.T) {
 	TestingT(t)
 }
 
-type ProgressSuite struct {}
+type ProgressSuite struct{}
 
 var _ = Suite(&ProgressSuite{})
 

@@ -240,7 +240,7 @@ func (downloader *downloaderImpl) download(req *http.Request, url, destination s
 	}
 	if resp.Body != nil {
 		defer func() {
-                    _ = resp.Body.Close()
+			_ = resp.Body.Close()
 		}()
 	}
 

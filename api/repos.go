@@ -901,10 +901,10 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-                ret := reposIncludePackageFromDirResponse{
+		ret := reposIncludePackageFromDirResponse{
 			Report:      reporter,
 			FailedFiles: failedFiles,
-                    }
+		}
 		return &task.ProcessReturnValue{Code: http.StatusOK, Value: ret}, nil
 	})
 }

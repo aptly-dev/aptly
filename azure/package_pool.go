@@ -108,7 +108,7 @@ func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating temporary file for blob download")
 	}
-	defer func () { _ = os.Remove(temp.Name()) }()
+	defer func() { _ = os.Remove(temp.Name()) }()
 
 	err = azblob.DownloadBlobToFile(context.Background(), blob, 0, 0, temp, azblob.DownloadFromBlobOptions{})
 	if err != nil {
