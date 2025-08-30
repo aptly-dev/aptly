@@ -60,6 +60,14 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.SkipBz2 = context.Flags().Lookup("skip-bz2").Value.Get().(bool)
 	}
 
+	if context.Flags().IsSet("origin") {
+		published.Origin = context.Flags().Lookup("origin").Value.String()
+	}
+
+	if context.Flags().IsSet("label") {
+		published.Label = context.Flags().Lookup("label").Value.String()
+	}
+
 	if context.Flags().IsSet("multi-dist") {
 		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
 	}
@@ -127,6 +135,8 @@ Example:
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
 	cmd.Flag.Bool("skip-cleanup", false, "don't remove unreferenced files in prefix/component")
 	cmd.Flag.Bool("multi-dist", false, "enable multiple packages with the same filename in different distributions")
+    cmd.Flag.String("origin", "", "overwrite origin name to publish")
+    cmd.Flag.String("label", "", "overwrite label to publish")
 
 	return cmd
 }
