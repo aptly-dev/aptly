@@ -241,7 +241,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 		return "", err
 	}
 	defer func() {
-            _ = source.Close()
+		_ = source.Close()
 	}()
 
 	sourceInfo, err := source.Stat()

@@ -1,17 +1,17 @@
 package azure
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"crypto/rand"
 	"io"
 	"os"
 	"path/filepath"
-        "bytes"
 
-        "github.com/Azure/azure-sdk-for-go/sdk/azcore"
-        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/utils"
 	. "gopkg.in/check.v1"
@@ -69,10 +69,10 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 
 	s.storage, err = NewPublishedStorage(s.accountName, s.accountKey, container, "", s.endpoint)
 	c.Assert(err, IsNil)
-        publicAccessType := azblob.PublicAccessTypeContainer
-        _, err = s.storage.az.client.CreateContainer(context.Background(), s.storage.az.container, &azblob.CreateContainerOptions{
-            Access: &publicAccessType,
-        })
+	publicAccessType := azblob.PublicAccessTypeContainer
+	_, err = s.storage.az.client.CreateContainer(context.Background(), s.storage.az.container, &azblob.CreateContainerOptions{
+		Access: &publicAccessType,
+	})
 	c.Assert(err, IsNil)
 
 	s.prefixedStorage, err = NewPublishedStorage(s.accountName, s.accountKey, container, prefix, s.endpoint)
@@ -80,12 +80,12 @@ func (s *PublishedStorageSuite) SetUpTest(c *C) {
 }
 
 func (s *PublishedStorageSuite) TearDownTest(c *C) {
-        _, err := s.storage.az.client.DeleteContainer(context.Background(), s.storage.az.container, nil)
+	_, err := s.storage.az.client.DeleteContainer(context.Background(), s.storage.az.container, nil)
 	c.Assert(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
-        resp, err := s.storage.az.client.DownloadStream(context.Background(), s.storage.az.container, path, nil)
+	resp, err := s.storage.az.client.DownloadStream(context.Background(), s.storage.az.container, path, nil)
 	c.Assert(err, IsNil)
 	data, err := io.ReadAll(resp.Body)
 	c.Assert(err, IsNil)
@@ -93,26 +93,26 @@ func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
 }
 
 func (s *PublishedStorageSuite) AssertNoFile(c *C, path string) {
-        serviceClient := s.storage.az.client.ServiceClient()
-        containerClient := serviceClient.NewContainerClient(s.storage.az.container)
-        blobClient := containerClient.NewBlobClient(path)
-        _, err := blobClient.GetProperties(context.Background(), nil)
+	serviceClient := s.storage.az.client.ServiceClient()
+	containerClient := serviceClient.NewContainerClient(s.storage.az.container)
+	blobClient := containerClient.NewBlobClient(path)
+	_, err := blobClient.GetProperties(context.Background(), nil)
 	c.Assert(err, NotNil)
 
-        storageError, ok := err.(*azcore.ResponseError)
+	storageError, ok := err.(*azcore.ResponseError)
 	c.Assert(ok, Equals, true)
 	c.Assert(storageError.StatusCode, Equals, 404)
 }
 
 func (s *PublishedStorageSuite) PutFile(c *C, path string, data []byte) {
 	hash := md5.Sum(data)
-        uploadOptions := &azblob.UploadStreamOptions{
-            HTTPHeaders: &blob.HTTPHeaders{
-            	BlobContentMD5: hash[:],
-            },
-        }
-        reader := bytes.NewReader(data)
-        _, err := s.storage.az.client.UploadStream(context.Background(), s.storage.az.container, path, reader, uploadOptions)
+	uploadOptions := &azblob.UploadStreamOptions{
+		HTTPHeaders: &blob.HTTPHeaders{
+			BlobContentMD5: hash[:],
+		},
+	}
+	reader := bytes.NewReader(data)
+	_, err := s.storage.az.client.UploadStream(context.Background(), s.storage.az.container, path, reader, uploadOptions)
 	c.Assert(err, IsNil)
 }
 
