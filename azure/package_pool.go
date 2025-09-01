@@ -104,7 +104,7 @@ func (pool *PackagePool) Open(path string) (aptly.ReadSeekerCloser, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating tempfile for %s", path)
 	}
-	defer func () { _ = os.Remove(temp.Name()) }()
+	defer func() { _ = os.Remove(temp.Name()) }()
 
 	_, err = pool.az.client.DownloadFile(context.TODO(), pool.az.container, path, temp, nil)
 	if err != nil {

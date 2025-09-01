@@ -34,7 +34,7 @@ func (s *UtilsSuite) TestDirIsAccessibleNotExist(c *C) {
 func (s *UtilsSuite) TestDirIsAccessibleNotAccessible(c *C) {
 	accessible := DirIsAccessible(s.tempfile.Name())
 	if accessible == nil {
-            c.Fatalf("Test dir should not be accessible: %s", s.tempfile.Name())
-        }
+		c.Fatalf("Test dir should not be accessible: %s", s.tempfile.Name())
+	}
 	c.Check(accessible.Error(), Equals, fmt.Errorf("'%s' is inaccessible, check access rights", s.tempfile.Name()).Error())
 }
