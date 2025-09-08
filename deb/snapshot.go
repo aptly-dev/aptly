@@ -227,10 +227,14 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 // Update stores updated information about snapshot in DB
 func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
 	batch := collection.db.CreateBatch()
-
 	_ = batch.Put(snapshot.Key(), snapshot.Encode())
+
 	if snapshot.packageRefs != nil {
 		_ = batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+	} else {
+		// Delete RefKey if packageRefs is nil
+		// This prevents inconsistent state where RefKey exists but is corrupted
+		_ = batch.Delete(snapshot.RefKey())
 	}
 
 	return batch.Write()
