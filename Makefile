@@ -7,6 +7,9 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
+export PODMAN_USERNS = keep-id
+DOCKER_RUN = docker run --security-opt label=disable -it --user 0:0 --rm -v ${PWD}:/work/src
+
 # Setting TZ for certificates
 export TZ=UTC
 # Unit Tests and some sysmte tests rely on expired certificates, turn back the time
@@ -173,16 +176,16 @@ docker-image-no-cache:  ## Build aptly-dev docker image (no cache)
 	@docker build --no-cache -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper build
 
 docker-shell:  ## Run aptly and other commands in docker container
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
+	@$(DOCKER_RUN) -p 3142:3142 aptly-dev /work/src/system/docker-wrapper || true
 
 docker-deb:  ## Build debian packages in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
 docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
@@ -191,7 +194,7 @@ docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to spec
 		azurite-stop
 
 docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
@@ -202,16 +205,16 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src -v /tmp/cache-go-aptly:/var/lib/aptly/.cache/go-build aptly-dev /work/src/system/docker-wrapper serve || true
+	@$(DOCKER_RUN) -p 3142:3142 -v /tmp/cache-go-aptly:/var/lib/aptly/.cache/go-build aptly-dev /work/src/system/docker-wrapper serve || true
 
 docker-lint:  ## Run golangci-lint in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper lint
 
 docker-binaries:  ## Build binary releases (FreeBSD, macOS, Linux generic) in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper binaries
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper binaries
 
 docker-man:  ## Create man page in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper man
+	@$(DOCKER_RUN) aptly-dev /work/src/system/docker-wrapper man
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp
