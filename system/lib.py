@@ -517,7 +517,7 @@ class BaseTest(object):
         if gold != output:
             diff = "".join(difflib.unified_diff(
                 [l + "\n" for l in gold.split("\n")], [l + "\n" for l in output.split("\n")]))
-            raise Exception("content doesn't match:\n" + diff + "\n\nOutput:\n" + orig + "\n")
+            raise Exception(f"content doesn't match:\n{diff}\n\nOutput:\n{orig}\n")
 
     check = check_output
 
