@@ -15,6 +15,15 @@ export TZ=UTC
 # Unit Tests and some sysmte tests rely on expired certificates, turn back the time
 export TEST_FAKETIME := 2025-01-02 03:04:05
 
+# run with 'COVERAGE_SKIP=1' to skip coverage checks during system tests
+ifeq ($(COVERAGE_SKIP),1)
+COVERAGE_ARG_BUILD :=
+COVERAGE_ARG_TEST := --coverage-skip
+else
+COVERAGE_ARG_BUILD := -coverpkg="./..."
+COVERAGE_ARG_TEST := --coverage-dir $(COVERAGE_DIR)
+endif
+
 # export CAPUTRE=1 for regenrating test gold files
 ifeq ($(CAPTURE),1)
 CAPTURE_ARG := --capture
@@ -106,13 +115,13 @@ test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify
 
 system-test: prepare swagger etcd-install  ## Run system tests
 	# build coverage binary
-	go test -v -coverpkg="./..." -c -tags testruncli
+	go test -v $(COVERAGE_ARG_BUILD) -c -tags testruncli
 	# Download fixture-db, fixture-pool, etcd.db
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARG) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(COVERAGE_ARG_TEST) $(CAPTURE_ARG) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -201,7 +210,7 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
 		AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 		AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
-		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) \
+		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) COVERAGE_SKIP=$(COVERAGE_SKIP) \
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
