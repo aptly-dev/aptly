@@ -201,7 +201,7 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
 		AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 		AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
-		system-test TEST=$(TEST) \
+		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) \
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
