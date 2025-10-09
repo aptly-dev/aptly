@@ -146,6 +146,68 @@ func apiFilesUpload(c *gin.Context) {
 	c.JSON(200, stored)
 }
 
+// @Summary Upload One File
+// @Description **Upload one file to a directory**
+// @Description
+// @Description - file is uploaded
+// @Description - existing uploaded are overwritten
+// @Description
+// @Description **Example:**
+// @Description  ```
+// @Description $ dput aptly aptly_0.9~dev+217+ge5d646c_i386.changes
+// @Description  ```
+// @Tags Files
+// @Param dir path string true "Directory to upload files to. Created if does not exist"
+// @Param file path string true "File to upload"
+// @Produce json
+// @Success 200 {array} string "Name of uploaded file"
+// @Failure 400 {object} Error "Bad Request"
+// @Failure 404 {object} Error "Not Found"
+// @Failure 500 {object} Error "Internal Server Error"
+func apiFilesUploadOne(c *gin.Context) {
+	if !verifyDir(c) {
+		return
+	}
+
+	path := filepath.Join(context.UploadPath(), utils.SanitizePath(c.Params.ByName("dir")))
+	err := os.MkdirAll(path, 0777)
+
+	if err != nil {
+		AbortWithJSONError(c, 500, err)
+		return
+	}
+	stored := []string{}
+
+	destPath := filepath.Join(path, c.Params.ByName("file"))
+	dst, err := os.Create(destPath)
+	if err != nil {
+		AbortWithJSONError(c, 500, err)
+		return
+	}
+	defer dst.Close()
+
+	buf := make([]byte, 1024)
+	for {
+		n, err := c.Request.Body.Read(buf)
+		if err != nil && err != io.EOF {
+			AbortWithJSONError(c, 400, err)
+			return
+		}
+		if n == 0 {
+			break
+		}
+		if _, err := dst.Write(buf[:n]); err != nil {
+			AbortWithJSONError(c, 500, err)
+			return
+		}
+	}
+
+	stored = append(stored, filepath.Join(c.Params.ByName("dir"), c.Params.ByName("file")))
+
+	apiFilesUploadedCounter.WithLabelValues(c.Params.ByName("dir")).Inc()
+	c.JSON(200, stored)
+}
+
 // @Summary List Files
 // @Description **Show uploaded files in upload directory**
 // @Description
