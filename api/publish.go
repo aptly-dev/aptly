@@ -393,7 +393,6 @@ type publishedRepoUpdateSwitchParams struct {
 // @Description
 // @Description See also: `aptly publish update` / `aptly publish switch`
 // @Tags Publish
-// @Produce json
 // @Param prefix path string true "publishing prefix"
 // @Param distribution path string true "distribution name"
 // @Param _async query bool false "Run in background and return task object"

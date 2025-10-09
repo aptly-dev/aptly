@@ -217,10 +217,9 @@ type snapshotsCreateFromRepositoryParams struct {
 // @Summary Snapshot Repository
 // @Description **Create a snapshot of a repository by name**
 // @Tags Snapshots
-// @Param name path string true "Repository name"
 // @Consume json
 // @Param request body snapshotsCreateFromRepositoryParams true "Parameters"
-// @Param name path string true "Name of the snapshot"
+// @Param name path string true "Repository name"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 201 {object} deb.Snapshot "Created snapshot object"
