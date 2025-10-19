@@ -455,7 +455,7 @@ func apiReposPackagesDelete(c *gin.Context) {
 // @Tags Repos
 // @Param name path string true "Repository name"
 // @Param dir path string true "Directory of packages"
-// @Param file path string false "Filename (optional)"
+// @Param file path string true "Filename"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {string} string "OK"
