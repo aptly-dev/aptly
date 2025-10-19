@@ -36,7 +36,7 @@ def natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
 
 
-def run(include_long_tests=False, capture_results=False, tests=None, filters=None, coverage_dir=None):
+def run(include_long_tests=False, capture_results=False, tests=None, filters=None, coverage_dir=None, coverage_skip=False):
     """
     Run system test.
     """
@@ -47,7 +47,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
     fails = []
     numTests = numFailed = numSkipped = 0
     lastBase = None
-    if not coverage_dir:
+    if not coverage_dir and not coverage_skip:
         coverage_dir = mkdtemp(suffix="aptly-coverage")
 
     failed = False
@@ -213,6 +213,7 @@ if __name__ == "__main__":
     include_long_tests = False
     capture_results = False
     coverage_dir = None
+    coverage_skip = False
     tests = None
     args = sys.argv[1:]
 
@@ -224,6 +225,8 @@ if __name__ == "__main__":
         elif args[0] == "--coverage-dir":
             coverage_dir = args[1]
             args = args[1:]
+        elif args[0] == "--coverage-skip":
+            coverage_skip = True
 
         args = args[1:]
 
@@ -236,4 +239,4 @@ if __name__ == "__main__":
         else:
             filters.append(arg)
 
-    run(include_long_tests, capture_results, tests, filters, coverage_dir)
+    run(include_long_tests, capture_results, tests, filters, coverage_dir, coverage_skip)

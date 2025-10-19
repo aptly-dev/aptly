@@ -15,4 +15,4 @@ else
 fi
 
 cd /work/src
-sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go $cmd
+sudo -u aptly PATH=$PATH:/work/src/build GOPATH=/work/src/.go GOCACHE=/work/src/.go/cache $cmd
