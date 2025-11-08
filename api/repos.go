@@ -195,17 +195,18 @@ func apiReposEdit(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
 	}
 
-	if b.Name != nil {
+	if b.Name != nil && *b.Name != name {
 		_, err := collection.ByName(*b.Name)
 		if err == nil {
 			// already exists
-			AbortWithJSONError(c, 404, err)
+			AbortWithJSONError(c, 404, fmt.Errorf("local repo with name %q already exists", *b.Name))
 			return
 		}
 		repo.Name = *b.Name
