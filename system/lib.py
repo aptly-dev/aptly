@@ -310,7 +310,9 @@ class BaseTest(object):
 
         if command[0] == "aptly":
             aptly_testing_bin = Path(__file__).parent / ".." / "aptly.test"
-            command = [str(aptly_testing_bin), f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out", *command[1:]]
+            command = [str(aptly_testing_bin), *command[1:]]
+            if self.coverage_dir is not None:
+                command.insert(1, f"-test.coverprofile={Path(self.coverage_dir) / self.__class__.__name__}-{uuid4()}.out")
 
         if self.faketime:
             command = ["faketime", os.environ.get("TEST_FAKETIME", "2025-01-02 03:04:05")] + command
@@ -337,7 +339,7 @@ class BaseTest(object):
         if is_aptly_command:
             # remove the last two rows as go tests always print PASS/FAIL and coverage in those
             # two lines. This would otherwise fail the tests as they would not match gold
-            matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*\ncoverage: .*", raw_output)
+            matches = re.findall(r"((.|\n)*)EXIT: (\d)\n.*(?:\ncoverage: .*|$)", raw_output)
             if not matches:
                 raise Exception("no matches found in command output '%s'" % raw_output)
 
@@ -517,7 +519,7 @@ class BaseTest(object):
         if gold != output:
             diff = "".join(difflib.unified_diff(
                 [l + "\n" for l in gold.split("\n")], [l + "\n" for l in output.split("\n")]))
-            raise Exception("content doesn't match:\n" + diff + "\n\nOutput:\n" + orig + "\n")
+            raise Exception(f"content doesn't match:\n{diff}\n\nOutput:\n{orig}\n")
 
     check = check_output
 

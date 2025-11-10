@@ -195,17 +195,18 @@ func apiReposEdit(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
 	}
 
-	if b.Name != nil {
+	if b.Name != nil && *b.Name != name {
 		_, err := collection.ByName(*b.Name)
 		if err == nil {
 			// already exists
-			AbortWithJSONError(c, 404, err)
+			AbortWithJSONError(c, 404, fmt.Errorf("local repo with name %q already exists", *b.Name))
 			return
 		}
 		repo.Name = *b.Name
@@ -455,7 +456,7 @@ func apiReposPackagesDelete(c *gin.Context) {
 // @Tags Repos
 // @Param name path string true "Repository name"
 // @Param dir path string true "Directory of packages"
-// @Param file path string false "Filename (optional)"
+// @Param file path string true "Filename"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {string} string "OK"
@@ -901,10 +902,10 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-                ret := reposIncludePackageFromDirResponse{
+		ret := reposIncludePackageFromDirResponse{
 			Report:      reporter,
 			FailedFiles: failedFiles,
-                    }
+		}
 		return &task.ProcessReturnValue{Code: http.StatusOK, Value: ret}, nil
 	})
 }

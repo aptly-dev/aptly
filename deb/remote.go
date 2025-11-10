@@ -574,7 +574,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 					if progress != nil {
 						progress.ColoredPrintf("@y[!]@| @!skipping package %s: duplicate in packages index@|", p)
 					}
-				} else if err != nil {
+				} else {
 					return err
 				}
 			}

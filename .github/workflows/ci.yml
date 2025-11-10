@@ -109,10 +109,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: ["Debian 13/testing", "Debian 12/bookworm", "Debian 11/bullseye", "Debian 10/buster", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
+        name: ["Debian 13/trixie", "Debian 12/bookworm", "Debian 11/bullseye", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
         arch: ["amd64", "i386" , "arm64" , "armhf"]
         include:
-          - name: "Debian 13/testing"
+          - name: "Debian 13/trixie"
             suite: trixie
             image: debian:trixie-slim
           - name: "Debian 12/bookworm"
@@ -121,9 +121,6 @@ jobs:
           - name: "Debian 11/bullseye"
             suite: bullseye
             image: debian:bullseye-slim
-          - name: "Debian 10/buster"
-            suite: buster
-            image: debian:buster-slim
           - name: "Ubuntu 24.04"
             suite: noble
             image: ubuntu:24.04
@@ -135,6 +132,7 @@ jobs:
             image: ubuntu:20.04
     container:
       image: ${{ matrix.image }}
+      options: --user root
       env:
         APT_LISTCHANGES_FRONTEND: none
         DEBIAN_FRONTEND: noninteractive
