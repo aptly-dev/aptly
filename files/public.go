@@ -119,7 +119,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}()
 
 	_, err = io.Copy(f, source)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Sync to ensure all data is written to disk and catch ENOSPC errors
+	err = f.Sync()
+	if err != nil {
+		return fmt.Errorf("error syncing file %s: %s", path, err)
+	}
+
+	return nil
 }
 
 // Remove removes single file under public path
@@ -266,6 +276,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		if err != nil {
 			_ = dst.Close()
 			return err
+		}
+
+		// Sync to ensure all data is written to disk and catch ENOSPC errors
+		err = dst.Sync()
+		if err != nil {
+			_ = dst.Close()
+			return fmt.Errorf("error syncing file %s: %s", destinationPath, err)
 		}
 
 		err = dst.Close()
