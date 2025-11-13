@@ -1,6 +1,6 @@
 module github.com/aptly-dev/aptly
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/AlekSi/pointer v1.1.0
@@ -41,6 +41,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -128,5 +129,6 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	go.etcd.io/etcd/client/v3 v3.5.15
+	golang.org/x/oauth2 v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
