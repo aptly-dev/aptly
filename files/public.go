@@ -15,6 +15,10 @@ import (
 	"github.com/saracen/walker"
 )
 
+// syncFile is a seam to allow tests to force fsync failures (e.g. ENOSPC).
+// In production it calls (*os.File).Sync().
+var syncFile = func(f *os.File) error { return f.Sync() }
+
 // PublishedStorage abstract file system with public dirs (published repos)
 type PublishedStorage struct {
 	rootPath     string
@@ -99,7 +103,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}()
 
 	_, err = io.Copy(f, source)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Sync to ensure all data is written to disk and catch ENOSPC errors
+	err = syncFile(f)
+	if err != nil {
+		return fmt.Errorf("error syncing file %s: %s", path, err)
+	}
+
+	return nil
 }
 
 // Remove removes single file under public path
@@ -240,6 +254,13 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		if err != nil {
 			_ = dst.Close()
 			return err
+		}
+
+		// Sync to ensure all data is written to disk and catch ENOSPC errors
+		err = syncFile(dst)
+		if err != nil {
+			_ = dst.Close()
+			return fmt.Errorf("error syncing file %s: %s", destinationPath, err)
 		}
 
 		err = dst.Close()
