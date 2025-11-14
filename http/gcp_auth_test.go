@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,7 +8,6 @@ import (
 )
 
 func TestGCPAuthTransport_RoundTrip(t *testing.T) {
-	// Create a test server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if Authorization header is present
 		auth := r.Header.Get("Authorization")
@@ -20,16 +18,11 @@ func TestGCPAuthTransport_RoundTrip(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	// Skip this test if no GCP credentials are available
 	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
 		t.Skip("Skipping test: GOOGLE_APPLICATION_CREDENTIALS not set")
 	}
 
-	ctx := context.Background()
-	transport, err := NewGCPAuthTransport(ctx, http.DefaultTransport)
-	if err != nil {
-		t.Fatalf("Failed to create GCP auth transport: %v", err)
-	}
+	transport := NewGCPRoundTripper(http.DefaultTransport)
 
 	client := &http.Client{Transport: transport}
 	resp, err := client.Get(ts.URL)
