@@ -45,9 +45,7 @@ func (t *gcpRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	reqCopy := req.Clone(req.Context())
-	if strings.HasPrefix(reqCopy.URL.Scheme, "ar+") {
-		reqCopy.URL.Scheme = strings.TrimPrefix(reqCopy.URL.Scheme, "ar+")
-	}
+	reqCopy.URL.Scheme = strings.TrimPrefix(reqCopy.URL.Scheme, "ar+")
 
 	token, err := t.tokenSrc.Token()
 	if err != nil {
