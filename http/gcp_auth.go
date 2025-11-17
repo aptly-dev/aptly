@@ -39,13 +39,13 @@ func (t *gcpRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.tokenSrc = creds.TokenSource
 	})
 
-	// Fall back to base transport if GCP auth initialization failed
-	if t.initErr != nil {
-		return t.base.RoundTrip(req)
-	}
-
 	reqCopy := req.Clone(req.Context())
 	reqCopy.URL.Scheme = strings.TrimPrefix(reqCopy.URL.Scheme, "ar+")
+
+	// Fall back to base transport if GCP auth initialization failed
+	if t.initErr != nil {
+		return t.base.RoundTrip(reqCopy)
+	}
 
 	token, err := t.tokenSrc.Token()
 	if err != nil {
