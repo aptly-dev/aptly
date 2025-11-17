@@ -44,6 +44,7 @@ func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly
 	transport.DisableCompression = true
 	initTransport(&transport)
 	transport.RegisterProtocol("ftp", &protocol.FTPRoundTripper{})
+	transport.RegisterProtocol("ar+https", NewGCPRoundTripper(&transport))
 
 	downloader := &downloaderImpl{
 		progress:  progress,
