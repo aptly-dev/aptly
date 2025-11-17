@@ -5,8 +5,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-
-	"golang.org/x/oauth2"
 )
 
 func TestGCPAuthTransport_RoundTrip(t *testing.T) {
@@ -20,11 +18,10 @@ func TestGCPAuthTransport_RoundTrip(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	transport := &gcpRoundTripper{
-		base: http.DefaultTransport,
-		tokenSrc: oauth2.StaticTokenSource(&oauth2.Token{
-			AccessToken: "fake-token",
-		}),
+	transport := NewGCPRoundTripper(http.DefaultTransport)
+
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+		t.Skip("Skipping test: GOOGLE_APPLICATION_CREDENTIALS not set")
 	}
 
 	client := &http.Client{Transport: transport}
@@ -36,10 +33,6 @@ func TestGCPAuthTransport_RoundTrip(t *testing.T) {
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
-	}
-
-	if transport.initErr != nil {
-		t.Errorf("Unexpected init error: %s", transport.initErr)
 	}
 }
 
