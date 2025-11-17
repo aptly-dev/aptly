@@ -22,13 +22,9 @@ func TestGCPAuthTransport_RoundTrip(t *testing.T) {
 
 	transport := &gcpRoundTripper{
 		base: http.DefaultTransport,
-	}
-
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
-		fakeTokenSrc := oauth2.StaticTokenSource(&oauth2.Token{
+		tokenSrc: oauth2.StaticTokenSource(&oauth2.Token{
 			AccessToken: "fake-token",
-		})
-		transport.tokenSrc = fakeTokenSrc
+		}),
 	}
 
 	client := &http.Client{Transport: transport}
