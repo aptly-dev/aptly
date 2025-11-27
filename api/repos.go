@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -195,7 +196,11 @@ func apiReposEdit(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	name := c.Params.ByName("name")
+	name, err := url.PathUnescape(c.Params.ByName("name"))
+	if err != nil {
+		AbortWithJSONError(c, 400, err)
+		return
+	}
 	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
