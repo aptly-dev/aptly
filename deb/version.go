@@ -30,14 +30,14 @@ func CompareVersions(ver1, ver2 string) int {
 
 // parseVersions breaks down full version to components (possibly empty)
 func parseVersion(ver string) (epoch, upstream, debian string) {
-	i := strings.LastIndex(ver, "-")
-	if i != -1 {
-		debian, ver = ver[i+1:], ver[:i]
-	}
-
-	i = strings.Index(ver, ":")
+	i := strings.Index(ver, ":")
 	if i != -1 {
 		epoch, ver = ver[:i], ver[i+1:]
+	}
+
+	i = strings.Index(ver, "-")
+	if i != -1 {
+		debian, ver = ver[i+1:], ver[:i]
 	}
 
 	upstream = ver
