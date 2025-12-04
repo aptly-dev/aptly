@@ -489,7 +489,18 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.Origin = *b.Origin
 	}
 
-	resources := []string{string(published.Key())}
+	// Lock the pool prefix and all published repos sharing it to prevent cleanup race conditions.
+	// Without prefix-level locking, concurrent publishes to different distributions under the
+	// same prefix can race during cleanup, causing one operation to delete the other's files.
+	poolLockKey := fmt.Sprintf("pool:%s:%s", storage, prefix)
+	resources := []string{poolLockKey, string(published.Key())}
+	poolSiblings := collection.ByStoragePrefix(storage, prefix)
+	for _, sibling := range poolSiblings {
+		if sibling.UUID != published.UUID {
+			resources = append(resources, string(sibling.Key()))
+		}
+	}
+
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err = collection.LoadComplete(published, collectionFactory)
@@ -1066,7 +1077,18 @@ func apiPublishUpdate(c *gin.Context) {
 		published.Origin = *b.Origin
 	}
 
-	resources := []string{string(published.Key())}
+	// Lock the pool prefix and all published repos sharing it to prevent cleanup race conditions.
+	// Without prefix-level locking, concurrent publishes to different distributions under the
+	// same prefix can race during cleanup, causing one operation to delete the other's files.
+	poolLockKey := fmt.Sprintf("pool:%s:%s", storage, prefix)
+	resources := []string{poolLockKey, string(published.Key())}
+	poolSiblings := collection.ByStoragePrefix(storage, prefix)
+	for _, sibling := range poolSiblings {
+		if sibling.UUID != published.UUID {
+			resources = append(resources, string(sibling.Key()))
+		}
+	}
+
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		result, err := published.Update(collectionFactory, out)
