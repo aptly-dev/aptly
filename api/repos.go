@@ -511,6 +511,13 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
+	// When adding packages to a local repo, we need to prevent concurrent publish operations
+	// from reading stale data. To do this, we find all published repositories that use this
+	// local repo and include them in the resource lock set. This ensures the task system
+	// will serialize package additions and publishes, preventing race conditions.
+	publishedCollection := collectionFactory.PublishedRepoCollection()
+	publishedRepos := publishedCollection.ByLocalRepo(repo)
+
 	var taskName string
 	var sources []string
 	if fileParam == "" {
@@ -521,7 +528,14 @@ func apiReposPackageFromDir(c *gin.Context) {
 		taskName = fmt.Sprintf("Add package %s from dir %s to repo %s", fileParam, dirParam, name)
 	}
 
+	// Build the resource lock list: start with the local repo itself
 	resources := []string{string(repo.Key())}
+
+	// Add all published repos that reference this local repo to the lock list
+	for _, published := range publishedRepos {
+		resources = append(resources, string(published.Key()))
+	}
+
 	resources = append(resources, sources...)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err = collection.LoadComplete(repo)
