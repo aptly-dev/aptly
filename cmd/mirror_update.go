@@ -87,10 +87,11 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	)
 
 	skipExistingPackages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
+	latestOnly := context.Flags().Lookup("latest").Value.Get().(bool)
 
 	context.Progress().Printf("Building download queue...\n")
 	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-		collectionFactory.ChecksumCollection(nil), skipExistingPackages)
+		collectionFactory.ChecksumCollection(nil), skipExistingPackages, latestOnly)
 
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -292,6 +293,7 @@ Example:
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("skip-existing-packages", false, "do not check file existence for packages listed in the internal database of the mirror")
+	cmd.Flag.Bool("latest", false, "download only latest version of each package (per architecture)")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
 	cmd.Flag.String("downloader", "default", "downloader to use (e.g. grab)")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")

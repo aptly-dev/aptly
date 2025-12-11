@@ -612,7 +612,19 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 }
 
 // BuildDownloadQueue builds queue, discards current PackageList
-func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages, latestOnly bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
+	if repo.packageList == nil {
+		err = fmt.Errorf("package list is empty, please (re)download package indexes")
+		return
+	}
+
+	if latestOnly {
+		repo.packageList, err = repo.packageList.FilterLatest()
+		if err != nil {
+			return
+		}
+	}
+
 	queue = make([]PackageDownloadTask, 0, repo.packageList.Len())
 	seen := make(map[string]int, repo.packageList.Len())
 
