@@ -211,6 +211,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                             $keyring \
                             "-max-tries=[max download tries till process fails with download error]:number: " \
                             "-skip-existing-packages=[do not check file existence for packages listed in the internal database of the mirror]:$bool" \
+                            "-latest=[download only latest version of each package (per architecture)]:$bool" \
                             "(-)2:mirror name:$mirrors"
                         ;;
                     rename)

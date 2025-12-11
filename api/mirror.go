@@ -343,6 +343,8 @@ type mirrorUpdateParams struct {
 	ForceUpdate bool `            json:"ForceUpdate"`
 	// Set "true" to skip downloading already downloaded packages
 	SkipExistingPackages bool `   json:"SkipExistingPackages"`
+	// Set "true" to download only the latest version per package/architecture
+	LatestOnly bool `             json:"LatestOnly"`
 }
 
 // @Summary Update Mirror
@@ -434,7 +436,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
+			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages, b.LatestOnly)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
