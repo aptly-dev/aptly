@@ -35,7 +35,7 @@ jobs:
       - name: Install and initialize swagger
         run: |
           go install github.com/swaggo/swag/cmd/swag@latest
-          swag init -q --markdownFiles docs
+          swag init -q --propertyStrategy pascalcase --markdownFiles docs
         shell: sh
 
       - name: golangci-lint
