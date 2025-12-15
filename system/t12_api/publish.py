@@ -725,6 +725,8 @@ class PublishSwitchAPITestRepo(APITest):
                 "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
                 "Signing": DefaultSigningOptions,
                 "SkipContents": True,
+                "Label": "fun",
+                "Origin": "earth",
             })
         self.check_task(task)
         repo_expected = {
@@ -732,8 +734,8 @@ class PublishSwitchAPITestRepo(APITest):
             'Architectures': ['i386', 'source'],
             'Codename': '',
             'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
+            'Label': 'fun',
+            'Origin': 'earth',
             'NotAutomatic': '',
             'ButAutomaticUpgrades': '',
             'Path': prefix + '/' + 'wheezy',
@@ -1533,6 +1535,8 @@ class PublishUpdateSourcesAPITestRepo(APITest):
                 "Signing": DefaultSigningOptions,
                 "SkipBz2": True,
                 "SkipContents": True,
+                "Label": "fun",
+                "Origin": "earth",
             }
         ).status_code, 200)
 
@@ -1541,8 +1545,8 @@ class PublishUpdateSourcesAPITestRepo(APITest):
             'Architectures': ['i386', 'source'],
             'Codename': '',
             'Distribution': 'wheezy',
-            'Label': '',
-            'Origin': '',
+            'Label': 'fun',
+            'Origin': 'earth',
             'NotAutomatic': '',
             'ButAutomaticUpgrades': '',
             'Path': prefix + '/' + 'wheezy',
