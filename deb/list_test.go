@@ -503,3 +503,52 @@ func (s *PackageListSuite) TestArchitectures(c *C) {
 	sort.Strings(archs)
 	c.Check(archs, DeepEquals, []string{"amd64", "arm", "i386", "s390"})
 }
+
+func (s *PackageListSuite) TestFilterLatest(c *C) {
+	list := NewPackageList()
+
+	older := packageStanza.Copy()
+	older["Version"] = "1.0"
+	olderPkg := NewPackageFromControlFile(older)
+	_ = list.Add(olderPkg)
+
+	newer := packageStanza.Copy()
+	newer["Version"] = "2.0"
+	newerPkg := NewPackageFromControlFile(newer)
+	_ = list.Add(newerPkg)
+
+	shared := packageStanza.Copy()
+	shared["Architecture"] = ArchitectureAll
+	shared["Version"] = "3.0"
+	shared["Package"] = "shared"
+	sharedPkg := NewPackageFromControlFile(shared)
+	_ = list.Add(sharedPkg)
+
+	filtered, err := list.FilterLatest()
+	c.Assert(err, IsNil)
+	c.Assert(filtered.Len(), Equals, 2)
+	c.Check(filtered.Has(newerPkg), Equals, true)
+	c.Check(filtered.Has(sharedPkg), Equals, true)
+}
+
+func (s *PackageListSuite) TestFilterLatestPreservesDuplicatesFlag(c *C) {
+	list := NewPackageListWithDuplicates(true, 2)
+
+	_ = list.Add(NewPackageFromControlFile(packageStanza.Copy()))
+
+	another := packageStanza.Copy()
+	another["Version"] = "7.41-1"
+	_ = list.Add(NewPackageFromControlFile(another))
+
+	filtered, err := list.FilterLatest()
+	c.Assert(err, IsNil)
+	c.Assert(filtered.duplicatesAllowed, Equals, true)
+}
+
+func (s *PackageListSuite) TestFilterLatestNil(c *C) {
+	var list *PackageList
+
+	filtered, err := list.FilterLatest()
+	c.Assert(err, ErrorMatches, "package list is nil")
+	c.Assert(filtered, IsNil)
+}
