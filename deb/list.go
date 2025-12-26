@@ -172,6 +172,39 @@ func (l *PackageList) ForEach(handler func(*Package) error) error {
 	return err
 }
 
+// FilterLatest creates a copy of the package list containing only the
+// latest version for each package name/architecture pair.
+func (l *PackageList) FilterLatest() (*PackageList, error) {
+	if l == nil {
+		return nil, fmt.Errorf("package list is nil")
+	}
+
+	filtered := make(map[string]*Package, l.Len())
+
+	err := l.ForEach(func(p *Package) error {
+		key := p.Architecture + "|" + p.Name
+
+		if existing, found := filtered[key]; !found || CompareVersions(p.Version, existing.Version) > 0 {
+			filtered[key] = p
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := NewPackageListWithDuplicates(l.duplicatesAllowed, len(filtered))
+
+	for _, pkg := range filtered {
+		if err = result.Add(pkg); err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
 // ForEachIndexed calls handler for each package in list in indexed order
 func (l *PackageList) ForEachIndexed(handler func(*Package) error) error {
 	if !l.indexed {
