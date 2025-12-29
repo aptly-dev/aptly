@@ -13,6 +13,7 @@
   "Origin": "LP-PPA-gladky-anton-gnuplot",
   "Path": "./maverick",
   "Prefix": ".",
+  "SignedBy": "",
   "SkipContents": false,
   "SourceKind": "snapshot",
   "Sources": [

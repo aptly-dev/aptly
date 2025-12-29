@@ -14,6 +14,7 @@
     "Origin": "LP-PPA-gladky-anton-gnuplot",
     "Path": "./maverick",
     "Prefix": ".",
+    "SignedBy": "",
     "SkipContents": false,
     "SourceKind": "snapshot",
     "Sources": [
@@ -39,6 +40,7 @@
     "Origin": "",
     "Path": "ppa/smira/wheezy",
     "Prefix": "ppa/smira",
+    "SignedBy": "",
     "SkipContents": false,
     "SourceKind": "snapshot",
     "Sources": [
@@ -65,6 +67,7 @@
     "Origin": "origin1",
     "Path": "ppa/tr1/maverick",
     "Prefix": "ppa/tr1",
+    "SignedBy": "",
     "SkipContents": false,
     "SourceKind": "snapshot",
     "Sources": [
@@ -91,6 +94,7 @@
     "Origin": "",
     "Path": "ppa/tr2/maverick",
     "Prefix": "ppa/tr2",
+    "SignedBy": "",
     "SkipContents": false,
     "SourceKind": "snapshot",
     "Sources": [

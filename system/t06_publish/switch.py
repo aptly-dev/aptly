@@ -5,7 +5,7 @@ from lib import BaseTest
 
 
 def strip_processor(output):
-    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
+    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:') and not l.startswith('Valid-Until:')])
 
 
 class PublishSwitch1Test(BaseTest):
@@ -603,3 +603,23 @@ class PublishSwitch16Test(BaseTest):
         self.check_exists('public/dists/bookworm/main/binary-amd64/Packages.gz')
 
         self.check_exists('public/pool/bookworm/main/g/gnuplot/gnuplot-x11_4.6.1-1~maverick2_amd64.deb')
+
+
+class PublishSwitch17Test(BaseTest):
+    """
+    publish switch: signed-by
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap1 from mirror gnuplot-maverick",
+        "aptly snapshot create snap2 from mirror gnuplot-maverick",
+        "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1",
+    ]
+    runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -signed-by=a,string maverick snap2"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSwitch17Test, self).check()
+
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)

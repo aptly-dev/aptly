@@ -168,6 +168,8 @@ type publishedRepoCreateParams struct {
 	SkipBz2 *bool `                               json:"SkipBz2"               example:"false"`
 	// Provide index files by hash
 	AcquireByHash *bool `                         json:"AcquireByHash"         example:"false"`
+	// An optional field containing a comma separated list of OpenPGP key fingerprints to be used for validating the next Release file.
+	SignedBy *string `                            json:"SignedBy"              example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"             example:"false"`
 }
@@ -341,6 +343,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			published.AcquireByHash = *b.AcquireByHash
 		}
 
+		if b.SignedBy != nil {
+			published.SignedBy = *b.SignedBy
+		}
+
 		duplicate := collection.CheckDuplicate(published)
 		if duplicate != nil {
 			_ = collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
@@ -376,6 +382,8 @@ type publishedRepoUpdateSwitchParams struct {
 	Snapshots []sourceParams `                    json:"Snapshots"`
 	// Provide index files by hash
 	AcquireByHash *bool `                         json:"AcquireByHash"  example:"false"`
+	// An optional field containing a comma separated list of OpenPGP key fingerprints to be used for validating the next Release file
+	SignedBy *string `                            json:"SignedBy"  example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
 }
@@ -459,6 +467,10 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if b.AcquireByHash != nil {
 		published.AcquireByHash = *b.AcquireByHash
+	}
+
+	if b.SignedBy != nil {
+		published.SignedBy = *b.SignedBy
 	}
 
 	if b.MultiDist != nil {
@@ -954,6 +966,8 @@ type publishedRepoUpdateParams struct {
 	SkipCleanup *bool `                           json:"SkipCleanup"     example:"false"`
 	// Provide index files by hash
 	AcquireByHash *bool `                         json:"AcquireByHash"   example:"false"`
+	// An optional field containing a comma separated list of OpenPGP key fingerprints to be used for validating the next Release file
+	SignedBy *string `                            json:"SignedBy"   example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"       example:"false"`
 }
@@ -1018,6 +1032,10 @@ func apiPublishUpdate(c *gin.Context) {
 
 	if b.AcquireByHash != nil {
 		published.AcquireByHash = *b.AcquireByHash
+	}
+
+	if b.SignedBy != nil {
+		published.SignedBy = *b.SignedBy
 	}
 
 	if b.MultiDist != nil {
