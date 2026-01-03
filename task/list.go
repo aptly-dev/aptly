@@ -75,7 +75,7 @@ func (list *List) consumer() {
 							// check resources
 							blockingTasks := list.usedResources.UsedBy(t.resources)
 							if len(blockingTasks) == 0 {
-								list.usedResources.MarkInUse(task.resources, task)
+								list.usedResources.MarkInUse(t.resources, t)
 								list.queue <- t
 								break
 							}
