@@ -70,19 +70,25 @@ func (list *List) consumer() {
 					task.wgTask.Done()
 					list.wg.Done()
 
+					unlocked := false
 					for _, t := range list.tasks {
 						if t.State == IDLE {
 							// check resources
 							blockingTasks := list.usedResources.UsedBy(t.resources)
 							if len(blockingTasks) == 0 {
 								list.usedResources.MarkInUse(t.resources, t)
+								// unlock list since queueing may block
+								list.Unlock()
+								unlocked = true
 								list.queue <- t
 								break
 							}
 						}
 					}
+					if !unlocked {
+						list.Unlock()
+					}
 				}
-				list.Unlock()
 			}()
 
 		case <-list.queueDone:
