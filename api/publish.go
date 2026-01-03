@@ -308,6 +308,12 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			storagePrefix = storage + ":" + prefix
 		}
 		resources = append(resources, "U"+storagePrefix+">>"+b.Distribution)
+		// Non-MultiDist publishes share a single pool/ directory under the
+		// prefix.  Lock at the prefix level so that concurrent publish/drop
+		// operations on sibling distributions cannot race during cleanup.
+		if !multiDist {
+			resources = append(resources, deb.PrefixPoolLockKey(storagePrefix))
+		}
 	} else {
 		log.Printf("distribution not specified for publish to prefix '%s' - unable to lock ", prefix)
 	}
@@ -508,6 +514,13 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
+	// Non-MultiDist distributions share a single pool/ directory under the
+	// prefix.  Acquire the prefix-level pool lock so that concurrent updates
+	// on sibling distributions are serialised and cannot race during cleanup.
+	if !published.MultiDist {
+		resources = append(resources, deb.PrefixPoolLockKey(published.StoragePrefix()))
+	}
+
 	// Field mutations and fresh DB load are deferred to inside the task so
 	// they always operate on a consistent state after the lock is held.
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
@@ -628,6 +641,12 @@ func apiPublishDrop(c *gin.Context) {
 	}
 
 	resources := []string{string(published.Key())}
+	// Non-MultiDist distributions share a single pool/ directory under the
+	// prefix.  Acquire the prefix-level pool lock so that a drop cannot race
+	// with a concurrent update or drop of a sibling distribution during cleanup.
+	if !published.MultiDist {
+		resources = append(resources, deb.PrefixPoolLockKey(published.StoragePrefix()))
+	}
 	taskName := fmt.Sprintf("Delete published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
@@ -1136,6 +1155,13 @@ func apiPublishUpdate(c *gin.Context) {
 	}
 
 	resources := []string{string(published.Key())}
+
+	// Non-MultiDist distributions share a single pool/ directory under the
+	// prefix.  Acquire the prefix-level pool lock so that concurrent updates
+	// on sibling distributions are serialised and cannot race during cleanup.
+	if !published.MultiDist {
+		resources = append(resources, deb.PrefixPoolLockKey(published.StoragePrefix()))
+	}
 
 	// Lock source repos / snapshots the same way apiPublishUpdateSwitch does,
 	// because published.Update() reads from them and concurrent modification
