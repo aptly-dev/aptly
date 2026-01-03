@@ -425,37 +425,51 @@ func (s *PublishedFileMissingSuite) TestIdenticalPackageRace(c *C) {
 
 		// Race: add and publish both simultaneously
 		var wg sync.WaitGroup
-		wg.Add(4)
+		wg.Add(2)
 
 		go func() {
 			defer wg.Done()
-			time.Sleep(5 * time.Millisecond)
+			//time.Sleep(5 * time.Millisecond)
+			c.Logf("[iter %d] Import A", iter)
 			resp := s.httpRequest(c, "POST", fmt.Sprintf("/api/repos/%s/file/%s?noRemove=0", repos[0], uploadID1), nil)
 			c.Logf("[iter %d] Import A complete: %d", iter, resp.Code)
-		}()
 
-		go func() {
-			defer wg.Done()
-			time.Sleep(7 * time.Millisecond)
-			resp := s.httpRequest(c, "POST", fmt.Sprintf("/api/repos/%s/file/%s?noRemove=0", repos[1], uploadID2), nil)
-			c.Logf("[iter %d] Import B complete: %d", iter, resp.Code)
-		}()
-
-		go func() {
-			defer wg.Done()
-			time.Sleep(15 * time.Millisecond)
 			updateBody, _ := json.Marshal(gin.H{"Signing": gin.H{"Skip": true}, "ForceOverwrite": true, "SkipBz2": true})
-			resp := s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[0]), updateBody)
+			c.Logf("[iter %d] Publish A", iter)
+			resp = s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[0]), updateBody)
 			c.Logf("[iter %d] Publish A complete: %d", iter, resp.Code)
 		}()
 
 		go func() {
 			defer wg.Done()
-			time.Sleep(18 * time.Millisecond)
+			//time.Sleep(7 * time.Millisecond)
+			c.Logf("[iter %d] Import B", iter)
+			resp := s.httpRequest(c, "POST", fmt.Sprintf("/api/repos/%s/file/%s?noRemove=0", repos[1], uploadID2), nil)
+			c.Logf("[iter %d] Import B complete: %d", iter, resp.Code)
+
 			updateBody, _ := json.Marshal(gin.H{"Signing": gin.H{"Skip": true}, "ForceOverwrite": true, "SkipBz2": true})
-			resp := s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[1]), updateBody)
+			c.Logf("[iter %d] Publish B", iter)
+			resp = s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[1]), updateBody)
 			c.Logf("[iter %d] Publish B complete: %d", iter, resp.Code)
 		}()
+
+		//go func() {
+			//defer wg.Done()
+			//time.Sleep(15 * time.Millisecond)
+			//updateBody, _ := json.Marshal(gin.H{"Signing": gin.H{"Skip": true}, "ForceOverwrite": true, "SkipBz2": true})
+			//c.Logf("[iter %d] Publish A", iter)
+			//resp := s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[0]), updateBody)
+			//c.Logf("[iter %d] Publish A complete: %d", iter, resp.Code)
+		//}()
+
+		//go func() {
+			//defer wg.Done()
+			//time.Sleep(18 * time.Millisecond)
+			//updateBody, _ := json.Marshal(gin.H{"Signing": gin.H{"Skip": true}, "ForceOverwrite": true, "SkipBz2": true})
+			//c.Logf("[iter %d] Publish B", iter)
+			//resp := s.httpRequest(c, "PUT", fmt.Sprintf("/api/publish/identical/%s", dists[1]), updateBody)
+			//c.Logf("[iter %d] Publish B complete: %d", iter, resp.Code)
+		//}()
 
 		wg.Wait()
 		time.Sleep(200 * time.Millisecond)
