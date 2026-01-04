@@ -60,6 +60,10 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.SkipBz2 = context.Flags().Lookup("skip-bz2").Value.Get().(bool)
 	}
 
+	if context.Flags().IsSet("signed-by") {
+		published.SignedBy = context.Flags().Lookup("signed-by").Value.String()
+	}
+
 	if context.Flags().IsSet("multi-dist") {
 		published.MultiDist = context.Flags().Lookup("multi-dist").Value.Get().(bool)
 	}
@@ -125,6 +129,7 @@ Example:
 	cmd.Flag.Bool("skip-contents", false, "don't generate Contents indexes")
 	cmd.Flag.Bool("skip-bz2", false, "don't generate bzipped indexes")
 	cmd.Flag.Bool("force-overwrite", false, "overwrite files in package pool in case of mismatch")
+	cmd.Flag.String("signed-by", "", "an optional field containing a comma separated list of OpenPGP key fingerprints to be used for validating the next Release file")
 	cmd.Flag.Bool("skip-cleanup", false, "don't remove unreferenced files in prefix/component")
 	cmd.Flag.Bool("multi-dist", false, "enable multiple packages with the same filename in different distributions")
 

@@ -13,6 +13,7 @@
   "Origin": "LP-PPA-gladky-anton-gnuplot",
   "Path": "ppa/smira/maverick",
   "Prefix": "ppa/smira",
+  "SignedBy": "",
   "SkipContents": false,
   "SourceKind": "snapshot",
   "Sources": [

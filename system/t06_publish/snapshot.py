@@ -6,7 +6,7 @@ from lib import BaseTest, ungzip_if_required
 
 
 def strip_processor(output):
-    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
+    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:') and not l.startswith('Valid-Until:')])
 
 
 def sorted_processor(output):
@@ -1419,3 +1419,23 @@ class PublishSnapshot42Test(BaseTest):
             'public/pool/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
         self.check_exists(
             'public/pool/maverick/main/g/gnuplot/gnuplot-doc_4.6.1-1~maverick2_all.deb')
+
+
+class PublishSnapshot43Test(BaseTest):
+    """
+    publish snapshot: signed-by
+    """
+    fixtureDB = True
+    fixturePool = True
+    fixtureCmds = [
+        "aptly snapshot create snap43 from mirror gnuplot-maverick",
+    ]
+    sortOutput = True
+    runCmd = "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -signed-by=string,separated,by,commas snap43"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishSnapshot43Test, self).check()
+
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)

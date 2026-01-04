@@ -5,7 +5,7 @@ from lib import BaseTest
 
 
 def strip_processor(output):
-    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
+    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:') and not l.startswith('Valid-Until:')])
 
 
 class PublishUpdate1Test(BaseTest):
@@ -606,3 +606,22 @@ class PublishUpdate18Test(BaseTest):
         components = sorted(components.split(' '))
         if ['other-test', 'test'] != components:
             raise Exception("value of 'Components' in release file is '%s' and does not match '%s'." % (' '.join(components), 'other-test test'))
+
+
+class PublishUpdate19Test(BaseTest):
+    """
+    publish update: signed-by
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}/",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick local-repo",
+        "aptly repo remove local-repo pyspi"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -signed-by=some,string maverick"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate19Test, self).check()
+
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)

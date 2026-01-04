@@ -6,7 +6,7 @@ from lib import BaseTest, ungzip_if_required
 
 
 def strip_processor(output):
-    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
+    return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:') and not l.startswith('Valid-Until:')])
 
 
 class PublishRepo1Test(BaseTest):
@@ -951,3 +951,22 @@ class PublishRepo34Test(BaseTest):
 
         if 'main/dep11/README' not in pathsSeen:
             raise Exception("README file not included in release file")
+
+
+class PublishRepo35Test(BaseTest):
+    """
+    publish repo: signed-by
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -component=contrib -label=label35 -signed-by=comma,separated,string local-repo"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishRepo35Test, self).check()
+
+        # verify contents except of sums
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor)
