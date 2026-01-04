@@ -386,6 +386,10 @@ type publishedRepoUpdateSwitchParams struct {
 	SignedBy *string `                            json:"SignedBy"  example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
+    // Value of Label: field in published repository stanza
+    Label *string `                               json:"Label"          example:"Debian"`
+    // Value of Origin: field in published repository stanza
+    Origin *string `                              json:"Origin"         example:"Debian"`
 }
 
 // @Summary Update Published Repository
@@ -475,6 +479,14 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	if b.MultiDist != nil {
 		published.MultiDist = *b.MultiDist
+	}
+
+	if b.Label != nil {
+		published.Label = *b.Label
+	}
+
+	if b.Origin != nil {
+		published.Origin = *b.Origin
 	}
 
 	resources := []string{string(published.Key())}
@@ -970,6 +982,10 @@ type publishedRepoUpdateParams struct {
 	SignedBy *string `                            json:"SignedBy"   example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"       example:"false"`
+    // Value of Label: field in published repository stanza
+    Label *string `                               json:"Label"          example:"Debian"`
+    // Value of Origin: field in published repository stanza
+    Origin *string `                              json:"Origin"         example:"Debian"`
 }
 
 // @Summary Update Published Repository
@@ -1040,6 +1056,14 @@ func apiPublishUpdate(c *gin.Context) {
 
 	if b.MultiDist != nil {
 		published.MultiDist = *b.MultiDist
+	}
+
+	if b.Label != nil {
+		published.Label = *b.Label
+	}
+
+	if b.Origin != nil {
+		published.Origin = *b.Origin
 	}
 
 	resources := []string{string(published.Key())}
