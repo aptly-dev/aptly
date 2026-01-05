@@ -3,7 +3,6 @@ VERSION=$(shell make -s version)
 PYTHON?=python3
 BINPATH?=$(GOPATH)/bin
 GOLANGCI_LINT_VERSION=v2.0.2  # version supporting go 1.24
-COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
@@ -15,12 +14,16 @@ export TZ=UTC
 # Unit Tests and some sysmte tests rely on expired certificates, turn back the time
 export TEST_FAKETIME := 2025-01-02 03:04:05
 
+ifeq ($(origin COVERAGE_DIR), undefined)
+COVERAGE_DIR := $(shell mktemp -d)
+endif
+
 # run with 'COVERAGE_SKIP=1' to skip coverage checks during system tests
 ifeq ($(COVERAGE_SKIP),1)
 COVERAGE_ARG_BUILD :=
 COVERAGE_ARG_TEST := --coverage-skip
 else
-COVERAGE_ARG_BUILD := -coverpkg="./..."
+COVERAGE_ARG_BUILD := -coverpkg=github.com/aptly-dev/aptly/...
 COVERAGE_ARG_TEST := --coverage-dir $(COVERAGE_DIR)
 endif
 
@@ -107,13 +110,16 @@ test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify
 	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
 	@mkdir -p /tmp/aptly-etcd-data; system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
 	@echo "\e[33m\e[1mRunning go test ...\e[0m"
-	faketime "$(TEST_FAKETIME)" go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
+	faketime "$(TEST_FAKETIME)" go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit-test.cov; echo $$? > .unit-test.ret
 	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
 	@rm -f /tmp/aptly-etcd-data/etcd.log
 	@ret=`cat .unit-test.ret`; if [ "$$ret" = "0" ]; then echo "\n\e[32m\e[1mUnit Tests SUCCESSFUL\e[0m"; else echo "\n\e[31m\e[1mUnit Tests FAILED\e[0m"; fi; rm -f .unit-test.ret; exit $$ret
+	@go tool cover -func=unit-test.cov
+
 
 system-test: prepare swagger etcd-install  ## Run system tests
+	@test -f $(BINPATH)/gocovmerge || GOOS= GOARCH= go install github.com/wadey/gocovmerge@latest
 	# build coverage binary
 	go test -v $(COVERAGE_ARG_BUILD) -c -tags testruncli
 	# Download fixture-db, fixture-pool, etcd.db
@@ -122,6 +128,9 @@ system-test: prepare swagger etcd-install  ## Run system tests
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
 	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(COVERAGE_ARG_TEST) $(CAPTURE_ARG) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) gocovmerge $(COVERAGE_DIR)/*.out > system-test.cov
+	rm -f $(COVERAGE_DIR)/*.out
+	go tool cover -func=system-test.cov
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -237,7 +246,7 @@ clean:  ## remove local build and module cache
 	test ! -e .go || find .go/ -type d ! -perm -u=w -exec chmod u+w {} \;
 	rm -rf .go/
 	rm -rf build/ obj-*-linux-gnu* tmp/
-	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
+	rm -f unit-test.cov system-test.cov aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
 .PHONY: help man prepare swagger version binaries build docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8
