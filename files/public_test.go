@@ -452,35 +452,35 @@ func (s *DiskFullSuite) SetUpTest(c *C) {
 	if runtime.GOOS != "linux" {
 		c.Skip("disk full tests only run on Linux")
 	}
-	if os.Geteuid() != 0 {
-		c.Skip("disk full tests require root privileges")
-	}
 
 	s.root = c.MkDir()
 }
 
 func (s *DiskFullSuite) TestPutFileOutOfSpace(c *C) {
-	mountPoint := filepath.Join(s.root, "smallfs")
-	err := os.MkdirAll(mountPoint, 0777)
-	c.Assert(err, IsNil)
-	fsImage := filepath.Join(s.root, "small.img")
-	cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
-	err = cmd.Run()
-	c.Assert(err, IsNil)
-	cmd = exec.Command("mkfs.ext4", "-F", fsImage)
-	err = cmd.Run()
-	c.Assert(err, IsNil)
-	cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
-	err = cmd.Run()
-	c.Assert(err, IsNil)
-	defer func() {
-		_ = exec.Command("umount", mountPoint).Run()
-	}()
+	mountPoint := "/smallfs"
+	if os.Geteuid() == 0 {
+		mountPoint = filepath.Join(s.root, "smallfs")
+		err := os.MkdirAll(mountPoint, 0777)
+		c.Assert(err, IsNil)
+		fsImage := filepath.Join(s.root, "small.img")
+		cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		cmd = exec.Command("mkfs.ext4", "-F", fsImage)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		defer func() {
+			_ = exec.Command("umount", mountPoint).Run()
+		}()
+	}
 
 	storage := NewPublishedStorage(mountPoint, "", "")
 	largeFile := filepath.Join(s.root, "largefile")
-	cmd = exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
-	err = cmd.Run()
+	cmd := exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
+	err := cmd.Run()
 	c.Assert(err, IsNil)
 
 	err = storage.PutFile("testfile", largeFile)
@@ -491,25 +491,28 @@ func (s *DiskFullSuite) TestPutFileOutOfSpace(c *C) {
 }
 
 func (s *DiskFullSuite) TestLinkFromPoolCopyOutOfSpace(c *C) {
-	mountPoint := filepath.Join(s.root, "smallfs")
-	err := os.MkdirAll(mountPoint, 0777)
-	c.Assert(err, IsNil)
-	fsImage := filepath.Join(s.root, "small.img")
+	mountPoint := "/smallfs"
+	if os.Geteuid() == 0 {
+		mountPoint = filepath.Join(s.root, "smallfs")
+		err := os.MkdirAll(mountPoint, 0777)
+		c.Assert(err, IsNil)
+		fsImage := filepath.Join(s.root, "small.img")
 
-	cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
-	err = cmd.Run()
-	c.Assert(err, IsNil)
+		cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
+		err = cmd.Run()
+		c.Assert(err, IsNil)
 
-	cmd = exec.Command("mkfs.ext4", "-F", fsImage)
-	err = cmd.Run()
-	c.Assert(err, IsNil)
+		cmd = exec.Command("mkfs.ext4", "-F", fsImage)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
 
-	cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
-	err = cmd.Run()
-	c.Assert(err, IsNil)
-	defer func() {
-		_ = exec.Command("umount", mountPoint).Run()
-	}()
+		cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		defer func() {
+			_ = exec.Command("umount", mountPoint).Run()
+		}()
+	}
 
 	storage := NewPublishedStorage(mountPoint, "copy", "")
 
@@ -518,8 +521,8 @@ func (s *DiskFullSuite) TestLinkFromPoolCopyOutOfSpace(c *C) {
 	cs := NewMockChecksumStorage()
 
 	largeFile := filepath.Join(s.root, "package.deb")
-	cmd = exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
-	err = cmd.Run()
+	cmd := exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
+	err := cmd.Run()
 	c.Assert(err, IsNil)
 
 	sourceChecksum, err := utils.ChecksumsForFile(largeFile)
