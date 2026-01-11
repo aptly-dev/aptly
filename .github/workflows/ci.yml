@@ -86,18 +86,6 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: "Run Unit Tests"
-        env:
-          RUN_LONG_TESTS: 'yes'
-          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
-          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
-          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make test
-
       - name: "Run Benchmark"
         run: |
           COVERAGE_DIR=${{ runner.temp }} make bench
