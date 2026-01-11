@@ -18,7 +18,7 @@ env:
 
 jobs:
   debug:
-    name: "Debug"
+    name: "Unit Tests (Debian 13)"
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -28,12 +28,17 @@ jobs:
         with:
           # fetch the whole repo for `git describe` to work
           fetch-depth: 0
-      - name: "Install Dependencies"
+      - name: "Docker Image"
         run: |
-          #sudo apt-get update
-          #sudo apt-get install -y --no-install-recommends make
           make docker-image
+      - name: "Unit Test"
+        run: |
           make docker-unit-tests
+      - name: "Upload Code Coverage"
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: unit.out
 
   test:
     name: "Test (Ubuntu 22.04)"
