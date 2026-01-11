@@ -13,6 +13,10 @@ import (
 	"github.com/saracen/walker"
 )
 
+// syncFile is a seam to allow tests to force fsync failures (e.g. ENOSPC).
+// In production it calls (*os.File).Sync().
+var syncFile = func(f *os.File) error { return f.Sync() }
+
 func verifyPath(path string) bool {
 	path = filepath.Clean(path)
 	for _, part := range strings.Split(path, string(filepath.Separator)) {
@@ -114,32 +118,67 @@ func apiFilesUpload(c *gin.Context) {
 	}
 
 	stored := []string{}
+	openFiles := []*os.File{}
 
+	// Write all files first
 	for _, files := range c.Request.MultipartForm.File {
 		for _, file := range files {
 			src, err := file.Open()
 			if err != nil {
+				// Close any files we've opened
+				for _, f := range openFiles {
+					_ = f.Close()
+				}
 				AbortWithJSONError(c, 500, err)
 				return
 			}
-			defer func() { _ = src.Close() }()
 
 			destPath := filepath.Join(path, filepath.Base(file.Filename))
 			dst, err := os.Create(destPath)
 			if err != nil {
+				_ = src.Close()
+				// Close any files we've opened
+				for _, f := range openFiles {
+					_ = f.Close()
+				}
 				AbortWithJSONError(c, 500, err)
 				return
 			}
-			defer func() { _ = dst.Close() }()
 
 			_, err = io.Copy(dst, src)
+			_ = src.Close()
 			if err != nil {
+				_ = dst.Close()
+				// Close any files we've opened
+				for _, f := range openFiles {
+					_ = f.Close()
+				}
 				AbortWithJSONError(c, 500, err)
 				return
 			}
 
+			// Keep file open for batch sync
+			openFiles = append(openFiles, dst)
 			stored = append(stored, filepath.Join(c.Params.ByName("dir"), filepath.Base(file.Filename)))
 		}
+	}
+
+	// Sync all files at once to catch ENOSPC errors
+	for i, dst := range openFiles {
+		err := syncFile(dst)
+		if err != nil {
+			// Close all files
+			for _, f := range openFiles {
+				_ = f.Close()
+			}
+			AbortWithJSONError(c, 500, fmt.Errorf("error syncing file %s: %s", stored[i], err))
+			return
+		}
+	}
+
+	// Close all files
+	for _, dst := range openFiles {
+		_ = dst.Close()
 	}
 
 	apiFilesUploadedCounter.WithLabelValues(c.Params.ByName("dir")).Inc()
