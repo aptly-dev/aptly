@@ -173,6 +173,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 	{
 		api.GET("/files", apiFilesListDirs)
 		api.POST("/files/:dir", apiFilesUpload)
+		api.PUT("/files/:dir/:file", apiFilesUploadOne)
 		api.GET("/files/:dir", apiFilesListFiles)
 		api.DELETE("/files/:dir", apiFilesDeleteDir)
 		api.DELETE("/files/:dir/:name", apiFilesDeleteFile)
