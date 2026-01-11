@@ -194,7 +194,7 @@ docker-deb:  ## Build debian packages in docker container
 	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
 docker-unit-tests:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
-	$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper \
+	$(DOCKER_RUN) -t --tmpfs /smallfs:rw,size=1m aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
