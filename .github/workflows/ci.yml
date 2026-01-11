@@ -17,7 +17,7 @@ env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
-  debug:
+  unit-test:
     name: "Unit Tests (Debian 13)"
     runs-on: ubuntu-22.04
     continue-on-error: false
@@ -105,7 +105,8 @@ jobs:
       - name: "Merge Code Coverage"
         run: |
           go install github.com/wadey/gocovmerge@v0.0.0-20160331181800-b5bfa59ec0ad
-          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
+          ls ${{ runner.temp }}/*.out -l
+          ~/go/bin/gocovmerge ${{ runner.temp }}/*.out > coverage.txt
 
       - name: "Upload Code Coverage"
         uses: codecov/codecov-action@v2
@@ -115,7 +116,8 @@ jobs:
 
   ci-debian-build:
     name: "Build"
-    needs: test
+    needs:
+      - test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -235,7 +237,9 @@ jobs:
 
   ci-binary-build:
     name: "Build"
-    needs: test
+    needs:
+      - unit-test
+      - test
     runs-on: ubuntu-latest
     strategy:
       matrix:
