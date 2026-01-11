@@ -17,6 +17,22 @@ env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
+  debug:
+    name: "Debug"
+    runs-on: ubuntu-22.04
+    continue-on-error: false
+    timeout-minutes: 30
+    steps:
+      - name: "Debug"
+        run: |
+          #sudo apt-get update
+          #sudo apt-get install -y --no-install-recommends docker.io
+          docker run --rm  --user 0:0 \
+            --tmpfs /smallfs:rw,size=1m \
+            alpine \
+            sh -c "df -h /smallfs && echo test > /smallfs/foo"
+
+
   test:
     name: "Test (Ubuntu 22.04)"
     runs-on: ubuntu-22.04
