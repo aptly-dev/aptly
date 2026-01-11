@@ -89,12 +89,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make system-test
+          make system-test
 
       - name: "Merge Code Coverage"
         run: |
           go install github.com/wadey/gocovmerge@v0.0.0-20160331181800-b5bfa59ec0ad
-          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
+          ~/go/bin/gocovmerge unit-test.cov system-test.cov > coverage.txt
 
       - name: "Upload Code Coverage"
         uses: codecov/codecov-action@v2
