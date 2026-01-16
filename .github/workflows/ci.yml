@@ -17,8 +17,32 @@ env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
+  unit-test:
+    name: "Unit Tests"
+    runs-on: ubuntu-22.04
+    continue-on-error: false
+    timeout-minutes: 30
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+        with:
+          # fetch the whole repo for `git describe` to work
+          fetch-depth: 0
+      - name: "Docker Image"
+        run: |
+          make docker-image
+      - name: "Unit Tests"
+        run: |
+          make docker-unit-tests
+          mkdir -p out/coverage
+          mv unit.out out/coverage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-coverage
+          path: out/
+
   test:
-    name: "Test (Ubuntu 22.04)"
+    name: "System Test"
     runs-on: ubuntu-22.04
     continue-on-error: false
     timeout-minutes: 30
@@ -63,21 +87,10 @@ jobs:
         with:
           directory: ${{ runner.temp }}
 
-      - name: "Run Unit Tests"
-        env:
-          RUN_LONG_TESTS: 'yes'
-          AZURE_STORAGE_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
-          AZURE_STORAGE_ACCOUNT: "devstoreaccount1"
-          AZURE_STORAGE_ACCESS_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make test
-
       - name: "Run Benchmark"
         run: |
-          COVERAGE_DIR=${{ runner.temp }} make bench
+          mkdir -p out/coverage
+          COVERAGE_DIR=$PWD/out/coverage make bench
 
       - name: "Run System Tests"
         env:
@@ -89,22 +102,53 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           sudo mkdir -p /srv ; sudo chown runner /srv
-          COVERAGE_DIR=${{ runner.temp }} make system-test
+          mkdir -p out/coverage
+          COVERAGE_DIR=$PWD/out/coverage make system-test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: system-tests-coverage
+          path: out/
+
+  coverage:
+    name: "Upload Coverage"
+    runs-on: ubuntu-22.04
+    continue-on-error: false
+    timeout-minutes: 30
+    needs:
+      - unit-test
+      - test
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Download Unit Test Coverage"
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-tests-coverage
+
+      - name: "Download System Test Coverage"
+        uses: actions/download-artifact@v4
+        with:
+          name: system-tests-coverage
 
       - name: "Merge Code Coverage"
         run: |
           go install github.com/wadey/gocovmerge@v0.0.0-20160331181800-b5bfa59ec0ad
-          ~/go/bin/gocovmerge unit.out ${{ runner.temp }}/*.out > coverage.txt
+          ~/go/bin/gocovmerge coverage/*.out > coverage.txt
 
       - name: "Upload Code Coverage"
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.txt
+          fail_ci_if_error: true
+
 
   ci-debian-build:
     name: "Build"
-    needs: test
+    needs:
+      - coverage
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -224,7 +268,8 @@ jobs:
 
   ci-binary-build:
     name: "Build"
-    needs: test
+    needs:
+      - coverage
     runs-on: ubuntu-latest
     strategy:
       matrix:

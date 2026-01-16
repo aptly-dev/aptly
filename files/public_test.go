@@ -1,8 +1,14 @@
 package files
 
 import (
+	"bytes"
+	"errors"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -10,6 +16,77 @@ import (
 
 	. "gopkg.in/check.v1"
 )
+
+type fakeProgress struct{ bytes.Buffer }
+
+func (p *fakeProgress) Start()    {}
+func (p *fakeProgress) Shutdown() {}
+func (p *fakeProgress) Flush()    {}
+func (p *fakeProgress) InitBar(count int64, isBytes bool, barType aptly.BarType) {
+}
+func (p *fakeProgress) ShutdownBar()     {}
+func (p *fakeProgress) AddBar(count int) {}
+func (p *fakeProgress) SetBar(count int) {}
+func (p *fakeProgress) Printf(msg string, a ...interface{}) {
+}
+func (p *fakeProgress) ColoredPrintf(msg string, a ...interface{}) {
+}
+func (p *fakeProgress) PrintfStdErr(msg string, a ...interface{}) {
+}
+
+type fakeRSC struct {
+	*bytes.Reader
+	closeErr error
+}
+
+func (r *fakeRSC) Close() error { return r.closeErr }
+
+type fakePool struct {
+	sizeErr error
+	openFn  func(string) (aptly.ReadSeekerCloser, error)
+}
+
+type fakeLocalPool struct {
+	fakePool
+	statErr error
+}
+
+func (p *fakeLocalPool) Stat(path string) (os.FileInfo, error) { return nil, p.statErr }
+func (p *fakeLocalPool) GenerateTempPath(filename string) (string, error) {
+	return "", nil
+}
+func (p *fakeLocalPool) Link(path, dstPath string) error    { return nil }
+func (p *fakeLocalPool) Symlink(path, dstPath string) error { return nil }
+func (p *fakeLocalPool) FullPath(path string) string        { return path }
+
+func (p *fakePool) Verify(poolPath, basename string, checksums *utils.ChecksumInfo, checksumStorage aptly.ChecksumStorage) (string, bool, error) {
+	return "", false, nil
+}
+
+func (p *fakePool) Import(srcPath, basename string, checksums *utils.ChecksumInfo, move bool, storage aptly.ChecksumStorage) (string, error) {
+	return "", nil
+}
+
+func (p *fakePool) LegacyPath(filename string, checksums *utils.ChecksumInfo) (string, error) {
+	return "", nil
+}
+
+func (p *fakePool) Size(path string) (int64, error) {
+	if p.sizeErr != nil {
+		return 0, p.sizeErr
+	}
+	return int64(len(path)), nil
+}
+
+func (p *fakePool) Open(path string) (aptly.ReadSeekerCloser, error) {
+	if p.openFn != nil {
+		return p.openFn(path)
+	}
+	return nil, io.EOF
+}
+
+func (p *fakePool) FilepathList(progress aptly.Progress) ([]string, error) { return nil, nil }
+func (p *fakePool) Remove(path string) (int64, error)                      { return 0, nil }
 
 type PublishedStorageSuite struct {
 	root            string
@@ -67,6 +144,14 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 
 	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
 	c.Assert(err, IsNil)
+}
+
+func (s *PublishedStorageSuite) TestPutFileReturnsErrorIfSourceMissing(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", filepath.Join(s.root, "no-such-file"))
+	c.Assert(err, NotNil)
 }
 
 func (s *PublishedStorageSuite) TestFilelist(c *C) {
@@ -134,6 +219,11 @@ func (s *PublishedStorageSuite) TestSymLink(c *C) {
 	c.Assert(linkTarget, Equals, "ppa/dists/squeeze/Release")
 }
 
+func (s *PublishedStorageSuite) TestReadLinkReturnsErrorOnMissingPath(c *C) {
+	_, err := s.storage.ReadLink("does/not/exist")
+	c.Assert(err, NotNil)
+}
+
 func (s *PublishedStorageSuite) TestHardLink(c *C) {
 	err := s.storage.MkDir("ppa/dists/squeeze/")
 	c.Assert(err, IsNil)
@@ -161,6 +251,18 @@ func (s *PublishedStorageSuite) TestRemoveDirs(c *C) {
 	_, err = os.Stat(filepath.Join(s.storage.rootPath, "ppa/dists/squeeze/Release"))
 	c.Assert(err, NotNil)
 	c.Assert(os.IsNotExist(err), Equals, true)
+}
+
+func (s *PublishedStorageSuite) TestRemoveDirsWithProgress(c *C) {
+	err := s.storage.MkDir("ppa/dists/squeeze/")
+	c.Assert(err, IsNil)
+
+	err = s.storage.PutFile("ppa/dists/squeeze/Release", "/dev/null")
+	c.Assert(err, IsNil)
+
+	p := &fakeProgress{}
+	err = s.storage.RemoveDirs("ppa/dists/", p)
+	c.Assert(err, IsNil)
 }
 
 func (s *PublishedStorageSuite) TestRemove(c *C) {
@@ -336,4 +438,288 @@ func (s *PublishedStorageSuite) TestRootRemove(c *C) {
 	// Actual dir
 	dirStorage := NewPublishedStorage(pwd, "", "")
 	c.Assert(func() { _ = dirStorage.RemoveDirs("", nil) }, PanicMatches, "trying to remove the root directory")
+}
+
+// DiskFullSuite uses a loopback mount; requires Linux + root.
+
+type DiskFullSuite struct {
+	root string
+}
+
+var _ = Suite(&DiskFullSuite{})
+
+func (s *DiskFullSuite) SetUpTest(c *C) {
+	if runtime.GOOS != "linux" {
+		c.Skip("disk full tests only run on Linux")
+	}
+
+	s.root = c.MkDir()
+}
+
+func (s *DiskFullSuite) TestPutFileOutOfSpace(c *C) {
+	mountPoint := "/smallfs"
+	if os.Geteuid() == 0 {
+		mountPoint = filepath.Join(s.root, "smallfs")
+		err := os.MkdirAll(mountPoint, 0777)
+		c.Assert(err, IsNil)
+		fsImage := filepath.Join(s.root, "small.img")
+		cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		cmd = exec.Command("mkfs.ext4", "-F", fsImage)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		defer func() {
+			_ = exec.Command("umount", mountPoint).Run()
+		}()
+	}
+
+	storage := NewPublishedStorage(mountPoint, "", "")
+	largeFile := filepath.Join(s.root, "largefile")
+	cmd := exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
+	err := cmd.Run()
+	c.Assert(err, IsNil)
+
+	err = storage.PutFile("testfile", largeFile)
+	c.Assert(err, NotNil)
+	c.Check(strings.Contains(err.Error(), "no space left on device") ||
+		strings.Contains(err.Error(), "sync"), Equals, true,
+		Commentf("Expected disk full error, got: %v", err))
+}
+
+func (s *DiskFullSuite) TestLinkFromPoolCopyOutOfSpace(c *C) {
+	mountPoint := "/smallfs"
+	if os.Geteuid() == 0 {
+		mountPoint = filepath.Join(s.root, "smallfs")
+		err := os.MkdirAll(mountPoint, 0777)
+		c.Assert(err, IsNil)
+		fsImage := filepath.Join(s.root, "small.img")
+
+		cmd := exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1")
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+
+		cmd = exec.Command("mkfs.ext4", "-F", fsImage)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+
+		cmd = exec.Command("mount", "-o", "loop", fsImage, mountPoint)
+		err = cmd.Run()
+		c.Assert(err, IsNil)
+		defer func() {
+			_ = exec.Command("umount", mountPoint).Run()
+		}()
+	}
+
+	storage := NewPublishedStorage(mountPoint, "copy", "")
+
+	poolPath := filepath.Join(s.root, "pool")
+	pool := NewPackagePool(poolPath, false)
+	cs := NewMockChecksumStorage()
+
+	largeFile := filepath.Join(s.root, "package.deb")
+	cmd := exec.Command("dd", "if=/dev/zero", "of="+largeFile, "bs=1M", "count=2")
+	err := cmd.Run()
+	c.Assert(err, IsNil)
+
+	sourceChecksum, err := utils.ChecksumsForFile(largeFile)
+	c.Assert(err, IsNil)
+
+	srcPoolPath, err := pool.Import(largeFile, "package.deb",
+		&utils.ChecksumInfo{MD5: "d41d8cd98f00b204e9800998ecf8427e"}, false, cs)
+	c.Assert(err, IsNil)
+
+	err = storage.LinkFromPool("", "pool/main/p/package", "package.deb",
+		pool, srcPoolPath, sourceChecksum, false)
+	c.Assert(err, NotNil)
+	c.Check(strings.Contains(err.Error(), "no space left on device") ||
+		strings.Contains(err.Error(), "sync"), Equals, true,
+		Commentf("Expected disk full error, got: %v", err))
+}
+
+type DiskFullNoRootSuite struct {
+	root string
+}
+
+var _ = Suite(&DiskFullNoRootSuite{})
+
+func (s *DiskFullNoRootSuite) SetUpTest(c *C) {
+	s.root = c.MkDir()
+}
+
+func (s *DiskFullNoRootSuite) TestSyncIsCalled(c *C) {
+	storage := NewPublishedStorage(s.root, "", "")
+	sourceFile := filepath.Join(s.root, "source.txt")
+	err := os.WriteFile(sourceFile, []byte("test content"), 0644)
+	c.Assert(err, IsNil)
+	err = storage.PutFile("dest.txt", sourceFile)
+	c.Assert(err, IsNil)
+	content, err := os.ReadFile(filepath.Join(s.root, "dest.txt"))
+	c.Assert(err, IsNil)
+	c.Check(string(content), Equals, "test content")
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopySyncIsCalled(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "")
+	poolPath := filepath.Join(s.root, "pool")
+	pool := NewPackagePool(poolPath, false)
+	cs := NewMockChecksumStorage()
+
+	pkgFile := filepath.Join(s.root, "package.deb")
+	err := os.WriteFile(pkgFile, []byte("package content"), 0644)
+	c.Assert(err, IsNil)
+
+	sourceChecksum, err := utils.ChecksumsForFile(pkgFile)
+	c.Assert(err, IsNil)
+
+	srcPoolPath, err := pool.Import(pkgFile, "package.deb",
+		&utils.ChecksumInfo{MD5: "d41d8cd98f00b204e9800998ecf8427e"}, false, cs)
+	c.Assert(err, IsNil)
+
+	err = storage.LinkFromPool("", "pool/main/p/package", "package.deb",
+		pool, srcPoolPath, sourceChecksum, false)
+	c.Assert(err, IsNil)
+
+	destPath := filepath.Join(s.root, "pool/main/p/package/package.deb")
+	content, err := os.ReadFile(destPath)
+	c.Assert(err, IsNil)
+	c.Check(string(content), Equals, "package content")
+}
+
+func (s *DiskFullNoRootSuite) TestPutFileSyncErrorIsReturned(c *C) {
+	storage := NewPublishedStorage(s.root, "", "")
+
+	sourceFile := filepath.Join(s.root, "source-syncfail.txt")
+	err := os.WriteFile(sourceFile, []byte("test content"), 0644)
+	c.Assert(err, IsNil)
+
+	oldSyncFile := syncFile
+	syncFile = func(_ *os.File) error { return syscall.ENOSPC }
+	defer func() { syncFile = oldSyncFile }()
+
+	err = storage.PutFile("dest-syncfail.txt", sourceFile)
+	c.Assert(err, NotNil)
+	c.Check(strings.Contains(err.Error(), "error syncing file"), Equals, true)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopySyncErrorIsReturned(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "")
+	poolPath := filepath.Join(s.root, "pool")
+	pool := NewPackagePool(poolPath, false)
+	cs := NewMockChecksumStorage()
+
+	pkgFile := filepath.Join(s.root, "package-syncfail.deb")
+	err := os.WriteFile(pkgFile, []byte("package content"), 0644)
+	c.Assert(err, IsNil)
+
+	sourceChecksum, err := utils.ChecksumsForFile(pkgFile)
+	c.Assert(err, IsNil)
+
+	srcPoolPath, err := pool.Import(pkgFile, "package-syncfail.deb",
+		&utils.ChecksumInfo{MD5: "d41d8cd98f00b204e9800998ecf8427e"}, false, cs)
+	c.Assert(err, IsNil)
+
+	oldSyncFile := syncFile
+	syncFile = func(_ *os.File) error { return syscall.ENOSPC }
+	defer func() { syncFile = oldSyncFile }()
+
+	err = storage.LinkFromPool("", "pool/main/p/package", "package-syncfail.deb",
+		pool, srcPoolPath, sourceChecksum, false)
+	c.Assert(err, NotNil)
+	c.Check(strings.Contains(err.Error(), "error syncing file"), Equals, true)
+}
+
+func (s *DiskFullNoRootSuite) TestGetFileLockReusesMutex(c *C) {
+	a := getFileLock(filepath.Join(s.root, "a"))
+	b := getFileLock(filepath.Join(s.root, "a"))
+	c.Check(a == b, Equals, true)
+
+	c1 := getFileLock(filepath.Join(s.root, "c1"))
+	c2 := getFileLock(filepath.Join(s.root, "c2"))
+	c.Check(c1 == c2, Equals, false)
+}
+
+func (s *DiskFullNoRootSuite) TestPutFileFailsIfDestinationDirMissing(c *C) {
+	storage := NewPublishedStorage(s.root, "", "")
+
+	sourceFile := filepath.Join(s.root, "src.txt")
+	err := os.WriteFile(sourceFile, []byte("x"), 0644)
+	c.Assert(err, IsNil)
+
+	err = storage.PutFile("missingdir/dest.txt", sourceFile)
+	c.Assert(err, NotNil)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolRejectsNonLocalPoolForHardlink(c *C) {
+	storage := NewPublishedStorage(s.root, "", "")
+	pool := &fakePool{}
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
+	c.Check(strings.Contains(err.Error(), "cannot link"), Equals, true)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopyReturnsErrorIfOpenFails(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "")
+	pool := &fakePool{openFn: func(string) (aptly.ReadSeekerCloser, error) { return nil, io.ErrUnexpectedEOF }}
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopyReturnsErrorIfReaderCloseFails(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "")
+
+	pool := &fakePool{openFn: func(string) (aptly.ReadSeekerCloser, error) {
+		return &fakeRSC{Reader: bytes.NewReader([]byte("data")), closeErr: io.ErrClosedPipe}, nil
+	}}
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
+	c.Check(err, Equals, io.ErrClosedPipe)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopyReturnsErrorIfSizeFailsWhenDestExists(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "size")
+	pool := &fakePool{sizeErr: io.ErrUnexpectedEOF, openFn: func(string) (aptly.ReadSeekerCloser, error) {
+		return &fakeRSC{Reader: bytes.NewReader([]byte("data")), closeErr: nil}, nil
+	}}
+
+	destDir := filepath.Join(s.root, "pool/main/p/pkg")
+	c.Assert(os.MkdirAll(destDir, 0777), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(destDir, "x.deb"), []byte("old"), 0644), IsNil)
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
+	c.Check(err, Equals, io.ErrUnexpectedEOF)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolCopyChecksumReturnsErrorIfDstMD5Fails(c *C) {
+	storage := NewPublishedStorage(s.root, "copy", "")
+	pool := &fakePool{openFn: func(string) (aptly.ReadSeekerCloser, error) {
+		return &fakeRSC{Reader: bytes.NewReader([]byte("data")), closeErr: nil}, nil
+	}}
+
+	// Make destinationPath a directory so MD5ChecksumForFile fails.
+	destDir := filepath.Join(s.root, "pool/main/p/pkg")
+	c.Assert(os.MkdirAll(destDir, 0777), IsNil)
+	c.Assert(os.MkdirAll(filepath.Join(destDir, "x.deb"), 0777), IsNil)
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
+}
+
+func (s *DiskFullNoRootSuite) TestLinkFromPoolHardlinkReturnsErrorIfStatFailsWhenDestExists(c *C) {
+	storage := NewPublishedStorage(c.MkDir(), "hardlink", "")
+	pool := &fakeLocalPool{statErr: errors.New("stat failed")}
+
+	destDir := filepath.Join(storage.rootPath, "pool", "main", "p", "pkg")
+	c.Assert(os.MkdirAll(destDir, 0777), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(destDir, "x.deb"), []byte("x"), 0644), IsNil)
+
+	err := storage.LinkFromPool("", "pool/main/p/pkg", "x.deb", pool, "x", utils.ChecksumInfo{MD5: "x"}, false)
+	c.Assert(err, NotNil)
 }
