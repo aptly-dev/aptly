@@ -625,3 +625,25 @@ class PublishUpdate19Test(BaseTest):
         super(PublishUpdate19Test, self).check()
 
         self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
+
+
+class PublishUpdate20Test(BaseTest):
+    """
+    publish update: update label and origin
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}/",
+        "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick -skip-bz2 local-repo",
+        "aptly repo remove local-repo pyspi"
+    ]
+    runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -label=fun -origin=earth maverick"
+    gold_processor = BaseTest.expand_environ
+
+    def check(self):
+        super(PublishUpdate20Test, self).check()
+
+        self.check_exists('public/dists/maverick/InRelease')
+
+        # verify contents except of sums
+        self.check_file_contents('public/dists/maverick/Release', 'release', match_prepare=strip_processor)
