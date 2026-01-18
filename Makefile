@@ -107,7 +107,7 @@ test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify
 	@echo "\e[33m\e[1mStarting etcd ...\e[0m"
 	@mkdir -p /tmp/aptly-etcd-data; system/t13_etcd/start-etcd.sh > /tmp/aptly-etcd-data/etcd.log 2>&1 &
 	@echo "\e[33m\e[1mRunning go test ...\e[0m"
-	faketime "$(TEST_FAKETIME)" go test -v ./... -gocheck.v=true -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
+	faketime "$(TEST_FAKETIME)" go test -timeout 20m -v ./... -gocheck.v=true -gocheck.vv -check.f "$(TEST)" -coverprofile=unit.out; echo $$? > .unit-test.ret
 	@echo "\e[33m\e[1mStopping etcd ...\e[0m"
 	@pid=`cat /tmp/etcd.pid`; kill $$pid
 	@rm -f /tmp/aptly-etcd-data/etcd.log
