@@ -3,7 +3,7 @@ import tempfile
 
 class TestOut:
     def __init__(self):
-        self.tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        self.tmp_file = tempfile.NamedTemporaryFile(delete=True)
         self.read_pos = 0
 
     def fileno(self):
