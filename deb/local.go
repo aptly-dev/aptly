@@ -160,9 +160,15 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
 	batch := collection.db.CreateBatch()
 	_ = batch.Put(repo.Key(), repo.Encode())
+
 	if repo.packageRefs != nil {
 		_ = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
+	} else {
+		// Delete RefKey if packageRefs is nil
+		// This prevents inconsistent state where RefKey exists but is corrupted
+		_ = batch.Delete(repo.RefKey())
 	}
+
 	return batch.Write()
 }
 

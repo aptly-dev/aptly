@@ -57,20 +57,37 @@ func checkRepo(repo *deb.LocalRepo) error {
 
 	err := repos.LoadComplete(repo)
 	if err != nil {
-		return fmt.Errorf("load complete repo %q: %s", repo.Name, err)
+		// If we can't load the repo, it might be severely corrupted
+		// Log the error but continue with other repos
+		context.Progress().Printf("Warning: Cannot load repo %q: %s\n", repo.Name, err)
+		return nil
 	}
 
-	dangling, err := deb.FindDanglingReferences(repo.RefList(), collectionFactory.PackageCollection())
+	// Check if RefList is nil (severe corruption case)
+	refList := repo.RefList()
+	if refList == nil {
+		context.Progress().Printf("Warning: Repo %q has no reference list (severely corrupted), initializing empty list\n", repo.Name)
+		// Initialize with empty reflist
+		repo.UpdateRefList(deb.NewPackageRefList())
+		if err = repos.Update(repo); err != nil {
+			return fmt.Errorf("update repo with empty reflist: %w", err)
+		}
+		return nil
+	}
+
+	dangling, err := deb.FindDanglingReferences(refList, collectionFactory.PackageCollection())
 	if err != nil {
-		return fmt.Errorf("find dangling references: %w", err)
+		// If we can't find dangling references, log but continue
+		context.Progress().Printf("Warning: Cannot check dangling references for repo %q: %s\n", repo.Name, err)
+		return nil
 	}
 
-	if len(dangling.Refs) > 0 {
+	if dangling != nil && len(dangling.Refs) > 0 {
 		for _, ref := range dangling.Refs {
 			context.Progress().Printf("Removing dangling database reference %q\n", ref)
 		}
 
-		repo.UpdateRefList(repo.RefList().Subtract(dangling))
+		repo.UpdateRefList(refList.Subtract(dangling))
 
 		if err = repos.Update(repo); err != nil {
 			return fmt.Errorf("update repo: %w", err)
