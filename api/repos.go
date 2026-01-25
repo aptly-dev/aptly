@@ -167,7 +167,7 @@ func apiReposCreate(c *gin.Context) {
 
 type reposEditParams struct {
 	// Name of repository to modify
-	Name *string `binding:"required"     json:"Name"                 example:"repo1"`
+	Name *string `                       json:"Name"                 example:"new-repo-name"`
 	// Change Comment of repository
 	Comment *string `                    json:"Comment"              example:"example repo"`
 	// Change Default Distribution for publishing
@@ -179,7 +179,7 @@ type reposEditParams struct {
 // @Summary Update Repository
 // @Description **Update local repository meta information**
 // @Tags Repos
-// @Param name path string true "Repository name"
+// @Param name path string true "Repository name to modify"
 // @Consume  json
 // @Param request body reposEditParams true "Parameters"
 // @Produce json
@@ -192,15 +192,20 @@ func apiReposEdit(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
+	if b.Name != nil {
+		new_name, err := url.PathUnescape(*b.Name)
+		if err != nil {
+			AbortWithJSONError(c, 400, err)
+			return
+		}
+		*b.Name = new_name
+	}
+
 
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	name, err := url.PathUnescape(c.Params.ByName("name"))
-	if err != nil {
-		AbortWithJSONError(c, 400, err)
-		return
-	}
+	name := c.Params.ByName("name") // repo to modify
 	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
