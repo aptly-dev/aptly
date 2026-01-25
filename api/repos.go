@@ -187,7 +187,7 @@ func apiReposCreate(c *gin.Context) {
 
 type reposEditParams struct {
 	// Name of repository to modify
-	Name *string `binding:"required"     json:"Name"                 example:"repo1"`
+	Name *string `                       json:"Name"                 example:"new-repo-name"`
 	// Change Comment of repository
 	Comment *string `                    json:"Comment"              example:"example repo"`
 	// Change Default Distribution for publishing
@@ -199,7 +199,7 @@ type reposEditParams struct {
 // @Summary Update Repository
 // @Description **Update local repository meta information**
 // @Tags Repos
-// @Param name path string true "Repository name"
+// @Param name path string true "Repository name to modify"
 // @Consume  json
 // @Param request body reposEditParams true "Parameters"
 // @Produce json
@@ -212,7 +212,6 @@ func apiReposEdit(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
-
 	// Load shallowly for 404 check and resource key.
 	// Mutation and duplicate check happen inside the task for atomicity.
 	collectionFactory := context.NewCollectionFactory()
