@@ -272,6 +272,9 @@ class BaseTest(object):
             self.run_cmd([
                 self.gpgFinder.gpg2, "--import",
                 os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files") + "/aptly.sec"], expected_code=None)
+            self.run_cmd([
+                self.gpgFinder.gpg2, "--import",
+                os.path.join(os.path.dirname(inspect.getsourcefile(BaseTest)), "files") + "/aptly3.sec"], expected_code=None)
 
         if self.fixtureGpg:
             self.run_cmd([self.gpgFinder.gpg, "--no-default-keyring", "--trust-model", "always", "--batch", "--keyring", "aptlytest.gpg", "--import"] +

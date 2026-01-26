@@ -29,6 +29,7 @@
     "gpgProvider": "gpg",
     "gpgDisableSign": false,
     "gpgDisableVerify": false,
+    "gpgKeys": [],
     "skipContentsPublishing": false,
     "skipBz2Publishing": false,
     "FileSystemPublishEndpoints": {},

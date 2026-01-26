@@ -1,6 +1,7 @@
 import inspect
 import os
 import threading
+import re
 
 from api_lib import TASK_SUCCEEDED, APITest
 
@@ -1874,3 +1875,63 @@ class PublishUpdateSourcesAPITestRepo(APITest):
         all_repos = self.get("/api/publish")
         self.check_equal(all_repos.status_code, 200)
         self.check_in(repo_expected, all_repos.json())
+
+
+class PublishAPITestDualSignature(APITest):
+    """
+    POST /publish/:prefix (local repos), GET /publish
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        # publishing under prefix, default distribution
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                 "SourceKind": "local",
+                 "Sources": [{"Name": repo_name}],
+                 "Signing": {"GPGKey": "C5ACD2179B5231DFE842EE6121DBB89C16DB3E6D,AEE16DF018354F67FE5F5C72BBF4E19434E91E4E"},
+            }
+        )
+        self.check_task(task)
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'Origin': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SignedBy': '',
+            'SkipContents': False,
+            'MultiDist': False,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_exists("public/" + prefix + "/dists/wheezy/Release")
+        path = os.path.join(os.environ["HOME"], self.aptlyDir, "public", prefix, "dists/wheezy")
+        self.check_cmd_output(f"gpg --verify {path}/Release.gpg {path}/Release", "Release.gpg",
+                              match_prepare=lambda s: re.sub(r'Signature made .*', '', s))
