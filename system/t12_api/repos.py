@@ -461,3 +461,34 @@ class ReposAPITestCopyPackage(APITest):
 
         self.check_equal(self.get(f"/api/repos/{repo2_name}/packages").json(),
                          ['Pi386 libboost-program-options-dev 1.49.0.1 918d2f433384e378'])
+
+
+class ReposAPITestCreateEdit(APITest):
+    """
+    POST /api/repos,
+    """
+    def check(self):
+        repo_name = self.random_name() + ' with space'
+        repo_desc = {'Comment': 'fun repo',
+                     'DefaultComponent': 'contrib',
+                     'DefaultDistribution': 'bookworm',
+                     'Name': repo_name}
+
+        resp = self.post("/api/repos", json=repo_desc)
+        self.check_equal(resp.json(), repo_desc)
+        self.check_equal(resp.status_code, 201)
+
+        repo_desc = {'Comment': 'modified repo',
+                     'DefaultComponent': 'main',
+                     'DefaultDistribution': 'trixie',
+                     'Name': repo_name + '@renamed'}
+        resp = self.put(f"/api/repos/{repo_name}", json=repo_desc)
+        self.check_equal(resp.json(), repo_desc)
+        self.check_equal(resp.status_code, 200)
+
+        resp = self.get("/api/repos/" + repo_name + '@renamed')
+        self.check_equal(resp.json(), repo_desc)
+        self.check_equal(resp.status_code, 200)
+
+        resp = self.delete("/api/repos/" + repo_name + '@renamed')
+        self.check_equal(resp.status_code, 200)
