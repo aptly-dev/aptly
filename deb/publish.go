@@ -1456,6 +1456,19 @@ func (collection *PublishedRepoCollection) ByLocalRepo(repo *LocalRepo) []*Publi
 	return result
 }
 
+// ByStoragePrefix looks up all repositories with the same storage and prefix
+func (collection *PublishedRepoCollection) ByStoragePrefix(storage, prefix string) []*PublishedRepo {
+	collection.loadList()
+
+	var result []*PublishedRepo
+	for _, r := range collection.list {
+		if r.Storage == storage && r.Prefix == prefix {
+			result = append(result, r)
+		}
+	}
+	return result
+}
+
 // ForEach runs method for each repository
 func (collection *PublishedRepoCollection) ForEach(handler func(*PublishedRepo) error) error {
 	return collection.db.ProcessByPrefix([]byte("U"), func(_, blob []byte) error {
@@ -1479,7 +1492,6 @@ func (collection *PublishedRepoCollection) Len() int {
 func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix string, components []string,
 	collectionFactory *CollectionFactory, progress aptly.Progress) (map[string][]string, error) {
 	referencedFiles := map[string][]string{}
-	processedComponentRefs := map[string]*PackageRefList{}
 
 	for _, r := range collection.list {
 		if r.Prefix == prefix && !r.MultiDist {
@@ -1504,20 +1516,17 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 
 			for _, component := range components {
 				if utils.StrSliceHasItem(repoComponents, component) {
-					unseenRefs := r.RefList(component)
-					processedRefs := processedComponentRefs[component]
-					if processedRefs != nil {
-						unseenRefs = unseenRefs.Subtract(processedRefs)
-					} else {
-						processedRefs = NewPackageRefList()
-					}
+					refList := r.RefList(component)
 
-					if unseenRefs.Len() == 0 {
+					// Process all package refs without subtracting previously seen ones.
+					// Subtraction was an optimization to avoid duplicate processing, but it caused
+					// shared files between distributions to be incorrectly marked as orphaned during cleanup.
+
+					if refList.Len() == 0 {
 						continue
 					}
-					processedComponentRefs[component] = processedRefs.Merge(unseenRefs, false, true)
 
-					packageList, err := NewPackageListFromRefList(unseenRefs, collectionFactory.PackageCollection(), progress)
+					packageList, err := NewPackageListFromRefList(refList, collectionFactory.PackageCollection(), progress)
 					if err != nil {
 						return nil, err
 					}
@@ -1548,6 +1557,8 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 
 	var err error
 
+	// Force reload to see recent database commits before cleanup.
+	collection.list = nil
 	collection.loadList()
 
 	storage := published.Storage
@@ -1716,6 +1727,20 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		// ignore error with -force-drop
 	}
 
+	// Delete from database first before cleanup to ensure cleanup sees the updated state
+	batch := collection.db.CreateBatch()
+	_ = batch.Delete(repo.Key())
+
+	for _, component := range repo.Components() {
+		_ = batch.Delete(repo.RefKey(component))
+	}
+
+	err = batch.Write()
+	if err != nil {
+		return err
+	}
+
+	// Remove from in-memory list after database commit
 	collection.list[len(collection.list)-1], collection.list[repoPosition], collection.list =
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
@@ -1728,12 +1753,5 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		}
 	}
 
-	batch := collection.db.CreateBatch()
-	_ = batch.Delete(repo.Key())
-
-	for _, component := range repo.Components() {
-		_ = batch.Delete(repo.RefKey(component))
-	}
-
-	return batch.Write()
+	return nil
 }
