@@ -9,6 +9,10 @@ def strip_processor(output):
     return "\n".join([l for l in output.split("\n") if not l.startswith(' ') and not l.startswith('Date:')])
 
 
+def strip_processor_keep_date(output):
+    return "\n".join([l for l in output.split("\n") if not l.startswith(' ')])
+
+
 class PublishRepo1Test(BaseTest):
     """
     publish repo: default
@@ -951,3 +955,34 @@ class PublishRepo34Test(BaseTest):
 
         if 'main/dep11/README' not in pathsSeen:
             raise Exception("README file not included in release file")
+
+
+class PublishRepo36Test(BaseTest):
+    """
+    publish repo: SOURCE_DATE_EPOCH produces byte-identical output
+    """
+    fixtureCmds = [
+        "aptly repo create local-repo",
+        "aptly repo add local-repo ${files}",
+    ]
+    runCmd = "aptly publish repo -skip-signing -distribution=maverick local-repo"
+    gold_processor = BaseTest.expand_environ
+    environmentOverride = {"SOURCE_DATE_EPOCH": "1234567890"}
+
+    def check(self):
+        super(PublishRepo36Test, self).check()
+
+        # verify Release file includes the expected date from SOURCE_DATE_EPOCH
+        self.check_file_contents(
+            'public/dists/maverick/Release', 'release', match_prepare=strip_processor_keep_date)
+
+        # save Release file from first publish
+        first_release = self.read_file('public/dists/maverick/Release')
+
+        # drop and republish with same SOURCE_DATE_EPOCH
+        self.run_cmd("aptly publish drop maverick")
+        self.run_cmd("aptly publish repo -skip-signing -distribution=maverick local-repo")
+
+        # verify byte-identical output
+        second_release = self.read_file('public/dists/maverick/Release')
+        self.check_equal(first_release, second_release)
