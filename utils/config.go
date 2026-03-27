@@ -62,6 +62,7 @@ type ConfigStructure struct { // nolint: maligned
 	// Storage
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"    yaml:"filesystem_publish_endpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"            yaml:"s3_publish_endpoints"`
+	GCSPublishRoots        map[string]GCSPublishRoot        `json:"GcsPublishEndpoints"           yaml:"gcs_publish_endpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"         yaml:"swift_publish_endpoints"`
 	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"         yaml:"azure_publish_endpoints"`
 	PackagePoolStorage     PackagePoolStorage               `json:"packagePoolStorage"            yaml:"packagepool_storage"`
@@ -189,6 +190,20 @@ type S3PublishRoot struct {
 	Debug                   bool   `json:"debug"                      yaml:"debug"`
 }
 
+// GCSPublishRoot describes single GCS publishing entry point
+type GCSPublishRoot struct {
+	Bucket             string `json:"bucket"              yaml:"bucket"`
+	Prefix             string `json:"prefix"              yaml:"prefix"`
+	CredentialsFile    string `json:"credentialsFile"     yaml:"credentials_file"`
+	ServiceAccountJSON string `json:"serviceAccountJSON"  yaml:"service_account_json"`
+	Project            string `json:"project"             yaml:"project"`
+	ACL                string `json:"acl"                 yaml:"acl"`
+	StorageClass       string `json:"storageClass"        yaml:"storage_class"`
+	EncryptionKey      string `json:"encryptionKey"       yaml:"encryption_key"`
+	DisableMultiDel    bool   `json:"disableMultiDel"     yaml:"disable_multidel"`
+	Debug              bool   `json:"debug"               yaml:"debug"`
+}
+
 // SwiftPublishRoot describes single OpenStack Swift publishing entry point
 type SwiftPublishRoot struct {
 	Container      string `json:"container"       yaml:"container"`
@@ -239,6 +254,7 @@ var Config = ConfigStructure{
 	PpaBaseURL:             "http://ppa.launchpad.net",
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
+	GCSPublishRoots:        map[string]GCSPublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
 	AzurePublishRoots:      map[string]AzureEndpoint{},
 	AsyncAPI:               false,
