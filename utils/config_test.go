@@ -49,6 +49,9 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		Region: "us-east-1",
 		Bucket: "repo"}}
 
+	s.config.GCSPublishRoots = map[string]GCSPublishRoot{"test": {
+		Bucket: "repo"}}
+
 	s.config.SwiftPublishRoots = map[string]SwiftPublishRoot{"test": {
 		Container: "repo"}}
 
@@ -128,6 +131,20 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"disableMultiDel\": false,\n" +
 		"      \"forceSigV2\": false,\n" +
 		"      \"forceVirtualHostedStyle\": false,\n" +
+		"      \"debug\": false\n" +
+		"    }\n" +
+		"  },\n" +
+		"  \"GcsPublishEndpoints\": {\n" +
+		"    \"test\": {\n" +
+		"      \"bucket\": \"repo\",\n" +
+		"      \"prefix\": \"\",\n" +
+		"      \"credentialsFile\": \"\",\n" +
+		"      \"serviceAccountJSON\": \"\",\n" +
+		"      \"project\": \"\",\n" +
+		"      \"acl\": \"\",\n" +
+		"      \"storageClass\": \"\",\n" +
+		"      \"encryptionKey\": \"\",\n" +
+		"      \"disableMultiDel\": false,\n" +
 		"      \"debug\": false\n" +
 		"    }\n" +
 		"  },\n" +
@@ -273,6 +290,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"skip_bz2_publishing: false\n" +
 		"filesystem_publish_endpoints: {}\n" +
 		"s3_publish_endpoints: {}\n" +
+		"gcs_publish_endpoints: {}\n" +
 		"swift_publish_endpoints: {}\n" +
 		"azure_publish_endpoints: {}\n" +
 		"packagepool_storage:\n" +
@@ -348,6 +366,18 @@ s3_publish_endpoints:
         disable_multidel: true
         force_sigv2: true
         force_virtualhosted_style: true
+        debug: true
+gcs_publish_endpoints:
+    test:
+        bucket: gcs-bucket
+        prefix: pre-gcs
+        credentials_file: /tmp/creds.json
+        service_account_json: '{"type":"service_account"}'
+        project: test-project
+        acl: public-read
+        storage_class: STANDARD
+        encryption_key: "12345678901234567890123456789012"
+        disable_multidel: true
         debug: true
 swift_publish_endpoints:
     test:
