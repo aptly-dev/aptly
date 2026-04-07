@@ -74,87 +74,112 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	buf := make([]byte, st.Size())
 	_, _ = f.Read(buf)
 
-	c.Check(string(buf), Equals, ""+
-"root_dir: \"\"
-" +
-    "log_level: \"\"
-" +
-    "log_format: \"\"
-" +
-    "database_open_attempts: 0
-" +
-    "architectures: []
-" +
-    "skip_legacy_pool: false
-" +
-    "dep_follow_suggests: false
-" +
-    "dep_follow_recommends: false
-" +
-    "dep_follow_all_variants: false
-" +
-    "dep_follow_source: false
-" +
-    "dep_verboseresolve: false
-" +
-    "ppa_distributor_id: \"\"
-" +
-    "ppa_codename: \"\"
-" +
-    "serve_in_api_mode: false
-" +
-    "enable_metrics_endpoint: false
-" +
-    "enable_swagger_endpoint: false
-" +
-    "async_api: false
-" +
-    "database_backend:
-" +
-    "    type: \"\"
-" +
-    "    db_path: \"\"
-" +
-    "    url: \"\"
-" +
-    "downloader: \"\"
-" +
-    "download_concurrency: 0
-" +
-    "download_limit: 0
-" +
-    "download_retries: 0
-" +
-    "download_sourcepackages: false
-" +
-    "gpg_provider: \"\"
-" +
-    "gpg_disable_sign: false
-" +
-    "gpg_disable_verify: false
-" +
-    "gpg_keys: []
-" +
-    "skip_contents_publishing: false
-" +
-    "skip_bz2_publishing: false
-" +
-    "filesystem_publish_endpoints: {}
-" +
-    "jfrog_publish_endpoints: {}
-" +
-    "s3_publish_endpoints: {}
-" +
-    "swift_publish_endpoints: {}
-" +
-    "azure_publish_endpoints: {}
-" +
-    "packagepool_storage:
-" +
-    "    type: local
-" +
-    "    path: /tmp/aptly-pool
-")
+	
+	expectedOut, _ := os.Create("/tmp/expected.json")
+	expectedOut.Write(buf)
+	expectedOut.Close()
+	c.Check(string(buf), Equals, `{
+  "rootDir": "/tmp/aptly",
+  "logLevel": "info",
+  "logFormat": "json",
+  "databaseOpenAttempts": 5,
+  "architectures": null,
+  "skipLegacyPool": false,
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": false,
+  "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
+  "dependencyVerboseResolve": false,
+  "ppaDistributorID": "",
+  "ppaCodename": "",
+  "serveInAPIMode": false,
+  "enableMetricsEndpoint": false,
+  "enableSwaggerEndpoint": false,
+  "AsyncAPI": false,
+  "databaseBackend": {
+    "type": "",
+    "dbPath": "",
+    "url": ""
+  },
+  "downloader": "",
+  "downloadConcurrency": 5,
+  "downloadSpeedLimit": 0,
+  "downloadRetries": 0,
+  "downloadSourcePackages": false,
+  "gpgProvider": "gpg",
+  "gpgDisableSign": false,
+  "gpgDisableVerify": false,
+  "gpgKeys": null,
+  "skipContentsPublishing": false,
+  "skipBz2Publishing": false,
+  "FileSystemPublishEndpoints": {
+    "test": {
+      "rootDir": "/opt/aptly-publish",
+      "linkMethod": "",
+      "verifyMethod": ""
+    }
+  },
+  "JFrogPublishEndpoints": {
+    "test": {
+      "repository": "repo",
+      "url": "jfrog.example.com",
+      "user": "",
+      "password": "",
+      "apiKey": "",
+      "accessToken": "",
+      "prefix": "",
+      "plusWorkaround": false,
+      "debug": false
+    }
+  },
+  "S3PublishEndpoints": {
+    "test": {
+      "region": "us-east-1",
+      "bucket": "repo",
+      "prefix": "",
+      "acl": "",
+      "awsAccessKeyID": "",
+      "awsSecretAccessKey": "",
+      "awsSessionToken": "",
+      "endpoint": "",
+      "storageClass": "",
+      "encryptionMethod": "",
+      "plusWorkaround": false,
+      "disableMultiDel": false,
+      "forceSigV2": false,
+      "forceVirtualHostedStyle": false,
+      "debug": false
+    }
+  },
+  "SwiftPublishEndpoints": {
+    "test": {
+      "container": "repo",
+      "prefix": "",
+      "osname": "",
+      "password": "",
+      "tenant": "",
+      "tenantid": "",
+      "domain": "",
+      "domainid": "",
+      "tenantdomain": "",
+      "tenantdomainid": "",
+      "authurl": ""
+    }
+  },
+  "AzurePublishEndpoints": {
+    "test": {
+      "container": "repo",
+      "prefix": "",
+      "accountName": "",
+      "accountKey": "",
+      "endpoint": ""
+    }
+  },
+  "packagePoolStorage": {
+    "type": "local",
+    "path": "/tmp/aptly-pool"
+  }
+}`)
 }
 
 func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {

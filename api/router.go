@@ -168,6 +168,7 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		api.GET("/s3", apiS3List)
+		api.GET("/jfrog", apiJFrogList)
 	}
 
 	{
