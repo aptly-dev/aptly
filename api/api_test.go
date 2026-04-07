@@ -173,3 +173,15 @@ func (s *APISuite) TestTruthy(c *C) {
 	c.Check(truthy(-1), Equals, true)
 	c.Check(truthy(gin.H{}), Equals, true)
 }
+
+func (s *APISuite) TestGetJFrogEndpoints(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/jfrog", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+
+	var endpoints []string
+	err = json.Unmarshal(response.Body.Bytes(), &endpoints)
+	c.Assert(err, IsNil)
+	sort.Strings(endpoints)
+	c.Check(endpoints, DeepEquals, []string{"test-jfrog"})
+}

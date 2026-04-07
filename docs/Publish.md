@@ -5,7 +5,7 @@ Publish snapshot or local repo as Debian repository to be used as APT source on 
 
 The published repository is signed with the user's GnuPG key.
 
-Repositories can be published to local directories, Amazon S3 buckets, Azure or Swift Storage.
+Repositories can be published to local directories, Amazon S3 buckets, Azure, Swift, or JFrog Artifactory Storage.
 
 #### GPG Keys
 
