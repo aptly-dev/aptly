@@ -31,7 +31,7 @@ class JFrogTest(BaseTest):
         self.jfrog_url = os.environ["JFROG_URL"]
         self.jfrog_username = os.environ["JFROG_USERNAME"]
         self.jfrog_password = os.environ["JFROG_PASSWORD"]
-        
+
         # Create repository via REST API
         auth = (self.jfrog_username, self.jfrog_password)
         create_url = f"{self.jfrog_url}/api/repositories/{self.repository}"
@@ -65,11 +65,10 @@ class JFrogTest(BaseTest):
 
         super(JFrogTest, self).shutdown()
 
-
     def check_path(self, path):
         if path.startswith("public/"):
             path = path[7:]
-        
+
         # Check against JFrog Artifactory API
         auth = (self.jfrog_username, self.jfrog_password)
         check_url = f"{self.jfrog_url}/api/storage/{self.repository}/{path}"
@@ -90,10 +89,9 @@ class JFrogTest(BaseTest):
         assert not mode
         if path.startswith("public/"):
             path = path[7:]
-        
+
         auth = (self.jfrog_username, self.jfrog_password)
         get_url = f"{self.jfrog_url}/{self.repository}/{path}"
         res = requests.get(get_url, auth=auth)
         res.raise_for_status()
         return res.text
-
