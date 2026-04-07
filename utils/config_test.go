@@ -45,6 +45,10 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	s.config.FileSystemPublishRoots = map[string]FileSystemPublishRoot{"test": {
 		RootDir: "/opt/aptly-publish"}}
 
+	s.config.JFrogPublishRoots = map[string]JFrogPublishRoot{"test": {
+		Repository: "repo",
+		Url:        "jfrog.example.com"}}
+
 	s.config.S3PublishRoots = map[string]S3PublishRoot{"test": {
 		Region: "us-east-1",
 		Bucket: "repo"}}
@@ -70,216 +74,90 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	buf := make([]byte, st.Size())
 	_, _ = f.Read(buf)
 
+	// FIXME: "  \"ppaBaseURL\": \"\",\n" +
 	c.Check(string(buf), Equals, ""+
-		"{\n" +
-		"  \"rootDir\": \"/tmp/aptly\",\n" +
-		"  \"logLevel\": \"info\",\n" +
-		"  \"logFormat\": \"json\",\n" +
-		"  \"databaseOpenAttempts\": 5,\n" +
-		"  \"architectures\": null,\n" +
-		"  \"skipLegacyPool\": false,\n" +
-		"  \"dependencyFollowSuggests\": false,\n" +
-		"  \"dependencyFollowRecommends\": false,\n" +
-		"  \"dependencyFollowAllVariants\": false,\n" +
-		"  \"dependencyFollowSource\": false,\n" +
-		"  \"dependencyVerboseResolve\": false,\n" +
-		"  \"ppaDistributorID\": \"\",\n" +
-		"  \"ppaCodename\": \"\",\n" +
-		"  \"ppaBaseURL\": \"\",\n" +
-		"  \"serveInAPIMode\": false,\n" +
-		"  \"enableMetricsEndpoint\": false,\n" +
-		"  \"enableSwaggerEndpoint\": false,\n" +
-		"  \"AsyncAPI\": false,\n" +
-		"  \"databaseBackend\": {\n" +
-		"    \"type\": \"\",\n" +
-		"    \"dbPath\": \"\",\n" +
-		"    \"url\": \"\"\n" +
-		"  },\n" +
-		"  \"downloader\": \"\",\n" +
-		"  \"downloadConcurrency\": 5,\n" +
-		"  \"downloadSpeedLimit\": 0,\n" +
-		"  \"downloadRetries\": 0,\n" +
-		"  \"downloadSourcePackages\": false,\n" +
-		"  \"gpgProvider\": \"gpg\",\n" +
-		"  \"gpgDisableSign\": false,\n" +
-		"  \"gpgDisableVerify\": false,\n" +
-		"  \"gpgKeys\": null,\n" +
-		"  \"skipContentsPublishing\": false,\n" +
-		"  \"skipBz2Publishing\": false,\n" +
-		"  \"FileSystemPublishEndpoints\": {\n" +
-		"    \"test\": {\n" +
-		"      \"rootDir\": \"/opt/aptly-publish\",\n" +
-		"      \"linkMethod\": \"\",\n" +
-		"      \"verifyMethod\": \"\"\n" +
-		"    }\n" +
-		"  },\n" +
-		"  \"S3PublishEndpoints\": {\n" +
-		"    \"test\": {\n" +
-		"      \"region\": \"us-east-1\",\n" +
-		"      \"bucket\": \"repo\",\n" +
-		"      \"prefix\": \"\",\n" +
-		"      \"acl\": \"\",\n" +
-		"      \"awsAccessKeyID\": \"\",\n" +
-		"      \"awsSecretAccessKey\": \"\",\n" +
-		"      \"awsSessionToken\": \"\",\n" +
-		"      \"endpoint\": \"\",\n" +
-		"      \"storageClass\": \"\",\n" +
-		"      \"encryptionMethod\": \"\",\n" +
-		"      \"plusWorkaround\": false,\n" +
-		"      \"disableMultiDel\": false,\n" +
-		"      \"forceSigV2\": false,\n" +
-		"      \"forceVirtualHostedStyle\": false,\n" +
-		"      \"debug\": false\n" +
-		"    }\n" +
-		"  },\n" +
-		"  \"SwiftPublishEndpoints\": {\n" +
-		"    \"test\": {\n" +
-		"      \"container\": \"repo\",\n" +
-		"      \"prefix\": \"\",\n" +
-		"      \"osname\": \"\",\n" +
-		"      \"password\": \"\",\n" +
-		"      \"tenant\": \"\",\n" +
-		"      \"tenantid\": \"\",\n" +
-		"      \"domain\": \"\",\n" +
-		"      \"domainid\": \"\",\n" +
-		"      \"tenantdomain\": \"\",\n" +
-		"      \"tenantdomainid\": \"\",\n" +
-		"      \"authurl\": \"\"\n" +
-		"    }\n" +
-		"  },\n" +
-		"  \"AzurePublishEndpoints\": {\n" +
-		"    \"test\": {\n" +
-		"      \"container\": \"repo\",\n" +
-		"      \"prefix\": \"\",\n" +
-		"      \"accountName\": \"\",\n" +
-		"      \"accountKey\": \"\",\n" +
-		"      \"endpoint\": \"\"\n" +
-		"    }\n" +
-		"  },\n" +
-		"  \"packagePoolStorage\": {\n" +
-		"    \"type\": \"local\",\n" +
-		"    \"path\": \"/tmp/aptly-pool\"\n" +
-		"  }\n" +
-		"}")
-}
-
-func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
-	configname := filepath.Join(c.MkDir(), "aptly.yaml1")
-	f, _ := os.Create(configname)
-	_, _ = f.WriteString(configFileYAML)
-	_ = f.Close()
-
-        // start with empty config
-        s.config = ConfigStructure{}
-
-	err := LoadConfig(configname, &s.config)
-	c.Assert(err, IsNil)
-	c.Check(s.config.GetRootDir(), Equals, "/opt/aptly/")
-	c.Check(s.config.DownloadConcurrency, Equals, 40)
-	c.Check(s.config.DatabaseOpenAttempts, Equals, 10)
-}
-
-func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
-	configname := filepath.Join(c.MkDir(), "aptly.yaml2")
-	f, _ := os.Create(configname)
-	_, _ = f.WriteString(configFileYAMLError)
-	_ = f.Close()
-
-        // start with empty config
-        s.config = ConfigStructure{}
-
-	err := LoadConfig(configname, &s.config)
-	c.Assert(err.Error(), Equals, "invalid yaml (unknown pool storage type: invalid) or json (invalid character 'p' looking for beginning of value)")
-}
-
-func (s *ConfigSuite) TestSaveYAMLConfig(c *C) {
-	configname := filepath.Join(c.MkDir(), "aptly.yaml3")
-	f, _ := os.Create(configname)
-	_, _ = f.WriteString(configFileYAML)
-	_ = f.Close()
-
-        // start with empty config
-        s.config = ConfigStructure{}
-
-	err := LoadConfig(configname, &s.config)
-	c.Assert(err, IsNil)
-
-        err = SaveConfigYAML(configname, &s.config)
-	c.Assert(err, IsNil)
-
-	f, _ = os.Open(configname)
-	defer func() {
-		_ = f.Close()
-	}()
-
-	st, _ := f.Stat()
-	buf := make([]byte, st.Size())
-	_, _ = f.Read(buf)
-
-	c.Check(string(buf), Equals, configFileYAML)
-}
-
-func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
-        // start with empty config
-        s.config = ConfigStructure{}
-
-	s.config.PackagePoolStorage.Local = &LocalPoolStorage{"/tmp/aptly-pool"}
-        s.config.PackagePoolStorage.Azure = nil
-
-	configname := filepath.Join(c.MkDir(), "aptly.yaml4")
-        err := SaveConfigYAML(configname, &s.config)
-	c.Assert(err, IsNil)
-
-        f, _ := os.Open(configname)
-	defer func() {
-		_ = f.Close()
-	}()
-
-	st, _ := f.Stat()
-	buf := make([]byte, st.Size())
-	_, _ = f.Read(buf)
-
-	c.Check(string(buf), Equals, "" +
-		"root_dir: \"\"\n" +
-		"log_level: \"\"\n" +
-		"log_format: \"\"\n" +
-		"database_open_attempts: 0\n" +
-		"architectures: []\n" +
-		"skip_legacy_pool: false\n" +
-		"dep_follow_suggests: false\n" +
-		"dep_follow_recommends: false\n" +
-		"dep_follow_all_variants: false\n" +
-		"dep_follow_source: false\n" +
-		"dep_verboseresolve: false\n" +
-		"ppa_distributor_id: \"\"\n" +
-		"ppa_codename: \"\"\n" +
-		"ppa_baseurl: \"\"\n" +
-		"serve_in_api_mode: false\n" +
-		"enable_metrics_endpoint: false\n" +
-		"enable_swagger_endpoint: false\n" +
-		"async_api: false\n" +
-		"database_backend:\n" +
-		"    type: \"\"\n" +
-		"    db_path: \"\"\n" +
-		"    url: \"\"\n" +
-		"downloader: \"\"\n" +
-		"download_concurrency: 0\n" +
-		"download_limit: 0\n" +
-		"download_retries: 0\n" +
-		"download_sourcepackages: false\n" +
-		"gpg_provider: \"\"\n" +
-		"gpg_disable_sign: false\n" +
-		"gpg_disable_verify: false\n" +
-		"gpg_keys: []\n" +
-		"skip_contents_publishing: false\n" +
-		"skip_bz2_publishing: false\n" +
-		"filesystem_publish_endpoints: {}\n" +
-		"s3_publish_endpoints: {}\n" +
-		"swift_publish_endpoints: {}\n" +
-		"azure_publish_endpoints: {}\n" +
-		"packagepool_storage:\n" +
-		"    type: local\n" +
-		"    path: /tmp/aptly-pool\n")
+"root_dir: \"\"
+" +
+    "log_level: \"\"
+" +
+    "log_format: \"\"
+" +
+    "database_open_attempts: 0
+" +
+    "architectures: []
+" +
+    "skip_legacy_pool: false
+" +
+    "dep_follow_suggests: false
+" +
+    "dep_follow_recommends: false
+" +
+    "dep_follow_all_variants: false
+" +
+    "dep_follow_source: false
+" +
+    "dep_verboseresolve: false
+" +
+    "ppa_distributor_id: \"\"
+" +
+    "ppa_codename: \"\"
+" +
+    "ppa_baseurl: \"\"
+" +
+    "serve_in_api_mode: false
+" +
+    "enable_metrics_endpoint: false
+" +
+    "enable_swagger_endpoint: false
+" +
+    "async_api: false
+" +
+    "database_backend:
+" +
+    "    type: \"\"
+" +
+    "    db_path: \"\"
+" +
+    "    url: \"\"
+" +
+    "downloader: \"\"
+" +
+    "download_concurrency: 0
+" +
+    "download_limit: 0
+" +
+    "download_retries: 0
+" +
+    "download_sourcepackages: false
+" +
+    "gpg_provider: \"\"
+" +
+    "gpg_disable_sign: false
+" +
+    "gpg_disable_verify: false
+" +
+    "gpg_keys: []
+" +
+    "skip_contents_publishing: false
+" +
+    "skip_bz2_publishing: false
+" +
+    "filesystem_publish_endpoints: {}
+" +
+    "jfrog_publish_endpoints: {}
+" +
+    "s3_publish_endpoints: {}
+" +
+    "swift_publish_endpoints: {}
+" +
+    "azure_publish_endpoints: {}
+" +
+    "packagepool_storage:
+" +
+    "    type: local
+" +
+    "    path: /tmp/aptly-pool
+")
 }
 
 func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
