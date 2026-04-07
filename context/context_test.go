@@ -2,10 +2,10 @@ package context
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/flag"
 
 	. "gopkg.in/check.v1"
@@ -79,11 +79,49 @@ func (s *AptlyContextSuite) SetUpTest(c *C) {
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
-	// https://github.com/aptly-dev/aptly/issues/711
-	// This will fail on account of us not having a config, so the
-	// storage never exists.
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.FileSystemPublishRoots = map[string]utils.FileSystemPublishRoot{}
+
 	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
 		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
-			os.Getenv("HOME"))})
+		&FatalError{ReturnCode: 1, Message: "published local storage fuji not configured"})
+}
+
+func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.RootDir = c.MkDir()
+	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{
+		"test": {
+			Repository:  "aptly-repo",
+			Url:         "https://example.jfrog.local/artifactory",
+			AccessToken: "token",
+			Prefix:      "public",
+		},
+	}
+
+	storage := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(storage, NotNil)
+	c.Assert(fmt.Sprintf("%v", storage), Equals, "jfrog:aptly-repo:public")
+
+	// Ensure we get the cached object on repeated lookups.
+	storageAgain := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(storageAgain, Equals, storage)
+}
+
+func (s *AptlyContextSuite) TestGetPublishedStorageJFrogMissing(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{}
+
+	c.Assert(func() { s.context.GetPublishedStorage("jfrog:missing") },
+		FatalErrorPanicMatches,
+		&FatalError{ReturnCode: 1, Message: "published JFrog storage missing not configured"})
 }
