@@ -60,6 +60,7 @@ type ConfigStructure struct { // nolint: maligned
 
 	// Storage
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"    yaml:"filesystem_publish_endpoints"`
+	JFrogPublishRoots      map[string]JFrogPublishRoot      `json:"JFrogPublishEndpoints"         yaml:"jfrog_publish_endpoints"`
 	S3PublishRoots         map[string]S3PublishRoot         `json:"S3PublishEndpoints"            yaml:"s3_publish_endpoints"`
 	SwiftPublishRoots      map[string]SwiftPublishRoot      `json:"SwiftPublishEndpoints"         yaml:"swift_publish_endpoints"`
 	AzurePublishRoots      map[string]AzureEndpoint         `json:"AzurePublishEndpoints"         yaml:"azure_publish_endpoints"`
@@ -170,6 +171,19 @@ type FileSystemPublishRoot struct {
 }
 
 // S3PublishRoot describes single S3 publishing entry point
+
+type JFrogPublishRoot struct {
+	Repository      string `json:"repository"                 yaml:"repository"`
+	Url             string `json:"url"                        yaml:"url"`
+	User            string `json:"user"                       yaml:"user"`
+	Password        string `json:"password"                   yaml:"password"`
+	ApiKey          string `json:"apiKey"                     yaml:"api_key"`
+	AccessToken     string `json:"accessToken"                yaml:"access_token"`
+	Prefix          string `json:"prefix"                     yaml:"prefix"`
+	PlusWorkaround  bool   `json:"plusWorkaround"             yaml:"plus_workaround"`
+	Debug           bool   `json:"debug"                      yaml:"debug"`
+}
+
 type S3PublishRoot struct {
 	Region                  string `json:"region"                     yaml:"region"`
 	Bucket                  string `json:"bucket"                     yaml:"bucket"`
