@@ -2,6 +2,7 @@ package context
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -79,15 +80,13 @@ func (s *AptlyContextSuite) SetUpTest(c *C) {
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
-	prevConfig := utils.Config
-	defer func() { utils.Config = prevConfig }()
-
-	s.context.configLoaded = true
-	utils.Config.FileSystemPublishRoots = map[string]utils.FileSystemPublishRoot{}
-
+	// https://github.com/aptly-dev/aptly/issues/711
+	// This will fail on account of us not having a config, so the
+	// storage never exists.
 	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
 		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: "published local storage fuji not configured"})
+		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
+			os.Getenv("HOME"))})
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
