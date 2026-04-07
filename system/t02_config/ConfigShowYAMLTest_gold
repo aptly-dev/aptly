@@ -32,6 +32,7 @@ gpg_keys: []
 skip_contents_publishing: false
 skip_bz2_publishing: false
 filesystem_publish_endpoints: {}
+jfrog_publish_endpoints: {}
 s3_publish_endpoints: {}
 gcs_publish_endpoints: {}
 swift_publish_endpoints: {}

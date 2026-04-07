@@ -51,6 +51,9 @@ func createTestConfig() *os.File {
 		"GcsPublishEndpoints": map[string]map[string]string{
 			"test-gcs": {
 				"bucket": "bucket-gcs",
+		"JFrogPublishEndpoints": gin.H{
+			"test-jfrog": gin.H{
+				"url": "http://jfrog.example.com",
 			},
 		},
 	})
