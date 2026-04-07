@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sort"
 	"strings"
 	"testing"
 
@@ -41,6 +42,11 @@ func createTestConfig() *os.File {
 	jsonString, err := json.Marshal(gin.H{
 		"architectures":         []string{},
 		"enableMetricsEndpoint": true,
+		"JFrogPublishEndpoints": gin.H{
+			"test-jfrog": gin.H{
+				"url": "http://jfrog.example.com",
+			},
+		},
 	})
 	if err != nil {
 		return nil
