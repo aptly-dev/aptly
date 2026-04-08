@@ -159,6 +159,15 @@ func (s *PublishedStorageSuite) TestRemove(c *C) {
 	c.Assert(s.manager.deleteCalled, Equals, true)
 }
 
+func (s *PublishedStorageSuite) TestRemovePlusWorkaround(c *C) {
+	s.storage.plusWorkaround = true
+	s.manager.getPathsToDelete = createReader(c, []jfrogutils.ResultItem{})
+
+	err := s.storage.Remove("pool/a+b.deb")
+	c.Assert(err, IsNil)
+	c.Assert(s.manager.deleteParams[0].Pattern, Equals, filepath.Join("repo", "prefix", "pool/a%2Bb.deb"))
+}
+
 func (s *PublishedStorageSuite) TestRemoveErrors(c *C) {
 	s.manager.getPathsDeleteErr = errors.New("search delete failed")
 	err := s.storage.Remove("x")
@@ -325,6 +334,13 @@ func (s *PublishedStorageSuite) TestNewPublishedStorageRaw(c *C) {
 	withToken, err := NewPublishedStorageRaw("repo", server.URL, "", "", "", "token", "prefix", false, false)
 	c.Assert(err, IsNil)
 	c.Assert(withToken, NotNil)
+}
+
+func (s *PublishedStorageSuite) TestNewPublishedStorageRawManagerError(c *C) {
+	// An SSH URL causes artifactory.New() to fail (no SSH key configured),
+	// exercising the error return on lines 59-61.
+	_, err := NewPublishedStorageRaw("repo", "ssh://example.local/artifactory", "", "", "", "", "", false, false)
+	c.Assert(err, ErrorMatches, "error creating jfrog manager: .*")
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
