@@ -77,7 +77,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 	// FIXME: "ppa_baseurl: \"\"
 
 	expectedOut, _ := os.Create("/tmp/expected.json")
-	expectedOut.Write(buf)
+	_, _ = expectedOut.Write(buf)
 	expectedOut.Close()
 	c.Check(string(buf), Equals, `{
   "rootDir": "/tmp/aptly",
@@ -197,6 +197,7 @@ func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
 }
 
 const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33, "databaseOpenAttempts": 33}`
+//nolint:unused
 const configFileYAML = `root_dir: /opt/aptly/
 log_level: error
 log_format: json
@@ -282,6 +283,7 @@ packagepool_storage:
     account_key: a key
     endpoint: ep
 `
+//nolint:unused
 const configFileYAMLError = `packagepool_storage:
     type: invalid
 `
