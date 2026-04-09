@@ -21,7 +21,6 @@ type PublishedStorage struct {
 	repository     string
 	prefix         string
 	plusWorkaround bool
-	pathCache      map[string]string
 }
 
 // Check interface
@@ -138,16 +137,14 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	defer reader.Close()
     
 	var paths []string
-	var md5s []string
-	
+
 	for element := new(utils.ResultItem); reader.NextRecord(element) == nil; element = new(utils.ResultItem) {
 		path := element.Path + "/" + element.Name
-		relPath := strings.TrimPrefix(path, storage.repository + "/" + storage.prefix + "/")
+		relPath := strings.TrimPrefix(path, storage.repository+"/"+storage.prefix+"/")
 		if storage.plusWorkaround {
-		    relPath = strings.Replace(relPath, "%2B", "+", -1)
+			relPath = strings.Replace(relPath, "%2B", "+", -1)
 		}
 		paths = append(paths, relPath)
-		md5s = append(md5s, element.Actual_Md5)
 	}
 	
 	return paths, nil
