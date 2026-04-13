@@ -24,7 +24,7 @@ import (
 // @Tags Repos
 // @Produce html
 // @Success 200 {object} string "HTML"
-// @Router /api/repos [get]
+// @Router /repos [get]
 func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -49,7 +49,7 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 // @Param pkgPath path string true "Package Path" allowReserved=true
 // @Produce json
 // @Success 200 ""
-// @Router /api/{storage}/{pkgPath} [get]
+// @Router /repos/{storage}/{pkgPath} [get]
 func reposServeInAPIMode(c *gin.Context) {
 	pkgpath := c.Param("pkgPath")
 
