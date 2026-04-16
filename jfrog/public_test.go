@@ -102,6 +102,92 @@ type resultFixture struct {
 	Results []jfrogutils.ResultItem `json:"results"`
 }
 
+type fakeLocalPool struct{}
+
+func (p *fakeLocalPool) Verify(string, string, *aptly_utils.ChecksumInfo, aptly.ChecksumStorage) (string, bool, error) {
+	return "", false, nil
+}
+
+func (p *fakeLocalPool) Import(string, string, *aptly_utils.ChecksumInfo, bool, aptly.ChecksumStorage) (string, error) {
+	return "", nil
+}
+
+func (p *fakeLocalPool) LegacyPath(string, *aptly_utils.ChecksumInfo) (string, error) {
+	return "", nil
+}
+
+func (p *fakeLocalPool) Size(string) (int64, error) {
+	return 0, nil
+}
+
+func (p *fakeLocalPool) Open(string) (aptly.ReadSeekerCloser, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (p *fakeLocalPool) FilepathList(aptly.Progress) ([]string, error) {
+	return nil, nil
+}
+
+func (p *fakeLocalPool) Remove(string) (int64, error) {
+	return 0, nil
+}
+
+func (p *fakeLocalPool) Stat(string) (os.FileInfo, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (p *fakeLocalPool) GenerateTempPath(string) (string, error) {
+	return "", nil
+}
+
+func (p *fakeLocalPool) Link(string, string) error {
+	return nil
+}
+
+func (p *fakeLocalPool) Symlink(string, string) error {
+	return nil
+}
+
+func (p *fakeLocalPool) FullPath(path string) string {
+	return filepath.Join("/var/lib/aptly/pool", path)
+}
+
+type fakeRemotePool struct {
+	openPath string
+	openErr  error
+}
+
+func (p *fakeRemotePool) Verify(string, string, *aptly_utils.ChecksumInfo, aptly.ChecksumStorage) (string, bool, error) {
+	return "", false, nil
+}
+
+func (p *fakeRemotePool) Import(string, string, *aptly_utils.ChecksumInfo, bool, aptly.ChecksumStorage) (string, error) {
+	return "", nil
+}
+
+func (p *fakeRemotePool) LegacyPath(string, *aptly_utils.ChecksumInfo) (string, error) {
+	return "", nil
+}
+
+func (p *fakeRemotePool) Size(string) (int64, error) {
+	return 0, nil
+}
+
+func (p *fakeRemotePool) Open(string) (aptly.ReadSeekerCloser, error) {
+	if p.openErr != nil {
+		return nil, p.openErr
+	}
+	return os.Open(p.openPath)
+}
+
+func (p *fakeRemotePool) FilepathList(aptly.Progress) ([]string, error) {
+	return nil, nil
+}
+
+func (p *fakeRemotePool) Remove(string) (int64, error) {
+	return 0, nil
+}
+
 func createReader(c *C, results []jfrogutils.ResultItem) *content.ContentReader {
 	filePath := filepath.Join(c.MkDir(), "results.json")
 	data, err := json.Marshal(resultFixture{Results: results})
@@ -190,6 +276,29 @@ func (s *PublishedStorageSuite) TestLinkFromPoolDelegatesToPutFile(c *C) {
 	err := s.storage.LinkFromPool("", "pool/main/p", "pkg.deb", nil, "/tmp/source.deb", aptly_utils.ChecksumInfo{}, false)
 	c.Assert(err, IsNil)
 	c.Assert(s.manager.uploadParams[0].Target, Equals, filepath.Join("repo", "prefix", "pool/main/p", "pkg.deb"))
+}
+
+func (s *PublishedStorageSuite) TestLinkFromPoolUsesLocalPoolFullPath(c *C) {
+	pool := &fakeLocalPool{}
+	poolPath := "e3/48/84d71bb98002bf0c775479aa31ee_accountsservice_0.6.55-0ubuntu11_amd64.deb"
+
+	err := s.storage.LinkFromPool("", "pool/main/p", "pkg.deb", pool, poolPath, aptly_utils.ChecksumInfo{}, false)
+	c.Assert(err, IsNil)
+	c.Assert(s.manager.uploadParams[0].Pattern, Equals, filepath.Join("/var/lib/aptly/pool", poolPath))
+}
+
+func (s *PublishedStorageSuite) TestLinkFromPoolCopiesFromRemotePool(c *C) {
+	tmpFile := filepath.Join(c.MkDir(), "source.deb")
+	c.Assert(os.WriteFile(tmpFile, []byte("package-bytes"), 0o644), IsNil)
+
+	pool := &fakeRemotePool{openPath: tmpFile}
+	err := s.storage.LinkFromPool("", "pool/main/p", "pkg.deb", pool, "hash/path/pkg.deb", aptly_utils.ChecksumInfo{}, false)
+	c.Assert(err, IsNil)
+
+	uploadPath := s.manager.uploadParams[0].Pattern
+	c.Assert(uploadPath, Not(Equals), "hash/path/pkg.deb")
+	_, statErr := os.Stat(uploadPath)
+	c.Assert(os.IsNotExist(statErr), Equals, true)
 }
 
 func (s *PublishedStorageSuite) TestFilelist(c *C) {
