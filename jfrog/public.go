@@ -2,6 +2,8 @@ package jfrog
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -122,7 +124,45 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 }
 
 func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool aptly.PackagePool, sourcePath string, sourceMD5 aptly_utils.ChecksumInfo, force bool) error {
-	return storage.PutFile(filepath.Join(publishedPrefix, publishedRelPath, fileName), sourcePath)
+	sourceFilename := sourcePath
+	cleanup := func() {}
+
+	if sourcePool != nil {
+		if localPool, ok := sourcePool.(aptly.LocalPackagePool); ok {
+			sourceFilename = localPool.FullPath(sourcePath)
+		} else {
+			src, err := sourcePool.Open(sourcePath)
+			if err != nil {
+				return err
+			}
+			defer func() { _ = src.Close() }()
+
+			tmpFile, err := os.CreateTemp("", "aptly-jfrog-pool-*")
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(tmpFile, src); err != nil {
+				_ = tmpFile.Close()
+				_ = os.Remove(tmpFile.Name())
+				return err
+			}
+
+			if err := tmpFile.Close(); err != nil {
+				_ = os.Remove(tmpFile.Name())
+				return err
+			}
+
+			sourceFilename = tmpFile.Name()
+			cleanup = func() {
+				_ = os.Remove(sourceFilename)
+			}
+		}
+	}
+
+	defer cleanup()
+
+	return storage.PutFile(filepath.Join(publishedPrefix, publishedRelPath, fileName), sourceFilename)
 }
 
 func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
