@@ -18,7 +18,7 @@ import (
 
 // PublishedStorage abstract file system with published files (actually hosted on Azure)
 type PublishedStorage struct {
-	// FIXME: unused ???? prefix    string
+	prefix    string
 	az        *azContext
 	pathCache map[string]map[string]string
 }
@@ -38,7 +38,7 @@ func NewPublishedStorage(accountName, accountKey, container, prefix, endpoint st
 	return &PublishedStorage{az: azctx}, nil
 }
 
-// String returns the storage as string
+// String
 func (storage *PublishedStorage) String() string {
 	return storage.az.String()
 }
@@ -65,7 +65,7 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	if err != nil {
 		return err
 	}
-	defer func() { _ = source.Close() }()
+	defer source.Close()
 
 	err = storage.az.putFile(path, source, sourceMD5)
 	if err != nil {
@@ -158,7 +158,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	if err != nil {
 		return err
 	}
-	defer func() { _ = source.Close() }()
+	defer source.Close()
 
 	err = storage.az.putFile(relFilePath, source, sourceMD5)
 	if err == nil {
@@ -193,9 +193,7 @@ func (storage *PublishedStorage) internalCopyOrMoveBlob(src, dst string, metadat
 	if err != nil {
 		return fmt.Errorf("error acquiring lease on source blob %s", src)
 	}
-	defer func() {
-		_, _ = blobLeaseClient.BreakLease(context.Background(), &lease.BlobBreakOptions{BreakPeriod: to.Ptr(int32(60))})
-	}()
+	defer blobLeaseClient.BreakLease(context.Background(), &lease.BlobBreakOptions{BreakPeriod: to.Ptr(int32(60))})
 
 	dstBlobClient := containerClient.NewBlobClient(dst)
 	copyResp, err := dstBlobClient.StartCopyFromURL(context.Background(), srcBlobClient.URL(), &blob.StartCopyFromURLOptions{
