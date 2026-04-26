@@ -141,7 +141,7 @@ func (s *PublishedFileMissingSuite) createDebPackage(c *C, uploadID, packageName
 
 	tempDir, err := os.MkdirTemp("", "deb-build")
 	c.Assert(err, IsNil)
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	debianDir := filepath.Join(tempDir, "DEBIAN")
 	err = os.MkdirAll(debianDir, 0755)
