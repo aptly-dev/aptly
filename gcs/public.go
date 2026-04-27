@@ -146,7 +146,7 @@ func (g *PublishedStorage) putFile(path string, source io.Reader, sourceMD5 stri
 	writer := obj.NewWriter(context.TODO())
 
 	if g.storageClass != "" {
-		writer.ObjectAttrs.StorageClass = g.storageClass
+		writer.StorageClass = g.storageClass
 	}
 	if sourceMD5 != "" {
 		writer.Metadata = map[string]string{"Md5": sourceMD5}
