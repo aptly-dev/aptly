@@ -447,7 +447,7 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			var err error
 			publishedStorage, err = gcs.NewPublishedStorage(
 				params.Bucket, params.Prefix, params.CredentialsFile, params.ServiceAccountJSON,
-				params.Project, params.ACL, params.StorageClass, params.EncryptionKey,
+				params.Project, params.Endpoint, params.ACL, params.StorageClass, params.EncryptionKey,
 				params.DisableMultiDel, params.Debug)
 			if err != nil {
 				Fatal(err)

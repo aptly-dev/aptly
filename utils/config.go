@@ -197,6 +197,7 @@ type GCSPublishRoot struct {
 	CredentialsFile    string `json:"credentialsFile"     yaml:"credentials_file"`
 	ServiceAccountJSON string `json:"serviceAccountJSON"  yaml:"service_account_json"`
 	Project            string `json:"project"             yaml:"project"`
+	Endpoint           string `json:"endpoint"            yaml:"endpoint"`
 	ACL                string `json:"acl"                 yaml:"acl"`
 	StorageClass       string `json:"storageClass"        yaml:"storage_class"`
 	EncryptionKey      string `json:"encryptionKey"       yaml:"encryption_key"`
