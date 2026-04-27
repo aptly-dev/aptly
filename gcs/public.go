@@ -48,9 +48,9 @@ func NewPublishedStorage(bucket, prefix, credentialsFile, serviceAccountJSON,
 	if endpoint != "" {
 		opts = append(opts, option.WithEndpoint(endpoint), option.WithoutAuthentication())
 	} else if credentialsFile != "" {
-		opts = append(opts, option.WithCredentialsFile(credentialsFile))
+		opts = append(opts, option.WithAuthCredentialsFile(option.ServiceAccount, credentialsFile))
 	} else if serviceAccountJSON != "" {
-		opts = append(opts, option.WithCredentialsJSON([]byte(serviceAccountJSON)))
+		opts = append(opts, option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(serviceAccountJSON)))
 	}
 
 	if project != "" {
