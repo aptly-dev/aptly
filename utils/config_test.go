@@ -142,6 +142,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"      \"credentialsFile\": \"\",\n" +
 		"      \"serviceAccountJSON\": \"\",\n" +
 		"      \"project\": \"\",\n" +
+		"      \"endpoint\": \"\",\n" +
 		"      \"acl\": \"\",\n" +
 		"      \"storageClass\": \"\",\n" +
 		"      \"encryptionKey\": \"\",\n" +
@@ -377,6 +378,7 @@ gcs_publish_endpoints:
         credentials_file: /tmp/creds.json
         service_account_json: '{"type":"service_account"}'
         project: test-project
+        endpoint: ""
         acl: public-read
         storage_class: STANDARD
         encryption_key: "12345678901234567890123456789012"
