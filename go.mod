@@ -1,6 +1,6 @@
 module github.com/aptly-dev/aptly
 
-go 1.25.0
+go 1.24.0
 
 require (
 	github.com/AlekSi/pointer v1.1.0
@@ -162,7 +162,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.46
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.97.3
 	github.com/aws/smithy-go v1.24.2
-	github.com/fsouza/fake-gcs-server v1.54.0
+	github.com/fsouza/fake-gcs-server v1.53.1
 	github.com/google/uuid v1.6.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
