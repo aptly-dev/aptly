@@ -39,13 +39,15 @@ var (
 
 // NewPublishedStorage creates a GCS-backed published storage.
 func NewPublishedStorage(bucket, prefix, credentialsFile, serviceAccountJSON,
-	project, defaultACL, storageClass, encryptionKey string,
+	project, endpoint, defaultACL, storageClass, encryptionKey string,
 	disableMultiDel, debug bool) (*PublishedStorage, error) {
 
 	ctx := context.TODO()
-	opts := make([]option.ClientOption, 0, 2)
+	opts := make([]option.ClientOption, 0, 4)
 
-	if credentialsFile != "" {
+	if endpoint != "" {
+		opts = append(opts, option.WithEndpoint(endpoint), option.WithoutAuthentication())
+	} else if credentialsFile != "" {
 		opts = append(opts, option.WithCredentialsFile(credentialsFile))
 	} else if serviceAccountJSON != "" {
 		opts = append(opts, option.WithCredentialsJSON([]byte(serviceAccountJSON)))
@@ -53,6 +55,16 @@ func NewPublishedStorage(bucket, prefix, credentialsFile, serviceAccountJSON,
 
 	if project != "" {
 		opts = append(opts, option.WithQuotaProject(project))
+	}
+
+	// When pointing at a non-production endpoint (an explicit override or the
+	// STORAGE_EMULATOR_HOST hook the GCS Go client honours natively), force
+	// JSON reads. The default XML download API uses virtual-host-style URLs
+	// (https://<bucket>.storage.googleapis.com/...) that emulators and most
+	// dev/staging endpoints can't serve under a single listener; the JSON API
+	// uses path-based URLs that work the same against real GCS or an emulator.
+	if endpoint != "" || os.Getenv("STORAGE_EMULATOR_HOST") != "" {
+		opts = append(opts, storage.WithJSONReads())
 	}
 
 	client, err := storage.NewClient(ctx, opts...)
