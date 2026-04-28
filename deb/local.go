@@ -168,6 +168,8 @@ func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
 
 // LoadComplete loads additional information for local repo
 func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo) error {
+	repo.packageRefs = &PackageRefList{}
+
 	encoded, err := collection.db.Get(repo.RefKey())
 	if err == database.ErrNotFound {
 		return nil
@@ -176,7 +178,6 @@ func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo) error {
 		return err
 	}
 
-	repo.packageRefs = &PackageRefList{}
 	return repo.packageRefs.Decode(encoded)
 }
 
