@@ -30,28 +30,45 @@ var (
 	_ aptly.PublishedStorage = (*PublishedStorage)(nil)
 )
 
+func createPublishedStorageConfig(url, user, password, apiKey, accessToken string) (config.Config, error) {
+	artDetails := auth.NewArtifactoryDetails()
+	artDetails.SetUrl(url)
+
+	if user == "" {
+		user = os.Getenv("JFROG_USERNAME");
+	}
+	if password == "" {
+		password = os.Getenv("JFROG_PASSWORD");
+	}
+	if apiKey == "" {
+		apiKey = os.Getenv("JFROG_APIKEY");
+	}
+	if accessToken == "" {
+		accessToken = os.Getenv("JFROG_ACCESSTOKEN");
+	}
+
+	if user != "" && password != "" {
+		artDetails.SetUser(user)
+		artDetails.SetPassword(password)
+	} else if apiKey != "" {
+		artDetails.SetApiKey(apiKey)
+	} else if accessToken != "" {
+		artDetails.SetAccessToken(accessToken)
+	}
+
+	return config.NewConfigBuilder().
+		SetServiceDetails(artDetails).
+		SetDryRun(false).
+		Build()
+}
+
 // NewPublishedStorageRaw creates jfrog PublishedStorage from raw connection specs
 func NewPublishedStorageRaw(
 	repository, url, user, password, apiKey, accessToken, prefix string,
 	plusWorkaround, debug bool,
 ) (*PublishedStorage, error) {
 
-	artDetails := auth.NewArtifactoryDetails()
-	artDetails.SetUrl(url)
-	if user != "" && password != "" {
-	    artDetails.SetUser(user)
-	    artDetails.SetPassword(password)
-	} else if apiKey != "" {
-	    artDetails.SetApiKey(apiKey)
-	} else if accessToken != "" {
-		artDetails.SetAccessToken(accessToken)
-    }
-
-	serviceConfig, err := config.NewConfigBuilder().
-		SetServiceDetails(artDetails).
-		SetDryRun(false).
-		Build()
-	
+	serviceConfig, err := createPublishedStorageConfig(url, user, password, apiKey, accessToken)
 	if err != nil {
 		return nil, errors.Wrap(err, "error building jfrog client config")
 	}
@@ -91,7 +108,7 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	if storage.plusWorkaround {
 		targetPath = strings.Replace(targetPath, "+", "%2B", -1)
 	}
-    
+
 	params := services.NewUploadParams()
 	params.Pattern = sourceFilename
 	params.Target = targetPath
@@ -106,7 +123,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 	if storage.plusWorkaround {
 		targetPath = strings.Replace(targetPath, "+", "%2B", -1)
 	}
-    
+
 	deleteParams := services.NewDeleteParams()
 	deleteParams.SetPattern(targetPath)
 
@@ -175,7 +192,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		return nil, err
 	}
 	defer reader.Close()
-    
+
 	var paths []string
 
 	for element := new(utils.ResultItem); reader.NextRecord(element) == nil; element = new(utils.ResultItem) {
@@ -186,19 +203,19 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 		}
 		paths = append(paths, relPath)
 	}
-	
+
 	return paths, nil
 }
 
 func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 	oldTarget := filepath.Join(storage.repository, storage.prefix, oldName)
 	newTarget := filepath.Join(storage.repository, storage.prefix, newName)
-	
+
 	if storage.plusWorkaround {
 		oldTarget = strings.Replace(oldTarget, "+", "%2B", -1)
 		newTarget = strings.Replace(newTarget, "+", "%2B", -1)
 	}
-    
+
 	params := services.NewMoveCopyParams()
 	params.Pattern = oldTarget
 	params.Target = newTarget
@@ -211,17 +228,17 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 func (storage *PublishedStorage) SymLink(src string, dst string) error {
 	oldTarget := filepath.Join(storage.repository, storage.prefix, src)
 	newTarget := filepath.Join(storage.repository, storage.prefix, dst)
-	
+
 	if storage.plusWorkaround {
 		oldTarget = strings.Replace(oldTarget, "+", "%2B", -1)
 		newTarget = strings.Replace(newTarget, "+", "%2B", -1)
 	}
-    
+
 	params := services.NewMoveCopyParams()
 	params.Pattern = oldTarget
 	params.Target = newTarget
 	params.Flat = true
-	
+
 	props := utils.NewProperties()
 	props.AddProperty("SymLink", src)
 	params.SetTargetProps(props)
@@ -239,7 +256,7 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	if storage.plusWorkaround {
 		targetPath = strings.Replace(targetPath, "+", "%2B", -1)
 	}
-	
+
 	params := services.NewSearchParams()
 	params.Pattern = targetPath
 
@@ -248,7 +265,7 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 		return false, err
 	}
 	defer reader.Close()
-	
+
 	length, err := reader.Length()
 	isEmpty := length == 0
 	return !isEmpty, err
@@ -259,17 +276,17 @@ func (storage *PublishedStorage) ReadLink(path string) (string, error) {
 	if storage.plusWorkaround {
 		targetPath = strings.Replace(targetPath, "+", "%2B", -1)
 	}
-	
+
 	props, err := storage.manager.GetItemProps(targetPath)
 	if err != nil {
 		return "", nil
 	}
-	
+
 	for k, v := range props.Properties {
 	    if k == "SymLink" && len(v) > 0 {
 	        return v[0], nil
 	    }
 	}
-	
+
 	return "", nil
 }
