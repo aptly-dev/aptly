@@ -18,7 +18,10 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func Test(t *testing.T) {
+	t.Setenv("JFROG_USERNAME", "userfromenv")
+	TestingT(t)
+}
 
 type fakeJFrogManager struct {
 	artifactory.EmptyArtifactoryServicesManager
@@ -423,6 +426,41 @@ func (s *PublishedStorageSuite) TestReadLinkPlusWorkaround(c *C) {
 	_, _ = s.storage.ReadLink("a+b")
 	// Ensure the method runs with plusWorkaround path conversion.
 	c.Assert(s.manager.itemPropsErr, IsNil)
+}
+
+func (s *PublishedStorageSuite) TestCreatePublishedStorageConfig(c *C) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	withUserPassword, err := createPublishedStorageConfig(server.URL, "user", "password", "", "")
+	c.Assert(err, IsNil)
+
+	withUserPasswordDetails := withUserPassword.GetServiceDetails()
+	c.Assert(withUserPasswordDetails, NotNil)
+	c.Assert(withUserPasswordDetails.GetUser(), Equals, "user")
+
+	withAPIKey, err := createPublishedStorageConfig(server.URL, "", "", "api-123", "")
+	c.Assert(err, IsNil)
+
+	withAPIKeyDetails := withAPIKey.GetServiceDetails()
+	c.Assert(withAPIKeyDetails, NotNil)
+	c.Assert(withAPIKeyDetails.GetApiKey(), Equals, "api-123")
+
+	withAccessToken, err := createPublishedStorageConfig(server.URL, "", "", "", "token")
+	c.Assert(err, IsNil)
+
+	withAccessTokenDetails := withAccessToken.GetServiceDetails()
+	c.Assert(withAccessTokenDetails, NotNil)
+	c.Assert(withAccessTokenDetails.GetAccessToken(), Equals, "token")
+
+	withUserPasswordFromEnv, err := createPublishedStorageConfig(server.URL, "", "password", "", "")
+	c.Assert(err, IsNil)
+
+	withUserPasswordFromEnvDetails := withUserPasswordFromEnv.GetServiceDetails()
+	c.Assert(withUserPasswordFromEnvDetails, NotNil)
+	c.Assert(withUserPasswordFromEnvDetails.GetUser(), Equals, "userfromenv")
 }
 
 func (s *PublishedStorageSuite) TestNewPublishedStorageRaw(c *C) {
