@@ -28,6 +28,11 @@ func ParsePPA(ppaURL string, config *utils.ConfigStructure) (url string, distrib
 		}
 	}
 
+	baseurl := config.PpaBaseURL
+	if baseurl == "" {
+		baseurl = "http://ppa.launchpad.net"
+	}
+
 	codename := config.PpaCodename
 	if codename == "" {
 		codename, err = getCodename()
@@ -39,7 +44,7 @@ func ParsePPA(ppaURL string, config *utils.ConfigStructure) (url string, distrib
 
 	distribution = codename
 	components = []string{"main"}
-	url = fmt.Sprintf("http://ppa.launchpad.net/%s/%s/%s", matches[1], matches[2], distributorID)
+	url = fmt.Sprintf("%s/%s/%s/%s", baseurl, matches[1], matches[2], distributorID)
 
 	return
 }
