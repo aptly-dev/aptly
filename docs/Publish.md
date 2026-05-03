@@ -35,6 +35,6 @@ aptly publish repo my-repo --gpg-key=KEY_ID_a --gpg-key=KEY_ID_b
 #### Parameters
 
 Publish APIs use following convention to identify published repositories: `/api/publish/:prefix/:distribution`.  `:distribution` is distribution name, while `:prefix` is `[<storage>:]<prefix>` (storage is optional, it defaults to empty string), if publishing prefix contains slashes `/`, they should be replaced with underscores (`_`) and underscores
-should be replaced with double underscore (`__`). To specify root `:prefix`, use `:.`, as `.` is ambigious in URLs.
+should be replaced with double underscore (`__`). To specify root `:prefix`, use `:.`, as `.` is ambiguous in URLs.
 
 </div>

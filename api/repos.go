@@ -93,7 +93,7 @@ type repoCreateParams struct {
 	DefaultDistribution string `     json:"DefaultDistribution"  example:"stable"`
 	// Default component when publishing from this local repo
 	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
-	// Snapshot name to create repoitory from (optional)
+	// Snapshot name to create repository from (optional)
 	FromSnapshot string `            json:"FromSnapshot"         example:""`
 }
 
@@ -171,7 +171,7 @@ type reposEditParams struct {
 	Comment *string `                    json:"Comment"              example:"example repo"`
 	// Change Default Distribution for publishing
 	DefaultDistribution *string `        json:"DefaultDistribution"  example:""`
-	// Change Devault Component for publishing
+	// Change Default Component for publishing
 	DefaultComponent *string `        json:"DefaultComponent"     example:""`
 }
 
