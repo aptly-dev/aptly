@@ -124,7 +124,7 @@ func apiPublishList(c *gin.Context) {
 // @Description See also: `aptly publish show`
 // @Tags Publish
 // @Produce json
-// @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambigious in URLs"
+// @Param prefix path string true "publishing prefix, use `:.` instead of `.` because it is ambiguous in URLs"
 // @Param distribution path string true "distribution name"
 // @Success 200 {object} deb.PublishedRepo
 // @Failure 404 {object} Error "Published repository not found"

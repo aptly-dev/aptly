@@ -497,7 +497,7 @@ func apiMirrorsEdit(c *gin.Context) {
 type mirrorUpdateParams struct {
 	// Change mirror name to `Name`
 	Name string `                 json:"Name"                   example:"mirror1"`
-	// Gpg keyring(s) for verifing Release file
+	// Gpg keyring(s) for verifying Release file
 	Keyrings []string `           json:"Keyrings"               example:"trustedkeys.gpg"`
 	// Set "true" to ignore checksum errors
 	IgnoreChecksums bool `        json:"IgnoreChecksums"`
