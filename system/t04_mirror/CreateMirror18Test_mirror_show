@@ -1,5 +1,5 @@
 Name: mirror18
-Archive Root URL: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/
+Archive Root URL: http://repo.aptly.info/system-tests/ppa/gladky-anton/gnuplot/ubuntu/
 Distribution: maverick
 Components: main
 Architectures: amd64, armel, i386, powerpc

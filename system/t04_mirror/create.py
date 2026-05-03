@@ -221,6 +221,7 @@ class CreateMirror18Test(BaseTest):
         "max-tries": 1,
         "ppaDistributorID": "ubuntu",
         "ppaCodename": "maverick",
+        "ppaBaseURL": "http://repo.aptly.info/system-tests/ppa",
     }
 
     fixtureCmds = [
