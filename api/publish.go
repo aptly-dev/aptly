@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"errors"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -386,6 +385,46 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	})
 }
 
+// Return resources to be locked for a Snapshot name
+func getSnapshotResources(snapshotCollection *deb.SnapshotCollection, snapshotName string) (resources []string, err error) {
+	snapshot, err := snapshotCollection.ByName(snapshotName)
+	if err != nil {
+		return
+	}
+	resources = append(resources, string(snapshot.ResourceKey()))
+
+	for _, sourceID := range snapshot.SourceIDs {
+		if snapshot.SourceKind == deb.SourceSnapshot {
+			snapshot2, err2 := snapshotCollection.ByUUID(sourceID)
+			if err2 != nil {
+				err = err2
+				return
+			}
+			res, err3 := getSnapshotResources(snapshotCollection, snapshot2.Name)
+			if err3 != nil {
+				err = err3
+				return
+			}
+			resources = append(resources, res...)
+		} else if snapshot.SourceKind == deb.SourceLocalRepo {
+			var repo *deb.LocalRepo
+			repo, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+			if err != nil {
+				return
+			}
+			resources = append(resources, string(repo.Key()))
+		} else if snapshot.SourceKind == deb.SourceRemoteRepo {
+			var mirror *deb.RemoteRepo
+			mirror, err = context.NewCollectionFactory().RemoteRepoCollection().ByUUID(sourceID)
+			if err != nil {
+				return
+			}
+			resources = append(resources, string(mirror.Key()))
+		}
+	}
+	return
+}
+
 type publishedRepoUpdateSwitchParams struct {
 	// when publishing, overwrite files in pool/ directory without notice
 	ForceOverwrite bool `                         json:"ForceOverwrite" example:"false"`
@@ -405,12 +444,12 @@ type publishedRepoUpdateSwitchParams struct {
 	SignedBy *string `                            json:"SignedBy"  example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
-    // Value of Label: field in published repository stanza
-    Label *string `                               json:"Label"          example:"Debian"`
-    // Value of Origin: field in published repository stanza
-    Origin *string `                              json:"Origin"         example:"Debian"`
-    // Version of the release: Optional
-    Version *string `                             json:"Version"        example:"13.3"`
+	// Value of Label: field in published repository stanza
+	Label *string `                               json:"Label"          example:"Debian"`
+	// Value of Origin: field in published repository stanza
+	Origin *string `                              json:"Origin"         example:"Debian"`
+	// Version of the release: Optional
+	Version *string `                             json:"Version"        example:"13.3"`
 }
 
 // @Summary Update Published Repository
@@ -471,53 +510,24 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
-		fmt.Printf("RACE DEBUG: deb.SourceLocalRepo\n")
 
-		// FIXME: lock repo ?
-		// localCollection := collectionFactory.LocalRepoCollection()
-		// for _, source := range b.Sources {
-		// 	components = append(components, source.Component)
-		// 	names = append(names, source.Name)
-
-		// 	localRepo, err = localCollection.ByName(source.Name)
-		// 	if err != nil {
-		// 		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
-		// 		return
-		// 	}
-
-		// 	resources = append(resources, string(localRepo.Key()))
-		// }
-	} else if published.SourceKind == deb.SourceSnapshot {
-		fmt.Printf("RACE DEBUG: deb.SourceSnapshot: %s\n", b.Snapshots)
-		for _, snapshotInfo := range b.Snapshots {
-			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
+		localCollection := collectionFactory.LocalRepoCollection()
+		for _, sourceID := range published.Sources {
+			localRepo, err2 := localCollection.ByUUID(sourceID)
 			if err2 != nil {
 				AbortWithJSONError(c, http.StatusNotFound, err2)
 				return
 			}
-			resources = append(resources, string(snapshot.ResourceKey()))
-
-			for _, sourceID := range snapshot.SourceIDs {
-				if snapshot.SourceKind == deb.SourceSnapshot {
-					// FIXME: implement
-					err := errors.New("not implemented deb.SourceSnapshot")
-					AbortWithJSONError(c, http.StatusNotFound, err)
-					return
-				} else if snapshot.SourceKind == deb.SourceLocalRepo {
-					var repo *deb.LocalRepo
-					repo, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
-					if err != nil {
-						AbortWithJSONError(c, http.StatusNotFound, err)
-						return
-					}
-					resources = append(resources, string(repo.Key()))
-				} else if snapshot.SourceKind == deb.SourceRemoteRepo {
-					// FIXME: implement
-					err := errors.New("not implemented: deb.SourceRemoteRepo")
-					AbortWithJSONError(c, http.StatusNotFound, err)
-					return
-				}
+			resources = append(resources, string(localRepo.Key()))
+		}
+	} else if published.SourceKind == deb.SourceSnapshot {
+		for _, snapshotInfo := range b.Snapshots {
+			res, err2 := getSnapshotResources(snapshotCollection, snapshotInfo.Name)
+			if err2 != nil {
+				AbortWithJSONError(c, http.StatusNotFound, err2)
+				return
 			}
+			resources = append(resources, res...)
 		}
 	} else {
 		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unknown published repository type"))
