@@ -471,6 +471,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
+		fmt.Printf("RACE DEBUG: deb.SourceLocalRepo\n")
 
 		// FIXME: lock repo ?
 		// localCollection := collectionFactory.LocalRepoCollection()
@@ -487,6 +488,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		// 	resources = append(resources, string(localRepo.Key()))
 		// }
 	} else if published.SourceKind == deb.SourceSnapshot {
+		fmt.Printf("RACE DEBUG: deb.SourceSnapshot: %s\n", b.Snapshots)
 		for _, snapshotInfo := range b.Snapshots {
 			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err2 != nil {
@@ -500,11 +502,13 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 					// FIXME: implement
 					err := errors.New("not implemented")
 					AbortWithJSONError(c, http.StatusNotFound, err)
+					return
 				} else if snapshot.SourceKind == deb.SourceLocalRepo {
 					var repo *deb.LocalRepo
 					repo, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
 					if err != nil {
-						AbortWithJSONError(c, http.StatusNotFound, err2)
+						AbortWithJSONError(c, http.StatusNotFound, err)
+						return
 					}
 					resources = append(resources, string(repo.Key()))
 				}
