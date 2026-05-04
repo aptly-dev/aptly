@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"errors"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/deb"
@@ -465,17 +466,53 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
+	resources := []string{string(published.Key())}
+
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
+
+		// FIXME: lock repo ?
+		// localCollection := collectionFactory.LocalRepoCollection()
+		// for _, source := range b.Sources {
+		// 	components = append(components, source.Component)
+		// 	names = append(names, source.Name)
+
+		// 	localRepo, err = localCollection.ByName(source.Name)
+		// 	if err != nil {
+		// 		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
+		// 		return
+		// 	}
+
+		// 	resources = append(resources, string(localRepo.Key()))
+		// }
 	} else if published.SourceKind == deb.SourceSnapshot {
 		for _, snapshotInfo := range b.Snapshots {
-			_, err2 := snapshotCollection.ByName(snapshotInfo.Name)
+			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
 			if err2 != nil {
 				AbortWithJSONError(c, http.StatusNotFound, err2)
 				return
+			}
+			resources = append(resources, string(snapshot.ResourceKey()))
+			// for repo := snapshot.LocalRepos {
+			// }
+
+			fmt.Printf("RACE DEBUG: source ids: %s\n", snapshot.SourceIDs)
+			for _, sourceID := range snapshot.SourceIDs {
+				if snapshot.SourceKind == deb.SourceSnapshot {
+					// FIXME: implement
+					err := errors.New("not implemented")
+					AbortWithJSONError(c, http.StatusNotFound, err)
+				} else if snapshot.SourceKind == deb.SourceLocalRepo {
+					var repo *deb.LocalRepo
+					repo, err = context.NewCollectionFactory().LocalRepoCollection().ByUUID(sourceID)
+					if err != nil {
+						AbortWithJSONError(c, http.StatusNotFound, err2)
+					}
+					resources = append(resources, string(repo.Key()))
+				}
 			}
 		}
 	} else {
@@ -515,9 +552,6 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.Version = *b.Version
 	}
 
-
-	fmt.Printf("apiPublishUpdateSwitch: %s\n", string(published.Key()))
-	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		err = collection.LoadComplete(published, collectionFactory)
