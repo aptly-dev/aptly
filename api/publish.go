@@ -515,6 +515,8 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		published.Version = *b.Version
 	}
 
+
+	fmt.Printf("apiPublishUpdateSwitch: %s\n", string(published.Key()))
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
