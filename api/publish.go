@@ -333,8 +333,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
-		resources = append(resources, string(published.Key()))
-
 		if b.Origin != "" {
 			published.Origin = b.Origin
 		}
