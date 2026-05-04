@@ -500,7 +500,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			for _, sourceID := range snapshot.SourceIDs {
 				if snapshot.SourceKind == deb.SourceSnapshot {
 					// FIXME: implement
-					err := errors.New("not implemented")
+					err := errors.New("not implemented deb.SourceSnapshot")
 					AbortWithJSONError(c, http.StatusNotFound, err)
 					return
 				} else if snapshot.SourceKind == deb.SourceLocalRepo {
@@ -511,6 +511,11 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 						return
 					}
 					resources = append(resources, string(repo.Key()))
+				} else if snapshot.SourceKind == deb.SourceRemoteRepo {
+					// FIXME: implement
+					err := errors.New("not implemented: deb.SourceRemoteRepo")
+					AbortWithJSONError(c, http.StatusNotFound, err)
+					return
 				}
 			}
 		}
