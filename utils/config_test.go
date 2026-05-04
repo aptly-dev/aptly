@@ -85,6 +85,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"dependencyVerboseResolve\": false,\n" +
 		"  \"ppaDistributorID\": \"\",\n" +
 		"  \"ppaCodename\": \"\",\n" +
+		"  \"ppaBaseURL\": \"\",\n" +
 		"  \"serveInAPIMode\": false,\n" +
 		"  \"enableMetricsEndpoint\": false,\n" +
 		"  \"enableSwaggerEndpoint\": false,\n" +
@@ -252,6 +253,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"dep_verboseresolve: false\n" +
 		"ppa_distributor_id: \"\"\n" +
 		"ppa_codename: \"\"\n" +
+		"ppa_baseurl: \"\"\n" +
 		"serve_in_api_mode: false\n" +
 		"enable_metrics_endpoint: false\n" +
 		"enable_swagger_endpoint: false\n" +
@@ -308,6 +310,7 @@ dep_follow_source: true
 dep_verboseresolve: true
 ppa_distributor_id: Ubuntu
 ppa_codename: code
+ppa_baseurl: http://ppa.launchpad.net
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: true

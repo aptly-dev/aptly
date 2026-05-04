@@ -12,6 +12,7 @@
     "dependencyVerboseResolve": false,
     "ppaDistributorID": "ubuntu",
     "ppaCodename": "",
+    "ppaBaseURL": "http://ppa.launchpad.net",
     "serveInAPIMode": true,
     "enableMetricsEndpoint": true,
     "enableSwaggerEndpoint": false,

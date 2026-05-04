@@ -31,6 +31,7 @@ type ConfigStructure struct { // nolint: maligned
 	// PPA
 	PpaDistributorID string `json:"ppaDistributorID"              yaml:"ppa_distributor_id"`
 	PpaCodename      string `json:"ppaCodename"                   yaml:"ppa_codename"`
+	PpaBaseURL       string `json:"ppaBaseURL"                    yaml:"ppa_baseurl"`
 
 	// Server
 	ServeInAPIMode        bool `json:"serveInAPIMode"                yaml:"serve_in_api_mode"`
@@ -235,6 +236,7 @@ var Config = ConfigStructure{
 	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
+	PpaBaseURL:             "http://ppa.launchpad.net",
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},
