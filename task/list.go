@@ -65,6 +65,7 @@ func (list *List) consumer() {
 						task.State = SUCCEEDED
 					}
 
+					fmt.Printf("RACE DEBUG: Task %s done, freeing %s\n", task.Name, task.resources)
 					list.usedResources.Free(task.resources)
 
 					task.wgTask.Done()
@@ -77,6 +78,8 @@ func (list *List) consumer() {
 							blockingTasks := list.usedResources.UsedBy(t.resources)
 							if len(blockingTasks) == 0 {
 								list.usedResources.MarkInUse(t.resources, t)
+
+								fmt.Printf("RACE DEBUG: Starting queued task %s, using %s\n", t.Name, t.resources)
 								// unlock list since queueing may block
 								list.Unlock()
 								unlocked = true
@@ -209,10 +212,12 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 	tasks := list.usedResources.UsedBy(resources)
 	if len(tasks) == 0 {
 		list.usedResources.MarkInUse(task.resources, task)
+		fmt.Printf("RACE DEBUG: Starting task %s, using %s\n", name, resources)
 		// queueing task might block if channel not ready, unlock list before queueing
 		list.Unlock()
 		list.queue <- task
 	} else {
+		fmt.Printf("RACE DEBUG: Queued task %s, locked %s\n", name, resources)
 		list.Unlock()
 	}
 
