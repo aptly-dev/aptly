@@ -256,13 +256,13 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	if b.SourceKind == deb.SourceSnapshot {
 		var snapshot *deb.Snapshot
 
-		snapshotCollection := collectionFactory.SnapshotCollection()
+		tmpCollection := collectionFactory.SnapshotCollection()
 
 		for _, source := range b.Sources {
 			components = append(components, source.Component)
 			names = append(names, source.Name)
 
-			snapshot, err = snapshotCollection.ByName(source.Name)
+			snapshot, err = tmpCollection.ByName(source.Name)
 			if err != nil {
 				AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
 				return
@@ -274,13 +274,13 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	} else if b.SourceKind == deb.SourceLocalRepo {
 		var localRepo *deb.LocalRepo
 
-		localCollection := collectionFactory.LocalRepoCollection()
+		tmpCollection := collectionFactory.LocalRepoCollection()
 
 		for _, source := range b.Sources {
 			components = append(components, source.Component)
 			names = append(names, source.Name)
 
-			localRepo, err = localCollection.ByName(source.Name)
+			localRepo, err = tmpCollection.ByName(source.Name)
 			if err != nil {
 				AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to publish: %s", err))
 				return
@@ -496,10 +496,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 				return
 			}
 			resources = append(resources, string(snapshot.ResourceKey()))
-			// for repo := snapshot.LocalRepos {
-			// }
 
-			fmt.Printf("RACE DEBUG: source ids: %s\n", snapshot.SourceIDs)
 			for _, sourceID := range snapshot.SourceIDs {
 				if snapshot.SourceKind == deb.SourceSnapshot {
 					// FIXME: implement
