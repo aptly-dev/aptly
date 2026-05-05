@@ -609,7 +609,12 @@ func (p *PublishedRepo) StoragePrefix() string {
 
 // Key returns unique key identifying PublishedRepo
 func (p *PublishedRepo) Key() []byte {
-	return []byte("U" + p.StoragePrefix() + ">>" + p.Distribution)
+	if p.MultiDist {
+		// do not lock Distribution in MultiDist
+		return []byte("UM" + p.StoragePrefix())
+	} else {
+		return []byte("U" + p.StoragePrefix() + ">>" + p.Distribution)
+	}
 }
 
 // RefKey is a unique id for package reference list
