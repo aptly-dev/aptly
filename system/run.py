@@ -155,6 +155,7 @@ def run(include_long_tests=False, capture_results=False, tests=None, filters=Non
                     traceback.print_exception(typ, val, tb, file=orig_stdout)
                 else:
                     orig_stdout.write(colored("\b\b\b\bOK", color="green", attrs=["bold"]) + f"   {duration}\n")
+                    orig_stdout.write(testout.get_contents())
 
                 t.shutdown()
 

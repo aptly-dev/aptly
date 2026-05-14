@@ -164,10 +164,10 @@ class BaseTest(object):
             self.run()
             self.check()
         except Exception as exc:
-            if self.debugOutput:
-                print(f"API log:\n{self.debug_output()}")
             raise exc
         finally:
+            if self.debugOutput:
+                print(f"API log:\n{self.debug_output()}")
             self.teardown()
 
     def prepare_remove_all(self):
