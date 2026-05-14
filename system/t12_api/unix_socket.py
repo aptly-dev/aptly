@@ -14,7 +14,7 @@ class UnixSocketAPITest(BaseTest):
     socket_path = "/tmp/_aptly_test.sock"
     base_url = ("unix://%s" % socket_path)
     aptly_out = None
-    debugOutput = True
+    debugOutput = False  # Controlled by --debug flag in run.py
 
     def prepare(self):
         if self.aptly_server is None:

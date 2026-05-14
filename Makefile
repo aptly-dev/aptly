@@ -29,6 +29,11 @@ ifeq ($(CAPTURE),1)
 CAPTURE_ARG := --capture
 endif
 
+# export DEBUG=1 to enable debug output in system tests
+ifeq ($(DEBUG),1)
+DEBUG_ARG := --debug
+endif
+
 help:  ## Print this help
 	@grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
@@ -121,7 +126,7 @@ system-test: prepare swagger etcd-install  ## Run system tests
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(COVERAGE_ARG_TEST) $(CAPTURE_ARG) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(COVERAGE_ARG_TEST) $(CAPTURE_ARG) $(DEBUG_ARG) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -211,7 +216,7 @@ docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirro
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
 		AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 		AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
-		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) COVERAGE_SKIP=$(COVERAGE_SKIP) \
+		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) COVERAGE_SKIP=$(COVERAGE_SKIP) DEBUG=$(DEBUG) \
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142

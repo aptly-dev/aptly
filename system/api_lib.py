@@ -25,7 +25,7 @@ class APITest(BaseTest):
     """
     aptly_server = None
     aptly_out = None
-    debugOutput = True
+    debugOutput = False  # Controlled by --debug flag in run.py
     base_url = "127.0.0.1:8765"
     configOverride = {
         "FileSystemPublishEndpoints": {
