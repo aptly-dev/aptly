@@ -16,7 +16,7 @@ Please report unacceptable behavior on [https://github.com/aptly-dev/aptly/discu
 ### List of Repositories
 
 * [aptly-dev/aptly](https://github.com/aptly-dev/aptly) - aptly source code, functional tests, man page
-* [apty-dev/aptly-dev.github.io](https://github.com/aptly-dev/aptly-dev.github.io) - aptly website (https://www.aptly.info/)
+* [aptly-dev/aptly-dev.github.io](https://github.com/aptly-dev/aptly-dev.github.io) - aptly website (https://www.aptly.info/)
 * [aptly-dev/aptly-fixture-db](https://github.com/aptly-dev/aptly-fixture-db) & [aptly-dev/aptly-fixture-pool](https://github.com/aptly-dev/aptly-fixture-pool) provide
   fixtures for aptly functional tests
 

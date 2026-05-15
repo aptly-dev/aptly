@@ -54,7 +54,7 @@ type gpgDeleteKeyParams struct {
 // @Summary Add GPG Keys
 // @Description **Adds GPG keys to aptly keyring**
 // @Description
-// @Description Add GPG public keys for veryfing remote repositories for mirroring.
+// @Description Add GPG public keys for verifying remote repositories for mirroring.
 // @Description
 // @Description Keys can be added in two ways:
 // @Description * By providing the ASCII armord key in `GpgKeyArmor` (leave Keyserver and GpgKeyID empty)
