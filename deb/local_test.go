@@ -133,6 +133,18 @@ func (s *LocalRepoCollectionSuite) TestByUUID(c *C) {
 	c.Assert(r.String(), Equals, repo.String())
 }
 
+func (s *LocalRepoCollectionSuite) TestLoadCompleteNoRefKey(c *C) {
+	repo := NewLocalRepo("local1", "Comment 1")
+	c.Assert(s.collection.Update(repo), IsNil)
+
+	r, err := s.collection.ByName("local1")
+	c.Assert(err, IsNil)
+
+	c.Assert(s.collection.LoadComplete(r), IsNil)
+	c.Assert(r.packageRefs, NotNil)
+	c.Assert(r.NumPackages(), Equals, 0)
+}
+
 func (s *LocalRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	repo := NewLocalRepo("local1", "Comment 1")
 	c.Assert(s.collection.Update(repo), IsNil)
