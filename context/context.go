@@ -24,6 +24,7 @@ import (
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/files"
 	"github.com/aptly-dev/aptly/http"
+	"github.com/aptly-dev/aptly/jfrog"
 	"github.com/aptly-dev/aptly/pgp"
 	"github.com/aptly-dev/aptly/s3"
 	"github.com/aptly-dev/aptly/swift"
@@ -458,6 +459,18 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 			var err error
 			publishedStorage, err = azure.NewPublishedStorage(
 				params.AccountName, params.AccountKey, params.Container, params.Prefix, params.Endpoint)
+			if err != nil {
+				Fatal(err)
+			}
+		} else if strings.HasPrefix(name, "jfrog:") {
+			params, ok := context.config().JFrogPublishRoots[name[6:]]
+			if !ok {
+				Fatal(fmt.Errorf("published JFrog storage %v not configured", name[6:]))
+			}
+
+			var err error
+			publishedStorage, err = jfrog.NewPublishedStorage(
+				name[6:], params)
 			if err != nil {
 				Fatal(err)
 			}

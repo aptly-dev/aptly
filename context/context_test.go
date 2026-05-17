@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/flag"
 
 	. "gopkg.in/check.v1"
@@ -86,4 +87,65 @@ func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 		FatalErrorPanicMatches,
 		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
 			os.Getenv("HOME"))})
+}
+
+func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.RootDir = c.MkDir()
+	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{
+		"test": {
+			Repository:  "aptly-repo",
+			Url:         "https://example.jfrog.local/artifactory",
+			AccessToken: "token",
+			Prefix:      "public",
+		},
+	}
+
+	storage := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(storage, NotNil)
+	c.Assert(fmt.Sprintf("%v", storage), Equals, "jfrog:aptly-repo:public")
+
+	// Ensure we get the cached object on repeated lookups.
+	storageAgain := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(storageAgain, Equals, storage)
+}
+
+func (s *AptlyContextSuite) TestGetPublishedStorageJFrogMissing(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{}
+
+	c.Assert(func() { s.context.GetPublishedStorage("jfrog:missing") },
+		FatalErrorPanicMatches,
+		&FatalError{ReturnCode: 1, Message: "published JFrog storage missing not configured"})
+}
+
+func (s *AptlyContextSuite) TestGetPublishedStorageJFrogInitError(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{
+		"broken": {
+			Repository: "aptly-repo",
+			Url:        "ssh://example.local/artifactory",
+		},
+	}
+
+	defer func() {
+		obtained := recover()
+		c.Assert(obtained, NotNil)
+
+		fatalErr, ok := obtained.(*FatalError)
+		c.Assert(ok, Equals, true)
+		c.Check(fatalErr.ReturnCode, Equals, 1)
+		c.Check(fatalErr.Message, Matches, `error creating jfrog manager: .*`)
+	}()
+
+	s.context.GetPublishedStorage("jfrog:broken")
 }

@@ -196,6 +196,35 @@ filesystem_publish_endpoints:
 #
 #   `aptly publish snapshot wheezy-main s3:test:`
 #
+
+# JFrog Artifactory Endpoint Support
+#
+# aptly can be configured to publish repositories directly to JFrog Artifactory. First,
+# publishing endpoints should be described in the aptly configuration file.
+#
+# The destination Artifactory repo should be of the "generic" type, not "debian".
+#
+# In order to publish to JFrog, specify endpoint as `jfrog:endpoint-name:` before
+# publishing prefix on the command line, e.g.:
+#
+#   `aptly publish snapshot wheezy-main jfrog:test:`
+#
+jfrog_publish_endpoints:
+    # # Endpoint Name
+    # test:
+    #     # JFrog URL
+    #     url: "https://artifactory.example.com/artifactory/"
+    #     # Repository
+    #     repository: apt-local
+    #     # Jfrog credentials to authenticate to Artifactory. If not supplied, the
+    #     # environment variables `JFROG_USERNAME`, `JFROG_PASSWORD`, `JFROG_APIKEY`,
+    #     # and `JFROG_ACCESSTOKEN` can be used
+    #     # Authentication requires one of: user+pass, api key, or access token
+    #     username: admin
+    #     password: password
+    #     api_key: api_key
+    #     access_token: access_token
+
 s3_publish_endpoints:
     # # Endpoint Name
     # test:
@@ -343,4 +372,6 @@ packagepool_storage:
     # # See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
     # # defaults to "https://<accountName>.blob.core.windows.net"
     # endpoint: ""
+
+
 
