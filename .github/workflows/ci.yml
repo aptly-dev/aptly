@@ -168,7 +168,7 @@ jobs:
             suite: bullseye
             image: debian:bullseye-slim
           - name: "Ubuntu 26.04"
-            suite: stonking
+            suite: resolute
             image: ubuntu:26.04
           - name: "Ubuntu 24.04"
             suite: noble
