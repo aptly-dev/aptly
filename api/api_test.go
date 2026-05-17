@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sort"
 	"strings"
 	"testing"
 
@@ -41,6 +42,17 @@ func createTestConfig() *os.File {
 	jsonString, err := json.Marshal(gin.H{
 		"architectures":         []string{},
 		"enableMetricsEndpoint": true,
+		"S3PublishEndpoints": map[string]map[string]string{
+			"test-s3": {
+				"region": "us-east-1",
+				"bucket": "bucket-s3",
+			},
+		},
+		"GcsPublishEndpoints": map[string]map[string]string{
+			"test-gcs": {
+				"bucket": "bucket-gcs",
+			},
+		},
 	})
 	if err != nil {
 		return nil
@@ -172,4 +184,28 @@ func (s *APISuite) TestTruthy(c *C) {
 	c.Check(truthy("foobar"), Equals, true)
 	c.Check(truthy(-1), Equals, true)
 	c.Check(truthy(gin.H{}), Equals, true)
+}
+
+func (s *APISuite) TestGetS3Endpoints(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/s3", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+
+	var endpoints []string
+	err = json.Unmarshal(response.Body.Bytes(), &endpoints)
+	c.Assert(err, IsNil)
+	sort.Strings(endpoints)
+	c.Check(endpoints, DeepEquals, []string{"test-s3"})
+}
+
+func (s *APISuite) TestGetGCSEndpoints(c *C) {
+	response, err := s.HTTPRequest("GET", "/api/gcs", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+
+	var endpoints []string
+	err = json.Unmarshal(response.Body.Bytes(), &endpoints)
+	c.Assert(err, IsNil)
+	sort.Strings(endpoints)
+	c.Check(endpoints, DeepEquals, []string{"test-gcs"})
 }

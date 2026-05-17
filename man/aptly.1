@@ -307,6 +307,66 @@ The legacy json configuration is still supported (and also supports comments):
     // }
   },
 
+  // GCS Endpoint Support
+  //
+  // aptly can be configured to publish repositories directly to Google Cloud
+  // Storage\. First, publishing endpoints should be described in the aptly
+  // configuration file\. Each endpoint has a name and associated settings\.
+  //
+  // In order to publish to GCS, specify endpoint as `gcs:endpoint\-name:` before
+  // publishing prefix on the command line, e\.g\.:
+  //
+  //   `aptly publish snapshot wheezy\-main gcs:test:`
+  //
+  "GcsPublishEndpoints": {
+    // // Endpoint Name
+    // "test": {
+
+    //    // Bucket name
+    //    "bucket": "test\-bucket",
+
+    //    // Prefix (optional)
+    //    // publishing under specified prefix in the bucket, defaults to
+    //    // no prefix (bucket root)
+    //    "prefix": "",
+
+    //    // Credentials file (optional)
+    //    // Path to a service account credentials JSON file\. If omitted,
+    //    // Application Default Credentials are used\.
+    //    "credentialsFile": "",
+
+    //    // Service Account JSON (optional)
+    //    // Inline service account credentials JSON content\.
+    //    "serviceAccountJSON": "",
+
+    //    // Project (optional)
+    //    // Quota project to bill requests to\.
+    //    "project": "",
+
+    //    // Default ACLs (optional)
+    //    // assign ACL to published files\. Useful values: `private` (default),
+    //    // `public\-read` (public repository), or `none` (don't set ACL)\.
+    //    "acl": "private",
+
+    //    // Storage Class (optional)
+    //    // GCS storage class, e\.g\. `STANDARD`\.
+    //    "storageClass": "STANDARD",
+
+    //    // Encryption Key (optional)
+    //    // Customer-supplied encryption key (32-byte AES-256 key) for object operations\.
+    //    "encryptionKey": "",
+
+    //    // Disable MultiDel (optional)
+    //    // Kept for parity with S3 settings\.
+    //    // GCS deletes are currently performed one object at a time\.
+    //    "disableMultiDel": false,
+
+    //    // Debug (optional)
+    //    // Enables detailed GCS operation logs
+    //    "debug": false
+    // }
+  },
+
   // Swift Endpoint Support
   //
   // aptly could be configured to publish repository directly to OpenStack Swift\. First,

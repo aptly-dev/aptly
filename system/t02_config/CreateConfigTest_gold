@@ -256,6 +256,58 @@ s3_publish_endpoints:
     #     # Enables detailed request/response dump for each S3 operation
     #     debug: false
 
+# GCS Endpoint Support
+#
+# aptly can be configured to publish repositories directly to Google Cloud
+# Storage. First, publishing endpoints should be described in the aptly
+# configuration file. Each endpoint has a name and associated settings.
+#
+# In order to publish to GCS, specify endpoint as `gcs:endpoint-name:` before
+# publishing prefix on the command line, e.g.:
+#
+#   `aptly publish snapshot wheezy-main gcs:test:`
+#
+gcs_publish_endpoints:
+    # # Endpoint Name
+    # test:
+    #     # Bucket name
+    #     bucket: test-bucket
+    #     # Prefix (optional)
+    #     # publishing under specified prefix in the bucket, defaults to
+    #     # no prefix (bucket root)
+    #     prefix: ""
+    #     # Credentials File (optional)
+    #     # Path to a service account credentials JSON file
+    #     credentials_file: ""
+    #     # Service Account JSON (optional)
+    #     # Inline service account credentials JSON payload
+    #     service_account_json: ""
+    #     # Project (optional)
+    #     # Quota project used for GCS requests
+    #     project: ""
+    #     # Endpoint (optional)
+    #     # Override the GCS endpoint (e.g. for staging or a fake server);
+    #     # leave empty to use the default GCS endpoint
+    #     endpoint: ""
+    #     # Default ACLs (optional)
+    #     # assign ACL to published files:
+    #     # * private     (default)
+    #     # * public-read (public repository)
+    #     # * none        (don't set ACL)
+    #     acl: private
+    #     # Storage Class (optional)
+    #     # GCS storage class, e.g. `STANDARD`
+    #     storage_class: STANDARD
+    #     # Encryption Key (optional)
+    #     # Customer-supplied encryption key (32-byte AES-256 key)
+    #     encryption_key: ""
+    #     # Disable MultiDel (optional)
+    #     # Kept for parity with S3 settings; GCS deletes are one-by-one
+    #     disable_multidel: false
+    #     # Debug (optional)
+    #     # Enables detailed logs for each GCS operation
+    #     debug: false
+
 # Swift Endpoint Support
 #
 # aptly can publish a repository directly to OpenStack Swift.
