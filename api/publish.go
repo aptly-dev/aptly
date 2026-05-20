@@ -492,44 +492,48 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
-	if b.SkipContents != nil {
-		published.SkipContents = *b.SkipContents
-	}
-
-	if b.SkipBz2 != nil {
-		published.SkipBz2 = *b.SkipBz2
-	}
-
-	if b.AcquireByHash != nil {
-		published.AcquireByHash = *b.AcquireByHash
-	}
-
-	if b.SignedBy != nil {
-		published.SignedBy = *b.SignedBy
-	}
-
-	if b.MultiDist != nil {
-		published.MultiDist = *b.MultiDist
-	}
-
-	if b.Label != nil {
-		published.Label = *b.Label
-	}
-
-	if b.Origin != nil {
-		published.Origin = *b.Origin
-	}
-
-	if b.Version != nil {
-		published.Version = *b.Version
-	}
-
+	// Field mutations and fresh DB load are deferred to inside the task so
+	// they always operate on a consistent state after the lock is held.
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err = collection.LoadComplete(published, collectionFactory)
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+
+		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = taskCollection.LoadComplete(published, taskCollectionFactory)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		// Apply field mutations on the freshly loaded object.
+		if b.SkipContents != nil {
+			published.SkipContents = *b.SkipContents
+		}
+		if b.SkipBz2 != nil {
+			published.SkipBz2 = *b.SkipBz2
+		}
+		if b.AcquireByHash != nil {
+			published.AcquireByHash = *b.AcquireByHash
+		}
+		if b.SignedBy != nil {
+			published.SignedBy = *b.SignedBy
+		}
+		if b.MultiDist != nil {
+			published.MultiDist = *b.MultiDist
+		}
+		if b.Label != nil {
+			published.Label = *b.Label
+		}
+		if b.Origin != nil {
+			published.Origin = *b.Origin
+		}
+		if b.Version != nil {
+			published.Version = *b.Version
 		}
 
 		revision := published.ObtainRevision()
@@ -543,17 +547,17 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			}
 		}
 
-		result, err := published.Update(collectionFactory, out)
+		result, err := published.Update(taskCollectionFactory, out)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
+		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = collection.Update(published)
+		err = taskCollection.Update(published)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -561,7 +565,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
 			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
-			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
+			err = taskCollection.CleanupPrefixComponentFiles(context, published, cleanComponents, taskCollectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
@@ -1105,64 +1109,67 @@ func apiPublishUpdate(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
 
+	// Load shallowly for 404 check, resource key, and task name.
+	// Full load and field mutations happen inside the task.
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
 		AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("unable to update: %s", err))
 		return
 	}
 
-	err = collection.LoadComplete(published, collectionFactory)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to update: %s", err))
-		return
-	}
-
-	if b.SkipContents != nil {
-		published.SkipContents = *b.SkipContents
-	}
-
-	if b.SkipBz2 != nil {
-		published.SkipBz2 = *b.SkipBz2
-	}
-
-	if b.AcquireByHash != nil {
-		published.AcquireByHash = *b.AcquireByHash
-	}
-
-	if b.SignedBy != nil {
-		published.SignedBy = *b.SignedBy
-	}
-
-	if b.MultiDist != nil {
-		published.MultiDist = *b.MultiDist
-	}
-
-	if b.Label != nil {
-		published.Label = *b.Label
-	}
-
-	if b.Origin != nil {
-		published.Origin = *b.Origin
-	}
-
-	if b.Version != nil {
-		published.Version = *b.Version
-	}
-
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		result, err := published.Update(collectionFactory, out)
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+
+		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
+		err = taskCollection.LoadComplete(published, taskCollectionFactory)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = collection.Update(published)
+		// Apply field mutations on the freshly loaded object.
+		if b.SkipContents != nil {
+			published.SkipContents = *b.SkipContents
+		}
+		if b.SkipBz2 != nil {
+			published.SkipBz2 = *b.SkipBz2
+		}
+		if b.AcquireByHash != nil {
+			published.AcquireByHash = *b.AcquireByHash
+		}
+		if b.SignedBy != nil {
+			published.SignedBy = *b.SignedBy
+		}
+		if b.MultiDist != nil {
+			published.MultiDist = *b.MultiDist
+		}
+		if b.Label != nil {
+			published.Label = *b.Label
+		}
+		if b.Origin != nil {
+			published.Origin = *b.Origin
+		}
+		if b.Version != nil {
+			published.Version = *b.Version
+		}
+
+		result, err := published.Update(taskCollectionFactory, out)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		err = taskCollection.Update(published)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -1170,7 +1177,7 @@ func apiPublishUpdate(c *gin.Context) {
 		if b.SkipCleanup == nil || !*b.SkipCleanup {
 			cleanComponents := make([]string, 0, len(result.UpdatedSources)+len(result.RemovedSources))
 			cleanComponents = append(append(cleanComponents, result.UpdatedComponents()...), result.RemovedComponents()...)
-			err = collection.CleanupPrefixComponentFiles(context, published, cleanComponents, collectionFactory, out)
+			err = taskCollection.CleanupPrefixComponentFiles(context, published, cleanComponents, taskCollectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
