@@ -300,6 +300,17 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 
 	collection := collectionFactory.PublishedRepoCollection()
 
+	// Pre-register the published repo key in resources so that concurrent
+	// POST requests for the same prefix/distribution are serialized by the
+	// task queue rather than racing on CheckDuplicate + Add.
+	if b.Distribution != "" {
+		storagePrefix := prefix
+		if storage != "" {
+			storagePrefix = storage + ":" + prefix
+		}
+		resources = append(resources, "U"+storagePrefix+">>"+b.Distribution)
+	}
+
 	taskName := fmt.Sprintf("Publish %s repository %s/%s with components \"%s\" and sources \"%s\"",
 		b.SourceKind, param, b.Distribution, strings.Join(components, `", "`), strings.Join(names, `", "`))
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
@@ -331,8 +342,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
-
-		resources = append(resources, string(published.Key()))
 
 		if b.Origin != "" {
 			published.Origin = b.Origin
