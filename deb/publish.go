@@ -612,6 +612,15 @@ func (p *PublishedRepo) Key() []byte {
 	return []byte("U" + p.StoragePrefix() + ">>" + p.Distribution)
 }
 
+// PrefixPoolLockKey returns the task-queue resource key that serialises all
+// publish operations sharing the same pool directory under storagePrefix.
+// It must be held whenever a non-MultiDist publish may read or clean the
+// shared pool, to prevent concurrent cleanup runs from deleting each other's
+// files.  See docs/Resource-Locking.md for the full key-namespace table.
+func PrefixPoolLockKey(storagePrefix string) string {
+	return "P" + storagePrefix
+}
+
 // RefKey is a unique id for package reference list
 func (p *PublishedRepo) RefKey(component string) []byte {
 	return []byte("E" + p.UUID + component)
