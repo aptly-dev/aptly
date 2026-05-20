@@ -1,7 +1,6 @@
 package azure
 
 import (
-	"bytes"
 	"context"
 	"crypto/md5"
 	"crypto/rand"
@@ -86,7 +85,7 @@ func (s *PublishedStorageSuite) GetFile(c *C, path string) []byte {
 	resp, err := blob.Download(context.Background(), 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false, azblob.ClientProvidedKeyOptions{})
 	c.Assert(err, IsNil)
 	body := resp.Body(azblob.RetryReaderOptions{MaxRetryRequests: 3})
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 	c.Assert(err, IsNil)
 	return data
 }

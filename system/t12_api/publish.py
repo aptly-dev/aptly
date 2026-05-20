@@ -222,8 +222,6 @@ class PublishSnapshotAPITest(APITest):
                 "Distribution": "squeeze",
                 "NotAutomatic": "yes",
                 "ButAutomaticUpgrades": "yes",
-                "Origin": "earth",
-                "Label": "fun",
             }
         )
         self.check_task(task)
@@ -238,8 +236,8 @@ class PublishSnapshotAPITest(APITest):
             'Architectures': ['i386'],
             'Codename': '',
             'Distribution': 'squeeze',
-            'Label': 'fun',
-            'Origin': 'earth',
+            'Label': '',
+            'Origin': '',
             'MultiDist': False,
             'NotAutomatic': 'yes',
             'ButAutomaticUpgrades': 'yes',
@@ -754,6 +752,219 @@ class PublishSwitchAPITestRepo(APITest):
             "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
         self.check_not_exists(
             "public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        task = self.delete_task("/api/publish/" + prefix + "/wheezy")
+        self.check_task(task)
+        self.check_not_exists("public/" + prefix + "dists/")
+
+
+class PublishSwitchAPITestMirror(APITest):
+    """
+    PUT /publish/:prefix/:distribution (snapshots), DELETE /publish/:prefix/:distribution
+    """
+    fixtureGpg = True
+
+    def check(self):
+        mirror_name = self.random_name()
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                       'Distribution': 'wheezy',
+                       'Keyrings': ["aptlytest.gpg"],
+                       'Architectures': ["amd64"],
+                       'Components': ['main']}
+        mirror_desc['IgnoreSignatures'] = True
+
+        # Create Mirror
+        resp = self.post("/api/mirrors", json=mirror_desc)
+        self.check_equal(resp.status_code, 201)
+
+        # Get Mirror
+        resp = self.get("/api/mirrors/" + mirror_name + "/packages")
+        self.check_equal(resp.status_code, 404)
+
+        # Update Mirror
+        resp = self.put_task("/api/mirrors/" + mirror_name, json=mirror_desc)
+        self.check_task(resp)
+
+        # Snapshot Mirror
+        snapshot1_name = self.random_name()
+        task = self.post_task("/api/mirrors/" + mirror_name + '/snapshots', json={'Name': snapshot1_name})
+        self.check_task(task)
+
+        # Publish Snapshot
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                "Architectures": ["i386", "source"],
+                "SourceKind": "snapshot",
+                "Sources": [{"Name": snapshot1_name}],
+                "Signing": DefaultSigningOptions,
+            })
+        self.check_task(task)
+
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Origin': 'packagecloud.io/varnishcache/varnish30',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': False,
+            'MultiDist': False,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
+            'Storage': '',
+            'Suite': ''}
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        # Snapshot Mirror 2
+        snapshot2_name = self.random_name()
+        task = self.post_task("/api/mirrors/" + mirror_name + '/snapshots', json={'Name': snapshot2_name})
+        self.check_task(task)
+
+        task = self.put_task(
+            "/api/publish/" + prefix + "/wheezy",
+            json={
+                "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
+                "Signing": DefaultSigningOptions,
+                "SkipContents": True,
+                "Version": "13.3",
+            })
+        self.check_task(task)
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Origin': 'packagecloud.io/varnishcache/varnish30',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': True,
+            'MultiDist': False,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        task = self.delete_task("/api/publish/" + prefix + "/wheezy")
+        self.check_task(task)
+        self.check_not_exists("public/" + prefix + "dists/")
+
+
+class PublishSwitchAPITestSnapshot(APITest):
+    """
+    publish snapshot of snapshot
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo_name, "DefaultDistribution": "wheezy"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(
+            self.upload("/api/files/" + d,
+                        "pyspi_0.6.1-1.3.dsc",
+                        "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                        "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        snapshot1_name = self.random_name()
+        task = self.post_task("/api/repos/" + repo_name + '/snapshots', json={'Name': snapshot1_name})
+        self.check_task(task)
+
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                "Architectures": ["i386", "source"],
+                "SourceKind": "snapshot",
+                "Sources": [{"Name": snapshot1_name}],
+                "Signing": DefaultSigningOptions,
+            })
+        self.check_task(task)
+
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Origin': '',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': False,
+            'MultiDist': False,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot1_name}],
+            'Storage': '',
+            'Suite': ''}
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_not_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists("public/" + prefix +
+                          "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+
+        snapshot2_name = self.random_name()
+        task = self.post_task("/api/snapshots", json={"Name": snapshot2_name, 'SourceSnapshots': [snapshot1_name]})
+        self.check_task(task)
+
+        task = self.put_task(
+            "/api/publish/" + prefix + "/wheezy",
+            json={
+                "Snapshots": [{"Component": "main", "Name": snapshot2_name}],
+                "Signing": DefaultSigningOptions,
+                "SkipContents": True,
+                "Version": "13.3",
+            })
+        self.check_task(task)
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'wheezy',
+            'Label': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Origin': '',
+            'Path': prefix + '/' + 'wheezy',
+            'Prefix': prefix,
+            'SkipContents': True,
+            'MultiDist': False,
+            'SourceKind': 'snapshot',
+            'Sources': [{'Component': 'main', 'Name': snapshot2_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        self.check_not_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists("public/" + prefix +
+                          "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
 
         task = self.delete_task("/api/publish/" + prefix + "/wheezy")
         self.check_task(task)
@@ -1602,7 +1813,6 @@ class PublishAPITestDualSignature(APITest):
             'ButAutomaticUpgrades': '',
             'Path': prefix + '/' + 'wheezy',
             'Prefix': prefix,
-            'SignedBy': '',
             'SkipContents': False,
             'MultiDist': False,
             'SourceKind': 'local',

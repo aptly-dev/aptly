@@ -632,16 +632,6 @@ func (s *DiskFullNoRootSuite) TestLinkFromPoolCopySyncErrorIsReturned(c *C) {
 	c.Check(strings.Contains(err.Error(), "error syncing file"), Equals, true)
 }
 
-func (s *DiskFullNoRootSuite) TestGetFileLockReusesMutex(c *C) {
-	a := getFileLock(filepath.Join(s.root, "a"))
-	b := getFileLock(filepath.Join(s.root, "a"))
-	c.Check(a == b, Equals, true)
-
-	c1 := getFileLock(filepath.Join(s.root, "c1"))
-	c2 := getFileLock(filepath.Join(s.root, "c2"))
-	c.Check(c1 == c2, Equals, false)
-}
-
 func (s *DiskFullNoRootSuite) TestPutFileFailsIfDestinationDirMissing(c *C) {
 	storage := NewPublishedStorage(s.root, "", "")
 

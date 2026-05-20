@@ -150,6 +150,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 	baseName := filepath.Base(fileName)
 	poolPath := filepath.Join(storage.rootPath, publishedPrefix, publishedRelPath, filepath.Dir(fileName))
+	destinationPath := filepath.Join(poolPath, baseName)
 
 	var localSourcePool aptly.LocalPackagePool
 	if storage.linkMethod != LinkMethodCopy {
