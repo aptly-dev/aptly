@@ -298,8 +298,6 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		multiDist = *b.MultiDist
 	}
 
-	collection := collectionFactory.PublishedRepoCollection()
-
 	// Pre-register the published repo key in resources so that concurrent
 	// POST requests for the same prefix/distribution are serialized by the
 	// task queue rather than racing on CheckDuplicate + Add.
@@ -314,6 +312,9 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	taskName := fmt.Sprintf("Publish %s repository %s/%s with components \"%s\" and sources \"%s\"",
 		b.SourceKind, param, b.Distribution, strings.Join(components, `", "`), strings.Join(names, `", "`))
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+
 		taskDetail := task.PublishDetail{
 			Detail: detail,
 		}
@@ -325,10 +326,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		for _, source := range sources {
 			switch s := source.(type) {
 			case *deb.Snapshot:
-				snapshotCollection := collectionFactory.SnapshotCollection()
+				snapshotCollection := taskCollectionFactory.SnapshotCollection()
 				err = snapshotCollection.LoadComplete(s)
 			case *deb.LocalRepo:
-				localCollection := collectionFactory.LocalRepoCollection()
+				localCollection := taskCollectionFactory.LocalRepoCollection()
 				err = localCollection.LoadComplete(s)
 			default:
 				err = fmt.Errorf("unexpected type for source: %T", source)
@@ -338,7 +339,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			}
 		}
 
-		published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, collectionFactory, multiDist)
+		published, err := deb.NewPublishedRepo(storage, prefix, b.Distribution, b.Architectures, components, sources, taskCollectionFactory, multiDist)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
@@ -376,18 +377,18 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			published.Version = b.Version
 		}
 
-		duplicate := collection.CheckDuplicate(published)
+		duplicate := taskCollection.CheckDuplicate(published)
 		if duplicate != nil {
-			_ = collectionFactory.PublishedRepoCollection().LoadComplete(duplicate, collectionFactory)
+			_ = taskCollectionFactory.PublishedRepoCollection().LoadComplete(duplicate, taskCollectionFactory)
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
-		err = published.Publish(context.PackagePool(), context, collectionFactory, signer, publishOutput, b.ForceOverwrite, context.SkelPath())
+		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, publishOutput, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = collection.Add(published)
+		err = taskCollection.Add(published)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -615,8 +616,11 @@ func apiPublishDrop(c *gin.Context) {
 	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Delete published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := collection.Remove(context, storage, prefix, distribution,
-			collectionFactory, out, force, skipCleanup)
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+
+		err := taskCollection.Remove(context, storage, prefix, distribution,
+			taskCollectionFactory, out, force, skipCleanup)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %s", err)
 		}
