@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -307,6 +308,8 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			storagePrefix = storage + ":" + prefix
 		}
 		resources = append(resources, "U"+storagePrefix+">>"+b.Distribution)
+	} else {
+		log.Printf("distribution not specified for publish to prefix '%s' - unable to lock ", prefix)
 	}
 
 	taskName := fmt.Sprintf("Publish %s repository %s/%s with components \"%s\" and sources \"%s\"",
