@@ -419,7 +419,8 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -432,8 +433,8 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.LocalRepoCollection()
 
-		// Fresh load after lock acquired
-		repo, err := taskCollection.ByName(c.Params.ByName("name"))
+		// Fresh load after lock acquired (use captured `name` variable, not gin context)
+		repo, err := taskCollection.ByName(name)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err
 		}

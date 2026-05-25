@@ -548,7 +548,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
 
-	remote, err = collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	remote, err = collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -584,8 +585,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.RemoteRepoCollection()
 
-		// Fresh load after lock acquired
-		remote, err := taskCollection.ByName(c.Params.ByName("name"))
+		// Fresh load after lock acquired (use captured `name` variable, not gin context)
+		remote, err := taskCollection.ByName(name)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
