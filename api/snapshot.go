@@ -340,7 +340,7 @@ func apiSnapshotsUpdate(c *gin.Context) {
 	}
 
 	// Pre-task validation of new name if provided
-	if b.Name != "" && b.Name != name {
+	if b.Name != "" {
 		_, err = collection.ByName(b.Name)
 		if err == nil {
 			AbortWithJSONError(c, 409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
@@ -362,8 +362,8 @@ func apiSnapshotsUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
 
-		// Fresh duplicate check inside lock (if renaming)
-		if b.Name != "" && b.Name != name {
+		// Fresh duplicate check inside lock
+		if b.Name != "" {
 			_, err := taskCollection.ByName(b.Name)
 			if err == nil {
 				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name)
