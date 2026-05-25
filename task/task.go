@@ -1,6 +1,7 @@
 package task
 
 import (
+	"sync"
 	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
