@@ -137,7 +137,7 @@ make docker-unit-tests
 
 In order to run aptly system tests, enter the following:
 ```
-make docker-system-tests
+make docker-system-test
 ```
 
 #### Running golangci-lint
