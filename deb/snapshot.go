@@ -143,12 +143,6 @@ func (s *Snapshot) Key() []byte {
 	return []byte("S" + s.UUID)
 }
 
-// ResourceKey is a unique identifier of the resource
-// this snapshot uses. Instead of uuid it uses name
-// which needs to be unique as well.
-func (s *Snapshot) ResourceKey() []byte {
-	return []byte("S" + s.Name)
-}
 
 // RefKey is a unique id for package reference list
 func (s *Snapshot) RefKey() []byte {
