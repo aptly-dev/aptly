@@ -211,6 +211,10 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 	list.wg.Add(1)
 	task.wgTask.Add(1)
 
+	// Copy task while still holding the lock to avoid racing with consumer
+	// setting State=RUNNING after receiving from queue
+	taskCopy := *task
+
 	// add task to queue for processing if resources are available
 	// if not, task will be queued by the consumer once resources are available
 	tasks := list.usedResources.UsedBy(resources)
@@ -223,7 +227,7 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 		list.Unlock()
 	}
 
-	return *task, nil
+	return taskCopy, nil
 }
 
 // Clear removes finished tasks from list
