@@ -471,6 +471,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.PublishedRepoCollection()
 	snapshotCollection := collectionFactory.SnapshotCollection()
+	localRepoCollection := collectionFactory.LocalRepoCollection()
 
 	published, err := collection.ByStoragePrefixDistribution(storage, prefix, distribution)
 	if err != nil {
@@ -478,18 +479,29 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 		return
 	}
 
+	resources := []string{string(published.Key())}
+
 	if published.SourceKind == deb.SourceLocalRepo {
 		if len(b.Snapshots) > 0 {
 			AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("snapshots shouldn't be given when updating local repo"))
 			return
 		}
-	} else if published.SourceKind == deb.SourceSnapshot {
-		for _, snapshotInfo := range b.Snapshots {
-			_, err2 := snapshotCollection.ByName(snapshotInfo.Name)
+		for _, uuid := range published.Sources {
+			repo, err2 := localRepoCollection.ByUUID(uuid)
 			if err2 != nil {
 				AbortWithJSONError(c, http.StatusNotFound, err2)
 				return
 			}
+			resources = append(resources, string(repo.Key()))
+		}
+	} else if published.SourceKind == deb.SourceSnapshot {
+		for _, snapshotInfo := range b.Snapshots {
+			snapshot, err2 := snapshotCollection.ByName(snapshotInfo.Name)
+			if err2 != nil {
+				AbortWithJSONError(c, http.StatusNotFound, err2)
+				return
+			}
+			resources = append(resources, string(snapshot.ResourceKey()))
 		}
 	} else {
 		AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unknown published repository type"))
@@ -498,7 +510,6 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 
 	// Field mutations and fresh DB load are deferred to inside the task so
 	// they always operate on a consistent state after the lock is held.
-	resources := []string{string(published.Key())}
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
