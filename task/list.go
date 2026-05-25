@@ -44,25 +44,27 @@ func (list *List) consumer() {
 	for {
 		select {
 		case task := <-list.queue:
+			// Set task state to RUNNING before processing
 			list.Lock()
-			{
-				task.State = RUNNING
-			}
+			task.State = RUNNING
 			list.Unlock()
 
 			go func() {
 				retValue, err := task.process(aptly.Progress(task.output), task.detail)
 
+				// Update task completion state and cleanup with list lock held
 				list.Lock()
 				{
-					task.processReturnValue = retValue
-					task.err = err
 					if err != nil {
 						task.output.Printf("Task failed with error: %v", err)
 						task.State = FAILED
+						task.err = err
+						task.processReturnValue = retValue
 					} else {
 						task.output.Print("Task succeeded")
 						task.State = SUCCEEDED
+						task.err = nil
+						task.processReturnValue = retValue
 					}
 
 					list.usedResources.Free(task.resources)
@@ -105,13 +107,15 @@ func (list *List) Stop() {
 
 // GetTasks gets complete list of tasks
 func (list *List) GetTasks() []Task {
-	tasks := []Task{}
 	list.Lock()
+	defer list.Unlock()
+
+	tasks := []Task{}
 	for _, task := range list.tasks {
+		// Copy task while holding list lock
 		tasks = append(tasks, *task)
 	}
 
-	list.Unlock()
 	return tasks
 }
 
@@ -139,11 +143,11 @@ func (list *List) DeleteTaskByID(ID int) (Task, error) {
 // GetTaskByID returns task with given id
 func (list *List) GetTaskByID(ID int) (Task, error) {
 	list.Lock()
-	tasks := list.tasks
-	list.Unlock()
+	defer list.Unlock()
 
-	for _, task := range tasks {
+	for _, task := range list.tasks {
 		if task.ID == ID {
+			// Copy task while holding list lock
 			return *task, nil
 		}
 	}
@@ -180,13 +184,16 @@ func (list *List) GetTaskDetailByID(ID int) (interface{}, error) {
 
 // GetTaskReturnValueByID returns process return value of task with given id
 func (list *List) GetTaskReturnValueByID(ID int) (*ProcessReturnValue, error) {
-	task, err := list.GetTaskByID(ID)
+	list.Lock()
+	defer list.Unlock()
 
-	if err != nil {
-		return nil, err
+	for _, task := range list.tasks {
+		if task.ID == ID {
+			return task.processReturnValue, nil
+		}
 	}
 
-	return task.processReturnValue, nil
+	return nil, fmt.Errorf("could not find task with id %v", ID)
 }
 
 // RunTaskInBackground creates task and runs it in background. This will block until the necessary resources
@@ -222,6 +229,7 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 // Clear removes finished tasks from list
 func (list *List) Clear() {
 	list.Lock()
+	defer list.Unlock()
 
 	var tasks []*Task
 	for _, task := range list.tasks {
@@ -230,8 +238,6 @@ func (list *List) Clear() {
 		}
 	}
 	list.tasks = tasks
-
-	list.Unlock()
 }
 
 // Wait waits till all tasks are processed
@@ -254,11 +260,14 @@ func (list *List) WaitForTaskByID(ID int) (Task, error) {
 
 // GetTaskErrorByID returns the Task error for a given id
 func (list *List) GetTaskErrorByID(ID int) (error, error) {
-	task, err := list.GetTaskByID(ID)
+	list.Lock()
+	defer list.Unlock()
 
-	if err != nil {
-		return nil, err
+	for _, task := range list.tasks {
+		if task.ID == ID {
+			return task.err, nil
+		}
 	}
 
-	return task.err, nil
+	return nil, fmt.Errorf("could not find task with id %v", ID)
 }
