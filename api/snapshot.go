@@ -182,6 +182,13 @@ func apiSnapshotsCreate(c *gin.Context) {
 		resources = append(resources, string(sources[i].ResourceKey()))
 	}
 
+	// Pre-task check for destination snapshot name
+	_, err = snapshotCollection.ByName(b.Name)
+	if err == nil {
+		AbortWithJSONError(c, 409, fmt.Errorf("unable to create: snapshot %s already exists", b.Name))
+		return
+	}
+
 	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		// Phase 2: Inside task lock - create fresh factory
 		taskCollectionFactory := context.NewCollectionFactory()
