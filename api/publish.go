@@ -1136,6 +1136,33 @@ func apiPublishUpdate(c *gin.Context) {
 	}
 
 	resources := []string{string(published.Key())}
+
+	// Lock source repos / snapshots the same way apiPublishUpdateSwitch does,
+	// because published.Update() reads from them and concurrent modification
+	// would produce an inconsistent view.
+	snapshotCollection := collectionFactory.SnapshotCollection()
+	localRepoCollection := collectionFactory.LocalRepoCollection()
+
+	if published.SourceKind == deb.SourceLocalRepo {
+		for _, uuid := range published.Sources {
+			repo, err2 := localRepoCollection.ByUUID(uuid)
+			if err2 != nil {
+				AbortWithJSONError(c, http.StatusNotFound, err2)
+				return
+			}
+			resources = append(resources, string(repo.Key()))
+		}
+	} else if published.SourceKind == deb.SourceSnapshot {
+		for _, uuid := range published.Sources {
+			snapshot, err2 := snapshotCollection.ByUUID(uuid)
+			if err2 != nil {
+				AbortWithJSONError(c, http.StatusNotFound, err2)
+				return
+			}
+			resources = append(resources, string(snapshot.ResourceKey()))
+		}
+	}
+
 	taskName := fmt.Sprintf("Update published %s repository %s/%s", published.SourceKind, published.StoragePrefix(), published.Distribution)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
