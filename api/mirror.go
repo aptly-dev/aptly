@@ -175,9 +175,9 @@ func apiMirrorsDrop(c *gin.Context) {
 	name := c.Params.ByName("name")
 	force := c.Request.URL.Query().Get("force") == "1"
 
+	// Phase 1: Pre-task validation (shallow load for 404 check only)
 	collectionFactory := context.NewCollectionFactory()
 	mirrorCollection := collectionFactory.RemoteRepoCollection()
-	snapshotCollection := collectionFactory.SnapshotCollection()
 
 	repo, err := mirrorCollection.ByName(name)
 	if err != nil {
@@ -187,21 +187,34 @@ func apiMirrorsDrop(c *gin.Context) {
 
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete mirror %s", name)
+
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := repo.CheckLock()
+		// Phase 2: Inside task lock - create fresh collections
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskMirrorCollection := taskCollectionFactory.RemoteRepoCollection()
+		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+
+		// Fresh load after lock acquired
+		repo, err := taskMirrorCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %v", err)
+		}
+
+		err = repo.CheckLock()
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %v", err)
 		}
 
 		if !force {
-			snapshots := snapshotCollection.ByRemoteRepoSource(repo)
+			// Fresh checks with current collections
+			snapshots := taskSnapshotCollection.ByRemoteRepoSource(repo)
 
 			if len(snapshots) > 0 {
 				return &task.ProcessReturnValue{Code: http.StatusForbidden, Value: nil}, fmt.Errorf("won't delete mirror with snapshots, use 'force=1' to override")
 			}
 		}
 
-		err = mirrorCollection.Drop(repo)
+		err = taskMirrorCollection.Drop(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to drop: %v", err)
 		}
@@ -232,6 +245,7 @@ func apiMirrorsShow(c *gin.Context) {
 	err = collection.LoadComplete(repo)
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to show: %s", err))
+		return
 	}
 
 	c.JSON(200, repo)
@@ -369,7 +383,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.RemoteRepoCollection()
 
-	remote, err = collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	remote, err = collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -384,6 +399,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		return
 	}
 
+	// Pre-task validation of new name if provided
 	if b.Name != remote.Name {
 		_, err = collection.ByName(b.Name)
 		if err == nil {
@@ -400,9 +416,26 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 	resources := []string{string(remote.Key())}
 	maybeRunTaskInBackground(c, "Update mirror "+b.Name, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
+		// Phase 2: Inside task lock - create fresh factory
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.RemoteRepoCollection()
+
+		// Fresh load after lock acquired (use captured `name` variable, not gin context)
+		remote, err := taskCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+		}
+
+		// Fresh rename check inside lock (if renaming)
+		if b.Name != remote.Name {
+			_, err := taskCollection.ByName(b.Name)
+			if err == nil {
+				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to rename: mirror %s already exists", b.Name)
+			}
+		}
 
 		downloader := context.NewDownloader(out)
-		err := remote.Fetch(downloader, verifier, b.IgnoreSignatures)
+		err = remote.Fetch(downloader, verifier, b.IgnoreSignatures)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -414,7 +447,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.IgnoreSignatures, remote.SkipComponentCheck)
+		err = remote.DownloadPackageIndexes(out, downloader, verifier, taskCollectionFactory, b.IgnoreSignatures, remote.SkipComponentCheck)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -433,8 +466,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
+		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), taskCollectionFactory.PackageCollection(),
+			taskCollectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -444,12 +477,12 @@ func apiMirrorsUpdate(c *gin.Context) {
 			e := context.ReOpenDatabase()
 			if e == nil {
 				remote.MarkAsIdle()
-				_ = collection.Update(remote)
+				_ = taskCollection.Update(remote)
 			}
 		}()
 
 		remote.MarkAsUpdating()
-		err = collection.Update(remote)
+		err = taskCollection.Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -553,7 +586,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 						}
 
 						// and import it back to the pool
-						task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
+						task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, taskCollectionFactory.ChecksumCollection(nil))
 						if err != nil {
 							//return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import file: %s", err)
 							pushError(err)
@@ -606,8 +639,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 		}
 
 		log.Info().Msgf("%s: Finalizing download...", b.Name)
-		_ = remote.FinalizeDownload(collectionFactory, out)
-		err = collectionFactory.RemoteRepoCollection().Update(remote)
+		_ = remote.FinalizeDownload(taskCollectionFactory, out)
+		err = taskCollection.Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
