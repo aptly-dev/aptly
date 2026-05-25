@@ -339,8 +339,8 @@ func apiSnapshotsUpdate(c *gin.Context) {
 		return
 	}
 
-	// Pre-task validation of new name if provided
-	if b.Name != "" {
+	// Pre-task validation of new name if provided (skip if renaming to same name)
+	if b.Name != "" && b.Name != name {
 		_, err = collection.ByName(b.Name)
 		if err == nil {
 			AbortWithJSONError(c, 409, fmt.Errorf("unable to rename: snapshot %s already exists", b.Name))
