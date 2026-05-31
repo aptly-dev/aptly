@@ -42,6 +42,7 @@ const (
 )
 
 // Task represents as task in a queue encapsulates process code
+// All fields are protected by List.Mutex - access task fields only while holding list.Lock()
 type Task struct {
 	output             *Output
 	detail             *Detail
