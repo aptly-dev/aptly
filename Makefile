@@ -182,6 +182,9 @@ binaries: prepare swagger  ## Build binary releases (FreeBSD, macOS, Linux gener
 docker-image:  ## Build aptly-dev docker image
 	@docker build -f system/Dockerfile . -t aptly-dev
 
+docker-image-test:  # Build aptly-test docker image for testing
+	@docker build -f docker/test.Dockerfile . -t aptly-test
+
 docker-image-no-cache:  ## Build aptly-dev docker image (no cache)
 	@docker build --no-cache -f system/Dockerfile . -t aptly-dev
 
