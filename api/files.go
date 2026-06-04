@@ -231,20 +231,9 @@ func apiFilesUploadOne(c *gin.Context) {
 	}
 	defer dst.Close()
 
-	buf := make([]byte, 1024)
-	for {
-		n, err := c.Request.Body.Read(buf)
-		if err != nil && err != io.EOF {
-			AbortWithJSONError(c, 400, err)
-			return
-		}
-		if n == 0 {
-			break
-		}
-		if _, err := dst.Write(buf[:n]); err != nil {
-			AbortWithJSONError(c, 500, err)
-			return
-		}
+	if _, err = io.Copy(dst, c.Request.Body); err != nil {
+		AbortWithJSONError(c, 500, err)
+		return
 	}
 
 	stored = append(stored, filepath.Join(c.Params.ByName("dir"), c.Params.ByName("file")))
