@@ -612,14 +612,14 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		err = remote.DownloadPackageIndexes(out, downloader, verifier, collectionFactory, b.IgnoreSignatures, remote.SkipComponentCheck)
+		err = remote.DownloadPackageIndexes(out, downloader, verifier, taskCollectionFactory, b.IgnoreSignatures, remote.SkipComponentCheck)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
 		if remote.DownloadAppStream && !remote.IsFlat() {
 			err = remote.DownloadAppStreamFiles(out, downloader,
-				context.PackagePool(), collectionFactory.ChecksumCollection(nil), b.IgnoreChecksums)
+				context.PackagePool(), taskCollectionFactory.ChecksumCollection(nil), b.IgnoreChecksums)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 			}
@@ -639,8 +639,8 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
-		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-			collectionFactory.ChecksumCollection(nil), b.SkipExistingPackages, b.LatestOnly)
+		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), taskCollectionFactory.PackageCollection(),
+			taskCollectionFactory.ChecksumCollection(nil), b.SkipExistingPackages, b.LatestOnly)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -650,12 +650,12 @@ func apiMirrorsUpdate(c *gin.Context) {
 			e := context.ReOpenDatabase()
 			if e == nil {
 				remote.MarkAsIdle()
-				_ = collection.Update(remote)
+				_ = taskCollection.Update(remote)
 			}
 		}()
 
 		remote.MarkAsUpdating()
-		err = collection.Update(remote)
+		err = taskCollection.Update(remote)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -759,7 +759,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 						}
 
 						// and import it back to the pool
-						task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, collectionFactory.ChecksumCollection(nil))
+						task.File.PoolPath, err = context.PackagePool().Import(task.TempDownPath, task.File.Filename, &task.File.Checksums, true, taskCollectionFactory.ChecksumCollection(nil))
 						if err != nil {
 							//return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import file: %s", err)
 							pushError(err)
