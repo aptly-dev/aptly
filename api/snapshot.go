@@ -83,11 +83,9 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	}
 
 	collectionFactory := context.NewCollectionFactory()
-	collection := collectionFactory.RemoteRepoCollection()
-	snapshotCollection := collectionFactory.SnapshotCollection()
 	name := c.Params.ByName("name")
 
-	repo, err = collection.ByName(name)
+	repo, err = collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -97,12 +95,21 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of mirror %s", name)
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := repo.CheckLock()
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskMirrorCollection := taskCollectionFactory.RemoteRepoCollection()
+		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+
+		repo, err := taskMirrorCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		err = repo.CheckLock()
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, err
 		}
 
-		err = collection.LoadComplete(repo)
+		err = taskMirrorCollection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -116,7 +123,7 @@ func apiSnapshotsCreateFromMirror(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		err = snapshotCollection.Add(snapshot)
+		err = taskSnapshotCollection.Add(snapshot)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
@@ -180,13 +187,6 @@ func apiSnapshotsCreate(c *gin.Context) {
 		}
 
 		resources = append(resources, string(sources[i].ResourceKey()))
-	}
-
-	// Pre-task check for destination snapshot name
-	_, err = snapshotCollection.ByName(b.Name)
-	if err == nil {
-		AbortWithJSONError(c, 409, fmt.Errorf("unable to create: snapshot %s already exists", b.Name))
-		return
 	}
 
 	maybeRunTaskInBackground(c, "Create snapshot "+b.Name, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
@@ -269,11 +269,9 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	}
 
 	collectionFactory := context.NewCollectionFactory()
-	collection := collectionFactory.LocalRepoCollection()
-	snapshotCollection := collectionFactory.SnapshotCollection()
 	name := c.Params.ByName("name")
 
-	repo, err = collection.ByName(name)
+	repo, err = collectionFactory.LocalRepoCollection().ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -283,7 +281,16 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 	resources := []string{string(repo.Key()), "S" + b.Name}
 	taskName := fmt.Sprintf("Create snapshot of repo %s", name)
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err := collection.LoadComplete(repo)
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskRepoCollection := taskCollectionFactory.LocalRepoCollection()
+		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+
+		repo, err := taskRepoCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		err = taskRepoCollection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -297,7 +304,7 @@ func apiSnapshotsCreateFromRepository(c *gin.Context) {
 			snapshot.Description = b.Description
 		}
 
-		err = snapshotCollection.Add(snapshot)
+		err = taskSnapshotCollection.Add(snapshot)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 		}
