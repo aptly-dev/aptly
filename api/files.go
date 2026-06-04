@@ -236,7 +236,12 @@ func apiFilesUploadOne(c *gin.Context) {
 		return
 	}
 
-	stored = append(stored, filepath.Join(c.Params.ByName("dir"), c.Params.ByName("file")))
+	if err = syncFile(dst); err != nil {
+		AbortWithJSONError(c, 500, fmt.Errorf("error syncing file %s: %s", fileName, err))
+		return
+	}
+
+	stored = append(stored, filepath.Join(c.Params.ByName("dir"), fileName))
 
 	apiFilesUploadedCounter.WithLabelValues(c.Params.ByName("dir")).Inc()
 	c.JSON(200, stored)
