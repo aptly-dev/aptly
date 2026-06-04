@@ -203,6 +203,7 @@ func apiFilesUpload(c *gin.Context) {
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
 // @Failure 500 {object} Error "Internal Server Error"
+// @Router /api/files/{dir}/{file} [put]
 func apiFilesUploadOne(c *gin.Context) {
 	if !verifyDir(c) {
 		return
