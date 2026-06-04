@@ -208,6 +208,12 @@ func apiFilesUploadOne(c *gin.Context) {
 		return
 	}
 
+	fileName := c.Params.ByName("file")
+	if !verifyPath(fileName) {
+		AbortWithJSONError(c, 400, fmt.Errorf("wrong file"))
+		return
+	}
+
 	path := filepath.Join(context.UploadPath(), utils.SanitizePath(c.Params.ByName("dir")))
 	err := os.MkdirAll(path, 0777)
 
@@ -217,7 +223,7 @@ func apiFilesUploadOne(c *gin.Context) {
 	}
 	stored := []string{}
 
-	destPath := filepath.Join(path, c.Params.ByName("file"))
+	destPath := filepath.Join(path, fileName)
 	dst, err := os.Create(destPath)
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
