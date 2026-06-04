@@ -1,5 +1,8 @@
 FROM aptly-dev
 
+RUN apt-get update -y && apt-get install -y --no-install-recommends dput-ng && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 ADD --chown=aptly:aptly . /work/src/
 
 # Pre-populate the Go module cache so go mod verify works offline
