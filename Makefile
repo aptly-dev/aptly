@@ -194,7 +194,7 @@ docker-shell:  ## Run aptly and other commands in docker container
 docker-deb:  ## Build debian packages in docker container
 	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
-docker-unit-tests:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
+docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
 	$(DOCKER_RUN) -t --tmpfs /smallfs:rw,size=1m aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
@@ -241,4 +241,4 @@ clean:  ## remove local build and module cache
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
-.PHONY: help man prepare swagger version binaries build docker-release docker-system-tests docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8
+.PHONY: help man prepare swagger version binaries build docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8

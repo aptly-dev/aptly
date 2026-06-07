@@ -1,3 +1,4 @@
+---
 name: CI
 
 on:
@@ -10,7 +11,6 @@ on:
 
 defaults:
   run:
-    # see: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
     shell: bash --noprofile --norc -eo pipefail {0}
 
 env:
@@ -33,7 +33,7 @@ jobs:
           make docker-image
       - name: "Unit Tests"
         run: |
-          make docker-unit-tests
+          make docker-unit-test
           mkdir -p out/coverage
           mv unit.out out/coverage/
       - uses: actions/upload-artifact@v4

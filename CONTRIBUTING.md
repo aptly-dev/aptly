@@ -130,14 +130,14 @@ aptly version: 1.5.0+189+g0fc90dff
 
 In order to run aptly unit tests, enter the following:
 ```
-make docker-unit-tests
+make docker-unit-test
 ```
 
 #### Running system tests
 
 In order to run aptly system tests, enter the following:
 ```
-make docker-system-tests
+make docker-system-test
 ```
 
 #### Running golangci-lint
