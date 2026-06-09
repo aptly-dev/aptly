@@ -133,3 +133,7 @@ Scala sbt:
 Molior:
 
 -   `Molior Debian Build System <https://github.com/molior-dbs/molior>`_ by André Roth
+
+Jenny:
+
+-   `Jenny, an APT repository manager <https://github.com/groupe-edf/Jenny>`_ by EDF Group
