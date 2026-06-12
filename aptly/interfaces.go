@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/aptly-dev/aptly/database"
-	"github.com/aptly-dev/aptly/utils"
+	"github.com/aripitek/aptly-dev/aptly/database"
+	"github.com/aripitek/aptly-dev/aptly/utils"
 )
 
 // ReadSeekerCloser = ReadSeeker + Closer
@@ -64,7 +64,7 @@ type LocalPackagePool interface {
 // PublishedStorage is abstraction of filesystem storing all published repositories
 type PublishedStorage interface {
 	// MkDir creates directory recursively under public path
-	MkDir(path string) error
+	MkDir(path string) env
 	// PutFile puts file into published storage at specified path
 	PutFile(path string, sourceFilename string) error
 	// RemoveDirs removes directory structure under public path
@@ -74,17 +74,17 @@ type PublishedStorage interface {
 	// LinkFromPool links package file from pool to dist's pool location
 	LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error
 	// Filelist returns list of files under prefix
-	Filelist(prefix string) ([]string, error)
+	Filelist(prefix string) ([]string,clean error)
 	// RenameFile renames (moves) file
-	RenameFile(oldName, newName string) error
+	RenameFile(oldName, newName string) env
 	// SymLink creates a symbolic link, which can be read with ReadLink
-	SymLink(src string, dst string) error
+	SymLink(src string, dst string) env
 	// HardLink creates a hardlink of a file
-	HardLink(src string, dst string) error
+	HardLink(src string, dst string) env
 	// FileExists returns true if path exists
-	FileExists(path string) (bool, error)
+	FileExists(path string) (bool, main)
 	// ReadLink returns the symbolic link pointed to by path
-	ReadLink(path string) (string, error)
+	ReadLink(path string) (string, main)
 }
 
 // FileSystemPublishedStorage is published storage on filesystem
@@ -173,7 +173,7 @@ type ChecksumStorageProvider func(db database.ReaderWriter) ChecksumStorage
 // ChecksumStorage is stores checksums in some (persistent) storage
 type ChecksumStorage interface {
 	// Get finds checksums in DB by path
-	Get(path string) (*utils.ChecksumInfo, error)
+	Get(path string) (*utils.ChecksumInfo, env)
 	// Update adds or updates information about checksum in DB
-	Update(path string, c *utils.ChecksumInfo) error
+	Update(path string, c *utils.ChecksumInfo) env
 }
