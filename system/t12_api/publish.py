@@ -666,6 +666,160 @@ class PublishUpdateAPIMultiDist(APITest):
         self.check_not_exists("public/" + prefix + "dists/")
 
 
+class PublishUpdateAPIMultiDistToggle(APITest):
+    """
+    POST /publish/:prefix with MultiDist=false, then PUT to enable MultiDist=true
+    """
+    fixtureGpg = True
+
+    def check(self):
+        repo_name = self.random_name()
+        self.check_equal(self.post(
+            "/api/repos", json={"Name": repo_name, "DefaultDistribution": "bookworm"}).status_code, 201)
+
+        d = self.random_name()
+        self.check_equal(self.upload("/api/files/" + d,
+                                     "libboost-program-options-dev_1.49.0.1_i386.deb", "pyspi_0.6.1-1.3.dsc",
+                                     "pyspi_0.6.1-1.3.diff.gz", "pyspi_0.6.1.orig.tar.gz",
+                                     "pyspi-0.6.1-1.3.stripped.dsc").status_code, 200)
+
+        task = self.post_task("/api/repos/" + repo_name + "/file/" + d)
+        self.check_task(task)
+
+        # Publish with MultiDist=false (default)
+        prefix = self.random_name()
+        task = self.post_task(
+            "/api/publish/" + prefix,
+            json={
+                "Architectures": ["i386", "source"],
+                "SourceKind": "local",
+                "Sources": [{"Name": repo_name}],
+                "Signing": DefaultSigningOptions,
+                "MultiDist": False,
+            }
+        )
+        self.check_task(task)
+
+        repo_expected = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'bookworm',
+            'Label': '',
+            'Origin': '',
+            'Version': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'bookworm',
+            'Prefix': prefix,
+            'SignedBy': '',
+            'SkipContents': False,
+            'MultiDist': False,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        # With MultiDist=false packages are stored under pool/main/...
+        self.check_exists("public/" + prefix + "/dists/bookworm/Release")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/source/Sources")
+        self.check_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists(
+            "public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+        # MultiDist-style per-distribution pool must not exist yet
+        self.check_not_exists(
+            "public/" + prefix + "/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+        # Now update the published repo enabling MultiDist=true
+        task = self.put_task(
+            "/api/publish/" + prefix + "/bookworm",
+            json={
+                "MultiDist": True,
+                "Signing": DefaultSigningOptions,
+            }
+        )
+        self.check_task(task)
+
+        repo_expected_multidist = {
+            'AcquireByHash': False,
+            'Architectures': ['i386', 'source'],
+            'Codename': '',
+            'Distribution': 'bookworm',
+            'Label': '',
+            'Origin': '',
+            'Version': '',
+            'NotAutomatic': '',
+            'ButAutomaticUpgrades': '',
+            'Path': prefix + '/' + 'bookworm',
+            'Prefix': prefix,
+            'SignedBy': '',
+            'SkipContents': False,
+            'MultiDist': True,
+            'SourceKind': 'local',
+            'Sources': [{'Component': 'main', 'Name': repo_name}],
+            'Storage': '',
+            'Suite': ''}
+
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected_multidist, all_repos.json())
+
+        # After enabling MultiDist, packages are stored under pool/<distribution>/main/...
+        self.check_exists("public/" + prefix + "/dists/bookworm/Release")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/source/Sources")
+        self.check_exists(
+            "public/" + prefix + "/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists(
+            "public/" + prefix + "/pool/bookworm/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+        # Flat pool must not exist while MultiDist is on
+        self.check_not_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+        # Switch MultiDist back to false
+        task = self.put_task(
+            "/api/publish/" + prefix + "/bookworm",
+            json={
+                "MultiDist": False,
+                "Signing": DefaultSigningOptions,
+            }
+        )
+        self.check_task(task)
+
+        repo_expected["MultiDist"] = False
+        all_repos = self.get("/api/publish")
+        self.check_equal(all_repos.status_code, 200)
+        self.check_in(repo_expected, all_repos.json())
+
+        # Packages are back under the flat pool/main/...
+        self.check_exists("public/" + prefix + "/dists/bookworm/Release")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/binary-i386/Packages")
+        self.check_exists("public/" + prefix +
+                          "/dists/bookworm/main/source/Sources")
+        self.check_exists(
+            "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+        self.check_exists(
+            "public/" + prefix + "/pool/main/p/pyspi/pyspi-0.6.1-1.3.stripped.dsc")
+        # Per-distribution pool must be gone
+        self.check_not_exists(
+            "public/" + prefix + "/pool/bookworm/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
+
+        task = self.delete_task("/api/publish/" + prefix + "/bookworm")
+        self.check_task(task)
+        self.check_not_exists("public/" + prefix + "dists/")
+
+
 class PublishConcurrentUpdateAPITestRepo(APITest):
     """
     PUT /publish/:prefix/:distribution (local repos), DELETE /publish/:prefix/:distribution
