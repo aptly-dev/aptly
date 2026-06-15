@@ -136,4 +136,5 @@ Molior:
 
 Jenny:
 
--   `Jenny, an APT repository manager <https://github.com/groupe-edf/Jenny>`_ by EDF Group
+-   `Jenny, an APT repository manager, a tool to manage Debian package repositories for a Debian-like distribution <https://github.com/groupe-edf/Jenny>`_ by EDF Group
+    It handles incoming packages either built locally or mirrored from external sources, follows them through phases of development (called "environments"), and publishes them as repositories usable by apt and related tools.
