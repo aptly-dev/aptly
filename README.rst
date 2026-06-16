@@ -133,3 +133,9 @@ Scala sbt:
 Molior:
 
 -   `Molior Debian Build System <https://github.com/molior-dbs/molior>`_ by André Roth
+
+Jenny:
+
+-   `Jenny, an APT repository manager, a tool to manage Debian package repositories for a Debian-like distribution <https://github.com/groupe-edf/Jenny>`_ by EDF Group
+    It handles incoming packages either built locally or mirrored from external sources, follows them through phases of development (called "environments"), and publishes them as repositories usable by apt and related tools.
+    This tool is actually only in French language.
