@@ -26,26 +26,6 @@ type PublishedStorage struct {
 	verifyMethod uint
 }
 
-// Global mutex map to prevent concurrent access to the same destinationPath in LinkFromPool
-var (
-	fileLockMutex sync.Mutex
-	fileLocks     = make(map[string]*sync.Mutex)
-)
-
-// getFileLock returns a mutex for a specific file path to prevent concurrent modifications
-func getFileLock(filePath string) *sync.Mutex {
-	fileLockMutex.Lock()
-	defer fileLockMutex.Unlock()
-
-	if mutex, exists := fileLocks[filePath]; exists {
-		return mutex
-	}
-
-	mutex := &sync.Mutex{}
-	fileLocks[filePath] = mutex
-	return mutex
-}
-
 // Check interfaces
 var (
 	_ aptly.PublishedStorage           = (*PublishedStorage)(nil)
@@ -171,11 +151,6 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 	baseName := filepath.Base(fileName)
 	poolPath := filepath.Join(storage.rootPath, publishedPrefix, publishedRelPath, filepath.Dir(fileName))
 	destinationPath := filepath.Join(poolPath, baseName)
-
-	// Acquire file-specific lock to prevent concurrent access to the same file
-	fileLock := getFileLock(destinationPath)
-	fileLock.Lock()
-	defer fileLock.Unlock()
 
 	var localSourcePool aptly.LocalPackagePool
 	if storage.linkMethod != LinkMethodCopy {
