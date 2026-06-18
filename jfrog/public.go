@@ -91,7 +91,7 @@ func NewPublishedStorage(
 	account string, root aptly_utils.JFrogPublishRoot,
 ) (*PublishedStorage, error) {
 	return NewPublishedStorageRaw(
-		root.Repository, root.Url, root.User, root.Password, root.ApiKey, root.AccessToken,
+		root.Repository, root.URL, root.User, root.Password, root.APIKey, root.AccessToken,
 		root.Prefix, root.PlusWorkaround, root.Debug)
 }
 
@@ -131,7 +131,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 	if err != nil {
 		return err
 	}
-	defer res.Close()
+	defer func() { _ = res.Close() }()
 	_, err = storage.manager.DeleteFiles(res)
 	return err
 }
@@ -191,7 +191,7 @@ func (storage *PublishedStorage) Filelist(prefix string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	var paths []string
 
@@ -264,7 +264,7 @@ func (storage *PublishedStorage) FileExists(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	length, err := reader.Length()
 	isEmpty := length == 0

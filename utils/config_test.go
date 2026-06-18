@@ -47,7 +47,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 
 	s.config.JFrogPublishRoots = map[string]JFrogPublishRoot{"test": {
 		Repository: "repo",
-		Url:        "jfrog.example.com"}}
+		URL:        "jfrog.example.com"}}
 
 	s.config.S3PublishRoots = map[string]S3PublishRoot{"test": {
 		Region: "us-east-1",

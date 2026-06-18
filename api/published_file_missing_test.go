@@ -220,7 +220,8 @@ func (s *PublishedFileMissingSuite) TestPublishedFileGoMissing(c *C) {
 	c.Assert(resp.Code, Equals, 200, Commentf("Failed to update publish: %s", resp.Body.String()))
 
 	// Now check if the file is actually accessible in the published location
-	publishedStorage := s.context.GetPublishedStorage("")
+	publishedStorage, err := s.context.GetPublishedStorage("")
+	c.Assert(err, IsNil)
 	publicPath := publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
 
 	// Expected file path: hrt/pool/main/h/hrt-libblobbyclient1/hrt-libblobbyclient1_20250926.152427+hrtdeb11_amd64.deb
@@ -332,7 +333,8 @@ func (s *PublishedFileMissingSuite) TestConcurrentPublishRace(c *C) {
 		c.Assert(err, IsNil)
 
 		// Check published files
-		publishedStorage := s.context.GetPublishedStorage("")
+		publishedStorage, err := s.context.GetPublishedStorage("")
+		c.Assert(err, IsNil)
 		publicPath := publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
 
 		missingFiles := []string{}
@@ -446,7 +448,8 @@ func (s *PublishedFileMissingSuite) TestIdenticalPackageRace(c *C) {
 		c.Logf("[iter %d] All operations complete", iter)
 
 		// Check the shared pool location
-		publishedStorage := s.context.GetPublishedStorage("")
+		publishedStorage, err := s.context.GetPublishedStorage("")
+		c.Assert(err, IsNil)
 		publicPath := publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
 
 		poolSubdir := string(packageName[0])
@@ -663,7 +666,8 @@ func (s *PublishedFileMissingSuite) TestConcurrentSnapshotPublishToSamePrefix(c 
 		c.Assert(bullseyePublishCode, Equals, expectedCode, Commentf("Bullseye publish/update should succeed"))
 
 		// Verify ALL package files exist in the published pool
-		publishedStorage := s.context.GetPublishedStorage("")
+		publishedStorage, err := s.context.GetPublishedStorage("")
+		c.Assert(err, IsNil)
 		publicPath := publishedStorage.(aptly.FileSystemPublishedStorage).PublicPath()
 
 		missingFiles := []string{}

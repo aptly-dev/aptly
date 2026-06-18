@@ -176,10 +176,10 @@ type FileSystemPublishRoot struct {
 
 type JFrogPublishRoot struct {
 	Repository      string `json:"repository"                 yaml:"repository"`
-	Url             string `json:"url"                        yaml:"url"`
+	URL             string `json:"url"                        yaml:"url"`
 	User            string `json:"user"                       yaml:"user"`
 	Password        string `json:"password"                   yaml:"password"`
-	ApiKey          string `json:"apiKey"                     yaml:"api_key"`
+	APIKey          string `json:"apiKey"                     yaml:"api_key"`
 	AccessToken     string `json:"accessToken"                yaml:"access_token"`
 	Prefix          string `json:"prefix"                     yaml:"prefix"`
 	PlusWorkaround  bool   `json:"plusWorkaround"             yaml:"plus_workaround"`

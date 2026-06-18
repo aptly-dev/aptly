@@ -498,7 +498,7 @@ func (s *PublishedStorageSuite) TestNewPublishedStorage(c *C) {
 
 	storage, err := NewPublishedStorage("test", aptly_utils.JFrogPublishRoot{
 		Repository:     "repo",
-		Url:            server.URL,
+		URL:            server.URL,
 		AccessToken:    "token",
 		Prefix:         "pref",
 		PlusWorkaround: true,
