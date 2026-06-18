@@ -230,7 +230,7 @@ func apiFilesUploadOne(c *gin.Context) {
 		AbortWithJSONError(c, 500, err)
 		return
 	}
-	defer dst.Close()
+	defer func() { _ = dst.Close() }()
 
 	if _, err = io.Copy(dst, c.Request.Body); err != nil {
 		AbortWithJSONError(c, 500, err)

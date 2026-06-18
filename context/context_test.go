@@ -2,7 +2,6 @@ package context
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -81,12 +80,11 @@ func (s *AptlyContextSuite) SetUpTest(c *C) {
 
 func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 	// https://github.com/aptly-dev/aptly/issues/711
-	// This will fail on account of us not having a config, so the
-	// storage never exists.
-	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
-		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
-			os.Getenv("HOME"))})
+	// https://github.com/aptly-dev/aptly/issues/1477
+	// GetPublishedStorage must return an error (not panic) when the
+	// requested storage is not configured.
+	_, err := s.context.GetPublishedStorage("filesystem:fuji")
+	c.Assert(err, NotNil)
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
@@ -98,18 +96,20 @@ func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
 	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{
 		"test": {
 			Repository:  "aptly-repo",
-			Url:         "https://example.jfrog.local/artifactory",
+			URL:         "https://example.jfrog.local/artifactory",
 			AccessToken: "token",
 			Prefix:      "public",
 		},
 	}
 
-	storage := s.context.GetPublishedStorage("jfrog:test")
+	storage, err := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(err, IsNil)
 	c.Assert(storage, NotNil)
 	c.Assert(fmt.Sprintf("%v", storage), Equals, "jfrog:aptly-repo:public")
 
 	// Ensure we get the cached object on repeated lookups.
-	storageAgain := s.context.GetPublishedStorage("jfrog:test")
+	storageAgain, err := s.context.GetPublishedStorage("jfrog:test")
+	c.Assert(err, IsNil)
 	c.Assert(storageAgain, Equals, storage)
 }
 
@@ -120,9 +120,9 @@ func (s *AptlyContextSuite) TestGetPublishedStorageJFrogMissing(c *C) {
 	s.context.configLoaded = true
 	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{}
 
-	c.Assert(func() { s.context.GetPublishedStorage("jfrog:missing") },
-		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: "published JFrog storage missing not configured"})
+	_, err := s.context.GetPublishedStorage("jfrog:missing")
+	c.Assert(err, NotNil)
+	c.Check(err.Error(), Equals, "published JFrog storage missing not configured")
 }
 
 func (s *AptlyContextSuite) TestGetPublishedStorageJFrogInitError(c *C) {
@@ -133,19 +133,11 @@ func (s *AptlyContextSuite) TestGetPublishedStorageJFrogInitError(c *C) {
 	utils.Config.JFrogPublishRoots = map[string]utils.JFrogPublishRoot{
 		"broken": {
 			Repository: "aptly-repo",
-			Url:        "ssh://example.local/artifactory",
+			URL:        "ssh://example.local/artifactory",
 		},
 	}
 
-	defer func() {
-		obtained := recover()
-		c.Assert(obtained, NotNil)
-
-		fatalErr, ok := obtained.(*FatalError)
-		c.Assert(ok, Equals, true)
-		c.Check(fatalErr.ReturnCode, Equals, 1)
-		c.Check(fatalErr.Message, Matches, `error creating jfrog manager: .*`)
-	}()
-
-	s.context.GetPublishedStorage("jfrog:broken")
+	_, err := s.context.GetPublishedStorage("jfrog:broken")
+	c.Assert(err, NotNil)
+	c.Check(err.Error(), Matches, `error creating jfrog manager: .*`)
 }
