@@ -34,6 +34,7 @@
     "skipContentsPublishing": false,
     "skipBz2Publishing": false,
     "FileSystemPublishEndpoints": {},
+    "JFrogPublishEndpoints": null,
     "S3PublishEndpoints": {},
     "GcsPublishEndpoints": {},
     "SwiftPublishEndpoints": {},

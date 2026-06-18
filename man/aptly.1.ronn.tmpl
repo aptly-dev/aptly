@@ -356,6 +356,29 @@ The legacy json configuration is still supported (and also supports comments):
         // }
       },
 
+      // JFrog Artifactory Endpoint Support
+      // aptly could be configured to publish repository directly to JFrog Artifactory. First,
+      // endpoints should be described in aptly.conf:
+      //
+      // The destination Artifactory repo should be of the "generic" type, not "debian".
+      // Authentication requires one of: user+pass, api key, or access token
+      //
+      // In order to publish to JFrog, specify endpoint as `jfrog:endpoint-name:` before
+      // publishing prefix on the command line, e.g.:
+      //
+      //   `aptly publish snapshot wheezy-main jfrog:test:`
+      //
+      "JFrogPublishEndpoints": {
+        "test": {
+          "url": "https://artifactory.example.com/artifactory/",
+          "repository": "apt-local",
+          "username": "admin",
+          "password": "password",
+          "api_key": "api_key",
+          "access_token": "access_token"
+        }
+      }
+
       // Swift Endpoint Support
       //
       // aptly could be configured to publish repository directly to OpenStack Swift. First,
