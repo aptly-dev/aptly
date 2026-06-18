@@ -128,6 +128,35 @@ func (s *ControlFileSuite) TestReadWriteStanza(c *C) {
 	c.Assert(strings.HasPrefix(str, "Package: "), Equals, true)
 }
 
+// Sources may contain "Package-List: " with a trailing space.
+// That trailing space must not be preserved and re-emitted
+// as a spurious blank continuation line when the stanza is written back out.
+func (s *ControlFileSuite) TestPackageListTrailingSpace(c *C) {
+	input := "Package-List: \n" +
+		" bash deb shells required arch=any\n" +
+		" bash-doc deb doc optional arch=all\n"
+
+	r := NewControlFileReader(bytes.NewBufferString(input), false, false)
+	stanza, err := r.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(stanza["Package-List"], Equals,
+		" bash deb shells required arch=any\n"+
+			" bash-doc deb doc optional arch=all\n")
+
+	buf := &bytes.Buffer{}
+	w := bufio.NewWriter(buf)
+	err = stanza.Copy().WriteTo(w, true, false, false)
+	c.Assert(err, IsNil)
+	c.Assert(w.Flush(), IsNil)
+
+	written := buf.String()
+	c.Assert(strings.Contains(written, "Package-List:\n \n"), Equals, false,
+		Commentf("spurious blank continuation line found in written output:\n%s", written))
+	c.Assert(strings.Contains(written, "Package-List:\n bash"), Equals, true,
+		Commentf("expected Package-List entries not found in written output:\n%s", written))
+}
+
 func (s *ControlFileSuite) TestReadWriteInstallerStanza(c *C) {
 	s.reader = bytes.NewBufferString(installerFile)
 	r := NewControlFileReader(s.reader, false, true)
