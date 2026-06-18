@@ -291,8 +291,11 @@ func (c *ControlFileReader) ReadStanza() (Stanza, error) {
 			lastField = canonicalCase(parts[0])
 			lastFieldMultiline = isMultilineField(lastField, c.isRelease)
 			if lastFieldMultiline {
-				stanza[lastField] = parts[1]
-				if parts[1] != "" {
+				// Trim trailing whitespace from the inline value so that
+				// "Package-List: " does not add empty line
+				inlineVal := strings.TrimRight(parts[1], " \t")
+				stanza[lastField] = inlineVal
+				if inlineVal != "" {
 					stanza[lastField] += "\n"
 				}
 			} else {
