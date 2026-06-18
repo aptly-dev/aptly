@@ -1,4 +1,5 @@
 azure-storage-blob
+google-cloud-storage
 boto
 requests==2.33.0
 requests-unixsocket
