@@ -14,7 +14,8 @@ import (
 // @Router /api/s3 [get]
 func apiS3List(c *gin.Context) {
 	keys := []string{}
-	for k := range context.Config().S3PublishRoots {
+	s3Roots := context.Config().S3PublishRoots
+	for k := range s3Roots {
 		keys = append(keys, k)
 	}
 	c.JSON(200, keys)
