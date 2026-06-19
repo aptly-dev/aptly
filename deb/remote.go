@@ -417,7 +417,7 @@ func (repo *RemoteRepo) Fetch(d aptly.Downloader, verifier pgp.Verifier, ignoreS
 			return err
 		}
 
-		err = verifier.VerifyDetachedSignature(releasesig, release, true)
+		_, err = verifier.VerifyDetachedSignature(releasesig, release, true)
 		if err != nil {
 			return err
 		}
@@ -600,7 +600,7 @@ func (repo *RemoteRepo) DownloadPackageIndexes(progress aptly.Progress, d aptly.
 						return err
 					}
 
-					err = verifier.VerifyDetachedSignature(filesig, packagesFile, false)
+					_, err = verifier.VerifyDetachedSignature(filesig, packagesFile, false)
 					if err != nil {
 						return err
 					}

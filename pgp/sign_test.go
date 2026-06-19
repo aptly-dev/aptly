@@ -72,7 +72,7 @@ func (s *SignerSuite) testSignDetached(c *C) {
 	err := s.signer.DetachedSign(s.clearF.Name(), s.signedF.Name())
 	c.Assert(err, IsNil)
 
-	err = s.verifier.VerifyDetachedSignature(s.signedF, s.clearF, false)
+	_, err = s.verifier.VerifyDetachedSignature(s.signedF, s.clearF, false)
 	c.Assert(err, IsNil)
 }
 

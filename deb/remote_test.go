@@ -29,8 +29,8 @@ func (n *NullVerifier) InitKeyring(_ bool) error {
 func (n *NullVerifier) AddKeyring(keyring string) {
 }
 
-func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, hint bool) error {
-	return nil
+func (n *NullVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, hint bool) (*pgp.KeyInfo, error) {
+	return &pgp.KeyInfo{}, nil
 }
 
 func (n *NullVerifier) VerifyClearsigned(clearsigned io.Reader, hint bool) (*pgp.KeyInfo, error) {

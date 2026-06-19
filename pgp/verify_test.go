@@ -16,11 +16,13 @@ type VerifierSuite struct {
 func (s *VerifierSuite) TestVerifyDetached(c *C) {
 	for _, test := range []struct {
 		textName, signatureName string
+		expiredKeys             []Key
 	}{
-		{"1.text", "1.signature"},
-		{"2.text", "2.signature"},
-		{"3.text", "3.signature"},
-		{"4.text", "4.signature"},
+		{"1.text", "1.signature", nil},
+		{"2.text", "2.signature", nil},
+		{"3.text", "3.signature", nil},
+		// 4.signature is signed by an expired key (wheezy, 8B48AD6246925553)
+		{"4.text", "4.signature", []Key{"8B48AD6246925553"}},
 	} {
 		cleartext, err := os.Open(test.textName)
 		c.Assert(err, IsNil)
@@ -28,8 +30,11 @@ func (s *VerifierSuite) TestVerifyDetached(c *C) {
 		signature, err := os.Open(test.signatureName)
 		c.Assert(err, IsNil)
 
-		err = s.verifier.VerifyDetachedSignature(signature, cleartext, false)
+		keyInfo, err := s.verifier.VerifyDetachedSignature(signature, cleartext, false)
 		c.Assert(err, IsNil)
+		if test.expiredKeys != nil {
+			c.Check(keyInfo.ExpiredKeys, DeepEquals, test.expiredKeys)
+		}
 
 		_ = signature.Close()
 		_ = cleartext.Close()
@@ -47,8 +52,10 @@ func (s *VerifierSuite) TestVerifyClearsigned(c *C) {
 
 		keyInfo, err := s.verifier.VerifyClearsigned(clearsigned, false)
 		c.Assert(err, IsNil)
-		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"04EE7237B7D453EC", "648ACFD622F3D138", "DCC9EFBF77E11517"})
+		// 04EE7237B7D453EC (stretch) is expired and must appear in ExpiredKeys, not GoodKeys
+		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"648ACFD622F3D138", "DCC9EFBF77E11517"})
 		c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
+		c.Check(keyInfo.ExpiredKeys, DeepEquals, []Key{"04EE7237B7D453EC"})
 
 		_ = clearsigned.Close()
 	}

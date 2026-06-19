@@ -292,12 +292,12 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 }
 
 // VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
-func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error {
+func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) (*KeyInfo, error) {
 	args := g.argsKeyrings()
 
 	sigf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		_ = os.Remove(sigf.Name())
@@ -306,12 +306,12 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sh
 
 	_, err = io.Copy(sigf, signature)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	clearf, err := os.CreateTemp("", "aptly-gpg")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		_ = os.Remove(clearf.Name())
@@ -320,12 +320,16 @@ func (g *GpgVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sh
 
 	_, err = io.Copy(clearf, cleartext)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	args = append(args, sigf.Name(), clearf.Name())
 	_, err = g.runGpgv(args, "detached signature", showKeyTip)
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	return &KeyInfo{}, nil
 }
 
 // IsClearSigned returns true if file contains signature

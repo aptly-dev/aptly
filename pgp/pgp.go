@@ -54,7 +54,7 @@ type Signer interface {
 type Verifier interface {
 	InitKeyring(verbose bool) error
 	AddKeyring(keyring string)
-	VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error
+	VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) (*KeyInfo, error)
 	IsClearSigned(clearsigned io.Reader) (bool, error)
 	VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (*KeyInfo, error)
 	ExtractClearsigned(clearsigned io.Reader) (text *os.File, err error)

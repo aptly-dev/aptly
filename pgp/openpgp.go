@@ -85,14 +85,14 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 		var pubKeyAlgo packet.PublicKeyAlgorithm
 		var keys []openpgp.Key
 
+		var sigExpired bool
+
 		switch sig := p.(type) {
 		case *packet.Signature:
 			if sig.IssuerKeyId == nil {
 				return nil, 0, errors.StructuralError("signature doesn't have an issuer")
 			}
-			if sig.SigExpired(now) {
-				continue
-			}
+			sigExpired = sig.SigExpired(now)
 			issuerKeyID = *sig.IssuerKeyId
 			hashFunc = sig.Hash
 			sigType = sig.SigType
@@ -134,7 +134,7 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 			if err == nil {
 				signers = append(signers, signatureResult{
 					CreationTime: creationTime,
-					IsExpired:    key.PublicKey.KeyExpired(key.SelfSignature, now),
+					IsExpired:    sigExpired || key.PublicKey.KeyExpired(key.SelfSignature, now),
 					IssuerKeyID:  issuerKeyID,
 					PubKeyAlgo:   pubKeyAlgo,
 					Entity:       key.Entity,

@@ -392,7 +392,7 @@ func (g *GoVerifier) printLog(signers []signatureResult) {
 }
 
 // VerifyDetachedSignature verifies combination of signature and cleartext using gpgv
-func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) error {
+func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, showKeyTip bool) (*KeyInfo, error) {
 	var signatureBuf bytes.Buffer
 
 	signers, missingKeys, err := checkArmoredDetachedSignature(g.trustedKeyring, cleartext, io.TeeReader(signature, &signatureBuf))
@@ -409,16 +409,24 @@ func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sho
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "failed to verify detached signature")
+		return nil, errors.Wrap(err, "failed to verify detached signature")
 	}
 
+	result := &KeyInfo{}
+
 	for _, signer := range signers {
-		if signer.Entity != nil && signer.IsExpired {
-			return errors.Errorf("signature key %s has expired", KeyFromUint64(signer.IssuerKeyID))
+		if signer.Entity != nil {
+			if signer.IsExpired {
+				result.ExpiredKeys = append(result.ExpiredKeys, KeyFromUint64(signer.IssuerKeyID))
+			} else {
+				result.GoodKeys = append(result.GoodKeys, KeyFromUint64(signer.IssuerKeyID))
+			}
+		} else {
+			result.MissingKeys = append(result.MissingKeys, KeyFromUint64(signer.IssuerKeyID))
 		}
 	}
 
-	return nil
+	return result, nil
 }
 
 // IsClearSigned returns true if file contains signature
