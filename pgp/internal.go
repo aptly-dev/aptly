@@ -412,6 +412,12 @@ func (g *GoVerifier) VerifyDetachedSignature(signature, cleartext io.Reader, sho
 		return errors.Wrap(err, "failed to verify detached signature")
 	}
 
+	for _, signer := range signers {
+		if signer.Entity != nil && signer.IsExpired {
+			return errors.Errorf("signature key %s has expired", KeyFromUint64(signer.IssuerKeyID))
+		}
+	}
+
 	return nil
 }
 
@@ -455,7 +461,9 @@ func (g *GoVerifier) VerifyClearsigned(clearsigned io.Reader, showKeyTip bool) (
 
 	for _, signer := range signers {
 		if signer.Entity != nil {
-			if !signer.IsExpired {
+			if signer.IsExpired {
+				result.ExpiredKeys = append(result.ExpiredKeys, KeyFromUint64(signer.IssuerKeyID))
+			} else {
 				result.GoodKeys = append(result.GoodKeys, KeyFromUint64(signer.IssuerKeyID))
 			}
 		} else {

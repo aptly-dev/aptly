@@ -36,6 +36,7 @@ func KeyFromUint64(key uint64) Key {
 type KeyInfo struct {
 	GoodKeys    []Key
 	MissingKeys []Key
+	ExpiredKeys []Key
 }
 
 // Signer interface describes facility implementing signing of files
