@@ -1540,6 +1540,52 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 	return referencedFiles, nil
 }
 
+// CleanupAfterMultiDistToggle cleans up stale pool files left behind when the
+// MultiDist flag is toggled on a published repository.
+//
+//   - false→true: Publish() wrote packages into pool/<distribution>/<component>/
+//     but the old flat pool/<component>/ files were not removed because
+//     CleanupPrefixComponentFiles only scans the new MultiDist tree.
+//     A second pass with MultiDist=false cleans the legacy flat layout by
+//     reusing the existing orphan-detection logic (the repo is now MultiDist=true
+//     so it is excluded from the referenced-files scan, making its old pool
+//     entries appear orphaned).
+//
+//   - true→false: Publish() wrote packages into pool/<component>/ but the old
+//     per-distribution pool/<distribution>/<component>/ directories were not
+//     removed.  The orphan-detection approach cannot be used here because the
+//     repo's RefList still contains all packages (they just moved locations).
+//     Instead we directly remove each pool/<distribution>/<component>/ directory.
+//     This is safe because per-distribution pool dirs are exclusive to a single
+//     prefix+distribution combination — no other published repo can share them.
+func (collection *PublishedRepoCollection) CleanupAfterMultiDistToggle(publishedStorageProvider aptly.PublishedStorageProvider,
+	published *PublishedRepo, prevMultiDist bool, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	if prevMultiDist == published.MultiDist {
+		return nil
+	}
+
+	if !prevMultiDist && published.MultiDist {
+		// false→true: use orphan-detection via the existing cleanup, but with
+		// MultiDist temporarily set to false so it scans the flat pool layout.
+		legacy := *published
+		legacy.MultiDist = false
+		return collection.CleanupPrefixComponentFiles(publishedStorageProvider, &legacy, cleanComponents, collectionFactory, progress)
+	}
+
+	// true→false: directly remove the per-distribution pool directories.
+	publishedStorage := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	for _, component := range cleanComponents {
+		poolDir := filepath.Join(published.Prefix, "pool", published.Distribution, component)
+		if err := publishedStorage.RemoveDirs(poolDir, progress); err != nil {
+			return err
+		}
+	}
+	// Remove the distribution-level pool dir if it is now empty.
+	distPoolDir := filepath.Join(published.Prefix, "pool", published.Distribution)
+	_ = publishedStorage.RemoveDirs(distPoolDir, progress)
+	return nil
+}
+
 // CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
 func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(publishedStorageProvider aptly.PublishedStorageProvider,
 	published *PublishedRepo, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {

@@ -502,6 +502,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
+		// Capture MultiDist before mutations to detect a false→true transition.
+		prevMultiDist := published.MultiDist
+
 		// Apply field mutations on the freshly loaded object.
 		if b.SkipContents != nil {
 			published.SkipContents = *b.SkipContents
@@ -548,6 +551,15 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			err = taskCollection.CleanupPrefixComponentFiles(context, published, cleanComponents, taskCollectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+			// When MultiDist is toggled, the old pool layout still has files that
+			// CleanupPrefixComponentFiles won't touch (it only scans the new layout).
+			// Run a second pass over the previous layout to remove stale files.
+			if prevMultiDist != published.MultiDist {
+				err = taskCollection.CleanupAfterMultiDistToggle(context, published, prevMultiDist, cleanComponents, taskCollectionFactory, out)
+				if err != nil {
+					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to clean legacy pool: %s", err)
+				}
 			}
 		}
 
@@ -1148,6 +1160,9 @@ func apiPublishUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
+		// Capture MultiDist before mutations to detect a false→true transition.
+		prevMultiDist := published.MultiDist
+
 		// Apply field mutations on the freshly loaded object.
 		if b.SkipContents != nil {
 			published.SkipContents = *b.SkipContents
@@ -1183,6 +1198,15 @@ func apiPublishUpdate(c *gin.Context) {
 			err = taskCollection.CleanupPrefixComponentFiles(context, published, cleanComponents, taskCollectionFactory, out)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+			// When MultiDist is toggled, the old pool layout still has files that
+			// CleanupPrefixComponentFiles won't touch (it only scans the new layout).
+			// Run a second pass over the previous layout to remove stale files.
+			if prevMultiDist != published.MultiDist {
+				err = taskCollection.CleanupAfterMultiDistToggle(context, published, prevMultiDist, cleanComponents, taskCollectionFactory, out)
+				if err != nil {
+					return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to clean legacy pool: %s", err)
+				}
 			}
 		}
 
