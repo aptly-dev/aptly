@@ -95,8 +95,8 @@ type FileSystemPublishedStorage interface {
 
 // PublishedStorageProvider is a thing that returns PublishedStorage by name
 type PublishedStorageProvider interface {
-	// GetPublishedStorage returns PublishedStorage by name
-	GetPublishedStorage(name string) PublishedStorage
+	// GetPublishedStorage returns PublishedStorage by name, or an error if the storage is not configured
+	GetPublishedStorage(name string) (PublishedStorage, error)
 }
 
 // BarType used to differentiate between different progress bars

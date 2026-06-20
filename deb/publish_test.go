@@ -61,12 +61,12 @@ type FakeStorageProvider struct {
 	storages map[string]aptly.PublishedStorage
 }
 
-func (p *FakeStorageProvider) GetPublishedStorage(name string) aptly.PublishedStorage {
+func (p *FakeStorageProvider) GetPublishedStorage(name string) (aptly.PublishedStorage, error) {
 	storage, ok := p.storages[name]
 	if !ok {
-		panic(fmt.Sprintf("unknown storage: %#v", name))
+		return nil, fmt.Errorf("unknown storage: %#v", name)
 	}
-	return storage
+	return storage, nil
 }
 
 type PublishedRepoSuite struct {

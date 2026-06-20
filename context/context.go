@@ -116,7 +116,12 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Config file not found, creating default config at %s\n\n", homeLocation)
 
-				_ = utils.SaveConfigRaw(homeLocation, aptly.AptlyConf)
+				defaultConfig := aptly.AptlyConf
+				if len(defaultConfig) == 0 {
+					defaultConfig = []byte("root_dir: \"\"")
+				}
+
+				_ = utils.SaveConfigRaw(homeLocation, defaultConfig)
 				err = utils.LoadConfig(homeLocation, &utils.Config)
 				if err != nil {
 					Fatal(fmt.Errorf("error loading config file %s: %s", homeLocation, err))
@@ -407,8 +412,8 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 	return context.packagePool
 }
 
-// GetPublishedStorage returns instance of PublishedStorage
-func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedStorage {
+// GetPublishedStorage returns instance of PublishedStorage, or an error if the storage is not configured
+func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedStorage, error) {
 	context.Lock()
 	defer context.Unlock()
 
@@ -419,14 +424,14 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 		} else if strings.HasPrefix(name, "filesystem:") {
 			params, ok := context.config().FileSystemPublishRoots[name[11:]]
 			if !ok {
-				Fatal(fmt.Errorf("published local storage %v not configured", name[11:]))
+				return nil, fmt.Errorf("published local storage %v not configured", name[11:])
 			}
 
 			publishedStorage = files.NewPublishedStorage(params.RootDir, params.LinkMethod, params.VerifyMethod)
 		} else if strings.HasPrefix(name, "s3:") {
 			params, ok := context.config().S3PublishRoots[name[3:]]
 			if !ok {
-				Fatal(fmt.Errorf("published S3 storage %v not configured", name[3:]))
+				return nil, fmt.Errorf("published S3 storage %v not configured", name[3:])
 			}
 
 			var err error
@@ -436,39 +441,39 @@ func (context *AptlyContext) GetPublishedStorage(name string) aptly.PublishedSto
 				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
 				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug)
 			if err != nil {
-				Fatal(err)
+				return nil, err
 			}
 		} else if strings.HasPrefix(name, "swift:") {
 			params, ok := context.config().SwiftPublishRoots[name[6:]]
 			if !ok {
-				Fatal(fmt.Errorf("published Swift storage %v not configured", name[6:]))
+				return nil, fmt.Errorf("published Swift storage %v not configured", name[6:])
 			}
 
 			var err error
 			publishedStorage, err = swift.NewPublishedStorage(params.UserName, params.Password,
 				params.AuthURL, params.Tenant, params.TenantID, params.Domain, params.DomainID, params.TenantDomain, params.TenantDomainID, params.Container, params.Prefix)
 			if err != nil {
-				Fatal(err)
+				return nil, err
 			}
 		} else if strings.HasPrefix(name, "azure:") {
 			params, ok := context.config().AzurePublishRoots[name[6:]]
 			if !ok {
-				Fatal(fmt.Errorf("published Azure storage %v not configured", name[6:]))
+				return nil, fmt.Errorf("published Azure storage %v not configured", name[6:])
 			}
 
 			var err error
 			publishedStorage, err = azure.NewPublishedStorage(
 				params.AccountName, params.AccountKey, params.Container, params.Prefix, params.Endpoint)
 			if err != nil {
-				Fatal(err)
+				return nil, err
 			}
 		} else {
-			Fatal(fmt.Errorf("unknown published storage format: %v", name))
+			return nil, fmt.Errorf("unknown published storage format: %v", name)
 		}
 		context.publishedStorages[name] = publishedStorage
 	}
 
-	return publishedStorage
+	return publishedStorage, nil
 }
 
 // UploadPath builds path to upload storage

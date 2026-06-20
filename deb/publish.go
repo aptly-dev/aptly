@@ -824,9 +824,12 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool, skelDir string) error {
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	if err != nil {
+		return err
+	}
 
-	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
+	err = publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
 	}
@@ -1200,7 +1203,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 // It can remove prefix fully, and part of pool (for specific component)
 func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStorageProvider, removePrefix bool,
 	removePoolComponents []string, progress aptly.Progress) error {
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	if err != nil {
+		return err
+	}
 
 	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
@@ -1213,7 +1219,7 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 	}
 
 	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
-	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
+	err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
 	if err != nil {
 		return err
 	}
@@ -1573,7 +1579,10 @@ func (collection *PublishedRepoCollection) CleanupAfterMultiDistToggle(published
 	}
 
 	// true→false: directly remove the per-distribution pool directories.
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	if err != nil {
+		return err
+	}
 	for _, component := range cleanComponents {
 		poolDir := filepath.Join(published.Prefix, "pool", published.Distribution, component)
 		if err := publishedStorage.RemoveDirs(poolDir, progress); err != nil {
@@ -1599,7 +1608,10 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 	distribution := published.Distribution
 
 	rootPath := filepath.Join(prefix, "dists", distribution)
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	if err != nil {
+		return err
+	}
 
 	sort.Strings(cleanComponents)
 	publishedComponents := published.Components()

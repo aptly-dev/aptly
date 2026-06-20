@@ -60,7 +60,12 @@ func reposServeInAPIMode(c *gin.Context) {
 		storage = "filesystem:" + storage
 	}
 
-	publicPath := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage).PublicPath()
+	ps, err := context.GetPublishedStorage(storage)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, err)
+		return
+	}
+	publicPath := ps.(aptly.FileSystemPublishedStorage).PublicPath()
 	c.FileFromFS(pkgpath, http.Dir(publicPath))
 }
 
