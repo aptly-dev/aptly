@@ -31,6 +31,7 @@ type ConfigStructure struct { // nolint: maligned
 	// PPA
 	PpaDistributorID string `json:"ppaDistributorID"              yaml:"ppa_distributor_id"`
 	PpaCodename      string `json:"ppaCodename"                   yaml:"ppa_codename"`
+	PpaBaseURL       string `json:"ppaBaseURL"                    yaml:"ppa_baseurl"`
 
 	// Server
 	ServeInAPIMode        bool `json:"serveInAPIMode"                yaml:"serve_in_api_mode"`
@@ -49,9 +50,10 @@ type ConfigStructure struct { // nolint: maligned
 	DownloadSourcePackages bool   `json:"downloadSourcePackages"        yaml:"download_sourcepackages"`
 
 	// Signing
-	GpgProvider      string `json:"gpgProvider"                   yaml:"gpg_provider"`
-	GpgDisableSign   bool   `json:"gpgDisableSign"                yaml:"gpg_disable_sign"`
-	GpgDisableVerify bool   `json:"gpgDisableVerify"              yaml:"gpg_disable_verify"`
+	GpgProvider      string   `json:"gpgProvider"                   yaml:"gpg_provider"`
+	GpgDisableSign   bool     `json:"gpgDisableSign"                yaml:"gpg_disable_sign"`
+	GpgDisableVerify bool     `json:"gpgDisableVerify"              yaml:"gpg_disable_verify"`
+	GpgKeys          []string `json:"gpgKeys"                       yaml:"gpg_keys"`
 
 	// Publishing
 	SkipContentsPublishing bool `json:"skipContentsPublishing"        yaml:"skip_contents_publishing"`
@@ -226,6 +228,7 @@ var Config = ConfigStructure{
 	GpgProvider:            "gpg",
 	GpgDisableSign:         false,
 	GpgDisableVerify:       false,
+	GpgKeys:                []string{},
 	DownloadSourcePackages: false,
 	PackagePoolStorage: PackagePoolStorage{
 		Local: &LocalPoolStorage{Path: ""},
@@ -233,6 +236,7 @@ var Config = ConfigStructure{
 	SkipLegacyPool:         false,
 	PpaDistributorID:       "ubuntu",
 	PpaCodename:            "",
+	PpaBaseURL:             "http://ppa.launchpad.net",
 	FileSystemPublishRoots: map[string]FileSystemPublishRoot{},
 	S3PublishRoots:         map[string]S3PublishRoot{},
 	SwiftPublishRoots:      map[string]SwiftPublishRoot{},

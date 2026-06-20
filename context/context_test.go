@@ -1,8 +1,6 @@
 package context
 
 import (
-	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -80,10 +78,9 @@ func (s *AptlyContextSuite) SetUpTest(c *C) {
 
 func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 	// https://github.com/aptly-dev/aptly/issues/711
-	// This will fail on account of us not having a config, so the
-	// storage never exists.
-	c.Assert(func() { s.context.GetPublishedStorage("filesystem:fuji") },
-		FatalErrorPanicMatches,
-		&FatalError{ReturnCode: 1, Message: fmt.Sprintf("error loading config file %s/.aptly.conf: invalid yaml (EOF) or json (EOF)",
-			os.Getenv("HOME"))})
+	// https://github.com/aptly-dev/aptly/issues/1477
+	// GetPublishedStorage must return an error (not panic) when the
+	// requested storage is not configured.
+	_, err := s.context.GetPublishedStorage("filesystem:fuji")
+	c.Assert(err, NotNil)
 }

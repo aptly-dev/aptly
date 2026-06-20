@@ -11,6 +11,7 @@ dep_follow_source: false
 dep_verboseresolve: false
 ppa_distributor_id: ubuntu
 ppa_codename: ""
+ppa_baseurl: http://ppa.launchpad.net
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: false
@@ -27,6 +28,7 @@ download_sourcepackages: false
 gpg_provider: gpg
 gpg_disable_sign: false
 gpg_disable_verify: false
+gpg_keys: []
 skip_contents_publishing: false
 skip_bz2_publishing: false
 filesystem_publish_endpoints: {}

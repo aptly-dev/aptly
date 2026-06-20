@@ -1,4 +1,4 @@
-Downloading: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/dists/maverick/InRelease
+Downloading: http://repo.aptly.info/system-tests/ppa/gladky-anton/gnuplot/ubuntu/dists/maverick/InRelease
 gpgv: Signature made Sun Jul 28 07:57:01 2024 UTC
 gpgv:                using RSA key 5BFCD481D86D5824470E469F9000B1C3A01F726C
 gpgv: Good signature from "Launchpad PPA for Anton Gladky"
@@ -6,5 +6,5 @@ gpgv: Signature made Sun Jul 28 07:57:01 2024 UTC
 gpgv:                using RSA key 02219381E9161C78A46CB2BFA5279A973B1F56C0
 gpgv: Good signature from "Launchpad sim"
 
-Mirror [mirror18]: http://ppa.launchpad.net/gladky-anton/gnuplot/ubuntu/ maverick successfully added.
+Mirror [mirror18]: http://repo.aptly.info/system-tests/ppa/gladky-anton/gnuplot/ubuntu/ maverick successfully added.
 You can run 'aptly mirror update mirror18' to download repository contents.

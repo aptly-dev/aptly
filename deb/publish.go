@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -603,6 +604,15 @@ func (p *PublishedRepo) Key() []byte {
 	return []byte("U" + p.StoragePrefix() + ">>" + p.Distribution)
 }
 
+// PrefixPoolLockKey returns the task-queue resource key that serialises all
+// publish operations sharing the same pool directory under storagePrefix.
+// It must be held whenever a non-MultiDist publish may read or clean the
+// shared pool, to prevent concurrent cleanup runs from deleting each other's
+// files.  See docs/Resource-Locking.md for the full key-namespace table.
+func PrefixPoolLockKey(storagePrefix string) string {
+	return "P" + storagePrefix
+}
+
 // RefKey is a unique id for package reference list
 func (p *PublishedRepo) RefKey(component string) []byte {
 	return []byte("E" + p.UUID + component)
@@ -814,9 +824,12 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool, skelDir string) error {
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	if err != nil {
+		return err
+	}
 
-	err := publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
+	err = publishedStorage.MkDir(filepath.Join(p.Prefix, "pool"))
 	if err != nil {
 		return err
 	}
@@ -1126,7 +1139,15 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	release["Label"] = p.GetLabel()
 	release["Suite"] = p.GetSuite()
 	release["Codename"] = p.GetCodename()
-	release["Date"] = time.Now().UTC().Format("Mon, 2 Jan 2006 15:04:05 MST")
+	datetimeFormat := "Mon, 2 Jan 2006 15:04:05 MST"
+
+	publishDate := time.Now().UTC()
+	if epoch := os.Getenv("SOURCE_DATE_EPOCH"); epoch != "" {
+		if sec, err := strconv.ParseInt(epoch, 10, 64); err == nil {
+			publishDate = time.Unix(sec, 0).UTC()
+		}
+	}
+	release["Date"] = publishDate.Format(datetimeFormat)
 	release["Architectures"] = strings.Join(utils.StrSlicesSubstract(p.Architectures, []string{ArchitectureSource}), " ")
 	if p.AcquireByHash {
 		release["Acquire-By-Hash"] = "yes"
@@ -1182,7 +1203,10 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 // It can remove prefix fully, and part of pool (for specific component)
 func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStorageProvider, removePrefix bool,
 	removePoolComponents []string, progress aptly.Progress) error {
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(p.Storage)
+	if err != nil {
+		return err
+	}
 
 	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
@@ -1195,7 +1219,7 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 	}
 
 	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
-	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
+	err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
 	if err != nil {
 		return err
 	}
@@ -1522,6 +1546,55 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 	return referencedFiles, nil
 }
 
+// CleanupAfterMultiDistToggle cleans up stale pool files left behind when the
+// MultiDist flag is toggled on a published repository.
+//
+//   - false→true: Publish() wrote packages into pool/<distribution>/<component>/
+//     but the old flat pool/<component>/ files were not removed because
+//     CleanupPrefixComponentFiles only scans the new MultiDist tree.
+//     A second pass with MultiDist=false cleans the legacy flat layout by
+//     reusing the existing orphan-detection logic (the repo is now MultiDist=true
+//     so it is excluded from the referenced-files scan, making its old pool
+//     entries appear orphaned).
+//
+//   - true→false: Publish() wrote packages into pool/<component>/ but the old
+//     per-distribution pool/<distribution>/<component>/ directories were not
+//     removed.  The orphan-detection approach cannot be used here because the
+//     repo's RefList still contains all packages (they just moved locations).
+//     Instead we directly remove each pool/<distribution>/<component>/ directory.
+//     This is safe because per-distribution pool dirs are exclusive to a single
+//     prefix+distribution combination — no other published repo can share them.
+func (collection *PublishedRepoCollection) CleanupAfterMultiDistToggle(publishedStorageProvider aptly.PublishedStorageProvider,
+	published *PublishedRepo, prevMultiDist bool, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+	if prevMultiDist == published.MultiDist {
+		return nil
+	}
+
+	if !prevMultiDist && published.MultiDist {
+		// false→true: use orphan-detection via the existing cleanup, but with
+		// MultiDist temporarily set to false so it scans the flat pool layout.
+		legacy := *published
+		legacy.MultiDist = false
+		return collection.CleanupPrefixComponentFiles(publishedStorageProvider, &legacy, cleanComponents, collectionFactory, progress)
+	}
+
+	// true→false: directly remove the per-distribution pool directories.
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	if err != nil {
+		return err
+	}
+	for _, component := range cleanComponents {
+		poolDir := filepath.Join(published.Prefix, "pool", published.Distribution, component)
+		if err := publishedStorage.RemoveDirs(poolDir, progress); err != nil {
+			return err
+		}
+	}
+	// Remove the distribution-level pool dir if it is now empty.
+	distPoolDir := filepath.Join(published.Prefix, "pool", published.Distribution)
+	_ = publishedStorage.RemoveDirs(distPoolDir, progress)
+	return nil
+}
+
 // CleanupPrefixComponentFiles removes all unreferenced files in published storage under prefix/component pair
 func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(publishedStorageProvider aptly.PublishedStorageProvider,
 	published *PublishedRepo, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
@@ -1535,7 +1608,10 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 	distribution := published.Distribution
 
 	rootPath := filepath.Join(prefix, "dists", distribution)
-	publishedStorage := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	if err != nil {
+		return err
+	}
 
 	sort.Strings(cleanComponents)
 	publishedComponents := published.Components()

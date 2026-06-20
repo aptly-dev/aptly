@@ -85,6 +85,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"dependencyVerboseResolve\": false,\n" +
 		"  \"ppaDistributorID\": \"\",\n" +
 		"  \"ppaCodename\": \"\",\n" +
+		"  \"ppaBaseURL\": \"\",\n" +
 		"  \"serveInAPIMode\": false,\n" +
 		"  \"enableMetricsEndpoint\": false,\n" +
 		"  \"enableSwaggerEndpoint\": false,\n" +
@@ -102,6 +103,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
 		"  \"gpgProvider\": \"gpg\",\n" +
 		"  \"gpgDisableSign\": false,\n" +
 		"  \"gpgDisableVerify\": false,\n" +
+		"  \"gpgKeys\": null,\n" +
 		"  \"skipContentsPublishing\": false,\n" +
 		"  \"skipBz2Publishing\": false,\n" +
 		"  \"FileSystemPublishEndpoints\": {\n" +
@@ -251,6 +253,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"dep_verboseresolve: false\n" +
 		"ppa_distributor_id: \"\"\n" +
 		"ppa_codename: \"\"\n" +
+		"ppa_baseurl: \"\"\n" +
 		"serve_in_api_mode: false\n" +
 		"enable_metrics_endpoint: false\n" +
 		"enable_swagger_endpoint: false\n" +
@@ -267,6 +270,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
 		"gpg_provider: \"\"\n" +
 		"gpg_disable_sign: false\n" +
 		"gpg_disable_verify: false\n" +
+		"gpg_keys: []\n" +
 		"skip_contents_publishing: false\n" +
 		"skip_bz2_publishing: false\n" +
 		"filesystem_publish_endpoints: {}\n" +
@@ -306,6 +310,7 @@ dep_follow_source: true
 dep_verboseresolve: true
 ppa_distributor_id: Ubuntu
 ppa_codename: code
+ppa_baseurl: http://ppa.launchpad.net
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: true
@@ -322,6 +327,7 @@ download_sourcepackages: true
 gpg_provider: gpg
 gpg_disable_sign: true
 gpg_disable_verify: true
+gpg_keys: []
 skip_contents_publishing: true
 skip_bz2_publishing: true
 filesystem_publish_endpoints:

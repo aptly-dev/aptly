@@ -14,7 +14,7 @@ func Test(t *testing.T) {
 }
 
 type EtcDDBSuite struct {
-	db  database.Storage
+	db database.Storage
 }
 
 var _ = Suite(&EtcDDBSuite{})
@@ -133,7 +133,7 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 	v, err := s.db.Get(key)
 	c.Assert(err, IsNil)
 	c.Check(v, DeepEquals, value)
-        err = transaction.Delete(key)
+	err = transaction.Delete(key)
 	c.Assert(err, IsNil)
 
 	_, err = transaction.Get(key2)
@@ -156,4 +156,3 @@ func (s *EtcDDBSuite) TestTransactionCommit(c *C) {
 	_, err = transaction.Get(key)
 	c.Assert(err, NotNil)
 }
-

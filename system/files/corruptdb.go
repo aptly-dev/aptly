@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error opening DB %q: %s", dbPath, err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	keys := db.KeysByPrefix([]byte(prefix))
 	if len(keys) == 0 {

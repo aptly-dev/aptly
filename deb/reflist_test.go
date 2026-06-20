@@ -65,7 +65,7 @@ func (s *PackageRefListSuite) TestNewPackageListFromRefList(c *C) {
 	list, err := NewPackageListFromRefList(reflist, coll, nil)
 	c.Assert(err, IsNil)
 	c.Check(list.Len(), Equals, 4)
-        c.Check(list.Add(s.p4), ErrorMatches, "package already exists and is different: .*")
+	c.Check(list.Add(s.p4), ErrorMatches, "package already exists and is different: .*")
 
 	list, err = NewPackageListFromRefList(nil, coll, nil)
 	c.Assert(err, IsNil)
@@ -128,6 +128,17 @@ func (s *PackageRefListSuite) TestPackageRefListForeach(c *C) {
 	})
 
 	c.Check(err, Equals, e)
+}
+
+func (s *PackageRefListSuite) TestForEachNilList(c *C) {
+	var l *PackageRefList
+	called := false
+	err := l.ForEach(func([]byte) error {
+		called = true
+		return nil
+	})
+	c.Assert(err, IsNil)
+	c.Assert(called, Equals, false)
 }
 
 func (s *PackageRefListSuite) TestHas(c *C) {

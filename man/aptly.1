@@ -111,8 +111,9 @@ The legacy json configuration is still supported (and also supports comments):
   // Enable metrics for Prometheus client
   "enableMetricsEndpoint": false,
 
+  // Not implemented in this version\.
   // Enable API documentation on /docs
-  "enableSwaggerEndpoint": false,
+  //"enableSwaggerEndpoint": false,
 
   // OBSOLETE: use via url param ?_async=true
   "AsyncAPI": false,
@@ -2451,6 +2452,9 @@ show yaml config
 .
 .SH "ENVIRONMENT"
 If environment variable \fBHTTP_PROXY\fR is set \fBaptly\fR would use its value to proxy all HTTP requests\.
+.
+.P
+If environment variable \fBSOURCE_DATE_EPOCH\fR is set to a Unix timestamp, \fBaptly\fR would use that timestamp for the \fBDate\fR and \fBValid\-Until\fR fields in the \fBRelease\fR file when publishing\. This enables reproducible builds as specified by \fIhttps://reproducible\-builds\.org/specs/source\-date\-epoch/\fR\.
 .
 .SH "RETURN VALUES"
 \fBaptly\fR exists with:

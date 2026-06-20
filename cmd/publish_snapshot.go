@@ -190,9 +190,11 @@ func aptlyPublishSnapshotOrRepo(cmd *commander.Command, args []string) error {
 
 	context.Progress().Printf("\n%s been successfully published.\n", message)
 
-	if localStorage, ok := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage); ok {
-		context.Progress().Printf("Please setup your webserver to serve directory '%s' with autoindexing.\n",
-			localStorage.PublicPath())
+	if ps, err := context.GetPublishedStorage(storage); err == nil {
+		if localStorage, ok := ps.(aptly.FileSystemPublishedStorage); ok {
+			context.Progress().Printf("Please setup your webserver to serve directory '%s' with autoindexing.\n",
+				localStorage.PublicPath())
+		}
 	}
 
 	context.Progress().Printf("Now you can add following line to apt sources:\n")
@@ -230,7 +232,7 @@ Example:
 	}
 	cmd.Flag.String("distribution", "", "distribution name to publish")
 	cmd.Flag.String("component", "", "component name to publish (for multi-component publishing, separate components with commas)")
-	cmd.Flag.String("gpg-key", "", "GPG key ID to use when signing the release")
+	cmd.Flag.Var(&gpgKeyFlag{}, "gpg-key", "GPG key ID to use when signing the release (flag is repeatable, can be specified multiple times)")
 	cmd.Flag.Var(&keyRingsFlag{}, "keyring", "GPG keyring to use (instead of default)")
 	cmd.Flag.String("secret-keyring", "", "GPG secret keyring to use (instead of default)")
 	cmd.Flag.String("passphrase", "", "GPG passphrase for the key (warning: could be insecure)")

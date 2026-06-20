@@ -24,7 +24,7 @@ import (
 // @Tags Repos
 // @Produce html
 // @Success 200 {object} string "HTML"
-// @Router /api/repos [get]
+// @Router /repos [get]
 func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -49,7 +49,7 @@ func reposListInAPIMode(localRepos map[string]utils.FileSystemPublishRoot) gin.H
 // @Param pkgPath path string true "Package Path" allowReserved=true
 // @Produce json
 // @Success 200 ""
-// @Router /api/{storage}/{pkgPath} [get]
+// @Router /repos/{storage}/{pkgPath} [get]
 func reposServeInAPIMode(c *gin.Context) {
 	pkgpath := c.Param("pkgPath")
 
@@ -60,7 +60,12 @@ func reposServeInAPIMode(c *gin.Context) {
 		storage = "filesystem:" + storage
 	}
 
-	publicPath := context.GetPublishedStorage(storage).(aptly.FileSystemPublishedStorage).PublicPath()
+	ps, err := context.GetPublishedStorage(storage)
+	if err != nil {
+		AbortWithJSONError(c, http.StatusNotFound, err)
+		return
+	}
+	publicPath := ps.(aptly.FileSystemPublishedStorage).PublicPath()
 	c.FileFromFS(pkgpath, http.Dir(publicPath))
 }
 
@@ -93,7 +98,7 @@ type repoCreateParams struct {
 	DefaultDistribution string `     json:"DefaultDistribution"  example:"stable"`
 	// Default component when publishing from this local repo
 	DefaultComponent string `        json:"DefaultComponent"     example:"main"`
-	// Snapshot name to create repoitory from (optional)
+	// Snapshot name to create repository from (optional)
 	FromSnapshot string `            json:"FromSnapshot"         example:""`
 }
 
@@ -122,63 +127,79 @@ func apiReposCreate(c *gin.Context) {
 		return
 	}
 
-	repo := deb.NewLocalRepo(b.Name, b.Comment)
-	repo.DefaultComponent = b.DefaultComponent
-	repo.DefaultDistribution = b.DefaultDistribution
-
+	// Handler: Pre-task validations (shallow)
 	collectionFactory := context.NewCollectionFactory()
 
+	var resources []string
 	if b.FromSnapshot != "" {
-		var snapshot *deb.Snapshot
-
-		snapshotCollection := collectionFactory.SnapshotCollection()
-
-		snapshot, err := snapshotCollection.ByName(b.FromSnapshot)
+		snapshot, err := collectionFactory.SnapshotCollection().ByName(b.FromSnapshot)
 		if err != nil {
 			AbortWithJSONError(c, http.StatusNotFound, fmt.Errorf("source snapshot not found: %s", err))
 			return
 		}
+		resources = append(resources, string(snapshot.Key()))
+	}
 
-		err = snapshotCollection.LoadComplete(snapshot)
-		if err != nil {
-			AbortWithJSONError(c, http.StatusInternalServerError, fmt.Errorf("unable to load source snapshot: %s", err))
-			return
+	taskName := fmt.Sprintf("Create repository %s", b.Name)
+
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		// Task: Create fresh collection and check/create ATOMIC inside task
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.LocalRepoCollection()
+
+		// Check duplicate inside lock
+		if _, err := taskCollection.ByName(b.Name); err == nil {
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, 
+				fmt.Errorf("local repo with name %s already exists", b.Name)
 		}
 
-		repo.UpdateRefList(snapshot.RefList())
-	}
+		// Create repo
+		repo := deb.NewLocalRepo(b.Name, b.Comment)
+		repo.DefaultComponent = b.DefaultComponent
+		repo.DefaultDistribution = b.DefaultDistribution
 
-	localRepoCollection := collectionFactory.LocalRepoCollection()
+		if b.FromSnapshot != "" {
+			snapshotCollection := taskCollectionFactory.SnapshotCollection()
 
-	if _, err := localRepoCollection.ByName(b.Name); err == nil {
-		AbortWithJSONError(c, http.StatusConflict, fmt.Errorf("local repo with name %s already exists", b.Name))
-		return
-	}
+			snapshot, err := snapshotCollection.ByName(b.FromSnapshot)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, 
+					fmt.Errorf("source snapshot not found: %s", err)
+			}
 
-	err := localRepoCollection.Add(repo)
-	if err != nil {
-		AbortWithJSONError(c, http.StatusInternalServerError, err)
-		return
-	}
+			err = snapshotCollection.LoadComplete(snapshot)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, 
+					fmt.Errorf("unable to load source snapshot: %s", err)
+			}
 
-	c.JSON(http.StatusCreated, repo)
+			repo.UpdateRefList(snapshot.RefList())
+		}
+
+		err := taskCollection.Add(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusCreated, Value: repo}, nil
+	})
 }
 
 type reposEditParams struct {
 	// Name of repository to modify
-	Name *string `binding:"required"     json:"Name"                 example:"repo1"`
+	Name *string `                       json:"Name"                 example:"new-repo-name"`
 	// Change Comment of repository
 	Comment *string `                    json:"Comment"              example:"example repo"`
 	// Change Default Distribution for publishing
 	DefaultDistribution *string `        json:"DefaultDistribution"  example:""`
-	// Change Devault Component for publishing
+	// Change Default Component for publishing
 	DefaultComponent *string `        json:"DefaultComponent"     example:""`
 }
 
 // @Summary Update Repository
 // @Description **Update local repository meta information**
 // @Tags Repos
-// @Param name path string true "Repository name"
+// @Param name path string true "Repository name to modify"
 // @Consume  json
 // @Param request body reposEditParams true "Parameters"
 // @Produce json
@@ -191,42 +212,66 @@ func apiReposEdit(c *gin.Context) {
 	if c.Bind(&b) != nil {
 		return
 	}
-
+	// Load shallowly for 404 check and resource key.
+	// Mutation and duplicate check happen inside the task for atomicity.
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
 	}
 
-	if b.Name != nil {
-		_, err := collection.ByName(*b.Name)
-		if err == nil {
-			// already exists
-			AbortWithJSONError(c, 404, err)
+	if b.Name != nil && *b.Name != name {
+		if _, err = collection.ByName(*b.Name); err == nil {
+			AbortWithJSONError(c, 409, fmt.Errorf("unable to rename: local repo %q already exists", *b.Name))
 			return
 		}
-		repo.Name = *b.Name
-	}
-	if b.Comment != nil {
-		repo.Comment = *b.Comment
-	}
-	if b.DefaultDistribution != nil {
-		repo.DefaultDistribution = *b.DefaultDistribution
-	}
-	if b.DefaultComponent != nil {
-		repo.DefaultComponent = *b.DefaultComponent
 	}
 
-	err = collection.Update(repo)
-	if err != nil {
-		AbortWithJSONError(c, 500, err)
-		return
-	}
+	resources := []string{string(repo.Key())}
+	taskName := fmt.Sprintf("Edit repository %s", name)
 
-	c.JSON(200, repo)
+	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		// Task: Create fresh collection inside task after lock
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.LocalRepoCollection()
+
+		// Fresh load after lock acquired
+		repo, err := taskCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err
+		}
+
+		// Check and update ATOMIC (inside lock)
+		if b.Name != nil && *b.Name != name {
+			_, err := taskCollection.ByName(*b.Name)
+			if err == nil {
+				// already exists
+				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, 
+					fmt.Errorf("local repo with name %q already exists", *b.Name)
+			}
+			repo.Name = *b.Name
+		}
+		if b.Comment != nil {
+			repo.Comment = *b.Comment
+		}
+		if b.DefaultDistribution != nil {
+			repo.DefaultDistribution = *b.DefaultDistribution
+		}
+		if b.DefaultComponent != nil {
+			repo.DefaultComponent = *b.DefaultComponent
+		}
+
+		err = taskCollection.Update(repo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: repo}, nil
+	})
 }
 
 // GET /api/repos/:name
@@ -268,10 +313,10 @@ func apiReposDrop(c *gin.Context) {
 	force := c.Request.URL.Query().Get("force") == "1"
 	name := c.Params.ByName("name")
 
+	// Load shallowly for 404 check, resource key, and task name.
+	// Full checks (published/snapshots) happen inside the task.
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
-	snapshotCollection := collectionFactory.SnapshotCollection()
-	publishedCollection := collectionFactory.PublishedRepoCollection()
 
 	repo, err := collection.ByName(name)
 	if err != nil {
@@ -282,19 +327,32 @@ func apiReposDrop(c *gin.Context) {
 	resources := []string{string(repo.Key())}
 	taskName := fmt.Sprintf("Delete repo %s", name)
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		published := publishedCollection.ByLocalRepo(repo)
+		// Task: Create fresh collections inside task after lock acquired
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.LocalRepoCollection()
+		taskSnapshotCollection := taskCollectionFactory.SnapshotCollection()
+		taskPublishedCollection := taskCollectionFactory.PublishedRepoCollection()
+
+		// Re-read repo with fresh collection after lock
+		repo, err := taskCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to drop: %s", err)
+		}
+
+		// Check with fresh collections
+		published := taskPublishedCollection.ByLocalRepo(repo)
 		if len(published) > 0 {
 			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to drop, local repo is published")
 		}
 
 		if !force {
-			snapshots := snapshotCollection.ByLocalRepoSource(repo)
+			snapshots := taskSnapshotCollection.ByLocalRepoSource(repo)
 			if len(snapshots) > 0 {
 				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to drop, local repo has snapshots, use ?force=1 to override")
 			}
 		}
 
-		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, collection.Drop(repo)
+		return &task.ProcessReturnValue{Code: http.StatusOK, Value: gin.H{}}, taskCollection.Drop(repo)
 	})
 }
 
@@ -351,10 +409,13 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		return
 	}
 
+	// Load shallowly for 404 check and resource key.
+	// Full load and mutations happen inside the task.
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
-	repo, err := collection.ByName(c.Params.ByName("name"))
+	name := c.Params.ByName("name")
+	repo, err := collection.ByName(name)
 	if err != nil {
 		AbortWithJSONError(c, 404, err)
 		return
@@ -363,13 +424,23 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 	resources := []string{string(repo.Key())}
 
 	maybeRunTaskInBackground(c, taskNamePrefix+repo.Name, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err = collection.LoadComplete(repo)
+		// Task: Create fresh factory and collection inside task after lock
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.LocalRepoCollection()
+
+		// Fresh load after lock acquired (use captured `name` variable, not gin context)
+		repo, err := taskCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err
+		}
+
+		err = taskCollection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
 
 		out.Printf("Loading packages...\n")
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
+		list, err := deb.NewPackageListFromRefList(repo.RefList(), taskCollectionFactory.PackageCollection(), nil)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -378,7 +449,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		for _, ref := range b.PackageRefs {
 			var p *deb.Package
 
-			p, err = collectionFactory.PackageCollection().ByKey([]byte(ref))
+			p, err = taskCollectionFactory.PackageCollection().ByKey([]byte(ref))
 			if err != nil {
 				if err == database.ErrNotFound {
 					return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, fmt.Errorf("packages %s: %s", ref, err)
@@ -394,7 +465,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-		err = collectionFactory.LocalRepoCollection().Update(repo)
+		err = taskCollection.Update(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -410,6 +481,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 // @Description API verifies that packages actually exist in aptly database and checks constraint that conflicting packages can’t be part of the same local repository.
 // @Tags Repos
 // @Param name path string true "Repository name"
+// @Consume  json
 // @Param request body reposPackagesAddDeleteParams true "Parameters"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
@@ -455,7 +527,7 @@ func apiReposPackagesDelete(c *gin.Context) {
 // @Tags Repos
 // @Param name path string true "Repository name"
 // @Param dir path string true "Directory of packages"
-// @Param file path string false "Filename (optional)"
+// @Param file path string true "Filename"
 // @Param _async query bool false "Run in background and return task object"
 // @Produce json
 // @Success 200 {string} string "OK"
@@ -500,6 +572,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 		return
 	}
 
+	// Load shallowly for 404 check and resource key.
+	// Full load and mutations happen inside the task.
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 
@@ -523,7 +597,17 @@ func apiReposPackageFromDir(c *gin.Context) {
 	resources := []string{string(repo.Key())}
 	resources = append(resources, sources...)
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err = collection.LoadComplete(repo)
+		// Task: Create fresh factory and collection inside task after lock
+		taskCollectionFactory := context.NewCollectionFactory()
+		taskCollection := taskCollectionFactory.LocalRepoCollection()
+
+		// Fresh load after lock acquired
+		repo, err := taskCollection.ByName(name)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
+		}
+
+		err = taskCollection.LoadComplete(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -544,13 +628,13 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 		packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(sources, reporter)
 
-		list, err := deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), nil)
+		list, err = deb.NewPackageListFromRefList(repo.RefList(), taskCollectionFactory.PackageCollection(), nil)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to load packages: %s", err)
 		}
 
 		processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			collectionFactory.PackageCollection(), reporter, nil, collectionFactory.ChecksumCollection)
+			taskCollectionFactory.PackageCollection(), reporter, nil, taskCollectionFactory.ChecksumCollection)
 		failedFiles = append(failedFiles, failedFiles2...)
 		processedFiles = append(processedFiles, otherFiles...)
 
@@ -560,7 +644,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
 
-		err = collectionFactory.LocalRepoCollection().Update(repo)
+		err = taskCollection.Update(repo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -613,11 +697,11 @@ type reposCopyPackageParams struct {
 // @Summary Copy Package
 // @Description Copies a package from a source to destination repository
 // @Tags Repos
-// @Produce json
 // @Param name path string true "Destination repo"
 // @Param src path string true "Source repo"
 // @Param file path string true "File/packages to copy"
 // @Param _async query bool false "Run in background and return task object"
+// @Produce json
 // @Success 200 {object} task.ProcessReturnValue "msg"
 // @Failure 400 {object} Error "Bad Request"
 // @Failure 404 {object} Error "Not Found"
@@ -639,6 +723,8 @@ func apiReposCopyPackage(c *gin.Context) {
 		return
 	}
 
+	// Load shallowly for 404 check and resource keys.
+	// Full load and mutations happen inside the task.
 	collectionFactory := context.NewCollectionFactory()
 	dstRepo, err := collectionFactory.LocalRepoCollection().ByName(dstRepoName)
 	if err != nil {
@@ -662,12 +748,26 @@ func apiReposCopyPackage(c *gin.Context) {
 	resources := []string{string(dstRepo.Key()), string(srcRepo.Key())}
 
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
-		err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
+		// Task: Create fresh factory and collections inside task after lock
+		taskCollectionFactory := context.NewCollectionFactory()
+
+		// Fresh load of both repos after lock acquired
+		dstRepo, err := taskCollectionFactory.LocalRepoCollection().ByName(dstRepoName)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("dest repo error: %s", err)
 		}
 
-		err = collectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
+		srcRepo, err := taskCollectionFactory.LocalRepoCollection().ByName(srcRepoName)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("src repo error: %s", err)
+		}
+
+		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
+		if err != nil {
+			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("dest repo error: %s", err)
+		}
+
+		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("src repo error: %s", err)
 		}
@@ -680,12 +780,12 @@ func apiReposCopyPackage(c *gin.Context) {
 			RemovedLines: []string{},
 		}
 
-		dstList, err := deb.NewPackageListFromRefList(dstRepo.RefList(), collectionFactory.PackageCollection(), context.Progress())
+		dstList, err := deb.NewPackageListFromRefList(dstRepo.RefList(), taskCollectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to load packages in dest: %s", err)
 		}
 
-		srcList, err := deb.NewPackageListFromRefList(srcRefList, collectionFactory.PackageCollection(), context.Progress())
+		srcList, err := deb.NewPackageListFromRefList(srcRefList, taskCollectionFactory.PackageCollection(), context.Progress())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to load packages in src: %s", err)
 		}
@@ -753,7 +853,7 @@ func apiReposCopyPackage(c *gin.Context) {
 		} else {
 			dstRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(dstList))
 
-			err = collectionFactory.LocalRepoCollection().Update(dstRepo)
+			err = taskCollectionFactory.LocalRepoCollection().Update(dstRepo)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 			}
@@ -856,6 +956,9 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 	resources = append(resources, sources...)
 
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
+		// Task: Create fresh factory and collection inside task after lock
+		taskCollectionFactory := context.NewCollectionFactory()
+
 		var (
 			err                       error
 			verifier                  = context.GetVerifier()
@@ -871,8 +974,8 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		changesFiles, failedFiles = deb.CollectChangesFiles(sources, reporter)
 		_, failedFiles2, err = deb.ImportChangesFiles(
 			changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
-			repoTemplate, context.Progress(), collectionFactory.LocalRepoCollection(), collectionFactory.PackageCollection(),
-			context.PackagePool(), collectionFactory.ChecksumCollection, nil, query.Parse)
+			repoTemplate, context.Progress(), taskCollectionFactory.LocalRepoCollection(), taskCollectionFactory.PackageCollection(),
+			context.PackagePool(), taskCollectionFactory.ChecksumCollection, nil, query.Parse)
 		failedFiles = append(failedFiles, failedFiles2...)
 
 		if err != nil {
@@ -901,10 +1004,10 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 			out.Printf("Failed files: %s\n", strings.Join(failedFiles, ", "))
 		}
 
-                ret := reposIncludePackageFromDirResponse{
+		ret := reposIncludePackageFromDirResponse{
 			Report:      reporter,
 			FailedFiles: failedFiles,
-                    }
+		}
 		return &task.ProcessReturnValue{Code: http.StatusOK, Value: ret}, nil
 	})
 }

@@ -79,6 +79,9 @@ func (l *PackageRefList) Decode(input []byte) error {
 
 // ForEach calls handler for each package ref in list
 func (l *PackageRefList) ForEach(handler func([]byte) error) error {
+	if l == nil {
+		return nil
+	}
 	var err error
 	for _, p := range l.Refs {
 		err = handler(p)

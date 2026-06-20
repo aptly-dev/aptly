@@ -61,12 +61,12 @@ type FakeStorageProvider struct {
 	storages map[string]aptly.PublishedStorage
 }
 
-func (p *FakeStorageProvider) GetPublishedStorage(name string) aptly.PublishedStorage {
+func (p *FakeStorageProvider) GetPublishedStorage(name string) (aptly.PublishedStorage, error) {
 	storage, ok := p.storages[name]
 	if !ok {
-		panic(fmt.Sprintf("unknown storage: %#v", name))
+		return nil, fmt.Errorf("unknown storage: %#v", name)
 	}
-	return storage
+	return storage, nil
 }
 
 type PublishedRepoSuite struct {
@@ -433,6 +433,47 @@ func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main/binary-i386/Release"), PathExists)
 }
 
+func (s *PublishedRepoSuite) TestPublishSourceDateEpoch(c *C) {
+	// Test with SOURCE_DATE_EPOCH set
+	_ = os.Setenv("SOURCE_DATE_EPOCH", "1234567890")
+	defer func() { _ = os.Unsetenv("SOURCE_DATE_EPOCH") }()
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, IsNil)
+
+	rf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"))
+	c.Assert(err, IsNil)
+	defer func() { _ = rf.Close() }()
+
+	cfr := NewControlFileReader(rf, true, false)
+	st, err := cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	// Expected date for Unix timestamp 1234567890: Fri, 13 Feb 2009 23:31:30 UTC
+	c.Check(st["Date"], Equals, "Fri, 13 Feb 2009 23:31:30 UTC")
+}
+
+func (s *PublishedRepoSuite) TestPublishSourceDateEpochInvalid(c *C) {
+	// Test with invalid SOURCE_DATE_EPOCH (should fallback to current time)
+	_ = os.Setenv("SOURCE_DATE_EPOCH", "invalid")
+	defer func() { _ = os.Unsetenv("SOURCE_DATE_EPOCH") }()
+
+	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, "")
+	c.Assert(err, IsNil)
+
+	rf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/maverick/Release"))
+	c.Assert(err, IsNil)
+	defer func() { _ = rf.Close() }()
+
+	cfr := NewControlFileReader(rf, true, false)
+	st, err := cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	// Should have a valid Date field (not empty, not the fixed date from SOURCE_DATE_EPOCH)
+	c.Check(st["Date"], Not(Equals), "")
+	c.Check(st["Date"], Not(Equals), "Fri, 13 Feb 2009 23:31:30 UTC")
+}
+
 func (s *PublishedRepoSuite) TestPublishLocalRepo(c *C) {
 	err := s.repo2.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, "")
 	c.Assert(err, IsNil)
@@ -756,7 +797,10 @@ func (s *PublishedRepoCollectionSuite) TestListReferencedFiles(c *C) {
 	snap3 := NewSnapshotFromRefList("snap3", []*Snapshot{}, s.snap2.RefList(), "desc3")
 	_ = s.snapshotCollection.Add(snap3)
 
-	// Ensure that adding a second publish point with matching files doesn't give duplicate results.
+	// When a second publish point references the same package (snap3 is a clone of snap2,
+	// both containing p3/lonely-strangers), listReferencedFilesByComponent deduplicates by
+	// package ref so the file appears only once.  StrSlicesSubstract handles a single entry
+	// correctly, so no duplicate is needed for cleanup safety.
 	repo3, err := NewPublishedRepo("", "", "anaconda-2", []string{}, []string{"main"}, []interface{}{snap3}, s.factory, false)
 	c.Check(err, IsNil)
 	c.Check(s.collection.Add(repo3), IsNil)
@@ -771,7 +815,9 @@ func (s *PublishedRepoCollectionSuite) TestListReferencedFiles(c *C) {
 			"a/alien-arena/alien-arena-common_7.40-2_i386.deb",
 			"a/alien-arena/mars-invaders_7.40-2_i386.deb",
 		},
-		"main": {"a/alien-arena/lonely-strangers_7.40-2_i386.deb"},
+		"main": {
+			"a/alien-arena/lonely-strangers_7.40-2_i386.deb",
+		},
 	})
 }
 

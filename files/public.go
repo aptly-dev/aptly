@@ -15,6 +15,10 @@ import (
 	"github.com/saracen/walker"
 )
 
+// syncFile is a seam to allow tests to force fsync failures (e.g. ENOSPC).
+// In production it calls (*os.File).Sync().
+var syncFile = func(f *os.File) error { return f.Sync() }
+
 // PublishedStorage abstract file system with public dirs (published repos)
 type PublishedStorage struct {
 	rootPath     string
@@ -99,7 +103,17 @@ func (storage *PublishedStorage) PutFile(path string, sourceFilename string) err
 	}()
 
 	_, err = io.Copy(f, source)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Sync to ensure all data is written to disk and catch ENOSPC errors
+	err = syncFile(f)
+	if err != nil {
+		return fmt.Errorf("error syncing file %s: %s", path, err)
+	}
+
+	return nil
 }
 
 // Remove removes single file under public path
@@ -136,6 +150,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 	baseName := filepath.Base(fileName)
 	poolPath := filepath.Join(storage.rootPath, publishedPrefix, publishedRelPath, filepath.Dir(fileName))
+	destinationPath := filepath.Join(poolPath, baseName)
 
 	var localSourcePool aptly.LocalPackagePool
 	if storage.linkMethod != LinkMethodCopy {
@@ -154,7 +169,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 	var dstStat os.FileInfo
 
-	dstStat, err = os.Stat(filepath.Join(poolPath, baseName))
+	dstStat, err = os.Stat(destinationPath)
 	if err == nil {
 		// already exists, check source file
 
@@ -173,7 +188,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 			} else {
 				// if source and destination have the same checksums, no need to copy
 				var dstMD5 string
-				dstMD5, err = utils.MD5ChecksumForFile(filepath.Join(poolPath, baseName))
+				dstMD5, err = utils.MD5ChecksumForFile(destinationPath)
 
 				if err != nil {
 					return err
@@ -204,11 +219,11 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 
 		// source and destination have different inodes, if !forced, this is fatal error
 		if !force {
-			return fmt.Errorf("error linking file to %s: file already exists and is different", filepath.Join(poolPath, baseName))
+			return fmt.Errorf("error linking file to %s: file already exists and is different", destinationPath)
 		}
 
 		// forced, so remove destination
-		err = os.Remove(filepath.Join(poolPath, baseName))
+		err = os.Remove(destinationPath)
 		if err != nil {
 			return err
 		}
@@ -223,7 +238,7 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 		}
 
 		var dst *os.File
-		dst, err = os.Create(filepath.Join(poolPath, baseName))
+		dst, err = os.Create(destinationPath)
 		if err != nil {
 			_ = r.Close()
 			return err
@@ -242,11 +257,18 @@ func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath,
 			return err
 		}
 
+		// Sync to ensure all data is written to disk and catch ENOSPC errors
+		err = syncFile(dst)
+		if err != nil {
+			_ = dst.Close()
+			return fmt.Errorf("error syncing file %s: %s", destinationPath, err)
+		}
+
 		err = dst.Close()
 	} else if storage.linkMethod == LinkMethodSymLink {
-		err = localSourcePool.Symlink(sourcePath, filepath.Join(poolPath, baseName))
+		err = localSourcePool.Symlink(sourcePath, destinationPath)
 	} else {
-		err = localSourcePool.Link(sourcePath, filepath.Join(poolPath, baseName))
+		err = localSourcePool.Link(sourcePath, destinationPath)
 	}
 
 	return err

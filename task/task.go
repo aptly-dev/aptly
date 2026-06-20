@@ -42,6 +42,7 @@ const (
 )
 
 // Task represents as task in a queue encapsulates process code
+// All fields are protected by List.Mutex - access task fields only while holding list.Lock()
 type Task struct {
 	output             *Output
 	detail             *Detail
@@ -51,7 +52,7 @@ type Task struct {
 	Name               string
 	ID                 int
 	State              State
-	resources          []string
+	Resources          []string
 	wgTask             *sync.WaitGroup
 }
 
@@ -64,7 +65,7 @@ func NewTask(process Process, name string, ID int, resources []string, wgTask *s
 		Name:      name,
 		ID:        ID,
 		State:     IDLE,
-		resources: resources,
+		Resources: resources,
 		wgTask:    wgTask,
 	}
 	return task

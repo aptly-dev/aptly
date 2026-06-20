@@ -31,8 +31,7 @@ func BenchmarkSnapshotCollectionForEach(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		collection = NewSnapshotCollection(db)
 
-
-                _ = collection.ForEach(func(s *Snapshot) error {
+		_ = collection.ForEach(func(s *Snapshot) error {
 			return nil
 		})
 	}

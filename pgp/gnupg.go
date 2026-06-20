@@ -22,7 +22,7 @@ var (
 type GpgSigner struct {
 	gpg                        string
 	version                    GPGVersion
-	keyRef                     string
+	keyRefs                    []string
 	keyring, secretKeyring     string
 	passphrase, passphraseFile string
 	batch                      bool
@@ -35,7 +35,14 @@ func (g *GpgSigner) SetBatch(batch bool) {
 
 // SetKey sets key ID to use when signing files
 func (g *GpgSigner) SetKey(keyRef string) {
-	g.keyRef = keyRef
+    keyRef = strings.TrimSpace(keyRef)
+    if keyRef != "" {
+        if g.keyRefs == nil {
+            g.keyRefs = []string{keyRef}
+        } else {
+            g.keyRefs = append(g.keyRefs, keyRef)
+        }
+    }
 }
 
 // SetKeyRing allows to set custom keyring and secretkeyring
@@ -57,8 +64,8 @@ func (g *GpgSigner) gpgArgs() []string {
 		args = append(args, "--secret-keyring", g.secretKeyring)
 	}
 
-	if g.keyRef != "" {
-		args = append(args, "-u", g.keyRef)
+	for _, k := range g.keyRefs {
+		args = append(args, "-u", k)
 	}
 
 	if g.passphrase != "" || g.passphraseFile != "" {

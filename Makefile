@@ -7,8 +7,22 @@ COVERAGE_DIR?=$(shell mktemp -d)
 GOOS=$(shell go env GOHOSTOS)
 GOARCH=$(shell go env GOHOSTARCH)
 
+export PODMAN_USERNS = keep-id
+DOCKER_RUN = docker run --security-opt label=disable --user 0:0 --rm -v ${PWD}:/work/src
+
+# Setting TZ for certificates
+export TZ=UTC
 # Unit Tests and some sysmte tests rely on expired certificates, turn back the time
 export TEST_FAKETIME := 2025-01-02 03:04:05
+
+# run with 'COVERAGE_SKIP=1' to skip coverage checks during system tests
+ifeq ($(COVERAGE_SKIP),1)
+COVERAGE_ARG_BUILD :=
+COVERAGE_ARG_TEST := --coverage-skip
+else
+COVERAGE_ARG_BUILD := -coverpkg="./..."
+COVERAGE_ARG_TEST := --coverage-dir $(COVERAGE_DIR)
+endif
 
 # export CAPUTRE=1 for regenrating test gold files
 ifeq ($(CAPTURE),1)
@@ -61,9 +75,9 @@ azurite-start:
 azurite-stop:
 	@kill `cat ~/.azurite.pid`
 
-swagger: swagger-install
+swagger: #swagger-install
 	# Generate swagger docs
-	@PATH=$(BINPATH)/:$(PATH) swag init --parseDependency --parseInternal --markdownFiles docs --generalInfo docs/swagger.conf
+	#@PATH=$(BINPATH)/:$(PATH) swag init --parseDependency --parseInternal --markdownFiles docs --generalInfo docs/swagger.conf
 
 etcd-install:
 	# Install etcd
@@ -101,13 +115,13 @@ test: prepare swagger etcd-install  ## Run unit tests (add TEST=regex to specify
 
 system-test: prepare swagger etcd-install  ## Run system tests
 	# build coverage binary
-	go test -v -coverpkg="./..." -c -tags testruncli
+	go test -v $(COVERAGE_ARG_BUILD) -c -tags testruncli
 	# Download fixture-db, fixture-pool, etcd.db
 	if [ ! -e ~/aptly-fixture-db ]; then git clone https://github.com/aptly-dev/aptly-fixture-db.git ~/aptly-fixture-db/; fi
 	if [ ! -e ~/aptly-fixture-pool ]; then git clone https://github.com/aptly-dev/aptly-fixture-pool.git ~/aptly-fixture-pool/; fi
 	test -f ~/etcd.db || (curl -o ~/etcd.db.xz http://repo.aptly.info/system-tests/etcd.db.xz && xz -d ~/etcd.db.xz)
 	# Run system tests
-	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long --coverage-dir $(COVERAGE_DIR) $(CAPTURE_ARG) $(TEST)
+	PATH=$(BINPATH)/:$(PATH) FORCE_COLOR=1 $(PYTHON) system/run.py --long $(COVERAGE_ARG_TEST) $(CAPTURE_ARG) $(TEST)
 
 bench:
 	@echo "\e[33m\e[1mRunning benchmark ...\e[0m"
@@ -117,6 +131,7 @@ serve: prepare swagger-install  ## Run development server (auto recompiling)
 	test -f $(BINPATH)/air || go install github.com/air-verse/air@v1.52.3
 	cp debian/aptly.conf ~/.aptly.conf
 	sed -i /enable_swagger_endpoint/s/false/true/ ~/.aptly.conf
+	sed -i /enable_metrics_endpoint/s/false/true/ ~/.aptly.conf
 	PATH=$(BINPATH):$$PATH air -build.pre_cmd 'swag init -q --markdownFiles docs --generalInfo docs/swagger.conf' -build.exclude_dir docs,system,debian,pgp/keyrings,pgp/test-bins,completion.d,man,deb/testdata,console,_man,systemd,obj-x86_64-linux-gnu -- api serve -listen 0.0.0.0:3142
 
 dpkg: prepare swagger  ## Build debian packages
@@ -171,16 +186,16 @@ docker-image-no-cache:  ## Build aptly-dev docker image (no cache)
 	@docker build --no-cache -f system/Dockerfile . -t aptly-dev
 
 docker-build:  ## Build aptly in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper build
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper build
 
 docker-shell:  ## Run aptly and other commands in docker container
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper || true
+	@$(DOCKER_RUN) -it -p 3142:3142 aptly-dev /work/src/system/docker-wrapper || true
 
 docker-deb:  ## Build debian packages in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper dpkg DEBARCH=amd64
 
 docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to specify which tests to run)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+	$(DOCKER_RUN) -t --tmpfs /smallfs:rw,size=1m aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
@@ -189,27 +204,27 @@ docker-unit-test:  ## Run unit tests in docker container (add TEST=regex to spec
 		azurite-stop
 
 docker-system-test:  ## Run system tests in docker container (add TEST=t04_mirror or TEST=UpdateMirror26Test to run only specific tests)
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper \
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper \
 		azurite-start \
 		AZURE_STORAGE_ENDPOINT=http://127.0.0.1:10000/devstoreaccount1 \
 		AZURE_STORAGE_ACCOUNT=devstoreaccount1 \
 		AZURE_STORAGE_ACCESS_KEY="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" \
 		AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 		AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
-		system-test TEST=$(TEST) \
+		system-test TEST=$(TEST) CAPTURE=$(CAPTURE) COVERAGE_SKIP=$(COVERAGE_SKIP) \
 		azurite-stop
 
 docker-serve:  ## Run development server (auto recompiling) on http://localhost:3142
-	@docker run -it --rm -p 3142:3142 -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper serve || true
+	@$(DOCKER_RUN) -it -p 3142:3142 -v /tmp/cache-go-aptly:/var/lib/aptly/.cache/go-build aptly-dev /work/src/system/docker-wrapper serve || true
 
 docker-lint:  ## Run golangci-lint in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper lint
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper lint
 
 docker-binaries:  ## Build binary releases (FreeBSD, macOS, Linux generic) in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper binaries
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper binaries
 
 docker-man:  ## Create man page in docker container
-	@docker run -it --rm -v ${PWD}:/work/src aptly-dev /work/src/system/docker-wrapper man
+	@$(DOCKER_RUN) -t aptly-dev /work/src/system/docker-wrapper man
 
 mem.png: mem.dat mem.gp
 	gnuplot mem.gp
@@ -226,4 +241,4 @@ clean:  ## remove local build and module cache
 	rm -f unit.out aptly.test VERSION docs/docs.go docs/swagger.json docs/swagger.yaml docs/swagger.conf
 	find system/ -type d -name __pycache__ -exec rm -rf {} \; 2>/dev/null || true
 
-.PHONY: help man prepare swagger version binaries build docker-release docker-system-test docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8
+.PHONY: help man prepare swagger version binaries build docker-release docker-system-tests docker-unit-test docker-lint docker-build docker-image docker-man docker-shell docker-serve clean releasetype dpkg serve flake8
