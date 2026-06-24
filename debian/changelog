@@ -1,3 +1,55 @@
+aptly (1.6.3) stable; urgency=medium
+
+  * NEW FEATURES:
+  * Google Cloud Storage (GCS) publish backend (https://github.com/aptly-dev/aptly/pull/1550)
+  * dput-compatible file upload API (https://github.com/aptly-dev/aptly/pull/1436)
+  * JFrog Artifactory publish backend (https://github.com/aptly-dev/aptly/pull/1553)
+  * AppStream (DEP-11) mirror support (https://github.com/aptly-dev/aptly/pull/1543)
+  * Multiple GPG keys support (https://github.com/aptly-dev/aptly/pull/1479)
+  * GPG key list & delete API (https://github.com/aptly-dev/aptly/pull/1558)
+  * Edit mirror API endpoint (https://github.com/aptly-dev/aptly/pull/1535)
+  * NumPackages in list responses (https://github.com/aptly-dev/aptly/pull/1559)
+  * Mirror latest packages (https://github.com/aptly-dev/aptly/pull/1513)
+  * Reproducible builds / `SOURCE_DATE_EPOCH` support (https://github.com/aptly-dev/aptly/pull/1537), https://github.com/aptly-dev/aptly/pull/1542)
+  * `Release` file `Version` field support (https://github.com/aptly-dev/aptly/pull/1533)
+  * `InRelease` file `Signed-By` field support (https://github.com/aptly-dev/aptly/pull/1518), https://github.com/aptly-dev/aptly/pull/1519)
+  * GCP / Google Artifact Registry authentication (https://github.com/aptly-dev/aptly/pull/1505)
+  * Update publish label & origin (https://github.com/aptly-dev/aptly/pull/1484)
+  * Ubuntu 26.04 / resolute builds (https://github.com/aptly-dev/aptly/pull/1571)
+  * BUG FIXES:
+  * Race condition & concurrency fixes for the REST API (https://github.com/aptly-dev/aptly/pull/1574)
+  * Fix empty line in `Package-List` for source packages (https://github.com/aptly-dev/aptly/pull/1588)
+  * Publish: check storage exists before publishing (https://github.com/aptly-dev/aptly/pull/1587)
+  * S3 publish race condition (https://github.com/aptly-dev/aptly/pull/1594)
+  * Repo edit name optionally (https://github.com/aptly-dev/aptly/pull/1593)
+  * Fix crash in `aptly db recover` (https://github.com/aptly-dev/aptly/pull/1565)
+  * Fix deadlocks in task list (https://github.com/aptly-dev/aptly/pull/1529)
+  * Fix S3 re-upload issue (https://github.com/aptly-dev/aptly/pull/1480)
+  * Fix `aptly repo edit` API (https://github.com/aptly-dev/aptly/pull/1493)
+  * Fix out-of-disk-space error handling (https://github.com/aptly-dev/aptly/pull/1504)
+  * Fix `aptly mirror update` removing unrelated params (https://github.com/aptly-dev/aptly/pull/1466)
+  * Fix concurrent pool linking race condition (https://github.com/aptly-dev/aptly/pull/1481)
+  * Fix `dpkg`-compliant version comparison (https://github.com/aptly-dev/aptly/pull/1509)
+  * Fix Swagger property casing and spec errors (https://github.com/aptly-dev/aptly/pull/1510), https://github.com/aptly-dev/aptly/pull/1498)
+  * Remove useless nil check (https://github.com/aptly-dev/aptly/pull/1482)
+  * Format Go code with gofmt (https://github.com/aptly-dev/aptly/pull/1483)
+  * DEPENDENCIES CHANGES:
+  * Go toolchain → 1.25.0
+  * `go.opentelemetry.io/otel` → v1.41.0 (https://github.com/aptly-dev/aptly/pull/1586)
+  * `go.opentelemetry.io/otel/sdk` → v1.43.0 (https://github.com/aptly-dev/aptly/pull/1584)
+  * `github.com/go-jose/go-jose/v4` → v4.1.4 (https://github.com/aptly-dev/aptly/pull/1585)
+  * `github.com/go-git/go-git/v5` → v5.19.1 (https://github.com/aptly-dev/aptly/pull/1590)
+  * `github.com/ulikunitz/xz` → v0.5.15 (fixes 32-bit build failures)
+  * `golang.org/x/crypto` → v0.45.0 (https://github.com/aptly-dev/aptly/pull/1506)
+  * `google.golang.org/grpc` → v1.79.3 (https://github.com/aptly-dev/aptly/pull/1546)
+  * `github.com/aws/aws-sdk-go-v2/service/s3` → v1.97.3 (https://github.com/aptly-dev/aptly/pull/1554)
+  * `github.com/cloudflare/circl` → v1.6.3 (https://github.com/aptly-dev/aptly/pull/1461), https://github.com/aptly-dev/aptly/pull/1541)
+  * `requests` (Python, system tests) → 2.33.0 (https://github.com/aptly-dev/aptly/pull/1460), https://github.com/aptly-dev/aptly/pull/1547)
+  * `github.com/ProtonMail/go-crypto` → v1.4.0
+  * `golang.org/x/net` → v0.48.0
+
+ -- André Roth <neolynx@gmail.com>  Wed, 24 Jun 2026 18:47:05 +0200
+
 aptly (1.6.2) stable; urgency=medium
 
   * doc: add swagger doc for /api/gpg/key (https://github.com/aptly-dev/aptly/pull/1456)
