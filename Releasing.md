@@ -16,3 +16,4 @@ git push origin v$version master
 - update version in content/download.md
 - push commit to master
 - create release announcement on https://github.com/aptly-dev/aptly/discussions
+- update aptly infrastructure
