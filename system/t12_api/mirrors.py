@@ -279,6 +279,78 @@ class MirrorsAPITestEditArchiveURL(APITest):
         self.check_equal(resp.json()['ArchiveRoot'], 'http://repo.aptly.info/system-tests/ftp.ch.debian.org/debian/')
 
 
+class MirrorsAPITestRename(APITest):
+    """
+    PUT /api/mirrors/:name - Rename mirror via update endpoint
+    """
+    def check(self):
+        mirror_name = self.random_name()
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                       'IgnoreSignatures': True,
+                       'Distribution': 'wheezy',
+                       'Components': ['main'],
+                       'Architectures': ['amd64']}
+
+        resp = self.post("/api/mirrors", json=mirror_desc)
+        self.check_equal(resp.status_code, 201)
+
+        # Rename the mirror via PUT
+        new_name = self.random_name()
+        resp = self.put_task("/api/mirrors/" + mirror_name, json={'Name': new_name, 'IgnoreSignatures': True})
+        self.check_task(resp)
+
+        # Old name should no longer exist
+        resp = self.get("/api/mirrors/" + mirror_name)
+        self.check_equal(resp.status_code, 404)
+
+        # New name should exist with correct data
+        resp = self.get("/api/mirrors/" + new_name)
+        self.check_equal(resp.status_code, 200)
+        self.check_subset({'Name': new_name,
+                           'ArchiveRoot': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                           'Distribution': 'wheezy'}, resp.json())
+
+
+class MirrorsAPITestRenameConflict(APITest):
+    """
+    PUT /api/mirrors/:name - Rename mirror to an already existing name should fail with 409
+    """
+    def check(self):
+        mirror_name_a = self.random_name()
+        mirror_name_b = self.random_name()
+
+        mirror_desc_a = {'Name': mirror_name_a,
+                         'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                         'IgnoreSignatures': True,
+                         'Distribution': 'wheezy',
+                         'Components': ['main'],
+                         'Architectures': ['amd64']}
+
+        mirror_desc_b = {'Name': mirror_name_b,
+                         'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                         'IgnoreSignatures': True,
+                         'Distribution': 'wheezy',
+                         'Components': ['main'],
+                         'Architectures': ['amd64']}
+
+        resp = self.post("/api/mirrors", json=mirror_desc_a)
+        self.check_equal(resp.status_code, 201)
+
+        resp = self.post("/api/mirrors", json=mirror_desc_b)
+        self.check_equal(resp.status_code, 201)
+
+        # Try to rename mirror A to mirror B's name — should fail with 409
+        resp = self.put("/api/mirrors/" + mirror_name_a, json={'Name': mirror_name_b, 'IgnoreSignatures': True})
+        self.check_equal(resp.status_code, 409)
+        self.check_in('unable to rename', resp.json()['error'])
+
+        # Mirror A should still exist under its original name
+        resp = self.get("/api/mirrors/" + mirror_name_a)
+        self.check_equal(resp.status_code, 200)
+        self.check_subset({'Name': mirror_name_a}, resp.json())
+
+
 class MirrorsAPITestEditFlatMirrorUdebs(APITest):
     """
     POST /api/mirrors/{name} - Edit flat mirror with udebs (should fail)
