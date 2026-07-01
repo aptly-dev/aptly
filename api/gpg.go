@@ -141,7 +141,7 @@ func apiGPGAddKey(c *gin.Context) {
 // @Description Returns all public keys currently installed in the aptly GPG keyring.
 // @Description
 // @Tags Mirrors
-// @Param keyring query string false "Keyring file to list keys from (default: trustedkeys.gpg)" example(trustedkeys.gpg)
+// @Param keyring query string false "Keyring file to list keys from (default: trustedkeys.gpg)"
 // @Produce json
 // @Success 200 {object} gpgKeyListResponse "OK"
 // @Failure 400 {object} Error "Bad Request"
