@@ -124,6 +124,12 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 			continue
 		}
 
+		if !isValidVersion(p.Version) {
+			reporter.Warning("Version number ('%s') for the '%s' package is invalid", p.Version, p.Name)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
 		if p.Architecture == "" {
 			reporter.Warning("Empty architecture on %s", file)
 			failedFiles = append(failedFiles, file)

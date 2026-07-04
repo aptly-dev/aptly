@@ -184,8 +184,21 @@ func (l *PackageList) FilterLatest() (*PackageList, error) {
 	err := l.ForEach(func(p *Package) error {
 		key := p.Architecture + "|" + p.Name
 
-		if existing, found := filtered[key]; !found || CompareVersions(p.Version, existing.Version) > 0 {
+		existing, found := filtered[key]
+		if !found {
 			filtered[key] = p
+			return nil
+		}
+
+		cmp, compareErr := CompareVersions(p.Version, existing.Version)
+		switch compareErr {
+		case nil:
+			if cmp > 0 {
+				filtered[key] = p
+			}
+		case RightInvalid:
+			filtered[key] = p
+		case LeftInvalid, BothInvalid:
 		}
 
 		return nil
@@ -427,7 +440,13 @@ func (l *PackageList) Swap(i, j int) {
 
 func (l *PackageList) lessPackages(iPkg, jPkg *Package) bool {
 	if iPkg.Name == jPkg.Name {
-		cmp := CompareVersions(iPkg.Version, jPkg.Version)
+		cmp, err := CompareVersions(iPkg.Version, jPkg.Version)
+		switch err {
+		case LeftInvalid, BothInvalid:
+			return false
+		case RightInvalid:
+			return true
+		}
 		if cmp == 0 {
 			return iPkg.Architecture < jPkg.Architecture
 		}

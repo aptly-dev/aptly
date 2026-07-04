@@ -365,32 +365,36 @@ func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConfli
 func (l *PackageRefList) FilterLatestRefs() {
 	var (
 		lastArch, lastName, lastVer []byte
-		arch, name, ver             []byte
-		parts                       [][]byte
 	)
 
-	for i := 0; i < len(l.Refs); i++ {
-		parts = bytes.Split(l.Refs[i][1:], []byte(" "))
-		arch, name, ver = parts[0], parts[1], parts[2]
+	filtered := l.Refs[:0]
+	for _, ref := range l.Refs {
+		parts := bytes.Split(ref[1:], []byte(" "))
+		arch, name, ver := parts[0], parts[1], parts[2]
 
 		if bytes.Equal(arch, lastArch) && bytes.Equal(name, lastName) {
-			// Two packages are identical, check version and only one wins
-			vres := CompareVersions(string(ver), string(lastVer))
-
-			// Remove the older refs from the result
-			if vres > 0 {
-				// ver[i] > ver[i-1], remove element i-1
-				l.Refs = append(l.Refs[:i-1], l.Refs[i:]...)
-			} else {
-				// ver[i] < ver[i-1], remove element i
-				l.Refs = append(l.Refs[:i], l.Refs[i+1:]...)
-				arch, name, ver = lastArch, lastName, lastVer
+			// The previous ref is valid, so this also validates the current ref.
+			vres, err := CompareVersions(string(ver), string(lastVer))
+			if err != nil {
+				continue
 			}
 
-			// Compensate for the reduced set
-			i--
+			// Replace the older ref in the result.
+			if vres > 0 {
+				filtered[len(filtered)-1] = ref
+				lastArch, lastName, lastVer = arch, name, ver
+			}
+			continue
 		}
 
+		// Comparing a version with itself validates singleton refs.
+		if _, err := CompareVersions(string(ver), string(ver)); err != nil {
+			continue
+		}
+
+		filtered = append(filtered, ref)
 		lastArch, lastName, lastVer = arch, name, ver
 	}
+
+	l.Refs = filtered
 }
