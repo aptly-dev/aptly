@@ -8,12 +8,26 @@ import (
 	"unicode"
 )
 
+var (
+	upstreamVersionRegex = regexp.MustCompile(`^[0-9][A-Za-z0-9.+~\-]*$`)
+	debianRevisionRegex  = regexp.MustCompile(`^[A-Za-z0-9.+~]*$`)
+)
+
 // Using documentation from: http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version
 
 // CompareVersions compares two package versions
 func CompareVersions(ver1, ver2 string) int {
-	e1, u1, d1 := parseVersion(ver1)
-	e2, u2, d2 := parseVersion(ver2)
+	e1, u1, d1, err := parseVersion(ver1)
+	// if an error is caught during parse, return 2 to signal
+	// an invalid version and handle as needed
+	if err != nil {
+		return 2
+	}
+
+	e2, u2, d2, err := parseVersion(ver2)
+	if err != nil {
+		return 2
+	}
 
 	r := compareVersionPart(e1, e2)
 	if r != 0 {
@@ -29,20 +43,65 @@ func CompareVersions(ver1, ver2 string) int {
 }
 
 // parseVersions breaks down full version to components (possibly empty)
-func parseVersion(ver string) (epoch, upstream, debian string) {
+func parseVersion(ver string) (epoch, upstream, debian string, err error) {
 	i := strings.Index(ver, ":")
 	if i != -1 {
 		epoch, ver = ver[:i], ver[i+1:]
 	}
 
-	i = strings.Index(ver, "-")
+	// Debian policy specifies that the upstream_version and debian_revision
+	// are separated by the LAST hyphen in the string, since upstream_version
+	// itself may legitimately contain hyphens.
+	i = strings.LastIndex(ver, "-")
 	if i != -1 {
 		debian, ver = ver[i+1:], ver[:i]
+		if debian == "" {
+			// if a hyphen is detected in the upstream version
+			// string without a debian revision following it, the
+			// version is invalid
+			return "", "", "", fmt.Errorf("could not parse version: version string ('%s-') includes hyphen without Debian revision", ver)
+		}
 	}
 
 	upstream = ver
 
 	return
+}
+
+// isValidVersion checks whether package version is compliant with control field spec
+// source: https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-version
+func isValidVersion(ver string) bool {
+	epoch, upstream, deb, err := parseVersion(ver)
+	if err != nil {
+		return false
+	}
+
+	// validate epoch component
+	if epoch != "" {
+		// uint64 for unexpectedly high epoch values
+		_, err := strconv.ParseUint(epoch, 10, 64)
+		if err != nil {
+			return false
+		}
+	}
+
+	if upstream == "" || !isValidUpstreamVersion(upstream) {
+		return false
+	}
+
+	if deb != "" && !isValidDebianRevision(deb) {
+		return false
+	}
+
+	return true
+}
+
+func isValidUpstreamVersion(upstream string) bool {
+	return upstreamVersionRegex.MatchString(upstream)
+}
+
+func isValidDebianRevision(debian string) bool {
+	return debianRevisionRegex.MatchString(debian)
 }
 
 // compareLexicographic compares in "Debian lexicographic" way, see below compareVersionPart for details
