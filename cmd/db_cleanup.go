@@ -27,7 +27,7 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 	collectionFactory := context.NewCollectionFactory()
 
 	// collect information about references packages and their reflistbuckets...
-	existingPackageRefs := deb.NewSplitRefList()
+	rs := deb.NewSplitRefSet(deb.RefSetOptions{})
 	existingBuckets := deb.NewRefListDigestSet()
 	referencedAppStreamFiles := []string{}
 
@@ -54,7 +54,7 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			return e
 		}
 
-		existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+		rs.AddList(sl)
 		if !revertSplitRefLists {
 			existingBuckets.AddAllInRefList(sl)
 		}
@@ -93,7 +93,7 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			return e
 		}
 
-		existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+		rs.AddList(sl)
 		if !revertSplitRefLists {
 			existingBuckets.AddAllInRefList(sl)
 		}
@@ -128,7 +128,7 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			return e
 		}
 
-		existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+		rs.AddList(sl)
 		if !revertSplitRefLists {
 			existingBuckets.AddAllInRefList(sl)
 		}
@@ -177,7 +177,7 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 				}
 			}
 
-			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			rs.AddList(sl)
 			if !revertSplitRefLists {
 				existingBuckets.AddAllInRefList(sl)
 			}
@@ -232,7 +232,8 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 	context.Progress().ColoredPrintf("@{w!}Loading list of all packages...@|")
 	allPackageRefs := collectionFactory.PackageCollection().AllPackageRefs()
 
-	toDelete := allPackageRefs.Subtract(existingPackageRefs.Flatten())
+	existingPackageRefs := rs.ToFlattenedRefList()
+	toDelete := allPackageRefs.Subtract(existingPackageRefs)
 
 	// delete packages that are no longer referenced
 	context.Progress().ColoredPrintf("@{r!}Deleting unreferenced packages (%d)...@|", toDelete.Len())

@@ -236,6 +236,21 @@ func subtractRefLists(l, r AnyRefList) AnyRefList {
 	}
 }
 
+func subtractThroughRefSet(identity RefSetIdentity, l, r AnyRefList) AnyRefList {
+	switch l := l.(type) {
+	case *PackageRefList:
+		rs := NewPackageRefSet(RefSetOptions{Identity: identity})
+		rs.AddList(r.(*PackageRefList))
+		return l.SubtractSet(rs)
+	case *SplitRefList:
+		rs := NewSplitRefSet(RefSetOptions{Identity: identity})
+		rs.AddList(r.(*SplitRefList))
+		return l.SubtractSet(rs)
+	default:
+		panic(fmt.Sprintf("unexpected reflist type %T", l))
+	}
+}
+
 func (s *PackageRefListSuite) TestSubtract(c *C) {
 	forEachRefList(func(f reflistFactory) {
 		r1 := []byte("Pall r1")
@@ -257,6 +272,42 @@ func (s *PackageRefListSuite) TestSubtract(c *C) {
 		c.Check(getRefs(subtractRefLists(l1, l4)), DeepEquals, getRefs(l5))
 		c.Check(getRefs(subtractRefLists(empty, l1)), DeepEquals, getRefs(empty))
 		c.Check(getRefs(subtractRefLists(l2, l3)), DeepEquals, getRefs(l2))
+	})
+}
+
+func (s *PackageRefListSuite) TestSubtractSet(c *C) {
+	forEachRefList(func(f reflistFactory) {
+		r1 := []byte("Pall r1 1 000000")
+		r1a := []byte("Pall r1 1 1111111")
+		r1b := []byte("Pall r1 2 1111111")
+		r2 := []byte("Pall r2 1 000000")
+		r3 := []byte("Pall r3 1 000000")
+		r4 := []byte("Pall r4 1 000000")
+		r5 := []byte("Pall r5 1 000000")
+
+		empty := f.newFromRefs()
+		l1 := f.newFromRefs(r1, r2, r3, r4)
+		l2 := f.newFromRefs(r1, r3)
+		l3 := f.newFromRefs(r2, r4)
+		l4 := f.newFromRefs(r4, r5)
+		l5 := f.newFromRefs(r1, r2, r3)
+		l6 := f.newFromRefs(r1)
+		l6a := f.newFromRefs(r1a)
+		l6b := f.newFromRefs(r1b)
+
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l1, empty)), DeepEquals, toStrSlice(l1))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l1, l2)), DeepEquals, toStrSlice(l3))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l1, l3)), DeepEquals, toStrSlice(l2))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l1, l4)), DeepEquals, toStrSlice(l5))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, empty, l1)), DeepEquals, toStrSlice(empty))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l2, l3)), DeepEquals, toStrSlice(l2))
+
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l6, l6a)), DeepEquals, toStrSlice(l6))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityFullKey, l6, l6b)), DeepEquals, toStrSlice(l6))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityWithoutHash, l6, l6a)), DeepEquals, toStrSlice(empty))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityWithoutHash, l6, l6b)), DeepEquals, toStrSlice(l6))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityWithoutVersion, l6, l6a)), DeepEquals, toStrSlice(empty))
+		c.Check(toStrSlice(subtractThroughRefSet(RefSetIdentityWithoutVersion, l6, l6b)), DeepEquals, toStrSlice(empty))
 	})
 }
 
@@ -378,118 +429,6 @@ func (s *PackageRefListSuite) TestDiffCompactsAtEnd(c *C) {
 
 		c.Check(diffAB[1].Left.String(), Equals, "app_1.1~bp1_i386")
 		c.Check(diffAB[1].Right.String(), Equals, "app_1.1~bp2_i386")
-	})
-}
-
-func mergeRefLists(l, r AnyRefList, overrideMatching, ignoreConflicting bool) AnyRefList {
-	switch l := l.(type) {
-	case *PackageRefList:
-		return l.Merge(r.(*PackageRefList), overrideMatching, ignoreConflicting)
-	case *SplitRefList:
-		return l.Merge(r.(*SplitRefList), overrideMatching, ignoreConflicting)
-	default:
-		panic(fmt.Sprintf("unexpected reflist type %T", l))
-	}
-}
-
-func (s *PackageRefListSuite) TestMerge(c *C) {
-	forEachRefList(func(f reflistFactory) {
-		db, _ := goleveldb.NewOpenDB(c.MkDir())
-		coll := NewPackageCollection(db)
-
-		packages := []*Package{
-			{Name: "lib", Version: "1.0", Architecture: "i386"},                      //0
-			{Name: "dpkg", Version: "1.7", Architecture: "i386"},                     //1
-			{Name: "data", Version: "1.1~bp1", Architecture: "all"},                  //2
-			{Name: "app", Version: "1.1~bp1", Architecture: "i386"},                  //3
-			{Name: "app", Version: "1.1~bp2", Architecture: "i386"},                  //4
-			{Name: "app", Version: "1.1~bp2", Architecture: "amd64"},                 //5
-			{Name: "dpkg", Version: "1.0", Architecture: "i386"},                     //6
-			{Name: "xyz", Version: "1.0", Architecture: "sparc"},                     //7
-			{Name: "dpkg", Version: "1.0", Architecture: "i386", FilesHash: 0x34445}, //8
-			{Name: "app", Version: "1.1~bp2", Architecture: "i386", FilesHash: 0x44}, //9
-		}
-
-		for _, p := range packages {
-			p.V06Plus = true
-			_ = coll.Update(p)
-		}
-
-		listA := NewPackageList()
-		_ = listA.Add(packages[0])
-		_ = listA.Add(packages[1])
-		_ = listA.Add(packages[2])
-		_ = listA.Add(packages[3])
-		_ = listA.Add(packages[7])
-
-		listB := NewPackageList()
-		_ = listB.Add(packages[0])
-		_ = listB.Add(packages[2])
-		_ = listB.Add(packages[4])
-		_ = listB.Add(packages[5])
-		_ = listB.Add(packages[6])
-
-		listC := NewPackageList()
-		_ = listC.Add(packages[0])
-		_ = listC.Add(packages[8])
-		_ = listC.Add(packages[9])
-
-		reflistA := f.newFromPackageList(listA)
-		reflistB := f.newFromPackageList(listB)
-		reflistC := f.newFromPackageList(listC)
-
-		mergeAB := mergeRefLists(reflistA, reflistB, true, false)
-		mergeBA := mergeRefLists(reflistB, reflistA, true, false)
-		mergeAC := mergeRefLists(reflistA, reflistC, true, false)
-		mergeBC := mergeRefLists(reflistB, reflistC, true, false)
-		mergeCB := mergeRefLists(reflistC, reflistB, true, false)
-
-		verifyRefListIntegrity(c, mergeAB)
-		verifyRefListIntegrity(c, mergeBA)
-		verifyRefListIntegrity(c, mergeAC)
-		verifyRefListIntegrity(c, mergeBC)
-		verifyRefListIntegrity(c, mergeCB)
-
-		c.Check(toStrSlice(mergeAB), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 dpkg 1.0 00000000", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
-		c.Check(toStrSlice(mergeBA), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp1 00000000", "Pi386 dpkg 1.7 00000000", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
-		c.Check(toStrSlice(mergeAC), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pi386 app 1.1~bp2 00000044", "Pi386 dpkg 1.0 00034445", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
-		c.Check(toStrSlice(mergeBC), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000044", "Pi386 dpkg 1.0 00034445", "Pi386 lib 1.0 00000000"})
-		c.Check(toStrSlice(mergeCB), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 dpkg 1.0 00000000", "Pi386 lib 1.0 00000000"})
-
-		mergeABall := mergeRefLists(reflistA, reflistB, false, false)
-		mergeBAall := mergeRefLists(reflistB, reflistA, false, false)
-		mergeACall := mergeRefLists(reflistA, reflistC, false, false)
-		mergeBCall := mergeRefLists(reflistB, reflistC, false, false)
-		mergeCBall := mergeRefLists(reflistC, reflistB, false, false)
-
-		verifyRefListIntegrity(c, mergeABall)
-		verifyRefListIntegrity(c, mergeBAall)
-		verifyRefListIntegrity(c, mergeACall)
-		verifyRefListIntegrity(c, mergeBCall)
-		verifyRefListIntegrity(c, mergeCBall)
-
-		c.Check(mergeABall, DeepEquals, mergeBAall)
-		c.Check(toStrSlice(mergeBAall), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp1 00000000", "Pi386 app 1.1~bp2 00000000",
-				"Pi386 dpkg 1.0 00000000", "Pi386 dpkg 1.7 00000000", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
-
-		c.Check(mergeBCall, Not(DeepEquals), mergeCBall)
-		c.Check(toStrSlice(mergeACall), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pi386 app 1.1~bp1 00000000", "Pi386 app 1.1~bp2 00000044", "Pi386 dpkg 1.0 00034445",
-				"Pi386 dpkg 1.7 00000000", "Pi386 lib 1.0 00000000", "Psparc xyz 1.0 00000000"})
-		c.Check(toStrSlice(mergeBCall), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000044", "Pi386 dpkg 1.0 00034445",
-				"Pi386 lib 1.0 00000000"})
-
-		mergeBCwithConflicts := mergeRefLists(reflistB, reflistC, false, true)
-		c.Check(toStrSlice(mergeBCwithConflicts), DeepEquals,
-			[]string{"Pall data 1.1~bp1 00000000", "Pamd64 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000000", "Pi386 app 1.1~bp2 00000044",
-				"Pi386 dpkg 1.0 00000000", "Pi386 dpkg 1.0 00034445", "Pi386 lib 1.0 00000000"})
 	})
 }
 

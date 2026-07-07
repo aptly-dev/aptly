@@ -1542,7 +1542,7 @@ func (collection *PublishedRepoCollection) Len() int {
 func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix string, components []string,
 	collectionFactory *CollectionFactory, progress aptly.Progress) (map[string][]string, error) {
 	referencedFiles := map[string][]string{}
-	processedComponentRefs := map[string]*SplitRefList{}
+	processedComponentRefs := map[string]*SplitRefSet{}
 
 	processedComponentBuckets := map[string]*RefListDigestSet{}
 	for _, component := range components {
@@ -1583,15 +1583,16 @@ func (collection *PublishedRepoCollection) listReferencedFilesByComponent(prefix
 						unseenRefs := NewSplitRefListFromRefList(bucket)
 						processedRefs := processedComponentRefs[component]
 						if processedRefs != nil {
-							unseenRefs = unseenRefs.Subtract(processedRefs)
+							unseenRefs = unseenRefs.SubtractSet(processedRefs)
 						} else {
-							processedRefs = NewSplitRefList()
+							processedRefs = NewSplitRefSet(RefSetOptions{})
+							processedComponentRefs[component] = processedRefs
 						}
 
 						if unseenRefs.Len() == 0 {
 							return nil
 						}
-						processedComponentRefs[component] = processedRefs.Merge(unseenRefs, false, true)
+						processedRefs.AddList(unseenRefs)
 
 						packageList, err := NewPackageListFromRefList(unseenRefs, collectionFactory.PackageCollection(), progress)
 						if err != nil {

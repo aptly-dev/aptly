@@ -168,6 +168,25 @@ func (l *PackageRefList) Subtract(r *PackageRefList) *PackageRefList {
 	return result
 }
 
+// SubtractSet returns all packages in l that are not in rs, according to rs's
+// configured identity
+//
+// If the identity is RefSetIdentityFullKey, this is equivalent to
+// l.Subtract(rs.ToRefList()), but faster. Otherwise, it will subtract all refs
+// where rs.HasMatch is true (so e.g. RefSetIdentityWithoutVersion will subtract
+// refs w/ the same arch + name but ignore version + hash).
+func (l *PackageRefList) SubtractSet(rs *PackageRefSet) *PackageRefList {
+	result := &PackageRefList{Refs: make([][]byte, 0, 128)}
+
+	for _, ref := range l.Refs {
+		if !rs.HasMatch(ref) {
+			result.Refs = append(result.Refs, ref)
+		}
+	}
+
+	return result
+}
+
 // PackageDiff is a difference between two packages in a list.
 //
 // If left & right are present, difference is in package version
@@ -281,100 +300,6 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 	}
 
 	return result, nil
-}
-
-// Merge merges reflist r into current reflist. If overrideMatching, merge
-// replaces matching packages (by architecture/name) with reference from r.
-// If ignoreConflicting is set, all packages are preserved, otherwise conflicting
-// packages are overwritten with packages from "right" snapshot.
-func (l *PackageRefList) Merge(r *PackageRefList, overrideMatching, ignoreConflicting bool) (result *PackageRefList) {
-	var overriddenArch, overridenName []byte
-
-	// pointer to left and right reflists
-	il, ir := 0, 0
-	// length of reflists
-	ll, lr := l.Len(), r.Len()
-
-	result = &PackageRefList{}
-	result.Refs = make([][]byte, 0, ll+lr)
-
-	// until we reached end of both lists
-	for il < ll || ir < lr {
-		// if we've exhausted left list, pull the rest from the right
-		if il == ll {
-			result.Refs = append(result.Refs, r.Refs[ir:]...)
-			break
-		}
-		// if we've exhausted right list, pull the rest from the left
-		if ir == lr {
-			result.Refs = append(result.Refs, l.Refs[il:]...)
-			break
-		}
-
-		// refs on both sides are present, load them
-		rl, rr := l.Refs[il], r.Refs[ir]
-		// compare refs
-		rel := bytes.Compare(rl, rr)
-
-		if rel == 0 {
-			// refs are identical, so are packages, advance pointer
-			result.Refs = append(result.Refs, l.Refs[il])
-			il++
-			ir++
-			overridenName = nil
-			overriddenArch = nil
-		} else {
-			if !ignoreConflicting || overrideMatching {
-				partsL := bytes.Split(rl, []byte(" "))
-				archL, nameL, versionL := partsL[0][1:], partsL[1], partsL[2]
-
-				partsR := bytes.Split(rr, []byte(" "))
-				archR, nameR, versionR := partsR[0][1:], partsR[1], partsR[2]
-
-				if !ignoreConflicting && bytes.Equal(archL, archR) &&
-					bytes.Equal(nameL, nameR) && bytes.Equal(versionL, versionR) {
-					// conflicting duplicates with same arch, name, version, but different file hash
-					result.Refs = append(result.Refs, r.Refs[ir])
-					il++
-					ir++
-					overridenName = nil
-					overriddenArch = nil
-					continue
-				}
-
-				if overrideMatching {
-					if bytes.Equal(archL, overriddenArch) && bytes.Equal(nameL, overridenName) {
-						// this package has already been overridden on the right
-						il++
-						continue
-					}
-
-					if bytes.Equal(archL, archR) && bytes.Equal(nameL, nameR) {
-						// override with package from the right
-						result.Refs = append(result.Refs, r.Refs[ir])
-						il++
-						ir++
-						overriddenArch = archL
-						overridenName = nameL
-						continue
-					}
-				}
-			}
-
-			// otherwise append smallest of two
-			if rel < 0 {
-				result.Refs = append(result.Refs, l.Refs[il])
-				il++
-			} else {
-				result.Refs = append(result.Refs, r.Refs[ir])
-				ir++
-				overridenName = nil
-				overriddenArch = nil
-			}
-		}
-	}
-
-	return
 }
 
 // FilterLatestRefs takes in a reflist with potentially multiples of the same
@@ -549,30 +474,6 @@ func (sl *SplitRefList) Replace(reflist *PackageRefList) {
 	}
 }
 
-// Merge merges reflist r into current reflist (see PackageRefList.Merge)
-func (sl *SplitRefList) Merge(r *SplitRefList, overrideMatching, ignoreConflicting bool) (result *SplitRefList) {
-	result = NewSplitRefList()
-
-	var empty PackageRefList
-	for idx, lbucket := range sl.bucketRefs {
-		rbucket := r.bucketRefs[idx]
-		if lbucket == nil && rbucket == nil {
-			continue
-		}
-
-		if lbucket == nil {
-			lbucket = &empty
-		} else if rbucket == nil {
-			rbucket = &empty
-		}
-
-		result.bucketRefs[idx] = lbucket.Merge(rbucket, overrideMatching, ignoreConflicting)
-		result.Buckets[idx] = reflistDigest(result.bucketRefs[idx])
-	}
-
-	return
-}
-
 // Subtract returns all packages in l that are not in r
 func (sl *SplitRefList) Subtract(r *SplitRefList) (result *SplitRefList) {
 	result = NewSplitRefList()
@@ -591,6 +492,25 @@ func (sl *SplitRefList) Subtract(r *SplitRefList) (result *SplitRefList) {
 	}
 
 	return
+}
+
+// SubtractSet returns all packages in sl that are not in srs
+//
+// If the identity is RefSetIdentityFullKey, this is equivalent to
+// l.Subtract(srs.ToRefList()), but faster. Otherwise, it will subtract all refs
+// where srs.HasMatch is true (so e.g. RefSetIdentityWithoutVersion will
+// subtract refs w/ the same arch + name but ignore version + hash).
+func (sl *SplitRefList) SubtractSet(srs *SplitRefSet) *SplitRefList {
+	result := NewSplitRefList()
+
+	for idx, lbucket := range sl.bucketRefs {
+		if lbucket != nil {
+			result.bucketRefs[idx] = lbucket.SubtractSet(srs.buckets[idx])
+			result.Buckets[idx] = reflistDigest(result.bucketRefs[idx])
+		}
+	}
+
+	return result
 }
 
 // Diff calculates difference between two reflists

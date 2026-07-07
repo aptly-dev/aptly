@@ -212,14 +212,12 @@ func apiSnapshotsCreate(c *gin.Context) {
 		}
 
 		// Merge packages from all source snapshots
-		var refList *deb.SplitRefList
-		if len(freshSources) > 0 {
-			refList = freshSources[0].RefList()
-			for i := 1; i < len(freshSources); i++ {
-				refList = refList.Merge(freshSources[i].RefList(), true, false)
-			}
-		} else {
-			refList = deb.NewSplitRefList()
+		rs := deb.NewSplitRefSet(deb.RefSetOptions{
+			Identity: deb.RefSetIdentityWithoutVersion,
+		})
+
+		for _, source := range freshSources {
+			rs.AddList(source.RefList())
 		}
 
 		// Add any explicitly specified package refs on top
@@ -238,10 +236,10 @@ func apiSnapshotsCreate(c *gin.Context) {
 					return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, err
 				}
 			}
-			refList = refList.Merge(deb.NewSplitRefListFromPackageList(list), true, false)
+			rs.AddList(deb.NewSplitRefListFromPackageList(list))
 		}
 
-		snapshot = deb.NewSnapshotFromRefList(b.Name, freshSources, refList, b.Description)
+		snapshot = deb.NewSnapshotFromRefList(b.Name, freshSources, rs.ToRefList(), b.Description)
 
 		err = taskSnapshotCollection.Add(snapshot, taskRefListCollection)
 		if err != nil {
@@ -652,7 +650,6 @@ func apiSnapshotsMerge(c *gin.Context) {
 
 	latest := c.Request.URL.Query().Get("latest") == "1"
 	noRemove := c.Request.URL.Query().Get("no-remove") == "1"
-	overrideMatching := !latest && !noRemove
 
 	if noRemove && latest {
 		AbortWithJSONError(c, http.StatusBadRequest, fmt.Errorf("no-remove and latest are mutually exclusive"))
@@ -695,11 +692,20 @@ func apiSnapshotsMerge(c *gin.Context) {
 			}
 		}
 
-		// Merge using fresh sources
-		result := freshSources[0].RefList()
-		for i := 1; i < len(freshSources); i++ {
-			result = result.Merge(freshSources[i].RefList(), overrideMatching, false)
+		rsopts := deb.RefSetOptions{}
+		if !latest && !noRemove {
+			rsopts.Identity = deb.RefSetIdentityWithoutVersion
+		} else {
+			rsopts.Identity = deb.RefSetIdentityWithoutHash
 		}
+
+		// Merge using fresh sources
+		rs := deb.NewSplitRefSet(rsopts)
+		for _, source := range freshSources {
+			rs.AddList(source.RefList())
+		}
+
+		result := rs.ToRefList()
 
 		if latest {
 			result.FilterLatestRefs()
