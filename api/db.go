@@ -30,7 +30,7 @@ func apiDBCleanup(c *gin.Context) {
 		collectionFactory := context.NewCollectionFactory()
 
 		// collect information about referenced packages and their reflist buckets...
-		existingPackageRefs := deb.NewSplitRefList()
+		rs := deb.NewSplitRefSet(deb.RefSetOptions{})
 		existingBuckets := deb.NewRefListDigestSet()
 
 		reflistMigration := collectionFactory.RefListCollection().NewMigration(deb.RefListMigrationOptions{})
@@ -43,7 +43,7 @@ func apiDBCleanup(c *gin.Context) {
 				return e
 			}
 
-			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			rs.AddList(sl)
 			existingBuckets.AddAllInRefList(sl)
 
 			return nil
@@ -59,7 +59,7 @@ func apiDBCleanup(c *gin.Context) {
 				return e
 			}
 
-			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			rs.AddList(sl)
 			existingBuckets.AddAllInRefList(sl)
 
 			return nil
@@ -75,7 +75,7 @@ func apiDBCleanup(c *gin.Context) {
 				return e
 			}
 
-			existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+			rs.AddList(sl)
 			existingBuckets.AddAllInRefList(sl)
 
 			return nil
@@ -102,7 +102,7 @@ func apiDBCleanup(c *gin.Context) {
 					}
 				}
 
-				existingPackageRefs = existingPackageRefs.Merge(sl, false, true)
+				rs.AddList(sl)
 				existingBuckets.AddAllInRefList(sl)
 			}
 			return nil
@@ -124,7 +124,8 @@ func apiDBCleanup(c *gin.Context) {
 		out.Printf("Loading list of all packages...")
 		allPackageRefs := collectionFactory.PackageCollection().AllPackageRefs()
 
-		toDelete := allPackageRefs.Subtract(existingPackageRefs.Flatten())
+		existingPackageRefs := rs.ToFlattenedRefList()
+		toDelete := allPackageRefs.Subtract(existingPackageRefs)
 
 		// delete packages that are no longer referenced
 		out.Printf("Deleting unreferenced packages (%d)...", toDelete.Len())

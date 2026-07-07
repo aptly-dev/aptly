@@ -37,12 +37,19 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("-no-remove and -latest can't be specified together")
 	}
 
-	overrideMatching := !latest && !noRemove
-
-	result := sources[0].RefList()
-	for i := 1; i < len(sources); i++ {
-		result = result.Merge(sources[i].RefList(), overrideMatching, false)
+	rsopts := deb.RefSetOptions{}
+	if !latest && !noRemove {
+		rsopts.Identity = deb.RefSetIdentityWithoutVersion
+	} else {
+		rsopts.Identity = deb.RefSetIdentityWithoutHash
 	}
+
+	rs := deb.NewSplitRefSet(rsopts)
+	for _, source := range sources {
+		rs.AddList(source.RefList())
+	}
+
+	result := rs.ToRefList()
 
 	if latest {
 		result.FilterLatestRefs()

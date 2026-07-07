@@ -132,7 +132,10 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 		repo := NewLocalRepo(fmt.Sprintf("repo%d", repoIndex), "comment")
 		repo.DefaultDistribution = fmt.Sprintf("dist%d", repoIndex)
 		repo.DefaultComponent = defaultComponent
-		repo.UpdateRefList(NewSplitRefListFromRefList(refs.Merge(sharedRefs, false, true)))
+		merge := NewPackageRefSet(RefSetOptions{})
+		merge.AddList(refs)
+		merge.AddList(sharedRefs)
+		repo.UpdateRefList(NewSplitRefListFromRefList(merge.ToRefList()))
 		err = repoCollection.Add(repo, reflistCollection)
 		if err != nil {
 			b.Fatal(err)
