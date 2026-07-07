@@ -412,12 +412,13 @@ func versionSatisfiesDependency(version string, dep Dependency) bool {
 		return r == 0
 	case VersionLess:
 		return r < 0
+	// 2 is returned when a package with an invalid version is detected; setting boundary for VersionGreater and GreaterOrEqual cases
 	case VersionGreater:
-		return r > 0
+		return r > 0 && r < 2
 	case VersionLessOrEqual:
 		return r <= 0
 	case VersionGreaterOrEqual:
-		return r >= 0
+		return r >= 0 && r < 2
 	case VersionPatternMatch:
 		matched, err := filepath.Match(dep.Version, version)
 		return err == nil && matched
