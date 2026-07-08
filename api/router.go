@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"net/http/pprof"
+	"strings"
 	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
@@ -80,6 +82,27 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	if c.Config().EnableMetricsEndpoint {
 		MetricsCollectorRegistrar.Register(router)
+	}
+
+	if c.Config().EnablePprofEndpoint {
+		pprofMux := http.NewServeMux()
+		pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
+		pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+		router.Any("/api/debug/pprof/*any", func(c *gin.Context) {
+			origPath := c.Request.URL.Path
+			origRawPath := c.Request.URL.RawPath
+			c.Request.URL.Path = strings.TrimPrefix(origPath, "/api")
+			if origRawPath != "" {
+				c.Request.URL.RawPath = strings.TrimPrefix(origRawPath, "/api")
+			}
+			pprofMux.ServeHTTP(c.Writer, c.Request)
+			c.Request.URL.Path = origPath
+			c.Request.URL.RawPath = origRawPath
+		})
 	}
 
 	if c.Config().ServeInAPIMode {
