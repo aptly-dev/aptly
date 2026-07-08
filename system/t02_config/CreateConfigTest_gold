@@ -86,6 +86,9 @@ enable_metrics_endpoint: false
 # Enable API documentation on /docs
 enable_swagger_endpoint: false
 
+# Enable pprof profiling endpoints on /api/debug/pprof/*
+enable_pprof_endpoint: false
+
 # OBSOLETE: use via url param ?_async=true
 async_api: false
 
