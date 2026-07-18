@@ -451,6 +451,7 @@ The legacy json configuration is still supported (and also supports comments):
       // Type must be one of:
       // * local
       // * azure
+      // * s3
       "packagePoolStorage": {
         // Local Pool
         "type": "local",
@@ -474,6 +475,28 @@ The legacy json configuration is still supported (and also supports comments):
         // // Endpoint URL
         // // See: Azure documentation https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
         // // defaults to "https://<accountName>.blob.core.windows.net"
+        // "endpoint": ""
+
+        // // S3 Object Storage Pool
+        // "type": "s3",
+        // // S3 bucket to store the pool in
+        // "bucket": "pool1",
+
+        // // Prefix (optional)
+        // // Store the pool under specified prefix in the bucket, defaults to no prefix (bucket root)
+        // "prefix": "",
+
+        // // Region (i.e. us-east-1)
+        // "region": "",
+
+        // // Credentials (optional)
+        // // empty credentials use the standard AWS credential chain (env vars, shared credentials file, IAM role)
+        // "awsAccessKeyID": "",
+        // "awsSecretAccessKey": "",
+        // "awsSessionToken": "",
+
+        // // Endpoint URL (optional)
+        // // for S3-compatible object stores (MinIO, etc.), defaults to AWS S3
         // "endpoint": ""
       }
 
