@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 
 	. "gopkg.in/check.v1"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type ConfigSuite struct {
@@ -433,3 +435,75 @@ packagepool_storage:
 const configFileYAMLError = `packagepool_storage:
     type: invalid
 `
+
+func (s *ConfigSuite) TestPackagePoolStorageS3JSON(c *C) {
+	data := []byte(`{"type": "s3", "region": "us-east-1", "bucket": "aptly-pool", "prefix": "pool", "endpoint": "http://minio:9000"}`)
+
+	var pool PackagePoolStorage
+	err := json.Unmarshal(data, &pool)
+	c.Assert(err, IsNil)
+	c.Assert(pool.S3, NotNil)
+	// the s3 discriminator must not leak into the other backends
+	c.Check(pool.Local, IsNil)
+	c.Check(pool.Azure, IsNil)
+	c.Check(pool.S3.Region, Equals, "us-east-1")
+	c.Check(pool.S3.Bucket, Equals, "aptly-pool")
+	c.Check(pool.S3.Prefix, Equals, "pool")
+	c.Check(pool.S3.Endpoint, Equals, "http://minio:9000")
+
+	out, err := json.Marshal(&pool)
+	c.Assert(err, IsNil)
+	c.Check(string(out), Matches, `.*"type":"s3".*`)
+	// prefix and endpoint collide with AzureEndpoint's tags. Embedding both in
+	// one wrapper makes encoding/json drop them silently (no error), so assert
+	// they survive the round trip.
+	c.Check(string(out), Matches, `.*"prefix":"pool".*`)
+	c.Check(string(out), Matches, `.*"endpoint":"http://minio:9000".*`)
+
+	var pool2 PackagePoolStorage
+	err = json.Unmarshal(out, &pool2)
+	c.Assert(err, IsNil)
+	c.Assert(pool2.S3, NotNil)
+	c.Check(*pool2.S3, DeepEquals, *pool.S3)
+}
+
+func (s *ConfigSuite) TestPackagePoolStorageS3YAML(c *C) {
+	data := []byte("type: s3\nregion: us-east-1\nbucket: aptly-pool\nprefix: pool\nendpoint: http://minio:9000\n")
+
+	var pool PackagePoolStorage
+	err := yaml.Unmarshal(data, &pool)
+	c.Assert(err, IsNil)
+	c.Assert(pool.S3, NotNil)
+	c.Check(pool.Local, IsNil)
+	c.Check(pool.Azure, IsNil)
+	c.Check(pool.S3.Region, Equals, "us-east-1")
+	c.Check(pool.S3.Bucket, Equals, "aptly-pool")
+	c.Check(pool.S3.Prefix, Equals, "pool")
+	c.Check(pool.S3.Endpoint, Equals, "http://minio:9000")
+
+	// a duplicate `prefix` inline tag makes yaml.v3 panic rather than drop it,
+	// so this also guards the shared-wrapper regression
+	out, err := yaml.Marshal(pool)
+	c.Assert(err, IsNil)
+	c.Check(string(out), Matches, "(?s).*type: s3.*")
+	c.Check(string(out), Matches, "(?s).*prefix: pool.*")
+	c.Check(string(out), Matches, "(?s).*endpoint: http://minio:9000.*")
+
+	var pool2 PackagePoolStorage
+	err = yaml.Unmarshal(out, &pool2)
+	c.Assert(err, IsNil)
+	c.Assert(pool2.S3, NotNil)
+	c.Check(*pool2.S3, DeepEquals, *pool.S3)
+}
+
+func (s *ConfigSuite) TestPackagePoolStorageMarshalNil(c *C) {
+	// an all-nil pool storage must not panic on the Local dereference
+	var pool PackagePoolStorage
+
+	out, err := json.Marshal(&pool)
+	c.Assert(err, IsNil)
+	c.Check(string(out), Equals, "{}")
+
+	_, err = yaml.Marshal(pool)
+	c.Assert(err, IsNil)
+}

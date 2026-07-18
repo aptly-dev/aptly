@@ -22,6 +22,7 @@ class S3Test(BaseTest):
     """
 
     s3Overrides = {}
+    use_s3_pool = False
 
     def fixture_available(self):
         return super(S3Test, self).fixture_available() and \
@@ -41,6 +42,15 @@ class S3Test(BaseTest):
         }}
 
         self.configOverride["S3PublishEndpoints"]["test1"].update(**self.s3Overrides)
+
+        if self.use_s3_pool:
+            self.configOverride["packagePoolStorage"] = {
+                "type": "s3",
+                "region": "us-east-1",
+                "bucket": self.bucket_name,
+                "awsAccessKeyID": os.environ["AWS_ACCESS_KEY_ID"],
+                "awsSecretAccessKey": os.environ["AWS_SECRET_ACCESS_KEY"],
+            }
 
         super(S3Test, self).prepare()
 
@@ -76,6 +86,10 @@ class S3Test(BaseTest):
     def check_exists(self, path):
         if not self.check_path(path):
             raise Exception("path %s doesn't exist" % (path, ))
+
+    def check_exists_s3_only(self, path):
+        self.check_exists(path)
+        BaseTest.check_not_exists(self, path)
 
     def check_not_exists(self, path):
         if self.check_path(path):
