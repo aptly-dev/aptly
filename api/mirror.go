@@ -74,7 +74,7 @@ func apiMirrorsList(c *gin.Context) {
 
 	result := []remoteRepoResponse{}
 	err := collection.ForEach(func(repo *deb.RemoteRepo) error {
-		err := collection.LoadComplete(repo)
+		err := collection.LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func apiMirrorsCreate(c *gin.Context) {
 		return
 	}
 
-	err = collection.Add(repo)
+	err = collection.Add(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to add mirror: %s", err))
 		return
@@ -283,7 +283,7 @@ func apiMirrorsShow(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to show: %s", err))
 		return
@@ -315,7 +315,7 @@ func apiMirrorsPackages(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to show: %s", err))
 	}
@@ -498,7 +498,7 @@ func apiMirrorsEdit(c *gin.Context) {
 		}
 	}
 
-	err = collection.Update(repo)
+	err = collection.Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, fmt.Errorf("unable to edit: %s", err))
 		return
@@ -584,6 +584,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 		// Phase 2: Inside task lock - create fresh factory
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.RemoteRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load after lock acquired (use captured `name` variable, not gin context)
 		remote, err := taskCollection.ByName(name)
@@ -650,12 +651,12 @@ func apiMirrorsUpdate(c *gin.Context) {
 			e := context.ReOpenDatabase()
 			if e == nil {
 				remote.MarkAsIdle()
-				_ = taskCollection.Update(remote)
+				_ = taskCollection.Update(remote, taskRefListCollection)
 			}
 		}()
 
 		remote.MarkAsUpdating()
-		err = taskCollection.Update(remote)
+		err = taskCollection.Update(remote, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
@@ -813,7 +814,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 
 		log.Info().Msgf("%s: Finalizing download...", b.Name)
 		_ = remote.FinalizeDownload(taskCollectionFactory, out)
-		err = taskCollection.Update(remote)
+		err = taskCollection.Update(remote, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}

@@ -16,10 +16,13 @@ type ReposSuite struct {
 var _ = Suite(&ReposSuite{})
 
 func (s *ReposSuite) TestGetReposIncludesNumPackages(c *C) {
-	collection := s.context.NewCollectionFactory().LocalRepoCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.LocalRepoCollection()
+	reflistCollection := collectionFactory.RefListCollection()
+
 	repo := deb.NewLocalRepo("count-repo-list", "")
 	repo.UpdateRefList(makePackageRefList(c))
-	c.Assert(collection.Add(repo), IsNil)
+	c.Assert(collection.Add(repo, reflistCollection), IsNil)
 
 	response, err := s.HTTPRequest("GET", "/api/repos", nil)
 	c.Assert(err, IsNil)

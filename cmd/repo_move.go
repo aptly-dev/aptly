@@ -25,13 +25,13 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
 
-	err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(dstRepo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to %s: %s", command, err)
 	}
 
 	var (
-		srcRefList *deb.PackageRefList
+		srcRefList *deb.SplitRefList
 		srcRepo    *deb.LocalRepo
 	)
 
@@ -45,7 +45,7 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to %s: source and destination are the same", command)
 		}
 
-		err = collectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
+		err = collectionFactory.LocalRepoCollection().LoadComplete(srcRepo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
@@ -59,12 +59,12 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
 
-		err = collectionFactory.RemoteRepoCollection().LoadComplete(srcRemoteRepo)
+		err = collectionFactory.RemoteRepoCollection().LoadComplete(srcRemoteRepo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to %s: %s", command, err)
 		}
 
-		if srcRemoteRepo.RefList() == nil {
+		if srcRemoteRepo.RefList().Len() == 0 {
 			return fmt.Errorf("unable to %s: mirror not updated", command)
 		}
 
@@ -161,17 +161,17 @@ func aptlyRepoMoveCopyImport(cmd *commander.Command, args []string) error {
 	if context.Flags().Lookup("dry-run").Value.Get().(bool) {
 		context.Progress().Printf("\nChanges not saved, as dry run has been requested.\n")
 	} else {
-		dstRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(dstList))
+		dstRepo.UpdateRefList(deb.NewSplitRefListFromPackageList(dstList))
 
-		err = collectionFactory.LocalRepoCollection().Update(dstRepo)
+		err = collectionFactory.LocalRepoCollection().Update(dstRepo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to save: %s", err)
 		}
 
 		if command == "move" { // nolint: goconst
-			srcRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(srcList))
+			srcRepo.UpdateRefList(deb.NewSplitRefListFromPackageList(srcList))
 
-			err = collectionFactory.LocalRepoCollection().Update(srcRepo)
+			err = collectionFactory.LocalRepoCollection().Update(srcRepo, collectionFactory.RefListCollection())
 			if err != nil {
 				return fmt.Errorf("unable to save: %s", err)
 			}

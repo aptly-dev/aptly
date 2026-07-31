@@ -9,10 +9,13 @@ import (
 	"github.com/aptly-dev/aptly/database"
 )
 
+const blockSize = 4 * 1024
+
 func internalOpen(path string, throttleCompaction bool) (*leveldb.DB, error) {
 	o := &opt.Options{
 		Filter:                 filter.NewBloomFilter(10),
 		OpenFilesCacheCapacity: 256,
+		BlockSize:              blockSize,
 	}
 
 	if throttleCompaction {

@@ -26,7 +26,7 @@ type LocalRepo struct {
 	// Uploaders configuration
 	Uploaders *Uploaders `codec:"Uploaders,omitempty" json:"-"`
 	// "Snapshot" of current list of packages
-	packageRefs *PackageRefList
+	packageRefs *SplitRefList
 }
 
 // NewLocalRepo creates new instance of Debian local repository
@@ -55,13 +55,13 @@ func (repo *LocalRepo) NumPackages() int {
 }
 
 // RefList returns package list for repo
-func (repo *LocalRepo) RefList() *PackageRefList {
+func (repo *LocalRepo) RefList() *SplitRefList {
 	return repo.packageRefs
 }
 
 // UpdateRefList changes package list for local repo
-func (repo *LocalRepo) UpdateRefList(reflist *PackageRefList) {
-	repo.packageRefs = reflist
+func (repo *LocalRepo) UpdateRefList(sl *SplitRefList) {
+	repo.packageRefs = sl
 }
 
 // Encode does msgpack encoding of LocalRepo
@@ -140,14 +140,14 @@ func (collection *LocalRepoCollection) search(filter func(*LocalRepo) bool, uniq
 }
 
 // Add appends new repo to collection and saves it
-func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
+func (collection *LocalRepoCollection) Add(repo *LocalRepo, reflistCollection *RefListCollection) error {
 	_, err := collection.ByName(repo.Name)
 
 	if err == nil {
 		return fmt.Errorf("local repo with name %s already exists", repo.Name)
 	}
 
-	err = collection.Update(repo)
+	err = collection.Update(repo, reflistCollection)
 	if err != nil {
 		return err
 	}
@@ -157,28 +157,34 @@ func (collection *LocalRepoCollection) Add(repo *LocalRepo) error {
 }
 
 // Update stores updated information about repo in DB
-func (collection *LocalRepoCollection) Update(repo *LocalRepo) error {
+func (collection *LocalRepoCollection) Update(repo *LocalRepo, reflistCollection *RefListCollection) error {
 	batch := collection.db.CreateBatch()
-	_ = batch.Put(repo.Key(), repo.Encode())
-	if repo.packageRefs != nil {
-		_ = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
-	}
-	return batch.Write()
-}
-
-// LoadComplete loads additional information for local repo
-func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo) error {
-	repo.packageRefs = &PackageRefList{}
-
-	encoded, err := collection.db.Get(repo.RefKey())
-	if err == database.ErrNotFound {
-		return nil
-	}
+	err := batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 
-	return repo.packageRefs.Decode(encoded)
+	if repo.packageRefs != nil {
+		bc := reflistCollection.NewBatch(batch)
+		err = reflistCollection.UpdateInBatch(repo.packageRefs, repo.RefKey(), bc)
+		if err != nil {
+			return err
+		}
+	}
+
+	return batch.Write()
+}
+
+// LoadComplete loads additional information for local repo
+func (collection *LocalRepoCollection) LoadComplete(repo *LocalRepo, reflistCollection *RefListCollection) error {
+	repo.packageRefs = NewSplitRefList()
+
+	err := reflistCollection.LoadComplete(repo.packageRefs, repo.RefKey())
+	if err == database.ErrNotFound {
+		return nil
+	}
+
+	return err
 }
 
 // ByName looks up repository by name

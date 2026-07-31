@@ -53,7 +53,7 @@ func (n *NullVerifier) IsClearSigned(clearsign io.Reader) (bool, error) {
 type PackageListMixinSuite struct {
 	p1, p2, p3 *Package
 	list       *PackageList
-	reflist    *PackageRefList
+	reflist    *SplitRefList
 }
 
 func (s *PackageListMixinSuite) SetUpPackages() {
@@ -73,7 +73,7 @@ func (s *PackageListMixinSuite) SetUpPackages() {
 	_ = s.list.Add(s.p2)
 	_ = s.list.Add(s.p3)
 
-	s.reflist = NewPackageRefListFromPackageList(s.list)
+	s.reflist = NewSplitRefListFromPackageList(s.list)
 }
 
 type RemoteRepoSuite struct {
@@ -151,12 +151,12 @@ func (s *RemoteRepoSuite) TestAppStreamPaths(c *C) {
 	c.Check(s.repo.AppStreamPaths("main"), DeepEquals, []string(nil))
 
 	s.repo.ReleaseFiles = map[string]utils.ChecksumInfo{
-		"main/binary-amd64/Packages":              {Size: 100},
-		"main/dep11/Components-amd64.yml.gz":       {Size: 200},
-		"main/dep11/Components-i386.yml.gz":         {Size: 300},
-		"main/dep11/icons-48x48.tar.gz":             {Size: 400},
-		"contrib/dep11/Components-amd64.yml.gz":     {Size: 500},
-		"main/source/Sources":                       {Size: 600},
+		"main/binary-amd64/Packages":            {Size: 100},
+		"main/dep11/Components-amd64.yml.gz":    {Size: 200},
+		"main/dep11/Components-i386.yml.gz":     {Size: 300},
+		"main/dep11/icons-48x48.tar.gz":         {Size: 400},
+		"contrib/dep11/Components-amd64.yml.gz": {Size: 500},
+		"main/source/Sources":                   {Size: 600},
 	}
 
 	paths := s.repo.AppStreamPaths("main")
@@ -331,7 +331,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
-	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Flatten().Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
@@ -413,12 +413,12 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
-	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Flatten().Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 
-	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Flatten().Refs[1])
 	c.Assert(err, IsNil)
 	c.Check(pkg.Name, Equals, "installer")
 }
@@ -488,12 +488,12 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	_ = s.repo.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.repo.packageRefs, NotNil)
 
-	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Flatten().Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 
-	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Refs[1])
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.repo.packageRefs.Flatten().Refs[1])
 	c.Assert(err, IsNil)
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
 
@@ -572,7 +572,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
-	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Flatten().Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
@@ -662,12 +662,12 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	_ = s.flat.FinalizeDownload(s.collectionFactory, nil)
 	c.Assert(s.flat.packageRefs, NotNil)
 
-	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[0])
+	pkg, err := s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Flatten().Refs[0])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "amanda-client")
 
-	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Refs[1])
+	pkg, err = s.collectionFactory.PackageCollection().ByKey(s.flat.packageRefs.Flatten().Refs[1])
 	c.Assert(err, IsNil)
 
 	c.Check(pkg.Name, Equals, "access-modifier-checker")
@@ -740,7 +740,7 @@ func (s *RemoteRepoSuite) TestDownloadAppStreamFiles(c *C) {
 	s.repo.ReleaseFiles = map[string]utils.ChecksumInfo{
 		"main/dep11/Components-amd64.yml.gz": {Size: 16},
 		"main/dep11/icons-48x48.tar.gz":      {Size: 16},
-		"main/binary-amd64/Packages":          {Size: 100},
+		"main/binary-amd64/Packages":         {Size: 100},
 	}
 
 	downloader := http.NewFakeDownloader()
@@ -795,8 +795,9 @@ func (s *RemoteRepoSuite) TestDownloadAppStreamFiles(c *C) {
 
 type RemoteRepoCollectionSuite struct {
 	PackageListMixinSuite
-	db         database.Storage
-	collection *RemoteRepoCollection
+	db                database.Storage
+	collection        *RemoteRepoCollection
+	refListCollection *RefListCollection
 }
 
 var _ = Suite(&RemoteRepoCollectionSuite{})
@@ -804,6 +805,7 @@ var _ = Suite(&RemoteRepoCollectionSuite{})
 func (s *RemoteRepoCollectionSuite) SetUpTest(c *C) {
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewRemoteRepoCollection(s.db)
+	s.refListCollection = NewRefListCollection(s.db)
 	s.SetUpPackages()
 }
 
@@ -816,8 +818,8 @@ func (s *RemoteRepoCollectionSuite) TestAddByName(c *C) {
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
-	c.Assert(s.collection.Add(repo), IsNil)
-	c.Assert(s.collection.Add(repo), ErrorMatches, ".*already exists")
+	c.Assert(s.collection.Add(repo, s.refListCollection), IsNil)
+	c.Assert(s.collection.Add(repo, s.refListCollection), ErrorMatches, ".*already exists")
 
 	r, err := s.collection.ByName("yandex")
 	c.Assert(err, IsNil)
@@ -834,7 +836,7 @@ func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
 	c.Assert(err, ErrorMatches, "*.not found")
 
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
-	c.Assert(s.collection.Add(repo), IsNil)
+	c.Assert(s.collection.Add(repo, s.refListCollection), IsNil)
 
 	r, err := s.collection.ByUUID(repo.UUID)
 	c.Assert(err, IsNil)
@@ -848,7 +850,7 @@ func (s *RemoteRepoCollectionSuite) TestByUUID(c *C) {
 
 func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
-	c.Assert(s.collection.Update(repo), IsNil)
+	c.Assert(s.collection.Update(repo, s.refListCollection), IsNil)
 
 	collection := NewRemoteRepoCollection(s.db)
 	r, err := collection.ByName("yandex")
@@ -856,20 +858,20 @@ func (s *RemoteRepoCollectionSuite) TestUpdateLoadComplete(c *C) {
 	c.Assert(r.packageRefs, IsNil)
 
 	repo.packageRefs = s.reflist
-	c.Assert(s.collection.Update(repo), IsNil)
+	c.Assert(s.collection.Update(repo, s.refListCollection), IsNil)
 
 	collection = NewRemoteRepoCollection(s.db)
 	r, err = collection.ByName("yandex")
 	c.Assert(err, IsNil)
 	c.Assert(r.packageRefs, IsNil)
 	c.Assert(r.NumPackages(), Equals, 0)
-	c.Assert(s.collection.LoadComplete(r), IsNil)
+	c.Assert(s.collection.LoadComplete(r, s.refListCollection), IsNil)
 	c.Assert(r.NumPackages(), Equals, 3)
 }
 
 func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 	repo, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
-	_ = s.collection.Add(repo)
+	_ = s.collection.Add(repo, s.refListCollection)
 
 	count := 0
 	err := s.collection.ForEach(func(*RemoteRepo) error {
@@ -891,10 +893,10 @@ func (s *RemoteRepoCollectionSuite) TestForEachAndLen(c *C) {
 
 func (s *RemoteRepoCollectionSuite) TestDrop(c *C) {
 	repo1, _ := NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
-	_ = s.collection.Add(repo1)
+	_ = s.collection.Add(repo1, s.refListCollection)
 
 	repo2, _ := NewRemoteRepo("tyndex", "http://mirror.yandex.ru/debian/", "wheezy", []string{"main"}, []string{}, false, false, false, false)
-	_ = s.collection.Add(repo2)
+	_ = s.collection.Add(repo2, s.refListCollection)
 
 	r1, _ := s.collection.ByUUID(repo1.UUID)
 	c.Check(r1, Equals, repo1)
