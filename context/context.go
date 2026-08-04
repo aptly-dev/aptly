@@ -93,7 +93,6 @@ func (context *AptlyContext) config() *utils.ConfigStructure {
 		configLocation := context.globalFlags.Lookup("config").Value.String()
 		if configLocation != "" {
 			err = utils.LoadConfig(configLocation, &utils.Config)
-
 			if err != nil {
 				Fatal(err)
 			}
@@ -248,7 +247,7 @@ func (context *AptlyContext) newDownloader(progress aptly.Progress) aptly.Downlo
 		// If flag is defined prefer it to global setting
 		maxTries = maxTriesFlag.Value.Get().(int)
 	}
-	var downloader = context.config().Downloader
+	downloader := context.config().Downloader
 	downloaderFlag := context.flags.Lookup("downloader")
 	if downloaderFlag != nil {
 		downloader = downloaderFlag.Value.String()
@@ -396,7 +395,8 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 				storageConfig.Azure.AccountKey,
 				storageConfig.Azure.Container,
 				storageConfig.Azure.Prefix,
-				storageConfig.Azure.Endpoint)
+				storageConfig.Azure.Endpoint,
+			)
 			if err != nil {
 				Fatal(err)
 			}
@@ -439,8 +439,9 @@ func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedSt
 			publishedStorage, err = s3.NewPublishedStorage(
 				params.AccessKeyID, params.SecretAccessKey, params.SessionToken,
 				params.Region, params.Endpoint, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
-				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
-				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug)
+				params.EncryptionMethod, params.PlusWorkaround, params.EnableMultiDel,
+				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -454,7 +455,8 @@ func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedSt
 			publishedStorage, err = gcs.NewPublishedStorage(
 				params.Bucket, params.Prefix, params.CredentialsFile, params.ServiceAccountJSON,
 				params.Project, params.Endpoint, params.ACL, params.StorageClass, params.EncryptionKey,
-				params.DisableMultiDel, params.Debug)
+				params.DisableMultiDel, params.Debug,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -478,7 +480,8 @@ func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedSt
 
 			var err error
 			publishedStorage, err = azure.NewPublishedStorage(
-				params.AccountName, params.AccountKey, params.Container, params.Prefix, params.Endpoint)
+				params.AccountName, params.AccountKey, params.Container, params.Prefix, params.Endpoint,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -490,7 +493,8 @@ func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedSt
 
 			var err error
 			publishedStorage, err = jfrog.NewPublishedStorage(
-				name[6:], params)
+				name[6:], params,
+			)
 			if err != nil {
 				return nil, fmt.Errorf("error creating jfrog manager: %w", err)
 			}
