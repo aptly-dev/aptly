@@ -49,6 +49,12 @@ type Config struct {
 	// all other regions.
 	// http://docs.amazonwebservices.com/AmazonS3/latest/API/ErrorResponses.html
 	Send409Conflict bool
+	// DeleteErrors maps object keys to errors returned by multi-object deletion.
+	DeleteErrors map[string]string
+	// DeleteObjectErrors maps object keys to errors returned by single-object deletion.
+	DeleteObjectErrors map[string]string
+	// DeleteObjectsError is returned for the entire multi-object deletion request.
+	DeleteObjectsError string
 }
 
 func (c *Config) send409Conflict() bool {
@@ -516,9 +522,59 @@ func (r bucketResource) put(a *action) interface{} {
 	return nil
 }
 
-func (bucketResource) post(a *action) interface{} {
-	fatalError(400, "Method", "bucket POST method not available")
-	return nil
+// POST on a bucket with ?delete deletes multiple objects at once.
+// https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
+func (r bucketResource) post(a *action) interface{} {
+	if _, multiDelete := a.req.URL.Query()["delete"]; !multiDelete {
+		fatalError(400, "Method", "bucket POST method not available")
+		return nil
+	}
+
+	b := r.bucket
+	if b == nil {
+		fatalError(404, "NoSuchBucket", "The specified bucket does not exist")
+	}
+	if a.srv.config != nil && a.srv.config.DeleteObjectsError != "" {
+		fatalError(403, "AccessDenied", "%s", a.srv.config.DeleteObjectsError)
+	}
+
+	var req struct {
+		Objects []struct {
+			Key string `xml:"Key"`
+		} `xml:"Object"`
+	}
+	if err := xml.NewDecoder(a.req.Body).Decode(&req); err != nil {
+		fatalError(400, "MalformedXML", "cannot parse delete request: %v", err)
+	}
+	if len(req.Objects) == 0 {
+		fatalError(400, "MalformedXML", "delete request contains no objects")
+	}
+	if len(req.Objects) > maxDeleteObjectsPerRequest {
+		fatalError(400, "MalformedXML", "delete request contains more than 1000 objects")
+	}
+
+	type deleteError struct {
+		Key     string `xml:"Key"`
+		Code    string `xml:"Code"`
+		Message string `xml:"Message"`
+	}
+	var errors []deleteError
+	for _, obj := range req.Objects {
+		message, failed := "", false
+		if a.srv.config != nil {
+			message, failed = a.srv.config.DeleteErrors[obj.Key]
+		}
+		if failed {
+			errors = append(errors, deleteError{Key: obj.Key, Code: "AccessDenied", Message: message})
+		} else {
+			delete(b.objects, obj.Key)
+		}
+	}
+
+	return &struct {
+		XMLName xml.Name      `xml:"DeleteResult"`
+		Errors  []deleteError `xml:"Error"`
+	}{Errors: errors}
 }
 
 // validBucketName returns whether name is a valid bucket name.
@@ -681,6 +737,11 @@ func (objr objectResource) put(a *action) interface{} {
 }
 
 func (objr objectResource) delete(a *action) interface{} {
+	if a.srv.config != nil {
+		if message, failed := a.srv.config.DeleteObjectErrors[objr.name]; failed {
+			fatalError(403, "AccessDenied", "%s", message)
+		}
+	}
 	delete(objr.bucket.objects, objr.name)
 	return nil
 }

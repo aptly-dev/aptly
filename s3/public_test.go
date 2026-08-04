@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -248,6 +249,155 @@ func (s *PublishedStorageSuite) TestRemoveDirsPlusWorkaround(c *C) {
 func (s *PublishedStorageSuite) TestRemoveDirsNoSuchBucket(c *C) {
 	err := s.noSuchBucketStorage.RemoveDirs("a/b", nil)
 	c.Check(err, ErrorMatches, ".*StatusCode: 404.*")
+}
+
+func (s *PublishedStorageSuite) countRequests(method, uriSubstring string) int {
+	count := 0
+	for _, r := range s.srv.Requests {
+		if r.Method == method && strings.Contains(r.RequestURI, uriSubstring) {
+			count++
+		}
+	}
+
+	return count
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesPrefixed(c *C) {
+	s.prefixedStorage.disableMultiDel = false
+
+	s.PutFile(c, "lala/xyz", []byte("test"))
+	s.PutFile(c, "lala/abc", []byte("test"))
+
+	err := s.prefixedStorage.RemoveFiles([]string{"xyz"})
+	c.Check(err, IsNil)
+
+	s.AssertNoFile(c, "lala/xyz")
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"lala/abc"})
+	c.Check(s.countRequests("POST", "delete"), Equals, 1)
+	c.Check(s.countRequests("DELETE", ""), Equals, 0)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesBatchesAtThousand(c *C) {
+	s.storage.disableMultiDel = false
+
+	paths := make([]string, maxDeleteObjectsPerRequest+1)
+	for i := range paths {
+		paths[i] = fmt.Sprintf("pool/main/p/pkg/file-%d.deb", i)
+	}
+
+	err := s.storage.RemoveFiles(paths)
+	c.Check(err, IsNil)
+
+	c.Check(s.countRequests("POST", "delete"), Equals, 2)
+	c.Check(s.countRequests("DELETE", ""), Equals, 0)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesEmpty(c *C) {
+	s.storage.disableMultiDel = false
+
+	err := s.storage.RemoveFiles(nil)
+	c.Check(err, IsNil)
+	c.Check(s.countRequests("POST", "delete"), Equals, 0)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesNoSuchBucket(c *C) {
+	s.noSuchBucketStorage.disableMultiDel = false
+
+	err := s.noSuchBucketStorage.RemoveFiles([]string{"a"})
+	c.Check(err, IsNil)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesRequestError(c *C) {
+	s.storage.disableMultiDel = false
+	s.srv.config.DeleteObjectsError = "multi-delete failed"
+
+	err := s.storage.RemoveFiles([]string{"a"})
+	c.Check(err, ErrorMatches, "error deleting multiple paths.*AccessDenied.*multi-delete failed.*")
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesReportsAllFailuresAndInvalidatesSuccesses(c *C) {
+	s.prefixedStorage.disableMultiDel = false
+	s.srv.config.DeleteErrors = map[string]string{
+		"lala/a": "a failed",
+		"lala/c": "c failed",
+	}
+	s.prefixedStorage.pathCache = map[string]string{"a": "", "b": "", "c": ""}
+	for _, path := range []string{"a", "b", "c"} {
+		s.PutFile(c, filepath.Join("lala", path), []byte("test"))
+	}
+
+	err := s.prefixedStorage.RemoveFiles([]string{"a", "b", "c"})
+	c.Check(err, ErrorMatches, "errors deleting multiple paths.*lala/a: AccessDenied: a failed; lala/c: AccessDenied: c failed")
+
+	s.AssertNoFile(c, "lala/b")
+	c.Check(s.prefixedStorage.pathCache, DeepEquals, map[string]string{"a": "", "c": ""})
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesReportsFailuresAcrossBatches(c *C) {
+	s.storage.disableMultiDel = false
+	paths := make([]string, maxDeleteObjectsPerRequest+1)
+	for i := range paths {
+		paths[i] = fmt.Sprintf("file-%d", i)
+	}
+	s.srv.config.DeleteErrors = map[string]string{
+		paths[0]:                          "first batch failed",
+		paths[maxDeleteObjectsPerRequest]: "second batch failed",
+	}
+
+	err := s.storage.RemoveFiles(paths)
+	c.Check(err, ErrorMatches, "errors deleting multiple paths.*file-0: AccessDenied: first batch failed; file-1000: AccessDenied: second batch failed")
+	c.Check(s.countRequests("POST", "delete"), Equals, 2)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesDisableMultiDel(c *C) {
+	s.storage.disableMultiDel = true
+
+	paths := []string{"a", "b", "c"}
+	for _, path := range paths {
+		s.PutFile(c, path, []byte("test"))
+	}
+
+	err := s.storage.RemoveFiles([]string{"a", "b"})
+	c.Check(err, IsNil)
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"c"})
+
+	// Endpoints that cannot multi-delete fall back to one request per file.
+	c.Check(s.countRequests("POST", "delete"), Equals, 0)
+	c.Check(s.countRequests("DELETE", ""), Equals, 2)
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesDisableMultiDelError(c *C) {
+	s.storage.disableMultiDel = true
+	s.srv.config.DeleteObjectErrors = map[string]string{"a": "delete failed"}
+
+	err := s.storage.RemoveFiles([]string{"a"})
+	c.Check(err, ErrorMatches, "error deleting a.*AccessDenied.*delete failed.*")
+}
+
+func (s *PublishedStorageSuite) TestRemoveFilesPlusWorkaround(c *C) {
+	s.storage.disableMultiDel = false
+	s.storage.plusWorkaround = true
+
+	s.PutFile(c, "a/b+c", []byte("test"))
+	s.PutFile(c, "a/b", []byte("test"))
+
+	// Filelist hides the space-substituted duplicate, so RemoveFiles has to
+	// expand it the way Remove does or it would be orphaned forever.
+	err := s.storage.RemoveFiles([]string{"a/b+c"})
+	c.Check(err, IsNil)
+
+	s.AssertNoFile(c, "a/b+c")
+	s.AssertNoFile(c, "a/b c")
+
+	list, err := s.storage.Filelist("")
+	c.Check(err, IsNil)
+	c.Check(list, DeepEquals, []string{"a/b"})
 }
 
 func (s *PublishedStorageSuite) TestRenameFile(c *C) {
