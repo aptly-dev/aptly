@@ -1769,11 +1769,19 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 		sort.Strings(existingFiles)
 
 		orphanedFiles := utils.StrSlicesSubstract(existingFiles, referencedFiles[component])
+		for i := range orphanedFiles {
+			orphanedFiles[i] = filepath.Join(path, orphanedFiles[i])
+		}
 
-		for _, file := range orphanedFiles {
-			err = publishedStorage.Remove(filepath.Join(path, file))
-			if err != nil {
+		if bulkRemover, ok := publishedStorage.(aptly.PublishedStorageBulkRemover); ok {
+			if err = bulkRemover.RemoveFiles(orphanedFiles); err != nil {
 				return err
+			}
+		} else {
+			for _, file := range orphanedFiles {
+				if err = publishedStorage.Remove(file); err != nil {
+					return err
+				}
 			}
 		}
 	}
