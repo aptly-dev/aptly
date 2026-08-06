@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -60,6 +62,49 @@ func (n *NullSigner) ClearSign(source string, destination string) error {
 
 type FakeStorageProvider struct {
 	storages map[string]aptly.PublishedStorage
+}
+
+type concurrentTestStorage struct {
+	aptly.PublishedStorage
+	concurrency      int
+	mu               sync.Mutex
+	active           int
+	maxActive        int
+	release          chan struct{}
+	releaseTriggered bool
+}
+
+func (s *concurrentTestStorage) UploadConcurrency() int {
+	return s.concurrency
+}
+
+func (s *concurrentTestStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string,
+	sourcePool aptly.PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
+	if s.release == nil {
+		return s.PublishedStorage.LinkFromPool(publishedPrefix, publishedRelPath, fileName, sourcePool, sourcePath, sourceChecksums, force)
+	}
+
+	s.mu.Lock()
+	s.active++
+	s.maxActive = max(s.maxActive, s.active)
+	if s.active == s.concurrency && !s.releaseTriggered {
+		close(s.release)
+		s.releaseTriggered = true
+	}
+	s.mu.Unlock()
+	defer func() {
+		s.mu.Lock()
+		s.active--
+		s.mu.Unlock()
+	}()
+
+	select {
+	case <-s.release:
+	case <-time.After(time.Second):
+		return errors.New("package uploads did not overlap")
+	}
+
+	return s.PublishedStorage.LinkFromPool(publishedPrefix, publishedRelPath, fileName, sourcePool, sourcePath, sourceChecksums, force)
 }
 
 func (p *FakeStorageProvider) GetPublishedStorage(name string) (aptly.PublishedStorage, error) {
@@ -195,6 +240,8 @@ func (s *PublishedRepoSuite) TestNewPublishedRepo(c *C) {
 }
 
 func (s *PublishedRepoSuite) TestMultiDistPool(c *C) {
+	s.provider.storages[""] = &concurrentTestStorage{PublishedStorage: s.publishedStorage, concurrency: 3}
+
 	repo, err := NewPublishedRepo("", "ppa", "squeeze", nil, []string{"main"}, []interface{}{s.snapshot}, s.factory, true)
 	c.Assert(err, IsNil)
 	err = repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
@@ -244,6 +291,24 @@ func (s *PublishedRepoSuite) TestMultiDistPool(c *C) {
 	_, err = os.Stat(filepath.Join(publishedStorage.PublicPath(), "ppa/pool/squeeze/main/a/alien-arena/alien-arena-common_7.40-2_i386.deb"))
 	c.Assert(err, IsNil)
 
+}
+
+func (s *PublishedRepoSuite) TestPackageUploadsConcurrent(c *C) {
+	for _, pkg := range []*Package{s.p1, s.p2, s.p3} {
+		pkg.Source = ""
+		c.Assert(s.packageCollection.Update(pkg), IsNil)
+	}
+
+	storage := &concurrentTestStorage{
+		PublishedStorage: s.publishedStorage,
+		concurrency:      2,
+		release:          make(chan struct{}),
+	}
+	s.provider.storages[""] = storage
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, IsNil)
+	c.Check(storage.maxActive, Equals, 2)
 }
 
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {
