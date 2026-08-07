@@ -829,6 +829,32 @@ func (p *PublishedRepo) GetSkelFiles(skelDir string, component string) (map[stri
 	return files, nil
 }
 
+func (p *PublishedRepo) packagePublishPath(pkg *Package, component string) (string, bool, error) {
+	for _, arch := range p.Architectures {
+		if !pkg.MatchesArchitecture(arch) {
+			continue
+		}
+
+		if pkg.IsInstaller {
+			if p.Distribution == aptly.DistributionFocal {
+				return filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "legacy-images"), true, nil
+			}
+			return filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images"), true, nil
+		}
+
+		poolDir, err := pkg.PoolDirectory()
+		if err != nil {
+			return "", false, err
+		}
+		if p.MultiDist {
+			return filepath.Join("pool", p.Distribution, component, poolDir), true, nil
+		}
+		return filepath.Join("pool", component, poolDir), true, nil
+	}
+
+	return "", false, nil
+}
+
 // Publish publishes snapshot (repository) contents, links package files, generates Packages & Release files, signs them
 func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageProvider aptly.PublishedStorageProvider,
 	collectionFactory *CollectionFactory, signer pgp.Signer, progress aptly.Progress, forceOverwrite bool, skelDir string) error {
@@ -919,6 +945,13 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		progress.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
 	}
 
+	uploadConcurrency := 1
+	if uploader, ok := publishedStorage.(interface{ UploadConcurrency() int }); ok {
+		if concurrency := uploader.UploadConcurrency(); concurrency > 1 {
+			uploadConcurrency = min(concurrency, 128)
+		}
+	}
+
 	for component, list := range lists {
 		hadUdebs := false
 
@@ -928,43 +961,24 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		}
 
 		list.PrepareIndex()
-
 		contentIndexes := map[string]*ContentsIndex{}
 
-		err = list.ForEachIndexed(func(pkg *Package) error {
+		processPackage := func(pkg *Package) error {
 			if progress != nil {
 				progress.AddBar(1)
 			}
 
-			for _, arch := range p.Architectures {
-				if pkg.MatchesArchitecture(arch) {
-					hadUdebs = hadUdebs || pkg.IsUdeb
-
-					var relPath string
-					if !pkg.IsInstaller {
-						poolDir, err2 := pkg.PoolDirectory()
-						if err2 != nil {
-							return err2
-						}
-						if p.MultiDist {
-							relPath = filepath.Join("pool", p.Distribution, component, poolDir)
-						} else {
-							relPath = filepath.Join("pool", component, poolDir)
-						}
-
-					} else {
-						if p.Distribution == aptly.DistributionFocal {
-							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "legacy-images")
-						} else {
-							relPath = filepath.Join("dists", p.Distribution, component, fmt.Sprintf("%s-%s", pkg.Name, arch), "current", "images")
-						}
-					}
-
+			relPath, matches, err2 := p.packagePublishPath(pkg, component)
+			if err2 != nil {
+				return err2
+			}
+			if matches {
+				hadUdebs = hadUdebs || pkg.IsUdeb
+				if uploadConcurrency == 1 {
 					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
 					if err != nil {
 						return err
 					}
-					break
 				}
 			}
 
@@ -1017,7 +1031,70 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.contents = nil
 
 			return batch.Write()
-		})
+		}
+
+		if uploadConcurrency == 1 {
+			err = list.ForEachIndexed(processPackage)
+		} else {
+			for offset := 0; offset < len(list.packagesIndex); offset += uploadConcurrency {
+				batch := list.packagesIndex[offset:min(offset+uploadConcurrency, len(list.packagesIndex))]
+				groups := map[string][]*Package{}
+				var paths []string
+				for _, pkg := range batch {
+					relPath, matches, err2 := p.packagePublishPath(pkg, component)
+					if err2 != nil {
+						return fmt.Errorf("unable to prepare package uploads: %s", err2)
+					}
+					if !matches {
+						continue
+					}
+
+					files := pkg.Files()
+					for i := range files {
+						if _, err2 = files[i].GetPoolPath(packagePool); err2 != nil {
+							return fmt.Errorf("unable to prepare package uploads: %s", err2)
+						}
+					}
+					if pkg.IsSource {
+						pkg.Extra()
+					}
+					if _, exists := groups[relPath]; !exists {
+						paths = append(paths, relPath)
+					}
+					groups[relPath] = append(groups[relPath], pkg)
+				}
+
+				done := make(chan struct{}, len(paths))
+				uploadErrors := make([]error, len(paths))
+				for i, relPath := range paths {
+					go func() {
+						defer func() { done <- struct{}{} }()
+						for _, pkg := range groups[relPath] {
+							if err := pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite); err != nil {
+								uploadErrors[i] = err
+								return
+							}
+						}
+					}()
+				}
+				for range paths {
+					<-done
+				}
+				for _, uploadErr := range uploadErrors {
+					if uploadErr != nil {
+						return fmt.Errorf("unable to upload packages: %s", uploadErr)
+					}
+				}
+				for _, pkg := range batch {
+					if err = processPackage(pkg); err != nil {
+						break
+					}
+				}
+				if err != nil {
+					break
+				}
+			}
+		}
 
 		if err != nil {
 			return fmt.Errorf("unable to process packages: %s", err)

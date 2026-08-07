@@ -112,6 +112,19 @@ func (s *PublishedStorageSuite) TestPutFile(c *C) {
 	c.Check(s.GetFile(c, "lala/a/b.txt"), DeepEquals, []byte("welcome to s3!"))
 }
 
+func (s *PublishedStorageSuite) TestUploadConcurrency(c *C) {
+	c.Check(s.storage.UploadConcurrency(), Equals, defaultUploadConcurrency)
+
+	storage, err := NewPublishedStorageWithUploadConcurrency("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, 7, false)
+	c.Assert(err, IsNil)
+	c.Check(storage.UploadConcurrency(), Equals, 7)
+
+	_, err = NewPublishedStorageWithUploadConcurrency("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, -1, false)
+	c.Check(err, ErrorMatches, "upload concurrency must be between 0 and 128")
+	_, err = NewPublishedStorageWithUploadConcurrency("aa", "bb", "", "test-1", s.srv.URL(), "test", "", "", "", "", false, true, false, false, 129, false)
+	c.Check(err, ErrorMatches, "upload concurrency must be between 0 and 128")
+}
+
 func (s *PublishedStorageSuite) TestPutFilePlusWorkaround(c *C) {
 	s.storage.plusWorkaround = true
 
