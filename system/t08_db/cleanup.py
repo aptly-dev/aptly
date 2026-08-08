@@ -174,3 +174,26 @@ class CleanupDB13Test(BaseTest):
             "publish", match_prepare=self.expand_environ)
         self.check_exists('public/dists/hardy/main/dep11/Components-amd64.yml.gz')
         self.check_exists('public/dists/hardy/main/dep11/icons-48x48.tar.gz')
+
+
+class CleanupDB14Test(BaseTest):
+    """
+    cleanup db: revert split reflists
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly db cleanup",
+    ]
+    runCmd = "aptly db cleanup -revert-split-reflists -verbose"
+
+
+class CleanupDB15Test(BaseTest):
+    """
+    cleanup db: revert split reflists and then convert back to split
+    """
+    fixtureDB = True
+    fixtureCmds = [
+        "aptly db cleanup",
+        "aptly db cleanup -revert-split-reflists -verbose",
+    ]
+    runCmd = "aptly db cleanup -verbose"

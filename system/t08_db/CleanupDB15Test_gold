@@ -1,0 +1,26 @@
+Loading mirrors, local repos, snapshots and published repos...
+Loading mirrors:
+- wheezy-backports
+- wheezy-updates-src
+- gnuplot-maverick-src
+- wheezy-main
+- wheezy-contrib
+- sensu
+- wheezy-main-src
+- wheezy-backports-src
+- wheezy-contrib-src
+- gnuplot-maverick
+- wheezy-non-free
+- wheezy-non-free-src
+- wheezy-updates
+Loading local repos:
+Loading snapshots:
+Loading published repositories:
+Split 13 reflist(s) into 512 bucket(s) (2125 segment(s))
+Loading list of all packages...
+Deleting unreferenced packages (0)...
+Deleting unreferenced reflist buckets (0)...
+Building list of files referenced by packages...
+Building list of files in package pool...
+Deleting unreferenced files (0)...
+Compacting database...

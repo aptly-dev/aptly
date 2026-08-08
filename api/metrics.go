@@ -102,7 +102,7 @@ func countPackagesByRepos() {
 
 		components := repo.Components()
 		for _, c := range components {
-			count := float64(len(repo.RefList(c).Refs))
+			count := float64(repo.RefList(c).Len())
 			apiReposPackageCountGauge.WithLabelValues(fmt.Sprintf("%s", (repo.SourceNames())), repo.Distribution, c).Set(count)
 		}
 

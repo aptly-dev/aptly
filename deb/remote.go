@@ -77,7 +77,7 @@ type RemoteRepo struct {
 	// Packages for json output
 	Packages []string `codec:"-" json:",omitempty"`
 	// "Snapshot" of current list of packages
-	packageRefs *PackageRefList
+	packageRefs *SplitRefList
 	// Parsed archived root
 	archiveRootURL *url.URL
 	// Current list of packages (filled while updating mirror)
@@ -181,7 +181,7 @@ func (repo *RemoteRepo) NumPackages() int {
 }
 
 // RefList returns package list for repo
-func (repo *RemoteRepo) RefList() *PackageRefList {
+func (repo *RemoteRepo) RefList() *SplitRefList {
 	return repo.packageRefs
 }
 
@@ -785,7 +785,7 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 	})
 
 	if err == nil {
-		repo.packageRefs = NewPackageRefListFromPackageList(repo.packageList)
+		repo.packageRefs = NewSplitRefListFromPackageList(repo.packageList)
 		repo.packageList = nil
 	}
 
@@ -927,14 +927,14 @@ func (collection *RemoteRepoCollection) search(filter func(*RemoteRepo) bool, un
 }
 
 // Add appends new repo to collection and saves it
-func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
+func (collection *RemoteRepoCollection) Add(repo *RemoteRepo, reflistCollection *RefListCollection) error {
 	_, err := collection.ByName(repo.Name)
 
 	if err == nil {
 		return fmt.Errorf("mirror with name %s already exists", repo.Name)
 	}
 
-	err = collection.Update(repo)
+	err = collection.Update(repo, reflistCollection)
 	if err != nil {
 		return err
 	}
@@ -944,28 +944,34 @@ func (collection *RemoteRepoCollection) Add(repo *RemoteRepo) error {
 }
 
 // Update stores updated information about repo in DB
-func (collection *RemoteRepoCollection) Update(repo *RemoteRepo) error {
+func (collection *RemoteRepoCollection) Update(repo *RemoteRepo, reflistCollection *RefListCollection) error {
 	batch := collection.db.CreateBatch()
 
-	_ = batch.Put(repo.Key(), repo.Encode())
-	if repo.packageRefs != nil {
-		_ = batch.Put(repo.RefKey(), repo.packageRefs.Encode())
-	}
-	return batch.Write()
-}
-
-// LoadComplete loads additional information for remote repo
-func (collection *RemoteRepoCollection) LoadComplete(repo *RemoteRepo) error {
-	encoded, err := collection.db.Get(repo.RefKey())
-	if err == database.ErrNotFound {
-		return nil
-	}
+	err := batch.Put(repo.Key(), repo.Encode())
 	if err != nil {
 		return err
 	}
 
-	repo.packageRefs = &PackageRefList{}
-	return repo.packageRefs.Decode(encoded)
+	if repo.packageRefs != nil {
+		rb := reflistCollection.NewBatch(batch)
+		err = reflistCollection.UpdateInBatch(repo.packageRefs, repo.RefKey(), rb)
+		if err != nil {
+			return err
+		}
+	}
+
+	return batch.Write()
+}
+
+// LoadComplete loads additional information for remote repo
+func (collection *RemoteRepoCollection) LoadComplete(repo *RemoteRepo, reflistCollection *RefListCollection) error {
+	repo.packageRefs = NewSplitRefList()
+	err := reflistCollection.LoadComplete(repo.packageRefs, repo.RefKey())
+	if err == database.ErrNotFound {
+		return nil
+	}
+
+	return err
 }
 
 // ByName looks up repository by name

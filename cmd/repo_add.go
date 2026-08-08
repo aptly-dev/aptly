@@ -28,7 +28,7 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to add: %s", err)
 	}
 
-	err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
+	err = collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to add: %s", err)
 	}
@@ -58,9 +58,9 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	processedFiles = append(processedFiles, otherFiles...)
 
-	repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+	repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-	err = collectionFactory.LocalRepoCollection().Update(repo)
+	err = collectionFactory.LocalRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to save: %s", err)
 	}

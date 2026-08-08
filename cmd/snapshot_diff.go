@@ -23,7 +23,7 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
 
-	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotA)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotA, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot A: %s", err)
 	}
@@ -34,13 +34,13 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
-	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotB)
+	err = collectionFactory.SnapshotCollection().LoadComplete(snapshotB, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to load snapshot B: %s", err)
 	}
 
 	// Calculate diff
-	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection())
+	diff, err := snapshotA.RefList().Diff(snapshotB.RefList(), collectionFactory.PackageCollection(), nil)
 	if err != nil {
 		return fmt.Errorf("unable to calculate diff: %s", err)
 	}

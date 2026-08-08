@@ -32,7 +32,7 @@ func aptlyRepoRename(cmd *commander.Command, args []string) error {
 	}
 
 	repo.Name = newName
-	err = collectionFactory.LocalRepoCollection().Update(repo)
+	err = collectionFactory.LocalRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
