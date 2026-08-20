@@ -537,6 +537,19 @@ func (s *PublishedRepoSuite) TestPublishAppStreamMultipleComponents(c *C) {
 	c.Check(published, DeepEquals, contribContent)
 }
 
+func (s *PublishedRepoSuite) TestPublishAppStreamAcquireByHash(c *C) {
+	s.snapshot.AppStreamFiles = map[string]string{
+		"main/dep11/Components-amd64.yml.gz": s.importAppStreamFile(c, "Components-amd64.yml.gz", []byte("DEP-11 content\n")),
+	}
+
+	s.repo.AcquireByHash = true
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, IsNil)
+
+	base := filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze")
+	c.Check(filepath.Join(base, "main/dep11/by-hash/SHA256"), PathExists)
+}
+
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, "")
 	c.Assert(err, IsNil)
