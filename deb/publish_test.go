@@ -6,8 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/database"
@@ -548,6 +551,165 @@ func (s *PublishedRepoSuite) TestPublishAppStreamAcquireByHash(c *C) {
 
 	base := filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze")
 	c.Check(filepath.Join(base, "main/dep11/by-hash/SHA256"), PathExists)
+}
+
+// setupSmallTempFS points TMPDIR at a ~1MB filesystem so that Publish's
+// temporary index files run out of space mid-write. Follows the DiskFullSuite
+// convention: /smallfs is pre-mounted in CI (see docker-unit-test), a loopback
+// mount is created when running as root, otherwise the test is skipped.
+func (s *PublishedRepoSuite) setupSmallTempFS(c *C) func() {
+	if runtime.GOOS != "linux" {
+		c.Skip("disk full tests only run on Linux")
+	}
+
+	mountPoint := "/smallfs"
+	mounted := false
+	if os.Geteuid() == 0 {
+		mountPoint = filepath.Join(c.MkDir(), "smallfs")
+		c.Assert(os.MkdirAll(mountPoint, 0777), IsNil)
+		fsImage := filepath.Join(c.MkDir(), "small.img")
+		c.Assert(exec.Command("dd", "if=/dev/zero", "of="+fsImage, "bs=1M", "count=1").Run(), IsNil)
+		c.Assert(exec.Command("mkfs.ext4", "-F", fsImage).Run(), IsNil)
+		c.Assert(exec.Command("mount", "-o", "loop", fsImage, mountPoint).Run(), IsNil)
+		mounted = true
+	} else if _, err := os.Stat(mountPoint); err != nil {
+		c.Skip("/smallfs is not mounted")
+	}
+
+	// remove leftovers from other tests sharing the mount
+	entries, err := os.ReadDir(mountPoint)
+	c.Assert(err, IsNil)
+	for _, entry := range entries {
+		if entry.Name() == "lost+found" {
+			continue
+		}
+		c.Assert(os.RemoveAll(filepath.Join(mountPoint, entry.Name())), IsNil)
+	}
+
+	oldTMPDIR, hadTMPDIR := os.LookupEnv("TMPDIR")
+	c.Assert(os.Setenv("TMPDIR", mountPoint), IsNil)
+
+	return func() {
+		if hadTMPDIR {
+			_ = os.Setenv("TMPDIR", oldTMPDIR)
+		} else {
+			_ = os.Unsetenv("TMPDIR")
+		}
+		if mounted {
+			_ = exec.Command("umount", mountPoint).Run()
+		}
+	}
+}
+
+func (s *PublishedRepoSuite) TestPublishSkelFiles(c *C) {
+	skelDir := c.MkDir()
+	dir := filepath.Join(skelDir, "ppa", "dists", "squeeze", "main")
+	c.Assert(os.MkdirAll(filepath.Join(dir, "extra"), 0755), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(dir, "top.txt"), []byte("top-level skel file\n"), 0644), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(dir, "extra", "metadata.json"), []byte("{\"nested\": true}\n"), 0644), IsNil)
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, IsNil)
+
+	base := filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/main")
+
+	published, err := os.ReadFile(filepath.Join(base, "top.txt"))
+	c.Assert(err, IsNil)
+	c.Check(string(published), Equals, "top-level skel file\n")
+
+	published, err = os.ReadFile(filepath.Join(base, "extra", "metadata.json"))
+	c.Assert(err, IsNil)
+	c.Check(string(published), Equals, "{\"nested\": true}\n")
+
+	// Release file should reference skel files
+	rf, err := os.Open(filepath.Join(s.publishedStorage.PublicPath(), "ppa/dists/squeeze/Release"))
+	c.Assert(err, IsNil)
+	defer func() { _ = rf.Close() }()
+
+	cfr := NewControlFileReader(rf, true, false)
+	st, err := cfr.ReadStanza()
+	c.Assert(err, IsNil)
+
+	c.Check(st["SHA256"], Matches, "(?s).*main/top\\.txt.*")
+	c.Check(st["SHA256"], Matches, "(?s).*main/extra/metadata\\.json.*")
+}
+
+func (s *PublishedRepoSuite) TestPublishSkelFilesWalkError(c *C) {
+	if runtime.GOOS == "windows" {
+		c.Skip("a file in the middle of a path is reported as not-exist on Windows")
+	}
+
+	// "dists" is a regular file, so walking skelDir/ppa/dists/squeeze/main
+	// fails with ENOTDIR, which is not swallowed as a not-exist error
+	skelDir := c.MkDir()
+	c.Assert(os.MkdirAll(filepath.Join(skelDir, "ppa"), 0755), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(skelDir, "ppa", "dists"), []byte("not a directory"), 0644), IsNil)
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, ErrorMatches, "unable to get skeleton files: .*")
+}
+
+func (s *PublishedRepoSuite) TestPublishSkelFilesIndexError(c *C) {
+	// each name stays within NAME_MAX, but BufWriter flattens the relative
+	// path into a single temporary file name that exceeds it
+	skelDir := c.MkDir()
+	dir := filepath.Join(skelDir, "ppa", "dists", "squeeze", "main", strings.Repeat("a", 200))
+	c.Assert(os.MkdirAll(dir, 0755), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(dir, strings.Repeat("b", 200)), []byte("skel content"), 0644), IsNil)
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, ErrorMatches, "unable to generate skeleton index: .*")
+}
+
+func (s *PublishedRepoSuite) TestPublishSkelFilesOpenError(c *C) {
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		c.Skip("requires POSIX permissions and a non-root user")
+	}
+
+	skelDir := c.MkDir()
+	dir := filepath.Join(skelDir, "ppa", "dists", "squeeze", "main")
+	c.Assert(os.MkdirAll(dir, 0755), IsNil)
+	skelFile := filepath.Join(dir, "InRelease")
+	c.Assert(os.WriteFile(skelFile, []byte("skel content"), 0644), IsNil)
+	c.Assert(os.Chmod(skelFile, 0), IsNil)
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, ErrorMatches, "unable to read skeleton file: .*")
+}
+
+func (s *PublishedRepoSuite) TestPublishSkelFilesWriteError(c *C) {
+	cleanup := s.setupSmallTempFS(c)
+	defer cleanup()
+
+	skelDir := c.MkDir()
+	dir := filepath.Join(skelDir, "ppa", "dists", "squeeze", "main")
+	c.Assert(os.MkdirAll(dir, 0755), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(dir, "Contents-huge"), bytes.Repeat([]byte{'x'}, 2*1024*1024), 0644), IsNil)
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, ErrorMatches, "unable to write skeleton file: .*")
+}
+
+func (s *PublishedRepoSuite) TestPublishAppStreamIndexError(c *C) {
+	// flattened temporary file name for the index exceeds NAME_MAX
+	s.snapshot.AppStreamFiles = map[string]string{
+		"main/" + strings.Repeat("a", 200) + "/" + strings.Repeat("b", 200): s.importAppStreamFile(c, "Components-amd64.yml.gz", []byte("DEP-11 content\n")),
+	}
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, ErrorMatches, "unable to generate AppStream index: .*")
+}
+
+func (s *PublishedRepoSuite) TestPublishAppStreamWriteError(c *C) {
+	cleanup := s.setupSmallTempFS(c)
+	defer cleanup()
+
+	s.snapshot.AppStreamFiles = map[string]string{
+		"main/dep11/Components-amd64.yml.gz": s.importAppStreamFile(c, "Components-amd64.yml.gz", bytes.Repeat([]byte{'x'}, 2*1024*1024)),
+	}
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, ErrorMatches, "unable to write AppStream file: .*")
 }
 
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
