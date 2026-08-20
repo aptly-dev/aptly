@@ -634,6 +634,32 @@ func (s *PublishedRepoSuite) TestPublishSkelFiles(c *C) {
 	c.Check(st["SHA256"], Matches, "(?s).*main/extra/metadata\\.json.*")
 }
 
+func (s *PublishedRepoSuite) TestPublishSkelFilesMultipleComponents(c *C) {
+	// regression test: skel files used to be emitted once per component,
+	// appending each payload to the index again (issue fixed in this change)
+	skelDir := c.MkDir()
+	mainDir := filepath.Join(skelDir, "linux", "dists", "natty", "main")
+	contribDir := filepath.Join(skelDir, "linux", "dists", "natty", "contrib")
+	c.Assert(os.MkdirAll(mainDir, 0755), IsNil)
+	c.Assert(os.MkdirAll(contribDir, 0755), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(mainDir, "main.txt"), []byte("skel for main\n"), 0644), IsNil)
+	c.Assert(os.WriteFile(filepath.Join(contribDir, "contrib.txt"), []byte("skel for contrib\n"), 0644), IsNil)
+
+	err := s.repo3.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, skelDir)
+	c.Assert(err, IsNil)
+
+	base := filepath.Join(s.publishedStorage.PublicPath(), "linux/dists/natty")
+
+	// each payload must be published exactly once, not duplicated per component
+	published, err := os.ReadFile(filepath.Join(base, "main/main.txt"))
+	c.Assert(err, IsNil)
+	c.Check(string(published), Equals, "skel for main\n")
+
+	published, err = os.ReadFile(filepath.Join(base, "contrib/contrib.txt"))
+	c.Assert(err, IsNil)
+	c.Check(string(published), Equals, "skel for contrib\n")
+}
+
 func (s *PublishedRepoSuite) TestPublishSkelFilesWalkError(c *C) {
 	if runtime.GOOS == "windows" {
 		c.Skip("a file in the middle of a path is reported as not-exist on Windows")
