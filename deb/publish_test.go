@@ -501,6 +501,42 @@ func (s *PublishedRepoSuite) TestPublishAppStream(c *C) {
 	c.Assert(err, ErrorMatches, "unable to open AppStream file from pool.*")
 }
 
+func (s *PublishedRepoSuite) importAppStreamFile(c *C, name string, content []byte) string {
+	tmpFile := filepath.Join(c.MkDir(), name)
+	c.Assert(os.WriteFile(tmpFile, content, 0644), IsNil)
+
+	checksums := utils.ChecksumInfo{Size: int64(len(content))}
+	poolPath, err := s.packagePool.Import(tmpFile, name, &checksums, false, s.cs)
+	c.Assert(err, IsNil)
+
+	return poolPath
+}
+
+func (s *PublishedRepoSuite) TestPublishAppStreamMultipleComponents(c *C) {
+	mainContent := []byte("DEP-11 content for main\n")
+	contribContent := []byte("DEP-11 content for contrib\n")
+
+	s.snapshot.AppStreamFiles = map[string]string{
+		"main/dep11/Components-amd64.yml.gz": s.importAppStreamFile(c, "Components-main.yml.gz", mainContent),
+	}
+	s.snapshot2.AppStreamFiles = map[string]string{
+		"contrib/dep11/Components-amd64.yml.gz": s.importAppStreamFile(c, "Components-contrib.yml.gz", contribContent),
+	}
+
+	err := s.repo3.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
+	c.Assert(err, IsNil)
+
+	base := filepath.Join(s.publishedStorage.PublicPath(), "linux/dists/natty")
+
+	published, err := os.ReadFile(filepath.Join(base, "main/dep11/Components-amd64.yml.gz"))
+	c.Assert(err, IsNil)
+	c.Check(published, DeepEquals, mainContent)
+
+	published, err = os.ReadFile(filepath.Join(base, "contrib/dep11/Components-amd64.yml.gz"))
+	c.Assert(err, IsNil)
+	c.Check(published, DeepEquals, contribContent)
+}
+
 func (s *PublishedRepoSuite) TestPublishNoSigner(c *C) {
 	err := s.repo.Publish(s.packagePool, s.provider, s.factory, nil, nil, false, "")
 	c.Assert(err, IsNil)
