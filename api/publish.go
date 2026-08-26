@@ -160,6 +160,8 @@ type publishedRepoCreateParams struct {
 	Sources []sourceParams `binding:"required"    json:"Sources"`
 	// Distribution name, if missing Aptly would try to guess from sources
 	Distribution string `                         json:"Distribution"          example:"bookworm"`
+	// Value of Codename: field in published repository stanza, if missing equals Distribution
+	Codename string `                             json:"Codename"              example:"bookworm"`
 	// Value of Label: field in published repository stanza
 	Label string `                                json:"Label"                 example:""`
 	// Value of Origin: field in published repository stanza
@@ -354,6 +356,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 		if b.ButAutomaticUpgrades != "" {
 			published.ButAutomaticUpgrades = b.ButAutomaticUpgrades
 		}
+		published.Codename = b.Codename
 		published.Label = b.Label
 
 		published.SkipContents = context.Config().SkipContentsPublishing
