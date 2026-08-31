@@ -384,6 +384,9 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("prefix/distribution already used by another published repo: %s", duplicate)
 		}
 
+		// Which hash algorithms get Acquire-By-Hash entries. Each one is a full
+		// set of index copies per publish, which is felt most on S3-like storage.
+		published.AcquireByHashAlgorithms = context.Config().AcquireByHashAlgorithms
 		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, publishOutput, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
@@ -575,6 +578,9 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
+		// Which hash algorithms get Acquire-By-Hash entries. Each one is a full
+		// set of index copies per publish, which is felt most on S3-like storage.
+		published.AcquireByHashAlgorithms = context.Config().AcquireByHashAlgorithms
 		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
@@ -1242,6 +1248,9 @@ func apiPublishUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
+		// Which hash algorithms get Acquire-By-Hash entries. Each one is a full
+		// set of index copies per publish, which is felt most on S3-like storage.
+		published.AcquireByHashAlgorithms = context.Config().AcquireByHashAlgorithms
 		err = published.Publish(context.PackagePool(), context, taskCollectionFactory, signer, out, b.ForceOverwrite, context.SkelPath())
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)

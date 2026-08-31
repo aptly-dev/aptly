@@ -80,6 +80,9 @@ func aptlyPublishUpdate(cmd *commander.Command, args []string) error {
 		published.Version = context.Flags().Lookup("version").Value.String()
 	}
 
+	// Which hash algorithms get Acquire-By-Hash entries. Each one is a full
+	// set of index copies per publish, which is felt most on S3-like storage.
+	published.AcquireByHashAlgorithms = context.Config().AcquireByHashAlgorithms
 	err = published.Publish(context.PackagePool(), context, collectionFactory, signer, context.Progress(), forceOverwrite, context.SkelPath())
 	if err != nil {
 		return fmt.Errorf("unable to publish: %s", err)

@@ -71,6 +71,13 @@ The legacy json configuration is still supported (and also supports comments):
   // empty array defaults to all available architectures
   "architectures": [],
 
+  // Hash algorithms to write Acquire\-By\-Hash entries for, when a publish
+  // has Acquire\-By\-Hash enabled. Each algorithm costs a full set of index
+  // copies on every publish, which is felt most on S3\-like storage where
+  // every write is a round trip. An empty array defaults to all four.
+  // Modern apt uses SHA256; MD5Sum and SHA1 are deprecated.
+  "acquireByHashAlgorithms": ["MD5Sum", "SHA1", "SHA256", "SHA512"],
+
   // Follow contents of `Suggests:` field when processing dependencies for the package
   "dependencyFollowSuggests": false,
 

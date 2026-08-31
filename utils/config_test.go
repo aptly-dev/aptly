@@ -83,6 +83,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
   "logFormat": "json",
   "databaseOpenAttempts": 5,
   "architectures": null,
+  "acquireByHashAlgorithms": null,
   "skipLegacyPool": false,
   "dependencyFollowSuggests": false,
   "dependencyFollowRecommends": false,
@@ -279,6 +280,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
     "log_format: \"\"\n"+
     "database_open_attempts: 0\n"+
     "architectures: []\n"+
+    "acquire_by_hash_algorithms: []\n"+
     "skip_legacy_pool: false\n"+
     "dep_follow_suggests: false\n"+
     "dep_follow_recommends: false\n"+
@@ -338,6 +340,7 @@ database_open_attempts: 10
 architectures:
     - amd64
     - arm64
+acquire_by_hash_algorithms: []
 skip_legacy_pool: true
 dep_follow_suggests: true
 dep_follow_recommends: true

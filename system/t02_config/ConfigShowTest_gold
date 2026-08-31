@@ -4,6 +4,12 @@
     "logFormat": "default",
     "databaseOpenAttempts": 10,
     "architectures": [],
+    "acquireByHashAlgorithms": [
+        "MD5Sum",
+        "SHA1",
+        "SHA256",
+        "SHA512"
+    ],
     "skipLegacyPool": false,
     "dependencyFollowSuggests": false,
     "dependencyFollowRecommends": false,
