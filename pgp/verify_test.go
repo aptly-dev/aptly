@@ -10,8 +10,23 @@ import (
 
 // Common set of tests shared by internal & external GnuPG implementations
 type VerifierSuite struct {
-	verifier Verifier
+	verifier             Verifier
+	multisigOneVerifier  Verifier
+	multisigBothVerifier Verifier
 }
+
+// The partial-keyring fixtures were generated with GnuPG 2.4:
+//
+//	gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'Aptly multisign known fixture <known@fixture.invalid>' rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'Aptly multisign unknown fixture <unknown@fixture.invalid>' rsa2048 sign 0
+//	gpg --export 2B5E1D91576341AF44C600E130AD2886ED58775C 32F003A216681D4CC810FA2198B5301EB1FA1317 > multisig-both.gpg
+//	gpg --export 2B5E1D91576341AF44C600E130AD2886ED58775C > multisig-one.gpg
+//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --detach-sign --output multisig.signature multisig.text
+//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --clearsign --output multisig.clearsigned multisig.text
+//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --detach-sign --output multisig-known-good.signature multisig.text
+//	gpg --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --detach-sign --output multisig-known-bad.signature multisig-bad.text
+//
+// multisig-bad.text was made by changing multisig.text after signing it.
 
 func (s *VerifierSuite) TestVerifyDetached(c *C) {
 	for _, test := range []struct {
@@ -37,21 +52,82 @@ func (s *VerifierSuite) TestVerifyDetached(c *C) {
 }
 
 func (s *VerifierSuite) TestVerifyClearsigned(c *C) {
-	for _, test := range []struct {
-		clearSignedName string
-	}{
-		{"1.clearsigned"},
-	} {
-		clearsigned, err := os.Open(test.clearSignedName)
-		c.Assert(err, IsNil)
+	clearsigned, err := os.Open("multisig.clearsigned")
+	c.Assert(err, IsNil)
+	defer func() { _ = clearsigned.Close() }()
 
-		keyInfo, err := s.verifier.VerifyClearsigned(clearsigned, false)
-		c.Assert(err, IsNil)
-		c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"04EE7237B7D453EC", "648ACFD622F3D138", "DCC9EFBF77E11517"})
-		c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
+	keyInfo, err := s.multisigBothVerifier.VerifyClearsigned(clearsigned, false)
+	c.Assert(err, IsNil)
+	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"30AD2886ED58775C", "98B5301EB1FA1317"})
+	c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
+}
 
-		_ = clearsigned.Close()
-	}
+func (s *VerifierSuite) TestVerifyClearsignedPartialKeyring(c *C) {
+	clearsigned, err := os.Open("multisig.clearsigned")
+	c.Assert(err, IsNil)
+	defer func() { _ = clearsigned.Close() }()
+
+	keyInfo, err := s.multisigOneVerifier.VerifyClearsigned(clearsigned, false)
+	c.Assert(err, IsNil)
+	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"30AD2886ED58775C"})
+	c.Check(keyInfo.MissingKeys, DeepEquals, []Key{"98B5301EB1FA1317"})
+}
+
+func (s *VerifierSuite) TestVerifyDetachedPartialKeyring(c *C) {
+	cleartext, err := os.Open("multisig.text")
+	c.Assert(err, IsNil)
+	defer func() { _ = cleartext.Close() }()
+
+	signature, err := os.Open("multisig.signature")
+	c.Assert(err, IsNil)
+	defer func() { _ = signature.Close() }()
+
+	err = s.multisigOneVerifier.VerifyDetachedSignature(signature, cleartext, false)
+	c.Assert(err, IsNil)
+}
+
+func (s *VerifierSuite) TestVerifyPartialKeyringRejectsBadSignature(c *C) {
+	cleartext, err := os.Open("multisig-bad.text")
+	c.Assert(err, IsNil)
+	defer func() { _ = cleartext.Close() }()
+
+	signature, err := os.Open("multisig.signature")
+	c.Assert(err, IsNil)
+	defer func() { _ = signature.Close() }()
+
+	err = s.multisigOneVerifier.VerifyDetachedSignature(signature, cleartext, false)
+	c.Assert(err, NotNil)
+}
+
+func (s *VerifierSuite) TestVerifyRejectsBadSignatureAlongsideGood(c *C) {
+	cleartext, err := os.Open("multisig.text")
+	c.Assert(err, IsNil)
+	defer func() { _ = cleartext.Close() }()
+
+	goodSignature, err := os.Open("multisig-known-good.signature")
+	c.Assert(err, IsNil)
+	defer func() { _ = goodSignature.Close() }()
+
+	badSignature, err := os.Open("multisig-known-bad.signature")
+	c.Assert(err, IsNil)
+	defer func() { _ = badSignature.Close() }()
+
+	signature := io.MultiReader(goodSignature, badSignature)
+	err = s.multisigBothVerifier.VerifyDetachedSignature(signature, cleartext, false)
+	c.Assert(err, NotNil)
+}
+
+func (s *VerifierSuite) TestVerifyNoKnownSignerStillFails(c *C) {
+	cleartext, err := os.Open("multisig.text")
+	c.Assert(err, IsNil)
+	defer func() { _ = cleartext.Close() }()
+
+	signature, err := os.Open("multisig.signature")
+	c.Assert(err, IsNil)
+	defer func() { _ = signature.Close() }()
+
+	err = s.verifier.VerifyDetachedSignature(signature, cleartext, false)
+	c.Assert(err, NotNil)
 }
 
 func (s *VerifierSuite) TestExtractClearsigned(c *C) {

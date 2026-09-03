@@ -93,8 +93,14 @@ func (s *Gnupg1VerifierSuite) SetUpTest(c *C) {
 
 	s.verifier = NewGpgVerifier(finder)
 	s.verifier.AddKeyring("./trusted.gpg")
+	s.multisigOneVerifier = NewGpgVerifier(finder)
+	s.multisigOneVerifier.AddKeyring("./multisig-one.gpg")
+	s.multisigBothVerifier = NewGpgVerifier(finder)
+	s.multisigBothVerifier.AddKeyring("./multisig-both.gpg")
 
 	c.Assert(s.verifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigOneVerifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigBothVerifier.InitKeyring(false), IsNil)
 }
 
 type Gnupg1SignerSuite struct {
@@ -142,8 +148,191 @@ func (s *Gnupg2VerifierSuite) SetUpTest(c *C) {
 
 	s.verifier = NewGpgVerifier(finder)
 	s.verifier.AddKeyring("./trusted.gpg")
+	s.multisigOneVerifier = NewGpgVerifier(finder)
+	s.multisigOneVerifier.AddKeyring("./multisig-one.gpg")
+	s.multisigBothVerifier = NewGpgVerifier(finder)
+	s.multisigBothVerifier.AddKeyring("./multisig-both.gpg")
 
 	c.Assert(s.verifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigOneVerifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigBothVerifier.InitKeyring(false), IsNil)
+}
+
+// The status fixtures were generated with GnuPG 2.4 at fixed times so the
+// expired key and subkey remain expired without making the other keys age out:
+//
+//	export GNUPGHOME=$(mktemp -d); chmod 700 "$GNUPGHOME"
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-generate-key 'Aptly status good fixture <good@fixture.invalid>' rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-generate-key 'Aptly status expired fixture <expired@fixture.invalid>' rsa2048 sign seconds=5
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-generate-key 'Aptly status unknown fixture <unknown-status@fixture.invalid>' rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-generate-key 'Aptly status revoked fixture <revoked@fixture.invalid>' rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-generate-key 'Aptly unused expired subkey fixture <subkey@fixture.invalid>' rsa2048 cert 0
+//	good=A35DB05543372EE999F6EF74EBC0B25127B9BF5A expired=DA1728275CB25D14DC8B6DC97D0DD4A295844522 unknown=A068D4E79AD454D37C0888F5B316843CAB67504E
+//	revoked=CD11F407D4CEB092E66A83EC402BF908BCB202A9 primary=E1745C372D24AC29BD57FAB094ABAB0251F5E2FC active=724D68416C95AA282D8280DF22EE1E88523FD531
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-add-key "$primary" rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' --faked-system-time 20250101T000000 --quick-add-key "$primary" rsa2048 sign seconds=5
+//	gpg --batch --yes --faked-system-time 20250101T000002 --local-user "$good!" --local-user "$expired!" --local-user "$unknown!" --detach-sign --output status-expired-held.signature multisig.text
+//	gpg --batch --yes --export "$good" "$expired" > status-expired-held.gpg
+//	gpg --batch --yes --faked-system-time 20250101T000002 --local-user "$good!" --local-user "$revoked!" --local-user "$unknown!" --detach-sign --output status-revoked-held.signature multisig.text
+//	sed 's/^://' "$GNUPGHOME/openpgp-revocs.d/$revoked.rev" | gpg --batch --yes --import
+//	gpg --batch --yes --export "$good" "$revoked" > status-revoked-held.gpg
+//	gpg --batch --yes --faked-system-time 20260902T143800 --local-user "$active!" --local-user "$unknown!" --detach-sign --output status-unused-expired-subkey.signature multisig.text
+//	gpg --batch --yes --export "$primary" > status-unused-expired-subkey.gpg
+
+func verifyGpgStatusFixture(c *C, finder GPGFinder, keyring, signature string) error {
+	verifier := NewGpgVerifier(finder)
+	verifier.AddKeyring(keyring)
+	c.Assert(verifier.InitKeyring(false), IsNil)
+
+	cleartext, err := os.Open("multisig.text")
+	c.Assert(err, IsNil)
+	defer func() { _ = cleartext.Close() }()
+
+	signatureFile, err := os.Open(signature)
+	c.Assert(err, IsNil)
+	defer func() { _ = signatureFile.Close() }()
+
+	return verifier.VerifyDetachedSignature(signatureFile, cleartext, false)
+}
+
+func (s *Gnupg2VerifierSuite) TestGpgVerifierRejectsExpiredHeldSignatureAlongsideGood(c *C) {
+	err := verifyGpgStatusFixture(c, GPG2Finder(), "./status-expired-held.gpg", "status-expired-held.signature")
+	c.Assert(err, NotNil)
+}
+
+func (s *Gnupg2VerifierSuite) TestGpgVerifierRejectsRevokedHeldSignatureAlongsideGood(c *C) {
+	err := verifyGpgStatusFixture(c, GPG2Finder(), "./status-revoked-held.gpg", "status-revoked-held.signature")
+	c.Assert(err, NotNil)
+}
+
+func (s *Gnupg2VerifierSuite) TestGpgVerifierIgnoresUnusedExpiredSubkey(c *C) {
+	err := verifyGpgStatusFixture(c, GPG2Finder(), "./status-unused-expired-subkey.gpg", "status-unused-expired-subkey.signature")
+	c.Assert(err, IsNil)
+}
+
+type fixedGPGFinder struct {
+	gpgv string
+}
+
+func (f fixedGPGFinder) FindGPG() (string, GPGVersion, error) {
+	return f.gpgv, GPG22xPlus, nil
+}
+
+func (f fixedGPGFinder) FindGPGV() (string, GPGVersion, error) {
+	return f.gpgv, GPG22xPlus, nil
+}
+
+func (s *GnupgSuite) TestGpgVerifierRejectsUnexplainedFailure(c *C) {
+	tests := []struct {
+		name        string
+		body        string
+		wantError   bool
+		goodKeys    []Key
+		missingKeys []Key
+	}{
+		{
+			name: "unexplained exit",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' \
+  '[GNUPG:] VALIDSIG 00000000000000000123456789ABCDEF 0 0 0 0 0 0 0 00 00000000000000000123456789ABCDEF' >&3
+exit 70
+`,
+			wantError: true,
+			goodKeys:  []Key{"0123456789ABCDEF"},
+		},
+		{
+			name: "unknown co-signer",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' \
+  '[GNUPG:] VALIDSIG 00000000000000000123456789ABCDEF 0 0 0 0 0 0 0 00 00000000000000000123456789ABCDEF' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] ERRSIG FEDCBA9876543210 1 10 00 0 9 0000000000000000FEDCBA9876543210' \
+  '[GNUPG:] NO_PUBKEY FEDCBA9876543210' >&3
+exit 2
+`,
+			goodKeys:    []Key{"0123456789ABCDEF"},
+			missingKeys: []Key{"FEDCBA9876543210"},
+		},
+		{
+			name: "non-missing-key ERRSIG",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' \
+  '[GNUPG:] VALIDSIG 00000000000000000123456789ABCDEF 0 0 0 0 0 0 0 00 00000000000000000123456789ABCDEF' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] ERRSIG FEDCBA9876543210 1 10 00 0 1 0000000000000000FEDCBA9876543210' >&3
+exit 2
+`,
+			wantError: true,
+			goodKeys:  []Key{"0123456789ABCDEF"},
+		},
+		{
+			name: "empty signature block",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' \
+  '[GNUPG:] VALIDSIG 00000000000000000123456789ABCDEF 0 0 0 0 0 0 0 00 00000000000000000123456789ABCDEF' \
+  '[GNUPG:] NEWSIG' >&3
+exit 2
+`,
+			wantError: true,
+			goodKeys:  []Key{"0123456789ABCDEF"},
+		},
+		{
+			name: "GOODSIG without VALIDSIG",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' >&3
+exit 2
+`,
+			wantError: true,
+			goodKeys:  []Key{"0123456789ABCDEF"},
+		},
+		{
+			name: "signal death",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] GOODSIG 0123456789ABCDEF held' \
+  '[GNUPG:] VALIDSIG 00000000000000000123456789ABCDEF 0 0 0 0 0 0 0 00 00000000000000000123456789ABCDEF' >&3
+kill -TERM "$$"
+`,
+			wantError: true,
+			goodKeys:  []Key{"0123456789ABCDEF"},
+		},
+		{
+			name: "exit zero preserves upstream behavior",
+			body: `#!/bin/sh
+printf '%s\n' \
+  '[GNUPG:] NEWSIG' \
+  '[GNUPG:] BADSIG 0123456789ABCDEF held' >&3
+exit 0
+`,
+		},
+	}
+
+	for _, test := range tests {
+		directory := c.MkDir()
+		gpgv := filepath.Join(directory, "gpgv")
+		c.Assert(os.WriteFile(gpgv, []byte(test.body), 0o700), IsNil)
+
+		verifier := NewGpgVerifier(fixedGPGFinder{gpgv: gpgv})
+		keyInfo, err := verifier.runGpgv(nil, "detached signature", false)
+		if test.wantError {
+			c.Check(err, NotNil, Commentf(test.name))
+		} else {
+			c.Check(err, IsNil, Commentf(test.name))
+		}
+		c.Check(keyInfo.GoodKeys, DeepEquals, test.goodKeys, Commentf(test.name))
+		c.Check(keyInfo.MissingKeys, DeepEquals, test.missingKeys, Commentf(test.name))
+	}
 }
 
 type Gnupg2SignerSuite struct {

@@ -13,8 +13,14 @@ var _ = Suite(&GoVerifierSuite{})
 func (s *GoVerifierSuite) SetUpTest(c *C) {
 	s.verifier = &GoVerifier{}
 	s.verifier.AddKeyring("./trusted.gpg")
+	s.multisigOneVerifier = &GoVerifier{}
+	s.multisigOneVerifier.AddKeyring("./multisig-one.gpg")
+	s.multisigBothVerifier = &GoVerifier{}
+	s.multisigBothVerifier.AddKeyring("./multisig-both.gpg")
 
 	c.Assert(s.verifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigOneVerifier.InitKeyring(false), IsNil)
+	c.Assert(s.multisigBothVerifier.InitKeyring(false), IsNil)
 }
 
 type GoSignerSuite struct {
