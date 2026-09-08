@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -33,11 +34,87 @@ type downloaderImpl struct {
 	client    *http.Client
 }
 
+func ForceProxyConnectDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+
+	// Get the proxy URL
+	dialURL, err := url.Parse(os.Getenv("HTTP_PROXY"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Connect to the proxy
+	proxyTunnel, err := net.Dial("tcp", dialURL.Hostname()+":"+dialURL.Port())
+	if err != nil {
+		return nil, err
+	}
+
+	// Send a CONNECT request
+	connectReq := fmt.Sprintf("CONNECT %s HTTP/1.1\r\nHost: %s\r\n\r\n", addr, addr)
+	if _, err := proxyTunnel.Write([]byte(connectReq)); err != nil {
+		err = proxyTunnel.Close()
+		if err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	// Read the response to the CONNECT request
+	br := bufio.NewReader(proxyTunnel)
+	statusLine, err := br.ReadString('\n')
+	if err != nil {
+		err = proxyTunnel.Close()
+		if err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	// Verify the successful (HTTP 200) response
+	if !strings.Contains(statusLine, "200") {
+		err = proxyTunnel.Close()
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("proxy CONNECT failed: %s", statusLine)
+	}
+
+	// Consume the headers until blank line
+	for {
+		line, err := br.ReadString('\n')
+		if err != nil {
+			err = proxyTunnel.Close()
+			if err != nil {
+				return nil, err
+			}
+			return nil, err
+		}
+		if line == "\r\n" {
+			break
+		}
+	}
+
+	return proxyTunnel, nil
+}
+
 // NewDownloader creates new instance of Downloader which specified number
 // of threads and download limit in bytes/sec
 func NewDownloader(downLimit int64, maxTries int, progress aptly.Progress) aptly.Downloader {
 	transport := http.Transport{}
 	transport.Proxy = http.DefaultTransport.(*http.Transport).Proxy
+	if os.Getenv("HTTP_PROXY") != "" && strings.EqualFold(os.Getenv("HTTP_PROXY_FORCE_CONNECT"), "true") {
+		// NOTE When defining both HTTP_PROXY and HTTP_PROXY_FORCE_CONNECT,
+		// the Proxy function always returns a nil URL, thus disabling
+		// Golang's internal Proxy facilities, even with HTTPS.
+		//
+		// However, the ForceProxyConnectDialContext works
+		// independently of the destination's URL's scheme.
+		//
+		// In any case, it is probably better to only define
+		// HTTP_PROXY_FORCE_CONNECT when using an http:// URL and not
+		// with https:// ones.
+		transport.DialContext = ForceProxyConnectDialContext
+		transport.Proxy = func(*http.Request) (*url.URL, error) { return nil, nil }
+	}
 	transport.ResponseHeaderTimeout = 30 * time.Second
 	transport.TLSHandshakeTimeout = http.DefaultTransport.(*http.Transport).TLSHandshakeTimeout
 	transport.ExpectContinueTimeout = http.DefaultTransport.(*http.Transport).ExpectContinueTimeout
