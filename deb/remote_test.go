@@ -1,6 +1,7 @@
 package deb
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -306,6 +307,94 @@ func (s *RemoteRepoSuite) TestRefKey(c *C) {
 	c.Assert(len(s.repo.RefKey()), Equals, 37)
 	c.Assert(s.repo.RefKey()[0], Equals, byte('E'))
 	c.Assert(s.repo.RefKey()[1:], DeepEquals, s.repo.Key()[1:])
+}
+
+type architectureVariantRemoteProgress struct {
+	aptly.Progress
+	messages []string
+}
+
+func (p *architectureVariantRemoteProgress) ColoredPrintf(format string, args ...interface{}) {
+	p.messages = append(p.messages, fmt.Sprintf(format, args...))
+}
+
+func (s *RemoteRepoSuite) loadArchitectureVariantIndexes(c *C) {
+	const normalIndex = `Package: example
+Version: 1.0
+Architecture: amd64
+Filename: pool/main/e/example/example_1.0_amd64.deb
+Size: 3
+MD5sum: 900150983cd24fb0d6963f7d28e17f72
+
+`
+	const variantIndex = `Package: example
+Version: 1.0
+Architecture: amd64
+Architecture-Variant: amd64v3
+Filename: pool/main/e/example/example_1.0_amd64v3.deb
+Size: 4
+MD5sum: e2fc714c4727ee9395f324cd2e7f331f
+
+`
+	const root = "http://mirror.yandex.ru/debian/dists/squeeze/"
+	release := fmt.Sprintf("Architectures: amd64 amd64v3\nComponents: main\nSHA256:\n %x %d main/binary-amd64/Packages\n %x %d main/binary-amd64v3/Packages\n",
+		sha256.Sum256([]byte(normalIndex)), len(normalIndex), sha256.Sum256([]byte(variantIndex)), len(variantIndex))
+	s.downloader = http.NewFakeDownloader().ExpectResponse(root+"Release", release)
+	s.downloader.ExpectResponse(root+"main/binary-amd64/Packages", normalIndex)
+	s.downloader.ExpectResponse(root+"main/binary-amd64v3/Packages", variantIndex)
+	c.Assert(s.repo.Fetch(s.downloader, nil, true), IsNil)
+	c.Check(s.repo.Architectures, DeepEquals, []string{"amd64", "amd64v3"})
+
+	progress := &architectureVariantRemoteProgress{Progress: s.progress}
+	c.Assert(s.repo.DownloadPackageIndexes(progress, s.downloader, nil, s.collectionFactory, true, false), IsNil)
+	c.Check(s.downloader.Empty(), Equals, true)
+	// Duplicate rejection is reported through ColoredPrintf, not as an error.
+	c.Check(progress.messages, HasLen, 0)
+	c.Assert(s.repo.packageList.Len(), Equals, 2)
+}
+
+func (s *RemoteRepoSuite) TestArchitectureVariantPackageIndexes(c *C) {
+	s.loadArchitectureVariantIndexes(c)
+	packages := map[string]*Package{}
+	c.Assert(s.repo.packageList.ForEach(func(p *Package) error {
+		packages[p.IndexArchitecture()] = p
+		return nil
+	}), IsNil)
+	c.Assert(packages, HasLen, 2)
+	for _, arch := range []string{"amd64", "amd64v3"} {
+		p := packages[arch]
+		c.Assert(p, NotNil)
+		c.Check(p.Name, Equals, "example")
+		c.Check(p.Version, Equals, "1.0")
+		c.Check(p.Architecture, Equals, "amd64")
+		variant := ""
+		if arch == "amd64v3" {
+			variant = "amd64v3"
+		}
+		c.Check(p.ArchitectureVariant, Equals, variant)
+		c.Check(p.IndexArchitecture(), Equals, arch)
+		c.Assert(p.Files(), HasLen, 1)
+		c.Check(p.Files()[0].Filename, Equals, "example_1.0_"+arch+".deb")
+		c.Check(p.Files()[0].DownloadURL(), Equals, "pool/main/e/example/example_1.0_"+arch+".deb")
+	}
+}
+
+func (s *RemoteRepoSuite) TestArchitectureVariantDownloadQueue(c *C) {
+	s.loadArchitectureVariantIndexes(c)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	c.Assert(err, IsNil)
+	c.Check(queue, HasLen, 2)
+	c.Check(size, Equals, int64(7))
+	var urls []string
+	for _, task := range queue {
+		urls = append(urls, task.File.DownloadURL())
+		c.Check(task.Additional, HasLen, 0)
+	}
+	sort.Strings(urls)
+	c.Check(urls, DeepEquals, []string{
+		"pool/main/e/example/example_1.0_amd64.deb",
+		"pool/main/e/example/example_1.0_amd64v3.deb",
+	})
 }
 
 func (s *RemoteRepoSuite) TestDownload(c *C) {
