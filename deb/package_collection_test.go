@@ -65,6 +65,106 @@ func (s *PackageCollectionSuite) TestByKey(c *C) {
 	c.Check(p2.Files()[0].Filename, Equals, "alien-arena-common_7.40-2_i386.deb")
 }
 
+func architectureVariantCollectionPackage(variant string) *Package {
+	stanza := Stanza{
+		"Package": "example", "Version": "1.0", "Architecture": "amd64",
+		"Filename": "pool/example_1.0_amd64.deb", "Size": "123",
+		"Depends": "libc6 (>= 2.7)", "Priority": "optional",
+	}
+	if variant != "" {
+		stanza["Architecture-Variant"] = variant
+		stanza["Filename"] = "pool/example_1.0_" + variant + ".deb"
+	}
+	return NewPackageFromControlFile(stanza)
+}
+
+func (s *PackageCollectionSuite) TestArchitectureVariantNormalRoundTrip(c *C) {
+	p := architectureVariantCollectionPackage("")
+	key := p.Key("")
+	c.Assert(s.collection.Update(p), IsNil)
+	loaded, err := s.collection.ByKey(key)
+	c.Assert(err, IsNil)
+	c.Check(loaded.Name, Equals, "example")
+	c.Check(loaded.Version, Equals, "1.0")
+	c.Check(loaded.Architecture, Equals, "amd64")
+	c.Check(loaded.ArchitectureVariant, Equals, "")
+	c.Check(loaded.IndexArchitecture(), Equals, "amd64")
+	c.Check(loaded.Key(""), DeepEquals, key)
+	c.Check(loaded.Equals(p), Equals, true)
+	c.Check(loaded.Files()[0].Filename, Equals, "example_1.0_amd64.deb")
+	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)"})
+	c.Check(loaded.Extra()["Priority"], Equals, "optional")
+	_, hasVariant := loaded.Stanza()["Architecture-Variant"]
+	c.Check(hasVariant, Equals, false)
+}
+
+func (s *PackageCollectionSuite) TestArchitectureVariantRoundTrip(c *C) {
+	p := architectureVariantCollectionPackage("amd64v3")
+	key := p.Key("")
+	c.Assert(s.collection.Update(p), IsNil)
+	loaded, err := s.collection.ByKey(key)
+	c.Assert(err, IsNil)
+	c.Check(loaded.Name, Equals, "example")
+	c.Check(loaded.Version, Equals, "1.0")
+	c.Check(loaded.Architecture, Equals, "amd64")
+	c.Check(loaded.ArchitectureVariant, Equals, "amd64v3")
+	c.Check(loaded.IndexArchitecture(), Equals, "amd64v3")
+	c.Check(loaded.Key(""), DeepEquals, key)
+	c.Check(loaded.Equals(p), Equals, true)
+	// Exercise offloaded records using the reloaded variant-aware key.
+	c.Check(loaded.Files()[0].Filename, Equals, "example_1.0_amd64v3.deb")
+	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)"})
+	c.Check(loaded.Extra()["Priority"], Equals, "optional")
+	stanza := loaded.Stanza()
+	c.Check(stanza["Architecture"], Equals, "amd64")
+	c.Check(stanza["Architecture-Variant"], Equals, "amd64v3")
+}
+
+func (s *PackageCollectionSuite) TestArchitectureVariantCoexistence(c *C) {
+	normal := architectureVariantCollectionPackage("")
+	variant := architectureVariantCollectionPackage("amd64v3")
+	c.Assert(s.collection.Update(normal), IsNil)
+	c.Assert(s.collection.Update(variant), IsNil)
+	refs := s.collection.AllPackageRefs()
+	c.Check(refs.Len(), Equals, 2)
+	c.Check(refs.Has(normal), Equals, true)
+	c.Check(refs.Has(variant), Equals, true)
+	for _, p := range []*Package{normal, variant} {
+		loaded, err := s.collection.ByKey(p.Key(""))
+		c.Assert(err, IsNil)
+		c.Check(loaded.Equals(p), Equals, true)
+		c.Check(loaded.Architecture, Equals, "amd64")
+		c.Check(loaded.ArchitectureVariant, Equals, p.ArchitectureVariant)
+	}
+}
+
+func (s *PackageCollectionSuite) TestArchitectureVariantFullKeyLookup(c *C) {
+	normal := architectureVariantCollectionPackage("")
+	variant := architectureVariantCollectionPackage("amd64v3")
+	// Keep the file hash identical so the architecture token alone must
+	// distinguish the full keys and stored records.
+	variant.UpdateFiles(normal.Files())
+	normalKey, variantKey := normal.Key(""), variant.Key("")
+	c.Assert(normalKey, Not(DeepEquals), variantKey)
+	c.Assert(s.collection.Update(normal), IsNil)
+	_, err := s.collection.ByKey(variantKey)
+	c.Assert(err, Equals, database.ErrNotFound)
+	c.Assert(s.collection.Update(variant), IsNil)
+
+	loaded, err := s.collection.ByKey(variantKey)
+	c.Assert(err, IsNil)
+	c.Check(loaded.Key(""), DeepEquals, variantKey)
+	c.Check(loaded.Architecture, Equals, "amd64")
+	c.Check(loaded.ArchitectureVariant, Equals, "amd64v3")
+	c.Check(loaded.IndexArchitecture(), Equals, "amd64v3")
+	c.Check(loaded.Equals(variant), Equals, true)
+	c.Check(loaded.Equals(normal), Equals, false)
+	loadedNormal, err := s.collection.ByKey(normalKey)
+	c.Assert(err, IsNil)
+	c.Check(loadedNormal.Equals(normal), Equals, true)
+	c.Check(loadedNormal.ArchitectureVariant, Equals, "")
+}
+
 func (s *PackageCollectionSuite) TestByKeyOld0_3(c *C) {
 	key := []byte("Pi386 vmware-view-open-client 4.5.0-297975+dfsg-4+b1")
 	_ = s.db.Put(key, old0_3Package)
