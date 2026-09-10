@@ -158,6 +158,23 @@ func (s *APISuite) TestGetMetrics(c *C) {
 	c.Check(b, Matches, ".*aptly_build_info.*version=\"testVersion\".*")
 }
 
+func (s *APISuite) TestHeadMetrics(c *C) {
+	server := httptest.NewServer(s.router)
+	defer server.Close()
+
+	req, err := http.NewRequest(http.MethodHead, server.URL+"/api/metrics", nil)
+	c.Assert(err, IsNil)
+
+	resp, err := server.Client().Do(req)
+	c.Assert(err, IsNil)
+	defer func() { _ = resp.Body.Close() }()
+
+	c.Check(resp.StatusCode, Equals, 200)
+	body, readErr := io.ReadAll(resp.Body)
+	c.Assert(readErr, IsNil)
+	c.Check(len(body), Equals, 0)
+}
+
 func (s *APISuite) TestRepoCreate(c *C) {
 	body, err := json.Marshal(gin.H{
 		"Name": "dummy",

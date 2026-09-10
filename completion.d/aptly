@@ -674,7 +674,7 @@ _aptly()
           "serve")
             if [[ $numargs -eq 0 ]]; then
               if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "-listen=" -- ${cur}))
+                COMPREPLY=($(compgen -W "-listen= -metrics-listen=" -- ${cur}))
               fi
               return 0
             fi
