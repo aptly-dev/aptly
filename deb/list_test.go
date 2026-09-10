@@ -612,3 +612,25 @@ func (s *PackageListSuite) TestFilterLatestNil(c *C) {
 	c.Assert(err, ErrorMatches, "package list is nil")
 	c.Assert(filtered, IsNil)
 }
+
+func (s *PackageListSuite) TestArchitectureVariantIndexArchitectures(c *C) {
+	for _, p := range []*Package{
+		{Name: "example", Version: "1.0", Architecture: "amd64"},
+		{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"},
+		{Name: "example", Version: "2.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"},
+		{Name: "example", Version: "1.0", Architecture: "i386"},
+		{Name: "data", Version: "1.0", Architecture: "all"},
+		{Name: "example", Version: "1.0", Architecture: "source", IsSource: true},
+	} {
+		c.Assert(s.list.Add(p), IsNil)
+	}
+	indexes := s.list.IndexArchitectures(false)
+	sort.Strings(indexes)
+	c.Check(indexes, DeepEquals, []string{"amd64", "amd64v3", "i386"})
+	indexes = s.list.IndexArchitectures(true)
+	sort.Strings(indexes)
+	c.Check(indexes, DeepEquals, []string{"amd64", "amd64v3", "i386", "source"})
+	base := s.list.Architectures(false)
+	sort.Strings(base)
+	c.Check(base, DeepEquals, []string{"amd64", "i386"})
+}

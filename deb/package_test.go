@@ -580,3 +580,26 @@ SHA256: bbb3a2cb07f741c3995b6d4bb08d772d83582b93a0236d4ea7736bc0370fc320`
 
 const installerPackageMeta = `9d8bb14044dee520f4706ab197dfff10e9e39ecb3c1a402331712154e8284b2e  ./MANIFEST.udebs
 dab96042d8e25e0f6bbb8d7c5bd78543afb5eb31a4a8b122ece68ab197228028  ./udeb.list`
+
+func (s *PackageSuite) TestArchitectureVariantMatchesIndexArchitecture(c *C) {
+	for _, tc := range []struct {
+		base, variant, target string
+		matches               bool
+	}{
+		{"amd64", "", "amd64", true},
+		{"amd64", "", "amd64v3", false},
+		{"amd64", "amd64v3", "amd64", false},
+		{"amd64", "amd64v3", "amd64v3", true},
+		{"all", "", "amd64", true},
+		{"all", "", "amd64v3", true},
+		{"all", "", "source", false},
+		{"source", "", "source", true},
+		{"source", "", "amd64v3", false},
+	} {
+		p := &Package{Architecture: tc.base, ArchitectureVariant: tc.variant, IsSource: tc.base == "source"}
+		c.Check(p.MatchesIndexArchitecture(tc.target), Equals, tc.matches, Commentf("base=%s variant=%s target=%s", tc.base, tc.variant, tc.target))
+	}
+	p := &Package{Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+	c.Check(p.MatchesArchitecture("amd64"), Equals, true)
+	c.Check(p.MatchesArchitecture("amd64v3"), Equals, false)
+}

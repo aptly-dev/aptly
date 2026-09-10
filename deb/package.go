@@ -352,6 +352,14 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 	return p.Architecture == arch
 }
 
+// MatchesIndexArchitecture checks membership in a repository index architecture.
+func (p *Package) MatchesIndexArchitecture(arch string) bool {
+	if p.Architecture == ArchitectureAll && arch != ArchitectureSource {
+		return true
+	}
+	return p.IndexArchitecture() == arch
+}
+
 func JoinErrors(errs ...error) error {
 	var combinedErr error
 	for _, err := range errs {

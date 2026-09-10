@@ -287,6 +287,19 @@ func (l *PackageList) Architectures(includeSource bool) (result []string) {
 	return
 }
 
+// IndexArchitectures returns repository index architectures present in the list.
+// If includeSource is true, the source meta-architecture is included.
+func (l *PackageList) IndexArchitectures(includeSource bool) (result []string) {
+	result = make([]string, 0, 10)
+	for _, pkg := range l.packages {
+		arch := pkg.IndexArchitecture()
+		if arch != ArchitectureAll && (arch != ArchitectureSource || includeSource) && !utils.StrSliceHasItem(result, arch) {
+			result = append(result, arch)
+		}
+	}
+	return
+}
+
 // Strings builds list of strings with package keys
 func (l *PackageList) Strings() []string {
 	result := make([]string, l.Len())
