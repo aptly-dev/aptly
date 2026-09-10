@@ -182,7 +182,7 @@ func (l *PackageList) FilterLatest() (*PackageList, error) {
 	filtered := make(map[string]*Package, l.Len())
 
 	err := l.ForEach(func(p *Package) error {
-		key := p.Architecture + "|" + p.Name
+		key := p.IndexArchitecture() + "|" + p.Name
 
 		if existing, found := filtered[key]; !found || CompareVersions(p.Version, existing.Version) > 0 {
 			filtered[key] = p

@@ -134,6 +134,66 @@ func (s *PackageListSuite) TestAddLen(c *C) {
 	c.Check(s.list.Add(s.p4), ErrorMatches, "package already exists and is different: .*")
 }
 
+func (s *PackageListSuite) TestArchitectureVariantAdd(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64"}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+
+	c.Assert(s.list.Add(normal), IsNil)
+	c.Assert(s.list.Add(variant), IsNil)
+	c.Check(s.list.Len(), Equals, 2)
+	var packages []*Package
+	c.Assert(s.list.ForEach(func(p *Package) error {
+		packages = append(packages, p)
+		return nil
+	}), IsNil)
+	c.Check(packages, HasLen, 2)
+	found := map[*Package]bool{}
+	for _, p := range packages {
+		found[p] = true
+	}
+	c.Check(found[normal], Equals, true)
+	c.Check(found[variant], Equals, true)
+}
+
+func (s *PackageListSuite) TestArchitectureVariantHas(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64"}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+
+	c.Check(s.list.Has(normal), Equals, false)
+	c.Check(s.list.Has(variant), Equals, false)
+	c.Assert(s.list.Add(normal), IsNil)
+	c.Check(s.list.Has(normal), Equals, true)
+	c.Check(s.list.Has(variant), Equals, false)
+	c.Assert(s.list.Add(variant), IsNil)
+	c.Check(s.list.Has(normal), Equals, true)
+	c.Check(s.list.Has(variant), Equals, true)
+}
+
+func (s *PackageListSuite) TestArchitectureVariantRemove(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64"}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+
+	c.Assert(s.list.Add(normal), IsNil)
+	c.Assert(s.list.Add(variant), IsNil)
+	s.list.Remove(variant)
+	c.Check(s.list.Len(), Equals, 1)
+	c.Check(s.list.Has(normal), Equals, true)
+	c.Check(s.list.Has(variant), Equals, false)
+}
+
+func (s *PackageListSuite) TestArchitectureVariantFilterLatest(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64"}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+
+	c.Assert(s.list.Add(normal), IsNil)
+	c.Assert(s.list.Add(variant), IsNil)
+	filtered, err := s.list.FilterLatest()
+	c.Assert(err, IsNil)
+	c.Check(filtered.Len(), Equals, 2)
+	c.Check(filtered.Has(normal), Equals, true)
+	c.Check(filtered.Has(variant), Equals, true)
+}
+
 func (s *PackageListSuite) TestRemove(c *C) {
 	c.Check(s.list.Add(s.p1), IsNil)
 	c.Check(s.list.Add(s.p3), IsNil)
