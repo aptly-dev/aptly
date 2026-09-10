@@ -127,6 +127,7 @@ GUI for aptly API:
 -   `Python aptly GUI (via pyqt5) <https://github.com/chnyda/python-aptly-gui>`_ by Cedric Hnyda
 
 Repository management:
+
 -   `AptlyPilot <https://github.com/mmayabi/AptlyPilot>`_ by Maryam Mayabi  -  Web-based management platform for Aptly repositories with Repository as Code workflows and lifecycle automation.
 
 Scala sbt:
