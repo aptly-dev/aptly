@@ -159,10 +159,20 @@ func (s *APISuite) TestGetMetrics(c *C) {
 }
 
 func (s *APISuite) TestHeadMetrics(c *C) {
-	response, err := s.HTTPRequest("HEAD", "/api/metrics", nil)
+	server := httptest.NewServer(s.router)
+	defer server.Close()
+
+	req, err := http.NewRequest(http.MethodHead, server.URL+"/api/metrics", nil)
 	c.Assert(err, IsNil)
-	c.Check(response.Code, Equals, 200)
-	c.Check(strings.Contains(response.Body.String(), "# TYPE aptly_build_info gauge"), Equals, true)
+
+	resp, err := server.Client().Do(req)
+	c.Assert(err, IsNil)
+	defer resp.Body.Close()
+
+	c.Check(resp.StatusCode, Equals, 200)
+	body, readErr := io.ReadAll(resp.Body)
+	c.Assert(readErr, IsNil)
+	c.Check(len(body), Equals, 0)
 }
 
 func (s *APISuite) TestRepoCreate(c *C) {
