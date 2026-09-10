@@ -158,6 +158,13 @@ func (s *APISuite) TestGetMetrics(c *C) {
 	c.Check(b, Matches, ".*aptly_build_info.*version=\"testVersion\".*")
 }
 
+func (s *APISuite) TestHeadMetrics(c *C) {
+	response, err := s.HTTPRequest("HEAD", "/api/metrics", nil)
+	c.Assert(err, IsNil)
+	c.Check(response.Code, Equals, 200)
+	c.Check(strings.Contains(response.Body.String(), "# TYPE aptly_build_info gauge"), Equals, true)
+}
+
 func (s *APISuite) TestRepoCreate(c *C) {
 	body, err := json.Marshal(gin.H{
 		"Name": "dummy",
