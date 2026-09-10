@@ -167,7 +167,7 @@ func (s *APISuite) TestHeadMetrics(c *C) {
 
 	resp, err := server.Client().Do(req)
 	c.Assert(err, IsNil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	c.Check(resp.StatusCode, Equals, 200)
 	body, readErr := io.ReadAll(resp.Body)
