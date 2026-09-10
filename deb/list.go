@@ -186,7 +186,7 @@ func (l *PackageList) FilterLatest(count int) (*PackageList, error) {
 	groups := make(map[string][]*Package, l.Len())
 
 	err := l.ForEach(func(p *Package) error {
-		key := p.Architecture + "|" + p.Name
+		key := p.IndexArchitecture() + "|" + p.Name
 		groups[key] = append(groups[key], p)
 
 		return nil
