@@ -2437,10 +2437,13 @@ host:port for HTTP listening
 Start HTTP server with aptly REST API\. The server can listen to either a port or Unix domain socket\. When using a socket, Aptly will fully manage the socket file\. This command also supports taking over from a systemd file descriptors to enable systemd socket activation\.
 .
 .P
+An optional metrics\-only TCP listener can be enabled with \-metrics\-listen\. It serves GET and HEAD requests at /metrics and requires enableMetricsEndpoint in the aptly configuration\. This listener uses plain HTTP; provide access control and TLS through network policy or a proxy when required\.
+.
+.P
 Example:
 .
 .P
-$ aptly api serve \-listen=:8080 $ aptly api serve \-listen=unix:///tmp/aptly\.sock
+$ aptly api serve \-listen=:8080 $ aptly api serve \-listen=unix:///tmp/aptly\.sock $ aptly api serve \-listen=:8080 \-metrics\-listen=127\.0\.0\.1:9090
 .
 .P
 Options:
@@ -2448,6 +2451,10 @@ Options:
 .TP
 \-\fBlisten\fR=:8080
 host:port for HTTP listening or unix://path to listen on a Unix domain socket
+.
+.TP
+\-\fBmetrics\-listen\fR=
+host:port for optional metrics\-only HTTP listening (requires enableMetricsEndpoint)
 .
 .TP
 \-\fBno\-lock\fR

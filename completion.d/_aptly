@@ -537,6 +537,7 @@ local keyring="*-keyring=[gpg keyring to use when verifying Release file (could 
                     serve)
                         _arguments '1:: :' \
                             "-listen=[host:port for HTTP listening or unix://path to listen on a Unix domain socket]:host\:port or unix\://path: " \
+                            "-metrics-listen=[host:port for optional metrics-only HTTP listening]:host\:port: " \
                             "-no-lock=[don’t lock the database]:$bool"
                         ;;
                 esac
