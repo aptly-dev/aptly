@@ -336,7 +336,7 @@ func (collection *PackageCollection) SearchByKey(arch, name, version string) (re
 			panic(fmt.Sprintf("unable to load package: %s", err))
 		}
 
-		if pkg.Architecture == arch && pkg.Name == name && pkg.Version == version {
+		if pkg.IndexArchitecture() == arch && pkg.Name == name && pkg.Version == version {
 			_ = result.Add(pkg)
 		}
 	}
