@@ -261,7 +261,11 @@ func (q *DependencyQuery) String() string {
 
 // Matches on specific properties
 func (q *PkgQuery) Matches(pkg PackageLike) bool {
-	return pkg.GetName() == q.Pkg && pkg.GetVersion() == q.Version && pkg.GetArchitecture() == q.Arch
+	arch := pkg.GetArchitecture()
+	if indexed, ok := pkg.(interface{ IndexArchitecture() string }); ok {
+		arch = indexed.IndexArchitecture()
+	}
+	return pkg.GetName() == q.Pkg && pkg.GetVersion() == q.Version && arch == q.Arch
 }
 
 // Fast is always true for package query
