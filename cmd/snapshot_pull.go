@@ -117,7 +117,7 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 	alreadySeen := map[string]bool{}
 
 	_ = result.ForEachIndexed(func(pkg *deb.Package) error {
-		key := pkg.Architecture + "_" + pkg.Name
+		key := pkg.IndexArchitecture() + "_" + pkg.Name
 		_, seen := alreadySeen[key]
 
 		// If we haven't seen such name-architecture pair and were instructed to remove, remove it
@@ -125,6 +125,9 @@ func aptlySnapshotPull(cmd *commander.Command, args []string) error {
 			// Remove all packages with the same name and architecture
 			pS := packageList.Search(deb.Dependency{Architecture: pkg.Architecture, Pkg: pkg.Name}, true, false)
 			for _, p := range pS {
+				if p.ArchitectureVariant != pkg.ArchitectureVariant {
+					continue
+				}
 				packageList.Remove(p)
 				context.Progress().ColoredPrintf("@r[-]@| %s removed", p)
 			}
