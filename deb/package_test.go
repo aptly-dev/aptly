@@ -603,3 +603,16 @@ func (s *PackageSuite) TestArchitectureVariantMatchesIndexArchitecture(c *C) {
 	c.Check(p.MatchesArchitecture("amd64"), Equals, true)
 	c.Check(p.MatchesArchitecture("amd64v3"), Equals, false)
 }
+
+func (s *PackageSuite) TestArchitectureVariantDisplayNames(c *C) {
+	for _, variant := range []string{"", "amd64v3"} {
+		p := &Package{Name: "3cpio", Version: "0.14.0-1ubuntu1", Architecture: "amd64", ArchitectureVariant: variant}
+		expected := "3cpio_0.14.0-1ubuntu1_amd64"
+		if variant != "" {
+			expected = "3cpio_0.14.0-1ubuntu1_amd64v3"
+		}
+		c.Check(p.String(), Equals, expected)
+		c.Check(p.GetFullName(), Equals, expected)
+		c.Check(p.GetArchitecture(), Equals, "amd64")
+	}
+}

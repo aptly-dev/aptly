@@ -634,3 +634,12 @@ func (s *PackageListSuite) TestArchitectureVariantIndexArchitectures(c *C) {
 	sort.Strings(base)
 	c.Check(base, DeepEquals, []string{"amd64", "i386"})
 }
+
+func (s *PackageListSuite) TestArchitectureVariantFullNames(c *C) {
+	for _, variant := range []string{"", "amd64v3"} {
+		c.Assert(s.list.Add(&Package{Name: "3cpio", Version: "0.14.0-1ubuntu1", Architecture: "amd64", ArchitectureVariant: variant}), IsNil)
+	}
+	names := s.list.FullNames()
+	sort.Strings(names)
+	c.Check(names, DeepEquals, []string{"3cpio_0.14.0-1ubuntu1_amd64", "3cpio_0.14.0-1ubuntu1_amd64v3"})
+}

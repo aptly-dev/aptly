@@ -240,7 +240,7 @@ func (p *Package) ShortKey(prefix string) []byte {
 
 // String creates readable representation
 func (p *Package) String() string {
-	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
+	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.IndexArchitecture())
 }
 
 // ExtendedStanza returns package stanza enhanced with aptly-specific fields
@@ -458,7 +458,7 @@ func (p *Package) GetName() string {
 
 // GetFullName returns the package full name
 func (p *Package) GetFullName() string {
-	return strings.Join([]string{p.Name, p.Version, p.Architecture}, "_")
+	return strings.Join([]string{p.Name, p.Version, p.IndexArchitecture()}, "_")
 }
 
 // GetVersion returns package version
