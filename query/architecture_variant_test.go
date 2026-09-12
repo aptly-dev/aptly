@@ -17,11 +17,11 @@ func TestArchitectureVariantQueries(t *testing.T) {
 	defer db.Close()
 	collection := deb.NewPackageCollection(db)
 	list := deb.NewPackageList()
-	const normal = "3cpio_0.14.0-1ubuntu1_amd64"
-	const variant = "3cpio_0.14.0-1ubuntu1_amd64v3"
+	const normal = "test-package_1.0_amd64"
+	const variant = "test-package_1.0_amd64v3"
 	for _, value := range []string{"", "amd64v3"} {
 		p := deb.NewPackageFromControlFile(deb.Stanza{
-			"Package": "3cpio", "Version": "0.14.0-1ubuntu1",
+			"Package": "test-package", "Version": "1.0",
 			"Architecture": "amd64", "Architecture-Variant": value,
 		})
 		if err := collection.Update(p); err != nil {
@@ -41,7 +41,7 @@ func TestArchitectureVariantQueries(t *testing.T) {
 				name, expression string
 				want             []string
 			}{
-				{"coexistence", "Name (= 3cpio)", []string{normal, variant}},
+				{"coexistence", "Name (= test-package)", []string{normal, variant}},
 				{"exact_normal", normal, []string{normal}},
 				{"exact_variant", variant, []string{variant}},
 				{"base_architecture", "Architecture (= amd64)", []string{normal, variant}},
@@ -75,11 +75,11 @@ func TestArchitectureVariantQueries(t *testing.T) {
 
 func TestArchitectureVariantQueryParsing(t *testing.T) {
 	for _, arch := range []string{"amd64", "amd64v3"} {
-		q, err := Parse("3cpio_0.14.0-1ubuntu1_" + arch)
+		q, err := Parse("test-package_1.0_" + arch)
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := &deb.PkgQuery{Pkg: "3cpio", Version: "0.14.0-1ubuntu1", Arch: arch}
+		want := &deb.PkgQuery{Pkg: "test-package", Version: "1.0", Arch: arch}
 		if !reflect.DeepEqual(q, want) {
 			t.Errorf("got %#v; want %#v", q, want)
 		}

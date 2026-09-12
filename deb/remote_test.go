@@ -319,6 +319,9 @@ func (p *architectureVariantRemoteProgress) ColoredPrintf(format string, args ..
 }
 
 func (s *RemoteRepoSuite) loadArchitectureVariantIndexes(c *C) {
+	var err error
+	s.repo, err = NewRemoteRepo("variant-test", "http://mirror.example.invalid/repo", "test", []string{"main"}, nil, false, false, false, false)
+	c.Assert(err, IsNil)
 	const normalIndex = `Package: example
 Version: 1.0
 Architecture: amd64
@@ -336,7 +339,7 @@ Size: 4
 MD5sum: e2fc714c4727ee9395f324cd2e7f331f
 
 `
-	const root = "http://mirror.yandex.ru/debian/dists/squeeze/"
+	const root = "http://mirror.example.invalid/repo/dists/test/"
 	release := fmt.Sprintf("Architectures: amd64 amd64v3\nComponents: main\nSHA256:\n %x %d main/binary-amd64/Packages\n %x %d main/binary-amd64v3/Packages\n",
 		sha256.Sum256([]byte(normalIndex)), len(normalIndex), sha256.Sum256([]byte(variantIndex)), len(variantIndex))
 	s.downloader = http.NewFakeDownloader().ExpectResponse(root+"Release", release)
