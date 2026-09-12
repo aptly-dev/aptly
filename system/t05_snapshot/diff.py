@@ -100,8 +100,8 @@ class DiffSnapshotArchitectureVariantTest(BaseTest):
                 control_dir = package_dir / "DEBIAN"
                 control_dir.mkdir(parents=True)
                 control = (
-                    "Package: 3cpio\n"
-                    "Version: 0.14.0-1ubuntu1\n"
+                    "Package: test-package\n"
+                    "Version: 1.0\n"
                     "Architecture: amd64\n"
                     "Maintainer: Aptly Test <test@example.com>\n"
                     "Description: Snapshot diff display fixture\n"
@@ -110,7 +110,7 @@ class DiffSnapshotArchitectureVariantTest(BaseTest):
                     control += "Architecture-Variant: amd64v3\n"
                 (control_dir / "control").write_text(control)
                 package_file = str(Path(tmp) / (
-                    "3cpio_0.14.0-1ubuntu1_" + arch + ".deb"))
+                    "test-package_1.0_" + arch + ".deb"))
                 self.run_cmd(["dpkg-deb", "--build", str(package_dir), package_file])
                 self.run_cmd(["aptly", "repo", "add", "variant-display", package_file])
                 snapshot = "variant-normal" if arch == "amd64" else "variant-both"
@@ -127,13 +127,13 @@ class DiffSnapshotArchitectureVariantTest(BaseTest):
                              "Arch | Package | Version in A | Version in B")
             self.check_equal(" ".join(lines[1].split()), expected)
 
-        check_row(self.output, "+ amd64 | 3cpio | - | 0.14.0-1ubuntu1")
+        check_row(self.output, "+ amd64 | test-package | - | 1.0")
         for left, right, expected in (
             ("variant-normal", "variant-both",
-             "+ amd64v3 | 3cpio | - | 0.14.0-1ubuntu1"),
+             "+ amd64v3 | test-package | - | 1.0"),
             ("variant-both", "variant-normal",
-             "- amd64v3 | 3cpio | 0.14.0-1ubuntu1 | -"),
+             "- amd64v3 | test-package | 1.0 | -"),
             ("variant-normal", "variant-empty",
-             "- amd64 | 3cpio | 0.14.0-1ubuntu1 | -"),
+             "- amd64 | test-package | 1.0 | -"),
         ):
             check_row(self.run_cmd(["aptly", "snapshot", "diff", left, right]), expected)

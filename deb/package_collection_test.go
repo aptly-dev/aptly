@@ -69,7 +69,7 @@ func architectureVariantCollectionPackage(variant string) *Package {
 	stanza := Stanza{
 		"Package": "example", "Version": "1.0", "Architecture": "amd64",
 		"Filename": "pool/example_1.0_amd64.deb", "Size": "123",
-		"Depends": "libc6 (>= 2.7)", "Priority": "optional",
+		"Depends": "test-dependency (>= 1.0)", "Priority": "optional",
 	}
 	if variant != "" {
 		stanza["Architecture-Variant"] = variant
@@ -92,7 +92,7 @@ func (s *PackageCollectionSuite) TestArchitectureVariantNormalRoundTrip(c *C) {
 	c.Check(loaded.Key(""), DeepEquals, key)
 	c.Check(loaded.Equals(p), Equals, true)
 	c.Check(loaded.Files()[0].Filename, Equals, "example_1.0_amd64.deb")
-	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)"})
+	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"test-dependency (>= 1.0)"})
 	c.Check(loaded.Extra()["Priority"], Equals, "optional")
 	_, hasVariant := loaded.Stanza()["Architecture-Variant"]
 	c.Check(hasVariant, Equals, false)
@@ -113,7 +113,7 @@ func (s *PackageCollectionSuite) TestArchitectureVariantRoundTrip(c *C) {
 	c.Check(loaded.Equals(p), Equals, true)
 	// Exercise offloaded records using the reloaded variant-aware key.
 	c.Check(loaded.Files()[0].Filename, Equals, "example_1.0_amd64v3.deb")
-	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"libc6 (>= 2.7)"})
+	c.Check(loaded.GetDependencies(0), DeepEquals, []string{"test-dependency (>= 1.0)"})
 	c.Check(loaded.Extra()["Priority"], Equals, "optional")
 	stanza := loaded.Stanza()
 	c.Check(stanza["Architecture"], Equals, "amd64")
