@@ -14,7 +14,11 @@ func TestArchitectureVariantQueries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	collection := deb.NewPackageCollection(db)
 	list := deb.NewPackageList()
 	const normal = "test-package_1.0_amd64"
