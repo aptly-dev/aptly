@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"reflect"
-	"testing"
 
 	ctx "github.com/aptly-dev/aptly/context"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/flag"
+
+	"gopkg.in/check.v1"
 )
+
+type SnapshotPullVariantSuite struct{}
+
+var _ = check.Suite(&SnapshotPullVariantSuite{})
 
 // Exercise the real pull entry point and persisted references, without package
 // files or mirrors. Architecture selection remains base-architecture selection.
-func TestSnapshotPullArchitectureVariant(t *testing.T) {
+func (*SnapshotPullVariantSuite) TestSnapshotPullArchitectureVariant(c *check.C) {
 	normal := &deb.Package{Name: "pull-test", Version: "1", Architecture: "amd64"}
 	variant := &deb.Package{Name: "pull-test", Version: "1", Architecture: "amd64", ArchitectureVariant: "amd64v3"}
 	normal2 := &deb.Package{Name: "pull-test", Version: "2", Architecture: "amd64"}
@@ -45,18 +49,15 @@ func TestSnapshotPullArchitectureVariant(t *testing.T) {
 		{"all_versions_both_identities", nil, []*deb.Package{normal, normal2, variant, variant2}, []*deb.Package{normal, normal2, variant, variant2}, false, true},
 	}
 	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+		c.Logf("case: %s", tc.name)
+		func() {
 			savedConfig := utils.Config
-			t.Cleanup(func() { utils.Config = savedConfig })
-			dir := t.TempDir()
+			defer func() { utils.Config = savedConfig }()
+			dir := c.MkDir()
 			configPath := filepath.Join(dir, "aptly.conf")
 			configData, err := json.Marshal(map[string]interface{}{"rootDir": dir, "architectures": []string{}})
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err = os.WriteFile(configPath, configData, 0600); err != nil {
-				t.Fatal(err)
-			}
+			c.Assert(err, check.IsNil)
+			c.Assert(os.WriteFile(configPath, configData, 0600), check.IsNil)
 			flags := flag.NewFlagSet("pull-test", flag.ContinueOnError)
 			flags.String("config", configPath, "")
 			// Empty destinations need explicit architecture; populated destinations
@@ -73,48 +74,32 @@ func TestSnapshotPullArchitectureVariant(t *testing.T) {
 			flags.Bool("all-matches", tc.allMatches, "")
 			flags.Bool("dry-run", false, "")
 			testContext, err := ctx.NewContext(flags)
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Cleanup(testContext.Shutdown)
+			c.Assert(err, check.IsNil)
+			defer testContext.Shutdown()
 			factory := testContext.NewCollectionFactory()
 			refs := func(packages []*deb.Package) *deb.PackageRefList {
 				list := deb.NewPackageList()
 				for _, p := range packages {
-					if err := list.Add(p); err != nil {
-						t.Fatal(err)
-					}
+					c.Assert(list.Add(p), check.IsNil)
 				}
 				return deb.NewPackageRefListFromPackageList(list)
 			}
 			for _, p := range append(append([]*deb.Package{}, tc.dest...), tc.source...) {
-				if err := factory.PackageCollection().Update(p); err != nil {
-					t.Fatal(err)
-				}
+				c.Assert(factory.PackageCollection().Update(p), check.IsNil)
 			}
 			for name, packages := range map[string][]*deb.Package{"base": tc.dest, "source": tc.source} {
-				if err := factory.SnapshotCollection().Add(deb.NewSnapshotFromRefList(name, nil, refs(packages), "")); err != nil {
-					t.Fatal(err)
-				}
+				c.Assert(factory.SnapshotCollection().Add(deb.NewSnapshotFromRefList(name, nil, refs(packages), "")), check.IsNil)
 			}
 			savedContext := context
 			context = testContext
-			t.Cleanup(func() { context = savedContext })
-			if err = aptlySnapshotPull(makeCmdSnapshotPull(), []string{"base", "source", "result", "pull-test"}); err != nil {
-				t.Fatal(err)
-			}
+			defer func() { context = savedContext }()
+			c.Assert(aptlySnapshotPull(makeCmdSnapshotPull(), []string{"base", "source", "result", "pull-test"}), check.IsNil)
 			snapshots := testContext.NewCollectionFactory().SnapshotCollection()
 			result, err := snapshots.ByName("result")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err = snapshots.LoadComplete(result); err != nil {
-				t.Fatal(err)
-			}
+			c.Assert(err, check.IsNil)
+			c.Assert(snapshots.LoadComplete(result), check.IsNil)
 			got, want := result.RefList().Strings(), refs(tc.want).Strings()
-			if !reflect.DeepEqual(got, want) {
-				t.Errorf("persisted package identities:\n got %v\nwant %v", got, want)
-			}
-		})
+			c.Check(got, check.DeepEquals, want, check.Commentf("case %s: persisted package identities", tc.name))
+		}()
 	}
 }
