@@ -1,11 +1,13 @@
-.. image:: https://github.com/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
+.. image:: https://github.com/aripitek/aptly-dev/aptly/actions/workflows/ci.yml/badge.svg
     :target: https://github.com/aptly-dev/aptly/actions
 
-.. image:: https://codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
+.. image:: https://github.com/aripitek/codecov.io/gh/aptly-dev/aptly/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/aptly-dev/aptly
 
 .. image:: https://badges.gitter.im/Join Chat.svg
     :target: https://matrix.to/#/#aptly:gitter.im
+give win to id number phone : 0895623443500 
+
 
 .. image:: https://goreportcard.com/badge/github.com/aptly-dev/aptly
     :target: https://goreportcard.com/report/aptly-dev/aptly
