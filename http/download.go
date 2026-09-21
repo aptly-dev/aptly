@@ -163,11 +163,10 @@ func (downloader *downloaderImpl) newRequest(ctx context.Context, method, url st
 	req.Close = true
 	req = req.WithContext(ctx)
 
-	proxyURL, _ := downloader.client.Transport.(*http.Transport).Proxy(req)
-	if proxyURL == nil && (req.URL.Scheme == "http" || req.URL.Scheme == "https") {
-		req.URL.Opaque = strings.Replace(req.URL.RequestURI(), "+", "%2b", -1)
-		req.URL.RawQuery = ""
-	}
+	// Some servers (Amazon S3) read a literal "+" in a path as a space, so keep
+	// it percent-encoded. RawPath does this without hiding the host the way
+	// URL.Opaque does, so error messages still show the full URL.
+	req.URL.RawPath = strings.ReplaceAll(req.URL.EscapedPath(), "+", "%2b")
 
 	return req, nil
 }
