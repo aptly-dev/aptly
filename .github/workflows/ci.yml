@@ -158,7 +158,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: ["Debian 13/trixie", "Debian 12/bookworm", "Debian 11/bullseye", "Ubuntu 26.04", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
+        name: ["Debian 13/trixie", "Debian 12/bookworm", "Ubuntu 26.04", "Ubuntu 24.04", "Ubuntu 22.04", "Ubuntu 20.04"]
         arch: ["amd64", "i386" , "arm64" , "armhf"]
         include:
           - name: "Debian 13/trixie"
@@ -167,9 +167,6 @@ jobs:
           - name: "Debian 12/bookworm"
             suite: bookworm
             image: debian:bookworm-slim
-          - name: "Debian 11/bullseye"
-            suite: bullseye
-            image: debian:bullseye-slim
           - name: "Ubuntu 26.04"
             suite: resolute
             image: ubuntu:26.04
