@@ -21,6 +21,9 @@ Aptly is a swiss army knife for Debian repository management.
 Documentation is available at `http://www.aptly.info/ <http://www.aptly.info/>`_. For support please use
 open `issues <https://github.com/aptly-dev/aptly/issues>`_ or `discussions <https://github.com/aptly-dev/aptly/discussions>`_.
 
+In-depth documentation of the architecture, data model, workflows and internals lives in the
+`documentation/ <documentation/README.md>`_ directory.
+
 Aptly features:
 
 * make mirrors of remote Debian/Ubuntu repositories, limiting by components/architectures
