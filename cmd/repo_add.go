@@ -42,14 +42,15 @@ func aptlyRepoAdd(cmd *commander.Command, args []string) error {
 
 	forceReplace := context.Flags().Lookup("force-replace").Value.Get().(bool)
 
-	var packageFiles, otherFiles, failedFiles []string
+	var packageFiles []deb.FileWithSize
+	var otherFiles, failedFiles []string
 
 	packageFiles, otherFiles, failedFiles = deb.CollectPackageFiles(args[1:], &aptly.ConsoleResultReporter{Progress: context.Progress()})
 
 	var processedFiles, failedFiles2 []string
 
 	processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-		collectionFactory.PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()}, nil,
+		collectionFactory.PackageCollection(), &aptly.ConsoleResultReporter{Progress: context.Progress()}, context.Progress(), nil,
 		collectionFactory.ChecksumCollection)
 	failedFiles = append(failedFiles, failedFiles2...)
 	if err != nil {

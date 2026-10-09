@@ -9,6 +9,7 @@ import (
 	"hash"
 	"io"
 	"os"
+	"slices"
 )
 
 // MD5ChecksumForFile computes just the MD5 hash and not all the others
@@ -46,10 +47,23 @@ func (cksum *ChecksumInfo) Complete() bool {
 
 // ChecksumsForReader generates size, MD5, SHA1 & SHA256 checksums for the given
 // io.Reader
-func ChecksumsForReader(rd io.Reader) (ChecksumInfo, error) {
+//
+// A scratch buffer may be passed as the second argument, in order to allow the
+// caller to reuse a larger buffer across invocations.
+func ChecksumsForReader(rd io.Reader, buf []byte) (ChecksumInfo, error) {
 	w := NewChecksumWriter()
 
-	_, err := io.Copy(w, rd)
+	// Make sure to hide os.File's WriteTo, because it will just end up falling
+	// back to a regular buffer-less io.Copy due to ChecksumWriter.
+	rd = struct{ io.Reader }{rd}
+
+	var err error
+	if len(buf) > 0 {
+		_, err = io.CopyBuffer(w, rd, buf[:])
+	} else {
+		_, err = io.Copy(w, rd)
+	}
+
 	if err != nil {
 		return ChecksumInfo{}, err
 	}
@@ -59,7 +73,10 @@ func ChecksumsForReader(rd io.Reader) (ChecksumInfo, error) {
 
 // ChecksumsForFile generates size, MD5, SHA1 & SHA256 checksums for the file at
 // the given path
-func ChecksumsForFile(path string) (ChecksumInfo, error) {
+//
+// A scratch buffer may be passed as the second argument, in order to allow the
+// caller to reuse a larger buffer across invocations.
+func ChecksumsForFile(path string, buf []byte) (ChecksumInfo, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return ChecksumInfo{}, err
@@ -68,7 +85,7 @@ func ChecksumsForFile(path string) (ChecksumInfo, error) {
 		_ = file.Close()
 	}()
 
-	return ChecksumsForReader(file)
+	return ChecksumsForReader(file, buf)
 }
 
 // ChecksumWriter is a writer that does checksum calculation on the fly passing data
@@ -94,8 +111,12 @@ func NewChecksumWriter() *ChecksumWriter {
 func (c *ChecksumWriter) Write(p []byte) (n int, err error) {
 	c.sum.Size += int64(len(p))
 
-	for _, h := range c.hashes {
-		h.Write(p)
+	// Iterate over smaller chunks to try to keep as much as possible in the cache
+	// for each hash algorithm.
+	for chunk := range slices.Chunk(p, 32*1024) {
+		for _, h := range c.hashes {
+			h.Write(chunk)
+		}
 	}
 
 	return len(p), nil

@@ -58,7 +58,7 @@ func (pool *PackagePool) ensureChecksums(poolPath string, checksumStorage aptly.
 		}
 
 		targetChecksums = &utils.ChecksumInfo{}
-		*targetChecksums, err = utils.ChecksumsForReader(download.Body)
+		*targetChecksums, err = utils.ChecksumsForReader(download.Body, nil)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checksumming blob at %s", poolPath)
 		}
@@ -136,7 +136,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	if checksums.MD5 == "" || checksums.SHA256 == "" || checksums.SHA512 == "" {
 		// need to update checksums, MD5 and SHA256 should be always defined
 		var err error
-		*checksums, err = utils.ChecksumsForFile(srcPath)
+		*checksums, err = utils.ChecksumsForFile(srcPath, nil)
 		if err != nil {
 			return "", err
 		}
@@ -165,7 +165,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 
 	if !checksums.Complete() {
 		// need full checksums here
-		*checksums, err = utils.ChecksumsForFile(srcPath)
+		*checksums, err = utils.ChecksumsForFile(srcPath, nil)
 		if err != nil {
 			return "", err
 		}

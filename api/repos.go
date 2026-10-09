@@ -624,7 +624,8 @@ func apiReposPackageFromDir(c *gin.Context) {
 		verifier := context.GetVerifier()
 
 		var (
-			packageFiles, failedFiles    []string
+			packageFiles                 []deb.FileWithSize
+			failedFiles                  []string
 			otherFiles                   []string
 			processedFiles, failedFiles2 []string
 			reporter                     = &aptly.RecordingResultReporter{
@@ -643,7 +644,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		}
 
 		processedFiles, failedFiles2, err = deb.ImportPackageFiles(list, packageFiles, forceReplace, verifier, context.PackagePool(),
-			taskCollectionFactory.PackageCollection(), reporter, nil, taskCollectionFactory.ChecksumCollection)
+			taskCollectionFactory.PackageCollection(), reporter, out, nil, taskCollectionFactory.ChecksumCollection)
 		failedFiles = append(failedFiles, failedFiles2...)
 		processedFiles = append(processedFiles, otherFiles...)
 

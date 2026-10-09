@@ -148,7 +148,7 @@ func (pool *PackagePool) ensureChecksums(poolPath, fullPoolPath string, checksum
 	if targetChecksums == nil {
 		// we don't have checksums stored yet for this file
 		targetChecksums = &utils.ChecksumInfo{}
-		*targetChecksums, err = utils.ChecksumsForFile(fullPoolPath)
+		*targetChecksums, err = utils.ChecksumsForFile(fullPoolPath, nil)
 		if err != nil {
 			return
 		}
@@ -251,7 +251,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 
 	if checksums.MD5 == "" || checksums.SHA256 == "" || checksums.Size != sourceInfo.Size() {
 		// need to update checksums, MD5 and SHA256 should be always defined
-		*checksums, err = utils.ChecksumsForFile(srcPath)
+		*checksums, err = utils.ChecksumsForFile(srcPath, nil)
 		if err != nil {
 			return "", err
 		}
@@ -367,7 +367,7 @@ func (pool *PackagePool) Import(srcPath, basename string, checksums *utils.Check
 	if err == nil {
 		if !checksums.Complete() {
 			// need full checksums here
-			*checksums, err = utils.ChecksumsForFile(srcPath)
+			*checksums, err = utils.ChecksumsForFile(srcPath, nil)
 			if err != nil {
 				return "", err
 			}

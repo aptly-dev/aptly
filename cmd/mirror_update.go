@@ -254,7 +254,7 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 	}()
 
 	// Import downloaded files
-	context.Progress().InitBar(int64(len(queue)), false, aptly.BarMirrorUpdateImportFiles)
+	context.Progress().InitBar(int64(len(queue)), false, aptly.BarGeneralImportFiles)
 
 	for idx := range queue {
 		context.Progress().AddBar(1)

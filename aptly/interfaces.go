@@ -109,6 +109,8 @@ const (
 	BarGeneralVerifyDependencies
 	// BarGeneralBuildFileList identifies bar for building file list
 	BarGeneralBuildFileList
+	// BarGeneralImportFiles identifies bar for importing package files
+	BarGeneralImportFiles
 	// BarCleanupBuildList identifies bar for building list to cleanup
 	BarCleanupBuildList
 	// BarCleanupDeleteUnreferencedFiles identifies bar for deleting unreferenced files
@@ -119,8 +121,6 @@ const (
 	BarMirrorUpdateDownloadPackages
 	// BarMirrorUpdateBuildPackageList identifies bar for building package list of downloaded files
 	BarMirrorUpdateBuildPackageList
-	// BarMirrorUpdateImportFiles identifies bar for importing package files
-	BarMirrorUpdateImportFiles
 	// BarMirrorUpdateFinalizeDownload identifies bar for finalizing downloads
 	BarMirrorUpdateFinalizeDownload
 	// BarPublishGeneratePackageFiles identifies bar for generating package files to publish
