@@ -49,7 +49,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg-shared_%d.deb", pkgIndex),
 			}})
 
-			_ = packageCollection.UpdateInTransaction(p, transaction)
+			_ = packageCollection.UpdateInWriter(p, transaction)
 			sharedRefs.Refs = append(sharedRefs.Refs, p.Key(""))
 		}
 
@@ -78,7 +78,7 @@ func BenchmarkListReferencedFiles(b *testing.B) {
 				Filename: fmt.Sprintf("pkg%d_%d.deb", repoIndex, pkgIndex),
 			}})
 
-			_ = packageCollection.UpdateInTransaction(p, transaction)
+			_ = packageCollection.UpdateInWriter(p, transaction)
 			refs.Refs = append(refs.Refs, p.Key(""))
 		}
 

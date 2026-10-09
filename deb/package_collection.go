@@ -203,21 +203,17 @@ func (collection *PackageCollection) loadContents(p *Package, packagePool aptly.
 
 // Update adds or updates information about package in DB
 func (collection *PackageCollection) Update(p *Package) error {
-	transaction, err := collection.db.OpenTransaction()
-	if err != nil {
-		return err
-	}
-	defer transaction.Discard()
+	batch := collection.db.CreateBatch()
 
-	if err = collection.UpdateInTransaction(p, transaction); err != nil {
+	if err := collection.UpdateInWriter(p, batch); err != nil {
 		return err
 	}
 
-	return transaction.Commit()
+	return batch.Write()
 }
 
-// UpdateInTransaction updates/creates package info in the context of the outer transaction
-func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction database.Transaction) error {
+// UpdateInWriter updates/creates package info in the context of the outer transaction or batch
+func (collection *PackageCollection) UpdateInWriter(p *Package, w database.Writer) error {
 	var encodeBuffer bytes.Buffer
 
 	encoder := codec.NewEncoder(&encodeBuffer, collection.codecHandle)
@@ -229,7 +225,7 @@ func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction
 		return err
 	}
 
-	err := transaction.Put(p.Key(""), encodeBuffer.Bytes())
+	err := w.Put(p.Key(""), encodeBuffer.Bytes())
 	if err != nil {
 		return err
 	}
@@ -242,7 +238,7 @@ func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction
 			return err
 		}
 
-		err = transaction.Put(p.Key("xF"), encodeBuffer.Bytes())
+		err = w.Put(p.Key("xF"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
@@ -255,7 +251,7 @@ func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction
 			return err
 		}
 
-		err = transaction.Put(p.Key("xD"), encodeBuffer.Bytes())
+		err = w.Put(p.Key("xD"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
@@ -270,7 +266,7 @@ func (collection *PackageCollection) UpdateInTransaction(p *Package, transaction
 			return err
 		}
 
-		err = transaction.Put(p.Key("xE"), encodeBuffer.Bytes())
+		err = w.Put(p.Key("xE"), encodeBuffer.Bytes())
 		if err != nil {
 			return err
 		}
