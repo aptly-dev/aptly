@@ -20,10 +20,10 @@ func (s *VersionSuite) TestParseVersion(c *C) {
 	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3.4", "1"})
 
 	e, u, d = parseVersion("1.3-pre4-1")
-	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3", "pre4-1"})
+	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3-pre4", "1"})
 
 	e, u, d = parseVersion("4:1.3-pre4-1")
-	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3", "pre4-1"})
+	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3-pre4", "1"})
 }
 
 func (s *VersionSuite) TestCompareLexicographic(c *C) {
@@ -100,7 +100,18 @@ func (s *VersionSuite) TestCompareVersions(c *C) {
 	c.Check(CompareVersions("1.0-133-avc", "1.0"), Equals, 1)
 
 	c.Check(CompareVersions("5.2.0.3", "5.2.0.283"), Equals, -1)
-	c.Check(CompareVersions("4.3.5a", "4.3.5-rc3-1"), Equals, 1)
+	c.Check(CompareVersions("4.3.5a", "4.3.5-rc3-1"), Equals, -1)
+	c.Check(CompareVersions("1.6.0-rc1+really1.6.0-0", "1.6.0-rc1-0"), Equals, 1)
+	c.Check(CompareVersions("1.2-3-4", "1.2-3-5"), Equals, -1)
+	c.Check(CompareVersions("1.0-1-1", "1.0-1"), Equals, 1)
+	c.Check(CompareVersions("1.0+1", "1.0"), Equals, 1)
+	c.Check(CompareVersions("1.0+a-1", "1.0-a-1"), Equals, -1)
+	c.Check(CompareVersions("1.0+1-1", "1.0-1"), Equals, 1)
+	c.Check(CompareVersions("1.0-1+b1", "1.0-1"), Equals, 1)
+	c.Check(CompareVersions("1.0-1+b1", "1.0-1~bpo1"), Equals, 1)
+	c.Check(CompareVersions("1.0-1+b2", "1.0-1+b10"), Equals, -1)
+	c.Check(CompareVersions("1.0.1+dfsg-1", "1.0.1-1"), Equals, 1)
+	c.Check(CompareVersions("1.0-1+b1", "1.0-2"), Equals, -1)
 }
 
 func (s *VersionSuite) TestParseDependency(c *C) {
