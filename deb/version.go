@@ -35,7 +35,7 @@ func parseVersion(ver string) (epoch, upstream, debian string) {
 		epoch, ver = ver[:i], ver[i+1:]
 	}
 
-	i = strings.Index(ver, "-")
+	i = strings.LastIndex(ver, "-")
 	if i != -1 {
 		debian, ver = ver[i+1:], ver[:i]
 	}
