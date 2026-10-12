@@ -21,6 +21,7 @@ type ChangesSuite struct {
 	db                  database.Storage
 	localRepoCollection *LocalRepoCollection
 	packageCollection   *PackageCollection
+	reflistCollection   *RefListCollection
 	packagePool         aptly.PackagePool
 	checksumStorage     aptly.ChecksumStorage
 	progress            aptly.Progress
@@ -42,6 +43,7 @@ func (s *ChangesSuite) SetUpTest(c *C) {
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.localRepoCollection = NewLocalRepoCollection(s.db)
 	s.packageCollection = NewPackageCollection(s.db)
+	s.reflistCollection = NewRefListCollection(s.db)
 
 	s.checksumStorage = files.NewMockChecksumStorage()
 	s.packagePool = files.NewPackagePool(s.Dir, false)
@@ -88,7 +90,7 @@ func (s *ChangesSuite) TestCollectChangesFiles(c *C) {
 
 func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	repo := NewLocalRepo("test", "Test Comment")
-	c.Assert(s.localRepoCollection.Add(repo), IsNil)
+	c.Assert(s.localRepoCollection.Add(repo, s.reflistCollection), IsNil)
 
 	origFailedFiles := []string{
 		"testdata/changes/calamares.changes",
@@ -124,7 +126,8 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 	processedFiles, failedFiles, err := ImportChangesFiles(
 		append(changesFiles, "testdata/changes/notexistent.changes"),
 		s.Reporter, true, true, false, false, &NullVerifier{},
-		template.Must(template.New("test").Parse("test")), s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
+		template.Must(template.New("test").Parse("test")), s.progress, s.localRepoCollection, s.packageCollection, s.reflistCollection, s.packagePool,
+		func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
 		nil, nil)
 	c.Assert(err, IsNil)
 	c.Check(failedFiles, DeepEquals, append(expectedFailedFiles, "testdata/changes/notexistent.changes"))
@@ -133,7 +136,7 @@ func (s *ChangesSuite) TestImportChangesFiles(c *C) {
 
 func (s *ChangesSuite) TestImportDbgsymWithVersionedSourceField(c *C) {
 	repo := NewLocalRepo("test", "Test Comment")
-	c.Assert(s.localRepoCollection.Add(repo), IsNil)
+	c.Assert(s.localRepoCollection.Add(repo, s.reflistCollection), IsNil)
 
 	changesFiles, failedFiles := CollectChangesFiles(
 		[]string{"testdata/dbgsym-with-source-version"}, s.Reporter)
@@ -142,7 +145,8 @@ func (s *ChangesSuite) TestImportDbgsymWithVersionedSourceField(c *C) {
 
 	_, failedFiles, err := ImportChangesFiles(
 		changesFiles, s.Reporter, true, true, false, true, &NullVerifier{},
-		template.Must(template.New("test").Parse("test")), s.progress, s.localRepoCollection, s.packageCollection, s.packagePool, func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
+		template.Must(template.New("test").Parse("test")), s.progress, s.localRepoCollection, s.packageCollection, s.reflistCollection, s.packagePool,
+		func(database.ReaderWriter) aptly.ChecksumStorage { return s.checksumStorage },
 		nil, nil)
 	c.Assert(err, IsNil)
 	c.Check(failedFiles, IsNil)

@@ -315,6 +315,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, detail *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		taskDetail := task.PublishDetail{
 			Detail: detail,
@@ -328,10 +329,10 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			switch s := source.(type) {
 			case *deb.Snapshot:
 				snapshotCollection := taskCollectionFactory.SnapshotCollection()
-				err = snapshotCollection.LoadComplete(s)
+				err = snapshotCollection.LoadComplete(s, taskRefListCollection)
 			case *deb.LocalRepo:
 				localCollection := taskCollectionFactory.LocalRepoCollection()
-				err = localCollection.LoadComplete(s)
+				err = localCollection.LoadComplete(s, taskRefListCollection)
 			default:
 				err = fmt.Errorf("unexpected type for source: %T", source)
 			}
@@ -389,7 +390,7 @@ func apiPublishRepoOrSnapshot(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to publish: %s", err)
 		}
 
-		err = taskCollection.Add(published)
+		err = taskCollection.Add(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -417,12 +418,12 @@ type publishedRepoUpdateSwitchParams struct {
 	SignedBy *string `                            json:"SignedBy"  example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"      example:"false"`
-    // Value of Label: field in published repository stanza
-    Label *string `                               json:"Label"          example:"Debian"`
-    // Value of Origin: field in published repository stanza
-    Origin *string `                              json:"Origin"         example:"Debian"`
-    // Version of the release: Optional
-    Version *string `                             json:"Version"        example:"13.3"`
+	// Value of Label: field in published repository stanza
+	Label *string `                               json:"Label"          example:"Debian"`
+	// Value of Origin: field in published repository stanza
+	Origin *string `                              json:"Origin"         example:"Debian"`
+	// Version of the release: Optional
+	Version *string `                             json:"Version"        example:"13.3"`
 }
 
 // @Summary Update Published Repository
@@ -519,6 +520,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -580,7 +582,7 @@ func apiPublishUpdateSwitch(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -714,6 +716,7 @@ func apiPublishAddSource(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -738,7 +741,7 @@ func apiPublishAddSource(c *gin.Context) {
 
 		sources[component] = name
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -840,6 +843,7 @@ func apiPublishSetSources(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -861,7 +865,7 @@ func apiPublishSetSources(c *gin.Context) {
 			sources[component] = name
 		}
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -907,6 +911,7 @@ func apiPublishDropChanges(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -920,7 +925,7 @@ func apiPublishDropChanges(c *gin.Context) {
 
 		published.DropRevision()
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -980,6 +985,7 @@ func apiPublishUpdateSource(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -1007,7 +1013,7 @@ func apiPublishUpdateSource(c *gin.Context) {
 		name := b.Name
 		sources[newComponent] = name
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -1057,6 +1063,7 @@ func apiPublishRemoveSource(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -1078,7 +1085,7 @@ func apiPublishRemoveSource(c *gin.Context) {
 
 		delete(sources, component)
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}
@@ -1104,12 +1111,12 @@ type publishedRepoUpdateParams struct {
 	SignedBy *string `                            json:"SignedBy"   example:""`
 	// Enable multiple packages with the same filename in different distributions
 	MultiDist *bool `                             json:"MultiDist"       example:"false"`
-    // Value of Label: field in published repository stanza
-    Label *string `                               json:"Label"          example:"Debian"`
-    // Value of Origin: field in published repository stanza
-    Origin *string `                              json:"Origin"         example:"Debian"`
-    // Version of the release: Optional
-    Version *string `                             json:"Version"        example:"13.3"`
+	// Value of Label: field in published repository stanza
+	Label *string `                               json:"Label"          example:"Debian"`
+	// Value of Origin: field in published repository stanza
+	Origin *string `                              json:"Origin"         example:"Debian"`
+	// Version of the release: Optional
+	Version *string `                             json:"Version"        example:"13.3"`
 }
 
 // @Summary Update Published Repository
@@ -1197,6 +1204,7 @@ func apiPublishUpdate(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(out aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.PublishedRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		published, err := taskCollection.ByStoragePrefixDistribution(storage, prefix, distribution)
 		if err != nil {
@@ -1247,7 +1255,7 @@ func apiPublishUpdate(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
 
-		err = taskCollection.Update(published)
+		err = taskCollection.Update(published, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save to DB: %s", err)
 		}

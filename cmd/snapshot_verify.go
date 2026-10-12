@@ -23,7 +23,7 @@ func aptlySnapshotVerify(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(snapshots[i])
+		err = collectionFactory.SnapshotCollection().LoadComplete(snapshots[i], collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to verify: %s", err)
 		}
