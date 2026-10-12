@@ -15,7 +15,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "Read go version from go.mod"
         run: |
@@ -23,7 +23,7 @@ jobs:
         id: goversion
 
       - name: "Setup Go"
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ steps.goversion.outputs.GOVER }}
 
