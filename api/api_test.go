@@ -42,6 +42,7 @@ func createTestConfig() *os.File {
 	jsonString, err := json.Marshal(gin.H{
 		"architectures":         []string{},
 		"enableMetricsEndpoint": true,
+		"enablePprofEndpoint":   false,
 		"S3PublishEndpoints": map[string]map[string]string{
 			"test-s3": {
 				"region": "us-east-1",
