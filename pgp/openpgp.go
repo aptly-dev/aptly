@@ -63,7 +63,9 @@ func checkDetachedSignature(keyring openpgp.KeyRing, signed, signature io.Reader
 	for {
 		p, err = packets.Next()
 		if err == io.EOF {
-			if len(signers) == 0 || missingKeys > 0 {
+			// Revocation and expiry of held keys deliberately remain unchanged
+			// from upstream in this provider; only unknown co-signers are ignored.
+			if len(signers) == missingKeys {
 				err = errors.ErrUnknownIssuer
 			} else {
 				err = nil
