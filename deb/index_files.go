@@ -397,11 +397,12 @@ func (files *indexFiles) SkelIndex(component, path string) *indexFile {
 		relativePath := filepath.Join(component, path)
 
 		file = &indexFile{
-			parent:       files,
-			discardable:  false,
-			compressable: false,
-			onlyGzip:     false,
-			relativePath: relativePath,
+			parent:        files,
+			discardable:   false,
+			compressable:  false,
+			onlyGzip:      false,
+			acquireByHash: files.acquireByHash,
+			relativePath:  relativePath,
 		}
 
 		files.indexes[key] = file
