@@ -379,6 +379,83 @@ func (s *PublishedRepoSuite) TestUpdate(c *C) {
 	c.Assert(result.RemovedComponents(), DeepEquals, []string{})
 }
 
+func (s *PublishedRepoSuite) checkArchitectureVariantPublication(c *C, architectures []string) {
+	list := NewPackageList()
+	for _, arch := range []string{"amd64", "amd64v3"} {
+		filename := "example_1.0_" + arch + ".deb"
+		stanza := Stanza{"Package": "example", "Version": "1.0", "Architecture": "amd64", "Filename": filename}
+		if arch == "amd64v3" {
+			stanza["Architecture-Variant"] = "amd64v3"
+		}
+		p := NewPackageFromControlFile(stanza)
+		inputPath := filepath.Join(c.MkDir(), filename)
+		c.Assert(os.WriteFile(inputPath, nil, 0644), IsNil)
+		var err error
+		p.Files()[0].PoolPath, err = s.packagePool.Import(inputPath, filename, &p.Files()[0].Checksums, false, s.cs)
+		c.Assert(err, IsNil)
+		p.UpdateFiles(p.Files())
+		c.Assert(s.packageCollection.Update(p), IsNil)
+		c.Assert(list.Add(p), IsNil)
+	}
+	local := NewLocalRepo("architecture-variant", "")
+	local.packageRefs = NewPackageRefListFromPackageList(list)
+	c.Assert(s.factory.LocalRepoCollection().Add(local), IsNil)
+	repo, err := NewPublishedRepo("", "variant-test", "test", architectures, []string{"main"}, []interface{}{local}, s.factory, false)
+	c.Assert(err, IsNil)
+	repo.SkipContents = true
+	c.Assert(repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, ""), IsNil)
+
+	root := filepath.Join(s.publishedStorage.PublicPath(), "variant-test")
+	releaseData, err := os.ReadFile(filepath.Join(root, "dists/test/Release"))
+	c.Assert(err, IsNil)
+	release, err := NewControlFileReader(bytes.NewReader(releaseData), true, false).ReadStanza()
+	c.Assert(err, IsNil)
+	c.Check(release["Architectures"], Equals, "amd64 amd64v3")
+
+	for _, arch := range []string{"amd64", "amd64v3"} {
+		filename := "example_1.0_" + arch + ".deb"
+		c.Check(filepath.Join(root, "pool/main/e/example", filename), PathExists)
+		indexPath := filepath.Join(root, "dists/test/main", "binary-"+arch, "Packages")
+		data, err := os.ReadFile(indexPath)
+		if !c.Check(err, IsNil, Commentf("index %s must exist", arch)) {
+			continue
+		}
+		reader := NewControlFileReader(bytes.NewReader(data), false, false)
+		var entries []Stanza
+		for {
+			entry, err := reader.ReadStanza()
+			c.Assert(err, IsNil)
+			if entry == nil {
+				break
+			}
+			entries = append(entries, entry)
+		}
+		c.Check(entries, HasLen, 1, Commentf("index %s must contain exactly one package", arch))
+		var filenames []string
+		for _, entry := range entries {
+			filenames = append(filenames, entry["Filename"])
+			c.Check(entry["Package"], Equals, "example")
+			c.Check(entry["Version"], Equals, "1.0")
+			c.Check(entry["Architecture"], Equals, "amd64")
+			if entry["Filename"] == "pool/main/e/example/example_1.0_amd64v3.deb" {
+				c.Check(entry["Architecture-Variant"], Equals, "amd64v3")
+			} else {
+				_, hasVariant := entry["Architecture-Variant"]
+				c.Check(hasVariant, Equals, false)
+			}
+		}
+		c.Check(filenames, DeepEquals, []string{"pool/main/e/example/" + filename}, Commentf("index %s package membership", arch))
+	}
+}
+
+func (s *PublishedRepoSuite) TestArchitectureVariantPublishAutoArchitectures(c *C) {
+	s.checkArchitectureVariantPublication(c, nil)
+}
+
+func (s *PublishedRepoSuite) TestArchitectureVariantPublishExplicitArchitectures(c *C) {
+	s.checkArchitectureVariantPublication(c, []string{"amd64", "amd64v3"})
+}
+
 func (s *PublishedRepoSuite) TestPublish(c *C) {
 	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
 	c.Assert(err, IsNil)

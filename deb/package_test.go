@@ -43,6 +43,66 @@ func (s *PackageSuite) TestNewFromPara(c *C) {
 	c.Check(p.deps.Depends, DeepEquals, []string{"libc6 (>= 2.7)", "alien-arena-data (>= 7.40)"})
 }
 
+func (s *PackageSuite) TestArchitectureVariantParsedSeparately(c *C) {
+	input, err := NewControlFileReader(bytes.NewBufferString("Package: example\nVersion: 1.0\nArchitecture: amd64\nArchitecture-Variant: amd64v3\nFilename: pool/example_1.0_amd64v3.deb\n"), false, false).ReadStanza()
+	c.Assert(err, IsNil)
+	p := NewPackageFromControlFile(input)
+
+	c.Check(p.Architecture, Equals, "amd64")
+	c.Check(p.ArchitectureVariant, Equals, "amd64v3")
+	_, inExtra := p.Extra()["Architecture-Variant"]
+	c.Check(inExtra, Equals, false)
+	c.Check(p.GetField("Architecture"), Equals, "amd64")
+	c.Check(p.GetField("Architecture-Variant"), Equals, "amd64v3")
+}
+
+func (s *PackageSuite) TestArchitectureVariantShortKey(c *C) {
+	input := Stanza{"Package": "example", "Version": "1.0", "Architecture": "amd64"}
+	normal := NewPackageFromControlFile(input.Copy())
+	input["Architecture-Variant"] = "amd64v3"
+	variant := NewPackageFromControlFile(input)
+
+	c.Check(normal.Architecture, Equals, "amd64")
+	c.Check(variant.Architecture, Equals, "amd64")
+	c.Check(string(normal.ShortKey("")), Equals, "Pamd64 example 1.0")
+	c.Check(string(variant.ShortKey("")), Equals, "Pamd64v3 example 1.0")
+	c.Check(string(variant.ShortKey("")), Not(Equals), string(normal.ShortKey("")))
+	c.Check(string(variant.ShortKey("xD")), Equals, "xDPamd64v3 example 1.0")
+}
+
+func (s *PackageSuite) TestArchitectureVariantKeyAndEquals(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64", V06Plus: true, FilesHash: 0x12345678}
+	variant := *normal
+	variant.ArchitectureVariant = "amd64v3"
+
+	c.Check(normal.IndexArchitecture(), Equals, "amd64")
+	c.Check(variant.IndexArchitecture(), Equals, "amd64v3")
+	c.Check(string(normal.Key("")), Equals, "Pamd64 example 1.0 12345678")
+	c.Check(string(variant.Key("")), Equals, "Pamd64v3 example 1.0 12345678")
+	c.Check(string(variant.Key("xD")), Equals, "xDPamd64v3 example 1.0 12345678")
+	c.Check(normal.Equals(&variant), Equals, false)
+	c.Check(variant.Equals(normal), Equals, false)
+	otherVariant := variant
+	c.Check(variant.Equals(&otherVariant), Equals, true)
+	otherVariant.ArchitectureVariant = "amd64v4"
+	c.Check(variant.Equals(&otherVariant), Equals, false)
+
+	variant.V06Plus = false
+	c.Check(string(variant.Key("")), Equals, "Pamd64v3 example 1.0")
+	c.Check(string(variant.Key("xD")), Equals, "xDPamd64v3 example 1.0")
+}
+
+func (s *PackageSuite) TestArchitectureVariantStanza(c *C) {
+	s.stanza["Architecture"] = "amd64"
+	s.stanza["Architecture-Variant"] = "amd64v3"
+	p := NewPackageFromControlFile(s.stanza)
+	stanza := p.Stanza()
+
+	c.Check(p.Architecture, Equals, "amd64")
+	c.Check(stanza["Architecture"], Equals, "amd64")
+	c.Check(stanza["Architecture-Variant"], Equals, "amd64v3")
+}
+
 func (s *PackageSuite) TestNewUdebFromPara(c *C) {
 	stanza, _ := NewControlFileReader(bytes.NewBufferString(udebPackageMeta), false, false).ReadStanza()
 	p := NewUdebPackageFromControlFile(stanza)
@@ -520,3 +580,39 @@ SHA256: bbb3a2cb07f741c3995b6d4bb08d772d83582b93a0236d4ea7736bc0370fc320`
 
 const installerPackageMeta = `9d8bb14044dee520f4706ab197dfff10e9e39ecb3c1a402331712154e8284b2e  ./MANIFEST.udebs
 dab96042d8e25e0f6bbb8d7c5bd78543afb5eb31a4a8b122ece68ab197228028  ./udeb.list`
+
+func (s *PackageSuite) TestArchitectureVariantMatchesIndexArchitecture(c *C) {
+	for _, tc := range []struct {
+		base, variant, target string
+		matches               bool
+	}{
+		{"amd64", "", "amd64", true},
+		{"amd64", "", "amd64v3", false},
+		{"amd64", "amd64v3", "amd64", false},
+		{"amd64", "amd64v3", "amd64v3", true},
+		{"all", "", "amd64", true},
+		{"all", "", "amd64v3", true},
+		{"all", "", "source", false},
+		{"source", "", "source", true},
+		{"source", "", "amd64v3", false},
+	} {
+		p := &Package{Architecture: tc.base, ArchitectureVariant: tc.variant, IsSource: tc.base == "source"}
+		c.Check(p.MatchesIndexArchitecture(tc.target), Equals, tc.matches, Commentf("base=%s variant=%s target=%s", tc.base, tc.variant, tc.target))
+	}
+	p := &Package{Architecture: "amd64", ArchitectureVariant: "amd64v3"}
+	c.Check(p.MatchesArchitecture("amd64"), Equals, true)
+	c.Check(p.MatchesArchitecture("amd64v3"), Equals, false)
+}
+
+func (s *PackageSuite) TestArchitectureVariantDisplayNames(c *C) {
+	for _, variant := range []string{"", "amd64v3"} {
+		p := &Package{Name: "test-package", Version: "1.0", Architecture: "amd64", ArchitectureVariant: variant}
+		expected := "test-package_1.0_amd64"
+		if variant != "" {
+			expected = "test-package_1.0_amd64v3"
+		}
+		c.Check(p.String(), Equals, expected)
+		c.Check(p.GetFullName(), Equals, expected)
+		c.Check(p.GetArchitecture(), Equals, "amd64")
+	}
+}
