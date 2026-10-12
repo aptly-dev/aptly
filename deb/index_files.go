@@ -22,6 +22,7 @@ type indexFiles struct {
 	suffix           string
 	indexes          map[string]*indexFile
 	acquireByHash    bool
+	byHashAlgorithms []string
 	skipBz2          bool
 }
 
@@ -111,7 +112,11 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	}
 
 	if file.acquireByHash {
-		for _, hash := range []string{"MD5Sum", "SHA1", "SHA256", "SHA512"} {
+		algorithms, algErr := file.parent.hashAlgorithms()
+		if algErr != nil {
+			return algErr
+		}
+		for _, hash := range algorithms {
 			err = file.parent.publishedStorage.MkDir(filepath.Join(filedir, "by-hash", hash))
 			if err != nil {
 				return fmt.Errorf("unable to create dir: %s", err)
@@ -133,8 +138,13 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 
 		if file.acquireByHash {
 			sums := file.parent.generatedFiles[file.relativePath+ext]
-			for hash, sum := range map[string]string{"SHA512": sums.SHA512, "SHA256": sums.SHA256, "SHA1": sums.SHA1, "MD5Sum": sums.MD5} {
-				err = packageIndexByHash(file, ext, hash, sum)
+			all := map[string]string{"SHA512": sums.SHA512, "SHA256": sums.SHA256, "SHA1": sums.SHA1, "MD5Sum": sums.MD5}
+			algorithms, algErr := file.parent.hashAlgorithms()
+			if algErr != nil {
+				return algErr
+			}
+			for _, hash := range algorithms {
+				err = packageIndexByHash(file, ext, hash, all[hash])
 				if err != nil {
 					return fmt.Errorf("unable to build hash file: %s", err)
 				}
@@ -183,6 +193,51 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	}
 
 	return nil
+}
+
+// knownHashAlgorithms are the algorithms aptly can write Acquire-By-Hash
+// entries for, in the order the entries are written.
+var knownHashAlgorithms = []string{"MD5Sum", "SHA1", "SHA256", "SHA512"}
+
+// hashAlgorithms is the set of Acquire-By-Hash algorithms to write entries for.
+// Empty means all of them, which is what aptly did before the set was
+// configurable, so an existing config behaves exactly as before.
+//
+// The order is knownHashAlgorithms' rather than the config's, so that the
+// directories created in one loop and the entries written in another always
+// agree whatever order the user listed.
+//
+// An unrecognised name is an error rather than something to skip. Skipping it
+// would turn a typo into "no by-hash entries for that algorithm", which looks
+// identical to having configured it away.
+func (files *indexFiles) hashAlgorithms() ([]string, error) {
+	if len(files.byHashAlgorithms) == 0 {
+		return knownHashAlgorithms, nil
+	}
+
+	wanted := make(map[string]bool, len(files.byHashAlgorithms))
+	for _, want := range files.byHashAlgorithms {
+		known := false
+		for _, k := range knownHashAlgorithms {
+			if k == want {
+				known = true
+				break
+			}
+		}
+		if !known {
+			return nil, fmt.Errorf("unknown Acquire-By-Hash algorithm %q, expected one of %v",
+				want, knownHashAlgorithms)
+		}
+		wanted[want] = true
+	}
+
+	ordered := make([]string, 0, len(wanted))
+	for _, known := range knownHashAlgorithms {
+		if wanted[known] {
+			ordered = append(ordered, known)
+		}
+	}
+	return ordered, nil
 }
 
 func packageIndexByHash(file *indexFile, ext string, hash string, sum string) error {
@@ -235,7 +290,7 @@ func packageIndexByHash(file *indexFile, ext string, hash string, sum string) er
 	return nil
 }
 
-func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, acquireByHash bool, skipBz2 bool) *indexFiles {
+func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, suffix string, acquireByHash bool, byHashAlgorithms []string, skipBz2 bool) *indexFiles {
 	return &indexFiles{
 		publishedStorage: publishedStorage,
 		basePath:         basePath,
@@ -245,6 +300,7 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 		suffix:           suffix,
 		indexes:          make(map[string]*indexFile),
 		acquireByHash:    acquireByHash,
+		byHashAlgorithms: byHashAlgorithms,
 		skipBz2:          skipBz2,
 	}
 }
