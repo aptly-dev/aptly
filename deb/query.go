@@ -169,10 +169,13 @@ func (q *FieldQuery) Matches(pkg PackageLike) bool {
 		return field != ""
 	case VersionEqual:
 		return CompareVersions(field, q.Value) == 0
+	// 2 is returned when a package with an invalid version is detected; setting boundary for VersionGreater and VersionGreaterOrEqual cases
 	case VersionGreater:
-		return CompareVersions(field, q.Value) > 0
+		result := CompareVersions(field, q.Value)
+		return result > 0 && result < 2
 	case VersionGreaterOrEqual:
-		return CompareVersions(field, q.Value) >= 0
+		result := CompareVersions(field, q.Value)
+		return result >= 0 && result < 2
 	case VersionLess:
 		return CompareVersions(field, q.Value) < 0
 	case VersionLessOrEqual:
