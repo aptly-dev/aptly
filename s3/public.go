@@ -576,5 +576,14 @@ func (storage *PublishedStorage) ReadLink(path string) (string, error) {
 		return "", err
 	}
 
-	return output.Metadata["SymLink"], nil
+	// S3 lowercases user metadata keys, so the value SymLink writes as
+	// "SymLink" is returned as "symlink" and a case-sensitive lookup finds
+	// nothing. Matched case-insensitively so either spelling resolves.
+	for key, value := range output.Metadata {
+		if strings.EqualFold(key, "SymLink") {
+			return value, nil
+		}
+	}
+
+	return "", nil
 }
