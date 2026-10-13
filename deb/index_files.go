@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
@@ -442,15 +443,48 @@ func (files *indexFiles) FinalizeAll(progress aptly.Progress, signer pgp.Signer)
 	return
 }
 
-func (files *indexFiles) RenameFiles() error {
-	var err error
+// How many index renames are in flight at once. Every rename is a round trip,
+// and on an S3 backend it is a CopyObject followed by a DeleteObject, so a
+// publish rewriting a dozen indexes spent most of its wall clock waiting on
+// them one at a time. Four matches the default used for concurrent package
+// uploads.
+const renameConcurrency = 4
 
+func (files *indexFiles) RenameFiles() error {
+	type renamePair struct{ oldName, newName string }
+
+	pairs := make([]renamePair, 0, len(files.renameMap))
 	for oldName, newName := range files.renameMap {
-		err = files.publishedStorage.RenameFile(oldName, newName)
-		if err != nil {
-			return fmt.Errorf("unable to rename: %s", err)
-		}
+		pairs = append(pairs, renamePair{oldName, newName})
 	}
 
-	return nil
+	var (
+		wg       sync.WaitGroup
+		mu       sync.Mutex
+		firstErr error
+	)
+	sem := make(chan struct{}, renameConcurrency)
+
+	for _, pair := range pairs {
+		wg.Add(1)
+
+		go func(pair renamePair) {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			if err := files.publishedStorage.RenameFile(pair.oldName, pair.newName); err != nil {
+				mu.Lock()
+				if firstErr == nil {
+					firstErr = fmt.Errorf("unable to rename: %s", err)
+				}
+				mu.Unlock()
+			}
+		}(pair)
+	}
+
+	wg.Wait()
+
+	return firstErr
 }
