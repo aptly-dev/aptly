@@ -436,11 +436,11 @@ func (context *AptlyContext) GetPublishedStorage(name string) (aptly.PublishedSt
 			}
 
 			var err error
-			publishedStorage, err = s3.NewPublishedStorage(
+			publishedStorage, err = s3.NewPublishedStorageWithUploadConcurrency(
 				params.AccessKeyID, params.SecretAccessKey, params.SessionToken,
 				params.Region, params.Endpoint, params.Bucket, params.ACL, params.Prefix, params.StorageClass,
 				params.EncryptionMethod, params.PlusWorkaround, params.DisableMultiDel,
-				params.ForceSigV2, params.ForceVirtualHostedStyle, params.Debug)
+				params.ForceSigV2, params.ForceVirtualHostedStyle, params.UploadConcurrency, params.Debug)
 			if err != nil {
 				return nil, err
 			}

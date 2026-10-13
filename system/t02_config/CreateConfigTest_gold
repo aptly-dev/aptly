@@ -281,6 +281,10 @@ s3_publish_endpoints:
     #     # Disable path style visit, useful with non-AWS S3-compatible object stores
     #     # which only support virtual hosted style
     #     force_virtualhosted_style: false
+    #     # Upload Concurrency (optional)
+    #     # Maximum number of package files uploaded concurrently (up to 128), defaults to 4.
+    #     # Set to 1 to upload package files sequentially.
+    #     upload_concurrency: 4
     #     # Debug (optional)
     #     # Enables detailed request/response dump for each S3 operation
     #     debug: false

@@ -42,21 +42,24 @@ func (l *logger) Logf(classification logging.Classification, format string, v ..
 
 // PublishedStorage abstract file system with published files (actually hosted on S3)
 type PublishedStorage struct {
-	s3               *s3.Client
-	config           *aws.Config
-	bucket           string
-	acl              types.ObjectCannedACL
-	prefix           string
-	storageClass     types.StorageClass
-	encryptionMethod types.ServerSideEncryption
-	plusWorkaround   bool
-	disableMultiDel  bool
-	pathCache        map[string]string
-	pathCacheMutex   sync.RWMutex
+	s3                *s3.Client
+	config            *aws.Config
+	bucket            string
+	acl               types.ObjectCannedACL
+	prefix            string
+	storageClass      types.StorageClass
+	encryptionMethod  types.ServerSideEncryption
+	plusWorkaround    bool
+	disableMultiDel   bool
+	uploadConcurrency int
+	pathCache         map[string]string
+	pathCacheMutex    sync.RWMutex
 
 	// True if the bucket encrypts objects by default.
 	encryptByDefault bool
 }
+
+const defaultUploadConcurrency = 4
 
 // Check interface
 var (
@@ -93,14 +96,15 @@ func NewPublishedStorageRaw(
 			o.HTTPSignerV4 = signer.NewSigner()
 			o.BaseEndpoint = baseEndpoint
 		}),
-		bucket:           bucket,
-		config:           config,
-		acl:              acl,
-		prefix:           prefix,
-		storageClass:     types.StorageClass(storageClass),
-		encryptionMethod: types.ServerSideEncryption(encryptionMethod),
-		plusWorkaround:   plusWorkaround,
-		disableMultiDel:  disabledMultiDel,
+		bucket:            bucket,
+		config:            config,
+		acl:               acl,
+		prefix:            prefix,
+		storageClass:      types.StorageClass(storageClass),
+		encryptionMethod:  types.ServerSideEncryption(encryptionMethod),
+		plusWorkaround:    plusWorkaround,
+		disableMultiDel:   disabledMultiDel,
+		uploadConcurrency: defaultUploadConcurrency,
 	}
 
 	result.setKMSFlag()
@@ -127,8 +131,8 @@ func (storage *PublishedStorage) setKMSFlag() {
 // keys, region and bucket name
 func NewPublishedStorage(
 	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
-	plusWorkaround, disableMultiDel, _, forceVirtualHostedStyle, debug bool) (*PublishedStorage, error) {
-
+	plusWorkaround, disableMultiDel, _, forceVirtualHostedStyle, debug bool,
+) (*PublishedStorage, error) {
 	opts := []func(*config.LoadOptions) error{config.WithRegion(region)}
 	if accessKey != "" {
 		opts = append(opts, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, sessionToken)))
@@ -147,6 +151,27 @@ func NewPublishedStorage(
 		encryptionMethod, plusWorkaround, disableMultiDel, forceVirtualHostedStyle, &config, endpoint)
 
 	return result, err
+}
+
+// NewPublishedStorageWithUploadConcurrency creates published storage with bounded concurrent package uploads.
+func NewPublishedStorageWithUploadConcurrency(
+	accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix, storageClass, encryptionMethod string,
+	plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle bool, uploadConcurrency int, debug bool,
+) (*PublishedStorage, error) {
+	if uploadConcurrency < 0 || uploadConcurrency > 128 {
+		return nil, fmt.Errorf("upload concurrency must be between 0 and 128")
+	}
+	storage, err := NewPublishedStorage(accessKey, secretKey, sessionToken, region, endpoint, bucket, defaultACL, prefix,
+		storageClass, encryptionMethod, plusWorkaround, disableMultiDel, forceSigV2, forceVirtualHostedStyle, debug)
+	if err == nil && uploadConcurrency > 0 {
+		storage.uploadConcurrency = uploadConcurrency
+	}
+	return storage, err
+}
+
+// UploadConcurrency returns the maximum number of concurrent package uploads.
+func (storage *PublishedStorage) UploadConcurrency() int {
+	return storage.uploadConcurrency
 }
 
 // String returns the storage as string
@@ -339,8 +364,8 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 //
 // LinkFromPool returns relative path for the published file to be included in package index
 func (storage *PublishedStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string, sourcePool aptly.PackagePool,
-	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
-
+	sourcePath string, sourceChecksums utils.ChecksumInfo, force bool,
+) error {
 	publishedDirectory := filepath.Join(publishedPrefix, publishedRelPath)
 	relPath := filepath.Join(publishedDirectory, fileName)
 	poolPath := filepath.Join(storage.prefix, relPath)
@@ -500,7 +525,6 @@ func (storage *PublishedStorage) RenameFile(oldName, newName string) error {
 
 // SymLink creates a copy of src file and adds link information as meta data
 func (storage *PublishedStorage) SymLink(src string, dst string) error {
-
 	params := &s3.CopyObjectInput{
 		Bucket:     aws.String(storage.bucket),
 		CopySource: aws.String(filepath.Join(storage.bucket, storage.prefix, src)),

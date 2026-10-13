@@ -201,6 +201,7 @@ type S3PublishRoot struct {
 	DisableMultiDel         bool   `json:"disableMultiDel"            yaml:"disable_multidel"`
 	ForceSigV2              bool   `json:"forceSigV2"                 yaml:"force_sigv2"`
 	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"    yaml:"force_virtualhosted_style"`
+	UploadConcurrency       int    `json:"uploadConcurrency,omitempty" yaml:"upload_concurrency,omitempty"`
 	Debug                   bool   `json:"debug"                      yaml:"debug"`
 }
 
