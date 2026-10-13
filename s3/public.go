@@ -58,9 +58,13 @@ type PublishedStorage struct {
 	encryptByDefault bool
 }
 
+// Amazon S3 accepts at most 1,000 keys in a DeleteObjects request.
+const maxDeleteObjectsPerRequest = 1000
+
 // Check interface
 var (
-	_ aptly.PublishedStorage = (*PublishedStorage)(nil)
+	_ aptly.PublishedStorage            = (*PublishedStorage)(nil)
+	_ aptly.PublishedStorageBulkRemover = (*PublishedStorage)(nil)
 )
 
 // NewPublishedStorageRaw creates published storage from raw aws credentials
@@ -262,7 +266,7 @@ func (storage *PublishedStorage) Remove(path string) error {
 
 // RemoveDirs removes directory structure under public path
 func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error {
-	const page = 1000
+	const page = maxDeleteObjectsPerRequest
 
 	filelist, _, err := storage.internalFilelist(path, false)
 	if err != nil {
@@ -325,6 +329,76 @@ func (storage *PublishedStorage) RemoveDirs(path string, _ aptly.Progress) error
 			}
 			storage.pathCacheMutex.Unlock()
 		}
+	}
+
+	return nil
+}
+
+// RemoveFiles removes multiple files under public path.
+func (storage *PublishedStorage) RemoveFiles(paths []string) error {
+	if storage.disableMultiDel {
+		for _, path := range paths {
+			if err := storage.Remove(path); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if storage.plusWorkaround {
+		expanded := make([]string, 0, len(paths))
+		for _, path := range paths {
+			expanded = append(expanded, path)
+			if strings.Contains(path, "+") {
+				expanded = append(expanded, strings.ReplaceAll(path, "+", " "))
+			}
+		}
+		paths = expanded
+	}
+
+	var failures []string
+	for offset := 0; offset < len(paths); offset += maxDeleteObjectsPerRequest {
+		part := paths[offset:min(offset+maxDeleteObjectsPerRequest, len(paths))]
+		objects := make([]types.ObjectIdentifier, len(part))
+		for i, path := range part {
+			objects[i] = types.ObjectIdentifier{
+				Key: aws.String(filepath.Join(storage.prefix, path)),
+			}
+		}
+
+		quiet := true
+		output, err := storage.s3.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+			Bucket: aws.String(storage.bucket),
+			Delete: &types.Delete{
+				Objects: objects,
+				Quiet:   &quiet,
+			},
+		})
+		if err != nil {
+			var notFoundErr *smithy.GenericAPIError
+			if errors.As(err, &notFoundErr) && notFoundErr.Code == "NoSuchBucket" {
+				return nil
+			}
+			return fmt.Errorf("error deleting multiple paths from %s: %s", storage, err)
+		}
+		failed := make(map[string]struct{}, len(output.Errors))
+		for _, failure := range output.Errors {
+			key := aws.ToString(failure.Key)
+			failed[key] = struct{}{}
+			failures = append(failures, fmt.Sprintf("%s: %s: %s", key,
+				aws.ToString(failure.Code), aws.ToString(failure.Message)))
+		}
+		storage.pathCacheMutex.Lock()
+		for _, path := range part {
+			if _, failed := failed[filepath.Join(storage.prefix, path)]; !failed {
+				delete(storage.pathCache, path)
+			}
+		}
+		storage.pathCacheMutex.Unlock()
+
+	}
+	if len(failures) != 0 {
+		return fmt.Errorf("errors deleting multiple paths from %s: %s", storage, strings.Join(failures, "; "))
 	}
 
 	return nil

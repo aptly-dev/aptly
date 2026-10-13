@@ -70,6 +70,26 @@ func (p *FakeStorageProvider) GetPublishedStorage(name string) (aptly.PublishedS
 	return storage, nil
 }
 
+type recordingBulkPublishedStorage struct {
+	aptly.PublishedStorage
+	removed []string
+	err     error
+}
+
+func (s *recordingBulkPublishedStorage) RemoveFiles(paths []string) error {
+	s.removed = append(s.removed, paths...)
+	return s.err
+}
+
+type failingRemovePublishedStorage struct {
+	aptly.PublishedStorage
+	err error
+}
+
+func (s *failingRemovePublishedStorage) Remove(string) error {
+	return s.err
+}
+
 type PublishedRepoSuite struct {
 	PackageListMixinSuite
 	repo, repo2, repo3, repo4, repo5    *PublishedRepo
@@ -1026,6 +1046,35 @@ func (s *PublishedRepoRemoveSuite) TestRemoveFilesWithPrefixRoot(c *C) {
 	c.Check(filepath.Join(s.publishedStorage.PublicPath(), "pool/main"), Not(PathExists))
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/dists/osminog"), PathExists)
 	c.Check(filepath.Join(s.publishedStorage2.PublicPath(), "ppa/pool/contrib"), PathExists)
+}
+
+func (s *PublishedRepoRemoveSuite) TestCleanupPrefixComponentFilesRemovalRouting(c *C) {
+	orphan := filepath.Join("ppa", "pool", "main", "orphan.deb")
+	orphanPath := filepath.Join(s.publishedStorage.PublicPath(), orphan)
+	c.Assert(os.WriteFile(orphanPath, []byte("orphan"), 0644), IsNil)
+
+	err := s.collection.CleanupPrefixComponentFiles(s.provider, s.repo1, []string{"main"}, s.factory, nil)
+	c.Check(err, IsNil)
+	c.Check(orphanPath, Not(PathExists))
+
+	c.Assert(os.WriteFile(orphanPath, []byte("orphan"), 0644), IsNil)
+	bulkStorage := &recordingBulkPublishedStorage{PublishedStorage: s.publishedStorage}
+	s.provider.storages[""] = bulkStorage
+
+	err = s.collection.CleanupPrefixComponentFiles(s.provider, s.repo1, []string{"main"}, s.factory, nil)
+	c.Check(err, IsNil)
+	c.Check(bulkStorage.removed, DeepEquals, []string{orphan})
+
+	bulkStorage.err = errors.New("bulk removal failed")
+	err = s.collection.CleanupPrefixComponentFiles(s.provider, s.repo1, []string{"main"}, s.factory, nil)
+	c.Check(err, ErrorMatches, "bulk removal failed")
+
+	s.provider.storages[""] = &failingRemovePublishedStorage{
+		PublishedStorage: s.publishedStorage,
+		err:              errors.New("single removal failed"),
+	}
+	err = s.collection.CleanupPrefixComponentFiles(s.provider, s.repo1, []string{"main"}, s.factory, nil)
+	c.Check(err, ErrorMatches, "single removal failed")
 }
 
 func (s *PublishedRepoRemoveSuite) TestRemoveRepo1and2(c *C) {
