@@ -51,3 +51,16 @@ func (s *SnapshotsSuite) TestGetSnapshotsReturns500OnCorruptRefList(c *C) {
 	c.Assert(response.Code, Equals, 500)
 	c.Assert(response.Body.String(), Matches, ".*msgpack.*|.*decode.*")
 }
+
+func (s *SnapshotsSuite) TestGetSnapshotsHandlesConcurrentDeletion(c *C) {
+	collection := s.context.NewCollectionFactory().SnapshotCollection()
+	snapshot := deb.NewSnapshotFromRefList("deleted-snapshot-list", nil, makePackageRefList(c), "")
+	c.Assert(collection.Add(snapshot), IsNil)
+	// Simulate concurrent deletion by dropping the ref key or entire snapshot record
+	c.Assert(collection.Drop(snapshot), IsNil)
+
+	response, err := s.HTTPRequest("GET", "/api/snapshots", nil)
+	c.Assert(err, IsNil)
+	c.Assert(response.Code, Equals, 200)
+}
+
