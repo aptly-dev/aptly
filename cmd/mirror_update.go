@@ -104,7 +104,11 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("unable to update: %s", err)
 		}
-		context.Progress().Printf("Keeping %d latest version(s) of each package: %d -> %d.\n", maxVersions, oldLen, newLen)
+		versionWord := "versions"
+		if maxVersions == 1 {
+			versionWord = "version"
+		}
+		context.Progress().Printf("Keeping at most %d %s of each package: %d -> %d.\n", maxVersions, versionWord, oldLen, newLen)
 	}
 
 	var (
