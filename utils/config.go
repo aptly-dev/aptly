@@ -83,10 +83,12 @@ type LocalPoolStorage struct {
 type PackagePoolStorage struct {
 	Local *LocalPoolStorage
 	Azure *AzureEndpoint
+	S3    *S3PublishRoot
 }
 
 var AZURE = "azure"
 var LOCAL = "local"
+var S3 = "s3"
 
 func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
 	var discriminator struct {
@@ -101,6 +103,9 @@ func (pool *PackagePoolStorage) UnmarshalJSON(data []byte) error {
 	case AZURE:
 		pool.Azure = &AzureEndpoint{}
 		return json.Unmarshal(data, &pool.Azure)
+	case S3:
+		pool.S3 = &S3PublishRoot{}
+		return json.Unmarshal(data, &pool.S3)
 	case LOCAL, "":
 		pool.Local = &LocalPoolStorage{}
 		return json.Unmarshal(data, &pool.Local)
@@ -121,6 +126,9 @@ func (pool *PackagePoolStorage) UnmarshalYAML(unmarshal func(interface{}) error)
 	case AZURE:
 		pool.Azure = &AzureEndpoint{}
 		return unmarshal(&pool.Azure)
+	case S3:
+		pool.S3 = &S3PublishRoot{}
+		return unmarshal(&pool.S3)
 	case LOCAL, "":
 		pool.Local = &LocalPoolStorage{}
 		return unmarshal(&pool.Local)
@@ -130,39 +138,53 @@ func (pool *PackagePoolStorage) UnmarshalYAML(unmarshal func(interface{}) error)
 }
 
 func (pool *PackagePoolStorage) MarshalJSON() ([]byte, error) {
-	var wrapper struct {
-		Type string `json:"type,omitempty"`
-		*LocalPoolStorage
-		*AzureEndpoint
-	}
+	switch {
+	case pool.S3 != nil:
+		return json.Marshal(struct {
+			Type string `json:"type"`
+			*S3PublishRoot
+		}{S3, pool.S3})
 
-	if pool.Azure != nil {
-		wrapper.Type = "azure"
-		wrapper.AzureEndpoint = pool.Azure
-	} else if pool.Local.Path != "" {
-		wrapper.Type = "local"
-		wrapper.LocalPoolStorage = pool.Local
-	}
+	case pool.Azure != nil:
+		return json.Marshal(struct {
+			Type string `json:"type"`
+			*AzureEndpoint
+		}{AZURE, pool.Azure})
 
-	return json.Marshal(wrapper)
+	case pool.Local != nil && pool.Local.Path != "":
+		return json.Marshal(struct {
+			Type string `json:"type"`
+			*LocalPoolStorage
+		}{LOCAL, pool.Local})
+
+	default:
+		return json.Marshal(struct{}{})
+	}
 }
 
 func (pool PackagePoolStorage) MarshalYAML() (interface{}, error) {
-	var wrapper struct {
-		Type              string `yaml:"type,omitempty"`
-		*LocalPoolStorage `yaml:",inline"`
-		*AzureEndpoint    `yaml:",inline"`
-	}
+	switch {
+	case pool.S3 != nil:
+		return struct {
+			Type           string `yaml:"type"`
+			*S3PublishRoot `yaml:",inline"`
+		}{S3, pool.S3}, nil
 
-	if pool.Azure != nil {
-		wrapper.Type = "azure"
-		wrapper.AzureEndpoint = pool.Azure
-	} else if pool.Local.Path != "" {
-		wrapper.Type = "local"
-		wrapper.LocalPoolStorage = pool.Local
-	}
+	case pool.Azure != nil:
+		return struct {
+			Type           string `yaml:"type"`
+			*AzureEndpoint `yaml:",inline"`
+		}{AZURE, pool.Azure}, nil
 
-	return wrapper, nil
+	case pool.Local != nil && pool.Local.Path != "":
+		return struct {
+			Type              string `yaml:"type"`
+			*LocalPoolStorage `yaml:",inline"`
+		}{LOCAL, pool.Local}, nil
+
+	default:
+		return struct{}{}, nil
+	}
 }
 
 // FileSystemPublishRoot describes single filesystem publishing entry point
