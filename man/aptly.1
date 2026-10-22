@@ -804,7 +804,11 @@ do not check file existence for packages listed in the internal database of the 
 .
 .TP
 \-\fBlatest\fR
-download only latest version of each package (per architecture)
+download only latest version of each package (per architecture), same as \-max\-versions=1
+.
+.TP
+\-\fBmax\-versions\fR=0
+download only the N most recent versions of each package (per architecture), 0 means all versions
 .
 .SH "RENAMES MIRROR"
 \fBaptly\fR \fBmirror\fR \fBrename\fR \fIold\-name\fR \fInew\-name\fR

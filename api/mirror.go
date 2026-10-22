@@ -520,8 +520,10 @@ type mirrorUpdateParams struct {
 	ForceUpdate bool `            json:"ForceUpdate"`
 	// Set "true" to skip downloading already downloaded packages
 	SkipExistingPackages bool `   json:"SkipExistingPackages"`
-	// Set "true" to download only the latest version per package/architecture
+	// Set "true" to download only the latest version per package/architecture (same as `MaxVersions`: 1)
 	LatestOnly bool `             json:"LatestOnly"`
+	// Download only the N most recent versions per package/architecture, 0 means all versions
+	MaxVersions int `             json:"MaxVersions"            example:"5"`
 }
 
 // @Summary Update Mirror
@@ -571,6 +573,14 @@ func apiMirrorsUpdate(c *gin.Context) {
 			AbortWithJSONError(c, 409, fmt.Errorf("unable to rename: mirror %s already exists", b.Name))
 			return
 		}
+	}
+
+	if b.MaxVersions < 0 {
+		AbortWithJSONError(c, 400, fmt.Errorf("MaxVersions should be a positive number"))
+		return
+	}
+	if b.LatestOnly && b.MaxVersions == 0 {
+		b.MaxVersions = 1
 	}
 
 	verifier, err := getVerifier(b.Keyrings)
@@ -639,8 +649,15 @@ func apiMirrorsUpdate(c *gin.Context) {
 			}
 		}
 
+		if b.MaxVersions > 0 {
+			_, _, err := remote.FilterLatest(b.MaxVersions)
+			if err != nil {
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
+			}
+		}
+
 		queue, downloadSize, err := remote.BuildDownloadQueue(context.PackagePool(), taskCollectionFactory.PackageCollection(),
-			taskCollectionFactory.ChecksumCollection(nil), b.SkipExistingPackages, b.LatestOnly)
+			taskCollectionFactory.ChecksumCollection(nil), b.SkipExistingPackages)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to update: %s", err)
 		}
