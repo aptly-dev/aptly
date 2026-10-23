@@ -457,6 +457,17 @@ func (s *RemoteRepoSuite) TestFilterLatest(c *C) {
 	c.Check(size, Equals, int64(187518))
 }
 
+func (s *RemoteRepoSuite) TestFilterLatestErrors(c *C) {
+	_, _, err := s.repo.FilterLatest(1)
+	c.Assert(err, ErrorMatches, "package list is empty, please \\(re\\)download package indexes")
+
+	s.repo.packageList = NewPackageList()
+	oldLen, newLen, err := s.repo.FilterLatest(0)
+	c.Assert(err, ErrorMatches, "number of latest versions should be at least 1, got 0")
+	c.Check(oldLen, Equals, 0)
+	c.Check(newLen, Equals, 0)
+}
+
 func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	s.repo.Architectures = []string{"i386"}
 	s.repo.DownloadSources = true
