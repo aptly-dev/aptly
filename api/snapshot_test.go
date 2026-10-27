@@ -14,9 +14,12 @@ type SnapshotsSuite struct {
 var _ = Suite(&SnapshotsSuite{})
 
 func (s *SnapshotsSuite) TestGetSnapshotsIncludesNumPackages(c *C) {
-	collection := s.context.NewCollectionFactory().SnapshotCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
+	reflistCollection := collectionFactory.RefListCollection()
+
 	snapshot := deb.NewSnapshotFromRefList("count-snapshot-list", nil, makePackageRefList(c), "")
-	c.Assert(collection.Add(snapshot), IsNil)
+	c.Assert(collection.Add(snapshot, reflistCollection), IsNil)
 
 	response, err := s.HTTPRequest("GET", "/api/snapshots", nil)
 	c.Assert(err, IsNil)
@@ -41,9 +44,12 @@ func (s *SnapshotsSuite) TestGetSnapshotsIncludesNumPackages(c *C) {
 }
 
 func (s *SnapshotsSuite) TestGetSnapshotsReturns500OnCorruptRefList(c *C) {
-	collection := s.context.NewCollectionFactory().SnapshotCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
+	reflistCollection := collectionFactory.RefListCollection()
+
 	snapshot := deb.NewSnapshotFromRefList("broken-snapshot-list", nil, makePackageRefList(c), "")
-	c.Assert(collection.Add(snapshot), IsNil)
+	c.Assert(collection.Add(snapshot, reflistCollection), IsNil)
 	putRawDBValue(c, &s.APISuite, snapshot.RefKey(), []byte("not-msgpack"))
 
 	response, err := s.HTTPRequest("GET", "/api/snapshots", nil)

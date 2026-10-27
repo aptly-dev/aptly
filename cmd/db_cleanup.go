@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
+	"github.com/aptly-dev/aptly/database"
 	"github.com/aptly-dev/aptly/deb"
 	"github.com/aptly-dev/aptly/utils"
 	"github.com/smira/commander"
@@ -22,14 +23,21 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 
 	verbose := context.Flags().Lookup("verbose").Value.Get().(bool)
 	dryRun := context.Flags().Lookup("dry-run").Value.Get().(bool)
+	revertSplitRefLists := context.Flags().Lookup("revert-split-reflists").Value.Get().(bool)
 	collectionFactory := context.NewCollectionFactory()
 
-	// collect information about references packages...
-	existingPackageRefs := deb.NewPackageRefList()
+	// collect information about references packages and their reflistbuckets...
+	rs := deb.NewSplitRefSet(deb.RefSetOptions{})
+	existingBuckets := deb.NewRefListDigestSet()
 	referencedAppStreamFiles := []string{}
 
 	// used only in verbose mode to report package use source
 	packageRefSources := map[string][]string{}
+
+	reflistMigration := collectionFactory.RefListCollection().NewMigration(deb.RefListMigrationOptions{
+		DryRun: dryRun,
+		Revert: revertSplitRefLists,
+	})
 
 	context.Progress().ColoredPrintf("@{w!}Loading mirrors, local repos, snapshots and published repos...@|")
 	if verbose {
@@ -40,20 +48,23 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
 
-		e := collectionFactory.RemoteRepoCollection().LoadComplete(repo)
-		if e != nil {
+		sl := deb.NewSplitRefList()
+		e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, repo.RefKey(), reflistMigration)
+		if e != nil && e != database.ErrNotFound {
 			return e
 		}
-		if repo.RefList() != nil {
-			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
 
-			if verbose {
-				description := fmt.Sprintf("mirror %s", repo.Name)
-				_ = repo.RefList().ForEach(func(key []byte) error {
-					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
-					return nil
-				})
-			}
+		rs.AddList(sl)
+		if !revertSplitRefLists {
+			existingBuckets.AddAllInRefList(sl)
+		}
+
+		if verbose {
+			description := fmt.Sprintf("mirror %s", repo.Name)
+			_ = sl.ForEach(func(key []byte) error {
+				packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+				return nil
+			})
 		}
 
 		for _, poolPath := range repo.AppStreamFiles {
@@ -76,21 +87,23 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", repo.Name)
 		}
 
-		e := collectionFactory.LocalRepoCollection().LoadComplete(repo)
-		if e != nil {
+		sl := deb.NewSplitRefList()
+		e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, repo.RefKey(), reflistMigration)
+		if e != nil && e != database.ErrNotFound {
 			return e
 		}
 
-		if repo.RefList() != nil {
-			existingPackageRefs = existingPackageRefs.Merge(repo.RefList(), false, true)
+		rs.AddList(sl)
+		if !revertSplitRefLists {
+			existingBuckets.AddAllInRefList(sl)
+		}
 
-			if verbose {
-				description := fmt.Sprintf("local repo %s", repo.Name)
-				_ = repo.RefList().ForEach(func(key []byte) error {
-					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
-					return nil
-				})
-			}
+		if verbose {
+			description := fmt.Sprintf("local repo %s", repo.Name)
+			_ = sl.ForEach(func(key []byte) error {
+				packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
+				return nil
+			})
 		}
 
 		return nil
@@ -109,16 +122,20 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			context.Progress().ColoredPrintf("- @{g}%s@|", snapshot.Name)
 		}
 
-		e := collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		sl := deb.NewSplitRefList()
+		e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, snapshot.RefKey(), reflistMigration)
 		if e != nil {
 			return e
 		}
 
-		existingPackageRefs = existingPackageRefs.Merge(snapshot.RefList(), false, true)
+		rs.AddList(sl)
+		if !revertSplitRefLists {
+			existingBuckets.AddAllInRefList(sl)
+		}
 
 		if verbose {
 			description := fmt.Sprintf("snapshot %s", snapshot.Name)
-			_ = snapshot.RefList().ForEach(func(key []byte) error {
+			_ = sl.ForEach(func(key []byte) error {
 				packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 				return nil
 			})
@@ -146,17 +163,29 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 		if published.SourceKind != deb.SourceLocalRepo {
 			return nil
 		}
-		e := collectionFactory.PublishedRepoCollection().LoadComplete(published, collectionFactory)
-		if e != nil {
-			return e
-		}
 
 		for _, component := range published.Components() {
-			existingPackageRefs = existingPackageRefs.Merge(published.RefList(component), false, true)
+			sl := deb.NewSplitRefList()
+			e := collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, published.RefKey(component), reflistMigration)
+			if e != nil {
+				// < 0.6 saving w/o component name
+				if e == database.ErrNotFound && len(published.Sources) == 1 {
+					e = collectionFactory.RefListCollection().LoadCompleteAndMigrate(sl, published.RefKey(""), reflistMigration)
+				}
+				if e != nil {
+					return e
+				}
+			}
+
+			rs.AddList(sl)
+			if !revertSplitRefLists {
+				existingBuckets.AddAllInRefList(sl)
+			}
+
 			if verbose {
 				description := fmt.Sprintf("published repository %s:%s/%s component %s",
 					published.Storage, published.Prefix, published.Distribution, component)
-				_ = published.RefList(component).ForEach(func(key []byte) error {
+				_ = sl.ForEach(func(key []byte) error {
 					packageRefSources[string(key)] = append(packageRefSources[string(key)], description)
 					return nil
 				})
@@ -170,10 +199,40 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 
 	collectionFactory.Flush()
 
+	err = reflistMigration.Flush()
+	if err != nil {
+		return err
+	}
+
+	if verbose {
+		if stats := reflistMigration.Stats(); stats.Reflists > 0 {
+			if revertSplitRefLists {
+				if !dryRun {
+					context.Progress().ColoredPrintf("@{w!}Converted %d split reflist(s) to inline@|", stats.Reflists)
+				} else {
+					context.Progress().ColoredPrintf(
+						"@{y!}Skipped converting %d split reflist(s) to inline, as -dry-run has been requested.@|",
+						stats.Reflists)
+				}
+
+			} else {
+				if !dryRun {
+					context.Progress().ColoredPrintf("@{w!}Split %d reflist(s) into %d bucket(s) (%d segment(s))@|",
+						stats.Reflists, stats.Buckets, stats.Segments)
+				} else {
+					context.Progress().ColoredPrintf(
+						"@{y!}Skipped splitting %d reflist(s) into %d bucket(s) (%d segment(s)), as -dry-run has been requested.@|",
+						stats.Reflists, stats.Buckets, stats.Segments)
+				}
+			}
+		}
+	}
+
 	// ... and compare it to the list of all packages
 	context.Progress().ColoredPrintf("@{w!}Loading list of all packages...@|")
 	allPackageRefs := collectionFactory.PackageCollection().AllPackageRefs()
 
+	existingPackageRefs := rs.ToFlattenedRefList()
 	toDelete := allPackageRefs.Subtract(existingPackageRefs)
 
 	// delete packages that are no longer referenced
@@ -209,6 +268,32 @@ func aptlyDBCleanup(cmd *commander.Command, args []string) error {
 			}
 		} else {
 			context.Progress().ColoredPrintf("@{y!}Skipped deletion, as -dry-run has been requested.@|")
+		}
+	}
+
+	bucketsToDelete, err := collectionFactory.RefListCollection().AllBucketDigests()
+	if err != nil {
+		return err
+	}
+
+	bucketsToDelete.RemoveAll(existingBuckets)
+
+	context.Progress().ColoredPrintf("@{r!}Deleting unreferenced reflist buckets (%d)...@|", bucketsToDelete.Len())
+	if bucketsToDelete.Len() > 0 {
+		if !dryRun {
+			batch := db.CreateBatch()
+			err := bucketsToDelete.ForEach(func(digest []byte) error {
+				return collectionFactory.RefListCollection().UnsafeDropBucket(digest, batch)
+			})
+			if err != nil {
+				return err
+			}
+
+			if err := batch.Write(); err != nil {
+				return err
+			}
+		} else {
+			context.Progress().ColoredPrintf("@{y!}Skipped reflist deletion, as -dry-run has been requested.@|")
 		}
 	}
 
@@ -319,6 +404,8 @@ Example:
 
 	cmd.Flag.Bool("verbose", false, "be verbose when loading objects/removing them")
 	cmd.Flag.Bool("dry-run", false, "don't delete anything")
+	cmd.Flag.Bool("revert-split-reflists", false,
+		"convert split reflists back to inline, for use with older aptly versions")
 
 	return cmd
 }
