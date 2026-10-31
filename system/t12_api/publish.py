@@ -75,7 +75,7 @@ class PublishAPITestRepo(APITest):
         self.check_exists(
             "public/" + prefix + "/pool/main/b/boost-defaults/libboost-program-options-dev_1.49.0.1_i386.deb")
 
-        # publishing under root, custom distribution, architectures
+        # publishing under root, custom distribution, architectures, codename
         distribution = self.random_name()
         task = self.post_task(
             "/api/publish/:.",
@@ -85,13 +85,14 @@ class PublishAPITestRepo(APITest):
                  "Signing": DefaultSigningOptions,
                  "Distribution": distribution,
                  "Architectures": ["i386", "amd64"],
+                 "Codename": distribution,
             }
         )
         self.check_task(task)
         repo2_expected = {
             'AcquireByHash': False,
             'Architectures': ['amd64', 'i386'],
-            'Codename': '',
+            'Codename': distribution,
             'Distribution': distribution,
             'Label': '',
             'Origin': '',
