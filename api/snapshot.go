@@ -36,6 +36,9 @@ func apiSnapshotsList(c *gin.Context) {
 	err := collection.ForEachSorted(SortMethodString, func(snapshot *deb.Snapshot) error {
 		err := collection.LoadComplete(snapshot)
 		if err != nil {
+			if err == database.ErrNotFound {
+				return nil
+			}
 			return err
 		}
 
