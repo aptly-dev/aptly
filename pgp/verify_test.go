@@ -15,16 +15,25 @@ type VerifierSuite struct {
 	multisigBothVerifier Verifier
 }
 
-// The partial-keyring fixtures were generated with GnuPG 2.4:
+// The partial-keyring fixtures were generated with GnuPG 2.4 at a fixed time
+// so they remain valid under the CI faketime window (2025-01-02):
 //
-//	gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'Aptly multisign known fixture <known@fixture.invalid>' rsa2048 sign 0
-//	gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'Aptly multisign unknown fixture <unknown@fixture.invalid>' rsa2048 sign 0
-//	gpg --export 2B5E1D91576341AF44C600E130AD2886ED58775C 32F003A216681D4CC810FA2198B5301EB1FA1317 > multisig-both.gpg
-//	gpg --export 2B5E1D91576341AF44C600E130AD2886ED58775C > multisig-one.gpg
-//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --detach-sign --output multisig.signature multisig.text
-//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --clearsign --output multisig.clearsigned multisig.text
-//	gpg --local-user 2B5E1D91576341AF44C600E130AD2886ED58775C --detach-sign --output multisig-known-good.signature multisig.text
-//	gpg --local-user 32F003A216681D4CC810FA2198B5301EB1FA1317 --detach-sign --output multisig-known-bad.signature multisig-bad.text
+//	gpg --batch --pinentry-mode loopback --passphrase '' \
+//	  --faked-system-time 20250101T000000 \
+//	  --quick-generate-key 'Aptly multisign known fixture <known@fixture.invalid>' rsa2048 sign 0
+//	gpg --batch --pinentry-mode loopback --passphrase '' \
+//	  --faked-system-time 20250101T000000 \
+//	  --quick-generate-key 'Aptly multisign unknown fixture <unknown@fixture.invalid>' rsa2048 sign 0
+//	gpg --export <FPR_known> <FPR_unknown> > multisig-both.gpg
+//	gpg --export <FPR_known> > multisig-one.gpg
+//	gpg --local-user <FPR_known> --local-user <FPR_unknown> \
+//	  --detach-sign --output multisig.signature multisig.text
+//	gpg --local-user <FPR_known> --local-user <FPR_unknown> \
+//	  --clearsign --output multisig.clearsigned multisig.text
+//	gpg --local-user <FPR_known> --detach-sign --output multisig-known-good.signature multisig.text
+//	gpg --local-user <FPR_unknown> --detach-sign --output multisig-known-bad.signature multisig-bad.text
+//
+// Replace <FPR_known> and <FPR_unknown> with the actual fingerprints from step 2.
 //
 // multisig-bad.text was made by changing multisig.text after signing it.
 
@@ -58,7 +67,7 @@ func (s *VerifierSuite) TestVerifyClearsigned(c *C) {
 
 	keyInfo, err := s.multisigBothVerifier.VerifyClearsigned(clearsigned, false)
 	c.Assert(err, IsNil)
-	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"30AD2886ED58775C", "98B5301EB1FA1317"})
+	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"853E869DF7F44986", "13D9046EB6A825A5"})
 	c.Check(keyInfo.MissingKeys, DeepEquals, []Key(nil))
 }
 
@@ -69,8 +78,8 @@ func (s *VerifierSuite) TestVerifyClearsignedPartialKeyring(c *C) {
 
 	keyInfo, err := s.multisigOneVerifier.VerifyClearsigned(clearsigned, false)
 	c.Assert(err, IsNil)
-	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"30AD2886ED58775C"})
-	c.Check(keyInfo.MissingKeys, DeepEquals, []Key{"98B5301EB1FA1317"})
+	c.Check(keyInfo.GoodKeys, DeepEquals, []Key{"853E869DF7F44986"})
+	c.Check(keyInfo.MissingKeys, DeepEquals, []Key{"13D9046EB6A825A5"})
 }
 
 func (s *VerifierSuite) TestVerifyDetachedPartialKeyring(c *C) {
