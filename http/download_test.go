@@ -109,6 +109,16 @@ func (s *DownloaderSuite) TestDownloadWithChecksum(c *C) {
 	c.Check(checksums.SHA512, Equals, "bac18bf4e564856369acc2ed57300fecba3a2c1af5ae8304021e4252488678feb18118466382ee4e1210fe1f065080210e453a80cfb37ccb8752af3269df160e")
 }
 
+func (s *DownloaderSuite) TestNewRequestEscapesPlus(c *C) {
+	d := s.d.(*downloaderImpl)
+
+	req, err := d.newRequest(s.ctx, "GET", s.url+"/test/pkg_1.0+dfsg-1_amd64.deb?a=b")
+	c.Assert(err, IsNil)
+	c.Check(req.URL.RequestURI(), Equals, "/test/pkg_1.0%2bdfsg-1_amd64.deb?a=b")
+	// the host must stay visible, it ends up in error messages
+	c.Check(req.URL.String(), Equals, s.url+"/test/pkg_1.0%2bdfsg-1_amd64.deb?a=b")
+}
+
 func (s *DownloaderSuite) TestDownload404(c *C) {
 	c.Assert(s.d.Download(s.ctx, s.url+"/doesntexist", s.tempfile.Name()),
 		ErrorMatches, "HTTP code 404.*")
