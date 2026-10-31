@@ -16,6 +16,7 @@
     "serveInAPIMode": true,
     "enableMetricsEndpoint": true,
     "enableSwaggerEndpoint": false,
+    "enablePprofEndpoint": false,
     "AsyncAPI": false,
     "databaseBackend": {
         "type": "",
