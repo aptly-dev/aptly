@@ -409,6 +409,52 @@ func (s *PublishedStorageSuite) TestSymLink(c *C) {
 	c.Skip("copy not available in s3test")
 }
 
+func (s *PublishedStorageSuite) TestReadLinkMetadataKeyIsCaseInsensitive(c *C) {
+	// S3 lowercases user metadata keys, so a value written as "SymLink" comes
+	// back as "symlink". A case-sensitive map lookup therefore returns "" with
+	// a nil error, which reads as "this is not a link" rather than as failure.
+	//
+	// deb.packageIndexByHash relies on ReadLink to find the physical file its
+	// .old pointer refers to, and removes it before rotating. With "" returned
+	// the Remove is a no-op whose error is discarded, so every superseded
+	// by-hash index file is left behind. On a live S3-backed archive that is
+	// one leaked object per index per hash algorithm per publish, forever;
+	// filesystem backends are unaffected because they have real symlinks.
+	//
+	// Written with PutObject rather than SymLink because the test server has
+	// no CopyObject, which is why TestSymLink above is skipped and why this
+	// path was never covered.
+	_, err := s.storage.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:   aws.String("test"),
+		Key:      aws.String("a/b.link"),
+		Body:     bytes.NewReader([]byte("test")),
+		Metadata: map[string]string{"symlink": "a/b"},
+	})
+	c.Assert(err, IsNil)
+
+	link, err := s.storage.ReadLink("a/b.link")
+	c.Check(err, IsNil)
+	c.Check(link, Equals, "a/b")
+}
+
+func (s *PublishedStorageSuite) TestReadLinkOnPlainObject(c *C) {
+	// An object that is not a link has no SymLink metadata, and ReadLink
+	// returns an empty string with a nil error rather than failing.
+	// packageIndexByHash relies on that: it calls ReadLink on a path it has
+	// only just confirmed exists, and treats an error as "leave it alone".
+	s.PutFile(c, "a/plain", []byte("test"))
+
+	link, err := s.storage.ReadLink("a/plain")
+	c.Check(err, IsNil)
+	c.Check(link, Equals, "")
+
+	// A HeadObject that fails is an error, not an empty link. The two are
+	// distinguishable so a caller can tell "this is not a link" from "I could
+	// not find out".
+	_, err = s.noSuchBucketStorage.ReadLink("a/plain")
+	c.Check(err, NotNil)
+}
+
 func (s *PublishedStorageSuite) TestFileExists(c *C) {
 	s.PutFile(c, "a/b", []byte("test"))
 
