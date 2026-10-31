@@ -1098,3 +1098,34 @@ class PublishRepo39Test(BaseTest):
         self.check_equal(first_release, self.read_file('public/dists/maverick/Release'))
         self.check_equal(first_release_gpg, self.read_file('public/dists/maverick/Release.gpg'))
         self.check_equal(first_inrelease, self.read_file('public/dists/maverick/InRelease'))
+
+
+class PublishRepo40Test(BaseTest):
+    """
+    publish repo: skeleton files with multiple components
+    """
+    fixtureCmds = [
+        "aptly repo create repo1",
+        "aptly repo create repo2",
+        "aptly repo add repo1 ${files}/libboost-program-options-dev_1.49.0.1_i386.deb",
+        "aptly repo add repo2 ${files}/pyspi-0.6.1-1.3.stripped.dsc",
+    ]
+    runCmd = "aptly publish repo -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -component=main,contrib -distribution=maverick -skip-contents repo1 repo2"
+    gold_processor = BaseTest.expand_environ
+
+    def prepare_fixture(self):
+        super(PublishRepo40Test, self).prepare_fixture()
+
+        self.write_file(os.path.join('skel', 'dists', 'maverick', 'main', 'dep11',
+                                     'Components-amd64.yml'), 'main dep11 payload')
+        self.write_file(os.path.join('skel', 'dists', 'maverick', 'contrib', 'dep11',
+                                     'Components-amd64.yml'), 'contrib dep11 payload')
+
+    def check(self):
+        super(PublishRepo40Test, self).check()
+
+        # each skeleton file is emitted once per publish, not once per component
+        self.check_equal(self.read_file('public/dists/maverick/main/dep11/Components-amd64.yml'),
+                         'main dep11 payload')
+        self.check_equal(self.read_file('public/dists/maverick/contrib/dep11/Components-amd64.yml'),
+                         'contrib dep11 payload')
