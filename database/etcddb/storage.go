@@ -14,6 +14,21 @@ type EtcDStorage struct {
 	tmpPrefix string // prefix for temporary DBs
 }
 
+func (s *EtcDStorage) GetRecommendedMaxKVSize() int {
+	// Trying to use the etcd page size here (akin to the goleveldb backend)
+	// doesn't give any performance gains, and I haven't observed any particular
+	// gains from larger sizes either. However, etcd itself does *effectively*
+	// have a limit of 1.5MiB, which is customizable and bumped from 1MiB as of
+	// v3.3:
+	//
+	// https://github.com/etcd-io/etcd/blob/b9ba05c8ec9aba815bf4736e79c9448e9fed7c1a/CHANGELOG/CHANGELOG-3.3.md#api
+	//
+	// A batch defaults to a max of 128 ops, so in order to avoid overfilling,
+	// then we need to max out around 8KiB (8KiB * 128 = 1MiB, then an extra .5MiB
+	// for whatever else needs to go there).
+	return 8 * 1024
+}
+
 // CreateTemporary creates new DB of the same type in temp dir
 func (s *EtcDStorage) CreateTemporary() (database.Storage, error) {
 	tmp := uuid.NewString()

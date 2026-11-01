@@ -25,7 +25,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 	command := cmd.Parent.Name()
 	collectionFactory := context.NewCollectionFactory()
 
-	var reflist *deb.PackageRefList
+	var reflist *deb.SplitRefList
 
 	if command == "snapshot" { // nolint: goconst
 		var snapshot *deb.Snapshot
@@ -34,7 +34,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 			return fmt.Errorf("unable to search: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot)
+		err = collectionFactory.SnapshotCollection().LoadComplete(snapshot, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to search: %s", err)
 		}
@@ -47,7 +47,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 			return fmt.Errorf("unable to search: %s", err)
 		}
 
-		err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+		err = collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to search: %s", err)
 		}
@@ -60,7 +60,7 @@ func aptlySnapshotMirrorRepoSearch(cmd *commander.Command, args []string) error 
 			return fmt.Errorf("unable to search: %s", err)
 		}
 
-		err = collectionFactory.LocalRepoCollection().LoadComplete(repo)
+		err = collectionFactory.LocalRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to search: %s", err)
 		}

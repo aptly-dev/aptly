@@ -37,7 +37,7 @@ func aptlyMirrorRename(cmd *commander.Command, args []string) error {
 	}
 
 	repo.Name = newName
-	err = collectionFactory.RemoteRepoCollection().Update(repo)
+	err = collectionFactory.RemoteRepoCollection().Update(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to rename: %s", err)
 	}
