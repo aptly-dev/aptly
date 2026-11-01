@@ -173,20 +173,21 @@ func (l *PackageList) ForEach(handler func(*Package) error) error {
 }
 
 // FilterLatest creates a copy of the package list containing only the
-// latest version for each package name/architecture pair.
-func (l *PackageList) FilterLatest() (*PackageList, error) {
+// count latest versions for each package name/architecture pair.
+func (l *PackageList) FilterLatest(count int) (*PackageList, error) {
 	if l == nil {
 		return nil, fmt.Errorf("package list is nil")
 	}
 
-	filtered := make(map[string]*Package, l.Len())
+	if count < 1 {
+		return nil, fmt.Errorf("number of latest versions should be at least 1, got %d", count)
+	}
+
+	groups := make(map[string][]*Package, l.Len())
 
 	err := l.ForEach(func(p *Package) error {
 		key := p.Architecture + "|" + p.Name
-
-		if existing, found := filtered[key]; !found || CompareVersions(p.Version, existing.Version) > 0 {
-			filtered[key] = p
-		}
+		groups[key] = append(groups[key], p)
 
 		return nil
 	})
@@ -194,11 +195,26 @@ func (l *PackageList) FilterLatest() (*PackageList, error) {
 		return nil, err
 	}
 
-	result := NewPackageListWithDuplicates(l.duplicatesAllowed, len(filtered))
+	result := NewPackageListWithDuplicates(l.duplicatesAllowed, len(groups)*count)
 
-	for _, pkg := range filtered {
-		if err = result.Add(pkg); err != nil {
-			return nil, err
+	for _, pkgs := range groups {
+		// sort from latest to oldest
+		sort.Slice(pkgs, func(i, j int) bool {
+			return CompareVersions(pkgs[i].Version, pkgs[j].Version) > 0
+		})
+
+		versions := 0
+		for i, p := range pkgs {
+			if i == 0 || CompareVersions(p.Version, pkgs[i-1].Version) != 0 {
+				versions++
+				if versions > count {
+					break
+				}
+			}
+
+			if err = result.Add(p); err != nil {
+				return nil, err
+			}
 		}
 	}
 

@@ -322,7 +322,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -349,7 +349,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -370,7 +370,7 @@ func (s *RemoteRepoSuite) TestDownload(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -397,7 +397,7 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3)+int64(len(exampleInstallerManifestFile)))
 	c.Check(queue, HasLen, 2)
@@ -423,7 +423,7 @@ func (s *RemoteRepoSuite) TestDownloadWithInstaller(c *C) {
 	c.Check(pkg.Name, Equals, "installer")
 }
 
-func (s *RemoteRepoSuite) TestBuildDownloadQueueLatestOnly(c *C) {
+func (s *RemoteRepoSuite) TestFilterLatest(c *C) {
 	s.repo.Architectures = []string{"i386"}
 
 	err := s.repo.Fetch(s.downloader, nil, true)
@@ -445,11 +445,27 @@ func (s *RemoteRepoSuite) TestBuildDownloadQueueLatestOnly(c *C) {
 	newest := NewPackageFromControlFile(stanza)
 	_ = s.repo.packageList.Add(newest)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, true)
+	oldLen, newLen, err := s.repo.FilterLatest(1)
+	c.Assert(err, IsNil)
+	c.Check(oldLen, Equals, 2)
+	c.Check(newLen, Equals, 1)
+
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(queue, HasLen, 1)
 	c.Check(queue[0].File.DownloadURL(), Equals, "pool/main/a/amanda/amanda-client_3.4.0-1_i386.deb")
 	c.Check(size, Equals, int64(187518))
+}
+
+func (s *RemoteRepoSuite) TestFilterLatestErrors(c *C) {
+	_, _, err := s.repo.FilterLatest(1)
+	c.Assert(err, ErrorMatches, "package list is empty, please \\(re\\)download package indexes")
+
+	s.repo.packageList = NewPackageList()
+	oldLen, newLen, err := s.repo.FilterLatest(0)
+	c.Assert(err, ErrorMatches, "number of latest versions should be at least 1, got 0")
+	c.Check(oldLen, Equals, 0)
+	c.Check(newLen, Equals, 0)
 }
 
 func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
@@ -470,7 +486,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err := s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -514,7 +530,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -539,7 +555,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSources(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(s.downloader.Empty(), Equals, true)
 
-	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err = s.repo.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -563,7 +579,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -591,7 +607,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -613,7 +629,7 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(3))
 	c.Check(queue, HasLen, 1)
@@ -644,7 +660,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)
@@ -690,7 +706,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, true)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(0))
 	c.Check(queue, HasLen, 0)
@@ -716,7 +732,7 @@ func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(downloader.Empty(), Equals, true)
 
-	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false, false)
+	queue, size, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
 	c.Assert(err, IsNil)
 	c.Check(size, Equals, int64(15))
 	c.Check(queue, HasLen, 4)

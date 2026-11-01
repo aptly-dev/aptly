@@ -524,11 +524,53 @@ func (s *PackageListSuite) TestFilterLatest(c *C) {
 	sharedPkg := NewPackageFromControlFile(shared)
 	_ = list.Add(sharedPkg)
 
-	filtered, err := list.FilterLatest()
+	filtered, err := list.FilterLatest(1)
 	c.Assert(err, IsNil)
 	c.Assert(filtered.Len(), Equals, 2)
 	c.Check(filtered.Has(newerPkg), Equals, true)
 	c.Check(filtered.Has(sharedPkg), Equals, true)
+}
+
+func (s *PackageListSuite) TestFilterLatestMultiple(c *C) {
+	list := NewPackageList()
+
+	pkgs := make([]*Package, 0, 4)
+	for _, version := range []string{"2.0", "1.0", "10.0", "1:0.1"} {
+		stanza := packageStanza.Copy()
+		stanza["Version"] = version
+		pkg := NewPackageFromControlFile(stanza)
+		_ = list.Add(pkg)
+		pkgs = append(pkgs, pkg)
+	}
+
+	shared := packageStanza.Copy()
+	shared["Architecture"] = ArchitectureAll
+	shared["Version"] = "3.0"
+	shared["Package"] = "shared"
+	sharedPkg := NewPackageFromControlFile(shared)
+	_ = list.Add(sharedPkg)
+
+	filtered, err := list.FilterLatest(3)
+	c.Assert(err, IsNil)
+	c.Assert(filtered.Len(), Equals, 4)
+	c.Check(filtered.Has(pkgs[0]), Equals, true)
+	c.Check(filtered.Has(pkgs[1]), Equals, false)
+	c.Check(filtered.Has(pkgs[2]), Equals, true)
+	c.Check(filtered.Has(pkgs[3]), Equals, true)
+	c.Check(filtered.Has(sharedPkg), Equals, true)
+
+	// fewer versions available than requested: everything is kept
+	filtered, err = list.FilterLatest(5)
+	c.Assert(err, IsNil)
+	c.Check(filtered.Len(), Equals, 5)
+}
+
+func (s *PackageListSuite) TestFilterLatestInvalidCount(c *C) {
+	list := NewPackageList()
+
+	filtered, err := list.FilterLatest(0)
+	c.Assert(err, ErrorMatches, "number of latest versions should be at least 1, got 0")
+	c.Assert(filtered, IsNil)
 }
 
 func (s *PackageListSuite) TestFilterLatestPreservesDuplicatesFlag(c *C) {
@@ -540,7 +582,7 @@ func (s *PackageListSuite) TestFilterLatestPreservesDuplicatesFlag(c *C) {
 	another["Version"] = "7.41-1"
 	_ = list.Add(NewPackageFromControlFile(another))
 
-	filtered, err := list.FilterLatest()
+	filtered, err := list.FilterLatest(1)
 	c.Assert(err, IsNil)
 	c.Assert(filtered.duplicatesAllowed, Equals, true)
 }
@@ -548,7 +590,7 @@ func (s *PackageListSuite) TestFilterLatestPreservesDuplicatesFlag(c *C) {
 func (s *PackageListSuite) TestFilterLatestNil(c *C) {
 	var list *PackageList
 
-	filtered, err := list.FilterLatest()
+	filtered, err := list.FilterLatest(1)
 	c.Assert(err, ErrorMatches, "package list is nil")
 	c.Assert(filtered, IsNil)
 }

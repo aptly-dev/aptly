@@ -372,3 +372,47 @@ class MirrorsAPITestEditFlatMirrorUdebs(APITest):
         resp = self.post("/api/mirrors/" + mirror_name, json=edit_params)
         self.check_equal(resp.status_code, 400)
         self.check_in("flat mirrors don't support udebs", resp.json()['error'])
+
+
+class MirrorsAPITestUpdateMaxVersions(APITest):
+    """
+    PUT /api/mirrors/:name with MaxVersions and LatestOnly
+    """
+    def check(self):
+        mirror_name = self.random_name()
+        mirror_desc = {'Name': mirror_name,
+                       'ArchiveURL': 'http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/',
+                       'Distribution': 'wheezy',
+                       'Architectures': ["amd64"],
+                       'Components': ['main'],
+                       'IgnoreSignatures': True}
+
+        resp = self.post("/api/mirrors", json=mirror_desc)
+        self.check_equal(resp.status_code, 201)
+
+        def versions_per_package():
+            resp = self.get("/api/mirrors/" + mirror_name + "/packages")
+            self.check_equal(resp.status_code, 200)
+            versions = {}
+            for key in resp.json():
+                arch, name, version = key.split(" ")[:3]
+                versions.setdefault((arch, name), []).append(version)
+            return versions
+
+        resp = self.put("/api/mirrors/" + mirror_name, json={'IgnoreSignatures': True, 'MaxVersions': -1})
+        self.check_equal(resp.status_code, 400)
+        self.check_in("MaxVersions should be a positive number", resp.json()['error'])
+
+        resp = self.put_task("/api/mirrors/" + mirror_name, json={'IgnoreSignatures': True, 'MaxVersions': 2})
+        self.check_task(resp)
+
+        versions = versions_per_package()
+        self.check_equal(sorted(versions[("Pamd64", "varnish")]), ["3.0.6-1~wheezy", "3.0.7-1~wheezy"])
+        self.check_equal(max(len(v) for v in versions.values()), 2)
+
+        resp = self.put_task("/api/mirrors/" + mirror_name, json={'IgnoreSignatures': True, 'LatestOnly': True})
+        self.check_task(resp)
+
+        versions = versions_per_package()
+        self.check_equal(versions[("Pamd64", "varnish")], ["3.0.7-1~wheezy"])
+        self.check_equal(max(len(v) for v in versions.values()), 1)
