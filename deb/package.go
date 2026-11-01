@@ -405,19 +405,19 @@ func (p *Package) MatchesDependency(dep Dependency) bool {
 }
 
 func versionSatisfiesDependency(version string, dep Dependency) bool {
-	r := CompareVersions(version, dep.Version)
+	r, err := CompareVersions(version, dep.Version)
 
 	switch dep.Relation {
 	case VersionEqual:
-		return r == 0
+		return err == nil && r == 0
 	case VersionLess:
-		return r < 0
+		return err == nil && r < 0
 	case VersionGreater:
-		return r > 0
+		return err == nil && r > 0
 	case VersionLessOrEqual:
-		return r <= 0
+		return err == nil && r <= 0
 	case VersionGreaterOrEqual:
-		return r >= 0
+		return err == nil && r >= 0
 	case VersionPatternMatch:
 		matched, err := filepath.Match(dep.Version, version)
 		return err == nil && matched
