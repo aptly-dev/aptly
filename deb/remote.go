@@ -682,6 +682,11 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 	emptyList := NewPackageList()
 	emptyList.PrepareIndex()
 
+	architectures := repo.packageList.Architectures(false)
+	if len(architectures) == 0 {
+		architectures = repo.Architectures
+	}
+
 	oldLen = repo.packageList.Len()
 	repo.packageList, err = repo.packageList.Filter(FilterOptions{
 		Queries:           []PackageQuery{filterQuery},
@@ -689,7 +694,7 @@ func (repo *RemoteRepo) ApplyFilter(dependencyOptions int, filterQuery PackageQu
 		Source:            emptyList,
 		WithSources:       repo.DownloadSources,
 		DependencyOptions: dependencyOptions,
-		Architectures:     repo.Architectures,
+		Architectures:     architectures,
 		Progress:          progress,
 	})
 	if repo.packageList != nil {

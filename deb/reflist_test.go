@@ -398,3 +398,104 @@ func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	c.Check(toStrSlice(result), DeepEquals,
 		[]string{"Pi386 dpkg 1.6", "Pi386 lib 1.2"})
 }
+
+func (s *PackageRefListSuite) TestArchitectureVariantCoexistence(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64", V06Plus: true}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3", V06Plus: true}
+	c.Assert(s.list.Add(normal), IsNil)
+	c.Assert(s.list.Add(variant), IsNil)
+
+	refs := NewPackageRefListFromPackageList(s.list)
+	c.Check(toStrSlice(refs), DeepEquals, []string{
+		"Pamd64 example 1.0 00000000",
+		"Pamd64v3 example 1.0 00000000",
+	})
+	c.Check(refs.Has(normal), Equals, true)
+	c.Check(refs.Has(variant), Equals, true)
+}
+
+func (s *PackageRefListSuite) TestArchitectureVariantMerge(c *C) {
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64", V06Plus: true}
+	variant := &Package{Name: "example", Version: "1.0", Architecture: "amd64", ArchitectureVariant: "amd64v3", V06Plus: true}
+	left, right := NewPackageList(), NewPackageList()
+	c.Assert(left.Add(normal), IsNil)
+	c.Assert(right.Add(variant), IsNil)
+	leftRefs := NewPackageRefListFromPackageList(left)
+	rightRefs := NewPackageRefListFromPackageList(right)
+
+	for _, overrideMatching := range []bool{false, true} {
+		for _, ignoreConflicting := range []bool{false, true} {
+			for _, reverse := range []bool{false, true} {
+				l, r := leftRefs, rightRefs
+				if reverse {
+					l, r = r, l
+				}
+				merged := l.Merge(r, overrideMatching, ignoreConflicting)
+				c.Check(toStrSlice(merged), DeepEquals, []string{
+					"Pamd64 example 1.0 00000000",
+					"Pamd64v3 example 1.0 00000000",
+				}, Commentf("overrideMatching=%v ignoreConflicting=%v reverse=%v", overrideMatching, ignoreConflicting, reverse))
+			}
+		}
+	}
+}
+
+func (s *PackageRefListSuite) TestArchitectureVariantFilterLatestRefs(c *C) {
+	for _, variant := range []string{"", "amd64v3"} {
+		for _, version := range []string{"1.0", "2.0"} {
+			c.Assert(s.list.Add(&Package{
+				Name: "example", Version: version, Architecture: "amd64", ArchitectureVariant: variant, V06Plus: true,
+			}), IsNil)
+		}
+	}
+	refs := NewPackageRefListFromPackageList(s.list)
+	c.Assert(refs.Len(), Equals, 4)
+	refs.FilterLatestRefs()
+	c.Check(toStrSlice(refs), DeepEquals, []string{
+		"Pamd64 example 2.0 00000000",
+		"Pamd64v3 example 2.0 00000000",
+	})
+}
+
+func (s *PackageRefListSuite) TestArchitectureVariantDiffCompaction(c *C) {
+	db, err := goleveldb.NewOpenDB(c.MkDir())
+	c.Assert(err, IsNil)
+	defer func() { c.Check(db.Close(), IsNil) }()
+	coll := NewPackageCollection(db)
+
+	normal := &Package{Name: "example", Version: "1.0", Architecture: "amd64", V06Plus: true}
+	// Equal and differing versions must both remain separate additions/removals.
+	for _, version := range []string{"1.0", "2.0"} {
+		variant := &Package{Name: "example", Version: version, Architecture: "amd64", ArchitectureVariant: "amd64v3", V06Plus: true}
+		c.Assert(coll.Update(normal), IsNil)
+		c.Assert(coll.Update(variant), IsNil)
+		left, right := NewPackageList(), NewPackageList()
+		c.Assert(left.Add(normal), IsNil)
+		c.Assert(right.Add(variant), IsNil)
+		leftRefs := NewPackageRefListFromPackageList(left)
+		rightRefs := NewPackageRefListFromPackageList(right)
+
+		for _, reverse := range []bool{false, true} {
+			l, r := leftRefs, rightRefs
+			if reverse {
+				l, r = r, l
+			}
+			diff, err := l.Diff(r, coll)
+			c.Assert(err, IsNil)
+			context := Commentf("variant version=%s reverse=%v", version, reverse)
+			c.Check(diff, HasLen, 2, context)
+			var removed, added []string
+			for _, entry := range diff {
+				c.Check(entry.Left != nil && entry.Right != nil, Equals, false, context)
+				if entry.Left != nil {
+					removed = append(removed, string(entry.Left.Key("")))
+				}
+				if entry.Right != nil {
+					added = append(added, string(entry.Right.Key("")))
+				}
+			}
+			c.Check(removed, DeepEquals, toStrSlice(l), context)
+			c.Check(added, DeepEquals, toStrSlice(r), context)
+		}
+	}
+}

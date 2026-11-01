@@ -879,7 +879,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	if !p.rePublishing {
 		if len(p.Architectures) == 0 {
 			for _, list := range lists {
-				p.Architectures = append(p.Architectures, list.Architectures(true)...)
+				p.Architectures = append(p.Architectures, list.IndexArchitectures(true)...)
 			}
 		}
 
@@ -937,7 +937,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			}
 
 			for _, arch := range p.Architectures {
-				if pkg.MatchesArchitecture(arch) {
+				if pkg.MatchesIndexArchitecture(arch) {
 					hadUdebs = hadUdebs || pkg.IsUdeb
 
 					var relPath string
@@ -975,7 +975,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			batch := tempDB.CreateBatch()
 
 			for _, arch := range p.Architectures {
-				if pkg.MatchesArchitecture(arch) {
+				if pkg.MatchesIndexArchitecture(arch) {
 					var bufWriter *bufio.Writer
 
 					if !p.SkipContents && !pkg.IsInstaller {

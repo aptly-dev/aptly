@@ -16,9 +16,10 @@ import (
 // Package is single instance of Debian package
 type Package struct {
 	// Basic package properties
-	Name         string
-	Version      string
-	Architecture string
+	Name                string
+	Version             string
+	Architecture        string
+	ArchitectureVariant string
 	// If this source package, this field holds "real" architecture value,
 	// while Architecture would be equal to "source"
 	SourceArchitecture string
@@ -68,16 +69,18 @@ var (
 // NewPackageFromControlFile creates Package from parsed Debian control file
 func NewPackageFromControlFile(input Stanza) *Package {
 	result := &Package{
-		Name:         input["Package"],
-		Version:      input["Version"],
-		Architecture: input["Architecture"],
-		Source:       input["Source"],
-		V06Plus:      true,
+		Name:                input["Package"],
+		Version:             input["Version"],
+		Architecture:        input["Architecture"],
+		ArchitectureVariant: input["Architecture-Variant"],
+		Source:              input["Source"],
+		V06Plus:             true,
 	}
 
 	delete(input, "Package")
 	delete(input, "Version")
 	delete(input, "Architecture")
+	delete(input, "Architecture-Variant")
 	delete(input, "Source")
 
 	filesize, _ := strconv.ParseInt(input["Size"], 10, 64)
@@ -213,10 +216,18 @@ func NewInstallerPackageFromControlFile(input Stanza, repo *RemoteRepo, componen
 	return p, nil
 }
 
+// IndexArchitecture returns the variant when present, otherwise the base architecture.
+func (p *Package) IndexArchitecture() string {
+	if p.ArchitectureVariant != "" {
+		return p.ArchitectureVariant
+	}
+	return p.Architecture
+}
+
 // Key returns unique key identifying package
 func (p *Package) Key(prefix string) []byte {
 	if p.V06Plus {
-		return []byte(fmt.Sprintf("%sP%s %s %s %08x", prefix, p.Architecture, p.Name, p.Version, p.FilesHash))
+		return []byte(fmt.Sprintf("%sP%s %s %s %08x", prefix, p.IndexArchitecture(), p.Name, p.Version, p.FilesHash))
 	}
 
 	return p.ShortKey(prefix)
@@ -224,12 +235,12 @@ func (p *Package) Key(prefix string) []byte {
 
 // ShortKey returns key for the package that should be unique in one list
 func (p *Package) ShortKey(prefix string) []byte {
-	return []byte(fmt.Sprintf("%sP%s %s %s", prefix, p.Architecture, p.Name, p.Version))
+	return []byte(fmt.Sprintf("%sP%s %s %s", prefix, p.IndexArchitecture(), p.Name, p.Version))
 }
 
 // String creates readable representation
 func (p *Package) String() string {
-	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.Architecture)
+	return fmt.Sprintf("%s_%s_%s", p.Name, p.Version, p.IndexArchitecture())
 }
 
 // ExtendedStanza returns package stanza enhanced with aptly-specific fields
@@ -292,6 +303,8 @@ func (p *Package) GetField(name string) string {
 			return p.SourceArchitecture
 		}
 		return p.Architecture
+	case "Architecture-Variant":
+		return p.ArchitectureVariant
 	case "Source":
 		return p.Source
 	case "Depends":
@@ -337,6 +350,14 @@ func (p *Package) MatchesArchitecture(arch string) bool {
 	}
 
 	return p.Architecture == arch
+}
+
+// MatchesIndexArchitecture checks membership in a repository index architecture.
+func (p *Package) MatchesIndexArchitecture(arch string) bool {
+	if p.Architecture == ArchitectureAll && arch != ArchitectureSource {
+		return true
+	}
+	return p.IndexArchitecture() == arch
 }
 
 func JoinErrors(errs ...error) error {
@@ -437,7 +458,7 @@ func (p *Package) GetName() string {
 
 // GetFullName returns the package full name
 func (p *Package) GetFullName() string {
-	return strings.Join([]string{p.Name, p.Version, p.Architecture}, "_")
+	return strings.Join([]string{p.Name, p.Version, p.IndexArchitecture()}, "_")
 }
 
 // GetVersion returns package version
@@ -594,6 +615,9 @@ func (p *Package) Stanza() (result Stanza) {
 		result["Architecture"] = p.SourceArchitecture
 	} else {
 		result["Architecture"] = p.Architecture
+		if p.ArchitectureVariant != "" {
+			result["Architecture-Variant"] = p.ArchitectureVariant
+		}
 		if p.Source != "" {
 			result["Source"] = p.Source
 		}
@@ -682,7 +706,7 @@ func (p *Package) Stanza() (result Stanza) {
 func (p *Package) Equals(p2 *Package) bool {
 	return p.Name == p2.Name && p.Version == p2.Version && p.SourceArchitecture == p2.SourceArchitecture &&
 		p.Architecture == p2.Architecture && p.Source == p2.Source && p.IsSource == p2.IsSource &&
-		p.FilesHash == p2.FilesHash
+		p.ArchitectureVariant == p2.ArchitectureVariant && p.FilesHash == p2.FilesHash
 }
 
 // LinkFromPool links package file from pool to dist's pool location

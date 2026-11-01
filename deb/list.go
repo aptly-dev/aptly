@@ -182,7 +182,7 @@ func (l *PackageList) FilterLatest() (*PackageList, error) {
 	filtered := make(map[string]*Package, l.Len())
 
 	err := l.ForEach(func(p *Package) error {
-		key := p.Architecture + "|" + p.Name
+		key := p.IndexArchitecture() + "|" + p.Name
 
 		if existing, found := filtered[key]; !found || CompareVersions(p.Version, existing.Version) > 0 {
 			filtered[key] = p
@@ -282,6 +282,19 @@ func (l *PackageList) Architectures(includeSource bool) (result []string) {
 	for _, pkg := range l.packages {
 		if pkg.Architecture != ArchitectureAll && (pkg.Architecture != ArchitectureSource || includeSource) && !utils.StrSliceHasItem(result, pkg.Architecture) {
 			result = append(result, pkg.Architecture)
+		}
+	}
+	return
+}
+
+// IndexArchitectures returns repository index architectures present in the list.
+// If includeSource is true, the source meta-architecture is included.
+func (l *PackageList) IndexArchitectures(includeSource bool) (result []string) {
+	result = make([]string, 0, 10)
+	for _, pkg := range l.packages {
+		arch := pkg.IndexArchitecture()
+		if arch != ArchitectureAll && (arch != ArchitectureSource || includeSource) && !utils.StrSliceHasItem(result, arch) {
+			result = append(result, arch)
 		}
 	}
 	return
