@@ -400,6 +400,24 @@ func (context *AptlyContext) PackagePool() aptly.PackagePool {
 			if err != nil {
 				Fatal(err)
 			}
+		} else if storageConfig.S3 != nil {
+			var err error
+			context.packagePool, err = s3.NewPackagePool(
+				storageConfig.S3.AccessKeyID,
+				storageConfig.S3.SecretAccessKey,
+				storageConfig.S3.SessionToken,
+				storageConfig.S3.Bucket,
+				storageConfig.S3.Prefix,
+				storageConfig.S3.ACL,
+				storageConfig.S3.StorageClass,
+				storageConfig.S3.EncryptionMethod,
+				storageConfig.S3.Region,
+				storageConfig.S3.Endpoint,
+				storageConfig.S3.ForceVirtualHostedStyle,
+				storageConfig.S3.Debug)
+			if err != nil {
+				Fatal(err)
+			}
 		} else {
 			poolRoot := context.config().PackagePoolStorage.Local.Path
 			if poolRoot == "" {
