@@ -1,3 +1,4 @@
+from lib import remove_tmp_suffix
 from s3_lib import S3Test
 
 
@@ -55,6 +56,7 @@ class S3Publish2Test(S3Test):
         "aptly repo remove local-repo pyspi"
     ]
     sortOutput = True
+    outputMatchPrepare = remove_tmp_suffix
     runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1:"
 
     def check(self):
@@ -96,6 +98,7 @@ class S3Publish3Test(S3Test):
         "aptly publish snapshot -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec -distribution=maverick snap1 s3:test1:",
     ]
     sortOutput = True
+    outputMatchPrepare = remove_tmp_suffix
     runCmd = "aptly publish switch -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1: snap3"
 
     def check(self):
@@ -178,6 +181,7 @@ class S3Publish6Test(S3Test):
         "aptly repo remove local-repo pyspi"
     ]
     sortOutput = True
+    outputMatchPrepare = remove_tmp_suffix
     runCmd = "aptly publish update -keyring=${files}/aptly.pub -secret-keyring=${files}/aptly.sec maverick s3:test1:"
 
     def check(self):

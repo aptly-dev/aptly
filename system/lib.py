@@ -25,6 +25,11 @@ from pathlib import Path
 from uuid import uuid4
 
 
+def remove_tmp_suffix(_, output):
+    """Normalize .tmp.<uuid> suffixes to .tmp for deterministic golden output."""
+    return re.sub(r'(\.tmp)\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', r'\1', output)
+
+
 def ungzip_if_required(output):
     if isinstance(output, bytes) and output.startswith(b"\x1f\x8b"):
         return zlib.decompress(output, 16 + zlib.MAX_WBITS).decode('utf-8')
