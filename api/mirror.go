@@ -597,6 +597,7 @@ func apiMirrorsUpdate(c *gin.Context) {
 			if err == nil {
 				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, fmt.Errorf("unable to rename: mirror %s already exists", b.Name)
 			}
+			remote.Name = b.Name
 		}
 
 		downloader := context.NewDownloader(out)
