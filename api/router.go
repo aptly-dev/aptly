@@ -122,7 +122,9 @@ func Router(c *ctx.AptlyContext) http.Handler {
 
 	{
 		if c.Config().EnableMetricsEndpoint {
-			api.GET("/metrics", apiMetricsGet())
+			metricsHandler := apiMetricsGet()
+			api.GET("/metrics", metricsHandler)
+			api.HEAD("/metrics", metricsHandler)
 		}
 		api.GET("/version", apiVersion)
 		api.GET("/storage", apiDiskFree)
