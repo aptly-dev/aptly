@@ -893,7 +893,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 	var suffix string
 	if p.rePublishing {
-		suffix = ".tmp"
+		suffix = ".tmp." + uuid.NewString()
 	}
 
 	if progress != nil {
