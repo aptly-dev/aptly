@@ -19,6 +19,11 @@ type ConfigStructure struct { // nolint: maligned
 	LogFormat            string   `json:"logFormat"                     yaml:"log_format"`
 	DatabaseOpenAttempts int      `json:"databaseOpenAttempts"          yaml:"database_open_attempts"`
 	Architectures        []string `json:"architectures"                 yaml:"architectures"`
+	// Hash algorithms to write Acquire-By-Hash entries for. Each one costs a
+	// full set of index copies on every publish, which is felt most on S3-like
+	// storage where every write is a round trip. Empty means all four, which is
+	// what aptly did before this was configurable.
+	AcquireByHashAlgorithms []string `json:"acquireByHashAlgorithms"    yaml:"acquire_by_hash_algorithms"`
 	SkipLegacyPool       bool     `json:"skipLegacyPool"                yaml:"skip_legacy_pool"` // OBSOLETE
 
 	// Dependency following
@@ -246,6 +251,7 @@ type AzureEndpoint struct {
 // Config is configuration for aptly, shared by all modules
 var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
+	AcquireByHashAlgorithms: []string{"MD5Sum", "SHA1", "SHA256", "SHA512"},
 	DownloadConcurrency:    4,
 	DownloadLimit:          0,
 	Downloader:             "default",
