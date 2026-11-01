@@ -13,7 +13,7 @@ require (
 	github.com/h2non/filetype v1.1.3
 	github.com/jlaffaye/ftp v0.2.0 // indirect
 	github.com/kjk/lzma v0.0.0-20120628231508-2a7c55cad4a2
-	github.com/klauspost/compress v1.18.2
+	github.com/klauspost/compress v1.18.7
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
