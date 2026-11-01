@@ -209,6 +209,40 @@ func (g *GpgVerifier) argsKeyrings() (args []string) {
 	return
 }
 
+type gpgvSignatureDisposition int
+
+const (
+	gpgvSignatureOther gpgvSignatureDisposition = iota
+	gpgvSignatureGood
+	gpgvSignatureUnknown
+	gpgvSignatureDisqualified
+)
+
+type gpgvSignatureStatus struct {
+	goodSig          bool
+	validSig         bool
+	missingKeyErrSig bool
+	noPubKey         bool
+	disqualified     bool
+	otherFailure     bool
+}
+
+func (status gpgvSignatureStatus) disposition() gpgvSignatureDisposition {
+	if status.disqualified {
+		return gpgvSignatureDisqualified
+	}
+	if status.otherFailure {
+		return gpgvSignatureOther
+	}
+	if status.goodSig && status.validSig {
+		return gpgvSignatureGood
+	}
+	if status.missingKeyErrSig && status.noPubKey && !status.goodSig && !status.validSig {
+		return gpgvSignatureUnknown
+	}
+	return gpgvSignatureOther
+}
+
 func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*KeyInfo, error) {
 	args = append([]string{"--status-fd", "3"}, args...)
 	cmd := exec.Command(g.gpgv, args...)
@@ -255,22 +289,82 @@ func (g *GpgVerifier) runGpgv(args []string, context string, showKeyTip bool) (*
 	statusr := bufio.NewScanner(tempf)
 
 	result := &KeyInfo{}
+	statuses := []gpgvSignatureStatus{}
+	var status *gpgvSignatureStatus
+	flushStatus := func() {
+		if status != nil {
+			statuses = append(statuses, *status)
+		}
+	}
 
 	for statusr.Scan() {
 		line := strings.TrimSpace(statusr.Text())
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[0] == "[GNUPG:]" && fields[1] == "NEWSIG" {
+			flushStatus()
+			status = &gpgvSignatureStatus{}
+			continue
+		}
+		if status == nil {
+			status = &gpgvSignatureStatus{otherFailure: true}
+		}
+		if len(fields) < 2 || fields[0] != "[GNUPG:]" {
+			status.otherFailure = true
+			continue
+		}
 
-		if strings.HasPrefix(line, "[GNUPG:] GOODSIG ") {
-			result.GoodKeys = append(result.GoodKeys, Key(strings.Fields(line)[2]))
-		} else if strings.HasPrefix(line, "[GNUPG:] NO_PUBKEY ") {
-			result.MissingKeys = append(result.MissingKeys, Key(strings.Fields(line)[2]))
+		switch fields[1] {
+		case "GOODSIG":
+			if len(fields) < 3 {
+				status.otherFailure = true
+				continue
+			}
+			status.goodSig = true
+			result.GoodKeys = append(result.GoodKeys, Key(fields[2]))
+		case "VALIDSIG":
+			status.validSig = true
+		case "NO_PUBKEY":
+			if len(fields) < 3 {
+				status.otherFailure = true
+				continue
+			}
+			status.noPubKey = true
+			result.MissingKeys = append(result.MissingKeys, Key(fields[2]))
+		case "ERRSIG":
+			// Field 7 is the gpg-error reason; 9 is GPG_ERR_NO_PUBKEY.
+			if len(fields) > 7 && fields[7] == "9" {
+				status.missingKeyErrSig = true
+			} else {
+				status.otherFailure = true
+			}
+		case "BADSIG", "EXPSIG", "EXPKEYSIG", "REVKEYSIG":
+			status.disqualified = true
 		}
 	}
+	flushStatus()
 
 	if err = statusr.Err(); err != nil {
 		return nil, err
 	}
 
 	if cmderr != nil {
+		goodSignatures := 0
+		unknownSignatures := 0
+		failureExplained := cmd.ProcessState != nil && cmd.ProcessState.Exited()
+		for _, signatureStatus := range statuses {
+			switch signatureStatus.disposition() {
+			case gpgvSignatureGood:
+				goodSignatures++
+			case gpgvSignatureUnknown:
+				unknownSignatures++
+			default:
+				failureExplained = false
+			}
+		}
+		if failureExplained && goodSignatures > 0 && unknownSignatures > 0 {
+			return result, nil
+		}
+
 		if showKeyTip && len(g.keyRings) == 0 && len(result.MissingKeys) > 0 {
 			fmt.Printf("\nLooks like some keys are missing in your trusted keyring, you may consider importing them from keyserver:\n\n")
 
