@@ -37,6 +37,7 @@ type ConfigStructure struct { // nolint: maligned
 	ServeInAPIMode        bool `json:"serveInAPIMode"                yaml:"serve_in_api_mode"`
 	EnableMetricsEndpoint bool `json:"enableMetricsEndpoint"         yaml:"enable_metrics_endpoint"`
 	EnableSwaggerEndpoint bool `json:"enableSwaggerEndpoint"         yaml:"enable_swagger_endpoint"`
+	EnablePprofEndpoint   bool `json:"enablePprofEndpoint"           yaml:"enable_pprof_endpoint"`
 	AsyncAPI              bool `json:"AsyncAPI"                      yaml:"async_api"` // OBSOLETE
 
 	// Database

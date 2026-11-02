@@ -95,6 +95,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
   "serveInAPIMode": false,
   "enableMetricsEndpoint": false,
   "enableSwaggerEndpoint": false,
+  "enablePprofEndpoint": false,
   "AsyncAPI": false,
   "databaseBackend": {
     "type": "",
@@ -291,6 +292,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
     "serve_in_api_mode: false\n"+
     "enable_metrics_endpoint: false\n"+
     "enable_swagger_endpoint: false\n"+
+    "enable_pprof_endpoint: false\n"+
     "async_api: false\n"+
     "database_backend:\n"+
     "    type: \"\"\n"+
@@ -350,6 +352,7 @@ ppa_baseurl: http://ppa.launchpad.net
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: true
+enable_pprof_endpoint: false
 async_api: true
 database_backend:
     type: etcd

@@ -15,6 +15,7 @@ ppa_baseurl: http://ppa.launchpad.net
 serve_in_api_mode: true
 enable_metrics_endpoint: true
 enable_swagger_endpoint: false
+enable_pprof_endpoint: false
 async_api: false
 database_backend:
     type: ""
