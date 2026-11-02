@@ -531,6 +531,36 @@ func (s *PackageListSuite) TestFilterLatest(c *C) {
 	c.Check(filtered.Has(sharedPkg), Equals, true)
 }
 
+func (s *PackageListSuite) TestFilterLatestInvalidVersions(c *C) {
+	list := NewPackageList()
+	valid := &Package{Name: "pkg", Version: "1.0", Architecture: "amd64"}
+	invalid := &Package{Name: "pkg", Version: "2.0-", Architecture: "amd64"}
+	_ = list.Add(valid)
+	_ = list.Add(invalid)
+
+	filtered, err := list.FilterLatest()
+	c.Assert(err, IsNil)
+	c.Check(filtered.Len(), Equals, 1)
+	c.Check(filtered.Has(valid), Equals, true)
+
+	invalidOnly := NewPackageList()
+	_ = invalidOnly.Add(&Package{Name: "pkg", Version: "1.0-", Architecture: "amd64"})
+	_ = invalidOnly.Add(&Package{Name: "pkg", Version: "2.0-", Architecture: "amd64"})
+	filtered, err = invalidOnly.FilterLatest()
+	c.Assert(err, IsNil)
+	c.Check(filtered.Len(), Equals, 1)
+}
+
+func (s *PackageListSuite) TestLessPackagesInvalidVersions(c *C) {
+	list := NewPackageList()
+	valid := &Package{Name: "pkg", Version: "1.0", Architecture: "amd64"}
+	invalid := &Package{Name: "pkg", Version: "2.0-", Architecture: "amd64"}
+
+	c.Check(list.lessPackages(valid, invalid), Equals, true)
+	c.Check(list.lessPackages(invalid, valid), Equals, false)
+	c.Check(list.lessPackages(invalid, invalid), Equals, false)
+}
+
 func (s *PackageListSuite) TestFilterLatestPreservesDuplicatesFlag(c *C) {
 	list := NewPackageListWithDuplicates(true, 2)
 

@@ -398,3 +398,17 @@ func (s *PackageRefListSuite) TestFilterLatestRefs(c *C) {
 	c.Check(toStrSlice(result), DeepEquals,
 		[]string{"Pi386 dpkg 1.6", "Pi386 lib 1.2"})
 }
+
+func (s *PackageRefListSuite) TestFilterLatestRefsRemovesInvalidVersions(c *C) {
+	result := &PackageRefList{Refs: [][]byte{
+		[]byte("Pi386 app 1.0-"),
+		[]byte("Pi386 dpkg 1.0"),
+		[]byte("Pi386 dpkg 2.0-"),
+		[]byte("Pi386 lib 1.0-"),
+		[]byte("Pi386 lib 2.0-"),
+	}}
+
+	result.FilterLatestRefs()
+
+	c.Check(toStrSlice(result), DeepEquals, []string{"Pi386 dpkg 1.0"})
+}

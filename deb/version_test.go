@@ -10,20 +10,74 @@ type VersionSuite struct {
 var _ = Suite(&VersionSuite{})
 
 func (s *VersionSuite) TestParseVersion(c *C) {
-	e, u, d := parseVersion("1.3.4")
+	e, u, d, err := parseVersion("1.3.4")
 	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3.4", ""})
+	c.Check(err, Equals, nil)
 
-	e, u, d = parseVersion("4:1.3:4")
+	e, u, d, err = parseVersion("4:1.3:4")
 	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3:4", ""})
+	c.Check(err, Equals, nil)
 
-	e, u, d = parseVersion("1.3.4-1")
+	e, u, d, err = parseVersion("1.3.4-1")
 	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3.4", "1"})
+	c.Check(err, Equals, nil)
 
-	e, u, d = parseVersion("1.3-pre4-1")
-	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3", "pre4-1"})
+	// upstream_version and debian_revision are separated by the LAST
+	// hyphen, since upstream_version may itself contain hyphens.
+	e, u, d, err = parseVersion("1.3-pre4-1")
+	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3-pre4", "1"})
+	c.Check(err, Equals, nil)
 
-	e, u, d = parseVersion("4:1.3-pre4-1")
-	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3", "pre4-1"})
+	e, u, d, err = parseVersion("4:1.3-pre4-1")
+	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3-pre4", "1"})
+	c.Check(err, Equals, nil)
+
+	e, u, d, err = parseVersion("1:2026.07.07-0325-54-a773b756")
+	c.Check([]string{e, u, d}, DeepEquals, []string{"1", "2026.07.07-0325-54", "a773b756"})
+	c.Check(err, Equals, nil)
+
+	e, u, d, err = parseVersion("1:1.2024-")
+	c.Check([]string{e, u, d}, DeepEquals, []string{"", "", ""})
+	c.Check(err.Error(), Equals, "could not parse version: version string ('1.2024-') includes hyphen without Debian revision")
+}
+
+func (s *VersionSuite) TestIsValidVersion(c *C) {
+	// valid cases
+	valid := isValidVersion("1.2.3-abc")
+	c.Check(valid, Equals, true)
+
+	valid = isValidVersion("1.0.1337~rc2-3")
+	c.Check(valid, Equals, true)
+
+	valid = isValidVersion("1.2.3+fdsfgs")
+	c.Check(valid, Equals, true)
+
+	valid = isValidVersion("1:2.3~4-5six")
+	c.Check(valid, Equals, true)
+
+	// upstream_version containing multiple hyphens (e.g. date/build-number/
+	// git-sha style versioning) is valid as long as it's split on the LAST
+	// hyphen for the debian_revision.
+	valid = isValidVersion("1:2026.07.07-0325-54-a773b756")
+	c.Check(valid, Equals, true)
+
+	// invalid cases
+	valid = isValidVersion("1:1.2.3-")
+	c.Check(valid, Equals, false)
+
+	valid = isValidVersion("42:")
+	c.Check(valid, Equals, false)
+
+	valid = isValidVersion("1:a.1.2.3~-4")
+	c.Check(valid, Equals, false)
+
+	// non-numeric epoch
+	valid = isValidVersion("abc:1.2.3")
+	c.Check(valid, Equals, false)
+
+	// valid upstream_version, but debian_revision contains a disallowed character
+	valid = isValidVersion("1.2.3-abc!")
+	c.Check(valid, Equals, false)
 }
 
 func (s *VersionSuite) TestCompareLexicographic(c *C) {
@@ -86,21 +140,35 @@ func (s *VersionSuite) TestCompareVersionPart(c *C) {
 }
 
 func (s *VersionSuite) TestCompareVersions(c *C) {
-	c.Check(CompareVersions("3:1.0~beta1~svn1245-1", "3:1.0~beta1~svn1245-1"), Equals, 0)
+	check := func(left, right string, expectedCmp int, expectedErr error) {
+		cmp, err := CompareVersions(left, right)
+		c.Check(cmp, Equals, expectedCmp)
+		c.Check(err, Equals, expectedErr)
+	}
 
-	c.Check(CompareVersions("1:1.0~beta1~svn1245-1", "3:1.0~beta1~svn1245-1"), Equals, -1)
-	c.Check(CompareVersions("1:1.0~beta1~svn1245-1", "1.0~beta1~svn1245-1"), Equals, 1)
-	c.Check(CompareVersions("1.0~beta1~svn1245-1", "1.0~beta1~svn1245-2"), Equals, -1)
-	c.Check(CompareVersions("3:1.0~beta1~svn1245-1", "3:1.0~beta1-1"), Equals, -1)
+	check("3:1.0~beta1~svn1245-1", "3:1.0~beta1~svn1245-1", 0, nil)
 
-	c.Check(CompareVersions("1.0~beta1~svn1245", "1.0~beta1"), Equals, -1)
-	c.Check(CompareVersions("1.0~beta1", "1.0"), Equals, -1)
+	check("1:1.0~beta1~svn1245-1", "3:1.0~beta1~svn1245-1", -1, nil)
+	check("1:1.0~beta1~svn1245-1", "1.0~beta1~svn1245-1", 1, nil)
+	check("1.0~beta1~svn1245-1", "1.0~beta1~svn1245-2", -1, nil)
+	check("3:1.0~beta1~svn1245-1", "3:1.0~beta1-1", -1, nil)
 
-	c.Check(CompareVersions("1.0-133-avc", "1.1"), Equals, -1)
-	c.Check(CompareVersions("1.0-133-avc", "1.0"), Equals, 1)
+	check("1.0~beta1~svn1245", "1.0~beta1", -1, nil)
+	check("1.0~beta1", "1.0", -1, nil)
 
-	c.Check(CompareVersions("5.2.0.3", "5.2.0.283"), Equals, -1)
-	c.Check(CompareVersions("4.3.5a", "4.3.5-rc3-1"), Equals, 1)
+	check("1.0-133-avc", "1.1", -1, nil)
+	check("1.0-133-avc", "1.0", 1, nil)
+
+	check("5.2.0.3", "5.2.0.283", -1, nil)
+	// upstream_version/debian_revision split on the LAST hyphen: "4.3.5-rc3-1"
+	// is upstream="4.3.5-rc3", debian="1", so it's actually greater than "4.3.5a"
+	// (confirmed against `dpkg --compare-versions`).
+	check("4.3.5a", "4.3.5-rc3-1", -1, nil)
+
+	// Version validation happens independently, so these exercise parse failures.
+	check("1:abc~1.2.3-", "1:1.2.3~abc-good", 0, LeftInvalid)
+	check("1:1.2.3~abc-good", "1:abc~1.2.3-", 0, RightInvalid)
+	check("1:abc~1.2.3-", "2:def~4.5.6-", 0, BothInvalid)
 }
 
 func (s *VersionSuite) TestParseDependency(c *C) {

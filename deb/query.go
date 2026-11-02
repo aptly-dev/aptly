@@ -168,15 +168,20 @@ func (q *FieldQuery) Matches(pkg PackageLike) bool {
 	case VersionDontCare:
 		return field != ""
 	case VersionEqual:
-		return CompareVersions(field, q.Value) == 0
+		result, err := CompareVersions(field, q.Value)
+		return err == nil && result == 0
 	case VersionGreater:
-		return CompareVersions(field, q.Value) > 0
+		result, err := CompareVersions(field, q.Value)
+		return err == nil && result > 0
 	case VersionGreaterOrEqual:
-		return CompareVersions(field, q.Value) >= 0
+		result, err := CompareVersions(field, q.Value)
+		return err == nil && result >= 0
 	case VersionLess:
-		return CompareVersions(field, q.Value) < 0
+		result, err := CompareVersions(field, q.Value)
+		return err == nil && result < 0
 	case VersionLessOrEqual:
-		return CompareVersions(field, q.Value) <= 0
+		result, err := CompareVersions(field, q.Value)
+		return err == nil && result <= 0
 	case VersionPatternMatch:
 		matched, err := filepath.Match(q.Value, field)
 		return err == nil && matched
