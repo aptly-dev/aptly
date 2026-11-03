@@ -89,6 +89,9 @@ The legacy json configuration is still supported (and also supports comments):
       // Codename for short PPA url expansion
       "ppaCodename": "",
 
+      // PPA Base URL
+      "ppaBaseURL": "http://ppa.launchpad.net",
+
       // OBSOLETE
       // in aptly up to version 1.0.0, package files were stored in internal package pool
       // with MD5-dervied path, since 1.1.0 package pool layout was changed;
@@ -109,6 +112,9 @@ The legacy json configuration is still supported (and also supports comments):
 
       // Enable API documentation on /docs
       "enableSwaggerEndpoint": false,
+
+      // Enable pprof profiling endpoints on /api/debug/pprof/*
+      "enablePprofEndpoint": false,
 
       // OBSOLETE: use via url param ?_async=true
       "AsyncAPI": false,
@@ -169,6 +175,10 @@ The legacy json configuration is still supported (and also supports comments):
 
       // Disable signature verification of remote repositories
       "gpgDisableVerify": false,
+
+      // GPG key IDs to sign with when a publish does not name one itself
+      // (the -gpg-key flag, or GpgKey in the API's signing options)
+      "gpgKeys": [],
 
 
     // Publishing
