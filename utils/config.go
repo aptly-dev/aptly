@@ -62,8 +62,9 @@ type ConfigStructure struct { // nolint: maligned
 	GpgKeys          []string `json:"gpgKeys"                       yaml:"gpg_keys"`
 
 	// Publishing
-	SkipContentsPublishing bool `json:"skipContentsPublishing"        yaml:"skip_contents_publishing"`
-	SkipBz2Publishing      bool `json:"skipBz2Publishing"             yaml:"skip_bz2_publishing"`
+	SkipContentsPublishing   bool `json:"skipContentsPublishing"        yaml:"skip_contents_publishing"`
+	SkipBz2Publishing        bool `json:"skipBz2Publishing"             yaml:"skip_bz2_publishing"`
+	PublishRenameConcurrency int  `json:"publishRenameConcurrency"      yaml:"publish_rename_concurrency"`
 
 	// Storage
 	FileSystemPublishRoots map[string]FileSystemPublishRoot `json:"FileSystemPublishEndpoints"    yaml:"filesystem_publish_endpoints"`
@@ -254,6 +255,7 @@ var Config = ConfigStructure{
 	RootDir:                filepath.Join(os.Getenv("HOME"), ".aptly"),
 	AcquireByHashAlgorithms: []string{"MD5Sum", "SHA1", "SHA256", "SHA512"},
 	DownloadConcurrency:    4,
+	PublishRenameConcurrency: 4,
 	DownloadLimit:          0,
 	Downloader:             "default",
 	DatabaseOpenAttempts:   -1,

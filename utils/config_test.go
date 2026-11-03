@@ -27,6 +27,16 @@ func (s *ConfigSuite) TestLoadConfig(c *C) {
 	c.Check(s.config.GetRootDir(), Equals, "/opt/aptly/")
 	c.Check(s.config.DownloadConcurrency, Equals, 33)
 	c.Check(s.config.DatabaseOpenAttempts, Equals, 33)
+	c.Check(s.config.PublishRenameConcurrency, Equals, 3)
+}
+
+func (s *ConfigSuite) TestLoadConfigKeepsTheDefaultRenameConcurrency(c *C) {
+	configname := filepath.Join(c.MkDir(), "aptly.json3")
+	c.Assert(os.WriteFile(configname, []byte(`{"rootDir": "/opt/aptly/"}`), 0644), IsNil)
+
+	s.config = Config
+	c.Assert(LoadConfig(configname, &s.config), IsNil)
+	c.Check(s.config.PublishRenameConcurrency, Equals, 4)
 }
 
 func (s *ConfigSuite) TestSaveConfig(c *C) {
@@ -114,6 +124,7 @@ func (s *ConfigSuite) TestSaveConfig(c *C) {
   "gpgKeys": null,
   "skipContentsPublishing": false,
   "skipBz2Publishing": false,
+  "publishRenameConcurrency": 0,
   "FileSystemPublishEndpoints": {
     "test": {
       "rootDir": "/opt/aptly-publish",
@@ -213,6 +224,7 @@ func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
   c.Check(s.config.GetRootDir(), Equals, "/opt/aptly/")
   c.Check(s.config.DownloadConcurrency, Equals, 40)
   c.Check(s.config.DatabaseOpenAttempts, Equals, 10)
+  c.Check(s.config.PublishRenameConcurrency, Equals, 2)
 }
 
 func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
@@ -311,6 +323,7 @@ func (s *ConfigSuite) TestSaveYAML2Config(c *C) {
     "gpg_keys: []\n"+
     "skip_contents_publishing: false\n"+
     "skip_bz2_publishing: false\n"+
+    "publish_rename_concurrency: 0\n"+
     "filesystem_publish_endpoints: {}\n"+
     "jfrog_publish_endpoints: {}\n"+
     "s3_publish_endpoints: {}\n"+
@@ -334,7 +347,7 @@ func (s *ConfigSuite) TestLoadEmptyConfig(c *C) {
 	c.Assert(err.Error(), Equals, "invalid yaml (EOF) or json (EOF)")
 }
 
-const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33, "databaseOpenAttempts": 33}`
+const configFile = `{"rootDir": "/opt/aptly/", "downloadConcurrency": 33, "databaseOpenAttempts": 33, "publishRenameConcurrency": 3}`
 const configFileYAML = `root_dir: /opt/aptly/
 log_level: error
 log_format: json
@@ -372,6 +385,7 @@ gpg_disable_verify: true
 gpg_keys: []
 skip_contents_publishing: true
 skip_bz2_publishing: true
+publish_rename_concurrency: 2
 filesystem_publish_endpoints:
     test1:
         root_dir: /opt/srv/aptly_public

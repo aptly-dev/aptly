@@ -500,13 +500,6 @@ func (files *indexFiles) FinalizeAll(progress aptly.Progress, signer pgp.Signer)
 	return
 }
 
-// How many index renames are in flight at once. Every rename is a round trip,
-// and on an S3 backend it is a CopyObject followed by a DeleteObject, so a
-// publish rewriting a dozen indexes spent most of its wall clock waiting on
-// them one at a time. Four matches the default used for concurrent package
-// uploads.
-const renameConcurrency = 4
-
 func (files *indexFiles) RenameFiles() error {
 	type renamePair struct{ oldName, newName string }
 
@@ -520,7 +513,8 @@ func (files *indexFiles) RenameFiles() error {
 		mu       sync.Mutex
 		firstErr error
 	)
-	sem := make(chan struct{}, renameConcurrency)
+	// Below 1 the semaphore would admit nothing, so treat it as serial.
+	sem := make(chan struct{}, max(utils.Config.PublishRenameConcurrency, 1))
 
 	for _, pair := range pairs {
 		wg.Add(1)
