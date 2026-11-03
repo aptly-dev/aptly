@@ -78,6 +78,14 @@ func (s *VersionSuite) TestIsValidVersion(c *C) {
 	// valid upstream_version, but debian_revision contains a disallowed character
 	valid = isValidVersion("1.2.3-abc!")
 	c.Check(valid, Equals, false)
+
+	e, u, d, err := parseVersion("1.3-pre4-1")
+	c.Check(err, IsNil)
+	c.Check([]string{e, u, d}, DeepEquals, []string{"", "1.3-pre4", "1"})
+
+	e, u, d, err = parseVersion("4:1.3-pre4-1")
+	c.Check(err, IsNil)
+	c.Check([]string{e, u, d}, DeepEquals, []string{"4", "1.3-pre4", "1"})
 }
 
 func (s *VersionSuite) TestCompareLexicographic(c *C) {
@@ -169,6 +177,20 @@ func (s *VersionSuite) TestCompareVersions(c *C) {
 	check("1:abc~1.2.3-", "1:1.2.3~abc-good", 0, LeftInvalid)
 	check("1:1.2.3~abc-good", "1:abc~1.2.3-", 0, RightInvalid)
 	check("1:abc~1.2.3-", "2:def~4.5.6-", 0, BothInvalid)
+
+	// The following tests exercise the last-hyphen split and additional
+	// comparison edge cases (added by PR #1646, rebased onto master).
+	check("1.6.0-rc1+really1.6.0-0", "1.6.0-rc1-0", 1, nil)
+	check("1.2-3-4", "1.2-3-5", -1, nil)
+	check("1.0-1-1", "1.0-1", 1, nil)
+	check("1.0+1", "1.0", 1, nil)
+	check("1.0+a-1", "1.0-a-1", -1, nil)
+	check("1.0+1-1", "1.0-1", 1, nil)
+	check("1.0-1+b1", "1.0-1", 1, nil)
+	check("1.0-1+b1", "1.0-1~bpo1", 1, nil)
+	check("1.0-1+b2", "1.0-1+b10", -1, nil)
+	check("1.0.1+dfsg-1", "1.0.1-1", 1, nil)
+	check("1.0-1+b1", "1.0-2", -1, nil)
 }
 
 func (s *VersionSuite) TestParseDependency(c *C) {
