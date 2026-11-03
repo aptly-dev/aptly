@@ -76,6 +76,10 @@ type PublishedRepo struct {
 
 	// Skip bz2 compression for index files
 	SkipBz2 bool
+	// AcquireByHashAlgorithms limits which hash algorithms get Acquire-By-Hash
+	// entries. Set per invocation from the config rather than persisted, the
+	// same way SkipBz2 is. Empty means all four.
+	AcquireByHashAlgorithms []string
 
 	// True if repo is being re-published
 	rePublishing bool
@@ -907,7 +911,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 	}
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
-	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash, p.SkipBz2)
+	indexes := newIndexFiles(publishedStorage, basePath, tempDir, suffix, p.AcquireByHash, p.AcquireByHashAlgorithms, p.SkipBz2)
 
 	legacyContentIndexes := map[string]*ContentsIndex{}
 	var count int64
