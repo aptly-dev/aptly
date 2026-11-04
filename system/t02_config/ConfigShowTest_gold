@@ -40,6 +40,7 @@
     "gpgKeys": [],
     "skipContentsPublishing": false,
     "skipBz2Publishing": false,
+    "publishRenameConcurrency": 4,
     "FileSystemPublishEndpoints": {},
     "JFrogPublishEndpoints": null,
     "S3PublishEndpoints": {},

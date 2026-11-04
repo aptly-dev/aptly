@@ -201,6 +201,10 @@ The legacy json configuration is still supported (and also supports comments):
   // Do not create bz2 files
   "skipBz2Publishing": false,
 
+  // Number of index files renamed in parallel when a publish finishes
+  // (set to 1 to rename them one at a time)
+  "publishRenameConcurrency": 4,
+
 
 // Storage
 ///////////
