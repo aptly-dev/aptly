@@ -75,6 +75,7 @@ type concurrentTestStorage struct {
 	maxActive        int
 	release          chan struct{}
 	releaseTriggered bool
+	linkError        error
 }
 
 func (s *concurrentTestStorage) UploadConcurrency() int {
@@ -83,6 +84,9 @@ func (s *concurrentTestStorage) UploadConcurrency() int {
 
 func (s *concurrentTestStorage) LinkFromPool(publishedPrefix, publishedRelPath, fileName string,
 	sourcePool aptly.PackagePool, sourcePath string, sourceChecksums utils.ChecksumInfo, force bool) error {
+	if s.linkError != nil {
+		return s.linkError
+	}
 	if s.release == nil {
 		return s.PublishedStorage.LinkFromPool(publishedPrefix, publishedRelPath, fileName, sourcePool, sourcePath, sourceChecksums, force)
 	}
@@ -312,6 +316,52 @@ func (s *PublishedRepoSuite) TestPackageUploadsConcurrent(c *C) {
 	err := s.repo.Publish(s.packagePool, s.provider, s.factory, &NullSigner{}, nil, false, "")
 	c.Assert(err, IsNil)
 	c.Check(storage.maxActive, Equals, 2)
+}
+
+func (s *PublishedRepoSuite) TestPackageUploadError(c *C) {
+	storage := &concurrentTestStorage{
+		PublishedStorage: s.publishedStorage,
+		concurrency:      2,
+		linkError:        errors.New("upload failed"),
+	}
+	s.provider.storages[""] = storage
+
+	err := s.repo.Publish(s.packagePool, s.provider, s.factory,
+		&NullSigner{}, nil, false, "")
+	c.Check(err, ErrorMatches,
+		"unable to upload packages: upload failed")
+}
+
+func (s *PublishedRepoSuite) TestPackagePublishPath(c *C) {
+	pkg := *s.p1
+	pkg.IsInstaller = true
+	s.repo.Architectures = []string{"i386"}
+
+	s.repo.Distribution = aptly.DistributionFocal
+	path, matches, err := s.repo.packagePublishPath(&pkg, "main")
+	c.Assert(err, IsNil)
+	c.Check(matches, Equals, true)
+	c.Check(path, Equals, filepath.Join("dists", "focal", "main",
+		"alien-arena-common-i386", "current", "legacy-images"))
+
+	s.repo.Distribution = "squeeze"
+	path, matches, err = s.repo.packagePublishPath(&pkg, "main")
+	c.Assert(err, IsNil)
+	c.Check(matches, Equals, true)
+	c.Check(path, Equals, filepath.Join("dists", "squeeze", "main",
+		"alien-arena-common-i386", "current", "images"))
+
+	pkg.Architecture = "amd64"
+	path, matches, err = s.repo.packagePublishPath(&pkg, "main")
+	c.Assert(err, IsNil)
+	c.Check(matches, Equals, false)
+	c.Check(path, Equals, "")
+
+	pkg.IsInstaller = false
+	pkg.Architecture = "i386"
+	pkg.Source = "x"
+	_, _, err = s.repo.packagePublishPath(&pkg, "main")
+	c.Check(err, ErrorMatches, "package source x too short")
 }
 
 func (s *PublishedRepoSuite) TestPrefixNormalization(c *C) {

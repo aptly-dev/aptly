@@ -322,6 +322,12 @@ The legacy json configuration is still supported (and also supports comments):
     //    // which only support virtual hosted style
     //    "forceVirtualHostedStyle": false,
 
+    //    // Upload Concurrency (optional)
+    //    // Maximum concurrent package uploads (up to 128)
+    //    // Defaults to 4
+    //    // Set to 1 to upload package files sequentially
+    //    "uploadConcurrency": 4,
+
     //    // Debug (optional)
     //    // Enables detailed request/response dump for each S3 operation
     //    "debug": false
