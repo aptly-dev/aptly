@@ -51,13 +51,13 @@ dep_follow_suggests: false
 dep_follow_recommends: false
 
 # When dependency looks like `package-a | package-b`, follow both variants always
-dep_follow_allvariants: false
+dep_follow_all_variants: false
 
 # Follow dependency from binary package to source package
 dep_follow_source: false
 
 # Log additional details while resolving dependencies (useful for debugging)
-dep_verbose_resolve: false
+dep_verboseresolve: false
 
 
 # PPA
