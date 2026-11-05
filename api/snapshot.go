@@ -809,7 +809,7 @@ func apiSnapshotsPull(c *gin.Context) {
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
-		err = taskCollectionFactory.SnapshotCollection().LoadComplete(freshToSnapshot)
+		err = taskCollectionFactory.SnapshotCollection().LoadComplete(freshToSnapshot, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}

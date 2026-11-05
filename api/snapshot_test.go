@@ -59,9 +59,11 @@ func (s *SnapshotsSuite) TestGetSnapshotsReturns500OnCorruptRefList(c *C) {
 }
 
 func (s *SnapshotsSuite) TestGetSnapshotsHandlesConcurrentDeletion(c *C) {
-	collection := s.context.NewCollectionFactory().SnapshotCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.SnapshotCollection()
+	reflistCollection := collectionFactory.RefListCollection()
 	snapshot := deb.NewSnapshotFromRefList("deleted-snapshot-list", nil, makePackageRefList(c), "")
-	c.Assert(collection.Add(snapshot), IsNil)
+	c.Assert(collection.Add(snapshot, reflistCollection), IsNil)
 	// Simulate concurrent deletion by dropping the ref key or entire snapshot record
 	c.Assert(collection.Drop(snapshot), IsNil)
 
