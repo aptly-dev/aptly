@@ -225,6 +225,7 @@ func (s *ConfigSuite) TestLoadYAMLConfig(c *C) {
   c.Check(s.config.DownloadConcurrency, Equals, 40)
   c.Check(s.config.DatabaseOpenAttempts, Equals, 10)
   c.Check(s.config.PublishRenameConcurrency, Equals, 2)
+  c.Check(s.config.S3PublishRoots["test"].UploadConcurrency, Equals, 8)
 }
 
 func (s *ConfigSuite) TestLoadYAMLErrorConfig(c *C) {
@@ -408,6 +409,7 @@ s3_publish_endpoints:
         disable_multidel: true
         force_sigv2: true
         force_virtualhosted_style: true
+        upload_concurrency: 8
         debug: true
 gcs_publish_endpoints:
     test:

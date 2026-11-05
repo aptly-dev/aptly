@@ -87,6 +87,20 @@ func (s *AptlyContextSuite) TestGetPublishedStorageBadFS(c *C) {
 	c.Assert(err, NotNil)
 }
 
+func (s *AptlyContextSuite) TestGetPublishedStorageBadS3Concurrency(c *C) {
+	prevConfig := utils.Config
+	defer func() { utils.Config = prevConfig }()
+
+	s.context.configLoaded = true
+	utils.Config.S3PublishRoots = map[string]utils.S3PublishRoot{
+		"broken": {UploadConcurrency: -1},
+	}
+
+	_, err := s.context.GetPublishedStorage("s3:broken")
+	c.Assert(err, ErrorMatches,
+		"upload concurrency must be between 0 and 128")
+}
+
 func (s *AptlyContextSuite) TestGetPublishedStorageJFrogConfigured(c *C) {
 	prevConfig := utils.Config
 	defer func() { utils.Config = prevConfig }()
