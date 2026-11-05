@@ -23,6 +23,14 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 
 	name := args[0]
 
+	maxVersions := context.Flags().Lookup("max-versions").Value.Get().(int)
+	if maxVersions < 0 {
+		return fmt.Errorf("unable to update: -max-versions should be a positive number")
+	}
+	if maxVersions == 0 && context.Flags().Lookup("latest").Value.Get().(bool) {
+		maxVersions = 1
+	}
+
 	collectionFactory := context.NewCollectionFactory()
 	repo, err := collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
@@ -90,17 +98,29 @@ func aptlyMirrorUpdate(cmd *commander.Command, args []string) error {
 		context.Progress().Printf("Packages filtered: %d -> %d.\n", oldLen, newLen)
 	}
 
+	if maxVersions > 0 {
+		var oldLen, newLen int
+		oldLen, newLen, err = repo.FilterLatest(maxVersions)
+		if err != nil {
+			return fmt.Errorf("unable to update: %s", err)
+		}
+		versionWord := "versions"
+		if maxVersions == 1 {
+			versionWord = "version"
+		}
+		context.Progress().Printf("Keeping at most %d %s of each package: %d -> %d.\n", maxVersions, versionWord, oldLen, newLen)
+	}
+
 	var (
 		downloadSize int64
 		queue        []deb.PackageDownloadTask
 	)
 
 	skipExistingPackages := context.Flags().Lookup("skip-existing-packages").Value.Get().(bool)
-	latestOnly := context.Flags().Lookup("latest").Value.Get().(bool)
 
 	context.Progress().Printf("Building download queue...\n")
 	queue, downloadSize, err = repo.BuildDownloadQueue(context.PackagePool(), collectionFactory.PackageCollection(),
-		collectionFactory.ChecksumCollection(nil), skipExistingPackages, latestOnly)
+		collectionFactory.ChecksumCollection(nil), skipExistingPackages)
 
 	if err != nil {
 		return fmt.Errorf("unable to update: %s", err)
@@ -302,7 +322,8 @@ Example:
 	cmd.Flag.Bool("ignore-checksums", false, "ignore checksum mismatches while downloading package files and metadata")
 	cmd.Flag.Bool("ignore-signatures", false, "disable verification of Release file signatures")
 	cmd.Flag.Bool("skip-existing-packages", false, "do not check file existence for packages listed in the internal database of the mirror")
-	cmd.Flag.Bool("latest", false, "download only latest version of each package (per architecture)")
+	cmd.Flag.Bool("latest", false, "download only latest version of each package (per architecture), same as -max-versions=1")
+	cmd.Flag.Int("max-versions", 0, "download only the N most recent versions of each package (per architecture), 0 means all versions")
 	cmd.Flag.Int64("download-limit", 0, "limit download speed (kbytes/sec)")
 	cmd.Flag.String("downloader", "default", "downloader to use (e.g. grab)")
 	cmd.Flag.Int("max-tries", 1, "max download tries till process fails with download error")

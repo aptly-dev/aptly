@@ -173,33 +173,21 @@ func (l *PackageList) ForEach(handler func(*Package) error) error {
 }
 
 // FilterLatest creates a copy of the package list containing only the
-// latest version for each package name/architecture pair.
-func (l *PackageList) FilterLatest() (*PackageList, error) {
+// count latest versions for each package name/architecture pair.
+func (l *PackageList) FilterLatest(count int) (*PackageList, error) {
 	if l == nil {
 		return nil, fmt.Errorf("package list is nil")
 	}
 
-	filtered := make(map[string]*Package, l.Len())
+	if count < 1 {
+		return nil, fmt.Errorf("number of latest versions should be at least 1, got %d", count)
+	}
+
+	groups := make(map[string][]*Package, l.Len())
 
 	err := l.ForEach(func(p *Package) error {
 		key := p.Architecture + "|" + p.Name
-
-		existing, found := filtered[key]
-		if !found {
-			filtered[key] = p
-			return nil
-		}
-
-		cmp, compareErr := CompareVersions(p.Version, existing.Version)
-		switch compareErr {
-		case nil:
-			if cmp > 0 {
-				filtered[key] = p
-			}
-		case RightInvalid:
-			filtered[key] = p
-		case LeftInvalid, BothInvalid:
-		}
+		groups[key] = append(groups[key], p)
 
 		return nil
 	})
@@ -207,11 +195,49 @@ func (l *PackageList) FilterLatest() (*PackageList, error) {
 		return nil, err
 	}
 
-	result := NewPackageListWithDuplicates(l.duplicatesAllowed, len(filtered))
+	result := NewPackageListWithDuplicates(l.duplicatesAllowed, len(groups)*count)
 
-	for _, pkg := range filtered {
-		if err = result.Add(pkg); err != nil {
-			return nil, err
+	for _, pkgs := range groups {
+		// sort from latest to oldest
+		sort.SliceStable(pkgs, func(i, j int) bool {
+			cmp, cmpErr := CompareVersions(pkgs[i].Version, pkgs[j].Version)
+			switch cmpErr {
+			case LeftInvalid, BothInvalid:
+				return false
+			case RightInvalid:
+				return true
+			}
+			return cmp > 0
+		})
+
+		versions := 0
+		for i, p := range pkgs {
+			if i == 0 {
+				// first element always included
+			} else {
+				cmp, cmpErr := CompareVersions(p.Version, pkgs[i-1].Version)
+				switch cmpErr {
+				case LeftInvalid, BothInvalid:
+					// invalid version is different from previous
+					versions++
+				case RightInvalid:
+					// previous was invalid, current is valid — different
+					versions++
+				default:
+					if cmp == 0 {
+						// same version, skip
+					} else {
+						versions++
+					}
+				}
+				if versions >= count {
+					break
+				}
+			}
+
+			if err = result.Add(p); err != nil {
+				return nil, err
+			}
 		}
 	}
 

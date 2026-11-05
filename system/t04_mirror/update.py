@@ -502,3 +502,45 @@ class UpdateMirror28Test(BaseTest):
         self.check_output()
         self.check_cmd_output("aptly mirror show appstream-test", "mirror_show",
                               match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+
+
+class UpdateMirror29Test(BaseTest):
+    """
+    update mirrors: keep only the 2 most recent versions of each package
+    """
+    sortOutput = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures -max-versions=2 varnish"
+    outputMatchPrepare = filterOutRedirects
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show -with-packages varnish", "mirror_show",
+                              match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+
+
+class UpdateMirror30Test(BaseTest):
+    """
+    update mirrors: -latest keeps only the most recent version of each package
+    """
+    sortOutput = True
+    fixtureCmds = [
+        "aptly -architectures=i386,amd64 mirror create --ignore-signatures varnish http://repo.aptly.info/system-tests/packagecloud.io/varnishcache/varnish30/debian/ wheezy main",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures -latest varnish"
+    outputMatchPrepare = filterOutRedirects
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output("aptly mirror show -with-packages varnish", "mirror_show",
+                              match_prepare=lambda s: re.sub(r"Last update: [0-9:+A-Za-z -]+\n", "", s))
+
+
+class UpdateMirror31Test(BaseTest):
+    """
+    update mirrors: negative -max-versions
+    """
+    runCmd = "aptly mirror update -max-versions=-1 varnish"
+    expectedCode = 1
