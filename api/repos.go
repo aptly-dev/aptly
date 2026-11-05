@@ -82,7 +82,7 @@ func apiReposList(c *gin.Context) {
 	collectionFactory := context.NewCollectionFactory()
 	collection := collectionFactory.LocalRepoCollection()
 	err := collection.ForEach(func(r *deb.LocalRepo) error {
-		err := collection.LoadComplete(r)
+		err := collection.LoadComplete(r, collectionFactory.RefListCollection())
 		if err != nil {
 			return err
 		}
@@ -155,10 +155,11 @@ func apiReposCreate(c *gin.Context) {
 		// Task: Create fresh collection and check/create ATOMIC inside task
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.LocalRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Check duplicate inside lock
 		if _, err := taskCollection.ByName(b.Name); err == nil {
-			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, 
+			return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil},
 				fmt.Errorf("local repo with name %s already exists", b.Name)
 		}
 
@@ -172,20 +173,20 @@ func apiReposCreate(c *gin.Context) {
 
 			snapshot, err := snapshotCollection.ByName(b.FromSnapshot)
 			if err != nil {
-				return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, 
+				return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil},
 					fmt.Errorf("source snapshot not found: %s", err)
 			}
 
-			err = snapshotCollection.LoadComplete(snapshot)
+			err = snapshotCollection.LoadComplete(snapshot, taskRefListCollection)
 			if err != nil {
-				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, 
+				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil},
 					fmt.Errorf("unable to load source snapshot: %s", err)
 			}
 
 			repo.UpdateRefList(snapshot.RefList())
 		}
 
-		err := taskCollection.Add(repo)
+		err := taskCollection.Add(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -247,6 +248,7 @@ func apiReposEdit(c *gin.Context) {
 		// Task: Create fresh collection inside task after lock
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.LocalRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load after lock acquired
 		repo, err := taskCollection.ByName(name)
@@ -259,7 +261,7 @@ func apiReposEdit(c *gin.Context) {
 			_, err := taskCollection.ByName(*b.Name)
 			if err == nil {
 				// already exists
-				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil}, 
+				return &task.ProcessReturnValue{Code: http.StatusConflict, Value: nil},
 					fmt.Errorf("local repo with name %q already exists", *b.Name)
 			}
 			repo.Name = *b.Name
@@ -274,7 +276,7 @@ func apiReposEdit(c *gin.Context) {
 			repo.DefaultComponent = *b.DefaultComponent
 		}
 
-		err = taskCollection.Update(repo)
+		err = taskCollection.Update(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -396,7 +398,7 @@ func apiReposPackagesShow(c *gin.Context) {
 		return
 	}
 
-	err = collection.LoadComplete(repo)
+	err = collection.LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		AbortWithJSONError(c, 500, err)
 		return
@@ -436,6 +438,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 		// Task: Create fresh factory and collection inside task after lock
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.LocalRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load after lock acquired (use captured `name` variable, not gin context)
 		repo, err := taskCollection.ByName(name)
@@ -443,7 +446,7 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 			return &task.ProcessReturnValue{Code: http.StatusNotFound, Value: nil}, err
 		}
 
-		err = taskCollection.LoadComplete(repo)
+		err = taskCollection.LoadComplete(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -472,9 +475,9 @@ func apiReposPackagesAddDelete(c *gin.Context, taskNamePrefix string, cb func(li
 			}
 		}
 
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-		err = taskCollection.Update(repo)
+		err = taskCollection.Update(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -609,6 +612,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 		// Task: Create fresh factory and collection inside task after lock
 		taskCollectionFactory := context.NewCollectionFactory()
 		taskCollection := taskCollectionFactory.LocalRepoCollection()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load after lock acquired
 		repo, err := taskCollection.ByName(name)
@@ -616,7 +620,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
 
-		err = taskCollection.LoadComplete(repo)
+		err = taskCollection.LoadComplete(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, err
 		}
@@ -651,9 +655,9 @@ func apiReposPackageFromDir(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to import package files: %s", err)
 		}
 
-		repo.UpdateRefList(deb.NewPackageRefListFromPackageList(list))
+		repo.UpdateRefList(deb.NewSplitRefListFromPackageList(list))
 
-		err = taskCollection.Update(repo)
+		err = taskCollection.Update(repo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 		}
@@ -759,6 +763,7 @@ func apiReposCopyPackage(c *gin.Context) {
 	maybeRunTaskInBackground(c, taskName, resources, func(_ aptly.Progress, _ *task.Detail) (*task.ProcessReturnValue, error) {
 		// Task: Create fresh factory and collections inside task after lock
 		taskCollectionFactory := context.NewCollectionFactory()
+		taskRefListCollection := taskCollectionFactory.RefListCollection()
 
 		// Fresh load of both repos after lock acquired
 		dstRepo, err := taskCollectionFactory.LocalRepoCollection().ByName(dstRepoName)
@@ -771,12 +776,12 @@ func apiReposCopyPackage(c *gin.Context) {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("src repo error: %s", err)
 		}
 
-		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(dstRepo)
+		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(dstRepo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("dest repo error: %s", err)
 		}
 
-		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(srcRepo)
+		err = taskCollectionFactory.LocalRepoCollection().LoadComplete(srcRepo, taskRefListCollection)
 		if err != nil {
 			return &task.ProcessReturnValue{Code: http.StatusBadRequest, Value: nil}, fmt.Errorf("src repo error: %s", err)
 		}
@@ -860,9 +865,9 @@ func apiReposCopyPackage(c *gin.Context) {
 		if jsonBody.DryRun {
 			reporter.Warning("Changes not saved, as dry run has been requested")
 		} else {
-			dstRepo.UpdateRefList(deb.NewPackageRefListFromPackageList(dstList))
+			dstRepo.UpdateRefList(deb.NewSplitRefListFromPackageList(dstList))
 
-			err = taskCollectionFactory.LocalRepoCollection().Update(dstRepo)
+			err = taskCollectionFactory.LocalRepoCollection().Update(dstRepo, taskRefListCollection)
 			if err != nil {
 				return &task.ProcessReturnValue{Code: http.StatusInternalServerError, Value: nil}, fmt.Errorf("unable to save: %s", err)
 			}
@@ -984,7 +989,7 @@ func apiReposIncludePackageFromDir(c *gin.Context) {
 		_, failedFiles2, err = deb.ImportChangesFiles(
 			changesFiles, reporter, acceptUnsigned, ignoreSignature, forceReplace, noRemoveFiles, verifier,
 			repoTemplate, context.Progress(), taskCollectionFactory.LocalRepoCollection(), taskCollectionFactory.PackageCollection(),
-			context.PackagePool(), taskCollectionFactory.ChecksumCollection, nil, query.Parse)
+			taskCollectionFactory.RefListCollection(), context.PackagePool(), taskCollectionFactory.ChecksumCollection, nil, query.Parse)
 		failedFiles = append(failedFiles, failedFiles2...)
 
 		if err != nil {

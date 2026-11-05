@@ -48,6 +48,8 @@ type Storage interface {
 
 	CreateTemporary() (Storage, error)
 
+	GetRecommendedMaxKVSize() int
+
 	Open() error
 	Close() error
 	CompactDB() error

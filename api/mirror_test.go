@@ -35,7 +35,7 @@ func (s *MirrorSuite) TestCreateMirrorFlatWithAppStream(c *C) {
 		"Name":              "test-flat-appstream",
 		"ArchiveURL":        "http://example.com/repo/",
 		"Distribution":      "./",
-		"DownloadAppStream":  true,
+		"DownloadAppStream": true,
 	})
 	c.Assert(err, IsNil)
 
@@ -59,14 +59,17 @@ func (s *MirrorSuite) TestCreateMirror(c *C) {
 }
 
 func (s *MirrorSuite) TestGetMirrorsIncludesNumPackages(c *C) {
-	collection := s.context.NewCollectionFactory().RemoteRepoCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.RemoteRepoCollection()
+	reflistCollection := collectionFactory.RefListCollection()
 
 	repo, err := deb.NewRemoteRepo("count-mirror", "http://example.com/debian", "stable", []string{"main"}, []string{}, false, false, false, false)
 	c.Assert(err, IsNil)
 
-	err = collection.Add(repo)
+	err = collection.Add(repo, reflistCollection)
 	c.Assert(err, IsNil)
-	putRawDBValue(c, &s.APISuite, repo.RefKey(), makePackageRefList(c).Encode())
+	err = reflistCollection.Update(makePackageRefList(c), repo.RefKey())
+	c.Assert(err, IsNil)
 
 	response, err := s.HTTPRequest("GET", "/api/mirrors", nil)
 	c.Assert(err, IsNil)
@@ -91,11 +94,13 @@ func (s *MirrorSuite) TestGetMirrorsIncludesNumPackages(c *C) {
 }
 
 func (s *MirrorSuite) TestGetMirrorsReturns500OnCorruptRefList(c *C) {
-	collection := s.context.NewCollectionFactory().RemoteRepoCollection()
+	collectionFactory := s.context.NewCollectionFactory()
+	collection := collectionFactory.RemoteRepoCollection()
+	reflistCollection := collectionFactory.RefListCollection()
 
 	repo, err := deb.NewRemoteRepo("broken-mirror", "http://example.com/debian", "stable", []string{"main"}, []string{}, false, false, false, false)
 	c.Assert(err, IsNil)
-	c.Assert(collection.Add(repo), IsNil)
+	c.Assert(collection.Add(repo, reflistCollection), IsNil)
 	putRawDBValue(c, &s.APISuite, repo.RefKey(), []byte("not-msgpack"))
 
 	response, err := s.HTTPRequest("GET", "/api/mirrors", nil)

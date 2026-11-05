@@ -91,9 +91,9 @@ func NewPackageListWithDuplicates(duplicates bool, capacity int) *PackageList {
 }
 
 // NewPackageListFromRefList loads packages list from PackageRefList
-func NewPackageListFromRefList(reflist *PackageRefList, collection *PackageCollection, progress aptly.Progress) (*PackageList, error) {
+func NewPackageListFromRefList(reflist AnyRefList, collection *PackageCollection, progress aptly.Progress) (*PackageList, error) {
 	// empty reflist
-	if reflist == nil {
+	if reflist == nil || reflist.Len() == 0 {
 		return NewPackageList(), nil
 	}
 

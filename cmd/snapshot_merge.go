@@ -24,7 +24,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load snapshot: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(sources[i])
+		err = collectionFactory.SnapshotCollection().LoadComplete(sources[i], collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to load snapshot: %s", err)
 		}
@@ -37,12 +37,19 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("-no-remove and -latest can't be specified together")
 	}
 
-	overrideMatching := !latest && !noRemove
-
-	result := sources[0].RefList()
-	for i := 1; i < len(sources); i++ {
-		result = result.Merge(sources[i].RefList(), overrideMatching, false)
+	rsopts := deb.RefSetOptions{}
+	if !latest && !noRemove {
+		rsopts.Identity = deb.RefSetIdentityWithoutVersion
+	} else {
+		rsopts.Identity = deb.RefSetIdentityWithoutHash
 	}
+
+	rs := deb.NewSplitRefSet(rsopts)
+	for _, source := range sources {
+		rs.AddList(source.RefList())
+	}
+
+	result := rs.ToRefList()
 
 	if latest {
 		result.FilterLatestRefs()
@@ -57,7 +64,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	destination := deb.NewSnapshotFromRefList(args[0], sources, result,
 		fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
 
-	err = collectionFactory.SnapshotCollection().Add(destination)
+	err = collectionFactory.SnapshotCollection().Add(destination, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to create snapshot: %s", err)
 	}

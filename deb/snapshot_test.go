@@ -165,6 +165,7 @@ type SnapshotCollectionSuite struct {
 	snapshot1, snapshot2 *Snapshot
 	snapshot3, snapshot4 *Snapshot
 	collection           *SnapshotCollection
+	reflistCollection    *RefListCollection
 }
 
 var _ = Suite(&SnapshotCollectionSuite{})
@@ -172,6 +173,7 @@ var _ = Suite(&SnapshotCollectionSuite{})
 func (s *SnapshotCollectionSuite) SetUpTest(c *C) {
 	s.db, _ = goleveldb.NewOpenDB(c.MkDir())
 	s.collection = NewSnapshotCollection(s.db)
+	s.reflistCollection = NewRefListCollection(s.db)
 	s.SetUpPackages()
 
 	s.repo1, _ = NewRemoteRepo("yandex", "http://mirror.yandex.ru/debian/", "squeeze", []string{"main"}, []string{}, false, false, false, false)
@@ -199,10 +201,10 @@ func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
 	_, err := s.collection.ByName("snap1")
 	c.Assert(err, ErrorMatches, "*.not found")
 
-	c.Assert(s.collection.Add(s.snapshot1), IsNil)
-	c.Assert(s.collection.Add(s.snapshot1), ErrorMatches, ".*already exists")
+	c.Assert(s.collection.Add(s.snapshot1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot1, s.reflistCollection), ErrorMatches, ".*already exists")
 
-	c.Assert(s.collection.Add(s.snapshot2), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2, s.reflistCollection), IsNil)
 
 	snapshot, err := s.collection.ByName("snap1")
 	c.Assert(err, IsNil)
@@ -223,20 +225,20 @@ func (s *SnapshotCollectionSuite) TestAddByNameByUUID(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestUpdateLoadComplete(c *C) {
-	c.Assert(s.collection.Update(s.snapshot1), IsNil)
+	c.Assert(s.collection.Update(s.snapshot1, s.reflistCollection), IsNil)
 
 	collection := NewSnapshotCollection(s.db)
 	snapshot, err := collection.ByName("snap1")
 	c.Assert(err, IsNil)
 	c.Assert(snapshot.packageRefs, IsNil)
 
-	c.Assert(s.collection.LoadComplete(snapshot), IsNil)
+	c.Assert(s.collection.LoadComplete(snapshot, s.reflistCollection), IsNil)
 	c.Assert(snapshot.NumPackages(), Equals, 3)
 }
 
 func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
-	_ = s.collection.Add(s.snapshot1)
-	_ = s.collection.Add(s.snapshot2)
+	_ = s.collection.Add(s.snapshot1, s.reflistCollection)
+	_ = s.collection.Add(s.snapshot2, s.reflistCollection)
 
 	count := 0
 	err := s.collection.ForEach(func(*Snapshot) error {
@@ -256,10 +258,10 @@ func (s *SnapshotCollectionSuite) TestForEachAndLen(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestForEachSorted(c *C) {
-	_ = s.collection.Add(s.snapshot2)
-	_ = s.collection.Add(s.snapshot1)
-	_ = s.collection.Add(s.snapshot4)
-	_ = s.collection.Add(s.snapshot3)
+	_ = s.collection.Add(s.snapshot2, s.reflistCollection)
+	_ = s.collection.Add(s.snapshot1, s.reflistCollection)
+	_ = s.collection.Add(s.snapshot4, s.reflistCollection)
+	_ = s.collection.Add(s.snapshot3, s.reflistCollection)
 
 	names := []string{}
 
@@ -273,8 +275,8 @@ func (s *SnapshotCollectionSuite) TestForEachSorted(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
-	c.Assert(s.collection.Add(s.snapshot1), IsNil)
-	c.Assert(s.collection.Add(s.snapshot2), IsNil)
+	c.Assert(s.collection.Add(s.snapshot1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2, s.reflistCollection), IsNil)
 
 	c.Check(s.collection.ByRemoteRepoSource(s.repo1), DeepEquals, []*Snapshot{s.snapshot1})
 	c.Check(s.collection.ByRemoteRepoSource(s.repo2), DeepEquals, []*Snapshot{s.snapshot2})
@@ -285,10 +287,10 @@ func (s *SnapshotCollectionSuite) TestFindByRemoteRepoSource(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestFindByLocalRepoSource(c *C) {
-	c.Assert(s.collection.Add(s.snapshot1), IsNil)
-	c.Assert(s.collection.Add(s.snapshot2), IsNil)
-	c.Assert(s.collection.Add(s.snapshot3), IsNil)
-	c.Assert(s.collection.Add(s.snapshot4), IsNil)
+	c.Assert(s.collection.Add(s.snapshot1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot3, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot4, s.reflistCollection), IsNil)
 
 	c.Check(s.collection.ByLocalRepoSource(s.lrepo1), DeepEquals, []*Snapshot{s.snapshot3})
 	c.Check(s.collection.ByLocalRepoSource(s.lrepo2), DeepEquals, []*Snapshot{s.snapshot4})
@@ -303,11 +305,11 @@ func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
 	snapshot4 := NewSnapshotFromRefList("snap4", []*Snapshot{s.snapshot1}, s.reflist, "desc2")
 	snapshot5 := NewSnapshotFromRefList("snap5", []*Snapshot{snapshot3}, s.reflist, "desc3")
 
-	c.Assert(s.collection.Add(s.snapshot1), IsNil)
-	c.Assert(s.collection.Add(s.snapshot2), IsNil)
-	c.Assert(s.collection.Add(snapshot3), IsNil)
-	c.Assert(s.collection.Add(snapshot4), IsNil)
-	c.Assert(s.collection.Add(snapshot5), IsNil)
+	c.Assert(s.collection.Add(s.snapshot1, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(s.snapshot2, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(snapshot3, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(snapshot4, s.reflistCollection), IsNil)
+	c.Assert(s.collection.Add(snapshot5, s.reflistCollection), IsNil)
 
 	list := s.collection.BySnapshotSource(s.snapshot1)
 	sorter, _ := newSnapshotSorter("name", list)
@@ -319,8 +321,8 @@ func (s *SnapshotCollectionSuite) TestFindSnapshotSource(c *C) {
 }
 
 func (s *SnapshotCollectionSuite) TestDrop(c *C) {
-	_ = s.collection.Add(s.snapshot1)
-	_ = s.collection.Add(s.snapshot2)
+	_ = s.collection.Add(s.snapshot1, s.reflistCollection)
+	_ = s.collection.Add(s.snapshot2, s.reflistCollection)
 
 	snap, _ := s.collection.ByUUID(s.snapshot1.UUID)
 	c.Check(snap, Equals, s.snapshot1)
