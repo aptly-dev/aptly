@@ -580,7 +580,7 @@ func (s *PackageListSuite) TestFilterLatestInvalidVersions(c *C) {
 	_ = list.Add(valid)
 	_ = list.Add(invalid)
 
-	filtered, err := list.FilterLatest()
+	filtered, err := list.FilterLatest(1)
 	c.Assert(err, IsNil)
 	c.Check(filtered.Len(), Equals, 1)
 	c.Check(filtered.Has(valid), Equals, true)
@@ -588,7 +588,7 @@ func (s *PackageListSuite) TestFilterLatestInvalidVersions(c *C) {
 	invalidOnly := NewPackageList()
 	_ = invalidOnly.Add(&Package{Name: "pkg", Version: "1.0-", Architecture: "amd64"})
 	_ = invalidOnly.Add(&Package{Name: "pkg", Version: "2.0-", Architecture: "amd64"})
-	filtered, err = invalidOnly.FilterLatest()
+	filtered, err = invalidOnly.FilterLatest(1)
 	c.Assert(err, IsNil)
 	c.Check(filtered.Len(), Equals, 1)
 }

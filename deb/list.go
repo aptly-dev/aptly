@@ -199,15 +199,38 @@ func (l *PackageList) FilterLatest(count int) (*PackageList, error) {
 
 	for _, pkgs := range groups {
 		// sort from latest to oldest
-		sort.Slice(pkgs, func(i, j int) bool {
-			return CompareVersions(pkgs[i].Version, pkgs[j].Version) > 0
+		sort.SliceStable(pkgs, func(i, j int) bool {
+			cmp, cmpErr := CompareVersions(pkgs[i].Version, pkgs[j].Version)
+			switch cmpErr {
+			case LeftInvalid, BothInvalid:
+				return false
+			case RightInvalid:
+				return true
+			}
+			return cmp > 0
 		})
 
 		versions := 0
 		for i, p := range pkgs {
-			if i == 0 || CompareVersions(p.Version, pkgs[i-1].Version) != 0 {
-				versions++
-				if versions > count {
+			if i == 0 {
+				// first element always included
+			} else {
+				cmp, cmpErr := CompareVersions(p.Version, pkgs[i-1].Version)
+				switch cmpErr {
+				case LeftInvalid, BothInvalid:
+					// invalid version is different from previous
+					versions++
+				case RightInvalid:
+					// previous was invalid, current is valid — different
+					versions++
+				default:
+					if cmp == 0 {
+						// same version, skip
+					} else {
+						versions++
+					}
+				}
+				if versions >= count {
 					break
 				}
 			}
