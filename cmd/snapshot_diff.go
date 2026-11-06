@@ -60,10 +60,10 @@ func aptlySnapshotDiff(cmd *commander.Command, args []string) error {
 				verA = "-"
 				verB = pdiff.Right.Version
 				pkg = pdiff.Right.Name
-				arch = pdiff.Right.Architecture
+				arch = pdiff.Right.IndexArchitecture()
 			} else {
 				pkg = pdiff.Left.Name
-				arch = pdiff.Left.Architecture
+				arch = pdiff.Left.IndexArchitecture()
 				verA = pdiff.Left.Version
 				if pdiff.Right == nil {
 					verB = "-"

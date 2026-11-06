@@ -240,7 +240,7 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 			if rel < 0 {
 				// compaction: +(,A) -(B,) --> !(A,B)
 				if len(result) > 0 && result[len(result)-1].Left == nil && result[len(result)-1].Right.Name == pl.Name &&
-					result[len(result)-1].Right.Architecture == pl.Architecture {
+					result[len(result)-1].Right.IndexArchitecture() == pl.IndexArchitecture() {
 					result[len(result)-1] = PackageDiff{Left: pl, Right: result[len(result)-1].Right}
 				} else {
 					result = append(result, PackageDiff{Left: pl, Right: nil})
@@ -250,7 +250,7 @@ func (l *PackageRefList) Diff(r *PackageRefList, packageCollection *PackageColle
 			} else {
 				// compaction: -(A,) +(,B) --> !(A,B)
 				if len(result) > 0 && result[len(result)-1].Right == nil && result[len(result)-1].Left.Name == pr.Name &&
-					result[len(result)-1].Left.Architecture == pr.Architecture {
+					result[len(result)-1].Left.IndexArchitecture() == pr.IndexArchitecture() {
 					result[len(result)-1] = PackageDiff{Left: result[len(result)-1].Left, Right: pr}
 				} else {
 					result = append(result, PackageDiff{Left: nil, Right: pr})

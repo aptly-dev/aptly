@@ -544,3 +544,25 @@ class UpdateMirror31Test(BaseTest):
     """
     runCmd = "aptly mirror update -max-versions=-1 varnish"
     expectedCode = 1
+
+
+class UpdateMirror32Test(BaseTest):
+    """
+    update mirrors: architecture variants
+    """
+    sortOutput = True
+    longTest = False
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures "
+        "-architectures=amd64,amd64v3 "
+        "-filter='Name (3cpio)' "
+        "arch-variant http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/ resolute main",
+    ]
+    runCmd = "aptly mirror update --ignore-signatures arch-variant"
+
+    def check(self):
+        self.check_output()
+        self.check_cmd_output(
+            "aptly mirror search -format='{{.ShortKey}}' arch-variant 'Name (3cpio)'",
+            "packages",
+        )

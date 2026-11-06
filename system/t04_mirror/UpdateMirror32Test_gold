@@ -1,0 +1,12 @@
+Downloading: http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/dists/resolute/Release
+Downloading & parsing package files...
+Downloading: http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/dists/resolute/main/binary-amd64/Packages.gz
+Downloading: http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/dists/resolute/main/binary-amd64v3/Packages.gz
+Applying filter...
+Packages filtered: 9974 -> 2.
+Building download queue...
+Download queue: 2 items (0.54 MiB)
+Downloading: http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/pool/main/r/rust-threecpio/3cpio_0.14.0-1ubuntu1_amd64v3.deb
+Downloading: http://repo.aptly.info/system-tests/archive.ubuntu.com/ubuntu/pool/main/r/rust-threecpio/3cpio_0.14.0-1ubuntu1_amd64.deb
+
+Mirror `arch-variant` has been updated successfully.
