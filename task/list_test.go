@@ -2,6 +2,7 @@ package task
 
 import (
 	"errors"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 
@@ -51,4 +52,38 @@ func (s *ListSuite) TestList(c *check.C) {
 	_, deleteErr := list.DeleteTaskByID(task.ID)
 	c.Check(deleteErr, check.IsNil)
 	list.Stop()
+}
+
+// A holds r1 and r2; B (r1) and C (r2) queue behind it. When A finishes,
+// both are runnable and C must not wait for the long-running B.
+func (s *ListSuite) TestAllUnblockedTasksStart(c *check.C) {
+	list := NewList()
+	releaseA := make(chan struct{})
+	releaseB := make(chan struct{})
+	defer close(releaseB)
+
+	a, _ := list.RunTaskInBackground("A", []string{"r1", "r2"}, func(aptly.Progress, *Detail) (*ProcessReturnValue, error) {
+		<-releaseA
+		return nil, nil
+	})
+	_, _ = list.RunTaskInBackground("B", []string{"r1"}, func(aptly.Progress, *Detail) (*ProcessReturnValue, error) {
+		<-releaseB
+		return nil, nil
+	})
+	taskC, _ := list.RunTaskInBackground("C", []string{"r2"}, func(aptly.Progress, *Detail) (*ProcessReturnValue, error) {
+		return nil, nil
+	})
+
+	close(releaseA)
+	_, _ = list.WaitForTaskByID(a.ID)
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if t, _ := list.GetTaskByID(taskC.ID); t.State == SUCCEEDED {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t, _ := list.GetTaskByID(taskC.ID)
+	c.Fatalf("C still in state %d 2s after its resources were freed", t.State)
 }
