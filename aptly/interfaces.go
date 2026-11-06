@@ -87,6 +87,12 @@ type PublishedStorage interface {
 	ReadLink(path string) (string, error)
 }
 
+// PublishedStorageBulkRemover optionally removes multiple files efficiently.
+type PublishedStorageBulkRemover interface {
+	// RemoveFiles removes multiple files under public path.
+	RemoveFiles(paths []string) error
+}
+
 // FileSystemPublishedStorage is published storage on filesystem
 type FileSystemPublishedStorage interface {
 	// PublicPath returns root of public part

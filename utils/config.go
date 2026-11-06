@@ -205,7 +205,7 @@ type S3PublishRoot struct {
 	StorageClass            string `json:"storageClass"               yaml:"storage_class"`
 	EncryptionMethod        string `json:"encryptionMethod"           yaml:"encryption_method"`
 	PlusWorkaround          bool   `json:"plusWorkaround"             yaml:"plus_workaround"`
-	DisableMultiDel         bool   `json:"disableMultiDel"            yaml:"disable_multidel"`
+	EnableMultiDel          bool   `json:"enableMultiDel,omitempty"   yaml:"enable_multidel,omitempty"`
 	ForceSigV2              bool   `json:"forceSigV2"                 yaml:"force_sigv2"`
 	ForceVirtualHostedStyle bool   `json:"forceVirtualHostedStyle"    yaml:"force_virtualhosted_style"`
 	Debug                   bool   `json:"debug"                      yaml:"debug"`
