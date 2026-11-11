@@ -48,6 +48,10 @@ func (f *PackageFile) GetPoolPath(packagePool aptly.PackagePool) (string, error)
 	return f.PoolPath, err
 }
 
+func (f *PackageFile) isSHA512Only() bool {
+	return f.Checksums.MD5 == "" && f.Checksums.SHA256 == "" && f.Checksums.SHA512 != ""
+}
+
 // DownloadURL return relative URL to package download location
 func (f *PackageFile) DownloadURL() string {
 	return filepath.Join(f.downloadPath, f.Filename)

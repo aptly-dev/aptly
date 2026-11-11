@@ -718,6 +718,63 @@ func (repo *RemoteRepo) FilterLatest(count int) (oldLen, newLen int, err error) 
 	return
 }
 
+// restoreSHA512OnlyFiles reuses the previous update's pool path and checksums
+// for files indexed by SHA512 alone, whose pool path cannot be derived.
+func (repo *RemoteRepo) restoreSHA512OnlyFiles(p *Package, packageCollection *PackageCollection) error {
+	if repo.packageRefs == nil {
+		return nil
+	}
+
+	files := p.Files()
+	sha512Only := false
+	for _, f := range files {
+		if f.isSHA512Only() {
+			sha512Only = true
+			break
+		}
+	}
+	if !sha512Only {
+		return nil
+	}
+
+	// packageRefs is built from a list unique by ShortKey, so at most one ref matches.
+	prefix := append(p.ShortKey(""), ' ')
+	refs := repo.packageRefs.Refs
+	i := sort.Search(len(refs), func(j int) bool { return bytes.Compare(refs[j], prefix) >= 0 })
+	if i == len(refs) || !bytes.HasPrefix(refs[i], prefix) {
+		return nil
+	}
+
+	prevP, err := packageCollection.ByKey(refs[i])
+	if errors.Is(err, database.ErrNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	restored := false
+	for idx := range files {
+		f := &files[idx]
+		if !f.isSHA512Only() {
+			continue
+		}
+		for _, prevF := range prevP.Files() {
+			if prevF.Filename == f.Filename && prevF.Checksums.Size == f.Checksums.Size && prevF.Checksums.SHA512 == f.Checksums.SHA512 {
+				f.Checksums = prevF.Checksums
+				f.PoolPath = prevF.PoolPath
+				restored = true
+				break
+			}
+		}
+	}
+
+	if restored {
+		p.UpdateFiles(files)
+	}
+	return nil
+}
+
 // BuildDownloadQueue builds queue, discards current PackageList
 func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packageCollection *PackageCollection, checksumStorage aptly.ChecksumStorage, skipExistingPackages bool) (queue []PackageDownloadTask, downloadSize int64, err error) {
 	if repo.packageList == nil {
@@ -729,6 +786,10 @@ func (repo *RemoteRepo) BuildDownloadQueue(packagePool aptly.PackagePool, packag
 	seen := make(map[string]int, repo.packageList.Len())
 
 	err = repo.packageList.ForEach(func(p *Package) error {
+		if err2 := repo.restoreSHA512OnlyFiles(p, packageCollection); err2 != nil {
+			return err2
+		}
+
 		if repo.packageRefs != nil && skipExistingPackages {
 			if repo.packageRefs.Has(p) {
 				// skip this package, but load checksums/files from package in DB
