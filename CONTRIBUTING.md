@@ -105,6 +105,10 @@ To build the development docker image, run:
 make docker-image
 ```
 
+#### Working with VSCode and devcontainers
+
+A ready-to-use [Dev Container](https://containers.dev/) configuration is provided in `.devcontainer/devcontainer.json`. To use it, open the repository in Visual Studio Code (or another Dev Container-compatible IDE) and choose to reopen the project in the container; the IDE will then build and start the configured development environment.
+
 #### Build aptly
 
 To build the aptly in the development docker container, run:

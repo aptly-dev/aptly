@@ -1,0 +1,39 @@
+{
+  "name": "aptly - Go 1.26",
+  "image": "mcr.microsoft.com/devcontainers/go:2-1.26-bookworm",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "runArgs": ["--network=host"],
+  "initializeCommand": "mkdir -p \"${localEnv:HOME}/.codex\" \"${localEnv:HOME}/.claude\"",
+  "mounts": [
+    "source=/etc/ssl/certs/ca-certificates.crt,target=/etc/ssl/certs/ca-certificates.crt,type=bind,readonly",
+    "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind",
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind"
+  ],
+  "containerEnv": {
+    "HTTP_PROXY": "${localEnv:HTTP_PROXY}",
+    "HTTPS_PROXY": "${localEnv:HTTPS_PROXY}",
+    "NO_PROXY": "${localEnv:NO_PROXY}",
+    "http_proxy": "${localEnv:http_proxy}",
+    "https_proxy": "${localEnv:https_proxy}",
+    "no_proxy": "${localEnv:no_proxy}"
+  },
+  "postCreateCommand": "go mod download",
+  "forwardPorts": [3142],
+  "portsAttributes": {
+    "3142": {
+      "label": "aptly development server"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.Go"
+      ],
+      "settings": {
+        "go.toolsManagement.autoUpdate": true,
+        "go.useLanguageServer": true
+      }
+    }
+  }
+}
