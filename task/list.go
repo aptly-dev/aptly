@@ -72,23 +72,23 @@ func (list *List) consumer() {
 					task.wgTask.Done()
 					list.wg.Done()
 
-					unlocked := false
+					// start every idle task whose resources are now free
+					var ready []*Task
 					for _, t := range list.tasks {
-						if t.State == IDLE {
+						if t.State == IDLE && !t.queued {
 							// check resources
 							blockingTasks := list.usedResources.UsedBy(t.Resources)
 							if len(blockingTasks) == 0 {
 								list.usedResources.MarkInUse(t.Resources, t)
-								// unlock list since queueing may block
-								list.Unlock()
-								unlocked = true
-								list.queue <- t
-								break
+								t.queued = true
+								ready = append(ready, t)
 							}
 						}
 					}
-					if !unlocked {
-						list.Unlock()
+					// unlock list since queueing may block
+					list.Unlock()
+					for _, t := range ready {
+						list.queue <- t
 					}
 				}
 			}()
@@ -220,6 +220,7 @@ func (list *List) RunTaskInBackground(name string, resources []string, process P
 	tasks := list.usedResources.UsedBy(resources)
 	if len(tasks) == 0 {
 		list.usedResources.MarkInUse(task.Resources, task)
+		task.queued = true
 		// queueing task might block if channel not ready, unlock list before queueing
 		list.Unlock()
 		list.queue <- task
