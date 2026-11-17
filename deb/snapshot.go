@@ -43,7 +43,7 @@ type Snapshot struct {
 	// AppStream files: relative path → pool path (pass-through from mirror)
 	AppStreamFiles map[string]string `json:",omitempty"`
 
-	packageRefs *PackageRefList
+	packageRefs *SplitRefList
 }
 
 // NewSnapshotFromRepository creates snapshot from current state of repository
@@ -80,7 +80,7 @@ func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
 	}
 
 	if snap.packageRefs == nil {
-		snap.packageRefs = NewPackageRefList()
+		snap.packageRefs = NewSplitRefList()
 	}
 
 	return snap, nil
@@ -88,11 +88,13 @@ func NewSnapshotFromLocalRepo(name string, repo *LocalRepo) (*Snapshot, error) {
 
 // NewSnapshotFromPackageList creates snapshot from PackageList
 func NewSnapshotFromPackageList(name string, sources []*Snapshot, list *PackageList, description string) *Snapshot {
-	return NewSnapshotFromRefList(name, sources, NewPackageRefListFromPackageList(list), description)
+	sl := NewSplitRefList()
+	sl.Replace(NewPackageRefListFromPackageList(list))
+	return NewSnapshotFromRefList(name, sources, sl, description)
 }
 
-// NewSnapshotFromRefList creates snapshot from PackageRefList
-func NewSnapshotFromRefList(name string, sources []*Snapshot, list *PackageRefList, description string) *Snapshot {
+// NewSnapshotFromRefList creates snapshot from SplitRefList
+func NewSnapshotFromRefList(name string, sources []*Snapshot, list *SplitRefList, description string) *Snapshot {
 	sourceUUIDs := make([]string, len(sources))
 	for i := range sources {
 		sourceUUIDs[i] = sources[i].UUID
@@ -134,7 +136,7 @@ func (s *Snapshot) NumPackages() int {
 }
 
 // RefList returns list of package refs in snapshot
-func (s *Snapshot) RefList() *PackageRefList {
+func (s *Snapshot) RefList() *SplitRefList {
 	return s.packageRefs
 }
 
@@ -142,7 +144,6 @@ func (s *Snapshot) RefList() *PackageRefList {
 func (s *Snapshot) Key() []byte {
 	return []byte("S" + s.UUID)
 }
-
 
 // RefKey is a unique id for package reference list
 func (s *Snapshot) RefKey() []byte {
@@ -221,13 +222,13 @@ func NewSnapshotCollection(db database.Storage) *SnapshotCollection {
 }
 
 // Add appends new repo to collection and saves it
-func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
+func (collection *SnapshotCollection) Add(snapshot *Snapshot, reflistCollection *RefListCollection) error {
 	_, err := collection.ByName(snapshot.Name)
 	if err == nil {
 		return fmt.Errorf("snapshot with name %s already exists", snapshot.Name)
 	}
 
-	err = collection.Update(snapshot)
+	err = collection.Update(snapshot, reflistCollection)
 	if err != nil {
 		return err
 	}
@@ -237,26 +238,29 @@ func (collection *SnapshotCollection) Add(snapshot *Snapshot) error {
 }
 
 // Update stores updated information about snapshot in DB
-func (collection *SnapshotCollection) Update(snapshot *Snapshot) error {
+func (collection *SnapshotCollection) Update(snapshot *Snapshot, reflistCollection *RefListCollection) error {
 	batch := collection.db.CreateBatch()
 
-	_ = batch.Put(snapshot.Key(), snapshot.Encode())
+	err := batch.Put(snapshot.Key(), snapshot.Encode())
+	if err != nil {
+		return err
+	}
+
 	if snapshot.packageRefs != nil {
-		_ = batch.Put(snapshot.RefKey(), snapshot.packageRefs.Encode())
+		rb := reflistCollection.NewBatch(batch)
+		err = reflistCollection.UpdateInBatch(snapshot.packageRefs, snapshot.RefKey(), rb)
+		if err != nil {
+			return err
+		}
 	}
 
 	return batch.Write()
 }
 
 // LoadComplete loads additional information about snapshot
-func (collection *SnapshotCollection) LoadComplete(snapshot *Snapshot) error {
-	encoded, err := collection.db.Get(snapshot.RefKey())
-	if err != nil {
-		return err
-	}
-
-	snapshot.packageRefs = &PackageRefList{}
-	return snapshot.packageRefs.Decode(encoded)
+func (collection *SnapshotCollection) LoadComplete(snapshot *Snapshot, reflistCollection *RefListCollection) error {
+	snapshot.packageRefs = NewSplitRefList()
+	return reflistCollection.LoadComplete(snapshot.packageRefs, snapshot.RefKey())
 }
 
 func (collection *SnapshotCollection) search(filter func(*Snapshot) bool, unique bool) []*Snapshot {

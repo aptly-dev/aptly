@@ -24,7 +24,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 			return fmt.Errorf("unable to load snapshot: %s", err)
 		}
 
-		err = collectionFactory.SnapshotCollection().LoadComplete(sources[i])
+		err = collectionFactory.SnapshotCollection().LoadComplete(sources[i], collectionFactory.RefListCollection())
 		if err != nil {
 			return fmt.Errorf("unable to load snapshot: %s", err)
 		}
@@ -57,7 +57,7 @@ func aptlySnapshotMerge(cmd *commander.Command, args []string) error {
 	destination := deb.NewSnapshotFromRefList(args[0], sources, result,
 		fmt.Sprintf("Merged from sources: %s", strings.Join(sourceDescription, ", ")))
 
-	err = collectionFactory.SnapshotCollection().Add(destination)
+	err = collectionFactory.SnapshotCollection().Add(destination, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to create snapshot: %s", err)
 	}

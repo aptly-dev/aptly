@@ -38,7 +38,7 @@ func aptlyMirrorShowTxt(_ *commander.Command, args []string) error {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -103,12 +103,13 @@ func aptlyMirrorShowJSON(_ *commander.Command, args []string) error {
 
 	name := args[0]
 
-	repo, err := context.NewCollectionFactory().RemoteRepoCollection().ByName(name)
+	collectionFactory := context.NewCollectionFactory()
+	repo, err := collectionFactory.RemoteRepoCollection().ByName(name)
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
 
-	err = context.NewCollectionFactory().RemoteRepoCollection().LoadComplete(repo)
+	err = collectionFactory.RemoteRepoCollection().LoadComplete(repo, collectionFactory.RefListCollection())
 	if err != nil {
 		return fmt.Errorf("unable to show: %s", err)
 	}
@@ -116,21 +117,19 @@ func aptlyMirrorShowJSON(_ *commander.Command, args []string) error {
 	// include packages if requested
 	withPackages := context.Flags().Lookup("with-packages").Value.Get().(bool)
 	if withPackages {
-		if repo.RefList() != nil {
-			var list *deb.PackageList
-			list, err = deb.NewPackageListFromRefList(repo.RefList(), context.NewCollectionFactory().PackageCollection(), context.Progress())
-			if err != nil {
-				return fmt.Errorf("unable to get package list: %s", err)
-			}
-
-			list.PrepareIndex()
-			_ = list.ForEachIndexed(func(p *deb.Package) error {
-				repo.Packages = append(repo.Packages, p.GetFullName())
-				return nil
-			})
-
-			sort.Strings(repo.Packages)
+		var list *deb.PackageList
+		list, err = deb.NewPackageListFromRefList(repo.RefList(), collectionFactory.PackageCollection(), context.Progress())
+		if err != nil {
+			return fmt.Errorf("unable to get package list: %s", err)
 		}
+
+		list.PrepareIndex()
+		_ = list.ForEachIndexed(func(p *deb.Package) error {
+			repo.Packages = append(repo.Packages, p.GetFullName())
+			return nil
+		})
+
+		sort.Strings(repo.Packages)
 	}
 
 	var output []byte
