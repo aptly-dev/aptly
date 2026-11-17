@@ -19,7 +19,7 @@ func TestFindDanglingReferences(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dangling, err := deb.FindDanglingReferences(reflist, packages)
+	dangling, err := deb.FindDanglingReferences(deb.NewSplitRefListFromRefList(reflist), packages)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func TestFindDanglingReferences(t *testing.T) {
 		Refs: [][]byte{[]byte("P dangling 1.2.3")},
 	}
 
-	compareRefs(t, exp, dangling)
+	compareRefs(t, exp, dangling.Flatten())
 }
 
 func compareRefs(t *testing.T, exp, got *deb.PackageRefList) {

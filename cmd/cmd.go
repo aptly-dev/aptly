@@ -21,10 +21,10 @@ const (
 )
 
 // ListPackagesRefList shows list of packages in PackageRefList
-func ListPackagesRefList(reflist *deb.PackageRefList, collectionFactory *deb.CollectionFactory) (err error) {
+func ListPackagesRefList(reflist deb.AnyRefList, collectionFactory *deb.CollectionFactory) (err error) {
 	fmt.Printf("Packages:\n")
 
-	if reflist == nil {
+	if reflist == nil || reflist.Len() == 0 {
 		return
 	}
 
