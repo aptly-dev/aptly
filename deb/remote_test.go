@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/console"
@@ -731,6 +732,50 @@ func (s *RemoteRepoSuite) TestDownloadFlat(c *C) {
 	c.Assert(s.flat.packageRefs, NotNil)
 }
 
+func (s *RemoteRepoSuite) TestDownloadSHA512OnlyFlat(c *C) {
+	downloader := http.NewFakeDownloader()
+	fetchIndexes := func(packages string) {
+		downloader.ExpectResponse("http://repos.express42.com/virool/precise/Release", exampleReleaseFile)
+		downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.bz2", &http.Error{Code: 404})
+		downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.gz", &http.Error{Code: 404})
+		downloader.ExpectError("http://repos.express42.com/virool/precise/Packages.xz", &http.Error{Code: 404})
+		downloader.ExpectResponse("http://repos.express42.com/virool/precise/Packages", packages)
+
+		c.Assert(s.flat.Fetch(downloader, nil, true), IsNil)
+		c.Assert(s.flat.DownloadPackageIndexes(s.progress, downloader, nil, s.collectionFactory, true, true), IsNil)
+		c.Assert(downloader.Empty(), Equals, true)
+	}
+
+	fetchIndexes(exampleSHA512OnlyPackagesFile)
+	queue, _, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Assert(queue, HasLen, 1)
+
+	tmpPath := c.MkDir() + "/amanda-client.deb"
+	c.Assert(os.WriteFile(tmpPath, []byte("abc"), 0644), IsNil)
+	queue[0].File.PoolPath, err = s.packagePool.Import(tmpPath, queue[0].File.Filename, &queue[0].File.Checksums, true, s.cs)
+	c.Assert(err, IsNil)
+	c.Assert(s.flat.FinalizeDownload(s.collectionFactory, nil), IsNil)
+
+	for _, skipExisting := range []bool{true, false} {
+		fetchIndexes(exampleSHA512OnlyPackagesFile)
+		queue, size, err := s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, skipExisting)
+		c.Assert(err, IsNil)
+		c.Check(size, Equals, int64(0))
+		c.Check(queue, HasLen, 0)
+		c.Check(s.flat.packageList.ForEach(func(p *Package) error {
+			c.Check(s.flat.packageRefs.Has(p), Equals, true)
+			return nil
+		}), IsNil)
+		c.Assert(s.flat.FinalizeDownload(s.collectionFactory, nil), IsNil)
+	}
+
+	fetchIndexes(strings.Replace(exampleSHA512OnlyPackagesFile, "SHA512: ddaf35", "SHA512: 00af35", 1))
+	queue, _, err = s.flat.BuildDownloadQueue(s.packagePool, s.collectionFactory.PackageCollection(), s.cs, false)
+	c.Assert(err, IsNil)
+	c.Check(queue, HasLen, 1)
+}
+
 func (s *RemoteRepoSuite) TestDownloadWithSourcesFlat(c *C) {
 	s.flat.DownloadSources = true
 
@@ -1172,6 +1217,16 @@ Size: 3
 MD5sum: d16fb36f0911f878998c136191af705e
 SHA1: 66b27417d37e024c46526c2f6d358a754fc552f3
 SHA256: 3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282
+`
+
+const exampleSHA512OnlyPackagesFile = `Package: amanda-client
+Source: amanda
+Version: 1:3.3.1-3~bpo60+1
+Architecture: i386
+Description: Advanced Maryland Automatic Network Disk Archiver (Client)
+Filename: pool/main/a/amanda/amanda-client_3.3.1-3~bpo60+1_amd64.deb
+Size: 3
+SHA512: ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f
 `
 
 const exampleInstallerHashSumFile = `82f69d557f0004d2923fb03e4fb47d18187e37768dbfd0c99756f8a6c68a6d3a  ./MANIFEST
