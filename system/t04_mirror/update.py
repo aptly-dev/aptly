@@ -566,3 +566,21 @@ class UpdateMirror32Test(BaseTest):
             "aptly mirror search -format='{{.ShortKey}}' arch-variant 'Name (3cpio)'",
             "packages",
         )
+
+
+class UpdateMirror33Test(BaseTest):
+    """
+    update mirrors: packages indexed by SHA512 only are not downloaded again
+    """
+    fixtureCmds = [
+        "aptly mirror create --ignore-signatures sha512-only ${url} hardy main",
+        "aptly mirror update --ignore-signatures sha512-only",
+    ]
+    fixtureWebServer = "test_release_sha512"
+    configOverride = {
+        "downloadRetries": 0,
+    }
+    runCmd = "aptly mirror update --ignore-signatures sha512-only"
+
+    def gold_processor(self, gold):
+        return string.Template(gold).substitute({'url': self.webServerUrl})

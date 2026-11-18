@@ -1,0 +1,12 @@
+Origin: test
+Label: sha512-only
+Suite: test
+Codename: hardy
+Date: Sat, 19 Oct 2013 13:54:21 UTC
+Architectures: amd64
+Components: main
+Description: Packages indexed by SHA512 only
+SHA256:
+ ad011bf6c8594241540f8786cf2f91b3854dd3ad39581b96ee8ccaf685675c24      467 main/binary-amd64/Packages
+SHA512:
+ bad5e2fc368c8f1db04bdb9c79ff5c590bf0e4c31e5afb0b55f9235812aeb304e3fe6ec8ba486783582aa327d240c030162086c0b67af7bc7a29b1115da3adc5      467 main/binary-amd64/Packages

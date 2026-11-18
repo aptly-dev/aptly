@@ -1,0 +1,7 @@
+Downloading: ${url}dists/hardy/Release
+Downloading & parsing package files...
+Downloading: ${url}dists/hardy/main/binary-amd64/Packages
+Building download queue...
+Download queue: 0 items (0 B)
+
+Mirror `sha512-only` has been updated successfully.
