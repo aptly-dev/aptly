@@ -7,6 +7,7 @@
   "initializeCommand": "mkdir -p \"${localEnv:HOME}/.codex\" \"${localEnv:HOME}/.claude\"",
   "mounts": [
     "source=/etc/ssl/certs/ca-certificates.crt,target=/etc/ssl/certs/ca-certificates.crt,type=bind,readonly",
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
     "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind"
   ],
