@@ -54,6 +54,7 @@ type Task struct {
 	State              State
 	Resources          []string
 	wgTask             *sync.WaitGroup
+	queued             bool // handed to the consumer, so it must not be queued again
 }
 
 // NewTask creates new task
