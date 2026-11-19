@@ -8,7 +8,9 @@ import (
 )
 
 func initTransport(transport *http.Transport) {
-	transport.DialContext = http.DefaultTransport.(*http.Transport).DialContext
+        if transport.DialContext == nil {
+		transport.DialContext = http.DefaultTransport.(*http.Transport).DialContext
+        }
 	transport.MaxIdleConns = http.DefaultTransport.(*http.Transport).MaxIdleConns
 	transport.IdleConnTimeout = http.DefaultTransport.(*http.Transport).IdleConnTimeout
 }
