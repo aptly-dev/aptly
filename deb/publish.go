@@ -8,9 +8,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,6 +41,15 @@ type repoSourceItem struct {
 	localRepo *LocalRepo
 	// Package references is SourceKind == "local"
 	packageRefs *PackageRefList
+}
+
+type asyncPublishedStorageRemover interface {
+	CommitAsyncRemoves() error
+	RollbackAsyncRemoves() error
+}
+
+type asyncPublishedStorageRemoveBatcher interface {
+	BeginAsyncRemoveBatch() aptly.PublishedStorage
 }
 
 // PublishedRepo is a published for http/ftp representation of snapshot as Debian repository
@@ -923,7 +934,73 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		progress.InitBar(count, false, aptly.BarPublishGeneratePackageFiles)
 	}
 
-	for component, list := range lists {
+	var legacyContentIndexesMu sync.Mutex
+	var progressMu sync.Mutex
+	var linkLocksMu sync.Mutex
+	linkLocks := map[string]*sync.Mutex{}
+
+	addProgress := func(n int) {
+		if progress == nil {
+			return
+		}
+		progressMu.Lock()
+		defer progressMu.Unlock()
+		progress.AddBar(n)
+	}
+
+	legacyContentIndex := func(key string) *ContentsIndex {
+		legacyContentIndexesMu.Lock()
+		defer legacyContentIndexesMu.Unlock()
+
+		contentIndex := legacyContentIndexes[key]
+		if contentIndex == nil {
+			contentIndex = NewContentsIndex(tempDB)
+			legacyContentIndexes[key] = contentIndex
+		}
+		return contentIndex
+	}
+
+	linkLock := func(key string) *sync.Mutex {
+		linkLocksMu.Lock()
+		defer linkLocksMu.Unlock()
+
+		mu := linkLocks[key]
+		if mu == nil {
+			mu = &sync.Mutex{}
+			linkLocks[key] = mu
+		}
+		return mu
+	}
+
+	parallelPackages := os.Getenv("APTLY_PARALLEL_PACKAGES") != "0"
+	packageWorkerCount := runtime.NumCPU()
+	if workerCountEnv := os.Getenv("APTLY_PARALLEL_PACKAGE_WORKERS"); workerCountEnv != "" {
+		if workerCount, parseErr := strconv.Atoi(workerCountEnv); parseErr == nil && workerCount > 0 {
+			packageWorkerCount = workerCount
+		}
+	}
+	if packageWorkerCount < 1 {
+		packageWorkerCount = 1
+	}
+
+	var packageWorkerTokens chan struct{}
+	if parallelPackages {
+		packageWorkerTokens = make(chan struct{}, packageWorkerCount)
+	}
+
+	type packageIndexStanza struct {
+		arch      string
+		udeb      bool
+		installer bool
+		data      []byte
+	}
+
+	type packageWorkResult struct {
+		hadUdeb bool
+		stanzas []packageIndexStanza
+	}
+
+	processComponent := func(component string, list *PackageList) error {
 		hadUdebs := false
 
 		// For all architectures, pregenerate packages/sources files
@@ -934,21 +1011,31 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		list.PrepareIndex()
 
 		contentIndexes := map[string]*ContentsIndex{}
+		var contentIndexesMu sync.Mutex
 
-		err = list.ForEachIndexed(func(pkg *Package) error {
-			if progress != nil {
-				progress.AddBar(1)
+		componentContentIndex := func(key string) *ContentsIndex {
+			contentIndexesMu.Lock()
+			defer contentIndexesMu.Unlock()
+
+			contentIndex := contentIndexes[key]
+			if contentIndex == nil {
+				contentIndex = NewContentsIndex(tempDB)
+				contentIndexes[key] = contentIndex
 			}
+			return contentIndex
+		}
+
+		processPackage := func(pkg *Package) (packageWorkResult, error) {
+			result := packageWorkResult{hadUdeb: pkg.IsUdeb}
+			addProgress(1)
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesIndexArchitecture(arch) {
-					hadUdebs = hadUdebs || pkg.IsUdeb
-
 					var relPath string
 					if !pkg.IsInstaller {
 						poolDir, err2 := pkg.PoolDirectory()
 						if err2 != nil {
-							return err2
+							return result, err2
 						}
 						if p.MultiDist {
 							relPath = filepath.Join("pool", p.Distribution, component, poolDir)
@@ -964,9 +1051,20 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 						}
 					}
 
-					err = pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
+					var linkKey strings.Builder
+					linkKey.WriteString(p.Prefix)
+					linkKey.WriteByte(0)
+					linkKey.WriteString(relPath)
+					for _, file := range pkg.Files() {
+						linkKey.WriteByte(0)
+						linkKey.WriteString(file.Filename)
+					}
+					linkMu := linkLock(linkKey.String())
+					linkMu.Lock()
+					err := pkg.LinkFromPool(publishedStorage, packagePool, p.Prefix, relPath, forceOverwrite)
+					linkMu.Unlock()
 					if err != nil {
-						return err
+						return result, err
 					}
 					break
 				}
@@ -980,38 +1078,42 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 
 			for _, arch := range p.Architectures {
 				if pkg.MatchesIndexArchitecture(arch) {
-					var bufWriter *bufio.Writer
-
 					if !p.SkipContents && !pkg.IsInstaller {
 						key := fmt.Sprintf("%s-%v", arch, pkg.IsUdeb)
 						qualifiedName := []byte(pkg.QualifiedName())
-						contents := pkg.Contents(packagePool, progress)
+						contentsProgress := progress
+						if parallelPackages {
+							contentsProgress = nil
+						}
+						contents := pkg.Contents(packagePool, contentsProgress)
 
-						for _, contentIndexesMap := range []map[string]*ContentsIndex{contentIndexes, legacyContentIndexes} {
-							contentIndex := contentIndexesMap[key]
-
-							if contentIndex == nil {
-								contentIndex = NewContentsIndex(tempDB)
-								contentIndexesMap[key] = contentIndex
-							}
-
-							_ = contentIndex.Push(qualifiedName, contents, batch)
+						if err := componentContentIndex(key).Push(qualifiedName, contents, batch); err != nil {
+							return result, err
+						}
+						if err := legacyContentIndex(key).Push(qualifiedName, contents, batch); err != nil {
+							return result, err
 						}
 					}
 
-					bufWriter, err = indexes.PackageIndex(component, arch, pkg.IsUdeb, pkg.IsInstaller, p.Distribution).BufWriter()
+					var stanzaBuffer bytes.Buffer
+					stanzaWriter := bufio.NewWriter(&stanzaBuffer)
+					err := pkg.Stanza().WriteTo(stanzaWriter, pkg.IsSource, false, pkg.IsInstaller)
 					if err != nil {
-						return err
+						return result, err
+					}
+					if err := stanzaWriter.WriteByte('\n'); err != nil {
+						return result, err
+					}
+					if err := stanzaWriter.Flush(); err != nil {
+						return result, err
 					}
 
-					err = pkg.Stanza().WriteTo(bufWriter, pkg.IsSource, false, pkg.IsInstaller)
-					if err != nil {
-						return err
-					}
-					err = bufWriter.WriteByte('\n')
-					if err != nil {
-						return err
-					}
+					result.stanzas = append(result.stanzas, packageIndexStanza{
+						arch:      arch,
+						udeb:      pkg.IsUdeb,
+						installer: pkg.IsInstaller,
+						data:      stanzaBuffer.Bytes(),
+					})
 				}
 			}
 
@@ -1020,13 +1122,91 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 			pkg.extra = nil
 			pkg.contents = nil
 
-			return batch.Write()
-		})
-
-		if err != nil {
-			return fmt.Errorf("unable to process packages: %s", err)
+			err := batch.Write()
+			return result, err
 		}
 
+		writePackageStanzas := func(result packageWorkResult) error {
+			for _, stanza := range result.stanzas {
+				bufWriter, err := indexes.PackageIndex(component, stanza.arch, stanza.udeb, stanza.installer, p.Distribution).BufWriter()
+				if err != nil {
+					return err
+				}
+
+				if _, err := bufWriter.Write(stanza.data); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+
+		if parallelPackages && list.Len() > 1 {
+			results := make([]packageWorkResult, len(list.packagesIndex))
+			jobs := make(chan int)
+
+			workerCount := min(packageWorkerCount, len(list.packagesIndex))
+			var wg sync.WaitGroup
+			var errMu sync.Mutex
+			var firstErr error
+
+			setErr := func(err error) {
+				if err == nil {
+					return
+				}
+				errMu.Lock()
+				defer errMu.Unlock()
+				if firstErr == nil {
+					firstErr = err
+				}
+			}
+
+			wg.Add(workerCount)
+			for i := 0; i < workerCount; i++ {
+				go func() {
+					defer wg.Done()
+					for index := range jobs {
+						packageWorkerTokens <- struct{}{}
+						result, err := processPackage(list.packagesIndex[index])
+						<-packageWorkerTokens
+						if err != nil {
+							setErr(err)
+							continue
+						}
+						results[index] = result
+					}
+				}()
+			}
+
+			for index := range list.packagesIndex {
+				jobs <- index
+			}
+			close(jobs)
+			wg.Wait()
+
+			if firstErr != nil {
+				return fmt.Errorf("unable to process packages: %s", firstErr)
+			}
+
+			for _, result := range results {
+				hadUdebs = hadUdebs || result.hadUdeb
+				if err := writePackageStanzas(result); err != nil {
+					return fmt.Errorf("unable to process packages: %s", err)
+				}
+			}
+		} else {
+			err = list.ForEachIndexed(func(pkg *Package) error {
+				result, err := processPackage(pkg)
+				if err != nil {
+					return err
+				}
+				hadUdebs = hadUdebs || result.hadUdeb
+				return writePackageStanzas(result)
+			})
+
+			if err != nil {
+				return fmt.Errorf("unable to process packages: %s", err)
+			}
+		}
 		for _, arch := range p.Architectures {
 			for _, udeb := range []bool{true, false} {
 				index := contentIndexes[fmt.Sprintf("%s-%v", arch, udeb)]
@@ -1034,8 +1214,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 					continue
 				}
 
-				var bufWriter *bufio.Writer
-				bufWriter, err = indexes.ContentsIndex(component, arch, udeb).BufWriter()
+				bufWriter, err := indexes.ContentsIndex(component, arch, udeb).BufWriter()
 				if err != nil {
 					return fmt.Errorf("unable to generate contents index: %v", err)
 				}
@@ -1078,8 +1257,7 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 					release["Version"] = p.Version
 				}
 
-				var bufWriter *bufio.Writer
-				bufWriter, err = indexes.ReleaseIndex(component, arch, udeb).BufWriter()
+				bufWriter, err := indexes.ReleaseIndex(component, arch, udeb).BufWriter()
 				if err != nil {
 					return fmt.Errorf("unable to get ReleaseIndex writer: %s", err)
 				}
@@ -1090,8 +1268,45 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 				}
 			}
 		}
+		return nil
 	}
 
+	componentNames := make([]string, 0, len(lists))
+	for component := range lists {
+		componentNames = append(componentNames, component)
+	}
+	sort.Strings(componentNames)
+
+	if os.Getenv("APTLY_PARALLEL_COMPONENTS") != "0" {
+		var wg sync.WaitGroup
+		var errMu sync.Mutex
+		var firstErr error
+		for _, component := range componentNames {
+			component := component
+			list := lists[component]
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				if err := processComponent(component, list); err != nil {
+					errMu.Lock()
+					if firstErr == nil {
+						firstErr = err
+					}
+					errMu.Unlock()
+				}
+			}()
+		}
+		wg.Wait()
+		if firstErr != nil {
+			return firstErr
+		}
+	} else {
+		for _, component := range componentNames {
+			if err := processComponent(component, lists[component]); err != nil {
+				return err
+			}
+		}
+	}
 	// Skeleton and AppStream (DEP-11) files are keyed by component and already
 	// iterate over every component, so they must be emitted once for the whole
 	// publish -- not once per component, which would append each payload again.
@@ -1261,7 +1476,8 @@ func (p *PublishedRepo) Publish(packagePool aptly.PackagePool, publishedStorageP
 		return err
 	}
 
-	return indexes.RenameFiles()
+	err = indexes.RenameFiles()
+	return err
 }
 
 // RemoveFiles removes files that were created by Publish
@@ -1273,7 +1489,11 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 	if err != nil {
 		return err
 	}
+	return p.removeFiles(publishedStorage, removePrefix, removePoolComponents, progress)
+}
 
+func (p *PublishedRepo) removeFiles(publishedStorage aptly.PublishedStorage, removePrefix bool,
+	removePoolComponents []string, progress aptly.Progress) error {
 	// I. Easy: remove whole prefix (meta+packages)
 	if removePrefix {
 		err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists"), progress)
@@ -1285,7 +1505,7 @@ func (p *PublishedRepo) RemoveFiles(publishedStorageProvider aptly.PublishedStor
 	}
 
 	// II. Medium: remove metadata, it can't be shared as prefix/distribution as unique
-	err = publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
+	err := publishedStorage.RemoveDirs(filepath.Join(p.Prefix, "dists", p.Distribution), progress)
 	if err != nil {
 		return err
 	}
@@ -1665,6 +1885,16 @@ func (collection *PublishedRepoCollection) CleanupAfterMultiDistToggle(published
 func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(publishedStorageProvider aptly.PublishedStorageProvider,
 	published *PublishedRepo, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
 
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
+	if err != nil {
+		return err
+	}
+	return collection.cleanupPrefixComponentFiles(publishedStorage, published, cleanComponents, collectionFactory, progress)
+}
+
+func (collection *PublishedRepoCollection) cleanupPrefixComponentFiles(publishedStorage aptly.PublishedStorage,
+	published *PublishedRepo, cleanComponents []string, collectionFactory *CollectionFactory, progress aptly.Progress) error {
+
 	var err error
 
 	collection.loadList()
@@ -1674,10 +1904,6 @@ func (collection *PublishedRepoCollection) CleanupPrefixComponentFiles(published
 	distribution := published.Distribution
 
 	rootPath := filepath.Join(prefix, "dists", distribution)
-	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(published.Storage)
-	if err != nil {
-		return err
-	}
 
 	sort.Strings(cleanComponents)
 	publishedComponents := published.Components()
@@ -1807,6 +2033,22 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		return err
 	}
 
+	publishedStorage, err := publishedStorageProvider.GetPublishedStorage(repo.Storage)
+	if err != nil {
+		return err
+	}
+	removeStorage := publishedStorage
+	if batcher, ok := publishedStorage.(asyncPublishedStorageRemoveBatcher); ok {
+		removeStorage = batcher.BeginAsyncRemoveBatch()
+	}
+	asyncRemover, _ := removeStorage.(asyncPublishedStorageRemover)
+	asyncRemovesCommitted := false
+	defer func() {
+		if asyncRemover != nil && !asyncRemovesCommitted {
+			_ = asyncRemover.RollbackAsyncRemoves()
+		}
+	}()
+
 	removePrefix := true
 	removePoolComponents := repo.Components()
 	cleanComponents := []string{}
@@ -1830,7 +2072,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		}
 	}
 
-	err = repo.RemoveFiles(publishedStorageProvider, removePrefix, removePoolComponents, progress)
+	err = repo.removeFiles(removeStorage, removePrefix, removePoolComponents, progress)
 	if err != nil {
 		if !force {
 			return fmt.Errorf("published files removal failed, use -force-drop to override: %s", err)
@@ -1842,7 +2084,7 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		nil, collection.list[len(collection.list)-1], collection.list[:len(collection.list)-1]
 
 	if !skipCleanup && len(cleanComponents) > 0 {
-		err = collection.CleanupPrefixComponentFiles(publishedStorageProvider, repo, cleanComponents, collectionFactory, progress)
+		err = collection.cleanupPrefixComponentFiles(removeStorage, repo, cleanComponents, collectionFactory, progress)
 		if err != nil {
 			if !force {
 				return fmt.Errorf("cleanup failed, use -force-drop to override: %s", err)
@@ -1857,5 +2099,18 @@ func (collection *PublishedRepoCollection) Remove(publishedStorageProvider aptly
 		_ = batch.Delete(repo.RefKey(component))
 	}
 
-	return batch.Write()
+	err = batch.Write()
+	if err != nil {
+		return err
+	}
+
+	asyncRemovesCommitted = true
+	if asyncRemover != nil {
+		err = asyncRemover.CommitAsyncRemoves()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
