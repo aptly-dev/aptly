@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
+	"time"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/utils"
@@ -18,6 +21,20 @@ import (
 // syncFile is a seam to allow tests to force fsync failures (e.g. ENOSPC).
 // In production it calls (*os.File).Sync().
 var syncFile = func(f *os.File) error { return f.Sync() }
+
+type asyncRemoveEntry struct {
+	original string
+	target   string
+}
+
+var asyncRemoveSequence uint64
+
+type asyncRemoveBatchPublishedStorage struct {
+	*PublishedStorage
+	batchID string
+	mu      sync.Mutex
+	entries []asyncRemoveEntry
+}
 
 // PublishedStorage abstract file system with public dirs (published repos)
 type PublishedStorage struct {
@@ -131,10 +148,168 @@ func (storage *PublishedStorage) RemoveDirs(path string, progress aptly.Progress
 		panic("trying to remove the root directory")
 	}
 	filepath := filepath.Join(storage.rootPath, path)
+	if os.Getenv("APTLY_ASYNC_REMOVE") != "0" {
+		batch := storage.newAsyncRemoveBatch()
+		if err := batch.RemoveDirs(path, progress); err != nil {
+			_ = batch.RollbackAsyncRemoves()
+			return err
+		}
+		return batch.CommitAsyncRemoves()
+	}
 	if progress != nil {
 		progress.Printf("Removing %s...\n", filepath)
 	}
-	return os.RemoveAll(filepath)
+	if os.Getenv("APTLY_FAST_REMOVE") == "0" {
+		return os.RemoveAll(filepath)
+	}
+	return removeAllFast(filepath)
+}
+
+// BeginAsyncRemoveBatch creates an isolated removal batch. Directories removed
+// through the returned storage are renamed into a batch-specific trash
+// directory, then physically deleted only when CommitAsyncRemoves is called.
+func (storage *PublishedStorage) BeginAsyncRemoveBatch() aptly.PublishedStorage {
+	return storage.newAsyncRemoveBatch()
+}
+
+func (storage *PublishedStorage) newAsyncRemoveBatch() *asyncRemoveBatchPublishedStorage {
+	sequence := atomic.AddUint64(&asyncRemoveSequence, 1)
+	batchID := fmt.Sprintf("%d-%d-%d", time.Now().UnixNano(), os.Getpid(), sequence)
+	return &asyncRemoveBatchPublishedStorage{
+		PublishedStorage: storage,
+		batchID:          batchID,
+	}
+}
+
+func (storage *asyncRemoveBatchPublishedStorage) RemoveDirs(path string, progress aptly.Progress) error {
+	if len(path) <= 0 {
+		panic("trying to remove the root directory")
+	}
+	fullPath := filepath.Join(storage.rootPath, path)
+	if progress != nil {
+		progress.Printf("Removing %s...\n", fullPath)
+	}
+	if os.Getenv("APTLY_ASYNC_REMOVE") == "0" {
+		return storage.PublishedStorage.RemoveDirs(path, nil)
+	}
+	return storage.stageAsyncRemove(path, fullPath)
+}
+
+func (storage *asyncRemoveBatchPublishedStorage) Remove(path string) error {
+	if len(path) <= 0 {
+		panic("trying to remove empty path")
+	}
+	fullPath := filepath.Join(storage.rootPath, path)
+	if os.Getenv("APTLY_ASYNC_REMOVE") == "0" {
+		return storage.PublishedStorage.Remove(path)
+	}
+	return storage.stageAsyncRemove(path, fullPath)
+}
+
+func (storage *asyncRemoveBatchPublishedStorage) stageAsyncRemove(path, fullPath string) error {
+	trashDir := filepath.Join(storage.rootPath, ".aptly-trash", storage.batchID)
+	if err := os.MkdirAll(trashDir, 0777); err != nil {
+		return err
+	}
+
+	sequence := atomic.AddUint64(&asyncRemoveSequence, 1)
+	target := filepath.Join(trashDir, fmt.Sprintf("%d-%s", sequence, trashName(path)))
+	if err := os.Rename(fullPath, target); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	storage.mu.Lock()
+	storage.entries = append(storage.entries, asyncRemoveEntry{
+		original: fullPath,
+		target:   target,
+	})
+	storage.mu.Unlock()
+
+	return nil
+}
+
+// CommitAsyncRemoves starts physical deletion of directories previously staged
+// by RemoveDirs in async mode. It is intentionally separate from RemoveDirs so
+// callers can update their metadata first, then make the staged deletion final.
+func (storage *asyncRemoveBatchPublishedStorage) CommitAsyncRemoves() error {
+	entries := storage.popAsyncRemoves()
+	if len(entries) == 0 {
+		return nil
+	}
+
+	return removeAllFastAsync(filepath.Join(storage.rootPath, ".aptly-trash", storage.batchID))
+}
+
+// RollbackAsyncRemoves moves directories staged by RemoveDirs in async mode back
+// to their original location. It is used when metadata update fails.
+func (storage *asyncRemoveBatchPublishedStorage) RollbackAsyncRemoves() error {
+	entries := storage.popAsyncRemoves()
+
+	for i := len(entries) - 1; i >= 0; i-- {
+		entry := entries[i]
+		if err := os.MkdirAll(filepath.Dir(entry.original), 0777); err != nil {
+			return err
+		}
+		if err := os.Rename(entry.target, entry.original); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	if len(entries) > 0 {
+		_ = os.Remove(filepath.Join(storage.rootPath, ".aptly-trash", storage.batchID))
+	}
+
+	return nil
+}
+
+func (storage *asyncRemoveBatchPublishedStorage) popAsyncRemoves() []asyncRemoveEntry {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
+
+	entries := storage.entries
+	storage.entries = nil
+
+	return entries
+}
+
+func trashName(path string) string {
+	name := filepath.Clean(path)
+	name = strings.TrimPrefix(name, string(filepath.Separator))
+	name = strings.Trim(name, ".")
+	name = strings.ReplaceAll(name, string(filepath.Separator), "_")
+	if name == "" {
+		return "removed"
+	}
+	return name
+}
+
+func removeAllFast(path string) error {
+	cmd := exec.Command("rm", "-rf", "--", path)
+	output, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	if _, lookupErr := exec.LookPath("rm"); lookupErr != nil {
+		return os.RemoveAll(path)
+	}
+	return fmt.Errorf("rm -rf failed: %w: %s", err, strings.TrimSpace(string(output)))
+}
+
+func removeAllFastAsync(path string) error {
+	cmd := exec.Command("rm", "-rf", "--", path)
+	if err := cmd.Start(); err != nil {
+		if _, lookupErr := exec.LookPath("rm"); lookupErr != nil {
+			return os.RemoveAll(path)
+		}
+		return fmt.Errorf("unable to start async rm -rf: %w", err)
+	}
+	if err := cmd.Process.Release(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // LinkFromPool links package file from pool to dist's pool location

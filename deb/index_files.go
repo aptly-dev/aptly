@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -25,6 +26,7 @@ type indexFiles struct {
 	acquireByHash    bool
 	byHashAlgorithms []string
 	skipBz2          bool
+	mu               sync.Mutex
 }
 
 type indexFile struct {
@@ -102,7 +104,7 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}
-		file.parent.generatedFiles[file.relativePath+ext] = checksumInfo
+		file.parent.recordGeneratedFile(file.relativePath+ext, checksumInfo)
 	}
 
 	filedir := filepath.Dir(filepath.Join(file.parent.basePath, file.relativePath))
@@ -133,12 +135,14 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 		}
 
 		if file.parent.suffix != "" {
-			file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+ext)] =
-				filepath.Join(file.parent.basePath, file.relativePath+ext)
+			file.parent.recordRename(
+				filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+ext),
+				filepath.Join(file.parent.basePath, file.relativePath+ext),
+			)
 		}
 
 		if file.acquireByHash {
-			sums := file.parent.generatedFiles[file.relativePath+ext]
+			sums := file.parent.generatedFile(file.relativePath + ext)
 			all := map[string]string{"SHA512": sums.SHA512, "SHA256": sums.SHA256, "SHA1": sums.SHA1, "MD5Sum": sums.MD5}
 			algorithms, algErr := file.parent.hashAlgorithms()
 			if algErr != nil {
@@ -162,8 +166,10 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 			}
 
 			if file.parent.suffix != "" {
-				file.parent.renameMap[filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+gpgExt)] =
-					filepath.Join(file.parent.basePath, file.relativePath+gpgExt)
+				file.parent.recordRename(
+					filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+gpgExt),
+					filepath.Join(file.parent.basePath, file.relativePath+gpgExt),
+				)
 			}
 
 			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, file.relativePath+file.parent.suffix+gpgExt),
@@ -181,8 +187,10 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 			}
 
 			if file.parent.suffix != "" {
-				file.parent.renameMap[filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix)] =
-					filepath.Join(file.parent.basePath, "In"+file.relativePath)
+				file.parent.recordRename(
+					filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix),
+					filepath.Join(file.parent.basePath, "In"+file.relativePath),
+				)
 			}
 
 			err = file.parent.publishedStorage.PutFile(filepath.Join(file.parent.basePath, "In"+file.relativePath+file.parent.suffix),
@@ -306,7 +314,31 @@ func newIndexFiles(publishedStorage aptly.PublishedStorage, basePath, tempDir, s
 	}
 }
 
+func (files *indexFiles) recordGeneratedFile(relativePath string, checksumInfo utils.ChecksumInfo) {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
+	files.generatedFiles[relativePath] = checksumInfo
+}
+
+func (files *indexFiles) generatedFile(relativePath string) utils.ChecksumInfo {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
+	return files.generatedFiles[relativePath]
+}
+
+func (files *indexFiles) recordRename(oldName, newName string) {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
+	files.renameMap[oldName] = newName
+}
+
 func (files *indexFiles) PackageIndex(component, arch string, udeb bool, installer bool, distribution string) *indexFile {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
 	if arch == ArchitectureSource {
 		udeb = false
 	}
@@ -348,6 +380,9 @@ func (files *indexFiles) PackageIndex(component, arch string, udeb bool, install
 }
 
 func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexFile {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
 	if arch == ArchitectureSource {
 		udeb = false
 	}
@@ -383,6 +418,9 @@ func (files *indexFiles) ReleaseIndex(component, arch string, udeb bool) *indexF
 }
 
 func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *indexFile {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
 	if arch == ArchitectureSource {
 		udeb = false
 	}
@@ -415,6 +453,9 @@ func (files *indexFiles) ContentsIndex(component, arch string, udeb bool) *index
 }
 
 func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
 	if arch == ArchitectureSource {
 		udeb = false
 	}
@@ -447,6 +488,9 @@ func (files *indexFiles) LegacyContentsIndex(arch string, udeb bool) *indexFile 
 }
 
 func (files *indexFiles) SkelIndex(component, path string) *indexFile {
+	files.mu.Lock()
+	defer files.mu.Unlock()
+
 	key := fmt.Sprintf("si-%s-%s", component, path)
 	file, ok := files.indexes[key]
 
@@ -485,10 +529,58 @@ func (files *indexFiles) FinalizeAll(progress aptly.Progress, signer pgp.Signer)
 		defer progress.ShutdownBar()
 	}
 
+	parallelFiles := make([]*indexFile, 0, len(files.indexes))
+	serialFiles := make([]*indexFile, 0)
+
 	for _, file := range files.indexes {
+		if signer != nil && (file.detachedSign || file.clearSign) {
+			serialFiles = append(serialFiles, file)
+			continue
+		}
+		parallelFiles = append(parallelFiles, file)
+	}
+
+	if len(parallelFiles) > 0 {
+		workerCount := min(max(runtime.NumCPU(), 1), len(parallelFiles))
+		jobs := make(chan *indexFile)
+		errs := make(chan error, len(parallelFiles))
+
+		var wg sync.WaitGroup
+		wg.Add(workerCount)
+		for i := 0; i < workerCount; i++ {
+			go func() {
+				defer wg.Done()
+				for file := range jobs {
+					errs <- file.Finalize(nil)
+				}
+			}()
+		}
+
+		for _, file := range parallelFiles {
+			jobs <- file
+		}
+		close(jobs)
+
+		wg.Wait()
+		close(errs)
+
+		for finalizeErr := range errs {
+			if finalizeErr != nil && err == nil {
+				err = finalizeErr
+			}
+			if progress != nil {
+				progress.AddBar(1)
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, file := range serialFiles {
 		err = file.Finalize(signer)
 		if err != nil {
-			return
+			return err
 		}
 		if progress != nil {
 			progress.AddBar(1)

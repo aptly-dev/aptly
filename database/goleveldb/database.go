@@ -19,6 +19,11 @@ func internalOpen(path string, throttleCompaction bool) (*leveldb.DB, error) {
 		o.CompactionL0Trigger = 32
 		o.WriteL0PauseTrigger = 96
 		o.WriteL0SlowdownTrigger = 64
+		o.BlockCacheCapacity = 128 * opt.MiB
+		o.CompactionTableSize = 64 * opt.MiB
+		o.CompactionTableSizeMultiplier = 2
+		o.NoSync = true
+		o.WriteBuffer = 256 * opt.MiB
 	}
 
 	return leveldb.OpenFile(path, o)
