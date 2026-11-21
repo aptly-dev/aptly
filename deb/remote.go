@@ -794,7 +794,7 @@ func (repo *RemoteRepo) FinalizeDownload(collectionFactory *CollectionFactory, p
 		}
 		// download process might have updated checksums
 		p.UpdateFiles(p.Files())
-		return collectionFactory.PackageCollection().UpdateInTransaction(p, transaction)
+		return collectionFactory.PackageCollection().UpdateInWriter(p, transaction)
 	})
 
 	if err == nil {

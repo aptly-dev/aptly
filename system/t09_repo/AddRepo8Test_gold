@@ -1,4 +1,6 @@
 Loading packages...
+Calculating checksums of 1 file(s)
+Importing 1 file(s)
 [!] Unable to add package: package already exists and is different: pyspi_0.6.1-1.3_source
 [!] Some files were skipped due to errors:
   /pyspi_0.6.1-1.3.conflict.dsc

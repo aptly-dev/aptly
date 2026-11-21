@@ -98,7 +98,7 @@ func (file *indexFile) Finalize(signer pgp.Signer) error {
 	for _, ext := range cksumExts {
 		var checksumInfo utils.ChecksumInfo
 
-		checksumInfo, err = utils.ChecksumsForFile(file.tempFilename + ext)
+		checksumInfo, err = utils.ChecksumsForFile(file.tempFilename+ext, nil)
 		if err != nil {
 			return fmt.Errorf("unable to collect checksums: %s", err)
 		}

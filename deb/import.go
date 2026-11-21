@@ -1,11 +1,14 @@
 package deb
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
-	"sort"
+	"runtime"
+	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/aptly-dev/aptly/aptly"
 	"github.com/aptly-dev/aptly/pgp"
@@ -13,8 +16,14 @@ import (
 	"github.com/saracen/walker"
 )
 
+// FileWithSize holds a file path and its size
+type FileWithSize struct {
+	Path string
+	Size int64
+}
+
 // CollectPackageFiles walks filesystem collecting all candidates for package files
-func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles, otherFiles, failedFiles []string) {
+func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (packageFiles []FileWithSize, otherFiles, failedFiles []string) {
 	packageFilesLock := &sync.Mutex{}
 	otherFilesLock := &sync.Mutex{}
 
@@ -35,7 +44,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 					strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
 					packageFilesLock.Lock()
 					defer packageFilesLock.Unlock()
-					packageFiles = append(packageFiles, path)
+					packageFiles = append(packageFiles, FileWithSize{Path: path, Size: info.Size()})
 				} else if strings.HasSuffix(info.Name(), ".buildinfo") {
 					otherFilesLock.Lock()
 					defer otherFilesLock.Unlock()
@@ -53,7 +62,7 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 		} else {
 			if strings.HasSuffix(info.Name(), ".deb") || strings.HasSuffix(info.Name(), ".udeb") ||
 				strings.HasSuffix(info.Name(), ".dsc") || strings.HasSuffix(info.Name(), ".ddeb") {
-				packageFiles = append(packageFiles, location)
+				packageFiles = append(packageFiles, FileWithSize{Path: location, Size: info.Size()})
 			} else if strings.HasSuffix(info.Name(), ".buildinfo") {
 				otherFiles = append(otherFiles, location)
 			} else {
@@ -64,14 +73,17 @@ func CollectPackageFiles(locations []string, reporter aptly.ResultReporter) (pac
 		}
 	}
 
-	sort.Strings(packageFiles)
+	slices.SortFunc(packageFiles, func(a, b FileWithSize) int {
+		return strings.Compare(a.Path, b.Path)
+	})
 
 	return
 }
 
 // ImportPackageFiles imports files into local repository
-func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace bool, verifier pgp.Verifier,
-	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, restriction PackageQuery,
+func ImportPackageFiles(list *PackageList, packageFiles []FileWithSize, forceReplace bool, verifier pgp.Verifier,
+	pool aptly.PackagePool, collection *PackageCollection, reporter aptly.ResultReporter, progress aptly.Progress,
+	restriction PackageQuery,
 	checksumStorageProvider aptly.ChecksumStorageProvider) (processedFiles []string, failedFiles []string, err error) {
 	if forceReplace {
 		list.PrepareIndex()
@@ -79,12 +91,77 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 	checksumStorage := checksumStorageProvider(collection.db)
 
-	for _, file := range packageFiles {
+	// Sort larger files before small ones, as larger files take longer to hash
+	// and thus result in a long non-parallelized "tail" if they are processed
+	// closer to the end.
+	fileSizeOrdering := make([]int, len(packageFiles))
+	for i := range packageFiles {
+		fileSizeOrdering[i] = i
+	}
+
+	slices.SortFunc(fileSizeOrdering, func(a, b int) int {
+		return -cmp.Compare(packageFiles[a].Size, packageFiles[b].Size)
+	})
+
+	if progress != nil {
+		progress.Printf("Calculating checksums of %d file(s)\n", len(packageFiles))
+		progress.InitBar(int64(len(packageFiles)), false, aptly.BarGeneralImportFiles)
+	}
+
+	var nextOrdIdx atomic.Int64
+	packageChecksums := make([]utils.ChecksumInfo, len(packageFiles))
+	packageChecksumErrors := make([]error, len(packageFiles))
+
+	var wg sync.WaitGroup
+	for range min(runtime.GOMAXPROCS(0), len(packageFiles)) {
+		wg.Go(func() {
+			var buf [512 * 1024]byte
+
+			for {
+				ordIdx := nextOrdIdx.Add(1) - 1
+				if ordIdx >= int64(len(packageFiles)) {
+					return
+				}
+
+				i := fileSizeOrdering[ordIdx]
+				fsz := packageFiles[i]
+				checksum, err := utils.ChecksumsForFile(fsz.Path, buf[:])
+				if err != nil {
+					packageChecksumErrors[i] = err
+				} else {
+					packageChecksums[i] = checksum
+				}
+
+				if progress != nil {
+					progress.AddBar(1)
+				}
+			}
+		})
+	}
+
+	wg.Wait()
+
+	if progress != nil {
+		progress.ShutdownBar()
+		progress.Printf("Importing %d file(s)\n", len(packageFiles))
+	}
+
+	for i, fsz := range packageFiles {
 		var (
 			stanza Stanza
 			p      *Package
 		)
 
+		file := fsz.Path
+
+		if err := packageChecksumErrors[i]; err != nil {
+			// Computing the checksum already failed above.
+			reporter.Warning("Unable to read file %s: %s", file, err)
+			failedFiles = append(failedFiles, file)
+			continue
+		}
+
+		checksums := packageChecksums[i]
 		candidateProcessedFiles := []string{}
 		isSourcePackage := strings.HasSuffix(file, ".dsc")
 		isUdebPackage := strings.HasSuffix(file, ".udeb")
@@ -140,12 +217,6 @@ func ImportPackageFiles(list *PackageList, packageFiles []string, forceReplace b
 
 		if isSourcePackage {
 			files = p.Files()
-		}
-
-		var checksums utils.ChecksumInfo
-		checksums, err = utils.ChecksumsForFile(file)
-		if err != nil {
-			return nil, nil, err
 		}
 
 		mainPackageFile := PackageFile{

@@ -132,7 +132,7 @@ func (c *Changes) Prepare() error {
 	for _, file := range c.Files {
 		var info utils.ChecksumInfo
 
-		info, err = utils.ChecksumsForFile(filepath.Join(c.TempDir, file.Filename))
+		info, err = utils.ChecksumsForFile(filepath.Join(c.TempDir, file.Filename), nil)
 		if err != nil {
 			return err
 		}
@@ -376,7 +376,7 @@ func ImportChangesFiles(changesFiles []string, reporter aptly.ResultReporter, ac
 		var processedFiles2, failedFiles2 []string
 
 		processedFiles2, failedFiles2, err = ImportPackageFiles(list, packageFiles, forceReplace, verifier, pool,
-			packageCollection, reporter, restriction, checksumStorageProvider)
+			packageCollection, reporter, progress, restriction, checksumStorageProvider)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to import package files: %s", err)

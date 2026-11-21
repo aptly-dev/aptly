@@ -327,7 +327,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 		err := os.WriteFile(tmpPath, []byte("Contents"), 0644)
 		c.Assert(err, IsNil)
 
-		sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
+		sourceChecksum, err := utils.ChecksumsForFile(tmpPath, nil)
 		c.Assert(err, IsNil)
 
 		srcPoolPath, err := pool.Import(tmpPath, t.sourcePath, &utils.ChecksumInfo{MD5: "c1df1da7a1ce305a3b60af9d5733ac1d"}, false, s.cs)
@@ -380,7 +380,7 @@ func (s *PublishedStorageSuite) TestLinkFromPool(c *C) {
 	err := os.WriteFile(tmpPath, []byte("cONTENTS"), 0644)
 	c.Assert(err, IsNil)
 
-	sourceChecksum, err := utils.ChecksumsForFile(tmpPath)
+	sourceChecksum, err := utils.ChecksumsForFile(tmpPath, nil)
 	c.Assert(err, IsNil)
 
 	srcPoolPath, err := pool.Import(tmpPath, "mars-invaders_1.03.deb", &utils.ChecksumInfo{MD5: "02bcda7a1ce305a3b60af9d5733ac1d"}, true, s.cs)
@@ -525,7 +525,7 @@ func (s *DiskFullSuite) TestLinkFromPoolCopyOutOfSpace(c *C) {
 	err := cmd.Run()
 	c.Assert(err, IsNil)
 
-	sourceChecksum, err := utils.ChecksumsForFile(largeFile)
+	sourceChecksum, err := utils.ChecksumsForFile(largeFile, nil)
 	c.Assert(err, IsNil)
 
 	srcPoolPath, err := pool.Import(largeFile, "package.deb",
@@ -572,7 +572,7 @@ func (s *DiskFullNoRootSuite) TestLinkFromPoolCopySyncIsCalled(c *C) {
 	err := os.WriteFile(pkgFile, []byte("package content"), 0644)
 	c.Assert(err, IsNil)
 
-	sourceChecksum, err := utils.ChecksumsForFile(pkgFile)
+	sourceChecksum, err := utils.ChecksumsForFile(pkgFile, nil)
 	c.Assert(err, IsNil)
 
 	srcPoolPath, err := pool.Import(pkgFile, "package.deb",
@@ -615,7 +615,7 @@ func (s *DiskFullNoRootSuite) TestLinkFromPoolCopySyncErrorIsReturned(c *C) {
 	err := os.WriteFile(pkgFile, []byte("package content"), 0644)
 	c.Assert(err, IsNil)
 
-	sourceChecksum, err := utils.ChecksumsForFile(pkgFile)
+	sourceChecksum, err := utils.ChecksumsForFile(pkgFile, nil)
 	c.Assert(err, IsNil)
 
 	srcPoolPath, err := pool.Import(pkgFile, "package-syncfail.deb",

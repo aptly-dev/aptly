@@ -33,9 +33,10 @@ func (s *ImportSuite) TearDownTest(c *C) {
 func (s *ImportSuite) TestImportPackageFilesRejectsInvalidVersion(c *C) {
 	list := NewPackageList()
 
+	files := []FileWithSize{{Path: "testdata/import/invalid-version.dsc"}}
 	processedFiles, failedFiles, err := ImportPackageFiles(
-		list, []string{"testdata/import/invalid-version.dsc"}, false, &NullVerifier{},
-		nil, s.packageCollection, s.reporter, nil,
+		list, files, false, &NullVerifier{},
+		nil, s.packageCollection, s.reporter, nil, nil,
 		func(database.ReaderWriter) aptly.ChecksumStorage { return nil })
 
 	c.Assert(err, IsNil)

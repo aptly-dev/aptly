@@ -48,7 +48,7 @@ func (*RepoAddVariantSuite) TestRepoAddArchitectureVariant(c *check.C) {
 		path := filepath.Join(dir, "payload.deb")
 		output, err := exec.Command(builder, "--build", "--root-owner-group", root, path).CombinedOutput()
 		c.Assert(err, check.IsNil, check.Commentf("build fixture: %s", output))
-		checksums, err := utils.ChecksumsForFile(path)
+		checksums, err := utils.ChecksumsForFile(path, nil)
 		c.Assert(err, check.IsNil)
 		pkg := &deb.Package{Name: "import-test", Version: spec.version, Architecture: "amd64", ArchitectureVariant: spec.variant, V06Plus: true}
 		pkg.UpdateFiles(deb.PackageFiles{{Filename: "payload.deb", Checksums: checksums}})
